@@ -28,7 +28,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class EM950Specific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_INT.withName("ping_number"),
         GSF.C_INT.withName("mode"),
@@ -43,10 +42,6 @@ public final class EM950Specific extends StructClass {
         super(struct);
     }
 
-    public EM950Specific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -54,27 +49,7 @@ public final class EM950Specific extends StructClass {
 
     private static final OfInt ping_numberLAYOUT = (OfInt)LAYOUT.select(groupElement("ping_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int ping_number
-     * }
-     */
-    public static final OfInt ping_numberLAYOUT() {
-        return ping_numberLAYOUT;
-    }
-
     private static final long ping_number$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int ping_number
-     * }
-     */
-    public static final long ping_number$offset() {
-        return ping_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -82,7 +57,7 @@ public final class EM950Specific extends StructClass {
      * int ping_number
      * }
      */
-    public static int ping_number(MemorySegment struct) {
+    public int ping_number() {
         return struct.get(ping_numberLAYOUT, ping_number$OFFSET);
     }
 
@@ -92,33 +67,13 @@ public final class EM950Specific extends StructClass {
      * int ping_number
      * }
      */
-    public static void ping_number(MemorySegment struct, int fieldValue) {
+    public void ping_number(int fieldValue) {
         struct.set(ping_numberLAYOUT, ping_number$OFFSET, fieldValue);
     }
 
     private static final OfInt modeLAYOUT = (OfInt)LAYOUT.select(groupElement("mode"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int mode
-     * }
-     */
-    public static final OfInt modeLAYOUT() {
-        return modeLAYOUT;
-    }
-
     private static final long mode$OFFSET = 4;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int mode
-     * }
-     */
-    public static final long mode$offset() {
-        return mode$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -126,7 +81,7 @@ public final class EM950Specific extends StructClass {
      * int mode
      * }
      */
-    public static int mode(MemorySegment struct) {
+    public int mode() {
         return struct.get(modeLAYOUT, mode$OFFSET);
     }
 
@@ -136,33 +91,13 @@ public final class EM950Specific extends StructClass {
      * int mode
      * }
      */
-    public static void mode(MemorySegment struct, int fieldValue) {
+    public void mode(int fieldValue) {
         struct.set(modeLAYOUT, mode$OFFSET, fieldValue);
     }
 
     private static final OfInt ping_qualityLAYOUT = (OfInt)LAYOUT.select(groupElement("ping_quality"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int ping_quality
-     * }
-     */
-    public static final OfInt ping_qualityLAYOUT() {
-        return ping_qualityLAYOUT;
-    }
-
     private static final long ping_quality$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int ping_quality
-     * }
-     */
-    public static final long ping_quality$offset() {
-        return ping_quality$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -170,7 +105,7 @@ public final class EM950Specific extends StructClass {
      * int ping_quality
      * }
      */
-    public static int ping_quality(MemorySegment struct) {
+    public int ping_quality() {
         return struct.get(ping_qualityLAYOUT, ping_quality$OFFSET);
     }
 
@@ -180,33 +115,13 @@ public final class EM950Specific extends StructClass {
      * int ping_quality
      * }
      */
-    public static void ping_quality(MemorySegment struct, int fieldValue) {
+    public void ping_quality(int fieldValue) {
         struct.set(ping_qualityLAYOUT, ping_quality$OFFSET, fieldValue);
     }
 
     private static final OfDouble ship_pitchLAYOUT = (OfDouble)LAYOUT.select(groupElement("ship_pitch"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double ship_pitch
-     * }
-     */
-    public static final OfDouble ship_pitchLAYOUT() {
-        return ship_pitchLAYOUT;
-    }
-
     private static final long ship_pitch$OFFSET = 16;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double ship_pitch
-     * }
-     */
-    public static final long ship_pitch$offset() {
-        return ship_pitch$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -214,7 +129,7 @@ public final class EM950Specific extends StructClass {
      * double ship_pitch
      * }
      */
-    public static double ship_pitch(MemorySegment struct) {
+    public double ship_pitch() {
         return struct.get(ship_pitchLAYOUT, ship_pitch$OFFSET);
     }
 
@@ -224,33 +139,13 @@ public final class EM950Specific extends StructClass {
      * double ship_pitch
      * }
      */
-    public static void ship_pitch(MemorySegment struct, double fieldValue) {
+    public void ship_pitch(double fieldValue) {
         struct.set(ship_pitchLAYOUT, ship_pitch$OFFSET, fieldValue);
     }
 
     private static final OfDouble transducer_pitchLAYOUT = (OfDouble)LAYOUT.select(groupElement("transducer_pitch"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double transducer_pitch
-     * }
-     */
-    public static final OfDouble transducer_pitchLAYOUT() {
-        return transducer_pitchLAYOUT;
-    }
-
     private static final long transducer_pitch$OFFSET = 24;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double transducer_pitch
-     * }
-     */
-    public static final long transducer_pitch$offset() {
-        return transducer_pitch$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -258,7 +153,7 @@ public final class EM950Specific extends StructClass {
      * double transducer_pitch
      * }
      */
-    public static double transducer_pitch(MemorySegment struct) {
+    public double transducer_pitch() {
         return struct.get(transducer_pitchLAYOUT, transducer_pitch$OFFSET);
     }
 
@@ -268,33 +163,13 @@ public final class EM950Specific extends StructClass {
      * double transducer_pitch
      * }
      */
-    public static void transducer_pitch(MemorySegment struct, double fieldValue) {
+    public void transducer_pitch(double fieldValue) {
         struct.set(transducer_pitchLAYOUT, transducer_pitch$OFFSET, fieldValue);
     }
 
     private static final OfDouble surface_velocityLAYOUT = (OfDouble)LAYOUT.select(groupElement("surface_velocity"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double surface_velocity
-     * }
-     */
-    public static final OfDouble surface_velocityLAYOUT() {
-        return surface_velocityLAYOUT;
-    }
-
     private static final long surface_velocity$OFFSET = 32;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double surface_velocity
-     * }
-     */
-    public static final long surface_velocity$offset() {
-        return surface_velocity$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -302,7 +177,7 @@ public final class EM950Specific extends StructClass {
      * double surface_velocity
      * }
      */
-    public static double surface_velocity(MemorySegment struct) {
+    public double surface_velocity() {
         return struct.get(surface_velocityLAYOUT, surface_velocity$OFFSET);
     }
 
@@ -312,9 +187,7 @@ public final class EM950Specific extends StructClass {
      * double surface_velocity
      * }
      */
-    public static void surface_velocity(MemorySegment struct, double fieldValue) {
+    public void surface_velocity(double fieldValue) {
         struct.set(surface_velocityLAYOUT, surface_velocity$OFFSET, fieldValue);
     }
-
 }
-

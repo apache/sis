@@ -27,7 +27,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class KMALLSpecific extends StructClass {
-
     private static final OfInt LAYOUT_GSFKMALLVERSION;
     private static final OfInt LAYOUT_DGMTYPE;
     private static final OfInt LAYOUT_DGMVERSION;
@@ -193,10 +192,6 @@ public final class KMALLSpecific extends StructClass {
 
     public KMALLSpecific(MemorySegment struct) {
         super(struct);
-    }
-
-    public KMALLSpecific(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -983,6 +978,4 @@ public final class KMALLSpecific extends StructClass {
     public String getSpare5() {
         return new String(getBytes(1880, 32));
     }
-
 }
-

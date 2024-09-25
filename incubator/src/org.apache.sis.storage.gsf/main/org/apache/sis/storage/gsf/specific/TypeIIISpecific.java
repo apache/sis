@@ -28,7 +28,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class TypeIIISpecific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_SHORT.withName("leftmost_beam"),
         GSF.C_SHORT.withName("rightmost_beam"),
@@ -42,10 +41,6 @@ public final class TypeIIISpecific extends StructClass {
         super(struct);
     }
 
-    public TypeIIISpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -53,27 +48,7 @@ public final class TypeIIISpecific extends StructClass {
 
     private static final OfShort leftmost_beamLAYOUT = (OfShort)LAYOUT.select(groupElement("leftmost_beam"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short leftmost_beam
-     * }
-     */
-    public static final OfShort leftmost_beamLAYOUT() {
-        return leftmost_beamLAYOUT;
-    }
-
     private static final long leftmost_beam$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short leftmost_beam
-     * }
-     */
-    public static final long leftmost_beam$offset() {
-        return leftmost_beam$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -81,7 +56,7 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short leftmost_beam
      * }
      */
-    public static short leftmost_beam(MemorySegment struct) {
+    public short leftmost_beam() {
         return struct.get(leftmost_beamLAYOUT, leftmost_beam$OFFSET);
     }
 
@@ -91,33 +66,13 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short leftmost_beam
      * }
      */
-    public static void leftmost_beam(MemorySegment struct, short fieldValue) {
+    public void leftmost_beam(short fieldValue) {
         struct.set(leftmost_beamLAYOUT, leftmost_beam$OFFSET, fieldValue);
     }
 
     private static final OfShort rightmost_beamLAYOUT = (OfShort)LAYOUT.select(groupElement("rightmost_beam"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short rightmost_beam
-     * }
-     */
-    public static final OfShort rightmost_beamLAYOUT() {
-        return rightmost_beamLAYOUT;
-    }
-
     private static final long rightmost_beam$OFFSET = 2;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short rightmost_beam
-     * }
-     */
-    public static final long rightmost_beam$offset() {
-        return rightmost_beam$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -125,7 +80,7 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short rightmost_beam
      * }
      */
-    public static short rightmost_beam(MemorySegment struct) {
+    public short rightmost_beam() {
         return struct.get(rightmost_beamLAYOUT, rightmost_beam$OFFSET);
     }
 
@@ -135,33 +90,13 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short rightmost_beam
      * }
      */
-    public static void rightmost_beam(MemorySegment struct, short fieldValue) {
+    public void rightmost_beam(short fieldValue) {
         struct.set(rightmost_beamLAYOUT, rightmost_beam$OFFSET, fieldValue);
     }
 
     private static final OfShort total_beamsLAYOUT = (OfShort)LAYOUT.select(groupElement("total_beams"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short total_beams
-     * }
-     */
-    public static final OfShort total_beamsLAYOUT() {
-        return total_beamsLAYOUT;
-    }
-
     private static final long total_beams$OFFSET = 4;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short total_beams
-     * }
-     */
-    public static final long total_beams$offset() {
-        return total_beams$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -169,7 +104,7 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short total_beams
      * }
      */
-    public static short total_beams(MemorySegment struct) {
+    public short total_beams() {
         return struct.get(total_beamsLAYOUT, total_beams$OFFSET);
     }
 
@@ -179,33 +114,13 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short total_beams
      * }
      */
-    public static void total_beams(MemorySegment struct, short fieldValue) {
+    public void total_beams(short fieldValue) {
         struct.set(total_beamsLAYOUT, total_beams$OFFSET, fieldValue);
     }
 
     private static final OfShort nav_modeLAYOUT = (OfShort)LAYOUT.select(groupElement("nav_mode"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short nav_mode
-     * }
-     */
-    public static final OfShort nav_modeLAYOUT() {
-        return nav_modeLAYOUT;
-    }
-
     private static final long nav_mode$OFFSET = 6;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short nav_mode
-     * }
-     */
-    public static final long nav_mode$offset() {
-        return nav_mode$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -213,7 +128,7 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short nav_mode
      * }
      */
-    public static short nav_mode(MemorySegment struct) {
+    public short nav_mode() {
         return struct.get(nav_modeLAYOUT, nav_mode$OFFSET);
     }
 
@@ -223,33 +138,13 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short nav_mode
      * }
      */
-    public static void nav_mode(MemorySegment struct, short fieldValue) {
+    public void nav_mode(short fieldValue) {
         struct.set(nav_modeLAYOUT, nav_mode$OFFSET, fieldValue);
     }
 
     private static final OfShort ping_numberLAYOUT = (OfShort)LAYOUT.select(groupElement("ping_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short ping_number
-     * }
-     */
-    public static final OfShort ping_numberLAYOUT() {
-        return ping_numberLAYOUT;
-    }
-
     private static final long ping_number$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short ping_number
-     * }
-     */
-    public static final long ping_number$offset() {
-        return ping_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -257,7 +152,7 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short ping_number
      * }
      */
-    public static short ping_number(MemorySegment struct) {
+    public short ping_number() {
         return struct.get(ping_numberLAYOUT, ping_number$OFFSET);
     }
 
@@ -267,33 +162,13 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short ping_number
      * }
      */
-    public static void ping_number(MemorySegment struct, short fieldValue) {
+    public void ping_number(short fieldValue) {
         struct.set(ping_numberLAYOUT, ping_number$OFFSET, fieldValue);
     }
 
     private static final OfShort mission_numberLAYOUT = (OfShort)LAYOUT.select(groupElement("mission_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short mission_number
-     * }
-     */
-    public static final OfShort mission_numberLAYOUT() {
-        return mission_numberLAYOUT;
-    }
-
     private static final long mission_number$OFFSET = 10;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short mission_number
-     * }
-     */
-    public static final long mission_number$offset() {
-        return mission_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -301,7 +176,7 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short mission_number
      * }
      */
-    public static short mission_number(MemorySegment struct) {
+    public short mission_number() {
         return struct.get(mission_numberLAYOUT, mission_number$OFFSET);
     }
 
@@ -311,9 +186,7 @@ public final class TypeIIISpecific extends StructClass {
      * unsigned short mission_number
      * }
      */
-    public static void mission_number(MemorySegment struct, short fieldValue) {
+    public void mission_number(short fieldValue) {
         struct.set(mission_numberLAYOUT, mission_number$OFFSET, fieldValue);
     }
-
 }
-

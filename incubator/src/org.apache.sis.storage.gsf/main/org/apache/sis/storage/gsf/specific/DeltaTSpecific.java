@@ -28,7 +28,6 @@ import org.apache.sis.storage.gsf.TimeSpec;
  * @author Johann Sorel (Geomatys)
  */
 public final class DeltaTSpecific extends StructClass {
-
     private static final SequenceLayout LAYOUT_DECODE_FILE_TYPE;
     private static final OfByte LAYOUT_VERSION;
     private static final OfInt LAYOUT_PING_BYTE_SIZE;
@@ -100,10 +99,6 @@ public final class DeltaTSpecific extends StructClass {
 
     public DeltaTSpecific(MemorySegment struct) {
         super(struct);
-    }
-
-    public DeltaTSpecific(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -400,6 +395,4 @@ public final class DeltaTSpecific extends StructClass {
     public String getSpare() {
         return new String(getBytes(200, 32));
     }
-
 }
-

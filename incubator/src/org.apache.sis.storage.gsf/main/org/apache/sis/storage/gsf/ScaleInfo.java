@@ -30,7 +30,7 @@ public final class ScaleInfo extends StructClass {
     private static final OfDouble LAYOUT_MULTIPLIER;
     private static final OfDouble LAYOUT_OFFSET;
 
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_COMPRESSIONFLAG = GSF.C_CHAR.withName("compressionFlag"),
         MemoryLayout.paddingLayout(7),
         LAYOUT_MULTIPLIER = GSF.C_DOUBLE.withName("multiplier"),
@@ -38,12 +38,8 @@ public final class ScaleInfo extends StructClass {
     ).withName("t_gsfScaleInfo");
 
 
-    public ScaleInfo(MemorySegment struct) {
+    ScaleInfo(MemorySegment struct) {
         super(struct);
-    }
-
-    public ScaleInfo(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -80,6 +76,4 @@ public final class ScaleInfo extends StructClass {
     public double getOffset() {
         return struct.get(LAYOUT_OFFSET, 16);
     }
-
 }
-

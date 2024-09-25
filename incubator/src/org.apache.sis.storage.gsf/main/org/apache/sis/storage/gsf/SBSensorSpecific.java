@@ -36,7 +36,7 @@ public final class SBSensorSpecific extends StructClass {
     private static final GroupLayout LAYOUT_GSFBDBSPECIFIC;
     private static final GroupLayout LAYOUT_GSFNOSHDBSPECIFIC;
 
-    public static final GroupLayout LAYOUT = MemoryLayout.unionLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.unionLayout(
         LAYOUT_GSFECHOTRACSPECIFIC = EchotracSpecific.LAYOUT.withName("gsfEchotracSpecific"),
         LAYOUT_GSFBATHY2000SPECIFIC = EchotracSpecific.LAYOUT.withName("gsfBathy2000Specific"),
         LAYOUT_GSFMGD77SPECIFIC = MGD77Specific.LAYOUT.withName("gsfMGD77Specific"),
@@ -44,12 +44,8 @@ public final class SBSensorSpecific extends StructClass {
         LAYOUT_GSFNOSHDBSPECIFIC = NOSHDBSpecific.LAYOUT.withName("gsfNOSHDBSpecific")
     ).withName("t_gsfSBSensorSpecific");
 
-    public SBSensorSpecific(MemorySegment struct) {
+    SBSensorSpecific(MemorySegment struct) {
         super(struct);
-    }
-
-    public SBSensorSpecific(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -106,6 +102,4 @@ public final class SBSensorSpecific extends StructClass {
     public MemorySegment gsfNOSHDBSpecific() {
         return struct.asSlice(0, LAYOUT_GSFNOSHDBSPECIFIC.byteSize());
     }
-
 }
-

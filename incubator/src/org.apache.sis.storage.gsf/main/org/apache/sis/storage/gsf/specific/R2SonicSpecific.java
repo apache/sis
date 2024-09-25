@@ -30,7 +30,6 @@ import org.apache.sis.storage.gsf.TimeSpec;
  * @author Johann Sorel (Geomatys)
  */
 public final class R2SonicSpecific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         MemoryLayout.sequenceLayout(12, GSF.C_CHAR).withName("model_number"),
         MemoryLayout.sequenceLayout(12, GSF.C_CHAR).withName("serial_number"),
@@ -70,10 +69,6 @@ public final class R2SonicSpecific extends StructClass {
         super(struct);
     }
 
-    public R2SonicSpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -81,27 +76,7 @@ public final class R2SonicSpecific extends StructClass {
 
     private static final SequenceLayout model_numberLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("model_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char model_number[12]
-     * }
-     */
-    public static final SequenceLayout model_numberLAYOUT() {
-        return model_numberLAYOUT;
-    }
-
     private static final long model_number$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char model_number[12]
-     * }
-     */
-    public static final long model_number$offset() {
-        return model_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -109,7 +84,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char model_number[12]
      * }
      */
-    public static MemorySegment model_number(MemorySegment struct) {
+    public MemorySegment model_number() {
         return struct.asSlice(model_number$OFFSET, model_numberLAYOUT.byteSize());
     }
 
@@ -119,21 +94,10 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char model_number[12]
      * }
      */
-    public static void model_number(MemorySegment struct, MemorySegment fieldValue) {
+    public void model_number(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, model_number$OFFSET, model_numberLAYOUT.byteSize());
     }
 
-    private static long[] model_number$DIMS = { 12 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned char model_number[12]
-     * }
-     */
-    public static long[] model_number$dimensions() {
-        return model_number$DIMS;
-    }
     private static final VarHandle model_number$ELEM_HANDLE = model_numberLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -142,7 +106,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char model_number[12]
      * }
      */
-    public static byte model_number(MemorySegment struct, long index0) {
+    public byte model_number(long index0) {
         return (byte)model_number$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -152,33 +116,13 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char model_number[12]
      * }
      */
-    public static void model_number(MemorySegment struct, long index0, byte fieldValue) {
+    public void model_number(long index0, byte fieldValue) {
         model_number$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
 
     private static final SequenceLayout serial_numberLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("serial_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char serial_number[12]
-     * }
-     */
-    public static final SequenceLayout serial_numberLAYOUT() {
-        return serial_numberLAYOUT;
-    }
-
     private static final long serial_number$OFFSET = 12;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char serial_number[12]
-     * }
-     */
-    public static final long serial_number$offset() {
-        return serial_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -186,7 +130,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char serial_number[12]
      * }
      */
-    public static MemorySegment serial_number(MemorySegment struct) {
+    public MemorySegment serial_number() {
         return struct.asSlice(serial_number$OFFSET, serial_numberLAYOUT.byteSize());
     }
 
@@ -196,21 +140,10 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char serial_number[12]
      * }
      */
-    public static void serial_number(MemorySegment struct, MemorySegment fieldValue) {
+    public void serial_number(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, serial_number$OFFSET, serial_numberLAYOUT.byteSize());
     }
 
-    private static long[] serial_number$DIMS = { 12 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned char serial_number[12]
-     * }
-     */
-    public static long[] serial_number$dimensions() {
-        return serial_number$DIMS;
-    }
     private static final VarHandle serial_number$ELEM_HANDLE = serial_numberLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -219,7 +152,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char serial_number[12]
      * }
      */
-    public static byte serial_number(MemorySegment struct, long index0) {
+    public byte serial_number(long index0) {
         return (byte)serial_number$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -229,33 +162,13 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char serial_number[12]
      * }
      */
-    public static void serial_number(MemorySegment struct, long index0, byte fieldValue) {
+    public void serial_number(long index0, byte fieldValue) {
         serial_number$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
 
     private static final GroupLayout dg_timeLAYOUT = (GroupLayout)LAYOUT.select(groupElement("dg_time"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * struct timespec dg_time
-     * }
-     */
-    public static final GroupLayout dg_timeLAYOUT() {
-        return dg_timeLAYOUT;
-    }
-
     private static final long dg_time$OFFSET = 24;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * struct timespec dg_time
-     * }
-     */
-    public static final long dg_time$offset() {
-        return dg_time$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -263,7 +176,7 @@ public final class R2SonicSpecific extends StructClass {
      * struct timespec dg_time
      * }
      */
-    public static MemorySegment dg_time(MemorySegment struct) {
+    public MemorySegment dg_time() {
         return struct.asSlice(dg_time$OFFSET, dg_timeLAYOUT.byteSize());
     }
 
@@ -273,33 +186,13 @@ public final class R2SonicSpecific extends StructClass {
      * struct timespec dg_time
      * }
      */
-    public static void dg_time(MemorySegment struct, MemorySegment fieldValue) {
+    public void dg_time(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, dg_time$OFFSET, dg_timeLAYOUT.byteSize());
     }
 
     private static final OfInt ping_numberLAYOUT = (OfInt)LAYOUT.select(groupElement("ping_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned int ping_number
-     * }
-     */
-    public static final OfInt ping_numberLAYOUT() {
-        return ping_numberLAYOUT;
-    }
-
     private static final long ping_number$OFFSET = 40;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned int ping_number
-     * }
-     */
-    public static final long ping_number$offset() {
-        return ping_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -307,7 +200,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned int ping_number
      * }
      */
-    public static int ping_number(MemorySegment struct) {
+    public int ping_number() {
         return struct.get(ping_numberLAYOUT, ping_number$OFFSET);
     }
 
@@ -317,33 +210,13 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned int ping_number
      * }
      */
-    public static void ping_number(MemorySegment struct, int fieldValue) {
+    public void ping_number(int fieldValue) {
         struct.set(ping_numberLAYOUT, ping_number$OFFSET, fieldValue);
     }
 
     private static final OfDouble ping_periodLAYOUT = (OfDouble)LAYOUT.select(groupElement("ping_period"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double ping_period
-     * }
-     */
-    public static final OfDouble ping_periodLAYOUT() {
-        return ping_periodLAYOUT;
-    }
-
     private static final long ping_period$OFFSET = 48;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double ping_period
-     * }
-     */
-    public static final long ping_period$offset() {
-        return ping_period$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -351,7 +224,7 @@ public final class R2SonicSpecific extends StructClass {
      * double ping_period
      * }
      */
-    public static double ping_period(MemorySegment struct) {
+    public double ping_period() {
         return struct.get(ping_periodLAYOUT, ping_period$OFFSET);
     }
 
@@ -361,33 +234,13 @@ public final class R2SonicSpecific extends StructClass {
      * double ping_period
      * }
      */
-    public static void ping_period(MemorySegment struct, double fieldValue) {
+    public void ping_period(double fieldValue) {
         struct.set(ping_periodLAYOUT, ping_period$OFFSET, fieldValue);
     }
 
     private static final OfDouble sound_speedLAYOUT = (OfDouble)LAYOUT.select(groupElement("sound_speed"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double sound_speed
-     * }
-     */
-    public static final OfDouble sound_speedLAYOUT() {
-        return sound_speedLAYOUT;
-    }
-
     private static final long sound_speed$OFFSET = 56;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double sound_speed
-     * }
-     */
-    public static final long sound_speed$offset() {
-        return sound_speed$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -395,7 +248,7 @@ public final class R2SonicSpecific extends StructClass {
      * double sound_speed
      * }
      */
-    public static double sound_speed(MemorySegment struct) {
+    public double sound_speed() {
         return struct.get(sound_speedLAYOUT, sound_speed$OFFSET);
     }
 
@@ -405,33 +258,13 @@ public final class R2SonicSpecific extends StructClass {
      * double sound_speed
      * }
      */
-    public static void sound_speed(MemorySegment struct, double fieldValue) {
+    public void sound_speed(double fieldValue) {
         struct.set(sound_speedLAYOUT, sound_speed$OFFSET, fieldValue);
     }
 
     private static final OfDouble frequencyLAYOUT = (OfDouble)LAYOUT.select(groupElement("frequency"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double frequency
-     * }
-     */
-    public static final OfDouble frequencyLAYOUT() {
-        return frequencyLAYOUT;
-    }
-
     private static final long frequency$OFFSET = 64;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double frequency
-     * }
-     */
-    public static final long frequency$offset() {
-        return frequency$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -439,7 +272,7 @@ public final class R2SonicSpecific extends StructClass {
      * double frequency
      * }
      */
-    public static double frequency(MemorySegment struct) {
+    public double frequency() {
         return struct.get(frequencyLAYOUT, frequency$OFFSET);
     }
 
@@ -449,33 +282,13 @@ public final class R2SonicSpecific extends StructClass {
      * double frequency
      * }
      */
-    public static void frequency(MemorySegment struct, double fieldValue) {
+    public void frequency(double fieldValue) {
         struct.set(frequencyLAYOUT, frequency$OFFSET, fieldValue);
     }
 
     private static final OfDouble tx_powerLAYOUT = (OfDouble)LAYOUT.select(groupElement("tx_power"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double tx_power
-     * }
-     */
-    public static final OfDouble tx_powerLAYOUT() {
-        return tx_powerLAYOUT;
-    }
-
     private static final long tx_power$OFFSET = 72;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double tx_power
-     * }
-     */
-    public static final long tx_power$offset() {
-        return tx_power$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -483,7 +296,7 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_power
      * }
      */
-    public static double tx_power(MemorySegment struct) {
+    public double tx_power() {
         return struct.get(tx_powerLAYOUT, tx_power$OFFSET);
     }
 
@@ -493,33 +306,13 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_power
      * }
      */
-    public static void tx_power(MemorySegment struct, double fieldValue) {
+    public void tx_power(double fieldValue) {
         struct.set(tx_powerLAYOUT, tx_power$OFFSET, fieldValue);
     }
 
     private static final OfDouble tx_pulse_widthLAYOUT = (OfDouble)LAYOUT.select(groupElement("tx_pulse_width"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double tx_pulse_width
-     * }
-     */
-    public static final OfDouble tx_pulse_widthLAYOUT() {
-        return tx_pulse_widthLAYOUT;
-    }
-
     private static final long tx_pulse_width$OFFSET = 80;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double tx_pulse_width
-     * }
-     */
-    public static final long tx_pulse_width$offset() {
-        return tx_pulse_width$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -527,7 +320,7 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_pulse_width
      * }
      */
-    public static double tx_pulse_width(MemorySegment struct) {
+    public double tx_pulse_width() {
         return struct.get(tx_pulse_widthLAYOUT, tx_pulse_width$OFFSET);
     }
 
@@ -537,33 +330,13 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_pulse_width
      * }
      */
-    public static void tx_pulse_width(MemorySegment struct, double fieldValue) {
+    public void tx_pulse_width(double fieldValue) {
         struct.set(tx_pulse_widthLAYOUT, tx_pulse_width$OFFSET, fieldValue);
     }
 
     private static final OfDouble tx_beamwidth_vertLAYOUT = (OfDouble)LAYOUT.select(groupElement("tx_beamwidth_vert"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double tx_beamwidth_vert
-     * }
-     */
-    public static final OfDouble tx_beamwidth_vertLAYOUT() {
-        return tx_beamwidth_vertLAYOUT;
-    }
-
     private static final long tx_beamwidth_vert$OFFSET = 88;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double tx_beamwidth_vert
-     * }
-     */
-    public static final long tx_beamwidth_vert$offset() {
-        return tx_beamwidth_vert$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -571,7 +344,7 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_beamwidth_vert
      * }
      */
-    public static double tx_beamwidth_vert(MemorySegment struct) {
+    public double tx_beamwidth_vert() {
         return struct.get(tx_beamwidth_vertLAYOUT, tx_beamwidth_vert$OFFSET);
     }
 
@@ -581,33 +354,13 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_beamwidth_vert
      * }
      */
-    public static void tx_beamwidth_vert(MemorySegment struct, double fieldValue) {
+    public void tx_beamwidth_vert(double fieldValue) {
         struct.set(tx_beamwidth_vertLAYOUT, tx_beamwidth_vert$OFFSET, fieldValue);
     }
 
     private static final OfDouble tx_beamwidth_horizLAYOUT = (OfDouble)LAYOUT.select(groupElement("tx_beamwidth_horiz"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double tx_beamwidth_horiz
-     * }
-     */
-    public static final OfDouble tx_beamwidth_horizLAYOUT() {
-        return tx_beamwidth_horizLAYOUT;
-    }
-
     private static final long tx_beamwidth_horiz$OFFSET = 96;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double tx_beamwidth_horiz
-     * }
-     */
-    public static final long tx_beamwidth_horiz$offset() {
-        return tx_beamwidth_horiz$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -615,7 +368,7 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_beamwidth_horiz
      * }
      */
-    public static double tx_beamwidth_horiz(MemorySegment struct) {
+    public double tx_beamwidth_horiz() {
         return struct.get(tx_beamwidth_horizLAYOUT, tx_beamwidth_horiz$OFFSET);
     }
 
@@ -625,33 +378,13 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_beamwidth_horiz
      * }
      */
-    public static void tx_beamwidth_horiz(MemorySegment struct, double fieldValue) {
+    public void tx_beamwidth_horiz(double fieldValue) {
         struct.set(tx_beamwidth_horizLAYOUT, tx_beamwidth_horiz$OFFSET, fieldValue);
     }
 
     private static final OfDouble tx_steering_vertLAYOUT = (OfDouble)LAYOUT.select(groupElement("tx_steering_vert"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double tx_steering_vert
-     * }
-     */
-    public static final OfDouble tx_steering_vertLAYOUT() {
-        return tx_steering_vertLAYOUT;
-    }
-
     private static final long tx_steering_vert$OFFSET = 104;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double tx_steering_vert
-     * }
-     */
-    public static final long tx_steering_vert$offset() {
-        return tx_steering_vert$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -659,7 +392,7 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_steering_vert
      * }
      */
-    public static double tx_steering_vert(MemorySegment struct) {
+    public double tx_steering_vert() {
         return struct.get(tx_steering_vertLAYOUT, tx_steering_vert$OFFSET);
     }
 
@@ -669,33 +402,13 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_steering_vert
      * }
      */
-    public static void tx_steering_vert(MemorySegment struct, double fieldValue) {
+    public void tx_steering_vert(double fieldValue) {
         struct.set(tx_steering_vertLAYOUT, tx_steering_vert$OFFSET, fieldValue);
     }
 
     private static final OfDouble tx_steering_horizLAYOUT = (OfDouble)LAYOUT.select(groupElement("tx_steering_horiz"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double tx_steering_horiz
-     * }
-     */
-    public static final OfDouble tx_steering_horizLAYOUT() {
-        return tx_steering_horizLAYOUT;
-    }
-
     private static final long tx_steering_horiz$OFFSET = 112;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double tx_steering_horiz
-     * }
-     */
-    public static final long tx_steering_horiz$offset() {
-        return tx_steering_horiz$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -703,7 +416,7 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_steering_horiz
      * }
      */
-    public static double tx_steering_horiz(MemorySegment struct) {
+    public double tx_steering_horiz() {
         return struct.get(tx_steering_horizLAYOUT, tx_steering_horiz$OFFSET);
     }
 
@@ -713,33 +426,13 @@ public final class R2SonicSpecific extends StructClass {
      * double tx_steering_horiz
      * }
      */
-    public static void tx_steering_horiz(MemorySegment struct, double fieldValue) {
+    public void tx_steering_horiz(double fieldValue) {
         struct.set(tx_steering_horizLAYOUT, tx_steering_horiz$OFFSET, fieldValue);
     }
 
     private static final OfInt tx_misc_infoLAYOUT = (OfInt)LAYOUT.select(groupElement("tx_misc_info"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned int tx_misc_info
-     * }
-     */
-    public static final OfInt tx_misc_infoLAYOUT() {
-        return tx_misc_infoLAYOUT;
-    }
-
     private static final long tx_misc_info$OFFSET = 120;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned int tx_misc_info
-     * }
-     */
-    public static final long tx_misc_info$offset() {
-        return tx_misc_info$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -747,7 +440,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned int tx_misc_info
      * }
      */
-    public static int tx_misc_info(MemorySegment struct) {
+    public int tx_misc_info() {
         return struct.get(tx_misc_infoLAYOUT, tx_misc_info$OFFSET);
     }
 
@@ -757,33 +450,13 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned int tx_misc_info
      * }
      */
-    public static void tx_misc_info(MemorySegment struct, int fieldValue) {
+    public void tx_misc_info(int fieldValue) {
         struct.set(tx_misc_infoLAYOUT, tx_misc_info$OFFSET, fieldValue);
     }
 
     private static final OfDouble rx_bandwidthLAYOUT = (OfDouble)LAYOUT.select(groupElement("rx_bandwidth"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double rx_bandwidth
-     * }
-     */
-    public static final OfDouble rx_bandwidthLAYOUT() {
-        return rx_bandwidthLAYOUT;
-    }
-
     private static final long rx_bandwidth$OFFSET = 128;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double rx_bandwidth
-     * }
-     */
-    public static final long rx_bandwidth$offset() {
-        return rx_bandwidth$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -791,7 +464,7 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_bandwidth
      * }
      */
-    public static double rx_bandwidth(MemorySegment struct) {
+    public double rx_bandwidth() {
         return struct.get(rx_bandwidthLAYOUT, rx_bandwidth$OFFSET);
     }
 
@@ -801,33 +474,13 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_bandwidth
      * }
      */
-    public static void rx_bandwidth(MemorySegment struct, double fieldValue) {
+    public void rx_bandwidth(double fieldValue) {
         struct.set(rx_bandwidthLAYOUT, rx_bandwidth$OFFSET, fieldValue);
     }
 
     private static final OfDouble rx_sample_rateLAYOUT = (OfDouble)LAYOUT.select(groupElement("rx_sample_rate"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double rx_sample_rate
-     * }
-     */
-    public static final OfDouble rx_sample_rateLAYOUT() {
-        return rx_sample_rateLAYOUT;
-    }
-
     private static final long rx_sample_rate$OFFSET = 136;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double rx_sample_rate
-     * }
-     */
-    public static final long rx_sample_rate$offset() {
-        return rx_sample_rate$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -835,7 +488,7 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_sample_rate
      * }
      */
-    public static double rx_sample_rate(MemorySegment struct) {
+    public double rx_sample_rate() {
         return struct.get(rx_sample_rateLAYOUT, rx_sample_rate$OFFSET);
     }
 
@@ -845,33 +498,13 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_sample_rate
      * }
      */
-    public static void rx_sample_rate(MemorySegment struct, double fieldValue) {
+    public void rx_sample_rate(double fieldValue) {
         struct.set(rx_sample_rateLAYOUT, rx_sample_rate$OFFSET, fieldValue);
     }
 
     private static final OfDouble rx_rangeLAYOUT = (OfDouble)LAYOUT.select(groupElement("rx_range"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double rx_range
-     * }
-     */
-    public static final OfDouble rx_rangeLAYOUT() {
-        return rx_rangeLAYOUT;
-    }
-
     private static final long rx_range$OFFSET = 144;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double rx_range
-     * }
-     */
-    public static final long rx_range$offset() {
-        return rx_range$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -879,7 +512,7 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_range
      * }
      */
-    public static double rx_range(MemorySegment struct) {
+    public double rx_range() {
         return struct.get(rx_rangeLAYOUT, rx_range$OFFSET);
     }
 
@@ -889,33 +522,13 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_range
      * }
      */
-    public static void rx_range(MemorySegment struct, double fieldValue) {
+    public void rx_range(double fieldValue) {
         struct.set(rx_rangeLAYOUT, rx_range$OFFSET, fieldValue);
     }
 
     private static final OfDouble rx_gainLAYOUT = (OfDouble)LAYOUT.select(groupElement("rx_gain"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double rx_gain
-     * }
-     */
-    public static final OfDouble rx_gainLAYOUT() {
-        return rx_gainLAYOUT;
-    }
-
     private static final long rx_gain$OFFSET = 152;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double rx_gain
-     * }
-     */
-    public static final long rx_gain$offset() {
-        return rx_gain$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -923,7 +536,7 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_gain
      * }
      */
-    public static double rx_gain(MemorySegment struct) {
+    public double rx_gain() {
         return struct.get(rx_gainLAYOUT, rx_gain$OFFSET);
     }
 
@@ -933,33 +546,13 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_gain
      * }
      */
-    public static void rx_gain(MemorySegment struct, double fieldValue) {
+    public void rx_gain(double fieldValue) {
         struct.set(rx_gainLAYOUT, rx_gain$OFFSET, fieldValue);
     }
 
     private static final OfDouble rx_spreadingLAYOUT = (OfDouble)LAYOUT.select(groupElement("rx_spreading"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double rx_spreading
-     * }
-     */
-    public static final OfDouble rx_spreadingLAYOUT() {
-        return rx_spreadingLAYOUT;
-    }
-
     private static final long rx_spreading$OFFSET = 160;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double rx_spreading
-     * }
-     */
-    public static final long rx_spreading$offset() {
-        return rx_spreading$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -967,7 +560,7 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_spreading
      * }
      */
-    public static double rx_spreading(MemorySegment struct) {
+    public double rx_spreading() {
         return struct.get(rx_spreadingLAYOUT, rx_spreading$OFFSET);
     }
 
@@ -977,33 +570,13 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_spreading
      * }
      */
-    public static void rx_spreading(MemorySegment struct, double fieldValue) {
+    public void rx_spreading(double fieldValue) {
         struct.set(rx_spreadingLAYOUT, rx_spreading$OFFSET, fieldValue);
     }
 
     private static final OfDouble rx_absorptionLAYOUT = (OfDouble)LAYOUT.select(groupElement("rx_absorption"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double rx_absorption
-     * }
-     */
-    public static final OfDouble rx_absorptionLAYOUT() {
-        return rx_absorptionLAYOUT;
-    }
-
     private static final long rx_absorption$OFFSET = 168;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double rx_absorption
-     * }
-     */
-    public static final long rx_absorption$offset() {
-        return rx_absorption$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1011,7 +584,7 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_absorption
      * }
      */
-    public static double rx_absorption(MemorySegment struct) {
+    public double rx_absorption() {
         return struct.get(rx_absorptionLAYOUT, rx_absorption$OFFSET);
     }
 
@@ -1021,33 +594,13 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_absorption
      * }
      */
-    public static void rx_absorption(MemorySegment struct, double fieldValue) {
+    public void rx_absorption(double fieldValue) {
         struct.set(rx_absorptionLAYOUT, rx_absorption$OFFSET, fieldValue);
     }
 
     private static final OfDouble rx_mount_tiltLAYOUT = (OfDouble)LAYOUT.select(groupElement("rx_mount_tilt"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double rx_mount_tilt
-     * }
-     */
-    public static final OfDouble rx_mount_tiltLAYOUT() {
-        return rx_mount_tiltLAYOUT;
-    }
-
     private static final long rx_mount_tilt$OFFSET = 176;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double rx_mount_tilt
-     * }
-     */
-    public static final long rx_mount_tilt$offset() {
-        return rx_mount_tilt$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1055,7 +608,7 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_mount_tilt
      * }
      */
-    public static double rx_mount_tilt(MemorySegment struct) {
+    public double rx_mount_tilt() {
         return struct.get(rx_mount_tiltLAYOUT, rx_mount_tilt$OFFSET);
     }
 
@@ -1065,33 +618,13 @@ public final class R2SonicSpecific extends StructClass {
      * double rx_mount_tilt
      * }
      */
-    public static void rx_mount_tilt(MemorySegment struct, double fieldValue) {
+    public void rx_mount_tilt(double fieldValue) {
         struct.set(rx_mount_tiltLAYOUT, rx_mount_tilt$OFFSET, fieldValue);
     }
 
     private static final OfInt rx_misc_infoLAYOUT = (OfInt)LAYOUT.select(groupElement("rx_misc_info"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned int rx_misc_info
-     * }
-     */
-    public static final OfInt rx_misc_infoLAYOUT() {
-        return rx_misc_infoLAYOUT;
-    }
-
     private static final long rx_misc_info$OFFSET = 184;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned int rx_misc_info
-     * }
-     */
-    public static final long rx_misc_info$offset() {
-        return rx_misc_info$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1099,7 +632,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned int rx_misc_info
      * }
      */
-    public static int rx_misc_info(MemorySegment struct) {
+    public int rx_misc_info() {
         return struct.get(rx_misc_infoLAYOUT, rx_misc_info$OFFSET);
     }
 
@@ -1109,33 +642,13 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned int rx_misc_info
      * }
      */
-    public static void rx_misc_info(MemorySegment struct, int fieldValue) {
+    public void rx_misc_info(int fieldValue) {
         struct.set(rx_misc_infoLAYOUT, rx_misc_info$OFFSET, fieldValue);
     }
 
     private static final OfShort reservedLAYOUT = (OfShort)LAYOUT.select(groupElement("reserved"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short reserved
-     * }
-     */
-    public static final OfShort reservedLAYOUT() {
-        return reservedLAYOUT;
-    }
-
     private static final long reserved$OFFSET = 188;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short reserved
-     * }
-     */
-    public static final long reserved$offset() {
-        return reserved$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1143,7 +656,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned short reserved
      * }
      */
-    public static short reserved(MemorySegment struct) {
+    public short reserved() {
         return struct.get(reservedLAYOUT, reserved$OFFSET);
     }
 
@@ -1153,33 +666,13 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned short reserved
      * }
      */
-    public static void reserved(MemorySegment struct, short fieldValue) {
+    public void reserved(short fieldValue) {
         struct.set(reservedLAYOUT, reserved$OFFSET, fieldValue);
     }
 
     private static final OfShort num_beamsLAYOUT = (OfShort)LAYOUT.select(groupElement("num_beams"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short num_beams
-     * }
-     */
-    public static final OfShort num_beamsLAYOUT() {
-        return num_beamsLAYOUT;
-    }
-
     private static final long num_beams$OFFSET = 190;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short num_beams
-     * }
-     */
-    public static final long num_beams$offset() {
-        return num_beams$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1187,7 +680,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned short num_beams
      * }
      */
-    public static short num_beams(MemorySegment struct) {
+    public short num_beams() {
         return struct.get(num_beamsLAYOUT, num_beams$OFFSET);
     }
 
@@ -1197,33 +690,13 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned short num_beams
      * }
      */
-    public static void num_beams(MemorySegment struct, short fieldValue) {
+    public void num_beams(short fieldValue) {
         struct.set(num_beamsLAYOUT, num_beams$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout A0_more_infoLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("A0_more_info"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double A0_more_info[6]
-     * }
-     */
-    public static final SequenceLayout A0_more_infoLAYOUT() {
-        return A0_more_infoLAYOUT;
-    }
-
     private static final long A0_more_info$OFFSET = 192;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double A0_more_info[6]
-     * }
-     */
-    public static final long A0_more_info$offset() {
-        return A0_more_info$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1231,7 +704,7 @@ public final class R2SonicSpecific extends StructClass {
      * double A0_more_info[6]
      * }
      */
-    public static MemorySegment A0_more_info(MemorySegment struct) {
+    public MemorySegment A0_more_info() {
         return struct.asSlice(A0_more_info$OFFSET, A0_more_infoLAYOUT.byteSize());
     }
 
@@ -1241,21 +714,10 @@ public final class R2SonicSpecific extends StructClass {
      * double A0_more_info[6]
      * }
      */
-    public static void A0_more_info(MemorySegment struct, MemorySegment fieldValue) {
+    public void A0_more_info(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, A0_more_info$OFFSET, A0_more_infoLAYOUT.byteSize());
     }
 
-    private static long[] A0_more_info$DIMS = { 6 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * double A0_more_info[6]
-     * }
-     */
-    public static long[] A0_more_info$dimensions() {
-        return A0_more_info$DIMS;
-    }
     private static final VarHandle A0_more_info$ELEM_HANDLE = A0_more_infoLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -1264,7 +726,7 @@ public final class R2SonicSpecific extends StructClass {
      * double A0_more_info[6]
      * }
      */
-    public static double A0_more_info(MemorySegment struct, long index0) {
+    public double A0_more_info(long index0) {
         return (double)A0_more_info$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -1274,33 +736,13 @@ public final class R2SonicSpecific extends StructClass {
      * double A0_more_info[6]
      * }
      */
-    public static void A0_more_info(MemorySegment struct, long index0, double fieldValue) {
+    public void A0_more_info(long index0, double fieldValue) {
         A0_more_info$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
 
     private static final SequenceLayout A2_more_infoLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("A2_more_info"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double A2_more_info[6]
-     * }
-     */
-    public static final SequenceLayout A2_more_infoLAYOUT() {
-        return A2_more_infoLAYOUT;
-    }
-
     private static final long A2_more_info$OFFSET = 240;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double A2_more_info[6]
-     * }
-     */
-    public static final long A2_more_info$offset() {
-        return A2_more_info$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1308,7 +750,7 @@ public final class R2SonicSpecific extends StructClass {
      * double A2_more_info[6]
      * }
      */
-    public static MemorySegment A2_more_info(MemorySegment struct) {
+    public MemorySegment A2_more_info() {
         return struct.asSlice(A2_more_info$OFFSET, A2_more_infoLAYOUT.byteSize());
     }
 
@@ -1318,21 +760,10 @@ public final class R2SonicSpecific extends StructClass {
      * double A2_more_info[6]
      * }
      */
-    public static void A2_more_info(MemorySegment struct, MemorySegment fieldValue) {
+    public void A2_more_info(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, A2_more_info$OFFSET, A2_more_infoLAYOUT.byteSize());
     }
 
-    private static long[] A2_more_info$DIMS = { 6 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * double A2_more_info[6]
-     * }
-     */
-    public static long[] A2_more_info$dimensions() {
-        return A2_more_info$DIMS;
-    }
     private static final VarHandle A2_more_info$ELEM_HANDLE = A2_more_infoLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -1341,7 +772,7 @@ public final class R2SonicSpecific extends StructClass {
      * double A2_more_info[6]
      * }
      */
-    public static double A2_more_info(MemorySegment struct, long index0) {
+    public double A2_more_info(long index0) {
         return (double)A2_more_info$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -1351,33 +782,13 @@ public final class R2SonicSpecific extends StructClass {
      * double A2_more_info[6]
      * }
      */
-    public static void A2_more_info(MemorySegment struct, long index0, double fieldValue) {
+    public void A2_more_info(long index0, double fieldValue) {
         A2_more_info$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
 
     private static final OfDouble G0_depth_gate_minLAYOUT = (OfDouble)LAYOUT.select(groupElement("G0_depth_gate_min"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double G0_depth_gate_min
-     * }
-     */
-    public static final OfDouble G0_depth_gate_minLAYOUT() {
-        return G0_depth_gate_minLAYOUT;
-    }
-
     private static final long G0_depth_gate_min$OFFSET = 288;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double G0_depth_gate_min
-     * }
-     */
-    public static final long G0_depth_gate_min$offset() {
-        return G0_depth_gate_min$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1385,7 +796,7 @@ public final class R2SonicSpecific extends StructClass {
      * double G0_depth_gate_min
      * }
      */
-    public static double G0_depth_gate_min(MemorySegment struct) {
+    public double G0_depth_gate_min() {
         return struct.get(G0_depth_gate_minLAYOUT, G0_depth_gate_min$OFFSET);
     }
 
@@ -1395,33 +806,13 @@ public final class R2SonicSpecific extends StructClass {
      * double G0_depth_gate_min
      * }
      */
-    public static void G0_depth_gate_min(MemorySegment struct, double fieldValue) {
+    public void G0_depth_gate_min(double fieldValue) {
         struct.set(G0_depth_gate_minLAYOUT, G0_depth_gate_min$OFFSET, fieldValue);
     }
 
     private static final OfDouble G0_depth_gate_maxLAYOUT = (OfDouble)LAYOUT.select(groupElement("G0_depth_gate_max"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double G0_depth_gate_max
-     * }
-     */
-    public static final OfDouble G0_depth_gate_maxLAYOUT() {
-        return G0_depth_gate_maxLAYOUT;
-    }
-
     private static final long G0_depth_gate_max$OFFSET = 296;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double G0_depth_gate_max
-     * }
-     */
-    public static final long G0_depth_gate_max$offset() {
-        return G0_depth_gate_max$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1429,7 +820,7 @@ public final class R2SonicSpecific extends StructClass {
      * double G0_depth_gate_max
      * }
      */
-    public static double G0_depth_gate_max(MemorySegment struct) {
+    public double G0_depth_gate_max() {
         return struct.get(G0_depth_gate_maxLAYOUT, G0_depth_gate_max$OFFSET);
     }
 
@@ -1439,33 +830,13 @@ public final class R2SonicSpecific extends StructClass {
      * double G0_depth_gate_max
      * }
      */
-    public static void G0_depth_gate_max(MemorySegment struct, double fieldValue) {
+    public void G0_depth_gate_max(double fieldValue) {
         struct.set(G0_depth_gate_maxLAYOUT, G0_depth_gate_max$OFFSET, fieldValue);
     }
 
     private static final OfDouble G0_depth_gate_slopeLAYOUT = (OfDouble)LAYOUT.select(groupElement("G0_depth_gate_slope"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double G0_depth_gate_slope
-     * }
-     */
-    public static final OfDouble G0_depth_gate_slopeLAYOUT() {
-        return G0_depth_gate_slopeLAYOUT;
-    }
-
     private static final long G0_depth_gate_slope$OFFSET = 304;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double G0_depth_gate_slope
-     * }
-     */
-    public static final long G0_depth_gate_slope$offset() {
-        return G0_depth_gate_slope$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1473,7 +844,7 @@ public final class R2SonicSpecific extends StructClass {
      * double G0_depth_gate_slope
      * }
      */
-    public static double G0_depth_gate_slope(MemorySegment struct) {
+    public double G0_depth_gate_slope() {
         return struct.get(G0_depth_gate_slopeLAYOUT, G0_depth_gate_slope$OFFSET);
     }
 
@@ -1483,33 +854,13 @@ public final class R2SonicSpecific extends StructClass {
      * double G0_depth_gate_slope
      * }
      */
-    public static void G0_depth_gate_slope(MemorySegment struct, double fieldValue) {
+    public void G0_depth_gate_slope(double fieldValue) {
         struct.set(G0_depth_gate_slopeLAYOUT, G0_depth_gate_slope$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char spare[32]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 312;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char spare[32]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -1517,7 +868,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char spare[32]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -1527,21 +878,10 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char spare[32]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 32 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned char spare[32]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -1550,7 +890,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char spare[32]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -1560,9 +900,7 @@ public final class R2SonicSpecific extends StructClass {
      * unsigned char spare[32]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

@@ -29,7 +29,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class SBNOSHDBSpecific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_SHORT.withName("type_code"),
         GSF.C_SHORT.withName("carto_code"),
@@ -40,10 +39,6 @@ public final class SBNOSHDBSpecific extends StructClass {
         super(struct);
     }
 
-    public SBNOSHDBSpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -51,27 +46,7 @@ public final class SBNOSHDBSpecific extends StructClass {
 
     private static final OfShort type_codeLAYOUT = (OfShort)LAYOUT.select(groupElement("type_code"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short type_code
-     * }
-     */
-    public static final OfShort type_codeLAYOUT() {
-        return type_codeLAYOUT;
-    }
-
     private static final long type_code$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short type_code
-     * }
-     */
-    public static final long type_code$offset() {
-        return type_code$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -79,7 +54,7 @@ public final class SBNOSHDBSpecific extends StructClass {
      * unsigned short type_code
      * }
      */
-    public static short type_code(MemorySegment struct) {
+    public short type_code() {
         return struct.get(type_codeLAYOUT, type_code$OFFSET);
     }
 
@@ -89,33 +64,13 @@ public final class SBNOSHDBSpecific extends StructClass {
      * unsigned short type_code
      * }
      */
-    public static void type_code(MemorySegment struct, short fieldValue) {
+    public void type_code(short fieldValue) {
         struct.set(type_codeLAYOUT, type_code$OFFSET, fieldValue);
     }
 
     private static final OfShort carto_codeLAYOUT = (OfShort)LAYOUT.select(groupElement("carto_code"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short carto_code
-     * }
-     */
-    public static final OfShort carto_codeLAYOUT() {
-        return carto_codeLAYOUT;
-    }
-
     private static final long carto_code$OFFSET = 2;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short carto_code
-     * }
-     */
-    public static final long carto_code$offset() {
-        return carto_code$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -123,7 +78,7 @@ public final class SBNOSHDBSpecific extends StructClass {
      * unsigned short carto_code
      * }
      */
-    public static short carto_code(MemorySegment struct) {
+    public short carto_code() {
         return struct.get(carto_codeLAYOUT, carto_code$OFFSET);
     }
 
@@ -133,33 +88,13 @@ public final class SBNOSHDBSpecific extends StructClass {
      * unsigned short carto_code
      * }
      */
-    public static void carto_code(MemorySegment struct, short fieldValue) {
+    public void carto_code(short fieldValue) {
         struct.set(carto_codeLAYOUT, carto_code$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char spare[4]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 4;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char spare[4]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -167,7 +102,7 @@ public final class SBNOSHDBSpecific extends StructClass {
      * char spare[4]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -177,21 +112,10 @@ public final class SBNOSHDBSpecific extends StructClass {
      * char spare[4]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 4 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * char spare[4]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -200,7 +124,7 @@ public final class SBNOSHDBSpecific extends StructClass {
      * char spare[4]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -210,9 +134,7 @@ public final class SBNOSHDBSpecific extends StructClass {
      * char spare[4]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

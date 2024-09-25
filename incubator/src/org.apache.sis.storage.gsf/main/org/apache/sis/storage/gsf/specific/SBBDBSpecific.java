@@ -29,7 +29,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class SBBDBSpecific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_INT.withName("doc_no"),
         GSF.C_CHAR.withName("eval"),
@@ -46,10 +45,6 @@ public final class SBBDBSpecific extends StructClass {
         super(struct);
     }
 
-    public SBBDBSpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -57,27 +52,7 @@ public final class SBBDBSpecific extends StructClass {
 
     private static final OfInt doc_noLAYOUT = (OfInt)LAYOUT.select(groupElement("doc_no"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int doc_no
-     * }
-     */
-    public static final OfInt doc_noLAYOUT() {
-        return doc_noLAYOUT;
-    }
-
     private static final long doc_no$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int doc_no
-     * }
-     */
-    public static final long doc_no$offset() {
-        return doc_no$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -85,7 +60,7 @@ public final class SBBDBSpecific extends StructClass {
      * int doc_no
      * }
      */
-    public static int doc_no(MemorySegment struct) {
+    public int doc_no() {
         return struct.get(doc_noLAYOUT, doc_no$OFFSET);
     }
 
@@ -95,33 +70,13 @@ public final class SBBDBSpecific extends StructClass {
      * int doc_no
      * }
      */
-    public static void doc_no(MemorySegment struct, int fieldValue) {
+    public void doc_no(int fieldValue) {
         struct.set(doc_noLAYOUT, doc_no$OFFSET, fieldValue);
     }
 
     private static final OfByte evalLAYOUT = (OfByte)LAYOUT.select(groupElement("eval"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char eval
-     * }
-     */
-    public static final OfByte evalLAYOUT() {
-        return evalLAYOUT;
-    }
-
     private static final long eval$OFFSET = 4;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char eval
-     * }
-     */
-    public static final long eval$offset() {
-        return eval$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -129,7 +84,7 @@ public final class SBBDBSpecific extends StructClass {
      * char eval
      * }
      */
-    public static byte eval(MemorySegment struct) {
+    public byte eval() {
         return struct.get(evalLAYOUT, eval$OFFSET);
     }
 
@@ -139,33 +94,13 @@ public final class SBBDBSpecific extends StructClass {
      * char eval
      * }
      */
-    public static void eval(MemorySegment struct, byte fieldValue) {
+    public void eval(byte fieldValue) {
         struct.set(evalLAYOUT, eval$OFFSET, fieldValue);
     }
 
     private static final OfByte classificationLAYOUT = (OfByte)LAYOUT.select(groupElement("classification"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char classification
-     * }
-     */
-    public static final OfByte classificationLAYOUT() {
-        return classificationLAYOUT;
-    }
-
     private static final long classification$OFFSET = 5;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char classification
-     * }
-     */
-    public static final long classification$offset() {
-        return classification$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -173,7 +108,7 @@ public final class SBBDBSpecific extends StructClass {
      * char classification
      * }
      */
-    public static byte classification(MemorySegment struct) {
+    public byte classification() {
         return struct.get(classificationLAYOUT, classification$OFFSET);
     }
 
@@ -183,33 +118,13 @@ public final class SBBDBSpecific extends StructClass {
      * char classification
      * }
      */
-    public static void classification(MemorySegment struct, byte fieldValue) {
+    public void classification(byte fieldValue) {
         struct.set(classificationLAYOUT, classification$OFFSET, fieldValue);
     }
 
     private static final OfByte track_adj_flagLAYOUT = (OfByte)LAYOUT.select(groupElement("track_adj_flag"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char track_adj_flag
-     * }
-     */
-    public static final OfByte track_adj_flagLAYOUT() {
-        return track_adj_flagLAYOUT;
-    }
-
     private static final long track_adj_flag$OFFSET = 6;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char track_adj_flag
-     * }
-     */
-    public static final long track_adj_flag$offset() {
-        return track_adj_flag$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -217,7 +132,7 @@ public final class SBBDBSpecific extends StructClass {
      * char track_adj_flag
      * }
      */
-    public static byte track_adj_flag(MemorySegment struct) {
+    public byte track_adj_flag() {
         return struct.get(track_adj_flagLAYOUT, track_adj_flag$OFFSET);
     }
 
@@ -227,33 +142,13 @@ public final class SBBDBSpecific extends StructClass {
      * char track_adj_flag
      * }
      */
-    public static void track_adj_flag(MemorySegment struct, byte fieldValue) {
+    public void track_adj_flag(byte fieldValue) {
         struct.set(track_adj_flagLAYOUT, track_adj_flag$OFFSET, fieldValue);
     }
 
     private static final OfByte source_flagLAYOUT = (OfByte)LAYOUT.select(groupElement("source_flag"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char source_flag
-     * }
-     */
-    public static final OfByte source_flagLAYOUT() {
-        return source_flagLAYOUT;
-    }
-
     private static final long source_flag$OFFSET = 7;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char source_flag
-     * }
-     */
-    public static final long source_flag$offset() {
-        return source_flag$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -261,7 +156,7 @@ public final class SBBDBSpecific extends StructClass {
      * char source_flag
      * }
      */
-    public static byte source_flag(MemorySegment struct) {
+    public byte source_flag() {
         return struct.get(source_flagLAYOUT, source_flag$OFFSET);
     }
 
@@ -271,33 +166,13 @@ public final class SBBDBSpecific extends StructClass {
      * char source_flag
      * }
      */
-    public static void source_flag(MemorySegment struct, byte fieldValue) {
+    public void source_flag(byte fieldValue) {
         struct.set(source_flagLAYOUT, source_flag$OFFSET, fieldValue);
     }
 
     private static final OfByte pt_or_track_lnLAYOUT = (OfByte)LAYOUT.select(groupElement("pt_or_track_ln"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char pt_or_track_ln
-     * }
-     */
-    public static final OfByte pt_or_track_lnLAYOUT() {
-        return pt_or_track_lnLAYOUT;
-    }
-
     private static final long pt_or_track_ln$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char pt_or_track_ln
-     * }
-     */
-    public static final long pt_or_track_ln$offset() {
-        return pt_or_track_ln$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -305,7 +180,7 @@ public final class SBBDBSpecific extends StructClass {
      * char pt_or_track_ln
      * }
      */
-    public static byte pt_or_track_ln(MemorySegment struct) {
+    public byte pt_or_track_ln() {
         return struct.get(pt_or_track_lnLAYOUT, pt_or_track_ln$OFFSET);
     }
 
@@ -315,33 +190,13 @@ public final class SBBDBSpecific extends StructClass {
      * char pt_or_track_ln
      * }
      */
-    public static void pt_or_track_ln(MemorySegment struct, byte fieldValue) {
+    public void pt_or_track_ln(byte fieldValue) {
         struct.set(pt_or_track_lnLAYOUT, pt_or_track_ln$OFFSET, fieldValue);
     }
 
     private static final OfByte datum_flagLAYOUT = (OfByte)LAYOUT.select(groupElement("datum_flag"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char datum_flag
-     * }
-     */
-    public static final OfByte datum_flagLAYOUT() {
-        return datum_flagLAYOUT;
-    }
-
     private static final long datum_flag$OFFSET = 9;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char datum_flag
-     * }
-     */
-    public static final long datum_flag$offset() {
-        return datum_flag$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -349,7 +204,7 @@ public final class SBBDBSpecific extends StructClass {
      * char datum_flag
      * }
      */
-    public static byte datum_flag(MemorySegment struct) {
+    public byte datum_flag() {
         return struct.get(datum_flagLAYOUT, datum_flag$OFFSET);
     }
 
@@ -359,33 +214,13 @@ public final class SBBDBSpecific extends StructClass {
      * char datum_flag
      * }
      */
-    public static void datum_flag(MemorySegment struct, byte fieldValue) {
+    public void datum_flag(byte fieldValue) {
         struct.set(datum_flagLAYOUT, datum_flag$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char spare[4]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 10;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char spare[4]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -393,7 +228,7 @@ public final class SBBDBSpecific extends StructClass {
      * char spare[4]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -403,21 +238,10 @@ public final class SBBDBSpecific extends StructClass {
      * char spare[4]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 4 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * char spare[4]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -426,7 +250,7 @@ public final class SBBDBSpecific extends StructClass {
      * char spare[4]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -436,9 +260,7 @@ public final class SBBDBSpecific extends StructClass {
      * char spare[4]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

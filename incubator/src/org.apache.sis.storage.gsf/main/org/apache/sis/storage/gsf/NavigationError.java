@@ -31,7 +31,7 @@ public final class NavigationError extends StructClass {
     private static final OfDouble LAYOUT_LATITUDE_ERROR;
     private static final OfDouble LAYOUT_LONGITUDE_ERROR;
 
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_NAV_ERROR_TIME = TimeSpec.LAYOUT.withName("nav_error_time"),
         LAYOUT_RECORD_ID = GSF.C_INT.withName("record_id"),
         MemoryLayout.paddingLayout(4),
@@ -39,12 +39,8 @@ public final class NavigationError extends StructClass {
         LAYOUT_LONGITUDE_ERROR = GSF.C_DOUBLE.withName("longitude_error")
     ).withName("t_gsfNavigationError");
 
-    public NavigationError(MemorySegment struct) {
+    NavigationError(MemorySegment struct) {
         super(struct);
-    }
-
-    public NavigationError(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -91,6 +87,4 @@ public final class NavigationError extends StructClass {
     public double getLongitudeError() {
         return struct.get(LAYOUT_LONGITUDE_ERROR, 32);
     }
-
 }
-

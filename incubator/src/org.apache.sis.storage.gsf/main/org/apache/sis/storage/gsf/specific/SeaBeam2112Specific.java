@@ -29,7 +29,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class SeaBeam2112Specific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_INT.withName("mode"),
         MemoryLayout.paddingLayout(4),
@@ -49,10 +48,6 @@ public final class SeaBeam2112Specific extends StructClass {
         super(struct);
     }
 
-    public SeaBeam2112Specific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -60,27 +55,7 @@ public final class SeaBeam2112Specific extends StructClass {
 
     private static final OfInt modeLAYOUT = (OfInt)LAYOUT.select(groupElement("mode"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int mode
-     * }
-     */
-    public static final OfInt modeLAYOUT() {
-        return modeLAYOUT;
-    }
-
     private static final long mode$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int mode
-     * }
-     */
-    public static final long mode$offset() {
-        return mode$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -88,7 +63,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * int mode
      * }
      */
-    public static int mode(MemorySegment struct) {
+    public int mode() {
         return struct.get(modeLAYOUT, mode$OFFSET);
     }
 
@@ -98,33 +73,13 @@ public final class SeaBeam2112Specific extends StructClass {
      * int mode
      * }
      */
-    public static void mode(MemorySegment struct, int fieldValue) {
+    public void mode(int fieldValue) {
         struct.set(modeLAYOUT, mode$OFFSET, fieldValue);
     }
 
     private static final OfDouble surface_velocityLAYOUT = (OfDouble)LAYOUT.select(groupElement("surface_velocity"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double surface_velocity
-     * }
-     */
-    public static final OfDouble surface_velocityLAYOUT() {
-        return surface_velocityLAYOUT;
-    }
-
     private static final long surface_velocity$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double surface_velocity
-     * }
-     */
-    public static final long surface_velocity$offset() {
-        return surface_velocity$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -132,7 +87,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * double surface_velocity
      * }
      */
-    public static double surface_velocity(MemorySegment struct) {
+    public double surface_velocity() {
         return struct.get(surface_velocityLAYOUT, surface_velocity$OFFSET);
     }
 
@@ -142,33 +97,13 @@ public final class SeaBeam2112Specific extends StructClass {
      * double surface_velocity
      * }
      */
-    public static void surface_velocity(MemorySegment struct, double fieldValue) {
+    public void surface_velocity(double fieldValue) {
         struct.set(surface_velocityLAYOUT, surface_velocity$OFFSET, fieldValue);
     }
 
     private static final OfByte ssv_sourceLAYOUT = (OfByte)LAYOUT.select(groupElement("ssv_source"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char ssv_source
-     * }
-     */
-    public static final OfByte ssv_sourceLAYOUT() {
-        return ssv_sourceLAYOUT;
-    }
-
     private static final long ssv_source$OFFSET = 16;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char ssv_source
-     * }
-     */
-    public static final long ssv_source$offset() {
-        return ssv_source$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -176,7 +111,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * char ssv_source
      * }
      */
-    public static byte ssv_source(MemorySegment struct) {
+    public byte ssv_source() {
         return struct.get(ssv_sourceLAYOUT, ssv_source$OFFSET);
     }
 
@@ -186,33 +121,13 @@ public final class SeaBeam2112Specific extends StructClass {
      * char ssv_source
      * }
      */
-    public static void ssv_source(MemorySegment struct, byte fieldValue) {
+    public void ssv_source(byte fieldValue) {
         struct.set(ssv_sourceLAYOUT, ssv_source$OFFSET, fieldValue);
     }
 
     private static final OfInt ping_gainLAYOUT = (OfInt)LAYOUT.select(groupElement("ping_gain"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int ping_gain
-     * }
-     */
-    public static final OfInt ping_gainLAYOUT() {
-        return ping_gainLAYOUT;
-    }
-
     private static final long ping_gain$OFFSET = 20;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int ping_gain
-     * }
-     */
-    public static final long ping_gain$offset() {
-        return ping_gain$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -220,7 +135,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * int ping_gain
      * }
      */
-    public static int ping_gain(MemorySegment struct) {
+    public int ping_gain() {
         return struct.get(ping_gainLAYOUT, ping_gain$OFFSET);
     }
 
@@ -230,33 +145,13 @@ public final class SeaBeam2112Specific extends StructClass {
      * int ping_gain
      * }
      */
-    public static void ping_gain(MemorySegment struct, int fieldValue) {
+    public void ping_gain(int fieldValue) {
         struct.set(ping_gainLAYOUT, ping_gain$OFFSET, fieldValue);
     }
 
     private static final OfInt pulse_widthLAYOUT = (OfInt)LAYOUT.select(groupElement("pulse_width"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int pulse_width
-     * }
-     */
-    public static final OfInt pulse_widthLAYOUT() {
-        return pulse_widthLAYOUT;
-    }
-
     private static final long pulse_width$OFFSET = 24;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int pulse_width
-     * }
-     */
-    public static final long pulse_width$offset() {
-        return pulse_width$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -264,7 +159,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * int pulse_width
      * }
      */
-    public static int pulse_width(MemorySegment struct) {
+    public int pulse_width() {
         return struct.get(pulse_widthLAYOUT, pulse_width$OFFSET);
     }
 
@@ -274,33 +169,13 @@ public final class SeaBeam2112Specific extends StructClass {
      * int pulse_width
      * }
      */
-    public static void pulse_width(MemorySegment struct, int fieldValue) {
+    public void pulse_width(int fieldValue) {
         struct.set(pulse_widthLAYOUT, pulse_width$OFFSET, fieldValue);
     }
 
     private static final OfInt transmitter_attenuationLAYOUT = (OfInt)LAYOUT.select(groupElement("transmitter_attenuation"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int transmitter_attenuation
-     * }
-     */
-    public static final OfInt transmitter_attenuationLAYOUT() {
-        return transmitter_attenuationLAYOUT;
-    }
-
     private static final long transmitter_attenuation$OFFSET = 28;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int transmitter_attenuation
-     * }
-     */
-    public static final long transmitter_attenuation$offset() {
-        return transmitter_attenuation$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -308,7 +183,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * int transmitter_attenuation
      * }
      */
-    public static int transmitter_attenuation(MemorySegment struct) {
+    public int transmitter_attenuation() {
         return struct.get(transmitter_attenuationLAYOUT, transmitter_attenuation$OFFSET);
     }
 
@@ -318,33 +193,13 @@ public final class SeaBeam2112Specific extends StructClass {
      * int transmitter_attenuation
      * }
      */
-    public static void transmitter_attenuation(MemorySegment struct, int fieldValue) {
+    public void transmitter_attenuation(int fieldValue) {
         struct.set(transmitter_attenuationLAYOUT, transmitter_attenuation$OFFSET, fieldValue);
     }
 
     private static final OfInt number_algorithmsLAYOUT = (OfInt)LAYOUT.select(groupElement("number_algorithms"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int number_algorithms
-     * }
-     */
-    public static final OfInt number_algorithmsLAYOUT() {
-        return number_algorithmsLAYOUT;
-    }
-
     private static final long number_algorithms$OFFSET = 32;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int number_algorithms
-     * }
-     */
-    public static final long number_algorithms$offset() {
-        return number_algorithms$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -352,7 +207,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * int number_algorithms
      * }
      */
-    public static int number_algorithms(MemorySegment struct) {
+    public int number_algorithms() {
         return struct.get(number_algorithmsLAYOUT, number_algorithms$OFFSET);
     }
 
@@ -362,33 +217,13 @@ public final class SeaBeam2112Specific extends StructClass {
      * int number_algorithms
      * }
      */
-    public static void number_algorithms(MemorySegment struct, int fieldValue) {
+    public void number_algorithms(int fieldValue) {
         struct.set(number_algorithmsLAYOUT, number_algorithms$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout algorithm_orderLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("algorithm_order"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char algorithm_order[5]
-     * }
-     */
-    public static final SequenceLayout algorithm_orderLAYOUT() {
-        return algorithm_orderLAYOUT;
-    }
-
     private static final long algorithm_order$OFFSET = 36;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char algorithm_order[5]
-     * }
-     */
-    public static final long algorithm_order$offset() {
-        return algorithm_order$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -396,7 +231,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * char algorithm_order[5]
      * }
      */
-    public static MemorySegment algorithm_order(MemorySegment struct) {
+    public MemorySegment algorithm_order() {
         return struct.asSlice(algorithm_order$OFFSET, algorithm_orderLAYOUT.byteSize());
     }
 
@@ -406,21 +241,10 @@ public final class SeaBeam2112Specific extends StructClass {
      * char algorithm_order[5]
      * }
      */
-    public static void algorithm_order(MemorySegment struct, MemorySegment fieldValue) {
+    public void algorithm_order(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, algorithm_order$OFFSET, algorithm_orderLAYOUT.byteSize());
     }
 
-    private static long[] algorithm_order$DIMS = { 5 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * char algorithm_order[5]
-     * }
-     */
-    public static long[] algorithm_order$dimensions() {
-        return algorithm_order$DIMS;
-    }
     private static final VarHandle algorithm_order$ELEM_HANDLE = algorithm_orderLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -429,7 +253,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * char algorithm_order[5]
      * }
      */
-    public static byte algorithm_order(MemorySegment struct, long index0) {
+    public byte algorithm_order(long index0) {
         return (byte)algorithm_order$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -439,33 +263,13 @@ public final class SeaBeam2112Specific extends StructClass {
      * char algorithm_order[5]
      * }
      */
-    public static void algorithm_order(MemorySegment struct, long index0, byte fieldValue) {
+    public void algorithm_order(long index0, byte fieldValue) {
         algorithm_order$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * char spare[2]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 41;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * char spare[2]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -473,7 +277,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * char spare[2]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -483,21 +287,10 @@ public final class SeaBeam2112Specific extends StructClass {
      * char spare[2]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 2 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * char spare[2]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -506,7 +299,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * char spare[2]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -516,9 +309,7 @@ public final class SeaBeam2112Specific extends StructClass {
      * char spare[2]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

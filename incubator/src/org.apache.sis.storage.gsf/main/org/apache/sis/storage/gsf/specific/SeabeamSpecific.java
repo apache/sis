@@ -28,17 +28,12 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class SeabeamSpecific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_SHORT.withName("EclipseTime")
     ).withName("t_gsfSeabeamSpecific");
 
     public SeabeamSpecific(MemorySegment struct) {
         super(struct);
-    }
-
-    public SeabeamSpecific(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -48,27 +43,7 @@ public final class SeabeamSpecific extends StructClass {
 
     private static final OfShort EclipseTimeLAYOUT = (OfShort)LAYOUT.select(groupElement("EclipseTime"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short EclipseTime
-     * }
-     */
-    public static final OfShort EclipseTimeLAYOUT() {
-        return EclipseTimeLAYOUT;
-    }
-
     private static final long EclipseTime$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short EclipseTime
-     * }
-     */
-    public static final long EclipseTime$offset() {
-        return EclipseTime$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -76,7 +51,7 @@ public final class SeabeamSpecific extends StructClass {
      * unsigned short EclipseTime
      * }
      */
-    public static short EclipseTime(MemorySegment struct) {
+    public short EclipseTime() {
         return struct.get(EclipseTimeLAYOUT, EclipseTime$OFFSET);
     }
 
@@ -86,9 +61,7 @@ public final class SeabeamSpecific extends StructClass {
      * unsigned short EclipseTime
      * }
      */
-    public static void EclipseTime(MemorySegment struct, short fieldValue) {
+    public void EclipseTime(short fieldValue) {
         struct.set(EclipseTimeLAYOUT, EclipseTime$OFFSET, fieldValue);
     }
-
 }
-

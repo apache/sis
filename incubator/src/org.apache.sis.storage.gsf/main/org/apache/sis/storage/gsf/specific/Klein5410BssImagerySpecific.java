@@ -29,8 +29,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class Klein5410BssImagerySpecific extends StructClass {
-
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_INT.withName("res_mode"),
         GSF.C_INT.withName("tvg_page"),
@@ -42,10 +40,6 @@ public final class Klein5410BssImagerySpecific extends StructClass {
         super(struct);
     }
 
-    public Klein5410BssImagerySpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -53,27 +47,7 @@ public final class Klein5410BssImagerySpecific extends StructClass {
 
     private static final OfInt res_modeLAYOUT = (OfInt)LAYOUT.select(groupElement("res_mode"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned int res_mode
-     * }
-     */
-    public static final OfInt res_modeLAYOUT() {
-        return res_modeLAYOUT;
-    }
-
     private static final long res_mode$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned int res_mode
-     * }
-     */
-    public static final long res_mode$offset() {
-        return res_mode$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -81,7 +55,7 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned int res_mode
      * }
      */
-    public static int res_mode(MemorySegment struct) {
+    public int res_mode() {
         return struct.get(res_modeLAYOUT, res_mode$OFFSET);
     }
 
@@ -91,33 +65,13 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned int res_mode
      * }
      */
-    public static void res_mode(MemorySegment struct, int fieldValue) {
+    public void res_mode(int fieldValue) {
         struct.set(res_modeLAYOUT, res_mode$OFFSET, fieldValue);
     }
 
     private static final OfInt tvg_pageLAYOUT = (OfInt)LAYOUT.select(groupElement("tvg_page"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned int tvg_page
-     * }
-     */
-    public static final OfInt tvg_pageLAYOUT() {
-        return tvg_pageLAYOUT;
-    }
-
     private static final long tvg_page$OFFSET = 4;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned int tvg_page
-     * }
-     */
-    public static final long tvg_page$offset() {
-        return tvg_page$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -125,7 +79,7 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned int tvg_page
      * }
      */
-    public static int tvg_page(MemorySegment struct) {
+    public int tvg_page() {
         return struct.get(tvg_pageLAYOUT, tvg_page$OFFSET);
     }
 
@@ -135,33 +89,13 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned int tvg_page
      * }
      */
-    public static void tvg_page(MemorySegment struct, int fieldValue) {
+    public void tvg_page(int fieldValue) {
         struct.set(tvg_pageLAYOUT, tvg_page$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout beam_idLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("beam_id"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned int beam_id[5]
-     * }
-     */
-    public static final SequenceLayout beam_idLAYOUT() {
-        return beam_idLAYOUT;
-    }
-
     private static final long beam_id$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned int beam_id[5]
-     * }
-     */
-    public static final long beam_id$offset() {
-        return beam_id$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -169,7 +103,7 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned int beam_id[5]
      * }
      */
-    public static MemorySegment beam_id(MemorySegment struct) {
+    public MemorySegment beam_id() {
         return struct.asSlice(beam_id$OFFSET, beam_idLAYOUT.byteSize());
     }
 
@@ -179,21 +113,10 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned int beam_id[5]
      * }
      */
-    public static void beam_id(MemorySegment struct, MemorySegment fieldValue) {
+    public void beam_id(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, beam_id$OFFSET, beam_idLAYOUT.byteSize());
     }
 
-    private static long[] beam_id$DIMS = { 5 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned int beam_id[5]
-     * }
-     */
-    public static long[] beam_id$dimensions() {
-        return beam_id$DIMS;
-    }
     private static final VarHandle beam_id$ELEM_HANDLE = beam_idLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -202,7 +125,7 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned int beam_id[5]
      * }
      */
-    public static int beam_id(MemorySegment struct, long index0) {
+    public int beam_id(long index0) {
         return (int)beam_id$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -212,33 +135,13 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned int beam_id[5]
      * }
      */
-    public static void beam_id(MemorySegment struct, long index0, int fieldValue) {
+    public void beam_id(long index0, int fieldValue) {
         beam_id$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char spare[4]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 28;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char spare[4]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -246,7 +149,7 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned char spare[4]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -256,21 +159,10 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned char spare[4]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 4 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned char spare[4]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -279,7 +171,7 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned char spare[4]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -289,9 +181,7 @@ public final class Klein5410BssImagerySpecific extends StructClass {
      * unsigned char spare[4]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

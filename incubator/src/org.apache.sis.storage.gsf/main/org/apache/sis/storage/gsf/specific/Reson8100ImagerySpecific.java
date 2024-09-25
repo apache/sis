@@ -28,18 +28,12 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class Reson8100ImagerySpecific extends StructClass {
-
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         MemoryLayout.sequenceLayout(8, GSF.C_CHAR).withName("spare")
     ).withName("t_gsfReson8100ImagerySpecific");
 
     public Reson8100ImagerySpecific(MemorySegment struct) {
         super(struct);
-    }
-
-    public Reson8100ImagerySpecific(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -49,27 +43,7 @@ public final class Reson8100ImagerySpecific extends StructClass {
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char spare[8]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char spare[8]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -77,7 +51,7 @@ public final class Reson8100ImagerySpecific extends StructClass {
      * unsigned char spare[8]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -87,21 +61,10 @@ public final class Reson8100ImagerySpecific extends StructClass {
      * unsigned char spare[8]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 8 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned char spare[8]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -110,7 +73,7 @@ public final class Reson8100ImagerySpecific extends StructClass {
      * unsigned char spare[8]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -120,9 +83,7 @@ public final class Reson8100ImagerySpecific extends StructClass {
      * unsigned char spare[8]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

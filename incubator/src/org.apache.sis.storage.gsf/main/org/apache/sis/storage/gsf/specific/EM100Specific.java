@@ -27,7 +27,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class EM100Specific extends StructClass {
-
     private static final OfDouble LAYOUT_SHIP_PITCH;
     private static final OfDouble LAYOUT_TRANSDUCER_PITCH;
     private static final OfInt LAYOUT_MODE;
@@ -52,19 +51,8 @@ public final class EM100Specific extends StructClass {
         super(struct);
     }
 
-    public EM100Specific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
-        return LAYOUT;
-    }
-
-    /**
-     * The layout of this struct
-     */
-    public static final GroupLayout layout() {
         return LAYOUT;
     }
 
@@ -147,6 +135,4 @@ public final class EM100Specific extends StructClass {
     public int getCounter() {
         return struct.get(LAYOUT_COUNTER, 36);
     }
-
 }
-

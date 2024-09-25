@@ -27,7 +27,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class CmpSassSpecific extends StructClass {
-
     private static final OfDouble LAYOUT_LFREQ;
     private static final OfDouble LAYOUT_LNTENS;
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
@@ -35,13 +34,8 @@ public final class CmpSassSpecific extends StructClass {
         LAYOUT_LNTENS = GSF.C_DOUBLE.withName("lntens")
     ).withName("t_gsfCmpSassSpecific");
 
-
     public CmpSassSpecific(MemorySegment struct) {
         super(struct);
-    }
-
-    public CmpSassSpecific(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -68,6 +62,4 @@ public final class CmpSassSpecific extends StructClass {
     public double getLntens() {
         return struct.get(LAYOUT_LNTENS, 8);
     }
-
 }
-

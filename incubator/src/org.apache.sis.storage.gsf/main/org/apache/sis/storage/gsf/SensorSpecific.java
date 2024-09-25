@@ -53,9 +53,9 @@ import org.apache.sis.storage.gsf.specific.TypeIIISpecific;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class SensorSpecific extends StructClass{
+public final class SensorSpecific extends StructClass {
 
-    public static final GroupLayout LAYOUT = MemoryLayout.unionLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.unionLayout(
         SeabeamSpecific.LAYOUT.withName("gsfSeaBeamSpecific"),
         EM100Specific.LAYOUT.withName("gsfEM100Specific"),
         EM121ASpecific.LAYOUT.withName("gsfEM121ASpecific"),
@@ -93,17 +93,12 @@ public final class SensorSpecific extends StructClass{
         SBNavisoundSpecific.LAYOUT.withName("gsfSBNavisoundSpecific")
     ).withName("t_gsfSensorSpecific");
 
-    public SensorSpecific(MemorySegment struct) {
+    SensorSpecific(MemorySegment struct) {
         super(struct);
-    }
-
-    public SensorSpecific(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
     }
-
 }

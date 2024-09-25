@@ -46,10 +46,6 @@ public final class SeamapSpecific extends StructClass {
         super(struct);
     }
 
-    public SeamapSpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -57,27 +53,7 @@ public final class SeamapSpecific extends StructClass {
 
     private static final SequenceLayout portTransmitterLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("portTransmitter"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double portTransmitter[2]
-     * }
-     */
-    public static final SequenceLayout portTransmitterLAYOUT() {
-        return portTransmitterLAYOUT;
-    }
-
     private static final long portTransmitter$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double portTransmitter[2]
-     * }
-     */
-    public static final long portTransmitter$offset() {
-        return portTransmitter$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -85,7 +61,7 @@ public final class SeamapSpecific extends StructClass {
      * double portTransmitter[2]
      * }
      */
-    public static MemorySegment portTransmitter(MemorySegment struct) {
+    public MemorySegment portTransmitter() {
         return struct.asSlice(portTransmitter$OFFSET, portTransmitterLAYOUT.byteSize());
     }
 
@@ -95,21 +71,10 @@ public final class SeamapSpecific extends StructClass {
      * double portTransmitter[2]
      * }
      */
-    public static void portTransmitter(MemorySegment struct, MemorySegment fieldValue) {
+    public void portTransmitter(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, portTransmitter$OFFSET, portTransmitterLAYOUT.byteSize());
     }
 
-    private static long[] portTransmitter$DIMS = { 2 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * double portTransmitter[2]
-     * }
-     */
-    public static long[] portTransmitter$dimensions() {
-        return portTransmitter$DIMS;
-    }
     private static final VarHandle portTransmitter$ELEM_HANDLE = portTransmitterLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -118,7 +83,7 @@ public final class SeamapSpecific extends StructClass {
      * double portTransmitter[2]
      * }
      */
-    public static double portTransmitter(MemorySegment struct, long index0) {
+    public double portTransmitter(long index0) {
         return (double)portTransmitter$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -128,33 +93,13 @@ public final class SeamapSpecific extends StructClass {
      * double portTransmitter[2]
      * }
      */
-    public static void portTransmitter(MemorySegment struct, long index0, double fieldValue) {
+    public void portTransmitter(long index0, double fieldValue) {
         portTransmitter$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
 
     private static final SequenceLayout stbdTransmitterLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("stbdTransmitter"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double stbdTransmitter[2]
-     * }
-     */
-    public static final SequenceLayout stbdTransmitterLAYOUT() {
-        return stbdTransmitterLAYOUT;
-    }
-
     private static final long stbdTransmitter$OFFSET = 16;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double stbdTransmitter[2]
-     * }
-     */
-    public static final long stbdTransmitter$offset() {
-        return stbdTransmitter$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -162,7 +107,7 @@ public final class SeamapSpecific extends StructClass {
      * double stbdTransmitter[2]
      * }
      */
-    public static MemorySegment stbdTransmitter(MemorySegment struct) {
+    public MemorySegment stbdTransmitter() {
         return struct.asSlice(stbdTransmitter$OFFSET, stbdTransmitterLAYOUT.byteSize());
     }
 
@@ -172,21 +117,10 @@ public final class SeamapSpecific extends StructClass {
      * double stbdTransmitter[2]
      * }
      */
-    public static void stbdTransmitter(MemorySegment struct, MemorySegment fieldValue) {
+    public void stbdTransmitter(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, stbdTransmitter$OFFSET, stbdTransmitterLAYOUT.byteSize());
     }
 
-    private static long[] stbdTransmitter$DIMS = { 2 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * double stbdTransmitter[2]
-     * }
-     */
-    public static long[] stbdTransmitter$dimensions() {
-        return stbdTransmitter$DIMS;
-    }
     private static final VarHandle stbdTransmitter$ELEM_HANDLE = stbdTransmitterLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -195,7 +129,7 @@ public final class SeamapSpecific extends StructClass {
      * double stbdTransmitter[2]
      * }
      */
-    public static double stbdTransmitter(MemorySegment struct, long index0) {
+    public double stbdTransmitter(long index0) {
         return (double)stbdTransmitter$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -205,33 +139,13 @@ public final class SeamapSpecific extends StructClass {
      * double stbdTransmitter[2]
      * }
      */
-    public static void stbdTransmitter(MemorySegment struct, long index0, double fieldValue) {
+    public void stbdTransmitter(long index0, double fieldValue) {
         stbdTransmitter$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
 
     private static final OfDouble portGainLAYOUT = (OfDouble)LAYOUT.select(groupElement("portGain"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double portGain
-     * }
-     */
-    public static final OfDouble portGainLAYOUT() {
-        return portGainLAYOUT;
-    }
-
     private static final long portGain$OFFSET = 32;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double portGain
-     * }
-     */
-    public static final long portGain$offset() {
-        return portGain$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -239,7 +153,7 @@ public final class SeamapSpecific extends StructClass {
      * double portGain
      * }
      */
-    public static double portGain(MemorySegment struct) {
+    public double portGain() {
         return struct.get(portGainLAYOUT, portGain$OFFSET);
     }
 
@@ -249,33 +163,13 @@ public final class SeamapSpecific extends StructClass {
      * double portGain
      * }
      */
-    public static void portGain(MemorySegment struct, double fieldValue) {
+    public void portGain(double fieldValue) {
         struct.set(portGainLAYOUT, portGain$OFFSET, fieldValue);
     }
 
     private static final OfDouble stbdGainLAYOUT = (OfDouble)LAYOUT.select(groupElement("stbdGain"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double stbdGain
-     * }
-     */
-    public static final OfDouble stbdGainLAYOUT() {
-        return stbdGainLAYOUT;
-    }
-
     private static final long stbdGain$OFFSET = 40;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double stbdGain
-     * }
-     */
-    public static final long stbdGain$offset() {
-        return stbdGain$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -283,7 +177,7 @@ public final class SeamapSpecific extends StructClass {
      * double stbdGain
      * }
      */
-    public static double stbdGain(MemorySegment struct) {
+    public double stbdGain() {
         return struct.get(stbdGainLAYOUT, stbdGain$OFFSET);
     }
 
@@ -293,33 +187,13 @@ public final class SeamapSpecific extends StructClass {
      * double stbdGain
      * }
      */
-    public static void stbdGain(MemorySegment struct, double fieldValue) {
+    public void stbdGain(double fieldValue) {
         struct.set(stbdGainLAYOUT, stbdGain$OFFSET, fieldValue);
     }
 
     private static final OfDouble portPulseLengthLAYOUT = (OfDouble)LAYOUT.select(groupElement("portPulseLength"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double portPulseLength
-     * }
-     */
-    public static final OfDouble portPulseLengthLAYOUT() {
-        return portPulseLengthLAYOUT;
-    }
-
     private static final long portPulseLength$OFFSET = 48;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double portPulseLength
-     * }
-     */
-    public static final long portPulseLength$offset() {
-        return portPulseLength$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -327,7 +201,7 @@ public final class SeamapSpecific extends StructClass {
      * double portPulseLength
      * }
      */
-    public static double portPulseLength(MemorySegment struct) {
+    public double portPulseLength() {
         return struct.get(portPulseLengthLAYOUT, portPulseLength$OFFSET);
     }
 
@@ -337,33 +211,13 @@ public final class SeamapSpecific extends StructClass {
      * double portPulseLength
      * }
      */
-    public static void portPulseLength(MemorySegment struct, double fieldValue) {
+    public void portPulseLength(double fieldValue) {
         struct.set(portPulseLengthLAYOUT, portPulseLength$OFFSET, fieldValue);
     }
 
     private static final OfDouble stbdPulseLengthLAYOUT = (OfDouble)LAYOUT.select(groupElement("stbdPulseLength"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double stbdPulseLength
-     * }
-     */
-    public static final OfDouble stbdPulseLengthLAYOUT() {
-        return stbdPulseLengthLAYOUT;
-    }
-
     private static final long stbdPulseLength$OFFSET = 56;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double stbdPulseLength
-     * }
-     */
-    public static final long stbdPulseLength$offset() {
-        return stbdPulseLength$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -371,7 +225,7 @@ public final class SeamapSpecific extends StructClass {
      * double stbdPulseLength
      * }
      */
-    public static double stbdPulseLength(MemorySegment struct) {
+    public double stbdPulseLength() {
         return struct.get(stbdPulseLengthLAYOUT, stbdPulseLength$OFFSET);
     }
 
@@ -381,33 +235,13 @@ public final class SeamapSpecific extends StructClass {
      * double stbdPulseLength
      * }
      */
-    public static void stbdPulseLength(MemorySegment struct, double fieldValue) {
+    public void stbdPulseLength(double fieldValue) {
         struct.set(stbdPulseLengthLAYOUT, stbdPulseLength$OFFSET, fieldValue);
     }
 
     private static final OfDouble pressureDepthLAYOUT = (OfDouble)LAYOUT.select(groupElement("pressureDepth"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double pressureDepth
-     * }
-     */
-    public static final OfDouble pressureDepthLAYOUT() {
-        return pressureDepthLAYOUT;
-    }
-
     private static final long pressureDepth$OFFSET = 64;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double pressureDepth
-     * }
-     */
-    public static final long pressureDepth$offset() {
-        return pressureDepth$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -415,7 +249,7 @@ public final class SeamapSpecific extends StructClass {
      * double pressureDepth
      * }
      */
-    public static double pressureDepth(MemorySegment struct) {
+    public double pressureDepth() {
         return struct.get(pressureDepthLAYOUT, pressureDepth$OFFSET);
     }
 
@@ -425,33 +259,13 @@ public final class SeamapSpecific extends StructClass {
      * double pressureDepth
      * }
      */
-    public static void pressureDepth(MemorySegment struct, double fieldValue) {
+    public void pressureDepth(double fieldValue) {
         struct.set(pressureDepthLAYOUT, pressureDepth$OFFSET, fieldValue);
     }
 
     private static final OfDouble altitudeLAYOUT = (OfDouble)LAYOUT.select(groupElement("altitude"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double altitude
-     * }
-     */
-    public static final OfDouble altitudeLAYOUT() {
-        return altitudeLAYOUT;
-    }
-
     private static final long altitude$OFFSET = 72;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double altitude
-     * }
-     */
-    public static final long altitude$offset() {
-        return altitude$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -459,7 +273,7 @@ public final class SeamapSpecific extends StructClass {
      * double altitude
      * }
      */
-    public static double altitude(MemorySegment struct) {
+    public double altitude() {
         return struct.get(altitudeLAYOUT, altitude$OFFSET);
     }
 
@@ -469,33 +283,13 @@ public final class SeamapSpecific extends StructClass {
      * double altitude
      * }
      */
-    public static void altitude(MemorySegment struct, double fieldValue) {
+    public void altitude(double fieldValue) {
         struct.set(altitudeLAYOUT, altitude$OFFSET, fieldValue);
     }
 
     private static final OfDouble temperatureLAYOUT = (OfDouble)LAYOUT.select(groupElement("temperature"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double temperature
-     * }
-     */
-    public static final OfDouble temperatureLAYOUT() {
-        return temperatureLAYOUT;
-    }
-
     private static final long temperature$OFFSET = 80;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double temperature
-     * }
-     */
-    public static final long temperature$offset() {
-        return temperature$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -503,7 +297,7 @@ public final class SeamapSpecific extends StructClass {
      * double temperature
      * }
      */
-    public static double temperature(MemorySegment struct) {
+    public double temperature() {
         return struct.get(temperatureLAYOUT, temperature$OFFSET);
     }
 
@@ -513,9 +307,7 @@ public final class SeamapSpecific extends StructClass {
      * double temperature
      * }
      */
-    public static void temperature(MemorySegment struct, double fieldValue) {
+    public void temperature(double fieldValue) {
         struct.set(temperatureLAYOUT, temperature$OFFSET, fieldValue);
     }
-
 }
-

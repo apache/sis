@@ -28,7 +28,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class SBAmpSpecific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_CHAR.withName("hour"),
         GSF.C_CHAR.withName("minute"),
@@ -43,10 +42,6 @@ public final class SBAmpSpecific extends StructClass {
         super(struct);
     }
 
-    public SBAmpSpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -54,27 +49,7 @@ public final class SBAmpSpecific extends StructClass {
 
     private static final OfByte hourLAYOUT = (OfByte)LAYOUT.select(groupElement("hour"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char hour
-     * }
-     */
-    public static final OfByte hourLAYOUT() {
-        return hourLAYOUT;
-    }
-
     private static final long hour$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char hour
-     * }
-     */
-    public static final long hour$offset() {
-        return hour$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -82,7 +57,7 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned char hour
      * }
      */
-    public static byte hour(MemorySegment struct) {
+    public byte hour() {
         return struct.get(hourLAYOUT, hour$OFFSET);
     }
 
@@ -92,33 +67,13 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned char hour
      * }
      */
-    public static void hour(MemorySegment struct, byte fieldValue) {
+    public void hour(byte fieldValue) {
         struct.set(hourLAYOUT, hour$OFFSET, fieldValue);
     }
 
     private static final OfByte minuteLAYOUT = (OfByte)LAYOUT.select(groupElement("minute"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char minute
-     * }
-     */
-    public static final OfByte minuteLAYOUT() {
-        return minuteLAYOUT;
-    }
-
     private static final long minute$OFFSET = 1;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char minute
-     * }
-     */
-    public static final long minute$offset() {
-        return minute$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -126,7 +81,7 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned char minute
      * }
      */
-    public static byte minute(MemorySegment struct) {
+    public byte minute() {
         return struct.get(minuteLAYOUT, minute$OFFSET);
     }
 
@@ -136,33 +91,13 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned char minute
      * }
      */
-    public static void minute(MemorySegment struct, byte fieldValue) {
+    public void minute(byte fieldValue) {
         struct.set(minuteLAYOUT, minute$OFFSET, fieldValue);
     }
 
     private static final OfByte secondLAYOUT = (OfByte)LAYOUT.select(groupElement("second"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char second
-     * }
-     */
-    public static final OfByte secondLAYOUT() {
-        return secondLAYOUT;
-    }
-
     private static final long second$OFFSET = 2;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char second
-     * }
-     */
-    public static final long second$offset() {
-        return second$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -170,7 +105,7 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned char second
      * }
      */
-    public static byte second(MemorySegment struct) {
+    public byte second() {
         return struct.get(secondLAYOUT, second$OFFSET);
     }
 
@@ -180,33 +115,13 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned char second
      * }
      */
-    public static void second(MemorySegment struct, byte fieldValue) {
+    public void second(byte fieldValue) {
         struct.set(secondLAYOUT, second$OFFSET, fieldValue);
     }
 
     private static final OfByte hundredthsLAYOUT = (OfByte)LAYOUT.select(groupElement("hundredths"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char hundredths
-     * }
-     */
-    public static final OfByte hundredthsLAYOUT() {
-        return hundredthsLAYOUT;
-    }
-
     private static final long hundredths$OFFSET = 3;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char hundredths
-     * }
-     */
-    public static final long hundredths$offset() {
-        return hundredths$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -214,7 +129,7 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned char hundredths
      * }
      */
-    public static byte hundredths(MemorySegment struct) {
+    public byte hundredths() {
         return struct.get(hundredthsLAYOUT, hundredths$OFFSET);
     }
 
@@ -224,33 +139,13 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned char hundredths
      * }
      */
-    public static void hundredths(MemorySegment struct, byte fieldValue) {
+    public void hundredths(byte fieldValue) {
         struct.set(hundredthsLAYOUT, hundredths$OFFSET, fieldValue);
     }
 
     private static final OfInt block_numberLAYOUT = (OfInt)LAYOUT.select(groupElement("block_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned int block_number
-     * }
-     */
-    public static final OfInt block_numberLAYOUT() {
-        return block_numberLAYOUT;
-    }
-
     private static final long block_number$OFFSET = 4;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned int block_number
-     * }
-     */
-    public static final long block_number$offset() {
-        return block_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -258,7 +153,7 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned int block_number
      * }
      */
-    public static int block_number(MemorySegment struct) {
+    public int block_number() {
         return struct.get(block_numberLAYOUT, block_number$OFFSET);
     }
 
@@ -268,33 +163,13 @@ public final class SBAmpSpecific extends StructClass {
      * unsigned int block_number
      * }
      */
-    public static void block_number(MemorySegment struct, int fieldValue) {
+    public void block_number(int fieldValue) {
         struct.set(block_numberLAYOUT, block_number$OFFSET, fieldValue);
     }
 
     private static final OfShort avg_gate_depthLAYOUT = (OfShort)LAYOUT.select(groupElement("avg_gate_depth"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * short avg_gate_depth
-     * }
-     */
-    public static final OfShort avg_gate_depthLAYOUT() {
-        return avg_gate_depthLAYOUT;
-    }
-
     private static final long avg_gate_depth$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * short avg_gate_depth
-     * }
-     */
-    public static final long avg_gate_depth$offset() {
-        return avg_gate_depth$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -302,7 +177,7 @@ public final class SBAmpSpecific extends StructClass {
      * short avg_gate_depth
      * }
      */
-    public static short avg_gate_depth(MemorySegment struct) {
+    public short avg_gate_depth() {
         return struct.get(avg_gate_depthLAYOUT, avg_gate_depth$OFFSET);
     }
 
@@ -312,9 +187,7 @@ public final class SBAmpSpecific extends StructClass {
      * short avg_gate_depth
      * }
      */
-    public static void avg_gate_depth(MemorySegment struct, short fieldValue) {
+    public void avg_gate_depth(short fieldValue) {
         struct.set(avg_gate_depthLAYOUT, avg_gate_depth$OFFSET, fieldValue);
     }
-
 }
-

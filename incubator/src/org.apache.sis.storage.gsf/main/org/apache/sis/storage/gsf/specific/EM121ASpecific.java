@@ -28,7 +28,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class EM121ASpecific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_INT.withName("ping_number"),
         GSF.C_INT.withName("mode"),
@@ -45,10 +44,6 @@ public final class EM121ASpecific extends StructClass {
         super(struct);
     }
 
-    public EM121ASpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -56,27 +51,7 @@ public final class EM121ASpecific extends StructClass {
 
     private static final OfInt ping_numberLAYOUT = (OfInt)LAYOUT.select(groupElement("ping_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int ping_number
-     * }
-     */
-    public static final OfInt ping_numberLAYOUT() {
-        return ping_numberLAYOUT;
-    }
-
     private static final long ping_number$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int ping_number
-     * }
-     */
-    public static final long ping_number$offset() {
-        return ping_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -84,7 +59,7 @@ public final class EM121ASpecific extends StructClass {
      * int ping_number
      * }
      */
-    public static int ping_number(MemorySegment struct) {
+    public int ping_number() {
         return struct.get(ping_numberLAYOUT, ping_number$OFFSET);
     }
 
@@ -94,33 +69,13 @@ public final class EM121ASpecific extends StructClass {
      * int ping_number
      * }
      */
-    public static void ping_number(MemorySegment struct, int fieldValue) {
+    public void ping_number(int fieldValue) {
         struct.set(ping_numberLAYOUT, ping_number$OFFSET, fieldValue);
     }
 
     private static final OfInt modeLAYOUT = (OfInt)LAYOUT.select(groupElement("mode"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int mode
-     * }
-     */
-    public static final OfInt modeLAYOUT() {
-        return modeLAYOUT;
-    }
-
     private static final long mode$OFFSET = 4;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int mode
-     * }
-     */
-    public static final long mode$offset() {
-        return mode$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -128,7 +83,7 @@ public final class EM121ASpecific extends StructClass {
      * int mode
      * }
      */
-    public static int mode(MemorySegment struct) {
+    public int mode() {
         return struct.get(modeLAYOUT, mode$OFFSET);
     }
 
@@ -138,33 +93,13 @@ public final class EM121ASpecific extends StructClass {
      * int mode
      * }
      */
-    public static void mode(MemorySegment struct, int fieldValue) {
+    public void mode(int fieldValue) {
         struct.set(modeLAYOUT, mode$OFFSET, fieldValue);
     }
 
     private static final OfInt valid_beamsLAYOUT = (OfInt)LAYOUT.select(groupElement("valid_beams"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int valid_beams
-     * }
-     */
-    public static final OfInt valid_beamsLAYOUT() {
-        return valid_beamsLAYOUT;
-    }
-
     private static final long valid_beams$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int valid_beams
-     * }
-     */
-    public static final long valid_beams$offset() {
-        return valid_beams$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -172,7 +107,7 @@ public final class EM121ASpecific extends StructClass {
      * int valid_beams
      * }
      */
-    public static int valid_beams(MemorySegment struct) {
+    public int valid_beams() {
         return struct.get(valid_beamsLAYOUT, valid_beams$OFFSET);
     }
 
@@ -182,33 +117,13 @@ public final class EM121ASpecific extends StructClass {
      * int valid_beams
      * }
      */
-    public static void valid_beams(MemorySegment struct, int fieldValue) {
+    public void valid_beams(int fieldValue) {
         struct.set(valid_beamsLAYOUT, valid_beams$OFFSET, fieldValue);
     }
 
     private static final OfInt pulse_lengthLAYOUT = (OfInt)LAYOUT.select(groupElement("pulse_length"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int pulse_length
-     * }
-     */
-    public static final OfInt pulse_lengthLAYOUT() {
-        return pulse_lengthLAYOUT;
-    }
-
     private static final long pulse_length$OFFSET = 12;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int pulse_length
-     * }
-     */
-    public static final long pulse_length$offset() {
-        return pulse_length$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -216,7 +131,7 @@ public final class EM121ASpecific extends StructClass {
      * int pulse_length
      * }
      */
-    public static int pulse_length(MemorySegment struct) {
+    public int pulse_length() {
         return struct.get(pulse_lengthLAYOUT, pulse_length$OFFSET);
     }
 
@@ -226,33 +141,13 @@ public final class EM121ASpecific extends StructClass {
      * int pulse_length
      * }
      */
-    public static void pulse_length(MemorySegment struct, int fieldValue) {
+    public void pulse_length(int fieldValue) {
         struct.set(pulse_lengthLAYOUT, pulse_length$OFFSET, fieldValue);
     }
 
     private static final OfInt beam_widthLAYOUT = (OfInt)LAYOUT.select(groupElement("beam_width"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int beam_width
-     * }
-     */
-    public static final OfInt beam_widthLAYOUT() {
-        return beam_widthLAYOUT;
-    }
-
     private static final long beam_width$OFFSET = 16;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int beam_width
-     * }
-     */
-    public static final long beam_width$offset() {
-        return beam_width$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -260,7 +155,7 @@ public final class EM121ASpecific extends StructClass {
      * int beam_width
      * }
      */
-    public static int beam_width(MemorySegment struct) {
+    public int beam_width() {
         return struct.get(beam_widthLAYOUT, beam_width$OFFSET);
     }
 
@@ -270,33 +165,13 @@ public final class EM121ASpecific extends StructClass {
      * int beam_width
      * }
      */
-    public static void beam_width(MemorySegment struct, int fieldValue) {
+    public void beam_width(int fieldValue) {
         struct.set(beam_widthLAYOUT, beam_width$OFFSET, fieldValue);
     }
 
     private static final OfInt tx_powerLAYOUT = (OfInt)LAYOUT.select(groupElement("tx_power"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int tx_power
-     * }
-     */
-    public static final OfInt tx_powerLAYOUT() {
-        return tx_powerLAYOUT;
-    }
-
     private static final long tx_power$OFFSET = 20;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int tx_power
-     * }
-     */
-    public static final long tx_power$offset() {
-        return tx_power$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -304,7 +179,7 @@ public final class EM121ASpecific extends StructClass {
      * int tx_power
      * }
      */
-    public static int tx_power(MemorySegment struct) {
+    public int tx_power() {
         return struct.get(tx_powerLAYOUT, tx_power$OFFSET);
     }
 
@@ -314,33 +189,13 @@ public final class EM121ASpecific extends StructClass {
      * int tx_power
      * }
      */
-    public static void tx_power(MemorySegment struct, int fieldValue) {
+    public void tx_power(int fieldValue) {
         struct.set(tx_powerLAYOUT, tx_power$OFFSET, fieldValue);
     }
 
     private static final OfInt tx_statusLAYOUT = (OfInt)LAYOUT.select(groupElement("tx_status"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int tx_status
-     * }
-     */
-    public static final OfInt tx_statusLAYOUT() {
-        return tx_statusLAYOUT;
-    }
-
     private static final long tx_status$OFFSET = 24;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int tx_status
-     * }
-     */
-    public static final long tx_status$offset() {
-        return tx_status$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -348,7 +203,7 @@ public final class EM121ASpecific extends StructClass {
      * int tx_status
      * }
      */
-    public static int tx_status(MemorySegment struct) {
+    public int tx_status() {
         return struct.get(tx_statusLAYOUT, tx_status$OFFSET);
     }
 
@@ -358,33 +213,13 @@ public final class EM121ASpecific extends StructClass {
      * int tx_status
      * }
      */
-    public static void tx_status(MemorySegment struct, int fieldValue) {
+    public void tx_status(int fieldValue) {
         struct.set(tx_statusLAYOUT, tx_status$OFFSET, fieldValue);
     }
 
     private static final OfInt rx_statusLAYOUT = (OfInt)LAYOUT.select(groupElement("rx_status"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int rx_status
-     * }
-     */
-    public static final OfInt rx_statusLAYOUT() {
-        return rx_statusLAYOUT;
-    }
-
     private static final long rx_status$OFFSET = 28;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int rx_status
-     * }
-     */
-    public static final long rx_status$offset() {
-        return rx_status$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -392,7 +227,7 @@ public final class EM121ASpecific extends StructClass {
      * int rx_status
      * }
      */
-    public static int rx_status(MemorySegment struct) {
+    public int rx_status() {
         return struct.get(rx_statusLAYOUT, rx_status$OFFSET);
     }
 
@@ -402,33 +237,13 @@ public final class EM121ASpecific extends StructClass {
      * int rx_status
      * }
      */
-    public static void rx_status(MemorySegment struct, int fieldValue) {
+    public void rx_status(int fieldValue) {
         struct.set(rx_statusLAYOUT, rx_status$OFFSET, fieldValue);
     }
 
     private static final OfDouble surface_velocityLAYOUT = (OfDouble)LAYOUT.select(groupElement("surface_velocity"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double surface_velocity
-     * }
-     */
-    public static final OfDouble surface_velocityLAYOUT() {
-        return surface_velocityLAYOUT;
-    }
-
     private static final long surface_velocity$OFFSET = 32;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double surface_velocity
-     * }
-     */
-    public static final long surface_velocity$offset() {
-        return surface_velocity$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -436,7 +251,7 @@ public final class EM121ASpecific extends StructClass {
      * double surface_velocity
      * }
      */
-    public static double surface_velocity(MemorySegment struct) {
+    public double surface_velocity() {
         return struct.get(surface_velocityLAYOUT, surface_velocity$OFFSET);
     }
 
@@ -446,9 +261,7 @@ public final class EM121ASpecific extends StructClass {
      * double surface_velocity
      * }
      */
-    public static void surface_velocity(MemorySegment struct, double fieldValue) {
+    public void surface_velocity(double fieldValue) {
         struct.set(surface_velocityLAYOUT, surface_velocity$OFFSET, fieldValue);
     }
-
 }
-

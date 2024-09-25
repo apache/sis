@@ -27,7 +27,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class BDBSpecific extends StructClass {
-
     private static final OfInt LAYOUT_DOC_NO;
     private static final OfByte LAYOUT_EVAL;
     private static final OfByte LAYOUT_CLASSIFICATION;
@@ -48,10 +47,6 @@ public final class BDBSpecific extends StructClass {
 
     public BDBSpecific(MemorySegment struct) {
         super(struct);
-    }
-
-    public BDBSpecific(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -128,6 +123,4 @@ public final class BDBSpecific extends StructClass {
     public byte getDatumFlag() {
         return struct.get(LAYOUT_DATUM_FLAG, 9);
     }
-
 }
-

@@ -29,7 +29,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class ResonTSeriesImagerySpecific extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_SHORT.withName("size"),
         MemoryLayout.sequenceLayout(64, GSF.C_CHAR).withName("spare")
@@ -39,10 +38,6 @@ public final class ResonTSeriesImagerySpecific extends StructClass {
         super(struct);
     }
 
-    public ResonTSeriesImagerySpecific(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -50,27 +45,7 @@ public final class ResonTSeriesImagerySpecific extends StructClass {
 
     private static final OfShort sizeLAYOUT = (OfShort)LAYOUT.select(groupElement("size"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned short size
-     * }
-     */
-    public static final OfShort sizeLAYOUT() {
-        return sizeLAYOUT;
-    }
-
     private static final long size$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned short size
-     * }
-     */
-    public static final long size$offset() {
-        return size$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -78,7 +53,7 @@ public final class ResonTSeriesImagerySpecific extends StructClass {
      * unsigned short size
      * }
      */
-    public static short size(MemorySegment struct) {
+    public short size() {
         return struct.get(sizeLAYOUT, size$OFFSET);
     }
 
@@ -88,33 +63,13 @@ public final class ResonTSeriesImagerySpecific extends StructClass {
      * unsigned short size
      * }
      */
-    public static void size(MemorySegment struct, short fieldValue) {
+    public void size(short fieldValue) {
         struct.set(sizeLAYOUT, size$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char spare[64]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 2;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char spare[64]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -122,7 +77,7 @@ public final class ResonTSeriesImagerySpecific extends StructClass {
      * unsigned char spare[64]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -132,21 +87,10 @@ public final class ResonTSeriesImagerySpecific extends StructClass {
      * unsigned char spare[64]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 64 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned char spare[64]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -155,7 +99,7 @@ public final class ResonTSeriesImagerySpecific extends StructClass {
      * unsigned char spare[64]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -165,9 +109,7 @@ public final class ResonTSeriesImagerySpecific extends StructClass {
      * unsigned char spare[64]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

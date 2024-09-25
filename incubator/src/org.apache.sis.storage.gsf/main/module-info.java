@@ -24,7 +24,9 @@ module org.apache.sis.storage.gsf {
     // Dependencies used in public API.
     requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
-    requires transitive org.apache.sis.storage.gdal;
+
+    // For internal usage only.
+    requires org.apache.sis.storage.gdal;
 
     provides org.apache.sis.storage.DataStoreProvider
             with org.apache.sis.storage.gsf.GSFStoreProvider;

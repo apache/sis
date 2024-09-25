@@ -33,17 +33,17 @@ public final class PositionOffsets extends StructClass {
     private static final long y$OFFSET = 8;
     private static final long z$OFFSET = 16;
 
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_X = GSF.C_DOUBLE.withName("x"),
         LAYOUT_Y = GSF.C_DOUBLE.withName("y"),
         LAYOUT_Z = GSF.C_DOUBLE.withName("z")
     ).withName("t_gsf_pos_offsets");
 
-    public PositionOffsets(MemorySegment struct) {
+    PositionOffsets(MemorySegment struct) {
         super(struct);
     }
 
-    public PositionOffsets(SegmentAllocator allocator) {
+    PositionOffsets(SegmentAllocator allocator) {
         super(allocator);
     }
 
@@ -81,6 +81,4 @@ public final class PositionOffsets extends StructClass {
     public double getZ() {
         return struct.get(LAYOUT_Z, z$OFFSET);
     }
-
 }
-

@@ -43,7 +43,7 @@ public final class GSFRecordReader implements AutoCloseable {
     private Records records;
     private boolean needsFree = false;
 
-    public GSFRecordReader(GSFStore store) throws DataStoreException {
+    GSFRecordReader(GSFStore store) throws DataStoreException {
         this.store = store;
         this.file = store.getFileSet().orElseThrow().getPaths().iterator().next();
         this.gsf = store.getProvider().GSF();
@@ -76,11 +76,11 @@ public final class GSFRecordReader implements AutoCloseable {
                 //DEBUG : this error happens because GSFLib keeps an internal Records in a table for each opened file
                 // and should copy the pointer in the return Records.
                 // When we free the records, it frees the pointed tables but the pointers are not reset in the internal Records.
-                //gsf.free(records.getMemorySegment());
+                //gsf.free(records.struct);
             }
             needsFree = false;
 
-            final int result = gsf.read(handleId, GSF.GSF_NEXT_RECORD, dataId.getMemorySegment(), records.getMemorySegment(), MemorySegment.NULL, 0);
+            final int result = gsf.read(handleId, GSF.GSF_NEXT_RECORD, dataId.struct, records.struct, MemorySegment.NULL, 0);
             if (result == -1) {
                 //error
                 final int errorCode = gsf.intError();
@@ -103,7 +103,7 @@ public final class GSFRecordReader implements AutoCloseable {
         //TODO See above comment line 75
 //        if (needsFree) {
 //            try {
-//                gsf.free(records.getMemorySegment());
+//                gsf.free(records.struct);
 //            } catch (Throwable ex) {
 //                exception.addSuppressed(ex);
 //            }

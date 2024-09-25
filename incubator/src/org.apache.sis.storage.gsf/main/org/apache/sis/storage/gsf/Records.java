@@ -24,7 +24,7 @@ import java.util.*;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class Records extends StructClass{
+public final class Records extends StructClass {
 
     private static final GroupLayout LAYOUT_HEADER;
     private static final GroupLayout LAYOUT_SUMMARY;
@@ -38,7 +38,7 @@ public final class Records extends StructClass{
     private static final GroupLayout LAYOUT_NAV_ERROR;
     private static final GroupLayout LAYOUT_HV_NAV_ERROR;
     private static final GroupLayout LAYOUT_ATTITUDE;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_HEADER = Header.LAYOUT.withName("header"),
         MemoryLayout.paddingLayout(4),
         LAYOUT_SUMMARY = SwathBathySummary.LAYOUT.withName("summary"),
@@ -56,11 +56,7 @@ public final class Records extends StructClass{
 
     private DataID dataId;
 
-    public Records( MemorySegment struct) {
-        super(struct);
-    }
-
-    public Records(SegmentAllocator allocator) {
+    Records(SegmentAllocator allocator) {
         super(allocator);
     }
 
