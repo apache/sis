@@ -17,6 +17,7 @@
 package org.apache.sis.cloud.aws.s3;
 
 // Test dependencies
+import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
@@ -43,5 +44,17 @@ public final class KeyPathMatcherTest extends TestCase {
         final ClientFileSystem fs = ClientFileSystemTest.create();
         assertTrue (matcher.matches(new KeyPath(fs, "bar_skip_foo/fuu/d1/d2/d3/f_i", false)));
         assertFalse(matcher.matches(new KeyPath(fs, "bar_sk/p_foo/fuu/d1/d2/d3/f_i", false)));
+    }
+
+    /**
+     * Ensures that the localized resources can be read.
+     * This is not really a {@code KeyPathMatcher} test, but is put here opportunistically.
+     */
+    @Test
+    public void testResource() {
+        assertEquals("Unexpected “foo” protocol.",
+                Resources.forLocale(Locale.ENGLISH).getString(Resources.Keys.UnexpectedProtocol_1, "foo"));
+        assertEquals("Le protocole « foo » est inattendu.",
+                Resources.forLocale(Locale.FRENCH).getString(Resources.Keys.UnexpectedProtocol_1, "foo"));
     }
 }

@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.cloud.aws.internal;
+package org.apache.sis.cloud.aws.s3;
 
 
 /**
- * Resource in English language.
+ * Messages in French language.
  */
-public class Resources_en extends Resources {
+final class Resources_fr extends Resources {
     /**
      * Constructs a new resource bundle loading data from
      * the resource file of the same name as this class.
      */
-    public Resources_en() {
+    public Resources_fr() {
     }
 }

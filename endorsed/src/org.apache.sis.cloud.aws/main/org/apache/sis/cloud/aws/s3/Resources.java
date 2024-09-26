@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.cloud.aws.internal;
+package org.apache.sis.cloud.aws.s3;
 
 import java.io.InputStream;
 import java.util.Locale;
@@ -30,7 +30,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class Resources extends IndexedResourceBundle {
+class Resources extends IndexedResourceBundle {
     /**
      * Resource keys. This class is used when compiling sources, but no dependencies to
      * {@code Keys} should appear in any resulting class files. Since the Java compiler
@@ -39,7 +39,7 @@ public class Resources extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      */
-    public static final class Keys extends KeyConstants {
+    static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
          */

@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.cloud.aws.s3;
 
 
 /**
- * Resources for AWS S3 wrappers.
- *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
- * @author  Martin Desruisseaux (Geomatys)
+ * Resource in English language.
  */
-package org.apache.sis.cloud.aws.internal;
+final class Resources_en extends Resources {
+    /**
+     * Constructs a new resource bundle loading data from
+     * the resource file of the same name as this class.
+     */
+    public Resources_en() {
+    }
+}

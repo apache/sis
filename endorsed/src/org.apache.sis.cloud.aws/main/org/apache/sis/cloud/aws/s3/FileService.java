@@ -57,7 +57,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.cloud.aws.internal.Resources;
 
 
 /**
