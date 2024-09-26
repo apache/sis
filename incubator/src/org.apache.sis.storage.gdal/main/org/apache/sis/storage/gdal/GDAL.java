@@ -34,6 +34,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.panama.LibraryLoader;
 import org.apache.sis.storage.panama.LibraryStatus;
 import org.apache.sis.storage.panama.NativeFunctions;
+import org.apache.sis.storage.panama.Resources;
 
 
 /**
@@ -397,7 +398,8 @@ final class GDAL extends NativeFunctions {
 
         // Initialize GDAL after we found all functions.
         if (!invoke("GDALAllRegister")) {
-            log(GDAL.class, "<init>", new LogRecord(Level.WARNING, "Could not initialize GDAL."));
+            log(GDAL.class, "<init>", Resources.forLocale(null)
+                    .getLogRecord(Level.WARNING, Resources.Keys.CannotInitialize_1, GDALStoreProvider.NAME));
         }
     }
 
@@ -458,9 +460,9 @@ final class GDAL extends NativeFunctions {
      */
     static synchronized GDAL global() throws DataStoreException {
         if (globalStatus == null) {
-            load(true).validate();
+            load(true).validate(GDALStoreProvider.NAME);
         }
-        globalStatus.report(null);
+        globalStatus.report(GDALStoreProvider.NAME, null);
         return global;
     }
 

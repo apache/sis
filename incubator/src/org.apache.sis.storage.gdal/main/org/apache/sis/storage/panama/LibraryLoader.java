@@ -197,11 +197,12 @@ create: try {
     /**
      * Throws an exception if the loading of the native library failed.
      *
+     * @param  library  name of the library, used if an error message needs to be produced.
      * @throws DataStoreException if the native library has not been found
      *         or if SIS is not allowed to call native functions.
      */
-    public void validate() throws DataStoreException {
-        status.report(error);
+    public void validate(String library) throws DataStoreException {
+        status.report(library, error);
     }
 
     /**

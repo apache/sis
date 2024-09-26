@@ -23,62 +23,62 @@ import org.apache.sis.storage.DataStoreClosedException;
  * Status of the native library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- *
- * @todo If moved to a shared module, replace all "GDAL" strings.
  */
 public enum LibraryStatus {
     /**
      * The native library is ready for use.
      */
-    LOADED(null),
+    LOADED((short) 0),
 
     /**
      * The native library has been unloaded.
      */
-    UNLOADED("GDAL has been unloaded."),
+    UNLOADED(Resources.Keys.LibraryUnloaded_1),
 
     /**
      * The native library has not been found.
      */
-    LIBRARY_NOT_FOUND("The GDAL library has not been found."),
+    LIBRARY_NOT_FOUND(Resources.Keys.LibraryNotFound_1),
 
     /**
      * The native library was found, but not symbol that we searched.
      */
-    FUNCTION_NOT_FOUND("A GDAL function has not been found."),
+    FUNCTION_NOT_FOUND(Resources.Keys.FunctionNotFound_1),
 
     /**
      * <abbr>SIS</abbr> is not authorized to perform native function calls.
      */
-    UNAUTHORIZED("Apache SIS is not authorized to call native functions."),
+    UNAUTHORIZED(Resources.Keys.NativeAccessNotAllowed),
 
     /**
      * A fatal error occurred in the native library and that library should not be used anymore.
      */
-    FATAL_ERROR("A fatal error occurred and GDAL should not be used anymore in this JVM.");
+    FATAL_ERROR(Resources.Keys.FatalLibraryError_1);
 
     /**
-     * An explanatory message, or {@code null} if none.
+     * Resource key of an explanatory message, or 0 if none.
      */
-    private final String message;
+    private final short message;
 
     /**
      * Creates a new enumeration value.
      */
-    private LibraryStatus(final String message) {
+    private LibraryStatus(final short message) {
         this.message = message;
     }
 
     /**
      * Throws an exception if the native library is not available.
      *
-     * @param  cause the cause of the error, or {@code null} if none.
+     * @param  library  the library name, of formatting the error message.
+     * @param  cause    the cause of the error, or {@code null} if none.
      * @throws DataStoreClosedException if this enumeration value is not {@link #LOADED}
      *         or if the given cause is not null.
      */
-    public void report(Exception cause) throws DataStoreClosedException {
-        if (message != null || cause != null) {
-            throw new DataStoreClosedException(message, cause);
+    public void report(String library, Exception cause) throws DataStoreClosedException {
+        if (message != 0 || cause != null) {
+            // Note: `NativeAccessNotAllowed` will ignore the `library` argument.
+            throw new DataStoreClosedException(Resources.format(message, library), cause);
         }
     }
 }

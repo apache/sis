@@ -129,6 +129,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short CanNotOpen_1 = 14;
 
         /**
+         * Cannot parse the Coordinate Reference System of “{0}”.
+         */
+        public static final short CanNotParseCRS_1 = 208;
+
+        /**
          * Cannot parse “{0}”.
          */
         public static final short CanNotParse_1 = 15;

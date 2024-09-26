@@ -945,9 +945,9 @@ public class GSF extends NativeFunctions {
      */
     static synchronized GSF global() throws DataStoreException {
         if (globalStatus == null) {
-            load(true).validate();
+            load(true).validate(GSFStoreProvider.NAME);
         }
-        globalStatus.report(null);
+        globalStatus.report(GSFStoreProvider.NAME, null);
         return global;
     }
 

@@ -36,6 +36,7 @@ import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.panama.LibraryStatus;
+import org.apache.sis.storage.panama.Resources;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -101,7 +102,9 @@ public class GDALStoreProvider extends DataStoreProvider {
     private static final ParameterDescriptorGroup OPEN_DESCRIPTOR;
     static {
         final var builder = new ParameterBuilder();
-        DRIVERS_PARAM = builder.addName("drivers").setDescription("GDAL drivers that may be used for opening the file.").create(String[].class, null);
+        DRIVERS_PARAM = builder.addName("drivers")
+                .setDescription(Resources.formatInternational(Resources.Keys.AllowedDrivers_1, NAME))
+                .create(String[].class, null);
         OPEN_DESCRIPTOR = builder.addName(NAME).createGroup(URIDataStoreProvider.LOCATION_PARAM, DRIVERS_PARAM);
     }
 
@@ -146,7 +149,7 @@ public class GDALStoreProvider extends DataStoreProvider {
         if (status == null) {
             return GDAL.global();       // Fetch each time (no cache) because may have changed outside this class.
         }
-        status.report(null);            // Should never return if `nativeFunctions` is null.
+        status.report(NAME, null);      // Should never return if `nativeFunctions` is null.
         return nativeFunctions;
     }
 

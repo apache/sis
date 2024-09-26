@@ -41,7 +41,6 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
-import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
@@ -191,7 +190,7 @@ public class GDALStore extends DataStore implements Aggregate {
     final MemorySegment handle() throws DataStoreClosedException {
         assert Thread.holdsLock(this);
         if (handle != null) return handle;
-        throw new DataStoreClosedException("Data store is closed.");
+        throw new DataStoreClosedException(getLocale(), GDALStoreProvider.NAME);
     }
 
     /**
@@ -230,10 +229,9 @@ public class GDALStore extends DataStore implements Aggregate {
      * This name can be used as driver identifier for opening sub-components.
      *
      * @param  gdal  set of handles for invoking <abbr>GDAL</abbr> functions.
-     * @return name of the <abbr>GDAL</abbr> driver used for opening the file.
-     * @throws DataStoreException if the driver name cannot be fetched.
+     * @return name of the <abbr>GDAL</abbr> driver used for opening the file, or {@code null} if none.
      */
-    private String getDriverName(final GDAL gdal) throws DataStoreException {
+    private String getDriverName(final GDAL gdal) {
         try {
             var result = (MemorySegment) gdal.getDatasetDriver.invokeExact(handle());
             if (!GDAL.isNull(result)) {     // Paranoiac check.
@@ -243,7 +241,7 @@ public class GDALStore extends DataStore implements Aggregate {
         } catch (Throwable e) {
             throw GDAL.propagate(e);
         }
-        throw new InternalDataStoreException("Cannot get the driver name.");
+        return null;
     }
 
     /**
@@ -402,16 +400,6 @@ public class GDALStore extends DataStore implements Aggregate {
             wktFormat.setConvention(Convention.WKT1_COMMON_UNITS);
         }
         return wktFormat;
-    }
-
-    /**
-     * Returns the exception to throw for the given cause.
-     *
-     * @param  cause    the cause of the error. Cannot be null.
-     * @return the data store exception to throw.
-     */
-    private static DataStoreException cannotExecute(final Exception cause) {
-        return new DataStoreException(cause.getMessage(), cause);
     }
 
     /**

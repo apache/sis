@@ -38,6 +38,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.panama.Resources;
 
 
 /**
@@ -295,7 +296,7 @@ public final class Driver {
         final var table = new DefaultTreeTable(shortNameColumn, longNameColumn);
         final TreeTable.Node root = table.getRoot();
         final String version = (gdal != null) ? gdal.version("--version").orElse(null) : null;
-        root.setValue(shortNameColumn, (gdal != null) ? gdal.libraryName : "GDAL library not found");
+        root.setValue(shortNameColumn, (gdal != null) ? gdal.libraryName : Resources.format(Resources.Keys.LibraryNotFound_1, GDALStoreProvider.NAME));
         root.setValue(longNameColumn, (version != null) ? version : Vocabulary.format(Vocabulary.Keys.NotKnown));
 
         DataStoreException error = null;

@@ -112,9 +112,9 @@ public class GSFStoreProvider extends DataStoreProvider {
      */
     final synchronized GSF GSF() throws DataStoreException {
         if (status == null) {
-            return GSF.global();       // Fetch each time (no cache) because may have changed outside this class.
+            return GSF.global();        // Fetch each time (no cache) because may have changed outside this class.
         }
-        status.report(null);            // Should never return if `nativeFunctions` is null.
+        status.report(NAME, null);      // Should never return if `nativeFunctions` is null.
         return nativeFunctions;
     }
 

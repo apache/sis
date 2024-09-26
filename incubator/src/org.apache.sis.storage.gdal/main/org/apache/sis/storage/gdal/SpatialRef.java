@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -127,7 +128,7 @@ final class SpatialRef {
             if (wkt != null && !wkt.isBlank()) try {
                 return (CoordinateReferenceSystem) owner.wktFormat().parseObject(wkt);
             } catch (ParseException | ClassCastException e) {
-                owner.warning(caller, "Cannot parse the CRS of " + owner.getDisplayName(), e);
+                owner.warning(caller, Errors.format(Errors.Keys.CanNotParseCRS_1, owner.getDisplayName()), e);
             }
         }
         return null;
