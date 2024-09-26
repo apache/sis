@@ -539,6 +539,7 @@ loop:   for (int convention=0;; convention++) {
                 }
             }
             builder.addFormatName(format);                          // Does nothing if `format` is null.
+            builder.addFormatReader(getProvider());
             builder.addResourceScope(ScopeCode.COVERAGE, null);
             builder.addSpatialRepresentation(null, getGridGeometry(MAIN_IMAGE), true);
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {

@@ -115,13 +115,14 @@ public final class Citations extends Static {
     });
 
     /**
-     * The <a href="https://www.iogp.org/">International Association of Oil &amp; Gas producers</a> (IOGP) organization.
+     * The International Association of Oil &amp; Gas producers (<abbr>IOGP</abbr>) organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
      *
      * <p>We do not expose this citation in public API because it is an organization rather than a reference
-     * to a document or a database (see SIS-200). For now we keep this citation mostly for resolving the legacy
-     * "OGP" identifier as "IOGP" (see the special case in fromName(String) method). This is also a way to share
-     * the same citation instance in GML like below:</p>
+     * to a document or a database (see <a href="http://issues.apache.org/jira/browse/SIS-200">SIS-200</a>).
+     * For now we keep this citation mostly for resolving the legacy "OGP" identifier as "IOGP"
+     * (see the special case in fromName(String) method).
+     * This is also a way to share the same citation instance in <abbr>GML</abbr> like below:</p>
      *
      * {@snippet lang="xml" :
      *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
@@ -129,13 +130,12 @@ public final class Citations extends Static {
      *
      * @see #fromName(String)
      * @see org.apache.sis.xml.bind.referencing.Code#getIdentifier()
-     * @see <a href="http://issues.apache.org/jira/browse/SIS-200">SIS-200</a>
+     * @see <a href="https://www.iogp.org/">International Association of Oil &amp; Gas producers</a>
      */
     static final CitationConstant IOGP = new CitationConstant(Constants.IOGP);
 
     /**
-     * The authority for identifiers of objects defined by the
-     * <a href="https://epsg.org/">EPSG Geodetic Parameter Dataset</a>.
+     * The authority for identifiers of objects defined by the <abbr>EPSG</abbr> Geodetic Parameter Dataset.
      * EPSG is not an organization by itself, but is the <em>identifier space</em> managed by the
      * <a href="https://www.iogp.org/">International Association of Oil &amp; Gas producers</a> (IOGP) organization
      * for {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} identifiers.
@@ -184,14 +184,15 @@ public final class Citations extends Static {
      *       with the addition of version information.</li>
      * </ul>
      *
+     * @see <a href="https://epsg.org/">EPSG Geodetic Parameter Dataset</a>
+     *
      * @since 0.4
      */
     public static final IdentifierSpace<Integer> EPSG = new CitationConstant.Authority<>(Constants.EPSG);
 
     /**
-     * The authority for identifiers of objects defined by the
-     * <a href="https://www.ogc.org/standards/wms">Web Map Service</a> (WMS) specification.
-     * The WMS 1.3 specifications is also known as ISO 19128
+     * The authority for identifiers of objects defined by the Web Map Service (<abbr>WMS</abbr>) specification.
+     * The <abbr>WMS</abbr> 1.3 specifications is also known as <abbr>ISO</abbr> 19128
      * <cite>Geographic Information — Web map server interface</cite> standard.
      *
      * <p>The citation {@linkplain DefaultCitation#getCitedResponsibleParties() responsible parties}
@@ -205,13 +206,14 @@ public final class Citations extends Static {
      *   <li>{@link org.apache.sis.referencing.factory.CommonAuthorityFactory#getAuthority()}</li>
      * </ul>
      *
+     * @see <a href="https://www.ogc.org/standards/wms">Web Map Service specification</a>
+     *
      * @since 0.7
      */
     public static final IdentifierSpace<Integer> WMS = new CitationConstant.Authority<>("WMS", Constants.OGC);
 
     /**
-     * The authority for identifiers found in specifications from the
-     * <a href="https://www.ogc.org/">Open Geospatial Consortium</a>.
+     * The authority for identifiers found in specifications from the Open Geospatial Consortium (<abbr>OGC</abbr>).
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "OGC"}.
      * Apache SIS uses this authority mostly for map projection methods and parameters as they were defined in older
      * OGC specifications (in more recent specifications, {@linkplain #EPSG} identifiers tend to be more widely used).
@@ -253,11 +255,12 @@ public final class Citations extends Static {
      *
      * @see #EPSG
      * @see #ESRI
+     * @see <a href="https://www.ogc.org/">Open Geospatial Consortium</a>
      */
     public static final IdentifierSpace<String> OGC = new CitationConstant.Authority<>(Constants.OGC);
 
     /**
-     * The authority for identifiers of objects defined by <a href="https://www.esri.com">ESRI</a>.
+     * The authority for identifiers of objects defined by <abbr>ESRI</abbr>.
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "ESRI"}.
      * This citation is used as the authority for many map projection method and parameter names
      * other than the {@linkplain #EPSG} ones.
@@ -286,17 +289,19 @@ public final class Citations extends Static {
      *
      * @see #OGC
      * @see #EPSG
+     * @see <a href="https://www.esri.com">ESRI</a>
      *
      * @since 0.4
      */
     public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ArcGIS", "ESRI");
 
     /**
-     * The authority for identifiers of objects defined by the
-     * <a href="https://www.wmo.int">World Meteorological Organization</a>.
+     * The authority for identifiers of objects defined by the World Meteorological Organization (<abbr>WMO</abbr>).
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "WMO"}.
      * This citation is used as the authority for some coordinate operations other than EPSG and ESRI ones,
      * for example "Rotated latitude/longitude".
+     *
+     * @see <a href="https://www.wmo.int">World Meteorological Organization</a>
      *
      * @since 1.2
      */
@@ -334,8 +339,7 @@ public final class Citations extends Static {
     public static final IdentifierSpace<String> NETCDF = new CitationConstant.Authority<>("NetCDF");
 
     /**
-     * The authority for identifiers of objects defined by the
-     * the <a href="https://www.ogc.org/standards/geotiff">GeoTIFF</a> specification.
+     * The authority for identifiers of objects defined by the the GeoTIFF specification.
      * This specification identifies some map projections by their own numerical codes.
      *
      * <h4>Main usage</h4>
@@ -344,12 +348,14 @@ public final class Citations extends Static {
      *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
+     * @see <a href="https://www.ogc.org/standards/geotiff">GeoTIFF specification</a>
+     *
      * @since 0.4
      */
     public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<>(Constants.GEOTIFF);
 
     /**
-     * The authority for identifiers of objects defined by the <a href="https://proj.org/">PROJ</a> project.
+     * The authority for identifiers of objects defined by the PROJ project.
      * We use the {@code PROJ4} name for historical reasons, because those identifiers were defined mostly
      * when the project was known as "Proj.4". Starting at PROJ version 6, EPSG identifiers should be used
      * instead.
@@ -359,6 +365,9 @@ public final class Citations extends Static {
      * <ul>
      *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
+     *
+     * @see #GDAL
+     * @see <a href="https://proj.org/">PROJ</a>
      *
      * @since 0.4
      */
@@ -434,6 +443,16 @@ public final class Citations extends Static {
     public static final Citation SIS = new CitationConstant.Authority<String>(Constants.SIS);
 
     /**
+     * The codespace for data formats accessed through the <abbr>GDAL</abbr> library.
+     *
+     * @see #PROJ4
+     * @see <a href="https://gdal.org/">Geospatial Data Abstraction Library</a>
+     *
+     * @since 1.5
+     */
+    public static final Citation GDAL = new CitationConstant.Authority<String>(Constants.GDAL);
+
+    /**
      * List of <em>public</em> citations declared in this class.
      * Most frequently used citations (at least in SIS) should be first.
      * Non-public citations like {@link #IOGP} are handled separately.
@@ -452,6 +471,7 @@ public final class Citations extends Static {
         (CitationConstant) ISBN,
         (CitationConstant) ISSN,
         (CitationConstant) SIS,
+        (CitationConstant) GDAL,
         (CitationConstant) ISO_19115.get(0),
         (CitationConstant) ISO_19115.get(1)
     };

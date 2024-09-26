@@ -29,6 +29,7 @@ import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.panama.LibraryLoader;
@@ -399,7 +400,7 @@ final class GDAL extends NativeFunctions {
         // Initialize GDAL after we found all functions.
         if (!invoke("GDALAllRegister")) {
             log(GDAL.class, "<init>", Resources.forLocale(null)
-                    .getLogRecord(Level.WARNING, Resources.Keys.CannotInitialize_1, GDALStoreProvider.NAME));
+                    .getLogRecord(Level.WARNING, Resources.Keys.CannotInitialize_1, Constants.GDAL));
         }
     }
 
@@ -460,9 +461,9 @@ final class GDAL extends NativeFunctions {
      */
     static synchronized GDAL global() throws DataStoreException {
         if (globalStatus == null) {
-            load(true).validate(GDALStoreProvider.NAME);
+            load(true).validate(Constants.GDAL);
         }
-        globalStatus.report(GDALStoreProvider.NAME, null);
+        globalStatus.report(Constants.GDAL, null);
         return global;
     }
 
@@ -475,7 +476,7 @@ final class GDAL extends NativeFunctions {
      */
     static synchronized Optional<GDAL> tryGlobal(final Class<?> classe, final String method) {
         if (globalStatus == null) {
-            load(true).getError(GDALStoreProvider.NAME).ifPresent((record) -> log(classe, method, record));
+            load(true).getError(Constants.GDAL).ifPresent((record) -> log(classe, method, record));
         }
         return Optional.ofNullable(global);
     }

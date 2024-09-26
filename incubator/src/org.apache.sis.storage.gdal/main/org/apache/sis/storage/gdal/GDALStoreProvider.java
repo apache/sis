@@ -43,6 +43,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.system.Cleaners;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.collection.TreeTable;
 
 
@@ -61,16 +62,11 @@ import org.apache.sis.util.collection.TreeTable;
  * @version 1.5
  * @since   1.5
  */
-@StoreMetadata(formatName    = GDALStoreProvider.NAME,
+@StoreMetadata(formatName    = Constants.GDAL,
                capabilities  = {Capability.READ},
                resourceTypes = {Aggregate.class, GridCoverageResource.class},
                yieldPriority = true)    // For trying Java implementations before GDAL.
 public class GDALStoreProvider extends DataStoreProvider {
-    /**
-     * The name of this data store provider.
-     */
-    static final String NAME = "GDAL";
-
     /**
      * The logger used by <abbr>GDAL</abbr> stores.
      *
@@ -103,9 +99,9 @@ public class GDALStoreProvider extends DataStoreProvider {
     static {
         final var builder = new ParameterBuilder();
         DRIVERS_PARAM = builder.addName("drivers")
-                .setDescription(Resources.formatInternational(Resources.Keys.AllowedDrivers_1, NAME))
+                .setDescription(Resources.formatInternational(Resources.Keys.AllowedDrivers_1, Constants.GDAL))
                 .create(String[].class, null);
-        OPEN_DESCRIPTOR = builder.addName(NAME).createGroup(URIDataStoreProvider.LOCATION_PARAM, DRIVERS_PARAM);
+        OPEN_DESCRIPTOR = builder.addName(Constants.GDAL).createGroup(URIDataStoreProvider.LOCATION_PARAM, DRIVERS_PARAM);
     }
 
     /**
@@ -149,7 +145,7 @@ public class GDALStoreProvider extends DataStoreProvider {
         if (status == null) {
             return GDAL.global();       // Fetch each time (no cache) because may have changed outside this class.
         }
-        status.report(NAME, null);      // Should never return if `nativeFunctions` is null.
+        status.report(Constants.GDAL, null);        // Should never return if `nativeFunctions` is null.
         return nativeFunctions;
     }
 
@@ -187,7 +183,7 @@ public class GDALStoreProvider extends DataStoreProvider {
      */
     @Override
     public String getShortName() {
-        return NAME;
+        return Constants.GDAL;
     }
 
     /**

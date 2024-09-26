@@ -10,6 +10,6 @@
 --
 CREATE TABLE metadata."Metadata" (
   "ID"                   VARCHAR(15) NOT NULL PRIMARY KEY,
-  "metadataIdentifier"   VARCHAR(15) REFERENCES metadata."Identifier"     ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
-  "parentMetadata"       VARCHAR(15) REFERENCES metadata."Citation"       ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT
+  "metadataIdentifier"   VARCHAR(15) REFERENCES metadata."Identifier" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
+  "parentMetadata"       VARCHAR(15) REFERENCES metadata."Citation"   ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT
 );

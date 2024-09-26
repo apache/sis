@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.file.NoSuchFileException;
@@ -155,8 +156,9 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
             builder.setPredefinedFormat(formatKey);
         } catch (MetadataStoreException e) {
             builder.addFormatName(formatName);
-            listeners.warning(e);
+            listeners.warning(Level.FINE, null, e);
         }
+        builder.addFormatReader(getProvider());
         builder.addResourceScope(ScopeCode.COVERAGE, null);
         builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.METADATA);
         builder.addSpatialRepresentation(null, gridGeometry, true);

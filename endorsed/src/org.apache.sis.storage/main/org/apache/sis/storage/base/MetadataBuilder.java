@@ -67,6 +67,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
@@ -90,11 +91,13 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.privy.Merger;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.AbstractGridCoverageResource;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
@@ -849,8 +852,10 @@ public class MetadataBuilder {
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
-        // Note: title is mandatory in ISO metadata, contrarily to the identifier.
-        resource.getIdentifier().ifPresent((name) -> addTitle(new Sentence(name)));
+        if (!hasTitle()) {
+            // Note: title is mandatory in ISO metadata, contrarily to the identifier.
+            resource.getIdentifier().ifPresent((name) -> addTitle(new Sentence(name)));
+        }
         resource.getEnvelope().ifPresent((envelope) -> addExtent(envelope, listeners));
     }
 
@@ -1040,7 +1045,7 @@ public class MetadataBuilder {
      *         metadata.setPredefinedFormat("MyFormat");
      *     } catch (MetadataStoreException e) {
      *         metadata.addFormatName("MyFormat");
-     *         listeners.warning(null, e);
+     *         listeners.warning(Level.FINE, null, e);
      *     }
      *     metadata.addCompression("decompression technique");
      *     }
@@ -1244,7 +1249,7 @@ public class MetadataBuilder {
      */
     public final void addTitleOrIdentifier(final String code, Scope scope) {
         if (scope != Scope.METADATA) {
-            if (citation == null || citation.getTitle() == null) {
+            if (!hasTitle()) {
                 addTitle(code);
                 if (scope == Scope.RESOURCE) {
                     return;
@@ -1253,6 +1258,16 @@ public class MetadataBuilder {
             }
         }
         addIdentifier(null, code, scope);
+    }
+
+    /**
+     * Returns whether the current citation has a title. This method is typically used for deciding
+     * whether to use some fallback as title, because titles are mandatory in ISO 19115.
+     *
+     * @return whether a title is defined in the current citation.
+     */
+    public final boolean hasTitle() {
+        return (citation != null) && citation.getTitle() != null;
     }
 
     /**
@@ -3005,8 +3020,9 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a name to the resource format. Note that this method does not add a new format,
-     * but only an alternative name to current format. Storage location is:
+     * Adds a name to the resource format. If no format citation has been created yet,
+     * then the given value is used as the format title. Otherwise, the given value is
+     * used as an alternative name of the current formaT. Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
@@ -3037,6 +3053,20 @@ public class MetadataBuilder {
     }
 
     /**
+     * Returns the citation of the format as a modifiable object for allowing the caller to set properties.
+     */
+    private DefaultCitation getFormatCitation() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final DefaultFormat format = format();
+        DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+        if (c == null) {
+            c = new DefaultCitation();
+        }
+        format.setFormatSpecificationCitation(c);   // Unconditional because may replace a proxy.
+        return c;
+    }
+
+    /**
      * Sets a version number for the resource format. Storage location is:
      *
      * <ul>
@@ -3054,14 +3084,46 @@ public class MetadataBuilder {
     public final void setFormatEdition(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
-            @SuppressWarnings("LocalVariableHidesMemberVariable")
-            final DefaultFormat format = format();
-            DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
-            if (c == null) {
-                c = new DefaultCitation();
-                format.setFormatSpecificationCitation(c);
-            }
-            c.setEdition(i18n);
+            getFormatCitation().setEdition(i18n);
+        }
+    }
+
+    /**
+     * Adds a note about which reader is used. This method should not be invoked before
+     * the {@linkplain #addFormatName format name} has been set. Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/identifier}</li>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/otherCitationDetails}</li>
+     * </ul>
+     *
+     * If this method is used together with {@link #setPredefinedFormat(String)},
+     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
+     *
+     * @param driver   library-specific way to identify the format (mandatory).
+     * @param version  the library version, or {@code null} if unknown.
+     */
+    public final void addFormatReader(final Identifier driver, final Version version) {
+        final DefaultCitation c = getFormatCitation();
+        addIfNotPresent(c.getIdentifiers(), driver);
+        addIfNotPresent(c.getOtherCitationDetails(),
+                Resources.formatInternational(
+                        Resources.Keys.ReadBy_2,
+                        driver.getCodeSpace(),
+                        (version != null) ? version : Vocabulary.formatInternational(Vocabulary.Keys.Unspecified)));
+    }
+
+    /**
+     * Adds a note saying that Apache <abbr>SIS</abbr> has been used for decoding the format.
+     * This method should not be invoked before the {@linkplain #addFormatName format name} has been set.
+     *
+     * @param  provider  the data store provider, or {@code null} if unspecified.
+     */
+    public final void addFormatReader(final DataStoreProvider provider) {
+        if (provider != null) {
+            String name = provider.getShortName();
+            var driver = (name != null) ? new ImmutableIdentifier(Citations.SIS, Constants.SIS, name) : null;
+            addFormatReader(driver, Version.SIS);
         }
     }
 

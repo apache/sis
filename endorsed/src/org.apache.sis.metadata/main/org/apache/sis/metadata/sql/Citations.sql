@@ -50,6 +50,7 @@ INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
   ('PostGIS', 'https://postgis.net/'),
   ('PROJ',    'https://proj.org/'),
   ('SIS',     'https://sis.apache.org/'),
+  ('GDAL',    'https://gdal.org/'),
   ('WMO',     'https://www.wmo.int/'),
   ('WMS',     'https://www.ogc.org/standards/wms');
 
@@ -193,6 +194,7 @@ INSERT INTO metadata."Identifier" ("ID", "code", "codeSpace", "version") VALUES
   ('ArcGIS',      'ArcGIS',  'ESRI',      NULL),
   ('MapInfo',     'MapInfo', 'Precisely', NULL),
   ('PROJ',        'PROJ',    'OSGeo',     NULL),
+  ('GDAL',        'GDAL',    'OSGeo',     NULL),
   ('SIS',         'SIS',     'Apache',    NULL);
 
 INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedResponsibleParty", "presentationForm", "alternateTitle" , "title") VALUES
@@ -207,6 +209,7 @@ INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedRespon
   ('ArcGIS',     'ESRI',  NULL,              'ESRI',    NULL,              NULL,          'ArcGIS'),
   ('MapInfo',     NULL,   NULL,              'MapInfo', NULL,             'MapInfo',      'MapInfo Pro'),
   ('PROJ',       'PROJ',  NULL,              'OSGeo',   NULL,             'Proj',         'PROJ coordinate transformation software library'),
+  ('GDAL',       'GDAL',  NULL,              'OSGeo',   NULL,              NULL,          'Geospatial Data Abstraction Library'),
   ('SIS',        'SIS',   NULL,              'Apache',  NULL,             'Apache SIS',   'Apache Spatial Information System');
 
 

@@ -636,8 +636,9 @@ final class Store extends URIDataStore implements FeatureSet {
                 builder.setPredefinedFormat(format);
             } catch (MetadataStoreException e) {
                 builder.addFormatName(format);
-                listeners.warning(e);
+                listeners.warning(Level.FINE, null, e);
             }
+            builder.addFormatReader(getProvider());
             builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.ALL);
             builder.addResourceScope(ScopeCode.FEATURE, null);
             builder.addExtent(envelope, listeners);

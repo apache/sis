@@ -110,7 +110,8 @@ public final class GDALStoreTest {
                 foundGrid = true;
 
                 final GenericName name = r.getIdentifier().orElseThrow();
-                assertEquals("test.tiff:Image #1", name.toString());
+                assertEquals("test.tiff:1", name.toString());
+                assertEquals("1", name.tip().toString());
                 assertSame(r, store.findResource(name.toString()));
 
                 // Test reading fully the coverage.

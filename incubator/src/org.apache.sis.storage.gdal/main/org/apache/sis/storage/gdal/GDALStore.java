@@ -36,6 +36,8 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -44,6 +46,7 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.system.Cleaners;
@@ -150,7 +153,7 @@ public class GDALStore extends DataStore implements Aggregate {
         drivers    = connector.getOption(GDALStoreProvider.DRIVERS_OPTION_KEY);
         location   = connector.getStorageAs(URI.class);
         path       = connector.getStorageAs(Path.class);
-        String url = connector.commit(String.class, GDALStoreProvider.NAME);
+        String url = connector.commit(String.class, Constants.GDAL);
         if (location != null) {
             url = Opener.toURL(location, path, true);
         }
@@ -190,7 +193,7 @@ public class GDALStore extends DataStore implements Aggregate {
     final MemorySegment handle() throws DataStoreClosedException {
         assert Thread.holdsLock(this);
         if (handle != null) return handle;
-        throw new DataStoreClosedException(getLocale(), GDALStoreProvider.NAME);
+        throw new DataStoreClosedException(getLocale(), Constants.GDAL);
     }
 
     /**
@@ -331,10 +334,28 @@ public class GDALStore extends DataStore implements Aggregate {
             final var builder = new MetadataBuilder();
             builder.addTitle(description);
             builder.addIdentifier(getIdentifier().orElse(null), MetadataBuilder.Scope.RESOURCE);
+            addFormatInfo(builder);
             // TODO: add more information.
             return builder.buildAndFreeze();
         }
         return metadata;
+    }
+
+    /**
+     * Adds information about the data format.
+     *
+     * @param  builder  the builder where to add information.
+     */
+    final void addFormatInfo(final MetadataBuilder builder) throws DataStoreException {
+        final Driver driver = getDriver();
+        if (driver != null) {
+            builder.addFormatName(driver.getName());
+            String id = driver.getIdentifier();
+            if (id != null) {
+                builder.addFormatReader(new ImmutableIdentifier(Citations.GDAL, Constants.GDAL, id),
+                                        getProvider().getVersion().orElse(null));
+            }
+        }
     }
 
     /**

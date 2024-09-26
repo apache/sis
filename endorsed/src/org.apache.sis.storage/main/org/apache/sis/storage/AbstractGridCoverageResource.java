@@ -126,7 +126,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
-        final MetadataBuilder builder = new MetadataBuilder();
+        final var builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
         return builder.build();
     }

@@ -199,6 +199,12 @@ final class MetadataFallback extends MetadataSource {
                 codeSpace = "OSGeo";
                 break;
             }
+            case Constants.GDAL: {
+                title     = "Geospatial Data Abstraction Library";
+                code      = key;
+                codeSpace = "OSGeo";
+                break;
+            }
             case "IHO S-57": {
                 title = code     = "S-57";
                 codeSpace        = "IHO";

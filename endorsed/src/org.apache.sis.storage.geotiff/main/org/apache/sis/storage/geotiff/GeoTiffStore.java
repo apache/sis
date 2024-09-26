@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.net.URI;
@@ -385,8 +386,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             builder.setPredefinedFormat(Constants.GEOTIFF);
         } catch (MetadataStoreException e) {
             builder.addFormatName(Constants.GEOTIFF);
-            listeners.warning(e);
+            listeners.warning(Level.FINE, null, e);
         }
+        builder.addFormatReader(getProvider());
         builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.METADATA);
         builder.addResourceScope(ScopeCode.COVERAGE, null);
     }
@@ -404,7 +406,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         if (metadata == null) {
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Reader reader = reader();
-            final MetadataBuilder builder = new MetadataBuilder();
+            final var builder = new MetadataBuilder();
             setFormatInfo(builder);
             int n = 0;
             try {

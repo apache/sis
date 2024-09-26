@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.io.IOException;
 import java.time.temporal.Temporal;
 import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
@@ -662,7 +663,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             id = null;
         } catch (MetadataStoreException e) {
             // Will add `id` at the end of this method.
-            warning(e);
+            decoder.listeners.warning(Level.FINE, null, e);
         }
         if (format.length >= 2) {
             addFormatName(format[1]);

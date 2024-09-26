@@ -30,6 +30,7 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemorySegment;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -45,6 +46,7 @@ import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArraysExt;
@@ -64,6 +66,11 @@ final class TiledResource extends TiledGridResource {
      * The data set that contains this raster.
      */
     final GDALStore parent;
+
+    /**
+     * Index of this image, with numbers starting at 1. This is the tip of the identifier.
+     */
+    private final int imageIndex;
 
     /**
      * The identifier of this resource, or {@code null} if none.
@@ -142,26 +149,22 @@ final class TiledResource extends TiledGridResource {
     /**
      * Creates a new instance as a child of the given data set.
      *
-     * @param  parent  the parent data set.
-     * @param  size    the raster width, height and data type.
-     * @param  bands   description of all bands as an array of {@link Band}.
-     * @param  name    an identifier for this band.
+     * @param  parent      the parent data set.
+     * @param  imageIndex  index of this image, with numbers starting at 1.
+     * @param  size        the raster width, height and data type.
+     * @param  bands       description of all bands as an array of {@link Band}.
+     * @param  name        an identifier for this band.
      */
-    private TiledResource(final GDALStore parent, final SizeAndType size, final List<Band> bands, final CharSequence name)
+    private TiledResource(final GDALStore parent, final int imageIndex, final SizeAndType size, final List<Band> bands)
             throws DataStoreException
     {
         super(parent);
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        GenericName identifier = parent.factory.createLocalName(parent.namespace, name);
-        final GenericName scope = parent.getIdentifier().orElse(null);
-        if (scope != null) {
-            identifier = identifier.push(scope);
-        }
         final Dimension t = size.tileSize();
         this.tileWidth  = t.width;
         this.tileHeight = t.height;
         this.parent     = parent;
-        this.identifier = identifier;
+        this.imageIndex = imageIndex;
+        this.identifier = parent.factory.createLocalName(parent.namespace, String.valueOf(imageIndex)).toFullyQualifiedName();
         this.width      = size.width();
         this.height     = size.height();
         this.dataType   = DataType.valueOf(size.type());
@@ -244,8 +247,7 @@ final class TiledResource extends TiledGridResource {
         final var rasters = new TiledResource[bands.size()];
         int count = 0;
         for (Map.Entry<SizeAndType, ArrayList<Band>> entry : bands.entrySet()) {
-            var name = Vocabulary.formatInternational(Vocabulary.Keys.Image_1, count + 1);
-            rasters[count++] = new TiledResource(parent, entry.getKey(), entry.getValue(), name);
+            rasters[count++] = new TiledResource(parent, count, entry.getKey(), entry.getValue());
         }
         // Search for the main image and, if found, move it first.
         for (int i=0; i<count; i++) {
@@ -277,6 +279,21 @@ final class TiledResource extends TiledGridResource {
     @Override
     public final Optional<GenericName> getIdentifier() {
         return Optional.ofNullable(identifier);
+    }
+
+    /**
+     * Builds the metadata.
+     * This method is invoked only if the user requested the ISO 19115 metadata.
+     *
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    @Override
+    protected Metadata createMetadata() throws DataStoreException {
+        final var builder = new MetadataBuilder();
+        parent.addFormatInfo(builder);
+        builder.addTitle(Vocabulary.formatInternational(Vocabulary.Keys.Image_1, imageIndex));
+        builder.addDefaultMetadata(this, listeners);
+        return builder.build();
     }
 
     /**

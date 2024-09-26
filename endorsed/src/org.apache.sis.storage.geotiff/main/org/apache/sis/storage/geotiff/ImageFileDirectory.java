@@ -1385,9 +1385,16 @@ final class ImageFileDirectory extends DataCube {
             source = new SchemaModifier.Source(reader.store, index, getDataType());
         }
         getIdentifier().ifPresent((id) -> {
+            metadata.addIdentifier(id, ImageMetadataBuilder.Scope.RESOURCE);
+            final CharSequence title;
             if (!getImageIndex().equals(id.tip().toString())) {
-                metadata.addTitle(id.toString());
+                title = id.toString();
+            } else if (source != null && !metadata.hasTitle()) {
+                title = Vocabulary.formatInternational(Vocabulary.Keys.Image_1, index + 1);
+            } else {
+                return;     // Return from lambda, not from `createMetadata()`.
             }
+            metadata.addTitle(title);
         });
         /*
          * Add information about sample dimensions.
