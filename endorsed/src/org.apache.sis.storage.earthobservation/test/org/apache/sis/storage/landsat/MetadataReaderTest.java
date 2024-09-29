@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static java.util.Map.entry;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -55,6 +56,16 @@ import org.opengis.test.dataset.ContentVerifier;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class MetadataReaderTest extends TestCase {
+    /**
+     * Helper class for verifying metadata content.
+     */
+    private ContentVerifier verifier;
+
+    /**
+     * A buffer for building paths to expected properties.
+     */
+    private StringBuilder buffer;
+
     /**
      * Creates a new test case.
      */
@@ -92,178 +103,137 @@ public final class MetadataReaderTest extends TestCase {
             reader.read(in);
             actual = reader.getMetadata();
         }
-        final ContentVerifier verifier = new ContentVerifier();
+        verifier = new ContentVerifier();
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");           // Because hard-coded in SIS.
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");        // Very verbose and depends on EPSG connection.
         verifier.addPropertyToIgnore(TemporalExtent.class, "extent");               // Because currently time-zone sensitive.
         verifier.addMetadataToVerify(actual);
         verifier.addExpectedValues(
-            "defaultLocale+otherLocale[0]",                                                          "en",
-            "metadataIdentifier.code",                                                               "LandsatTest",
-            "metadataScope[0].resourceScope",                                                        ScopeCode.COVERAGE,
-            "dateInfo[0].date",                                                                      OffsetDateTime.of(2016, 6, 27, 16, 48, 12, 0, ZoneOffset.UTC),
-            "dateInfo[0].dateType",                                                                  DateType.CREATION,
-            "identificationInfo[0].topicCategory[0]",                                                TopicCategory.GEOSCIENTIFIC_INFORMATION,
-            "identificationInfo[0].citation.date[0].date",                                           OffsetDateTime.of(2016, 6, 27, 16, 48, 12, 0, ZoneOffset.UTC),
-            "identificationInfo[0].citation.date[0].dateType",                                       DateType.CREATION,
-            "identificationInfo[0].citation.title",                                                  "LandsatTest",
-            "identificationInfo[0].credit[0]",                                                       "Derived from U.S. Geological Survey data",
-            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title",             "GeoTIFF Coverage Encoding Profile",
-            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "GeoTIFF",
-            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].party[0].name", "Open Geospatial Consortium",
-            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR,
-            "identificationInfo[0].extent[0].geographicElement[0].extentTypeCode",                   true,
-            "identificationInfo[0].extent[0].geographicElement[0].westBoundLongitude",               108.34,
-            "identificationInfo[0].extent[0].geographicElement[0].eastBoundLongitude",               110.44,
-            "identificationInfo[0].extent[0].geographicElement[0].southBoundLatitude",                10.50,
-            "identificationInfo[0].extent[0].geographicElement[0].northBoundLatitude",                12.62,
-            "identificationInfo[0].spatialResolution[0].distance",                                    15.0,
-            "identificationInfo[0].spatialResolution[1].distance",                                    30.0,
+            entry("defaultLocale+otherLocale[0]",   "en"),
+            entry("metadataIdentifier.code",        "LandsatTest"),
+            entry("metadataScope[0].resourceScope", ScopeCode.COVERAGE),
+            entry("dateInfo[0].date",               OffsetDateTime.of(2016, 6, 27, 16, 48, 12, 0, ZoneOffset.UTC)),
+            entry("dateInfo[0].dateType",           DateType.CREATION),
 
-            "acquisitionInformation[0].platform[0].identifier.code",               "Pseudo LANDSAT",
-            "acquisitionInformation[0].platform[0].instrument[0].identifier.code", "Pseudo TIRS",
-            "acquisitionInformation[0].acquisitionRequirement[0].identifier.code", "Software unit tests",
-            "acquisitionInformation[0].operation[0].significantEvent[0].context",  Context.ACQUISITION,
-            "acquisitionInformation[0].operation[0].significantEvent[0].time",     OffsetDateTime.of(2016, 6, 26, 3, 2, 1, 90_000_000, ZoneOffset.UTC),
-            "acquisitionInformation[0].operation[0].status",                       Progress.COMPLETED,
-            "acquisitionInformation[0].operation[0].type",                         OperationType.REAL,
+            entry("identificationInfo[0].topicCategory[0]",          TopicCategory.GEOSCIENTIFIC_INFORMATION),
+            entry("identificationInfo[0].citation.date[0].date",     OffsetDateTime.of(2016, 6, 27, 16, 48, 12, 0, ZoneOffset.UTC)),
+            entry("identificationInfo[0].citation.date[0].dateType", DateType.CREATION),
+            entry("identificationInfo[0].citation.title",            "LandsatTest"),
+            entry("identificationInfo[0].credit[0]", "Derived from U.S. Geological Survey data"),
 
-            "contentInfo[0].processingLevelCode.authority.title",          "Landsat",
-            "contentInfo[0].processingLevelCode.codeSpace",                "Landsat",
-            "contentInfo[0].processingLevelCode.code",                     "Pseudo LT1",
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title", "GeoTIFF Coverage Encoding Profile"),
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "GeoTIFF"),
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].party[0].name", "Open Geospatial Consortium"),
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR),
 
-            "contentInfo[0].attributeGroup[0].attribute[0].description",   "Coastal Aerosol",
-            "contentInfo[0].attributeGroup[0].attribute[1].description",   "Blue",
-            "contentInfo[0].attributeGroup[0].attribute[2].description",   "Green",
-            "contentInfo[0].attributeGroup[0].attribute[3].description",   "Red",
-            "contentInfo[0].attributeGroup[0].attribute[4].description",   "Near-Infrared",
-            "contentInfo[0].attributeGroup[0].attribute[5].description",   "Short Wavelength Infrared (SWIR) 1",
-            "contentInfo[0].attributeGroup[0].attribute[6].description",   "Short Wavelength Infrared (SWIR) 2",
-            "contentInfo[0].attributeGroup[0].attribute[7].description",   "Cirrus",
-            "contentInfo[0].attributeGroup[1].attribute[0].description",   "Panchromatic",
-            "contentInfo[0].attributeGroup[2].attribute[0].description",   "Thermal Infrared Sensor (TIRS) 1",
-            "contentInfo[0].attributeGroup[2].attribute[1].description",   "Thermal Infrared Sensor (TIRS) 2",
+            entry("identificationInfo[0].extent[0].geographicElement[0].extentTypeCode",     true),
+            entry("identificationInfo[0].extent[0].geographicElement[0].westBoundLongitude", 108.34),
+            entry("identificationInfo[0].extent[0].geographicElement[0].eastBoundLongitude", 110.44),
+            entry("identificationInfo[0].extent[0].geographicElement[0].southBoundLatitude",  10.50),
+            entry("identificationInfo[0].extent[0].geographicElement[0].northBoundLatitude",  12.62),
+            entry("identificationInfo[0].spatialResolution[0].distance", 15.0),
+            entry("identificationInfo[0].spatialResolution[1].distance", 30.0),
 
-            "contentInfo[0].attributeGroup[0].attribute[0].minValue",      1.0,
-            "contentInfo[0].attributeGroup[0].attribute[1].minValue",      1.0,
-            "contentInfo[0].attributeGroup[0].attribute[2].minValue",      1.0,
-            "contentInfo[0].attributeGroup[0].attribute[3].minValue",      1.0,
-            "contentInfo[0].attributeGroup[0].attribute[4].minValue",      1.0,
-            "contentInfo[0].attributeGroup[0].attribute[5].minValue",      1.0,
-            "contentInfo[0].attributeGroup[0].attribute[6].minValue",      1.0,
-            "contentInfo[0].attributeGroup[0].attribute[7].minValue",      1.0,
-            "contentInfo[0].attributeGroup[1].attribute[0].minValue",      1.0,
-            "contentInfo[0].attributeGroup[2].attribute[0].minValue",      1.0,
-            "contentInfo[0].attributeGroup[2].attribute[1].minValue",      1.0,
+            entry("acquisitionInformation[0].platform[0].identifier.code",               "Pseudo LANDSAT"),
+            entry("acquisitionInformation[0].platform[0].instrument[0].identifier.code", "Pseudo TIRS"),
+            entry("acquisitionInformation[0].acquisitionRequirement[0].identifier.code", "Software unit tests"),
+            entry("acquisitionInformation[0].operation[0].significantEvent[0].context",  Context.ACQUISITION),
+            entry("acquisitionInformation[0].operation[0].significantEvent[0].time",     OffsetDateTime.of(2016, 6, 26, 3, 2, 1, 90_000_000, ZoneOffset.UTC)),
+            entry("acquisitionInformation[0].operation[0].status", Progress.COMPLETED),
+            entry("acquisitionInformation[0].operation[0].type",   OperationType.REAL),
 
-            "contentInfo[0].attributeGroup[0].attribute[0].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[0].attribute[1].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[0].attribute[2].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[0].attribute[3].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[0].attribute[4].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[0].attribute[5].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[0].attribute[6].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[0].attribute[7].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[1].attribute[0].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[2].attribute[0].maxValue",      65535.0,
-            "contentInfo[0].attributeGroup[2].attribute[1].maxValue",      65535.0,
+            entry("contentInfo[0].processingLevelCode.authority.title", "Landsat"),
+            entry("contentInfo[0].processingLevelCode.codeSpace",       "Landsat"),
+            entry("contentInfo[0].processingLevelCode.code",            "Pseudo LT1"),
 
-            "contentInfo[0].attributeGroup[0].attribute[0].peakResponse",    433.0,
-            "contentInfo[0].attributeGroup[0].attribute[1].peakResponse",    482.0,
-            "contentInfo[0].attributeGroup[0].attribute[2].peakResponse",    562.0,
-            "contentInfo[0].attributeGroup[0].attribute[3].peakResponse",    655.0,
-            "contentInfo[0].attributeGroup[0].attribute[4].peakResponse",    865.0,
-            "contentInfo[0].attributeGroup[0].attribute[5].peakResponse",   1610.0,
-            "contentInfo[0].attributeGroup[0].attribute[6].peakResponse",   2200.0,
-            "contentInfo[0].attributeGroup[0].attribute[7].peakResponse",   1375.0,
-            "contentInfo[0].attributeGroup[1].attribute[0].peakResponse",    590.0,
-            "contentInfo[0].attributeGroup[2].attribute[0].peakResponse",  10800.0,
-            "contentInfo[0].attributeGroup[2].attribute[1].peakResponse",  12000.0,
+            entry("contentInfo[0].cloudCoverPercentage",        8.3),
+            entry("contentInfo[0].illuminationAzimuthAngle",  116.9),
+            entry("contentInfo[0].illuminationElevationAngle", 58.8),
 
-            "contentInfo[0].attributeGroup[0].attribute[0].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[0].attribute[1].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[0].attribute[2].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[0].attribute[3].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[0].attribute[4].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[0].attribute[5].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[0].attribute[6].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[0].attribute[7].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[1].attribute[0].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[2].attribute[0].transferFunctionType",  TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[2].attribute[1].transferFunctionType",  TransferFunctionType.LINEAR,
+            entry("spatialRepresentationInfo[0].numberOfDimensions", 2),
+            entry("spatialRepresentationInfo[1].numberOfDimensions", 2),
+            entry("spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionName", DimensionNameType.SAMPLE),
+            entry("spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionName", DimensionNameType.SAMPLE),
+            entry("spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionName", DimensionNameType.LINE),
+            entry("spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionName", DimensionNameType.LINE),
+            entry("spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionSize",  7600),
+            entry("spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionSize",  7800),
+            entry("spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionSize", 15000),
+            entry("spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionSize", 15500),
+            entry("spatialRepresentationInfo[0].transformationParameterAvailability", false),
+            entry("spatialRepresentationInfo[1].transformationParameterAvailability", false),
+            entry("spatialRepresentationInfo[0].checkPointAvailability", false),
+            entry("spatialRepresentationInfo[1].checkPointAvailability", false),
 
-            "contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[0].attribute[1].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[0].attribute[2].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[0].attribute[3].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[0].attribute[4].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[0].attribute[5].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[0].attribute[6].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[0].attribute[7].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[1].attribute[0].scaleFactor",  2.0E-5,
-            "contentInfo[0].attributeGroup[2].attribute[0].scaleFactor",  0.000334,
-            "contentInfo[0].attributeGroup[2].attribute[1].scaleFactor",  0.000334,
+            entry("resourceLineage[0].source[0].description", "Pseudo GLS"));
 
-            "contentInfo[0].attributeGroup[0].attribute[0].offset",      -0.1,
-            "contentInfo[0].attributeGroup[0].attribute[1].offset",      -0.1,
-            "contentInfo[0].attributeGroup[0].attribute[2].offset",      -0.1,
-            "contentInfo[0].attributeGroup[0].attribute[3].offset",      -0.1,
-            "contentInfo[0].attributeGroup[0].attribute[4].offset",      -0.1,
-            "contentInfo[0].attributeGroup[0].attribute[5].offset",      -0.1,
-            "contentInfo[0].attributeGroup[0].attribute[6].offset",      -0.1,
-            "contentInfo[0].attributeGroup[0].attribute[7].offset",      -0.1,
-            "contentInfo[0].attributeGroup[1].attribute[0].offset",      -0.1,
-            "contentInfo[0].attributeGroup[2].attribute[0].offset",       0.1,
-            "contentInfo[0].attributeGroup[2].attribute[1].offset",       0.1,
+        /*
+         * The expected values in "contentInfo[0].attributeGroup[…].attribute[…].*" have a lot of redundancy.
+         * Therefore, we set those expected values by loop instead of repeating tens of long property paths.
+         */
+        final String[] descriptions = {
+            "Coastal Aerosol",
+            "Blue",
+            "Green",
+            "Red",
+            "Near-Infrared",
+            "Short Wavelength Infrared (SWIR) 1",
+            "Short Wavelength Infrared (SWIR) 2",
+            "Cirrus",
+            "Panchromatic",
+            "Thermal Infrared Sensor (TIRS) 1",
+            "Thermal Infrared Sensor (TIRS) 2"
+        };
+        final short[] peakResponses = {433, 482, 562, 655, 865, 1610, 2200, 1375, 590, 10800, 12000};
+        int band = 0;
 
-            "contentInfo[0].attributeGroup[0].attribute[0].units", "",
-            "contentInfo[0].attributeGroup[0].attribute[1].units", "",
-            "contentInfo[0].attributeGroup[0].attribute[2].units", "",
-            "contentInfo[0].attributeGroup[0].attribute[3].units", "",
-            "contentInfo[0].attributeGroup[0].attribute[4].units", "",
-            "contentInfo[0].attributeGroup[0].attribute[5].units", "",
-            "contentInfo[0].attributeGroup[0].attribute[6].units", "",
-            "contentInfo[0].attributeGroup[0].attribute[7].units", "",
-            "contentInfo[0].attributeGroup[1].attribute[0].units", "",
-
-            "contentInfo[0].attributeGroup[0].attribute[0].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[0].attribute[1].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[0].attribute[2].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[0].attribute[3].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[0].attribute[4].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[0].attribute[5].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[0].attribute[6].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[0].attribute[7].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[1].attribute[0].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[2].attribute[0].boundUnits",   "nm",
-            "contentInfo[0].attributeGroup[2].attribute[1].boundUnits",   "nm",
-
-            "contentInfo[0].attributeGroup[0].contentType[0]", CoverageContentType.PHYSICAL_MEASUREMENT,
-            "contentInfo[0].attributeGroup[1].contentType[0]", CoverageContentType.PHYSICAL_MEASUREMENT,
-            "contentInfo[0].attributeGroup[2].contentType[0]", CoverageContentType.PHYSICAL_MEASUREMENT,
-
-            "contentInfo[0].cloudCoverPercentage",         8.3,
-            "contentInfo[0].illuminationAzimuthAngle",   116.9,
-            "contentInfo[0].illuminationElevationAngle",  58.8,
-
-            "spatialRepresentationInfo[0].numberOfDimensions",                       2,
-            "spatialRepresentationInfo[1].numberOfDimensions",                       2,
-            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionName", DimensionNameType.SAMPLE,
-            "spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionName", DimensionNameType.SAMPLE,
-            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionName", DimensionNameType.LINE,
-            "spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionName", DimensionNameType.LINE,
-            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionSize", 7600,
-            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionSize", 7800,
-            "spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionSize", 15000,
-            "spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionSize", 15500,
-            "spatialRepresentationInfo[0].transformationParameterAvailability",      false,
-            "spatialRepresentationInfo[1].transformationParameterAvailability",      false,
-            "spatialRepresentationInfo[0].checkPointAvailability",                   false,
-            "spatialRepresentationInfo[1].checkPointAvailability",                   false,
-
-            "resourceLineage[0].source[0].description", "Pseudo GLS");
-
+        buffer = new StringBuilder(80).append("contentInfo[0].attributeGroup[");
+        final int groupBase = buffer.length();
+        final int[] numAttributes = {8, 1, 2};
+        for (int group = 0; group < numAttributes.length; group++) {
+            final boolean mainGroups = (group != 2);
+            /*
+             * contentInfo[0].attributeGroup[0…2].contentType[0]
+             */
+            buffer.setLength(groupBase);
+            buffer.append(group).append("].");
+            addExpectedValue("contentType[0]", CoverageContentType.PHYSICAL_MEASUREMENT);
+            /*
+             * contentInfo[0].attributeGroup[0…2].attribute[…].minValue
+             * contentInfo[0].attributeGroup[0…2].attribute[…].maxValue
+             * ... etc ...
+             */
+            final int attributeBase = buffer.append("attribute[").length();
+            for (int attribute = 0; attribute < numAttributes[group]; attribute++) {
+                buffer.setLength(attributeBase);
+                buffer.append(attribute).append("].");
+                addExpectedValue("minValue", 1.0);
+                addExpectedValue("maxValue", 65535.0);
+                addExpectedValue("description", descriptions[band]);
+                addExpectedValue("peakResponse", (double) peakResponses[band++]);
+                addExpectedValue("boundUnits", "nm");
+                addExpectedValue("transferFunctionType", TransferFunctionType.LINEAR);
+                addExpectedValue("scaleFactor", mainGroups ? 2.0E-5 : 0.000334);
+                addExpectedValue("offset", mainGroups ? -0.1 : 0.1);
+                if (mainGroups) {
+                    addExpectedValue("units", "");
+                }
+            }
+        }
+        assertEquals(descriptions.length, band);
+        assertEquals(peakResponses.length, band);
         verifier.assertMetadataEquals();
+    }
+
+    /**
+     * Adds an expected value for the given property. The path to that property is the
+     * current content of {@link #buffer}, including a trailing {@code '.'} separator.
+     * The buffer is reset to its original length after this method call.
+     */
+    private void addExpectedValue(final String tip, Object value) {
+        final int length = buffer.length();
+        verifier.addExpectedValue(buffer.append(tip).toString(), value);
+        buffer.setLength(length);
     }
 
     /**

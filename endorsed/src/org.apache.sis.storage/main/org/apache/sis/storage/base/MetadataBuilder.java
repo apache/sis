@@ -97,7 +97,6 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.AbstractGridCoverageResource;
-import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
@@ -1037,34 +1036,34 @@ public class MetadataBuilder {
      * </ul>
      *
      * This method should be invoked <strong>before</strong> any other method writing in the
-     * {@code identificationInfo/resourceFormat} node. If this exception throws an exception,
-     * than that exception should be reported as a warning. Example:
-     *
-     * {@snippet lang="java" :
-     *     try {
-     *         metadata.setPredefinedFormat("MyFormat");
-     *     } catch (MetadataStoreException e) {
-     *         metadata.addFormatName("MyFormat");
-     *         listeners.warning(Level.FINE, null, e);
-     *     }
-     *     metadata.addCompression("decompression technique");
-     *     }
+     * {@code identificationInfo/resourceFormat} node.
      *
      * @param  abbreviation  the format short name or abbreviation, or {@code null} for no-operation.
-     * @throws MetadataStoreException  if this method cannot connect to the {@code jdbc/SpatialMetadata} database.
-     *         Callers should generally handle this exception as a recoverable one (i.e. log a warning and continue).
+     * @param  listeners     where to report a failure to connect to the {@code jdbc/SpatialMetadata} database.
+     * @param  fallback      whether to fallback on {@link #addFormatName(String)} if the description was not found.
+     * @return whether the format description has been added.
      *
      * @see #addCompression(CharSequence)
      * @see #addFormatName(CharSequence)
      */
-    public final void setPredefinedFormat(final String abbreviation) throws MetadataStoreException {
+    public boolean setPredefinedFormat(final String abbreviation, final StoreListeners listeners, boolean fallback) {
         if (abbreviation != null && abbreviation.length() != 0) {
-            if (format == null) {
+            if (format == null) try {
                 format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
-            } else {
+                return true;
+            } catch (MetadataStoreException e) {
+                if (listeners != null) {
+                    listeners.warning(Level.FINE, null, e);
+                } else {
+                    Logging.recoverableException(StoreUtilities.LOGGER, null, null, e);
+                }
+            }
+            if (fallback) {
                 addFormatName(abbreviation);
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -3028,12 +3027,11 @@ public class MetadataBuilder {
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setPredefinedFormat(String)},
-     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
+     * then the predefined format should be set <strong>before</strong> this method.
      *
      * @param value  the format name, or {@code null} for no-operation.
      *
-     * @see #setPredefinedFormat(String)
      * @see #setFormatEdition(CharSequence)
      * @see #addCompression(CharSequence)
      */
@@ -3073,12 +3071,11 @@ public class MetadataBuilder {
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/edition}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setPredefinedFormat(String)},
-     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
+     * then the predefined format should be set <strong>before</strong> this method.
      *
      * @param value  the format edition, or {@code null} for no-operation.
      *
-     * @see #setPredefinedFormat(String)
      * @see #addFormatName(CharSequence)
      */
     public final void setFormatEdition(final CharSequence value) {
@@ -3097,19 +3094,29 @@ public class MetadataBuilder {
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/otherCitationDetails}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setPredefinedFormat(String)},
-     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
+     * then the predefined format should be set <strong>before</strong> this method.
      *
      * @param driver   library-specific way to identify the format (mandatory).
      * @param version  the library version, or {@code null} if unknown.
      */
     public final void addFormatReader(final Identifier driver, final Version version) {
+        CharSequence title = null;
+        Citation authority = driver.getAuthority();
+        if (authority != null) {
+            title = authority.getTitle();
+            if (title != null) {
+                for (CharSequence t : authority.getAlternateTitles()) {
+                    if (t.length() < title.length()) {
+                        title = t;      // Alternate titles are often abbreviations.
+                    }
+                }
+            }
+        }
         final DefaultCitation c = getFormatCitation();
         addIfNotPresent(c.getIdentifiers(), driver);
         addIfNotPresent(c.getOtherCitationDetails(),
-                Resources.formatInternational(
-                        Resources.Keys.ReadBy_2,
-                        driver.getCodeSpace(),
+                Resources.formatInternational(Resources.Keys.ReadBy_2, (title != null) ? title : driver.getCodeSpace(),
                         (version != null) ? version : Vocabulary.formatInternational(Vocabulary.Keys.Unspecified)));
     }
 
@@ -3117,13 +3124,11 @@ public class MetadataBuilder {
      * Adds a note saying that Apache <abbr>SIS</abbr> has been used for decoding the format.
      * This method should not be invoked before the {@linkplain #addFormatName format name} has been set.
      *
-     * @param  provider  the data store provider, or {@code null} if unspecified.
+     * @param  name  the format name, or {@code null} if unspecified.
      */
-    public final void addFormatReader(final DataStoreProvider provider) {
-        if (provider != null) {
-            String name = provider.getShortName();
-            var driver = (name != null) ? new ImmutableIdentifier(Citations.SIS, Constants.SIS, name) : null;
-            addFormatReader(driver, Version.SIS);
+    public void addFormatReaderSIS(final String name) {
+        if (name != null) {
+            addFormatReader(new ImmutableIdentifier(Citations.SIS, Constants.SIS, name), Version.SIS);
         }
     }
 
@@ -3135,12 +3140,11 @@ public class MetadataBuilder {
      *   <li>{@code metadata/identificationInfo/resourceFormat/fileDecompressionTechnique}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setPredefinedFormat(String)},
-     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
+     * then the predefined format should be set <strong>before</strong> this method.
      *
      * @param value  the compression name, or {@code null} for no-operation.
      *
-     * @see #setPredefinedFormat(String)
      * @see #addFormatName(CharSequence)
      */
     public final void addCompression(final CharSequence value) {

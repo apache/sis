@@ -45,6 +45,7 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.netcdf.base.DataType;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Node;
@@ -262,8 +263,9 @@ public final class ChannelDecoder extends Decoder {
          * Read the dimension, attribute and variable declarations. We expect exactly 3 lists,
          * where any of them can be flagged as absent by a long (64 bits) 0.
          */
-        DimensionInfo[] dimensions = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         VariableInfo[]  variables  = null;
+        DimensionInfo[] dimensions = null;
         List<Map.Entry<String,Object>> attributes = List.of();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
@@ -676,14 +678,13 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns an identification of the file format. The returned value is a reference to a database entry
+     * Sets an identification of the file format. This method uses a reference to a database entry
      * known to {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.
-     *
-     * @return an identification of the file format in an array of length 1.
      */
     @Override
-    public String[] getFormatDescription() {
-        return new String[] {"NetCDF"};
+    public void addFormatDescription(MetadataBuilder builder) {
+        builder.setPredefinedFormat(Constants.NETCDF, null, true);
+        builder.addFormatReaderSIS(Constants.NETCDF);
     }
 
     /**
@@ -719,6 +720,7 @@ public final class ChannelDecoder extends Decoder {
      * @return dimension of the given name, or {@code null} if none.
      */
     @Override
+    @SuppressWarnings("StringEquality")
     protected Dimension findDimension(final String dimName) {
         DimensionInfo dim = dimensionMap.get(dimName);          // Give precedence to exact match before to ignore case.
         if (dim == null) {
@@ -736,6 +738,7 @@ public final class ChannelDecoder extends Decoder {
      * @param  name  the name of the variable to search, or {@code null}.
      * @return the variable of the given name, or {@code null} if none.
      */
+    @SuppressWarnings("StringEquality")
     private VariableInfo findVariableInfo(final String name) {
         VariableInfo v = variableMap.get(name);
         if (v == null && name != null) {
@@ -782,6 +785,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #getAttributeNames()
      */
+    @SuppressWarnings("StringEquality")
     private Object findAttribute(final String name) {
         if (name == null) {
             return null;

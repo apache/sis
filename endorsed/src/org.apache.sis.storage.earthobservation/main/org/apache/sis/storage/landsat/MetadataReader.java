@@ -48,7 +48,6 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
@@ -469,15 +468,12 @@ final class MetadataReader extends MetadataBuilder {
              * Value is "GEOTIFF".
              */
             case "OUTPUT_FORMAT": {
-                String name = value;
-                if (Constants.GEOTIFF.equalsIgnoreCase(name)) try {
-                    name = Constants.GEOTIFF;       // Because `metadata.setPredefinedFormat(…)` is case-sensitive.
-                    setPredefinedFormat(name);
-                    break;
-                } catch (MetadataStoreException e) {
-                    warning(key, null, e);
+                if (Constants.GEOTIFF.equalsIgnoreCase(value)) {
+                    setPredefinedFormat(Constants.GEOTIFF, listeners, true);
+                } else {
+                    addFormatName(value);
                 }
-                addFormatName(name);
+                // Do not invoke `addFormatReaderSIS(name)`, it will be done by the caller.
                 break;
             }
             /*

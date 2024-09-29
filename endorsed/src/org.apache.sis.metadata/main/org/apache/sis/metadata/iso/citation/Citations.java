@@ -336,7 +336,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> NETCDF = new CitationConstant.Authority<>("NetCDF");
+    public static final IdentifierSpace<String> NETCDF = new CitationConstant.Authority<>(Constants.NETCDF);
 
     /**
      * The authority for identifiers of objects defined by the the GeoTIFF specification.

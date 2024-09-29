@@ -39,6 +39,7 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.Utilities;
@@ -233,19 +234,15 @@ public abstract class Decoder extends ReferencingFactoryContainer {
     public abstract String getFilename();
 
     /**
-     * Returns an identification of the file format. This method should returns an array of length 1, 2 or 3 as below:
+     * Adds to the given metadata an identification of the file format.
+     * Subclasses should invoke the following methods:
      *
      * <ul>
-     *   <li>One of the following identifier in the first element: {@code "NetCDF"}, {@code "NetCDF-4"} or other values
-     *       defined by the UCAR library. If known, it will be used as an identifier for a more complete description to
-     *       be provided by {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.</li>
-     *   <li>Optionally a human-readable description in the second array element.</li>
-     *   <li>Optionally a version in the third array element.</li>
+     *   <li>{@link MetadataBuilder#setPredefinedFormat(String, StoreListeners, boolean)}</li>
+     *   <li>{@link MetadataBuilder#addFormatReaderSIS(String)} (if applicable)</li>
      * </ul>
-     *
-     * @return identification of the file format, human-readable description and version number.
      */
-    public abstract String[] getFormatDescription();
+    public abstract void addFormatDescription(MetadataBuilder builder);
 
     /**
      * Defines the groups where to search for named attributes, in preference order.

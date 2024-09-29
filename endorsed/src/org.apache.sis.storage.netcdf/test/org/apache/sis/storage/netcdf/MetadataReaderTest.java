@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.identification.KeywordType;
@@ -41,6 +42,7 @@ import org.apache.sis.storage.netcdf.base.TestCase;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static java.util.Map.entry;
 import org.opengis.test.dataset.ContentVerifier;
 import org.opengis.test.dataset.TestData;
 
@@ -118,66 +120,70 @@ public final class MetadataReaderTest extends TestCase {
      * @param  ucar      whether the UCAR wrapper is used.
      */
     static ContentVerifier compareToExpected(final Metadata actual, final boolean ucar) {
-        final ContentVerifier verifier = new ContentVerifier();
+        final var verifier = new ContentVerifier();
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");
+        verifier.addPropertyToIgnore(Citation.class, "otherCitationDetails");   // "Read by Foo version XYZ" in format citation.
         verifier.addPropertyToIgnore(TemporalExtent.class, "extent");
+        verifier.addPropertyToIgnore((path) -> path.equals("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.identifier[0].authority"));
         verifier.addMetadataToVerify(actual);
         verifier.addExpectedValues(
             // Hard-coded
-            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "NetCDF",
-            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title", "NetCDF Classic and 64-bit Offset Format",
-            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].party[0].name", "Open Geospatial Consortium",
-            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR,
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "NetCDF"),
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title", "NetCDF Classic and 64-bit Offset Format"),
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].party[0].name", "Open Geospatial Consortium"),
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR),
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.identifier[0].codeSpace", ucar ? "UCAR" : "SIS"),
+            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.identifier[0].code", "NetCDF"),
 
             // Read from the file
-            "dateInfo[0].date",                                                        actual(LocalDateTime.of(2018, 5, 15, 13, 1), ucar),
-            "dateInfo[0].dateType",                                                    DateType.REVISION,
-            "metadataScope[0].resourceScope",                                          ScopeCode.DATASET,
-            "identificationInfo[0].abstract",                                          "Global, two-dimensional model data",
-            "identificationInfo[0].purpose",                                           "GeoAPI conformance tests",
-            "identificationInfo[0].supplementalInformation",                           "For testing purpose only.",
-            "identificationInfo[0].citation.title",                                    "Test data from Sea Surface Temperature Analysis Model",
-            "identificationInfo[0].descriptiveKeywords[0].keyword[0]",                 "EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature",
-            "identificationInfo[0].descriptiveKeywords[0].thesaurusName.title",        "GCMD Science Keywords",
-            "identificationInfo[0].descriptiveKeywords[0].type",                       KeywordType.THEME,
-            "identificationInfo[0].pointOfContact[0].role",                            Role.POINT_OF_CONTACT,
-            "identificationInfo[0].pointOfContact[0].party[0].name",                   "NOAA/NWS/NCEP",
-            "identificationInfo[0].citation.citedResponsibleParty[0].role",            Role.ORIGINATOR,
-            "identificationInfo[0].citation.citedResponsibleParty[0].party[0].name",   "NOAA/NWS/NCEP",
-            "identificationInfo[0].citation.date[0].date",                             actual(LocalDateTime.of(2005, 9, 22,  0, 0), ucar),
-            "identificationInfo[0].citation.date[1].date",                             actual(LocalDateTime.of(2018, 5, 15, 13, 0), ucar),
-            "identificationInfo[0].citation.date[0].dateType",                         DateType.CREATION,
-            "identificationInfo[0].citation.date[1].dateType",                         DateType.REVISION,
-            "identificationInfo[0].citation.identifier[0].code",                       "NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc",
-            "identificationInfo[0].citation.identifier[0].authority.title",            "edu.ucar.unidata",
-            "identificationInfo[0].resourceConstraints[0].useLimitation[0]",           "Freely available",
-            "identificationInfo[0].extent[0].geographicElement[0].extentTypeCode",     Boolean.TRUE,
-            "identificationInfo[0].extent[0].geographicElement[0].westBoundLongitude", -180.0,
-            "identificationInfo[0].extent[0].geographicElement[0].eastBoundLongitude",  180.0,
-            "identificationInfo[0].extent[0].geographicElement[0].southBoundLatitude",  -90.0,
-            "identificationInfo[0].extent[0].geographicElement[0].northBoundLatitude",   90.0,
-            "identificationInfo[0].extent[0].verticalElement[0].maximumValue",            0.0,
-            "identificationInfo[0].extent[0].verticalElement[0].minimumValue",            0.0,
-            "identificationInfo[0].spatialRepresentationType[0]",                      SpatialRepresentationType.GRID,
-            "spatialRepresentationInfo[0].cellGeometry",                               CellGeometry.AREA,
-            "spatialRepresentationInfo[0].numberOfDimensions",                         2,
-            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionName",   DimensionNameType.COLUMN,
-            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionName",   DimensionNameType.ROW,
-            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionSize",   73,
-            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionSize",   73,
-            "spatialRepresentationInfo[0].transformationParameterAvailability",        false,
+            entry("dateInfo[0].date",                                                        actual(LocalDateTime.of(2018, 5, 15, 13, 1), ucar)),
+            entry("dateInfo[0].dateType",                                                    DateType.REVISION),
+            entry("metadataScope[0].resourceScope",                                          ScopeCode.DATASET),
+            entry("identificationInfo[0].abstract",                                          "Global, two-dimensional model data"),
+            entry("identificationInfo[0].purpose",                                           "GeoAPI conformance tests"),
+            entry("identificationInfo[0].supplementalInformation",                           "For testing purpose only."),
+            entry("identificationInfo[0].citation.title",                                    "Test data from Sea Surface Temperature Analysis Model"),
+            entry("identificationInfo[0].descriptiveKeywords[0].keyword[0]",                 "EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature"),
+            entry("identificationInfo[0].descriptiveKeywords[0].thesaurusName.title",        "GCMD Science Keywords"),
+            entry("identificationInfo[0].descriptiveKeywords[0].type",                       KeywordType.THEME),
+            entry("identificationInfo[0].pointOfContact[0].role",                            Role.POINT_OF_CONTACT),
+            entry("identificationInfo[0].pointOfContact[0].party[0].name",                   "NOAA/NWS/NCEP"),
+            entry("identificationInfo[0].citation.citedResponsibleParty[0].role",            Role.ORIGINATOR),
+            entry("identificationInfo[0].citation.citedResponsibleParty[0].party[0].name",   "NOAA/NWS/NCEP"),
+            entry("identificationInfo[0].citation.date[0].date",                             actual(LocalDateTime.of(2005, 9, 22,  0, 0), ucar)),
+            entry("identificationInfo[0].citation.date[1].date",                             actual(LocalDateTime.of(2018, 5, 15, 13, 0), ucar)),
+            entry("identificationInfo[0].citation.date[0].dateType",                         DateType.CREATION),
+            entry("identificationInfo[0].citation.date[1].dateType",                         DateType.REVISION),
+            entry("identificationInfo[0].citation.identifier[0].code",                       "NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc"),
+            entry("identificationInfo[0].citation.identifier[0].authority.title",            "edu.ucar.unidata"),
+            entry("identificationInfo[0].resourceConstraints[0].useLimitation[0]",           "Freely available"),
+            entry("identificationInfo[0].extent[0].geographicElement[0].extentTypeCode",     Boolean.TRUE),
+            entry("identificationInfo[0].extent[0].geographicElement[0].westBoundLongitude", -180.0),
+            entry("identificationInfo[0].extent[0].geographicElement[0].eastBoundLongitude",  180.0),
+            entry("identificationInfo[0].extent[0].geographicElement[0].southBoundLatitude",  -90.0),
+            entry("identificationInfo[0].extent[0].geographicElement[0].northBoundLatitude",   90.0),
+            entry("identificationInfo[0].extent[0].verticalElement[0].maximumValue",            0.0),
+            entry("identificationInfo[0].extent[0].verticalElement[0].minimumValue",            0.0),
+            entry("identificationInfo[0].spatialRepresentationType[0]",                      SpatialRepresentationType.GRID),
+            entry("spatialRepresentationInfo[0].cellGeometry",                               CellGeometry.AREA),
+            entry("spatialRepresentationInfo[0].numberOfDimensions",                         2),
+            entry("spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionName",   DimensionNameType.COLUMN),
+            entry("spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionName",   DimensionNameType.ROW),
+            entry("spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionSize",   73),
+            entry("spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionSize",   73),
+            entry("spatialRepresentationInfo[0].transformationParameterAvailability",        false),
 
             // Variable descriptions (only one in this test).
-            "contentInfo[0].attributeGroup[0].attribute[0].sequenceIdentifier",        "SST",
-            "contentInfo[0].attributeGroup[0].attribute[0].description",               "Sea temperature",
-            "contentInfo[0].attributeGroup[0].attribute[0].name[0].code",              "sea_water_temperature",
-            "contentInfo[0].attributeGroup[0].attribute[0].transferFunctionType",      TransferFunctionType.LINEAR,
-            "contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",               0.0011,
-            "contentInfo[0].attributeGroup[0].attribute[0].offset",                    -1.85,
-            "contentInfo[0].attributeGroup[0].attribute[0].units",                     "°C",
+            entry("contentInfo[0].attributeGroup[0].attribute[0].sequenceIdentifier",        "SST"),
+            entry("contentInfo[0].attributeGroup[0].attribute[0].description",               "Sea temperature"),
+            entry("contentInfo[0].attributeGroup[0].attribute[0].name[0].code",              "sea_water_temperature"),
+            entry("contentInfo[0].attributeGroup[0].attribute[0].transferFunctionType",      TransferFunctionType.LINEAR),
+            entry("contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",               0.0011),
+            entry("contentInfo[0].attributeGroup[0].attribute[0].offset",                    -1.85),
+            entry("contentInfo[0].attributeGroup[0].attribute[0].units",                     "°C"),
 
-            "resourceLineage[0].statement", "Decimated and modified by GeoAPI for inclusion in conformance test suite.");
+            entry("resourceLineage[0].statement", "Decimated and modified by GeoAPI for inclusion in conformance test suite."));
 
         return verifier;
     }

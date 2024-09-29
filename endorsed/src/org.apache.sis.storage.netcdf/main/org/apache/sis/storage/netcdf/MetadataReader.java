@@ -25,7 +25,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
 import java.io.IOException;
 import java.time.temporal.Temporal;
 import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
@@ -51,7 +50,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
@@ -69,6 +67,7 @@ import org.apache.sis.system.Configuration;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
@@ -656,22 +655,30 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             addBoundingPolygon(new StoreFormat(null, null, decoder.geomlib, decoder.listeners).parseGeometry(wkt,
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
         }
-        final String[] format = decoder.getFormatDescription();
-        String id = format[0];
-        if (NetcdfStoreProvider.NAME.equalsIgnoreCase(id)) try {
-            setPredefinedFormat(NetcdfStoreProvider.NAME);
-            id = null;
-        } catch (MetadataStoreException e) {
-            // Will add `id` at the end of this method.
-            decoder.listeners.warning(Level.FINE, null, e);
+        /*
+         * Add a description of the format. The description is determined by the decoder in use.
+         * That decoder may itself infer that description from another library such as UCAR.
+         */
+        decoder.addFormatDescription(this);
+    }
+
+    /**
+     * Adds the format description with a check about whether the given format identifier is recognized.
+     * This is a helper method for {@link Decoder#addFormatDescription(MetadataBuilder)} implementations.
+     *
+     * @param  format     format identifier. Recognized value is {@value NetcdfStoreProvider#NAME}.
+     * @param  listeners  ignored. Will be replaced by the listeners of the decoder.
+     * @param  fallback   whether to use a fallback if the description was not found.
+     * @return whether the format description has been added.
+     */
+    @Override
+    public boolean setPredefinedFormat(String format, StoreListeners listeners, boolean fallback) {
+        if (Constants.NETCDF.equalsIgnoreCase(format)) {
+            return super.setPredefinedFormat(format, decoder.listeners, fallback);
+        } else if (fallback) {
+            addFormatName(format);
         }
-        if (format.length >= 2) {
-            addFormatName(format[1]);
-            if (format.length >= 3) {
-                setFormatEdition(format[2]);
-            }
-        }
-        addFormatName(id);          // Do nothing is `id` is null.
+        return false;
     }
 
     /**

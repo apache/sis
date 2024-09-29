@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.net.URI;
@@ -62,7 +61,6 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -382,13 +380,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * Sets the {@code metadata/identificationInfo/resourceFormat} node to "GeoTIFF" format.
      */
     final void setFormatInfo(final MetadataBuilder builder) {
-        try {
-            builder.setPredefinedFormat(Constants.GEOTIFF);
-        } catch (MetadataStoreException e) {
-            builder.addFormatName(Constants.GEOTIFF);
-            listeners.warning(Level.FINE, null, e);
-        }
-        builder.addFormatReader(getProvider());
+        builder.setPredefinedFormat(Constants.GEOTIFF, listeners, true);
+        builder.addFormatReaderSIS(Constants.GEOTIFF);
         builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.METADATA);
         builder.addResourceScope(ScopeCode.COVERAGE, null);
     }

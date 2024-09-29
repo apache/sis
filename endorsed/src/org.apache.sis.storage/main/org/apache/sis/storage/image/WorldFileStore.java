@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.EOFException;
@@ -54,7 +53,6 @@ import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.referencing.privy.AffineTransform2D;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.ListOfUnknownSize;
@@ -529,17 +527,14 @@ loop:   for (int convention=0;; convention++) {
             String format = reader().getFormatName();
             for (final String key : KNOWN_FORMATS) {
                 if (key.equalsIgnoreCase(format)) {
-                    try {
-                        builder.setPredefinedFormat(key);
+                    if (builder.setPredefinedFormat(key, listeners, false)) {
                         format = null;
-                    } catch (MetadataStoreException e) {
-                        listeners.warning(Level.FINE, null, e);
                     }
                     break;
                 }
             }
             builder.addFormatName(format);                          // Does nothing if `format` is null.
-            builder.addFormatReader(getProvider());
+            builder.addFormatReaderSIS(WorldFileStoreProvider.NAME);
             builder.addResourceScope(ScopeCode.COVERAGE, null);
             builder.addSpatialRepresentation(null, getGridGeometry(MAIN_IMAGE), true);
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {

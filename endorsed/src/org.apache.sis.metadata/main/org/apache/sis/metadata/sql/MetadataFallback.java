@@ -110,7 +110,7 @@ final class MetadataFallback extends MetadataSource {
         CharSequence     title;
         CharSequence     alternateTitle        = null;
         CharSequence     edition               = null;
-        String           code                  = null;
+        String           code                  = key;
         String           codeSpace             = null;
         String           version               = null;
         CharSequence     citedResponsibleParty = null;
@@ -141,29 +141,25 @@ final class MetadataFallback extends MetadataSource {
                 title             = "Web Map Server";
                 alternateTitle    = "WMS";
                 edition = version = "1.3";
-                code              = "WMS";      // Note: OGC internal code is 06-042.
                 codeSpace         = "OGC";
                 copyFrom          = "OGC";
                 presentationForm  = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }
-            case "OGC": {
+            case Constants.OGC: {
                 title                 = "OGC Naming Authority";
-                code                  = Constants.OGC;
                 citedResponsibleParty = "Open Geospatial Consortium";
                 presentationForm      = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }
             case "WMO": {
                 title                 = "WMO Information System (WIS)";
-                code                  = key;
                 citedResponsibleParty = "World Meteorological Organization";
                 presentationForm      = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }
-            case "IOGP": {       // Not in public API (see Citations.IOGP javadoc)
+            case Constants.IOGP: {  // Not in public API (see Citations.IOGP javadoc)
                 title            = "IOGP Surveying and Positioning Guidance Note 7";
-                code             = Constants.IOGP;
                 copyFrom         = Constants.EPSG;
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;
@@ -171,7 +167,6 @@ final class MetadataFallback extends MetadataSource {
             case Constants.EPSG: {
                 title                 = "EPSG Geodetic Parameter Dataset";
                 alternateTitle        = "EPSG Dataset";
-                code                  = Constants.EPSG;
                 codeSpace             = Constants.IOGP;
                 citedResponsibleParty = "International Association of Oil & Gas producers";
                 presentationForm      = PresentationForm.TABLE_DIGITAL;
@@ -179,30 +174,35 @@ final class MetadataFallback extends MetadataSource {
             }
             case Constants.SIS: {
                 title     = "Apache Spatial Information System";
-                code      = key;
                 codeSpace = "Apache";
                 break;
             }
             case "ISBN": {
                 title = "International Standard Book Number";
                 alternateTitle = key;
+                code = null;
                 break;
             }
             case "ISSN": {
                 title = "International Standard Serial Number";
                 alternateTitle = key;
+                code = null;
                 break;
             }
             case "PROJ": {
                 title     = "PROJ coordinate transformation software library";
-                code      = "PROJ";
                 codeSpace = "OSGeo";
                 break;
             }
             case Constants.GDAL: {
-                title     = "Geospatial Data Abstraction Library";
-                code      = key;
+                title = "Geospatial Data Abstraction Library";
+                alternateTitle = "GDAL";
                 codeSpace = "OSGeo";
+                break;
+            }
+            case "Unidata": {
+                title = "Unidata netCDF library";
+                code  = null;
                 break;
             }
             case "IHO S-57": {

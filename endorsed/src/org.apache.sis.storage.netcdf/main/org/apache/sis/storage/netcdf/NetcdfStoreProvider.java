@@ -52,6 +52,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -72,7 +73,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @since 0.3
  */
-@StoreMetadata(formatName    = NetcdfStoreProvider.NAME,
+@StoreMetadata(formatName    = Constants.NETCDF,
                fileSuffixes  = "nc",
                capabilities  = Capability.READ,
                resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class},
@@ -86,11 +87,6 @@ import org.apache.sis.util.logging.Logging;
  */
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
-     * The format name.
-     */
-    static final String NAME = "NetCDF";
-
-    /**
      * The MIME type for netCDF files.
      */
     static final String MIME_TYPE = "application/x-netcdf";
@@ -98,7 +94,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreProvider.descriptor(NAME);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreProvider.descriptor(Constants.NETCDF);
 
     /**
      * The name of the {@link ucar.nc2.NetcdfFile} class, which is {@value}.
@@ -161,7 +157,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      */
     @Override
     public String getShortName() {
-        return NAME;
+        return Constants.NETCDF;
     }
 
     /**

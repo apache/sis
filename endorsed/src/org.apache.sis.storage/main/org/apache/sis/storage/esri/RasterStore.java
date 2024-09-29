@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.file.NoSuchFileException;
@@ -33,7 +32,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage2D;
@@ -152,13 +150,8 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     final void createMetadata(final String formatName, final String formatKey) throws DataStoreException {
         final GridGeometry gridGeometry = getGridGeometry();        // May cause parsing of header.
         final MetadataBuilder builder = new MetadataBuilder();
-        try {
-            builder.setPredefinedFormat(formatKey);
-        } catch (MetadataStoreException e) {
-            builder.addFormatName(formatName);
-            listeners.warning(Level.FINE, null, e);
-        }
-        builder.addFormatReader(getProvider());
+        builder.setPredefinedFormat(formatKey, listeners, true);
+        builder.addFormatReaderSIS(provider != null ? provider.getShortName() : null);
         builder.addResourceScope(ScopeCode.COVERAGE, null);
         builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.METADATA);
         builder.addSpatialRepresentation(null, gridGeometry, true);
