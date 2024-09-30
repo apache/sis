@@ -345,7 +345,7 @@ final class TiledResource extends TiledGridResource {
                  * The axis order used by GDAL is not the axis order in the CRS definition.
                  * GDAL provides a separated method for specifying the axis swapping.
                  */
-                if (gridToCRS != null) {
+                if (gridToCRS != null && srs != null) {
                     int dimension = (crs != null) ? crs.getCoordinateSystem().getDimension() : SpatialRef.BIDIMENSIONAL;
                     final Matrix swap = srs.getDataToCRS(dimension);
                     if (swap != null) {
@@ -557,6 +557,15 @@ final class TiledResource extends TiledGridResource {
             }
             return (fillValues.length != 0) ? fillValues : null;
         }
+    }
+
+    /**
+     * Allows the reading of truncated tiles in all dimensions. In <abbr>GDAL</abbr> case, truncating is actually
+     * mandatory because <abbr>GDAL</abbr> requires the read requests to be fully contained inside the valid area.
+     */
+    @Override
+    protected boolean canReadTruncatedTiles(int dim, boolean suggested) {
+        return true;
     }
 
     /**

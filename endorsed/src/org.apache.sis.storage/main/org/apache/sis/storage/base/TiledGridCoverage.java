@@ -47,6 +47,7 @@ import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.privy.Numerics;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -112,10 +113,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *       (note: this is rare. GeoTIFF for example always stores whole tiles).</li>
      * </ul>
      *
-     * <p>In current version this is a flag for the <var>x</var> dimension only. In a future version
-     * it could be flags for other dimensions as well (using bitmask) if it appears to be useful.</p>
+     * This a list of Boolean flags packed as a bitmask with the flag for the first dimension in the lowest bit.
+     * The default implementation always sets the flag of the last dimension to {@code false} (0), then sets the
+     * flags of other dimensions to {@code true} (1) if we are not in the case of a big untiled image.
      */
-    private final boolean forceTileSize;
+    private final long forceWholeTiles;
 
     /**
      * Size of all tiles in the domain of this {@code TiledGridCoverage}, without clipping and subsampling.
@@ -276,7 +278,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         this.model      = model;
         this.colors     = subset.colorsForBandSubset;
         this.fillValues = subset.fillValues;
-        forceTileSize   = multiplyExact(subsampling[X_DIMENSION], subSize[X_DIMENSION]) == virtualTileSize[X_DIMENSION];
+        forceWholeTiles = subset.forceWholeTiles(subSize);
     }
 
     /**
@@ -795,7 +797,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 if (offset >= limit) {          // Test for intersection before we adjust the limit.
                     return false;
                 }
-                if (dimension == X_DIMENSION && coverage.forceTileSize) {
+                if ((coverage.forceWholeTiles & Numerics.bitmask(dimension)) != 0) {
                     limit = tileSize;
                 }
                 if (subsampled) {

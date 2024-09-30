@@ -47,6 +47,7 @@ import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import static org.apache.sis.storage.base.TiledGridCoverage.X_DIMENSION;
 import static org.apache.sis.storage.base.TiledGridCoverage.Y_DIMENSION;
@@ -223,6 +224,32 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     }
 
     /**
+     * Returns {@code true} if the reader can load truncated tiles. Truncated tiles may happen in the
+     * last row and last column of a tile matrix when the image size is not a multiple of the tile size.
+     * Some file formats, such as GeoTIFF, unconditionally stores full tiles, in which case this method
+     * should return {@code false}. At the opposite, some implementations, such as <abbr>GDAL</abbr>,
+     * accept only requests over the valid area, in which case this method should return {@code true}.
+     *
+     * <h4>Suggested value</h4>
+     * The {@code suggested} argument is a value computed by the caller based on common usages.
+     * The default implementation of {@link TiledGridCoverage} suggests {@code true}
+     * if the read operation is inside a single big tile, or {@code false} otherwise.
+     * The default implementation of this method returns {@code suggested} unchanged.
+     *
+     * <p>Note that even for subclasses that generally do not support the reading of truncated tiles,
+     * it is often safe to return {@code true} for the last dimension (for example, <var>y</var> in a
+     * two-dimensional image), because there is no data after that dimension.
+     * Therefore, it is often safe to stop the reading process in that dimension.
+     *
+     * @param  dim        the dimension: 0 for <var>x</var>, 1 for <var>y</var>, <i>etc.</i>
+     * @param  suggested  suggested response to return (see above heuristic rules).
+     * @return whether the reader can load truncated tiles along the specified dimension.
+     */
+    protected boolean canReadTruncatedTiles(int dim, boolean suggested) {
+        return suggested;
+    }
+
+    /**
      * Returns {@code true} if the reader can load only the requested bands and skip the other bands,
      * or {@code false} if the reader must load all bands. This value controls the amount of data to
      * be loaded by {@link #read(GridGeometry, int...)}:
@@ -373,8 +400,8 @@ check:  if (dataType.isInteger()) {
 
     /**
      * Parameters that describe the resource subset to be accepted by the {@link TiledGridCoverage} constructor.
-     * Instances of this class are temporary and used only for transferring information from {@link TiledGridResource}.
-     * This class does not perform I/O operations.
+     * Instances of this class are temporary and used only for transferring information from {@link TiledGridResource}
+     * to {@link TiledGridCoverage}. This class does not perform I/O operations.
      */
     public final class Subset {
         /**
@@ -580,6 +607,22 @@ check:  if (dataType.isInteger()) {
              * If they read only sub-regions or apply subsampling, then they will need their own cache.
              */
             cache = sharedCache ? rasters : new WeakValueHashMap<>(CacheKey.class);
+        }
+
+        /**
+         * Returns flags telling, for each dimension, whether the read region should be an integer number of tiles.
+         *
+         * @param  subSize  tile size after subsampling.
+         * @return a bitmask with the flag for the first dimension in the lowest bit.
+         */
+        final long forceWholeTiles(final int[] subSize) {
+            long forceWholeTiles = 0;
+            for (int i=0; i<subSize.length; i++) {
+                if (!canReadTruncatedTiles(i, Math.multiplyExact(subsampling[i], subSize[i]) != virtualTileSize[i])) {
+                    forceWholeTiles |= Numerics.bitmask(i);
+                }
+            }
+            return forceWholeTiles;
         }
 
         /**

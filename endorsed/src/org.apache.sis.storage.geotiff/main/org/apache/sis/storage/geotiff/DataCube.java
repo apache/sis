@@ -179,6 +179,16 @@ abstract class DataCube extends TiledGridResource implements StoreResource {
     abstract Number getReplaceableFillValue();
 
     /**
+     * Allows the reading of truncated tiles in the <var>y</var> dimension.
+     * Since there is no data after that dimension, it is safe to stop the
+     * reading process as soon as possible along that axis of each tile.
+     */
+    @Override
+    protected final boolean canReadTruncatedTiles(int dim, boolean suggested) {
+        return suggested | (dim >= 1);      // Y_DIMENSION.
+    }
+
+    /**
      * Returns {@code true} if the image can be read with the {@link DataSubset} base class,
      * or {@code false} if the more sophisticated {@link CompressedSubset} sub-class is needed.
      * The {@link DataSubset#readSlice readSlice(…)} implementation in {@link DataSubset} base
