@@ -545,8 +545,8 @@ reuse:  if (source != null) {
         int deferred = 0;                                   // Number of entries deferred to next loop.
         int count    = entries.length;                      // Total number of valid entries.
         NumberRange<?> themes = null;                       // The range of values in a thematic map.
-        final Map<NumberRange<Integer>,ColorsForRange> mapper = new HashMap<>();
-        final SampleDimension.Builder builder = new SampleDimension.Builder();
+        final var mapper  = new HashMap<NumberRange<Integer>, ColorsForRange>();
+        final var builder = new SampleDimension.Builder();
         /*
          * We will use the byte values range [0 … 255] with 0 reserved in priority for the most transparent pixels.
          * The first loop below processes NaN values, which are usually the ones associated to transparent pixels.
@@ -573,7 +573,9 @@ reuse:  if (source != null) {
                         builder.mapQualitative(entry.name(), targetRange, (float) value);
                     } else {
                         if (value == entry.sampleRange.getMaxDouble()) {
-                            sourceRange = NumberRange.create(value - 0.5, true, value + 0.5, false);
+                            sourceRange = NumberRange.create(
+                                    Math.min(value - 0.5, Math.nextDown(value)), true,
+                                    Math.max(value + 0.5, Math.nextUp(value)), false);
                         }
                         builder.addQuantitative(entry.name(), targetRange, sourceRange);
                         themes = (themes != null) ? themes.unionAny(sourceRange) : sourceRange;

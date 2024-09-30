@@ -1548,10 +1548,14 @@ final class ImageFileDirectory extends DataCube {
     public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
         synchronized (getSynchronizationLock()) {
             if (sampleDimensions == null) {
-                final Number fill = getFillValue(true);
+                /*
+                 * For floating point type, `DataSubset.createWritableRaster(…)` has already replaced
+                 * fill value by NaN. Therefore, it shall not appear anymore in the `SampleDimension`.
+                 */
+                final Number fill = (sampleFormat != FLOAT) ? getFillValue(true) : null;
                 final DataType dataType = getDataType();
-                final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
-                final SampleDimension.Builder builder = new SampleDimension.Builder();
+                final var dimensions = new SampleDimension[samplesPerPixel];
+                final var builder = new SampleDimension.Builder();
                 final boolean isIndexValid = !isReducedResolution();
                 for (int band = 0; band < dimensions.length; band++) {
                     short nameKey = 0;
