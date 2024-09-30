@@ -18,8 +18,6 @@ package org.apache.sis.gui.metadata;
 
 import java.util.Locale;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.io.IOException;
 import javafx.util.Callback;
 import javafx.beans.DefaultProperty;
@@ -306,14 +304,10 @@ check:      if (data != null) {
          */
         @Override
         public ObservableList<TreeItem<TreeTable.Node>> getChildren() {
-            final ObservableList<TreeItem<TreeTable.Node>> children = super.getChildren();
+            final var children = super.getChildren();
             if (children.isEmpty()) {
-                final Collection<TreeTable.Node> data = getValue().getChildren();
-                final List<Item> wrappers = new ArrayList<>(data.size());
-                for (final TreeTable.Node child : data) {
-                    wrappers.add(new Item(child));
-                }
-                children.setAll(wrappers);      // Fire a single event instead of multiple `add`.
+                // Fire a single event instead of multiple `add`.
+                children.setAll(getValue().getChildren().stream().map(Item::new).toList());
             }
             return children;
         }

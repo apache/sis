@@ -56,6 +56,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 
@@ -200,20 +201,25 @@ final class IdentificationInfo extends Section<Identification> {
             BackgroundThreads.execute(aggregateWalker = new Task<Set<GeographicBoundingBox>>() {
                 /** Invoked in a background thread for fetching bounding boxes. */
                 @Override protected Set<GeographicBoundingBox> call() throws DataStoreException {
-                    final Set<GeographicBoundingBox> boxes = new LinkedHashSet<>();
-                    for (final Resource child : resource.components()) {
-                        final Metadata metadata = child.getMetadata();
-                        if (isCancelled()) break;
-                        if (metadata != null) {
-                            for (final Identification id : nonNull(metadata.getIdentificationInfo())) {
-                                if (id != null) {
-                                    for (final Extent extent : id.getExtents()) {
-                                        final GeographicBoundingBox b = Extents.getGeographicBoundingBox(extent);
-                                        if (b != null) boxes.add(b);
+                    final var boxes = new LinkedHashSet<GeographicBoundingBox>();
+                    try {
+                        for (final Resource child : resource.components()) {
+                            final Metadata metadata = child.getMetadata();
+                            if (isCancelled()) break;
+                            if (metadata != null) {
+                                for (final Identification id : nonNull(metadata.getIdentificationInfo())) {
+                                    if (id != null) {
+                                        for (final Extent extent : id.getExtents()) {
+                                            final GeographicBoundingBox b = Extents.getGeographicBoundingBox(extent);
+                                            if (b != null) boxes.add(b);
+                                        }
                                     }
                                 }
                             }
                         }
+                    } catch (BackingStoreException e) {
+                        // This exception can be thrown by the iterator.
+                        throw e.unwrapOrRethrow(DataStoreException.class);
                     }
                     return boxes;
                 }
