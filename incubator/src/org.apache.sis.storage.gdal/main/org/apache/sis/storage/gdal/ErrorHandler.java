@@ -110,6 +110,12 @@ final class ErrorHandler {
             String text = NativeFunctions.toString(message);
             if (text == null || text.isBlank()) {
                 text = "GDAL error #" + code;
+            } else {
+                /*
+                 * GDAL puts line separator in the middle of messages, maybe for console output.
+                 * Remove them as line feeds are handled either by JavaFX or by our log formatter.
+                 */
+                text = text.replace(System.lineSeparator(), " ");
             }
             messages.add(new ErrorHandler(err, text));
         } catch (Throwable e) {

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.AbstractList;
 import java.util.LinkedHashMap;
@@ -154,5 +155,13 @@ final class SubdatasetList extends AbstractList<Subdataset> {
             }
             return component;
         }
+    }
+
+    /**
+     * Returns the components that are open. The returned array may contain null elements.
+     * Those null elements are for components that have not been opened yet and shall be ignored.
+     */
+    final List<Subdataset> getOpenedComponents() {
+        return Arrays.asList(components);
     }
 }

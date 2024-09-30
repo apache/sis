@@ -26,6 +26,7 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -109,6 +110,10 @@ final class Opener implements Runnable {
                     GDAL.toNullTerminatedStrings(arena, siblingFiles));
         } catch (Throwable e) {
             throw GDAL.propagate(e);
+        }
+        if (GDAL.isNull(handle)) {
+            ErrorHandler.throwOnFailure(null, "open");
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, url));
         }
     }
 

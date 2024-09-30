@@ -238,7 +238,7 @@ public class GDALStore extends DataStore implements Aggregate {
         try {
             var result = (MemorySegment) gdal.getDatasetDriver.invokeExact(handle());
             if (!GDAL.isNull(result)) {     // Paranoiac check.
-                result = (MemorySegment) gdal.getName.invokeExact(result);
+                result = (MemorySegment) gdal.getIdentifier.invokeExact(result);
                 return GDAL.toString(result);
             }
         } catch (Throwable e) {
@@ -478,15 +478,19 @@ public class GDALStore extends DataStore implements Aggregate {
             error = e;      // Should not happen even if a listener threw an exception, but we want to be safe.
         } finally {
             try {
-                final List<? extends Resource> children;
+                List<? extends Resource> children;
                 synchronized (this) {
                     children = components;
                     components = null;
                 }
+                if (children instanceof SubdatasetList delayed) {
+                    children = delayed.getOpenedComponents();
+                }
                 if (children != null) {
                     for (Resource child : children) {
-                        if (child instanceof Subdataset) try {
-                            ((GDALStore) child).closeRecursively();
+                        // Note: child may be null if not yet opened.
+                        if (child instanceof GDALStore subdataset) try {
+                            subdataset.closeRecursively();
                         } catch (RuntimeException e) {
                             if (error == null) error = e;
                             else error.addSuppressed(e);
