@@ -16,15 +16,10 @@
  */
 
 /**
- * LibGSF Panama binding.
- *
- * @author Johann Sorel (Geomatys)
+ * Partial (simplified) copy of the {@code org.apache.sis.storage.panama} package.
+ * This copy is for keeping this <abbr>GSF</abbr> module independent from the <abbr>GDAL</abbr> module,
+ * because we do not yet have a location where to put the {@code org.apache.sis.storage.panama} package
+ * in a way where it can be reused by other modules. This package will be deleted in a future version
+ * if we find a home for the {@code org.apache.sis.storage.panama} package.
  */
-module org.apache.sis.storage.gsf {
-    // Dependencies used in public API.
-    requires transitive org.apache.sis.referencing;
-    requires transitive org.apache.sis.storage;
-
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.gsf.GSFStoreProvider;
-}
+package org.apache.sis.storage.gsf.panama;

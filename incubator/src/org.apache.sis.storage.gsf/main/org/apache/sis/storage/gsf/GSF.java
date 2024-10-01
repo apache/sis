@@ -17,7 +17,6 @@
 package org.apache.sis.storage.gsf;
 
 import java.lang.foreign.AddressLayout;
-import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
@@ -30,9 +29,9 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.panama.LibraryLoader;
-import org.apache.sis.storage.panama.LibraryStatus;
-import org.apache.sis.storage.panama.NativeFunctions;
+import org.apache.sis.storage.gsf.panama.LibraryLoader;
+import org.apache.sis.storage.gsf.panama.LibraryStatus;
+import org.apache.sis.storage.gsf.panama.NativeFunctions;
 import org.apache.sis.util.logging.Logging;
 
 /**
@@ -680,11 +679,13 @@ public class GSF extends NativeFunctions {
 
     /**
      * Creates the handles for all <abbr>GSF</abbr> functions which will be needed.
+     * This constructor is public for {@link LibraryLoader} purpose only.
+     * <strong>Do not use.</strong>
      *
      * @param  loader  the object used for loading the library.
      * @throws NoSuchElementException if a <abbr>GSF</abbr> function has not been found in the library.
      */
-    private GSF(final LibraryLoader<GSF> loader) {
+    public GSF(final LibraryLoader loader) {
         super(loader);
 
         final FunctionDescriptor p = FunctionDescriptor.of(GSF.C_POINTER);
@@ -727,10 +728,6 @@ public class GSF extends NativeFunctions {
         gsfStat                                 = lookup("gsfStat",                                 i_p_p);
         gsfGetPositionDestination               = lookup("gsfGetPositionDestination",               FunctionDescriptor.of(GSF.C_POINTER, Position.LAYOUT, PositionOffsets.LAYOUT, GSF.C_DOUBLE, GSF.C_DOUBLE));
         gsfGetPositionOffsets                   = lookup("gsfGetPositionOffsets",                   FunctionDescriptor.of(GSF.C_POINTER, Position.LAYOUT, Position.LAYOUT, GSF.C_DOUBLE, GSF.C_DOUBLE));
-    }
-
-    public Arena getArena() {
-        return arena();
     }
 
     public int open(MemorySegment filename, int mode, MemorySegment handle) throws Throwable {
@@ -883,7 +880,7 @@ public class GSF extends NativeFunctions {
     /**
      * Raise an exception if code is an error code.
      */
-    public void catchError(int error) throws GSFException {
+    public static void catchError(int error) throws GSFException {
         if (error == 0) return;
         String message = ERRORCODES.get(error);
         if (message == null) message = "UNKNOWN ERROR CODE";
@@ -899,13 +896,13 @@ public class GSF extends NativeFunctions {
      *         In such case, the caller must be synchronized and {@link #global} must be initially null.
      * @return the library loader for <abbr>GSF</abbr>.
      */
-    private static LibraryLoader<GSF> load(final boolean now) {
-        final var loader = new LibraryLoader<>(GSF::new);
+    private static LibraryLoader load(final boolean now) {
+        final var loader = new LibraryLoader();
         if (now) {
             try {
-                global = loader.global("gsf");
+                global = loader.global();
             } finally {
-                globalStatus = loader.status();
+                globalStatus = loader.status;
             }
             if (global != null) {
                 if (GSFStoreProvider.LOGGER.isLoggable(Level.CONFIG)) {
@@ -945,9 +942,11 @@ public class GSF extends NativeFunctions {
      */
     static synchronized GSF global() throws DataStoreException {
         if (globalStatus == null) {
-            load(true).validate(GSFStoreProvider.NAME);
+            load(true).validate();
         }
-        globalStatus.report(GSFStoreProvider.NAME, null);
+        if (globalStatus != LibraryStatus.LOADED) {
+            throw new DataStoreException("GSF not loaded.");
+        }
         return global;
     }
 
@@ -959,7 +958,7 @@ public class GSF extends NativeFunctions {
      */
     static synchronized Optional<GSF> tryGlobal(final String caller) {
         if (globalStatus == null) {
-            load(true).getError(GSFStoreProvider.NAME).ifPresent((record) -> log(caller, record));
+            load(true).getError().ifPresent((record) -> log(caller, record));
         }
         return Optional.ofNullable(global);
     }
@@ -973,5 +972,4 @@ public class GSF extends NativeFunctions {
     private static void log(final String caller, final LogRecord record) {
         Logging.completeAndLog(GSFStoreProvider.LOGGER, GSFStoreProvider.class, caller, record);
     }
-
 }

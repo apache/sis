@@ -14,17 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.gsf.panama;
+
 
 /**
- * LibGSF Panama binding.
+ * Status of the native library.
  *
- * @author Johann Sorel (Geomatys)
+ * @see org.apache.sis.storage.panama.LibraryStatus
  */
-module org.apache.sis.storage.gsf {
-    // Dependencies used in public API.
-    requires transitive org.apache.sis.referencing;
-    requires transitive org.apache.sis.storage;
+public enum LibraryStatus {
+    /**
+     * The native library is ready for use.
+     */
+    LOADED,
 
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.gsf.GSFStoreProvider;
+    /**
+     * The native library has not been found or cannot be loaded. Note: this is a merge of
+     * {@link org.apache.sis.storage.panama.LibraryStatus#LIBRARY_NOT_FOUND} and
+     * {@link org.apache.sis.storage.panama.LibraryStatus#UNAUTHORIZED}.
+     */
+    CANNOT_LOAD_LIBRARY,
+
+    /**
+     * The native library was found, but not symbol that we searched.
+     */
+    FUNCTION_NOT_FOUND
 }

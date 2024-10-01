@@ -29,7 +29,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.URIDataStoreProvider;
-import org.apache.sis.storage.panama.LibraryStatus;
+import org.apache.sis.storage.gsf.panama.LibraryStatus;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.system.Cleaners;
@@ -114,7 +114,9 @@ public class GSFStoreProvider extends DataStoreProvider {
         if (status == null) {
             return GSF.global();        // Fetch each time (no cache) because may have changed outside this class.
         }
-        status.report(NAME, null);      // Should never return if `nativeFunctions` is null.
+        if (status != LibraryStatus.LOADED) {
+            throw new DataStoreException("GSF not loaded.");
+        }
         return nativeFunctions;
     }
 
