@@ -30,8 +30,11 @@
  * If a different <abbr>GDAL</abbr> library is desired, it can be specified explicitly
  * to the {@link org.apache.sis.storage.gdal.GDALStoreProvider} constructor.</p>
  *
- * <p>The current implementation can read rasters.
- * Write operations and support of vector data will be provided in a future version.</p>
+ * <h2>Limitations</h2>
+ * The current implementation can only read two-dimensional rasters.
+ * It does not yet support vector data, cannot write any data,
+ * and does not yet use the multi-dimensional <abbr>API</abbr> of <abbr>GDAL</abbr>.
+ * Those operations will be added progressively in future versions of this module.
  *
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

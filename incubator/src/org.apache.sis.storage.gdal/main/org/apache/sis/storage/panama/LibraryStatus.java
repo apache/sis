@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.panama;
 
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 
 
@@ -72,13 +73,17 @@ public enum LibraryStatus {
      *
      * @param  library  the library name, of formatting the error message.
      * @param  cause    the cause of the error, or {@code null} if none.
-     * @throws DataStoreClosedException if this enumeration value is not {@link #LOADED}
-     *         or if the given cause is not null.
+     * @throws DataStoreException if this enumeration value is not {@link #LOADED} or if the given cause is not null.
      */
-    public void report(String library, Exception cause) throws DataStoreClosedException {
+    public void report(String library, Exception cause) throws DataStoreException {
         if (message != 0 || cause != null) {
             // Note: `NativeAccessNotAllowed` will ignore the `library` argument.
-            throw new DataStoreClosedException(Resources.format(message, library), cause);
+            String text = Resources.format(message, library);
+            if (cause != null) {
+                throw new DataStoreException(text, cause);
+            } else {
+                throw new DataStoreClosedException(text);
+            }
         }
     }
 }
