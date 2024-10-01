@@ -30,7 +30,7 @@ public final class TAIClockInfo extends FullBox {
 
     public static final String FCC = "taic";
 
-    public long timeUncertainty;
+    public int timeUncertainty;
     public int clockResolution;
     public int clockDriftRate;
     public int unknown;
@@ -38,7 +38,7 @@ public final class TAIClockInfo extends FullBox {
 
     @Override
     protected void readProperties(ISOBMFFReader reader) throws IOException {
-        timeUncertainty = reader.channel.readLong();
+        timeUncertainty = reader.channel.readInt();
         clockResolution = reader.channel.readInt();
         clockDriftRate = reader.channel.readInt();
         unknown = reader.channel.readInt();

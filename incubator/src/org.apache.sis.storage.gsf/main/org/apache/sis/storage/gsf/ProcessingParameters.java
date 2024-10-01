@@ -30,7 +30,7 @@ public final class ProcessingParameters extends StructClass {
     private static final OfInt LAYOUT_NUMBER_PARAMETERS;
     private static final SequenceLayout LAYOUT_PARAM_SIZE;
     private static final SequenceLayout LAYOUT_PARAM;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_PARAM_TIME = TimeSpec.LAYOUT.withName("param_time"),
         LAYOUT_NUMBER_PARAMETERS = GSF.C_INT.withName("number_parameters"),
         LAYOUT_PARAM_SIZE = MemoryLayout.sequenceLayout(128, GSF.C_SHORT).withName("param_size"),
@@ -38,12 +38,8 @@ public final class ProcessingParameters extends StructClass {
         LAYOUT_PARAM = MemoryLayout.sequenceLayout(128, GSF.C_POINTER).withName("param")
     ).withName("t_gsfProcessingParameters");
 
-    public ProcessingParameters(MemorySegment struct) {
+    ProcessingParameters(MemorySegment struct) {
         super(struct);
-    }
-
-    public ProcessingParameters(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override

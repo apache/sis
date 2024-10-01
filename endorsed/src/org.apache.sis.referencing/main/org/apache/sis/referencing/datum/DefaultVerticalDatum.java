@@ -282,8 +282,11 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
          * Creates a dynamic reference frame from the given properties.
          * See super-class constructor for more information.
          *
-         * @param  properties     the properties to be given to the identified object.
-         * @param  epoch          the epoch to which the definition of the dynamic reference frame is referenced.
+         * @param  properties  the properties to be given to the identified object.
+         * @param  method      the realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
+         * @param  epoch       the epoch to which the definition of the dynamic reference frame is referenced.
+         *
+         * @since 2.0 (temporary version number until this branch is released)
          */
         public Dynamic(Map<String,?> properties, RealizationMethod method, Temporal epoch) {
             super(properties, method);
@@ -309,8 +312,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         /**
          * Creates a new datum with the same values as the specified datum, which must be dynamic.
          *
-         * @param  datum   the datum to copy.
-         * @param  method  the realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
+         * @param  datum  the datum to copy.
          * @throws ClassCastException if the given datum is not an instance of {@link DynamicReferenceFrame}.
          *
          * @see #castOrCopy(VerticalDatum)

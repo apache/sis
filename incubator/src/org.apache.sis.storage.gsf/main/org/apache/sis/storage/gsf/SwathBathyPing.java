@@ -77,7 +77,7 @@ public final class SwathBathyPing extends StructClass {
     private static final OfInt LAYOUT_SENSOR_ID;
     private static final GroupLayout LAYOUT_SENSOR_DATA;
     private static final AddressLayout LAYOUT_BRB_INTEN;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_PING_TIME = TimeSpec.LAYOUT.withName("ping_time"),
         LAYOUT_LATITUDE = GSF.C_DOUBLE.withName("latitude"),
         LAYOUT_LONGITUDE = GSF.C_DOUBLE.withName("longitude"),
@@ -132,12 +132,8 @@ public final class SwathBathyPing extends StructClass {
         LAYOUT_BRB_INTEN = GSF.C_POINTER.withName("brb_inten")
     ).withName("t_gsfSwathBathyPing");
 
-    public SwathBathyPing(MemorySegment struct) {
+    SwathBathyPing(MemorySegment struct) {
         super(struct);
-    }
-
-    public SwathBathyPing(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override

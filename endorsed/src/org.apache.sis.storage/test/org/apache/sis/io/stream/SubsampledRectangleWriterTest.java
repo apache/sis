@@ -85,7 +85,7 @@ public final class SubsampledRectangleWriterTest extends TestCase {
         final int    length = width * height;
         final long[] lower  = new long[2];
         final long[] upper  = new long[] {width, height};
-        final int[]  subsm  = new int[]  {1,1};
+        final long[] subsm  = new long[] {1,1};
         final A source = creator.apply(length);
         for (int i=0; i<length; i++) {
             Array.setByte(source, i, (byte) (BASE + i));

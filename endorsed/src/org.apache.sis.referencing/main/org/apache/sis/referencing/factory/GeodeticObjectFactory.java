@@ -69,9 +69,7 @@ import org.opengis.referencing.datum.DynamicReferenceFrame;
 
 
 /**
- * Creates {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) implementations,
- * with their {@linkplain org.apache.sis.referencing.cs.AbstractCS Coordinate System} (CS)
- * and {@linkplain org.apache.sis.referencing.datum.AbstractDatum Datum} components.
+ * Creates Coordinate Reference System (CRS) implementations, with their Coordinate System (CS) and Datum components.
  * This factory serves two purposes:
  *
  * <ul>

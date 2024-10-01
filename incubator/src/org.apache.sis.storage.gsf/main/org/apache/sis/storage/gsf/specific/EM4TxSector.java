@@ -29,7 +29,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class EM4TxSector extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_DOUBLE.withName("tilt_angle"),
         GSF.C_DOUBLE.withName("focus_range"),
@@ -47,10 +46,6 @@ public final class EM4TxSector extends StructClass {
         super(struct);
     }
 
-    public EM4TxSector(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -58,27 +53,7 @@ public final class EM4TxSector extends StructClass {
 
     private static final OfDouble tilt_angleLAYOUT = (OfDouble)LAYOUT.select(groupElement("tilt_angle"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double tilt_angle
-     * }
-     */
-    public static final OfDouble tilt_angleLAYOUT() {
-        return tilt_angleLAYOUT;
-    }
-
     private static final long tilt_angle$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double tilt_angle
-     * }
-     */
-    public static final long tilt_angle$offset() {
-        return tilt_angle$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -86,7 +61,7 @@ public final class EM4TxSector extends StructClass {
      * double tilt_angle
      * }
      */
-    public static double tilt_angle(MemorySegment struct) {
+    public double tilt_angle() {
         return struct.get(tilt_angleLAYOUT, tilt_angle$OFFSET);
     }
 
@@ -96,33 +71,13 @@ public final class EM4TxSector extends StructClass {
      * double tilt_angle
      * }
      */
-    public static void tilt_angle(MemorySegment struct, double fieldValue) {
+    public void tilt_angle(double fieldValue) {
         struct.set(tilt_angleLAYOUT, tilt_angle$OFFSET, fieldValue);
     }
 
     private static final OfDouble focus_rangeLAYOUT = (OfDouble)LAYOUT.select(groupElement("focus_range"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double focus_range
-     * }
-     */
-    public static final OfDouble focus_rangeLAYOUT() {
-        return focus_rangeLAYOUT;
-    }
-
     private static final long focus_range$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double focus_range
-     * }
-     */
-    public static final long focus_range$offset() {
-        return focus_range$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -130,7 +85,7 @@ public final class EM4TxSector extends StructClass {
      * double focus_range
      * }
      */
-    public static double focus_range(MemorySegment struct) {
+    public double focus_range() {
         return struct.get(focus_rangeLAYOUT, focus_range$OFFSET);
     }
 
@@ -140,33 +95,13 @@ public final class EM4TxSector extends StructClass {
      * double focus_range
      * }
      */
-    public static void focus_range(MemorySegment struct, double fieldValue) {
+    public void focus_range(double fieldValue) {
         struct.set(focus_rangeLAYOUT, focus_range$OFFSET, fieldValue);
     }
 
     private static final OfDouble signal_lengthLAYOUT = (OfDouble)LAYOUT.select(groupElement("signal_length"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double signal_length
-     * }
-     */
-    public static final OfDouble signal_lengthLAYOUT() {
-        return signal_lengthLAYOUT;
-    }
-
     private static final long signal_length$OFFSET = 16;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double signal_length
-     * }
-     */
-    public static final long signal_length$offset() {
-        return signal_length$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -174,7 +109,7 @@ public final class EM4TxSector extends StructClass {
      * double signal_length
      * }
      */
-    public static double signal_length(MemorySegment struct) {
+    public double signal_length() {
         return struct.get(signal_lengthLAYOUT, signal_length$OFFSET);
     }
 
@@ -184,33 +119,13 @@ public final class EM4TxSector extends StructClass {
      * double signal_length
      * }
      */
-    public static void signal_length(MemorySegment struct, double fieldValue) {
+    public void signal_length(double fieldValue) {
         struct.set(signal_lengthLAYOUT, signal_length$OFFSET, fieldValue);
     }
 
     private static final OfDouble transmit_delayLAYOUT = (OfDouble)LAYOUT.select(groupElement("transmit_delay"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double transmit_delay
-     * }
-     */
-    public static final OfDouble transmit_delayLAYOUT() {
-        return transmit_delayLAYOUT;
-    }
-
     private static final long transmit_delay$OFFSET = 24;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double transmit_delay
-     * }
-     */
-    public static final long transmit_delay$offset() {
-        return transmit_delay$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -218,7 +133,7 @@ public final class EM4TxSector extends StructClass {
      * double transmit_delay
      * }
      */
-    public static double transmit_delay(MemorySegment struct) {
+    public double transmit_delay() {
         return struct.get(transmit_delayLAYOUT, transmit_delay$OFFSET);
     }
 
@@ -228,33 +143,13 @@ public final class EM4TxSector extends StructClass {
      * double transmit_delay
      * }
      */
-    public static void transmit_delay(MemorySegment struct, double fieldValue) {
+    public void transmit_delay(double fieldValue) {
         struct.set(transmit_delayLAYOUT, transmit_delay$OFFSET, fieldValue);
     }
 
     private static final OfDouble center_frequencyLAYOUT = (OfDouble)LAYOUT.select(groupElement("center_frequency"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double center_frequency
-     * }
-     */
-    public static final OfDouble center_frequencyLAYOUT() {
-        return center_frequencyLAYOUT;
-    }
-
     private static final long center_frequency$OFFSET = 32;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double center_frequency
-     * }
-     */
-    public static final long center_frequency$offset() {
-        return center_frequency$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -262,7 +157,7 @@ public final class EM4TxSector extends StructClass {
      * double center_frequency
      * }
      */
-    public static double center_frequency(MemorySegment struct) {
+    public double center_frequency() {
         return struct.get(center_frequencyLAYOUT, center_frequency$OFFSET);
     }
 
@@ -272,33 +167,13 @@ public final class EM4TxSector extends StructClass {
      * double center_frequency
      * }
      */
-    public static void center_frequency(MemorySegment struct, double fieldValue) {
+    public void center_frequency(double fieldValue) {
         struct.set(center_frequencyLAYOUT, center_frequency$OFFSET, fieldValue);
     }
 
     private static final OfDouble mean_absorptionLAYOUT = (OfDouble)LAYOUT.select(groupElement("mean_absorption"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double mean_absorption
-     * }
-     */
-    public static final OfDouble mean_absorptionLAYOUT() {
-        return mean_absorptionLAYOUT;
-    }
-
     private static final long mean_absorption$OFFSET = 40;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double mean_absorption
-     * }
-     */
-    public static final long mean_absorption$offset() {
-        return mean_absorption$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -306,7 +181,7 @@ public final class EM4TxSector extends StructClass {
      * double mean_absorption
      * }
      */
-    public static double mean_absorption(MemorySegment struct) {
+    public double mean_absorption() {
         return struct.get(mean_absorptionLAYOUT, mean_absorption$OFFSET);
     }
 
@@ -316,33 +191,13 @@ public final class EM4TxSector extends StructClass {
      * double mean_absorption
      * }
      */
-    public static void mean_absorption(MemorySegment struct, double fieldValue) {
+    public void mean_absorption(double fieldValue) {
         struct.set(mean_absorptionLAYOUT, mean_absorption$OFFSET, fieldValue);
     }
 
     private static final OfInt waveform_idLAYOUT = (OfInt)LAYOUT.select(groupElement("waveform_id"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int waveform_id
-     * }
-     */
-    public static final OfInt waveform_idLAYOUT() {
-        return waveform_idLAYOUT;
-    }
-
     private static final long waveform_id$OFFSET = 48;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int waveform_id
-     * }
-     */
-    public static final long waveform_id$offset() {
-        return waveform_id$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -350,7 +205,7 @@ public final class EM4TxSector extends StructClass {
      * int waveform_id
      * }
      */
-    public static int waveform_id(MemorySegment struct) {
+    public int waveform_id() {
         return struct.get(waveform_idLAYOUT, waveform_id$OFFSET);
     }
 
@@ -360,33 +215,13 @@ public final class EM4TxSector extends StructClass {
      * int waveform_id
      * }
      */
-    public static void waveform_id(MemorySegment struct, int fieldValue) {
+    public void waveform_id(int fieldValue) {
         struct.set(waveform_idLAYOUT, waveform_id$OFFSET, fieldValue);
     }
 
     private static final OfInt sector_numberLAYOUT = (OfInt)LAYOUT.select(groupElement("sector_number"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int sector_number
-     * }
-     */
-    public static final OfInt sector_numberLAYOUT() {
-        return sector_numberLAYOUT;
-    }
-
     private static final long sector_number$OFFSET = 52;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int sector_number
-     * }
-     */
-    public static final long sector_number$offset() {
-        return sector_number$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -394,7 +229,7 @@ public final class EM4TxSector extends StructClass {
      * int sector_number
      * }
      */
-    public static int sector_number(MemorySegment struct) {
+    public int sector_number() {
         return struct.get(sector_numberLAYOUT, sector_number$OFFSET);
     }
 
@@ -404,33 +239,13 @@ public final class EM4TxSector extends StructClass {
      * int sector_number
      * }
      */
-    public static void sector_number(MemorySegment struct, int fieldValue) {
+    public void sector_number(int fieldValue) {
         struct.set(sector_numberLAYOUT, sector_number$OFFSET, fieldValue);
     }
 
     private static final OfDouble signal_bandwidthLAYOUT = (OfDouble)LAYOUT.select(groupElement("signal_bandwidth"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * double signal_bandwidth
-     * }
-     */
-    public static final OfDouble signal_bandwidthLAYOUT() {
-        return signal_bandwidthLAYOUT;
-    }
-
     private static final long signal_bandwidth$OFFSET = 56;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * double signal_bandwidth
-     * }
-     */
-    public static final long signal_bandwidth$offset() {
-        return signal_bandwidth$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -438,7 +253,7 @@ public final class EM4TxSector extends StructClass {
      * double signal_bandwidth
      * }
      */
-    public static double signal_bandwidth(MemorySegment struct) {
+    public double signal_bandwidth() {
         return struct.get(signal_bandwidthLAYOUT, signal_bandwidth$OFFSET);
     }
 
@@ -448,33 +263,13 @@ public final class EM4TxSector extends StructClass {
      * double signal_bandwidth
      * }
      */
-    public static void signal_bandwidth(MemorySegment struct, double fieldValue) {
+    public void signal_bandwidth(double fieldValue) {
         struct.set(signal_bandwidthLAYOUT, signal_bandwidth$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char spare[16]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 64;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char spare[16]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -482,7 +277,7 @@ public final class EM4TxSector extends StructClass {
      * unsigned char spare[16]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -492,21 +287,10 @@ public final class EM4TxSector extends StructClass {
      * unsigned char spare[16]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 16 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned char spare[16]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -515,7 +299,7 @@ public final class EM4TxSector extends StructClass {
      * unsigned char spare[16]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -525,9 +309,7 @@ public final class EM4TxSector extends StructClass {
      * unsigned char spare[16]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

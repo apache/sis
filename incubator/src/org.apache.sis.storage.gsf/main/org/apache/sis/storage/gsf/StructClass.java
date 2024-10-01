@@ -43,19 +43,15 @@ public abstract class StructClass {
 
     protected final MemorySegment struct;
 
-    public StructClass(MemorySegment struct) {
+    protected StructClass(MemorySegment struct) {
         this.struct = struct;
     }
 
-    public StructClass(SegmentAllocator allocator) {
+    protected StructClass(SegmentAllocator allocator) {
         this.struct = allocator.allocate(getLayout());
     }
 
     protected abstract MemoryLayout getLayout();
-
-    public MemorySegment getMemorySegment() {
-        return struct;
-    }
 
     @Override
     public String toString() {
@@ -105,11 +101,11 @@ public abstract class StructClass {
         return sb.toString();
     }
 
-    protected byte[] getBytes(int offset, int nb) {
+    protected final byte[] getBytes(int offset, int nb) {
         return getBytes(struct, offset, nb);
     }
 
-    protected static byte[] getBytes(MemorySegment segment, int offset, int nb) {
+    static byte[] getBytes(MemorySegment segment, int offset, int nb) {
         if (segment.address() == 0L) return null; //C null adress
         final ByteBuffer db = segment.asSlice(offset, nb).asByteBuffer();
         final byte[] dst = new byte[nb];
@@ -117,11 +113,11 @@ public abstract class StructClass {
         return dst;
     }
 
-    protected short[] getShorts(int offset, int nb) {
+    protected final short[] getShorts(int offset, int nb) {
         return getShorts(struct, offset, nb);
     }
 
-    protected static short[] getShorts(MemorySegment segment, int offset, int nb) {
+    static short[] getShorts(MemorySegment segment, int offset, int nb) {
         if (segment.address() == 0L) return null; //C null adress
         final ShortBuffer db = segment.asSlice(offset, nb*2).asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
         final short[] dst = new short[nb];
@@ -129,11 +125,11 @@ public abstract class StructClass {
         return dst;
     }
 
-    protected int[] getInts(int offset, int nb) {
+    protected final int[] getInts(int offset, int nb) {
         return getInts(struct, offset, nb);
     }
 
-    protected static int[] getInts(MemorySegment segment, int offset, int nb) {
+    static int[] getInts(MemorySegment segment, int offset, int nb) {
         if (segment.address() == 0L) return null; //C null adress
         final IntBuffer db = segment.asSlice(offset, nb*2).asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).asIntBuffer();
         final int[] dst = new int[nb];
@@ -141,11 +137,11 @@ public abstract class StructClass {
         return dst;
     }
 
-    protected long[] getLongs(int offset, int nb) {
+    protected final long[] getLongs(int offset, int nb) {
         return getLongs(struct, offset, nb);
     }
 
-    protected static long[] getLongs(MemorySegment segment, int offset, int nb) {
+    static long[] getLongs(MemorySegment segment, int offset, int nb) {
         if (segment.address() == 0L) return null; //C null adress
         final LongBuffer db = segment.asSlice(offset, nb*2).asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).asLongBuffer();
         final long[] dst = new long[nb];
@@ -153,11 +149,11 @@ public abstract class StructClass {
         return dst;
     }
 
-    protected double[] getDoubles(int offset, int nb) {
+    protected final double[] getDoubles(int offset, int nb) {
         return getDoubles(struct, offset, nb);
     }
 
-    protected static double[] getDoubles(MemorySegment segment, int offset, int nb) {
+    static double[] getDoubles(MemorySegment segment, int offset, int nb) {
         if (segment.address() == 0L) return null; //C null adress
         final DoubleBuffer db = segment.asSlice(offset, nb*8).asByteBuffer().order(ByteOrder.LITTLE_ENDIAN).asDoubleBuffer();
         final double[] dst = new double[nb];
@@ -165,7 +161,7 @@ public abstract class StructClass {
         return dst;
     }
 
-    protected <T extends StructClass> T[] getObjects(int offset, int nb, Class<T> clazz) {
+    final <T extends StructClass> T[] getObjects(int offset, int nb, Class<T> clazz) {
         try {
             final Constructor<T> constructor = clazz.getConstructor(MemorySegment.class);
             final GroupLayout layout = (GroupLayout) clazz.getDeclaredField("LAYOUT").get(null);
@@ -192,7 +188,7 @@ public abstract class StructClass {
      * @param  objects The objects to format as root children.
      * @return A string representation of the tree.
      */
-    protected static String toStringTree(String root, final Iterable<?> objects) {
+    static String toStringTree(String root, final Iterable<?> objects) {
         final StringBuilder sb = new StringBuilder();
         if (root != null) {
             sb.append(root);

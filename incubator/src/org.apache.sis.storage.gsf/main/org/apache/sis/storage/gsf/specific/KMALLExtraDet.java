@@ -29,7 +29,6 @@ import org.apache.sis.storage.gsf.StructClass;
  * @author Johann Sorel (Geomatys)
  */
 public final class KMALLExtraDet extends StructClass {
-
     public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         GSF.C_INT.withName("numExtraDetInClass"),
         GSF.C_INT.withName("alarmFlag"),
@@ -40,10 +39,6 @@ public final class KMALLExtraDet extends StructClass {
         super(struct);
     }
 
-    public KMALLExtraDet(SegmentAllocator allocator) {
-        super(allocator);
-    }
-
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
@@ -51,27 +46,7 @@ public final class KMALLExtraDet extends StructClass {
 
     private static final OfInt numExtraDetInClassLAYOUT = (OfInt)LAYOUT.select(groupElement("numExtraDetInClass"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int numExtraDetInClass
-     * }
-     */
-    public static final OfInt numExtraDetInClassLAYOUT() {
-        return numExtraDetInClassLAYOUT;
-    }
-
     private static final long numExtraDetInClass$OFFSET = 0;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int numExtraDetInClass
-     * }
-     */
-    public static final long numExtraDetInClass$offset() {
-        return numExtraDetInClass$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -79,7 +54,7 @@ public final class KMALLExtraDet extends StructClass {
      * int numExtraDetInClass
      * }
      */
-    public static int numExtraDetInClass(MemorySegment struct) {
+    public int numExtraDetInClass() {
         return struct.get(numExtraDetInClassLAYOUT, numExtraDetInClass$OFFSET);
     }
 
@@ -89,33 +64,13 @@ public final class KMALLExtraDet extends StructClass {
      * int numExtraDetInClass
      * }
      */
-    public static void numExtraDetInClass(MemorySegment struct, int fieldValue) {
+    public void numExtraDetInClass(int fieldValue) {
         struct.set(numExtraDetInClassLAYOUT, numExtraDetInClass$OFFSET, fieldValue);
     }
 
     private static final OfInt alarmFlagLAYOUT = (OfInt)LAYOUT.select(groupElement("alarmFlag"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * int alarmFlag
-     * }
-     */
-    public static final OfInt alarmFlagLAYOUT() {
-        return alarmFlagLAYOUT;
-    }
-
     private static final long alarmFlag$OFFSET = 4;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * int alarmFlag
-     * }
-     */
-    public static final long alarmFlag$offset() {
-        return alarmFlag$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -123,7 +78,7 @@ public final class KMALLExtraDet extends StructClass {
      * int alarmFlag
      * }
      */
-    public static int alarmFlag(MemorySegment struct) {
+    public int alarmFlag() {
         return struct.get(alarmFlagLAYOUT, alarmFlag$OFFSET);
     }
 
@@ -133,33 +88,13 @@ public final class KMALLExtraDet extends StructClass {
      * int alarmFlag
      * }
      */
-    public static void alarmFlag(MemorySegment struct, int fieldValue) {
+    public void alarmFlag(int fieldValue) {
         struct.set(alarmFlagLAYOUT, alarmFlag$OFFSET, fieldValue);
     }
 
     private static final SequenceLayout spareLAYOUT = (SequenceLayout)LAYOUT.select(groupElement("spare"));
 
-    /**
-     * Layout for field:
-     * {@snippet lang=c :
-     * unsigned char spare[32]
-     * }
-     */
-    public static final SequenceLayout spareLAYOUT() {
-        return spareLAYOUT;
-    }
-
     private static final long spare$OFFSET = 8;
-
-    /**
-     * Offset for field:
-     * {@snippet lang=c :
-     * unsigned char spare[32]
-     * }
-     */
-    public static final long spare$offset() {
-        return spare$OFFSET;
-    }
 
     /**
      * Getter for field:
@@ -167,7 +102,7 @@ public final class KMALLExtraDet extends StructClass {
      * unsigned char spare[32]
      * }
      */
-    public static MemorySegment spare(MemorySegment struct) {
+    public MemorySegment spare() {
         return struct.asSlice(spare$OFFSET, spareLAYOUT.byteSize());
     }
 
@@ -177,21 +112,10 @@ public final class KMALLExtraDet extends StructClass {
      * unsigned char spare[32]
      * }
      */
-    public static void spare(MemorySegment struct, MemorySegment fieldValue) {
+    public void spare(MemorySegment fieldValue) {
         MemorySegment.copy(fieldValue, 0L, struct, spare$OFFSET, spareLAYOUT.byteSize());
     }
 
-    private static long[] spare$DIMS = { 32 };
-
-    /**
-     * Dimensions for array field:
-     * {@snippet lang=c :
-     * unsigned char spare[32]
-     * }
-     */
-    public static long[] spare$dimensions() {
-        return spare$DIMS;
-    }
     private static final VarHandle spare$ELEM_HANDLE = spareLAYOUT.varHandle(sequenceElement());
 
     /**
@@ -200,7 +124,7 @@ public final class KMALLExtraDet extends StructClass {
      * unsigned char spare[32]
      * }
      */
-    public static byte spare(MemorySegment struct, long index0) {
+    public byte spare(long index0) {
         return (byte)spare$ELEM_HANDLE.get(struct, 0L, index0);
     }
 
@@ -210,9 +134,7 @@ public final class KMALLExtraDet extends StructClass {
      * unsigned char spare[32]
      * }
      */
-    public static void spare(MemorySegment struct, long index0, byte fieldValue) {
+    public void spare(long index0, byte fieldValue) {
         spare$ELEM_HANDLE.set(struct, 0L, index0, fieldValue);
     }
-
 }
-

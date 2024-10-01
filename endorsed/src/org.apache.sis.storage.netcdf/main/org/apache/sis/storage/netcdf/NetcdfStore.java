@@ -48,6 +48,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -117,7 +118,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
             throw new DataStoreException(e);
         }
         if (decoder == null) {
-            throw new UnsupportedStorageException(super.getLocale(), NetcdfStoreProvider.NAME,
+            throw new UnsupportedStorageException(super.getLocale(), Constants.NETCDF,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         decoder.location = path;
@@ -217,7 +218,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     public Optional<TreeTable> getNativeMetadata() throws DataStoreException {
         final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
         final TreeTable.Node root = table.getRoot();
-        root.setValue(TableColumn.NAME, NetcdfStoreProvider.NAME);
+        root.setValue(TableColumn.NAME, Constants.NETCDF);
         decoder().addAttributesTo(root);
         return Optional.of(table);
     }
@@ -294,7 +295,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     private Decoder decoder() throws DataStoreClosedException {
         final Decoder reader = decoder;
         if (reader == null) {
-            throw new DataStoreClosedException(getLocale(), NetcdfStoreProvider.NAME, StandardOpenOption.READ);
+            throw new DataStoreClosedException(getLocale(), Constants.NETCDF, StandardOpenOption.READ);
         }
         return reader;
     }

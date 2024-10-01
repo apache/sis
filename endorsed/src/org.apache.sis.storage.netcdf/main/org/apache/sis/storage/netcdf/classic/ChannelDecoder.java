@@ -45,6 +45,7 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.netcdf.base.DataType;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Node;
@@ -262,8 +263,9 @@ public final class ChannelDecoder extends Decoder {
          * Read the dimension, attribute and variable declarations. We expect exactly 3 lists,
          * where any of them can be flagged as absent by a long (64 bits) 0.
          */
-        DimensionInfo[] dimensions = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         VariableInfo[]  variables  = null;
+        DimensionInfo[] dimensions = null;
         List<Map.Entry<String,Object>> attributes = List.of();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
@@ -592,6 +594,7 @@ public final class ChannelDecoder extends Decoder {
         if (allDimensions == null) {
             throw malformedHeader();        // May happen if readDimensions(…) has not been invoked.
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final VariableInfo[] variables = new VariableInfo[nelems];
         for (int j=0; j<nelems; j++) {
             final String name = readName();
@@ -675,14 +678,13 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns an identification of the file format. The returned value is a reference to a database entry
+     * Sets an identification of the file format. This method uses a reference to a database entry
      * known to {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.
-     *
-     * @return an identification of the file format in an array of length 1.
      */
     @Override
-    public String[] getFormatDescription() {
-        return new String[] {"NetCDF"};
+    public void addFormatDescription(MetadataBuilder builder) {
+        builder.setPredefinedFormat(Constants.NETCDF, null, true);
+        builder.addFormatReaderSIS(Constants.NETCDF);
     }
 
     /**
@@ -718,6 +720,7 @@ public final class ChannelDecoder extends Decoder {
      * @return dimension of the given name, or {@code null} if none.
      */
     @Override
+    @SuppressWarnings("StringEquality")
     protected Dimension findDimension(final String dimName) {
         DimensionInfo dim = dimensionMap.get(dimName);          // Give precedence to exact match before to ignore case.
         if (dim == null) {
@@ -735,6 +738,7 @@ public final class ChannelDecoder extends Decoder {
      * @param  name  the name of the variable to search, or {@code null}.
      * @return the variable of the given name, or {@code null} if none.
      */
+    @SuppressWarnings("StringEquality")
     private VariableInfo findVariableInfo(final String name) {
         VariableInfo v = variableMap.get(name);
         if (v == null && name != null) {
@@ -781,6 +785,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #getAttributeNames()
      */
+    @SuppressWarnings("StringEquality")
     private Object findAttribute(final String name) {
         if (name == null) {
             return null;
@@ -961,12 +966,11 @@ public final class ChannelDecoder extends Decoder {
              * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
              * more complicated netCDF files (e.g. using two-dimensional localisation grids) also exist.
              */
-            final Map<DimensionInfo, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
+            final var dimToAxes = new IdentityHashMap<DimensionInfo, Set<VariableInfo>>();
             for (final VariableInfo variable : variables) {
                 switch (variable.getRole()) {
                     case COVERAGE:
-                    case DISCRETE_COVERAGE:
-                    {
+                    case DISCRETE_COVERAGE: {
                         // If Convention.roleOf(…) overwrote the value computed by VariableInfo,
                         // remember the new value for avoiding to ask again in next loops.
                         variable.isCoordinateSystemAxis = false;
@@ -984,9 +988,9 @@ public final class ChannelDecoder extends Decoder {
              * For each variable, get its list of axes. More than one variable may have the same list of axes,
              * so we remember the previously created instances in order to share the grid geometry instances.
              */
-            final Set<VariableInfo> axes = new LinkedHashSet<>(8);
-            final Set<DimensionInfo> usedDimensions = new HashSet<>(8);
-            final Map<GridInfo,GridInfo> shared = new LinkedHashMap<>();
+            final var axes = new LinkedHashSet<VariableInfo>(8);
+            final var usedDimensions = new HashSet<DimensionInfo>(8);
+            final var shared = new LinkedHashMap<GridInfo,GridInfo>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis || variable.dimensions.length == 0) {
                     continue;
@@ -1011,7 +1015,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                 for (int i=variable.dimensions.length; --i >= 0;) {                     // Reverse of netCDF order.
                     final DimensionInfo dimension = variable.dimensions[i];
                     if (usedDimensions.add(dimension)) {
-                        final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
+                        final Set<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
                             continue nextVar;
                         }
@@ -1072,7 +1076,7 @@ nextVar:    for (final VariableInfo variable : variables) {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder();
+        final var buffer = new StringBuilder();
         buffer.append("SIS driver: “").append(getFilename()).append('”');
         if (!input.channel.isOpen()) {
             buffer.append(" (closed)");

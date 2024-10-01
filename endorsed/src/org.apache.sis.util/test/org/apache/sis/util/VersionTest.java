@@ -140,4 +140,13 @@ public final class VersionTest extends TestCase {
         final Version version = new Version("1.6.b2");
         assertNotSame(version, assertSerializedEquals(version));
     }
+
+    /**
+     * Tests {@link Version#ofLibrary(Class)}.
+     */
+    @Test
+    public void testOfLibrary() {
+        Version version = Version.ofLibrary(javax.measure.Unit.class).orElseThrow();
+        assertEquals(Version.valueOf(2, 1, 3), version);
+    }
 }

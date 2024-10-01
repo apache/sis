@@ -36,7 +36,6 @@ import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.multiplyFull;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
@@ -53,20 +52,6 @@ import static org.apache.sis.util.privy.Numerics.COMPARISON_THRESHOLD;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class ImageUtilities extends Static {
-    /**
-     * Default width and height of tiles, in pixels.
-     */
-    @Configuration
-    public static final int DEFAULT_TILE_SIZE = 256;
-
-    /**
-     * Suggested size for a tile cache in number of tiles. This value can be used for very simple caching mechanism,
-     * keeping the most recently used tiles up to 10 Mb of memory. This is not for sophisticated caching mechanism;
-     * instead the "real" caching should be done by {@link org.apache.sis.image.ComputedImage}.
-     */
-    @Configuration
-    public static final int SUGGESTED_TILE_CACHE_SIZE = 10 * (1024 * 1024) / (DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE);
-
     /**
      * The logger for operations on images and rasters.
      */
@@ -149,7 +134,7 @@ public final class ImageUtilities extends Static {
 
     /**
      * If the given image is showing only one band, returns the index of that band.
-     * Otherwise returns -1. Image showing only one band are SIS-specific
+     * Otherwise, returns -1. Images showing only one band are SIS-specific
      * (usually an image shows all its bands).
      *
      * @param  image  the image for which to get the visible band, or {@code null}.
@@ -173,6 +158,21 @@ public final class ImageUtilities extends Static {
             }
         }
         return -1;
+    }
+
+    /**
+     * Returns the index of the band shown by the given color model.
+     * This is zero for standard color models, but <abbr>SIS</abbr>
+     * sometime allows color models to show another band.
+     *
+     * @param  cm  the color model for which to get the visible band.
+     * @return index of the visible band.
+     */
+    public static int getVisibleBand(final IndexColorModel cm) {
+        if (cm instanceof MultiBandsIndexColorModel) {
+            return ((MultiBandsIndexColorModel) cm).visibleBand;
+        }
+        return 0;
     }
 
     /**
@@ -570,7 +570,7 @@ public final class ImageUtilities extends Static {
      * <h4>Implementation note</h4>
      * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
-     * The intend is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.
+     * The intent is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.
      *
      * @param  image   the image containing tiles.
      * @param  pixels  the pixel coordinates for which to get tile indices.
@@ -604,7 +604,7 @@ public final class ImageUtilities extends Static {
      * <h4>Implementation note</h4>
      * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
-     * The intend is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.
+     * The intent is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.
      *
      * @param  image  the image containing tiles.
      * @param  tiles  the tile indices for which to get pixel coordinates.

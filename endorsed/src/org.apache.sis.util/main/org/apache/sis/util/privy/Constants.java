@@ -134,6 +134,17 @@ public final class Constants extends Static {
     public static final String SIS = "SIS";
 
     /**
+     * The {@value} code space.
+     */
+    public static final String GDAL = "GDAL";
+
+    /**
+     * The {@value} code space. Uses upper case "N" in the assumption that this name is used
+     * in the beginning of sentences. Otherwise, the <abbr>UCAR</abbr> usage is "netCDF".
+     */
+    public static final String NETCDF = "NetCDF";
+
+    /**
      * The {@value} code space. The project name is {@code "Proj.4"}, but this constant omits
      * the dot because this name is used as a code space and we want to avoid risk of confusion.
      * We use "Proj4" instead of "PROJ" for historical reasons, because we use this identifier

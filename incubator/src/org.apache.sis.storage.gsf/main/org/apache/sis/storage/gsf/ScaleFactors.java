@@ -28,19 +28,15 @@ public final class ScaleFactors extends StructClass{
 
     private static final OfInt LAYOUT_NUMARRAYSUBRECORDS;
     private static final SequenceLayout LAYOUT_SCALETABLE;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_NUMARRAYSUBRECORDS = GSF.C_INT.withName("numArraySubrecords"),
         MemoryLayout.paddingLayout(4),
         LAYOUT_SCALETABLE = MemoryLayout.sequenceLayout(30, ScaleInfo.LAYOUT).withName("scaleTable")
     ).withName("t_gsfScaleFactors");
 
 
-    public ScaleFactors(MemorySegment struct) {
+    ScaleFactors(MemorySegment struct) {
         super(struct);
-    }
-
-    public ScaleFactors(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -67,6 +63,4 @@ public final class ScaleFactors extends StructClass{
     public ScaleInfo[] getScaleTables() {
         return getObjects(8, 30, ScaleInfo.class);
     }
-
 }
-

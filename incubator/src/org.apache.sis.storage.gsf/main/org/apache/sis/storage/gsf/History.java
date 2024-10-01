@@ -30,7 +30,7 @@ public final class History extends StructClass {
     private static final SequenceLayout LAYOUT_OPERATOR_NAME;
     private static final AddressLayout LAYOUT_COMMAND_LINE;
     private static final AddressLayout LAYOUT_COMMENT;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_HISTORY_TIME = TimeSpec.LAYOUT.withName("history_time"),
         LAYOUT_HOST_NAME = MemoryLayout.sequenceLayout(65, GSF.C_CHAR).withName("host_name"),
         LAYOUT_OPERATOR_NAME = MemoryLayout.sequenceLayout(65, GSF.C_CHAR).withName("operator_name"),
@@ -39,12 +39,8 @@ public final class History extends StructClass {
         LAYOUT_COMMENT = GSF.C_POINTER.withName("comment")
     ).withName("t_gsfHistory");
 
-    public History(MemorySegment struct) {
+    History(MemorySegment struct) {
         super(struct);
-    }
-
-    public History(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -101,6 +97,4 @@ public final class History extends StructClass {
     public MemorySegment comment(MemorySegment struct) {
         return struct.get(LAYOUT_COMMENT, 160);
     }
-
 }
-

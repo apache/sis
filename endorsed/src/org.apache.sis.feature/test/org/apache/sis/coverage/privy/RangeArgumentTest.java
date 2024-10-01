@@ -77,7 +77,7 @@ public final class RangeArgumentTest extends TestCase implements Localized {
     public void testRangeArgumentForInterleavedModel() {
         final RangeArgument r = RangeArgument.validate(7, new int[] {4, 6, 2}, this);
         assertEquals(3, r.insertBandDimension(new GridExtent(360, 180), 2).getDimension());
-        assertArrayEquals(new int[] {3, 1, 2}, r.insertSubsampling(new int[] {3, 1}, 2));
+        assertArrayEquals(new long[] {3, 1, 2}, r.insertSubsampling(new long[] {3, 1}, 2));
         assertEquals(3, r.getNumBands());
         assertEquals(4, r.getFirstSpecified());
         assertEquals(2, r.getSourceIndex(0));           // Expect sorted source indices: {2, 4, 6}.

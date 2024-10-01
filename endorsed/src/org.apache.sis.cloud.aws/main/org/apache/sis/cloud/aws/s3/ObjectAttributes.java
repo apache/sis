@@ -28,7 +28,6 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.core.exception.SdkException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.cloud.aws.internal.Resources;
 
 
 /**

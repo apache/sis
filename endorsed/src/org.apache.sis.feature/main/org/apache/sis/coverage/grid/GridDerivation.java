@@ -65,7 +65,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * <ol>
  *   <li>{@link #rounding(GridRoundingMode)}, {@link #margin(int...)} and/or {@link #chunkSize(int...)} in any order</li>
- *   <li>{@link #subgrid(GridGeometry)}, {@link #subgrid(Envelope, double...)} or {@link #subgrid(GridExtent, int...)}</li>
+ *   <li>{@link #subgrid(GridGeometry)}, {@link #subgrid(Envelope, double...)} or {@link #subgrid(GridExtent, long...)}</li>
  *   <li>{@link #slice(DirectPosition)} and/or {@link #sliceByRatio(double, int...)}</li>
  * </ol>
  *
@@ -128,9 +128,9 @@ public class GridDerivation {
     /**
      * The maximum subsampling values (inclusive), or {@code null} if none.
      *
-     * @see #maximumSubsampling(int...)
+     * @see #maximumSubsampling(long...)
      */
-    private int[] maximumSubsampling;
+    private long[] maximumSubsampling;
 
     // ──────── FIELDS COMPUTED BY METHODS IN THIS CLASS ──────────────────────────────────────────────────────────────
 
@@ -283,7 +283,7 @@ public class GridDerivation {
      * <ul>
      *   <li>{@link #subgrid(GridGeometry)}</li>
      *   <li>{@link #subgrid(Envelope, double...)}</li>
-     *   <li>{@link #subgrid(GridExtent, int...)}</li>
+     *   <li>{@link #subgrid(GridExtent, long...)}</li>
      * </ul>
      *
      * For each dimension <var>i</var> of the grid computed by above methods, the {@linkplain GridExtent#getLow(int) low}
@@ -313,7 +313,7 @@ public class GridDerivation {
      */
     public GridDerivation margin(final int... cellCounts) {
         ensureSubgridNotSet();
-        margin = validateCellCounts("cellCounts", cellCounts, 0);
+        margin = validateCellCounts(cellCounts, 0);
         return this;
     }
 
@@ -344,8 +344,38 @@ public class GridDerivation {
      */
     public GridDerivation chunkSize(final int... cellCounts) {
         ensureSubgridNotSet();
-        chunkSize = validateCellCounts("cellCounts", cellCounts, 1);
+        chunkSize = validateCellCounts(cellCounts, 1);
         return this;
+    }
+
+    /**
+     * Returns a copy of the {@code values} array with trailing {@code defaultValue} trimmed.
+     * Returns {@code null} if all values are trimmed. This method verifies that values are valid.
+     *
+     * @param  property    argument name to use in error message in case of errors.
+     * @param  cellCounts  user supplied values as an {@code int[]} or {@code long[]} array.
+     * @return values to save in {@link GridDerivation}.
+     */
+    private static int[] validateCellCounts(final int[] cellCounts, final int defaultValue) {
+        int[] copy = null;
+        ArgumentChecks.ensureNonNull("cellCounts", cellCounts);
+        for (int i = cellCounts.length; --i >= 0;) {
+            final int value = cellCounts[i];
+            if (value != defaultValue) {
+                if (defaultValue == 0) {
+                    ArgumentChecks.ensurePositive("cellCounts", value);
+                } else {
+                    ArgumentChecks.ensureStrictlyPositive("cellCounts", value);
+                }
+                if (copy == null) {
+                    copy = new int[i+1];
+                }
+            } else if (copy == null) {
+                continue;
+            }
+            copy[i] = value;
+        }
+        return copy;
     }
 
     /**
@@ -365,41 +395,40 @@ public class GridDerivation {
      * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
      *         has already been invoked.
      *
-     * @since 1.1
+     * @since 1.5
      */
-    public GridDerivation maximumSubsampling(final int... subsampling) {
+    public GridDerivation maximumSubsampling(final long... subsampling) {
         ensureSubgridNotSet();
-        maximumSubsampling = validateCellCounts("subsampling", subsampling, Integer.MAX_VALUE);
+        long[] copy = null;
+        ArgumentChecks.ensureNonNull("subsampling", subsampling);
+        for (int i = subsampling.length; --i >= 0;) {
+            final long value = subsampling[i];
+            if (value != Long.MAX_VALUE) {
+                ArgumentChecks.ensureStrictlyPositive("subsampling", value);
+                if (copy == null) copy = new long[i+1];
+            } else if (copy == null) {
+                continue;
+            }
+            copy[i] = value;
+        }
+        maximumSubsampling = copy;
         return this;
     }
 
     /**
-     * Returns a copy of the {@code values} array with trailing {@code defaultValue} trimmed.
-     * Returns {@code null} if all values are trimmed. This method verifies that values are valid.
+     * Specifies the maximum subsampling values (32-bits version).
+     * See {@link #maximumSubsampling(long...)} for details.
      *
-     * @param  property  argument name to use in error message in case of errors.
-     * @param  values    user supplied values.
-     * @return values to save in {@link GridDerivation}.
+     * @param  subsampling  maximal subsampling values (inclusive).
+     * @return {@code this} for method call chaining.
+     * @since 1.1
+     *
+     * @deprecated Use the version with {@code long} integers instead of {@code int}.
+     * Small overviews of large images require large subsampling factors.
      */
-    private static int[] validateCellCounts(final String property, final int[] values, final int defaultValue) {
-        ArgumentChecks.ensureNonNull(property, values);
-        int[] copy = null;
-        for (int i=values.length; --i >= 0;) {
-            final int n = values[i];
-            if (n != defaultValue) {
-                if (defaultValue == 0) {
-                    ArgumentChecks.ensurePositive(property, n);
-                } else {
-                    ArgumentChecks.ensureStrictlyPositive(property, n);
-                }
-                if (copy == null) {
-                    copy = new int[i+1];
-                    Arrays.fill(copy, defaultValue);
-                }
-                copy[i] = n;
-            }
-        }
-        return copy;
+    @Deprecated(since="1.5")
+    public GridDerivation maximumSubsampling(final int[] subsampling) {
+        return maximumSubsampling(ArraysExt.copyAsLongs(subsampling));
     }
 
     /**
@@ -409,7 +438,7 @@ public class GridDerivation {
      * The new grid geometry resolution will be integer multiples of the {@link #base} grid geometry resolution.
      *
      * <p>If {@code gridExtent} contains only an envelope, then this method delegates to {@link #subgrid(Envelope, double...)}.
-     * Otherwise if {@code gridExtent} contains only an extent, then this method delegates to {@link #subgrid(GridExtent, int...)}.
+     * Otherwise if {@code gridExtent} contains only an extent, then this method delegates to {@link #subgrid(GridExtent, long...)}.
      * Otherwise the following information are mandatory:</p>
      * <ul>
      *   <li>{@linkplain GridGeometry#getExtent() Extent} in {@code areaOfInterest}.</li>
@@ -440,7 +469,7 @@ public class GridDerivation {
      *         public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
      *             GridDerivation change = getGridGeometry().derive().subgrid(domain);
      *             GridExtent toRead = change.buildExtent();
-     *             int[] subsampling = change.getSubsampling());
+     *             long[] subsampling = change.getSubsampling());
      *             // Do reading here.
      *         }
      *     }
@@ -533,7 +562,7 @@ public class GridDerivation {
         if (scales == null) {
             return this;
         }
-        final int[] subsampling = new int[scales.length];
+        final var subsampling = new long[scales.length];
         for (int i=0; i<subsampling.length; i++) {
             subsampling[i] = roundSubsampling(scales[i], i);
         }
@@ -861,9 +890,9 @@ public class GridDerivation {
      * @see #getIntersection()
      * @see #getSubsampling()
      *
-     * @since 1.1
+     * @since 1.5
      */
-    public GridDerivation subgrid(final GridExtent areaOfInterest, int... subsampling) {
+    public GridDerivation subgrid(final GridExtent areaOfInterest, long... subsampling) {
         ensureSubgridNotSet();
         final int n = base.getDimension();
         if (areaOfInterest != null) {
@@ -890,6 +919,24 @@ public class GridDerivation {
     }
 
     /**
+     * Requests a grid geometry over a sub-region (32-bits version).
+     * See {@link #subgrid(GridExtent, long...)} for details.
+     *
+     * @param  areaOfInterest  the desired grid extent in unit of base grid cell, or {@code null}.
+     * @param  subsampling     the subsampling to apply on each grid dimension, or {@code null} if none.
+     * @return {@code this} for method call chaining.
+     *
+     * @since 1.1
+     *
+     * @deprecated Use the version with {@code long} integers instead of {@code int}.
+     * Small overviews of large images require large subsampling factors.
+     */
+    @Deprecated(since="1.5")
+    public GridDerivation subgrid(GridExtent areaOfInterest, int[] subsampling) {
+        return subgrid(areaOfInterest, ArraysExt.copyAsLongs(subsampling));
+    }
+
+    /**
      * Applies a subsampling on the grid geometry to build.
      * This method can be invoked as an alternative to {@code subgrid(…)} methods if only the resolution needs to be changed.
      * The {@linkplain GridGeometry#getExtent() extent} of the {@linkplain #build() built} grid geometry will be derived
@@ -905,7 +952,7 @@ public class GridDerivation {
      *
      * <h4>Preconditions</h4>
      * This method assumes that subsampling are divisors of {@linkplain #chunkSize(int...) chunk sizes}
-     * and are not greater than the {@linkplain #maximumSubsampling(int...) maximum subsampling}.
+     * and are not greater than the {@linkplain #maximumSubsampling(long...) maximum subsampling}.
      * It is caller responsibility to ensure that those preconditions are met.
      *
      * @param  subsampling  the subsampling to apply on each grid dimension. All values shall be greater than zero.
@@ -914,11 +961,11 @@ public class GridDerivation {
      * @throws IllegalStateException if a subsampling has already been set,
      *         for example by a call to {@link #subgrid(Envelope, double...) subgrid(…)}.
      *
-     * @see #subgrid(GridExtent, int...)
+     * @see #subgrid(GridExtent, long...)
      * @see #getSubsampling()
-     * @see GridExtent#subsample(int...)
+     * @see GridExtent#subsample(long...)
      */
-    private GridDerivation subsample(final int... subsampling) {
+    private GridDerivation subsample(final long... subsampling) {
         if (toBase != null) {
             throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "subsampling"));
         }
@@ -930,7 +977,7 @@ public class GridDerivation {
         Matrix affine = null;
         final int dimension = extent.getDimension();
         for (int i = Math.min(dimension, subsampling.length); --i >= 0;) {
-            final int s = subsampling[i];
+            final long s = subsampling[i];
             if (s != 1) {
                 if (affine == null) {
                     affine = Matrices.createIdentity(dimension + 1);
@@ -1215,7 +1262,7 @@ public class GridDerivation {
      * returns the {t₀, t₁, t₂} values. All subsampling values are strictly positive integers.
      *
      * <p>This method can be invoked after {@link #build()} for getting additional information.
-     * If {@link #subgrid(GridExtent, int...)} has been invoked, then this method returns the
+     * If {@link #subgrid(GridExtent, long...)} has been invoked, then this method returns the
      * values that were given in the {@code subsampling} argument.</p>
      *
      * <h4>Application to iterations</h4>
@@ -1229,21 +1276,21 @@ public class GridDerivation {
      *
      * @see #getSubsamplingOffsets()
      * @see #subgrid(GridGeometry)
-     * @see #subgrid(GridExtent, int...)
+     * @see #subgrid(GridExtent, long...)
      *
      * @since 1.1
      */
-    public int[] getSubsampling() {
-        final int[] subsampling;
+    public long[] getSubsampling() {
+        final long[] subsampling;
         if (toBase == null) {
-            subsampling = new int[base.getDimension()];
+            subsampling = new long[base.getDimension()];
             Arrays.fill(subsampling, 1);
         } else {
-            subsampling = new int[toBase.getTargetDimensions()];
+            subsampling = new long[toBase.getTargetDimensions()];
             final Matrix affine = toBase.getMatrix();
             for (int j=0; j < subsampling.length; j++) {
                 final double e = affine.getElement(j,j);
-                if ((subsampling[j] = (int) e) != e) {
+                if ((subsampling[j] = (long) e) != e) {
                     throw new IllegalStateException(Errors.format(Errors.Keys.NotAnInteger_1, e));
                 }
             }
@@ -1279,15 +1326,15 @@ public class GridDerivation {
      * @param  scale      the scale factor to round.
      * @param  dimension  the dimension of the scale factor to round.
      */
-    private int roundSubsampling(final double scale, final int dimension) {
-        int subsampling;
+    private long roundSubsampling(final double scale, final int dimension) {
+        long subsampling;
         switch (rounding) {
             default:        throw new AssertionError(rounding);
-            case NEAREST:   subsampling = (int) Math.min(Math.round(scale), Integer.MAX_VALUE); break;
-            case CONTAINED: subsampling = (int) Math.ceil(scale - tolerance(dimension)); break;
-            case ENCLOSING: subsampling = (int) (scale + tolerance(dimension)); break;
+            case NEAREST:   subsampling = Math.round(scale); break;
+            case CONTAINED: subsampling = (long) Math.ceil(scale - tolerance(dimension)); break;
+            case ENCLOSING: subsampling = (long)          (scale + tolerance(dimension)); break;
         }
-        int max = Integer.MAX_VALUE;
+        long max = Long.MAX_VALUE;
         if (maximumSubsampling != null && dimension < maximumSubsampling.length) {
             max = maximumSubsampling[dimension];
             if (subsampling > max) subsampling = max;
@@ -1302,7 +1349,7 @@ public class GridDerivation {
              * we can remove an integer number of tiles because tiles can be fully skipped at read time.
              */
             final int size = chunkSize[dimension];
-            final int r = subsampling % size;       // Reduced subsampling (with integer amont of tiles removed).
+            final int r = (int) (subsampling % size);   // Reduced subsampling (with integer amont of tiles removed).
             if (r > 1 && (size % r) != 0) {
                 final int[] divisors = MathFunctions.divisors(size);
                 final int i = ~Arrays.binarySearch(divisors, r);
@@ -1314,10 +1361,10 @@ public class GridDerivation {
                  * It is better to know now if there is any problem here.
                  */
                 int s = divisors[i-1];
-                final int offset = subsampling - r;
+                final long offset = subsampling - r;
                 if (rounding != GridRoundingMode.ENCLOSING && i < divisors.length) {
                     final int above = divisors[i];
-                    if (max == Integer.MAX_VALUE || above <= max - offset) {
+                    if (max == Long.MAX_VALUE || above <= max - offset) {
                         if (rounding == GridRoundingMode.CONTAINED || above - r < r - s) {
                             s = above;
                         }
@@ -1352,21 +1399,21 @@ public class GridDerivation {
      *
      * @see #getSubsampling()
      * @see #subgrid(GridGeometry)
-     * @see #subgrid(GridExtent, int...)
+     * @see #subgrid(GridExtent, long...)
      *
      * @since 1.1
      */
-    public int[] getSubsamplingOffsets() {
-        final int[] offsets;
+    public long[] getSubsamplingOffsets() {
+        final long[] offsets;
         if (toBase == null) {
-            offsets = new int[base.getDimension()];
+            offsets = new long[base.getDimension()];
         } else {
             final int srcDim = toBase.getSourceDimensions();
-            offsets = new int[toBase.getTargetDimensions()];
+            offsets = new long[toBase.getTargetDimensions()];
             final Matrix affine = toBase.getMatrix();
             for (int j=0; j < offsets.length; j++) {
                 final double e = affine.getElement(j, srcDim);
-                if ((offsets[j] = (int) e) != e) {
+                if ((offsets[j] = (long) e) != e) {
                     throw new IllegalStateException(Errors.format(Errors.Keys.NotAnInteger_1, e));
                 }
             }

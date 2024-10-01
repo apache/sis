@@ -230,7 +230,7 @@ public final class RasterFactory extends Static {
      * @param  bank  bank index of the data array to wrap.
      * @return buffer wrapping the data array of the specified bank.
      */
-    public static Buffer createBuffer(final DataBuffer data, final int bank) {
+    public static Buffer wrapAsBuffer(final DataBuffer data, final int bank) {
         Buffer buffer;
         switch (data.getDataType()) {
             case DataBuffer.TYPE_BYTE:   buffer = ByteBuffer  .wrap(((DataBufferByte)   data).getData(bank)); break;
@@ -239,7 +239,7 @@ public final class RasterFactory extends Static {
             case DataBuffer.TYPE_INT:    buffer = IntBuffer   .wrap(((DataBufferInt)    data).getData(bank)); break;
             case DataBuffer.TYPE_FLOAT:  buffer = FloatBuffer .wrap(((DataBufferFloat)  data).getData(bank)); break;
             case DataBuffer.TYPE_DOUBLE: buffer = DoubleBuffer.wrap(((DataBufferDouble) data).getData(bank)); break;
-            default: throw new AssertionError();
+            default: throw new IllegalArgumentException();
         }
         final int lower = data.getOffsets()[bank];
         final int upper = lower + data.getSize();

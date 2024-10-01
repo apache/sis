@@ -143,12 +143,8 @@ public final class KeyPathTest extends TestCase {
         assertEquals("second",          relative.getName(0).toString());
         assertEquals("third",           relative.getName(1).toString());
         assertEquals("the-file",        relative.getName(2).toString());
-        try {
-            absolute.getName(5);
-            fail("Expected an exception.");
-        } catch (IllegalArgumentException e) {
-            assertNotNull(e.getMessage());
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> absolute.getName(5));
+        assertNotNull(e.getMessage());
     }
 
     /**

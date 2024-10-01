@@ -1149,7 +1149,7 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Computes immediately all tiles in the given region of interest, then return an image will those tiles ready.
+     * Computes immediately all tiles in the given region of interest, then returns an image with those tiles ready.
      * Computations will use many threads if {@linkplain #getExecutionMode() execution mode} is parallel.
      *
      * <h4>Properties used</h4>

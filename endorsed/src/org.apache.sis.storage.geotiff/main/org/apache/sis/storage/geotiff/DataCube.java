@@ -34,7 +34,6 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.base.TiledGridResource;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.math.Vector;
 
@@ -50,7 +49,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class DataCube extends TiledGridResource implements ResourceOnFileSystem, StoreResource {
+abstract class DataCube extends TiledGridResource implements StoreResource {
     /**
      * The GeoTIFF reader which contain this {@code DataCube}.
      * Used for fetching information like the input channel and where to report warnings.
@@ -63,7 +62,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      * @param  reader  information about the input stream to read, the metadata and the character encoding.
      */
     DataCube(final Reader reader) {
-        super(reader.store.listeners());
+        super(reader.store);
         this.reader = reader;
     }
 
@@ -111,20 +110,20 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     public abstract Optional<GenericName> getIdentifier();
 
     /**
-     * Gets the paths to files used by this resource, or an empty array if unknown.
+     * Gets the paths to files used by this resource, or an empty value if unknown.
      */
     @Override
-    public final Path[] getComponentFiles() {
+    public final Optional<FileSet> getFileSet() {
         final Path location = reader.store.path;
-        return (location != null) ? new Path[] {location} : new Path[0];
+        return (location != null) ? Optional.of(new FileSet(location)) : Optional.empty();
     }
 
     /**
      * Returns the number of components per pixel in the image stored in GeoTIFF file.
-     * This the same value as the one returned by {@code getSampleModel().getNumBands()},
+     * This the same value as the one returned by {@code getSampleModel(null).getNumBands()},
      * and is also the size of the collection returned by {@link #getSampleDimensions()}.
      *
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      * @see SampleModel#getNumBands()
      */
     abstract int getNumBands();
@@ -166,17 +165,28 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      * If non-null, this value will be replaced by {@link Float#NaN} at reading time.
      *
      * <div class="note"><b>Rational:</b>
-     * the intend is to handle the image as if it was already converted to the units of measurement.
+     * the intent is to handle the image as if it was already converted to the units of measurement.
      * Our netCDF reader does the same thing, and we want a consistent behavior of coverage readers.
      * </div>
      *
-     * If this method returns a non-null value, then {@link #getFillValue()} should return NaN.
+     * If this method returns a non-null value, then {@link #getFillValues(int[])} should return
+     * an array of NaN.
      *
      * @return value to be replaced by NaN at reading time, or {@code null} if none.
      *
-     * @see #getFillValue()
+     * @see #getFillValues(int[])
      */
     abstract Number getReplaceableFillValue();
+
+    /**
+     * Allows the reading of truncated tiles in the <var>y</var> dimension.
+     * Since there is no data after that dimension, it is safe to stop the
+     * reading process as soon as possible along that axis of each tile.
+     */
+    @Override
+    protected final boolean canReadTruncatedTiles(int dim, boolean suggested) {
+        return suggested | (dim >= 1);      // Y_DIMENSION.
+    }
 
     /**
      * Returns {@code true} if the image can be read with the {@link DataSubset} base class,
@@ -201,7 +211,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      *       a multiple of 8.
      */
     private boolean canReadDirect(final Subset subset) throws DataStoreException {
-        final SampleModel model = getSampleModel();
+        final SampleModel model = getSampleModel(null);
         int b = model.getNumBands();
         if (b != 1 && !(model instanceof BandedSampleModel)) {              // First condition (see Javadoc).
             if (!subset.isXContiguous()) {                                  // Exception to first consition.

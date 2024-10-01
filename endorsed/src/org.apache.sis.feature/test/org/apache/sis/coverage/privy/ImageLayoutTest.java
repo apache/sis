@@ -37,6 +37,14 @@ public final class ImageLayoutTest extends TestCase {
     }
 
     /**
+     * Verifies that {@link ImageLayout#SUGGESTED_TILE_CACHE_SIZE} is strictly positive.
+     */
+    @Test
+    public void verifySuggestedTileCacheSize() {
+        assertTrue(ImageLayout.SUGGESTED_TILE_CACHE_SIZE >= 1);
+    }
+
+    /**
      * Tests {@link ImageLayout#suggestTileSize(int, int, boolean)}.
      */
     @Test

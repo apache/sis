@@ -102,7 +102,7 @@ public final class CollectionsExtTest extends TestCase {
      */
     @Test
     public void testAddAndRemoveToMultiValuesMap() {
-        final Map<String, List<Integer>> map = new LinkedHashMap<>();
+        final var map = new LinkedHashMap<String, Set<Integer>>();
         final Integer A1 = 2;
         final Integer A2 = 4;
         final Integer B1 = 3;
@@ -130,7 +130,7 @@ public final class CollectionsExtTest extends TestCase {
      */
     @Test
     public void testToCaseInsensitiveNameMap() {
-        final List<Map.Entry<String,String>> elements = new ArrayList<>();
+        final var elements = new ArrayList<Map.Entry<String,String>>();
         elements.add(new AbstractMap.SimpleEntry<>("AA", "AA"));
         elements.add(new AbstractMap.SimpleEntry<>("Aa", "Aa"));
         elements.add(new AbstractMap.SimpleEntry<>("BB", "BB"));

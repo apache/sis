@@ -261,6 +261,8 @@ public final class ColorModelBuilder {
             if (!categories.isEmpty()) {
                 boolean isUndefined = true;
                 boolean missingNodata = true;
+
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 ColorsForRange[] entries = new ColorsForRange[categories.size()];
                 for (int i=0; i<entries.length; i++) {
                     final var range = new ColorsForRange(categories.get(i), colors, inheritedColors);
@@ -420,6 +422,8 @@ public final class ColorModelBuilder {
          */
         source = target.forConvertedValues(true);
         final List<Category> categories = target.getCategories();
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ColorsForRange[] entries = new ColorsForRange[categories.size()];
         for (int i=0; i<entries.length; i++) {
             final Category category = categories.get(i);
@@ -491,6 +495,7 @@ public final class ColorModelBuilder {
          * If a source SampleDimension has been specified, verify if it provides a transfer function that we can
          * use directly. If this is the case, use the existing transfer function instead of inventing our own.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         ColorsForRange[] entries = this.entries;
 reuse:  if (source != null) {
             target = source.forConvertedValues(false);
@@ -540,8 +545,8 @@ reuse:  if (source != null) {
         int deferred = 0;                                   // Number of entries deferred to next loop.
         int count    = entries.length;                      // Total number of valid entries.
         NumberRange<?> themes = null;                       // The range of values in a thematic map.
-        final Map<NumberRange<Integer>,ColorsForRange> mapper = new HashMap<>();
-        final SampleDimension.Builder builder = new SampleDimension.Builder();
+        final var mapper  = new HashMap<NumberRange<Integer>, ColorsForRange>();
+        final var builder = new SampleDimension.Builder();
         /*
          * We will use the byte values range [0 … 255] with 0 reserved in priority for the most transparent pixels.
          * The first loop below processes NaN values, which are usually the ones associated to transparent pixels.
@@ -568,7 +573,9 @@ reuse:  if (source != null) {
                         builder.mapQualitative(entry.name(), targetRange, (float) value);
                     } else {
                         if (value == entry.sampleRange.getMaxDouble()) {
-                            sourceRange = NumberRange.create(value - 0.5, true, value + 0.5, false);
+                            sourceRange = NumberRange.create(
+                                    Math.min(value - 0.5, Math.nextDown(value)), true,
+                                    Math.max(value + 0.5, Math.nextUp(value)), false);
                         }
                         builder.addQuantitative(entry.name(), targetRange, sourceRange);
                         themes = (themes != null) ? themes.unionAny(sourceRange) : sourceRange;

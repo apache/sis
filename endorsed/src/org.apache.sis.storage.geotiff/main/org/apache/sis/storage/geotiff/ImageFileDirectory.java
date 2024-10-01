@@ -425,14 +425,14 @@ final class ImageFileDirectory extends DataCube {
      * The image sample model, created when first needed. The raster size is the tile size.
      * Sample models with different size and number of bands can be derived from this model.
      *
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      */
     private SampleModel sampleModel;
 
     /**
      * The image color model, created when first needed.
      *
-     * @see #getColorModel()
+     * @see #getColorModel(int[])
      */
     private ColorModel colorModel;
 
@@ -1385,9 +1385,16 @@ final class ImageFileDirectory extends DataCube {
             source = new SchemaModifier.Source(reader.store, index, getDataType());
         }
         getIdentifier().ifPresent((id) -> {
+            metadata.addIdentifier(id, ImageMetadataBuilder.Scope.RESOURCE);
+            final CharSequence title;
             if (!getImageIndex().equals(id.tip().toString())) {
-                metadata.addTitle(id.toString());
+                title = id.toString();
+            } else if (source != null && !metadata.hasTitle()) {
+                title = Vocabulary.formatInternational(Vocabulary.Keys.Image_1, index + 1);
+            } else {
+                return;     // Return from lambda, not from `createMetadata()`.
             }
+            metadata.addTitle(title);
         });
         /*
          * Add information about sample dimensions.
@@ -1541,10 +1548,14 @@ final class ImageFileDirectory extends DataCube {
     public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
         synchronized (getSynchronizationLock()) {
             if (sampleDimensions == null) {
-                final Number fill = getFillValue(true);
+                /*
+                 * For floating point type, `DataSubset.createWritableRaster(…)` has already replaced
+                 * fill value by NaN. Therefore, it shall not appear anymore in the `SampleDimension`.
+                 */
+                final Number fill = (sampleFormat != FLOAT) ? getFillValue(true) : null;
                 final DataType dataType = getDataType();
-                final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
-                final SampleDimension.Builder builder = new SampleDimension.Builder();
+                final var dimensions = new SampleDimension[samplesPerPixel];
+                final var builder = new SampleDimension.Builder();
                 final boolean isIndexValid = !isReducedResolution();
                 for (int band = 0; band < dimensions.length; band++) {
                     short nameKey = 0;
@@ -1592,12 +1603,15 @@ final class ImageFileDirectory extends DataCube {
      *
      * @see SampleModel#createCompatibleSampleModel(int, int)
      * @see SampleModel#createSubsetSampleModel(int[])
-     * @see #getColorModel()
+     * @see #getColorModel(int[])
      * @see #getTileSize()
      */
     @Override
-    protected SampleModel getSampleModel() throws DataStoreContentException {
+    protected SampleModel getSampleModel(final int[] bands) throws DataStoreContentException {
         assert Thread.holdsLock(getSynchronizationLock());
+        if (bands != null) {
+            return null;    // Let `TileGridResource` derive a model itself.
+        }
         if (sampleModel == null) {
             RuntimeException error = null;
             final DataType type = getDataType();
@@ -1637,7 +1651,7 @@ final class ImageFileDirectory extends DataCube {
      * The number of dimensions is always 2 for {@code ImageFileDirectory}.
      *
      * @see #getExtent()
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      */
     @Override
     protected int[] getTileSize() {
@@ -1690,13 +1704,16 @@ final class ImageFileDirectory extends DataCube {
      *
      * @throws DataStoreContentException if the data type is not supported.
      *
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      */
     @Override
-    protected ColorModel getColorModel() throws DataStoreContentException {
+    protected ColorModel getColorModel(final int[] bands) throws DataStoreContentException {
         assert Thread.holdsLock(getSynchronizationLock());
+        if (bands != null) {
+            return null;    // Let `TileGridResource` derive a model itself.
+        }
         if (colorModel == null) {
-            final SampleModel sm  = getSampleModel();
+            final SampleModel sm  = getSampleModel(null);
             final int dataType    = sm.getDataType();
             final int visibleBand = 0;      // May be configurable in a future version.
             short missing = 0;              // Non-zero if there is a warning about missing information.
@@ -1772,13 +1789,21 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * Returns the value to use for filling empty spaces in the raster, or {@code null} if none,
+     * Returns the values to use for filling empty spaces in the raster, or {@code null} if none,
      * not different than zero or not valid for the target data type.
      * The zero value is excluded because tiles are already initialized to zero by default.
      */
     @Override
-    protected Number getFillValue() {
-        return (sampleFormat != FLOAT) ? getFillValue(false) : Double.NaN;
+    protected Number[] getFillValues(final int[] bands) {
+        final Number fill;
+        if (sampleFormat == FLOAT) {
+            fill = Double.NaN;
+        } else if ((fill = getFillValue(false)) == null) {
+            return null;
+        }
+        final var values = new Number[(bands != null) ? bands.length : getNumBands()];
+        Arrays.fill(values, fill);
+        return values;
     }
 
     /**

@@ -16,8 +16,18 @@
  */
 package org.apache.sis.util;
 
+import java.net.URI;
+import java.net.URL;
+import java.io.File;
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.StringTokenizer;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.jar.Attributes;
+import java.util.logging.Logger;
+import org.apache.sis.system.Modules;
+import org.apache.sis.util.logging.Logging;
 import static org.apache.sis.system.Modules.MAJOR_VERSION;
 import static org.apache.sis.system.Modules.MINOR_VERSION;
 
@@ -39,7 +49,7 @@ import static org.apache.sis.system.Modules.MINOR_VERSION;
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @version 1.5
  * @since   0.3
  */
 public class Version implements CharSequence, Comparable<Version>, Serializable {
@@ -74,6 +84,8 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
 
     /**
      * The version in string form.
+     *
+     * @see #toString()
      */
     private final String version;
 
@@ -100,6 +112,45 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     public Version(final String version) {
         ArgumentChecks.ensureNonEmpty("version", version);
         this.version = version;
+    }
+
+    /**
+     * Returns the version of the library that provides the given class. This method reads the
+     * {@code "Implementation-Version"} attribute of the {@code META-INF/MANIFEST.MF} file of
+     * the <abbr>JAR</abbr> file that contains the given class.
+     *
+     * @param  member  any public class of the library for which to get the version.
+     * @return version declared by the library that provides the given class.
+     *
+     * @see Attributes.Name#IMPLEMENTATION_VERSION
+     * @since 1.5
+     */
+    public static Optional<Version> ofLibrary(final Class<?> member) {
+        URL url = member.getResource(member.getSimpleName() + ".class");
+        if ("jar".equalsIgnoreCase(url.getProtocol())) {
+            String path = url.getPath();
+            if (path != null) {
+                int s = path.indexOf('!');
+                if (s >= 0) {
+                    path = path.substring(0, s);
+                }
+                try (JarFile jar = new JarFile(new File(new URI(path)))) {
+                    final Manifest manifest = jar.getManifest();
+                    if (manifest != null) {
+                        final Attributes attributes = manifest.getMainAttributes();
+                        if (attributes != null) {
+                            String version = attributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                            if (version != null) {
+                                return Optional.of(new Version(version));
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    Logging.recoverableException(Logger.getLogger(Modules.UTILITIES), Version.class, "ofLibrary", e);
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**

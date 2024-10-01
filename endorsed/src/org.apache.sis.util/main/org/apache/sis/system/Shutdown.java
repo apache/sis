@@ -24,7 +24,7 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * A central place where to manage SIS shutdown process.
+ * A central place where to manage SIS shutdown processes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)

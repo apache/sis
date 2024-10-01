@@ -24,24 +24,20 @@ import static java.lang.foreign.ValueLayout.*;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class Comment extends StructClass{
+public final class Comment extends StructClass {
 
     private static final GroupLayout LAYOUT_COMMENT_TIME;
     private static final OfInt LAYOUT_COMMENT_LENGTH;
     private static final AddressLayout LAYOUT_COMMENT;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_COMMENT_TIME = TimeSpec.LAYOUT.withName("comment_time"),
         LAYOUT_COMMENT_LENGTH = GSF.C_INT.withName("comment_length"),
         MemoryLayout.paddingLayout(4),
         LAYOUT_COMMENT = GSF.C_POINTER.withName("comment")
     ).withName("t_gsfComment");
 
-    public Comment(MemorySegment struct) {
+    Comment(MemorySegment struct) {
         super(struct);
-    }
-
-    public Comment(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override

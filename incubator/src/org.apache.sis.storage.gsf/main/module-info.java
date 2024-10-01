@@ -25,4 +25,6 @@ module org.apache.sis.storage.gsf {
     requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
 
+    provides org.apache.sis.storage.DataStoreProvider
+            with org.apache.sis.storage.gsf.GSFStoreProvider;
 }

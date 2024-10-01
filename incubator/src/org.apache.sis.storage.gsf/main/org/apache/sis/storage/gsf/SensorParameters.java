@@ -34,7 +34,7 @@ public final class SensorParameters extends StructClass {
     private static final SequenceLayout LAYOUT_PARAM;
     private static final long param$OFFSET = 280;
 
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_PARAM_TIME = TimeSpec.LAYOUT.withName("param_time"),
         LAYOUT_NUMBER_PARAMETERS = GSF.C_INT.withName("number_parameters"),
         LAYOUT_PARAM_SIZE = MemoryLayout.sequenceLayout(128, GSF.C_SHORT).withName("param_size"),
@@ -42,12 +42,8 @@ public final class SensorParameters extends StructClass {
         LAYOUT_PARAM = MemoryLayout.sequenceLayout(128, GSF.C_POINTER).withName("param")
     ).withName("t_gsfSensorParameters");
 
-    public SensorParameters(MemorySegment struct) {
+    SensorParameters(MemorySegment struct) {
         super(struct);
-    }
-
-    public SensorParameters(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -101,6 +97,4 @@ public final class SensorParameters extends StructClass {
         }
         return params;
     }
-
 }
-

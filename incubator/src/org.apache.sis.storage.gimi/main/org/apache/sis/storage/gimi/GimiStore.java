@@ -27,12 +27,14 @@ import java.util.Optional;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.GroupList;
@@ -40,6 +42,7 @@ import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfo;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfoEntry;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.Meta;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.ImagePyramidEntityGroup;
+import org.apache.sis.util.iso.Names;
 
 
 /**
@@ -52,6 +55,7 @@ public final class GimiStore extends DataStore implements Aggregate {
 
     private List<Resource> components;
     private Map<Integer,Resource> componentIndex;
+    private Metadata metadata;
 
     //cache the reader
     private ISOBMFFReader reader;
@@ -72,8 +76,13 @@ public final class GimiStore extends DataStore implements Aggregate {
     }
 
     @Override
-    public Metadata getMetadata() throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public synchronized Metadata getMetadata() throws DataStoreException {
+        if (metadata == null) {
+            final MetadataBuilder builder = new MetadataBuilder();
+            builder.addIdentifier(Names.createLocalName(null, null, IOUtilities.filenameWithoutExtension(gimiPath.getFileName().toString())), MetadataBuilder.Scope.ALL);
+            metadata = builder.buildAndFreeze();
+        }
+        return metadata;
     }
 
     @Override
@@ -154,6 +163,10 @@ public final class GimiStore extends DataStore implements Aggregate {
                         final ResourcePyramid pyramid = new ResourcePyramid(this, img);
                         components.add(pyramid);
                         componentIndex.put(pyramid.group.groupId, pyramid);
+
+                        //force initialize now, pyramids may amend existing grids
+                        pyramid.getGridGeometry();
+
                     }
                 }
             }

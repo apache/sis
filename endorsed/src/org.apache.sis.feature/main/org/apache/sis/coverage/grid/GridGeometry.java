@@ -335,7 +335,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The new {@linkplain #getEnvelope() grid geometry envelope} will be computed from the new extent and transform,
      * then {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the other grid geometry.
      * This clip is for preventing the envelope to become larger under the effect of subsampling because
-     * {@linkplain GridExtent#subsample(int[]) each cell become larger}. The clip is not applied when {@code toOther}
+     * {@linkplain GridExtent#subsample(long[]) each cell become larger}. The clip is not applied when {@code toOther}
      * is {@code null} because in such case, we presume that the grid extent has been changed for another reason than
      * subsampling (e.g. application of a margin, in which case we want the envelope to be expanded).
      *
@@ -1473,14 +1473,14 @@ public class GridGeometry implements LenientComparable, Serializable {
      * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  periods  the upsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @param  periods  the upsampling factors for each dimension of this grid geometry.
      * @return the upsampled grid geometry, or {@code this} is upsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
-     * @see GridExtent#upsample(int...)
-     * @since 1.3
+     * @see GridExtent#upsample(long...)
+     * @since 1.5
      */
-    public GridGeometry upsample(final int... periods) {
+    public GridGeometry upsample(final long... periods) {
         GridExtent newExtent = extent;
         if (newExtent != null) {
             newExtent = newExtent.upsample(periods);
@@ -1522,6 +1522,23 @@ public class GridGeometry implements LenientComparable, Serializable {
         }
         if (!changed) return this;
         return new GridGeometry(newExtent, cornerToCenter(newGridToCRS), newGridToCRS, envelope, newResolution, nonLinears);
+    }
+
+    /**
+     * Creates a new upsampled grid geometry (32-bits version).
+     * See {@link #upsample(long...)} for details.
+     *
+     * @param  periods  the upsampling factors for each dimension of this grid geometry.
+     * @return the upsampled grid geometry, or {@code this} is upsampling results in the same extent.
+     * @throws IllegalArgumentException if a period is not greater than zero.
+     * @since 1.3
+     *
+     * @deprecated Use the version with {@code long} integers instead of {@code int}.
+     * Small overviews of large images require large subsampling factors.
+     */
+    @Deprecated(since="1.5")
+    public GridGeometry upsample(final int[] periods) {
+        return upsample(ArraysExt.copyAsLongs(periods));
     }
 
     /**

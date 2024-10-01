@@ -41,7 +41,7 @@ public final class SingleBeamPing extends StructClass {
     private static final OfInt LAYOUT_SENSOR_ID;
     private static final GroupLayout LAYOUT_SENSOR_DATA;
 
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_PING_TIME = TimeSpec.LAYOUT.withName("ping_time"),
         LAYOUT_LATITUDE = GSF.C_DOUBLE.withName("latitude"),
         LAYOUT_LONGITUDE = GSF.C_DOUBLE.withName("longitude"),
@@ -59,12 +59,8 @@ public final class SingleBeamPing extends StructClass {
         LAYOUT_SENSOR_DATA = SBSensorSpecific.LAYOUT.withName("sensor_data")
     ).withName("t_gsfSingleBeamPing");
 
-    public SingleBeamPing(MemorySegment struct) {
+    SingleBeamPing(MemorySegment struct) {
         super(struct);
-    }
-
-    public SingleBeamPing(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -211,6 +207,4 @@ public final class SingleBeamPing extends StructClass {
     public MemorySegment getSensorData() {
         return struct.asSlice(104, LAYOUT_SENSOR_DATA.byteSize());
     }
-
 }
-

@@ -115,7 +115,7 @@ public final class HyperRectangleWriterTest extends TestCase {
                 new long[] {sourceSizeX,  sourceSizeY,  sourceSizeZ},
                 new long[] {lowerX,       lowerY,       lowerZ},
                 new long[] {upperX,       upperY,       upperZ},
-                new  int[] {subsamplingX, subsamplingY, subsamplingZ});
+                new long[] {subsamplingX, subsamplingY, subsamplingZ});
 
         final byte[] target = new byte[dataSize * region.targetLength(3)];
         final var buffer = ByteBuffer.allocate(random.nextInt(10) + Double.BYTES);

@@ -17,8 +17,11 @@
 package org.apache.sis.storage.gimi.isobmff.gimi;
 
 import java.io.IOException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -34,6 +37,12 @@ public final class WellKnownText2Property extends ItemFullProperty {
     @Override
     protected void readProperties(ISOBMFFReader reader) throws IOException {
         wkt2 = reader.readUtf8String();
+    }
+
+    public CoordinateReferenceSystem toCRS() throws FactoryException {
+        //TODO remove this hack when SIS support BASEGEOGCRS
+        String wkt = this.wkt2.replace("BASEGEOGCRS", "BASEGEODCRS");
+        return CRS.fromWKT(wkt);
     }
 
 }

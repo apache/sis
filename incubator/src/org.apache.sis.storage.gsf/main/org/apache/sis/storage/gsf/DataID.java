@@ -30,18 +30,14 @@ public final class DataID extends StructClass {
     private static final OfInt LAYOUT_RESERVED;
     private static final OfInt LAYOUT_RECORDID;
     private static final OfInt LAYOUT_RECORD_NUMBER;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_CHECKSUMFLAG = GSF.C_INT.withName("checksumFlag"),
         LAYOUT_RESERVED = GSF.C_INT.withName("reserved"),
         LAYOUT_RECORDID = GSF.C_INT.withName("recordID"),
         LAYOUT_RECORD_NUMBER = GSF.C_INT.withName("record_number")
     ).withName("t_gsfDataID");
 
-    public DataID(MemorySegment struct) {
-        super(struct);
-    }
-
-    public DataID(SegmentAllocator allocator) {
+    DataID(SegmentAllocator allocator) {
         super(allocator);
     }
 
@@ -65,5 +61,4 @@ public final class DataID extends StructClass {
     public int getRecordNumber() {
         return struct.get(LAYOUT_RECORD_NUMBER, 12);
     }
-
 }

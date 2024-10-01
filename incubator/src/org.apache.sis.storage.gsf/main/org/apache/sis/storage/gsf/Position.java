@@ -26,20 +26,20 @@ import static java.lang.foreign.ValueLayout.*;
  */
 public final class Position extends StructClass {
 
-    public static final OfDouble LAYOUT_LON;
-    public static final OfDouble LAYOUT_LAT;
-    public static final OfDouble LAYOUT_Z;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    private static final OfDouble LAYOUT_LON;
+    private static final OfDouble LAYOUT_LAT;
+    private static final OfDouble LAYOUT_Z;
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_LON = GSF.C_DOUBLE.withName("lon"),
         LAYOUT_LAT = GSF.C_DOUBLE.withName("lat"),
         LAYOUT_Z = GSF.C_DOUBLE.withName("z")
     ).withName("t_gsf_gp");
 
-    public Position(MemorySegment segment) {
+    Position(MemorySegment segment) {
         super(segment);
     }
 
-    public Position(SegmentAllocator allocator) {
+    Position(SegmentAllocator allocator) {
         super(allocator);
     }
 
@@ -71,5 +71,4 @@ public final class Position extends StructClass {
     public void setZ(double fieldValue) {
         struct.set(LAYOUT_Z, 16, fieldValue);
     }
-
 }

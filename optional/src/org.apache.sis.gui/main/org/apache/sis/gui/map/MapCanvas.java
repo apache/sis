@@ -1236,7 +1236,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                     }
                 }
                 if (objectiveCRS == null) {
-                    if (init.isDefined(GridGeometry.CRS)) {
+                    if (init != null && init.isDefined(GridGeometry.CRS)) {
                         objectiveCRS = init.getCoordinateReferenceSystem();
                     } else {
                         objectiveCRS = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();

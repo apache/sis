@@ -520,7 +520,7 @@ public final class BandAggregateImageTest extends TestCase {
                 final int tileY = source.getMinTileY() + y;
                 final DataBuffer buffer = source.getTile(tileX, tileY).getDataBuffer();
                 for (int band = buffer.getNumBanks(); --band >= 0;) {
-                    action.accept(RasterFactory.createBuffer(buffer, band).array(), band);
+                    action.accept(RasterFactory.wrapAsBuffer(buffer, band).array(), band);
                 }
             }
         }

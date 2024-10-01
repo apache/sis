@@ -18,7 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.net.URI;
 import java.util.Map;
-import java.util.List;
+import java.util.Set;
 import java.util.Date;
 import java.util.Locale;
 import java.util.LinkedHashMap;
@@ -138,7 +138,7 @@ abstract class AbstractParser implements Parser {
      * <ul>
      *   <li><b>Keys</b>: keyword of ignored elements. Note that a key may be null.</li>
      *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
-     *       This list is used for helping the users to locate the ignored elements.</li>
+     *       This collection is used for helping the users to locate the ignored elements.</li>
      * </ul>
      *
      * Content of this map is not discarded immediately {@linkplain #getAndClearWarnings(Object) after parsing}.
@@ -146,7 +146,7 @@ abstract class AbstractParser implements Parser {
      *
      * @see #getAndClearWarnings(Object)
      */
-    final Map<String, List<String>> ignoredElements;
+    final Map<String, Set<String>> ignoredElements;
 
     /**
      * The warning (other than {@link #ignoredElements}) that occurred during the parsing.

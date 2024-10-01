@@ -478,7 +478,7 @@ public class Convention {
         if (method == null) {
             return null;
         }
-        final Map<String,Object> definition = new HashMap<>();
+        final var definition = new HashMap<String,Object>();
         definition.put(CF.GRID_MAPPING_NAME, method);
         for (final String name : node.getAttributeNames()) try {
             final String ln = name.toLowerCase(Decoder.DATA_LOCALE);
@@ -493,7 +493,7 @@ public class Convention {
                      */
                     final Vector values = node.getAttributeAsVector(name);
                     if (values == null || values.size() < 3) continue;
-                    final BursaWolfParameters bp = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+                    final var bp = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
                     bp.setValues(values.doubleValues());
                     value = bp;
                     break;
@@ -709,7 +709,7 @@ public class Convention {
      * @return no-data values with bitmask of their roles or textual descriptions.
      */
     public Map<Number,Object> nodataValues(final Variable data) {
-        final Map<Number,Object> pads = new LinkedHashMap<>();
+        final var pads = new LinkedHashMap<Number,Object>();
         for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
             final String name = NODATA_ATTRIBUTES[i];
             final Vector values = data.getAttributeAsVector(name);
@@ -748,7 +748,7 @@ public class Convention {
          * If scale_factor and/or add_offset variable attributes are present, then this is
          * a "packed" variable. Otherwise the transfer function is the identity transform.
          */
-        final TransferFunction tr = new TransferFunction();
+        final var tr = new TransferFunction();
         final double scale  = data.getAttributeAsDouble(CDM.SCALE_FACTOR);
         final double offset = data.getAttributeAsDouble(CDM.ADD_OFFSET);
         if (!Double.isNaN(scale))  tr.setScale (scale);
