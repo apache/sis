@@ -122,8 +122,8 @@ public final class GridDerivationTest extends TestCase {
         GridExtent     extent = change.getIntersection();
         GridExtentTest.assertExtentEquals(extent, 0,  2000, 5549);            // Subrange of base extent.
         GridExtentTest.assertExtentEquals(extent, 1, -1000, 8000);
-        assertArrayEquals(new int[] {50, 300}, change.getSubsampling());    // s = scaleQuery / scaleBase
-        assertArrayEquals(new int[] {0, -100}, change.getSubsamplingOffsets());
+        assertArrayEquals(new long[] {50, 300}, change.getSubsampling());    // s = scaleQuery / scaleBase
+        assertArrayEquals(new long[] {0, -100}, change.getSubsamplingOffsets());
         /*
          * Above (50, 300) subsampling shall be applied and the `gridToCRS` transform adjusted consequently.
          */
@@ -361,7 +361,7 @@ public final class GridDerivationTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridDerivation#subgrid(GridExtent, int...)}
+     * Tests {@link GridDerivation#subgrid(GridExtent, long...)}
      * with an integer number of tiles, operating only on extents.
      */
     @Test
@@ -420,8 +420,8 @@ public final class GridDerivationTest extends TestCase {
         GridExtent     extent = change.getIntersection();
         GridExtentTest.assertExtentEquals(extent, 0,  3900, 5849);
         GridExtentTest.assertExtentEquals(extent, 1,  -910, 8000);
-        assertArrayEquals(new int[] {39, 294}, change.getSubsampling());
-        assertArrayEquals(new int[] { 0, -28}, change.getSubsamplingOffsets());
+        assertArrayEquals(new long[] {39, 294}, change.getSubsampling());
+        assertArrayEquals(new long[] { 0, -28}, change.getSubsamplingOffsets());
 
         final GridGeometry tg = change.build();
         extent = tg.getExtent();
@@ -453,8 +453,8 @@ public final class GridDerivationTest extends TestCase {
          * Subsampling values checked below shall be equal or smaller
          * than the values given to `maximumSubsampling(…)`.
          */
-        assertArrayEquals(new int[] {15,  84}, change.getSubsampling());
-        assertArrayEquals(new int[] { 0, -70}, change.getSubsamplingOffsets());
+        assertArrayEquals(new long[] {15,  84}, change.getSubsampling());
+        assertArrayEquals(new long[] { 0, -70}, change.getSubsamplingOffsets());
         assertMatrixEquals(new Matrix3(30,   0, 200,
                                         0, -84, 570,
                                         0,   0,   1),
@@ -479,7 +479,7 @@ public final class GridDerivationTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridDerivation#subgrid(GridExtent, int...)} with a null "grid to CRS" transform.
+     * Tests {@link GridDerivation#subgrid(GridExtent, long...)} with a null "grid to CRS" transform.
      */
     @Test
     public void testSubgridWithoutTransform() {

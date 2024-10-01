@@ -304,8 +304,7 @@ next:       for (final String name : axisNames) {
                  */
             }
             if (i != 0) {   // Variables with 0 dimensions sometimes happen.
-                axes[axisCount++] = new Axis(abbreviation, axis.getPositive(),
-                        ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), wrapper);
+                axes[axisCount++] = new Axis(abbreviation, axis.getPositive(), indices, sizes, i, wrapper);
             }
         }
         return ArraysExt.resize(axes, axisCount);

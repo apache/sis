@@ -164,14 +164,9 @@ public abstract class URIDataStoreProvider extends DataStoreProvider {
         /*
          * This fallback should not happen with `URIDataStore` implementation because the "location" parameter
          * is always present even if null. This fallback is for resources implementated by different classes.
+         * The first path is presumed the main file.
          */
-        if (resource instanceof ResourceOnFileSystem) {
-            final Path[] paths = ((ResourceOnFileSystem) resource).getComponentFiles();
-            if (paths != null && paths.length != 0) {
-                return paths[0];                                    // First path is presumed the main file.
-            }
-        }
-        return null;
+        return resource.getFileSet().flatMap((files) -> files.getPaths().stream().findFirst()).orElse(null);
     }
 
     /**

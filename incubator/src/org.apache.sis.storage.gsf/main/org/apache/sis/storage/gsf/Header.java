@@ -26,16 +26,12 @@ import java.lang.foreign.*;
 public final class Header extends StructClass {
 
     private static final SequenceLayout LAYOUT_VERSION;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_VERSION = MemoryLayout.sequenceLayout(12, GSF.C_CHAR).withName("version")
     ).withName("t_gsfHeader");
 
-    public Header(MemorySegment struct) {
+    Header(MemorySegment struct) {
         super(struct);
-    }
-
-    public Header(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -46,5 +42,4 @@ public final class Header extends StructClass {
     public String getVersion() {
         return struct.asSlice(0, LAYOUT_VERSION.byteSize()).getString(0);
     }
-
 }

@@ -33,7 +33,7 @@ public final class SVP extends StructClass {
     private static final OfInt LAYOUT_NUMBER_POINTS;
     private static final AddressLayout LAYOUT_DEPTH;
     private static final AddressLayout LAYOUT_SOUND_SPEED;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         OBSERVATION_TIMELAYOUT = TimeSpec.LAYOUT.withName("observation_time"),
         APPLICATION_TIMELAYOUT = TimeSpec.LAYOUT.withName("application_time"),
         LAYOUT_LATITUDE = GSF.C_DOUBLE.withName("latitude"),
@@ -44,12 +44,8 @@ public final class SVP extends StructClass {
         LAYOUT_SOUND_SPEED = GSF.C_POINTER.withName("sound_speed")
     ).withName("t_gsfSVP");
 
-    public SVP(MemorySegment struct) {
+    SVP(MemorySegment struct) {
         super(struct);
-    }
-
-    public SVP(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -86,5 +82,4 @@ public final class SVP extends StructClass {
         final MemorySegment resolvedAddress = struct.get(LAYOUT_SOUND_SPEED, 64);
         return getDoubles(resolvedAddress, 0, getNumberPoints());
     }
-
 }

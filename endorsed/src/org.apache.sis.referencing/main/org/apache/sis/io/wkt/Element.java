@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -785,13 +786,13 @@ final class Element {
      * <ul>
      *   <li><b>Keys</b>: keyword of ignored elements. Note that a key may be null.</li>
      *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
-     *       This list is used for helping the users to locate the ignored elements.</li>
+     *       This collection is used for helping the users to locate the ignored elements.</li>
      * </ul>
      *
      * @param  ignoredElements  the collection where to declare ignored elements.
      * @throws ParseException if the children list still contains some unprocessed values.
      */
-    final void close(final Map<String, List<String>> ignoredElements) throws ParseException {
+    final void close(final Map<String, Set<String>> ignoredElements) throws ParseException {
         for (final Object value : children) {
             if (value instanceof Element) {
                 CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);

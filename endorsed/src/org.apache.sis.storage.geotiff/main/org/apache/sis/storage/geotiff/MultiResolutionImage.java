@@ -18,8 +18,8 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Optional;
 import java.io.IOException;
-import java.nio.file.Path;
 import org.opengis.util.NameSpace;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
@@ -37,7 +37,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.base.GridResourceWrapper;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.privy.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -49,7 +48,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class MultiResolutionImage extends GridResourceWrapper implements ResourceOnFileSystem, StoreResource {
+final class MultiResolutionImage extends GridResourceWrapper implements StoreResource {
     /**
      * Name of the image at finest resolution.
      * This is used as the namespace for overviews.
@@ -95,11 +94,11 @@ final class MultiResolutionImage extends GridResourceWrapper implements Resource
     }
 
     /**
-     * Gets the paths to files used by this resource, or an empty array if unknown.
+     * Gets the paths to files used by this resource, or an empty value if unknown.
      */
     @Override
-    public Path[] getComponentFiles() {
-        return levels[0].getComponentFiles();
+    public final Optional<FileSet> getFileSet() {
+        return levels[0].getFileSet();
     }
 
     /**

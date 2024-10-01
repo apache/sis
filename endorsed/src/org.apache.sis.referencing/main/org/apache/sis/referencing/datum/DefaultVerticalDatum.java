@@ -280,7 +280,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         /**
          * Creates a new datum with the same values as the specified datum, which must be dynamic.
          *
-         * @param  datum   the datum to copy.
+         * @param  datum  the datum to copy.
          * @throws ClassCastException if the given datum is not an instance of {@code DynamicReferenceFrame}.
          *
          * @see #castOrCopy(VerticalDatum)

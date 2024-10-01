@@ -35,7 +35,7 @@ import java.util.Iterator;
  */
 final class InfiniteSet<E> extends AbstractSet<E> {
     /**
-     * The singleton instance. This is not parameterized on intend.
+     * The singleton instance. This is not parameterized on intent.
      */
     @SuppressWarnings("rawtypes")
     static final Set INSTANCE = new InfiniteSet();

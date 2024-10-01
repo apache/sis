@@ -85,7 +85,7 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#subsample(int...)}.
+     * Tests {@link GridExtent#subsample(long...)}.
      */
     @Test
     public void testSubsample() {
@@ -97,7 +97,7 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#upsample(int...)}.
+     * Tests {@link GridExtent#upsample(long...)}.
      */
     @Test
     public void testUpsample() {

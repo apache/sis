@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.lang.ref.WeakReference;
-import java.lang.ref.PhantomReference;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import javax.measure.Unit;
@@ -49,7 +48,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Printable;
-import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -59,7 +57,7 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.simple.SimpleCitation;
-import org.apache.sis.system.ReferenceQueueConsumer;
+import org.apache.sis.system.Cleaners;
 import org.apache.sis.system.DelayedExecutor;
 import org.apache.sis.system.DelayedRunnable;
 import org.apache.sis.system.Configuration;
@@ -305,6 +303,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *        If more than this number of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
      *        additional threads will be blocked until a Data Access Object become available.
      */
+    @SuppressWarnings("this-escape")        // Phantom reference.
     protected ConcurrentAuthorityFactory(final Class<DAO> dataAccessClass,
             final int maxStrongReferences, final int maxConcurrentQueries)
     {
@@ -347,7 +346,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          *   2) Closes the Data Access Objects at JVM shutdown time if the application is standalone,
          *      or when the bundle is uninstalled if running inside an OSGi or Servlet container.
          */
-        Shutdown.register(new ShutdownHook<>(this));
+        final var closer = new ShutdownHook<>(availableDAOs);
+        Cleaners.SHARED.register(this, closer);
+        Shutdown.register(closer);
     }
 
     /**
@@ -2034,29 +2035,26 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * when the Java Virtual Machine is shutdown, or when the module is uninstalled by the OSGi or Servlet container.
      *
      * <p><strong>Do not keep reference to the enclosing factory</strong> - in particular,
-     * this class must not be static - otherwise the factory would never been garbage collected.</p>
+     * this class must be static - otherwise the factory would never been garbage collected.</p>
      */
-    private static final class ShutdownHook<DAO extends GeodeticAuthorityFactory>           // MUST be static!
-            extends PhantomReference<ConcurrentAuthorityFactory<DAO>> implements Disposable, Callable<Object>
-    {
+    private static final class ShutdownHook<DAO extends GeodeticAuthorityFactory> implements Runnable, Callable<Object> {
         /**
          * The {@link ConcurrentAuthorityFactory#availableDAOs} queue.
          */
         private final Deque<DataAccessRef<DAO>> availableDAOs;
 
         /**
-         * Creates a new shutdown hook for the given factory.
+         * Creates a new shutdown hook.
          */
-        ShutdownHook(final ConcurrentAuthorityFactory<DAO> factory) {
-            super(factory, ReferenceQueueConsumer.QUEUE);
-            availableDAOs = factory.availableDAOs;
+        ShutdownHook(final Deque<DataAccessRef<DAO>> availableDAOs) {
+            this.availableDAOs = availableDAOs;
         }
 
         /**
          * Invoked indirectly by the garbage collector when the {@link ConcurrentAuthorityFactory} is disposed.
          */
         @Override
-        public void dispose() {
+        public void run() {
             Shutdown.unregister(this);
             try {
                 call();

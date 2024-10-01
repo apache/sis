@@ -122,7 +122,7 @@ public final class Axis extends NamedElement {
      * In particular, this field has no meaning for CRS of geometries in a {@link FeatureSet}.
      * See {@link #Axis(Variable)} for a list of methods than cannot be used in such case.</p>
      *
-     * @suu #getNumDimensions()
+     * @see #getNumDimensions()
      * @see #getMainDirection()
      */
     final int[] gridDimensionIndices;
@@ -157,7 +157,7 @@ public final class Axis extends NamedElement {
 
     /**
      * Creates an axis for a {@link FeatureSet}. This constructor leaves the {@link #gridDimensionIndices}
-     * and {@link #gridSizes} array to {@code null}, which forbid the use of following methods:
+     * and {@link #gridSizes} array to {@code null}, which forbids the use of following methods:
      *
      * <ul>
      *   <li>{@link #mainDimensionFirst(Axis[], int)}</li>
@@ -178,21 +178,24 @@ public final class Axis extends NamedElement {
     }
 
     /**
-     * Constructs a new axis associated to an arbitrary number of grid dimension. The given arrays are stored
+     * Constructs a new axis associated to an arbitrary number of grid dimensions. The given arrays are stored
      * as-in (not cloned) and their content may be modified after construction by {@link Grid#getAxes(Decoder)}.
      *
      * @param  abbreviation          axis abbreviation, also identifying its type. This is a controlled vocabulary.
      * @param  direction             direction of positive values ("up" or "down"), or {@code null} if unknown.
      * @param  gridDimensionIndices  indices of grid dimension associated to this axis, initially in netCDF order.
      * @param  gridSizes             number of cell elements along above grid dimensions, as unsigned integers.
+     * @param  dimension             number of valid elements in {@code gridDimensionIndices} and {@code gridSizes}.
      * @param  coordinates           coordinates of the localization grid used by this axis.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public Axis(final char abbreviation, final String direction, final int[] gridDimensionIndices, final int[] gridSizes,
-                final Variable coordinates) throws IOException, DataStoreException
+    public Axis(final char abbreviation, final String direction, int[] gridDimensionIndices, int[] gridSizes,
+                int dimension, final Variable coordinates) throws IOException, DataStoreException
     {
+        gridDimensionIndices = ArraysExt.resize(gridDimensionIndices, dimension);
+        gridSizes = ArraysExt.resize(gridSizes, dimension);
         /*
          * Try to get the axis direction from one of the following sources,
          * in preference order (unless an inconsistency is detected):
@@ -385,7 +388,7 @@ public final class Axis extends NamedElement {
 
     /**
      * Returns the number of dimension of the localization grid used by this axis.
-     * This method returns 2 if this axis if backed by a localization grid having 2 or more dimensions.
+     * This method returns 2 if this axis is backed by a localization grid having 2 or more dimensions.
      * In the netCDF UCAR library, such axes are handled by a {@link ucar.nc2.dataset.CoordinateAxis2D}.
      *
      * @return number of dimension of the localization grid used by this axis.
@@ -917,7 +920,8 @@ public final class Axis extends NamedElement {
             data = data.transform(tr.getScale(), tr.getOffset());       // Apply scale and offset attributes, if any.
             return data;
         } else {
-            throw new DataStoreException(coordinates.resources().getString(Resources.Keys.CanNotUseAxis_1, getName()));
+            throw new DataStoreException(coordinates.decoder.resources()
+                    .getString(Resources.Keys.CanNotUseAxis_1, getName()));
         }
     }
 

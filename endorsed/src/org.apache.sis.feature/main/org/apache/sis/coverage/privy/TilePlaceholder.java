@@ -133,20 +133,18 @@ public class TilePlaceholder {
     }
 
     /**
-     * Returns a provider of empty tiles filled with the given value in all bands.
-     * A value of {@code null} is interpreted as 0 for integer types or NaN for floating point types.
+     * Returns a provider of empty tiles filled with the given values in all bands.
+     * A {@code null} array is interpreted as 0 for integer types or NaN for floating point types.
      *
-     * @param  model      sample model of the empty tiles.
-     * @param  fillValue  the value to use for filling empty spaces in rasters, or {@code null} for zero.
+     * @param  model       sample model of the empty tiles.
+     * @param  fillValues  the values to use for filling empty spaces in rasters, or {@code null} for the default.
      * @return provider of filled tiles.
      */
-    public static TilePlaceholder filled(final SampleModel model, final Number fillValue) {
-        if (fillValue == null) {
+    public static TilePlaceholder filled(final SampleModel model, final Number[] fillValues) {
+        if (fillValues == null) {
             return empty(model);
         }
-        final Number[] values = new Number[model.getNumBands()];
-        Arrays.fill(values, fillValue);
-        return filled(model, new FillValues(model, values, true));
+        return filled(model, new FillValues(model, fillValues, true));
     }
 
     /**

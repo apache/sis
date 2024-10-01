@@ -514,7 +514,7 @@ public final class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#upsample(int...)}.
+     * Tests {@link GridGeometry#upsample(long...)}.
      */
     @Test
     public void testUpsample() {

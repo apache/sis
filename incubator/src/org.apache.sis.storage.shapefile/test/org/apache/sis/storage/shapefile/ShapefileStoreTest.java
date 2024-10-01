@@ -179,13 +179,13 @@ public class ShapefileStoreTest {
     public void testFiles() throws URISyntaxException, DataStoreException {
         final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/point.shp");
         try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
-            Path[] componentFiles = store.getComponentFiles();
-            assertEquals(5, componentFiles.length);
-            assertTrue(componentFiles[0].toString().endsWith("point.shp"));
-            assertTrue(componentFiles[1].toString().endsWith("point.shx"));
-            assertTrue(componentFiles[2].toString().endsWith("point.dbf"));
-            assertTrue(componentFiles[3].toString().endsWith("point.prj"));
-            assertTrue(componentFiles[4].toString().endsWith("point.cpg"));
+            Iterator<Path> componentFiles = store.getFileSet().orElseThrow().getPaths().iterator();
+            assertTrue(componentFiles.next().toString().endsWith("point.shp"));
+            assertTrue(componentFiles.next().toString().endsWith("point.shx"));
+            assertTrue(componentFiles.next().toString().endsWith("point.dbf"));
+            assertTrue(componentFiles.next().toString().endsWith("point.prj"));
+            assertTrue(componentFiles.next().toString().endsWith("point.cpg"));
+            assertFalse(componentFiles.hasNext());
         }
     }
 
@@ -197,8 +197,7 @@ public class ShapefileStoreTest {
         final Path temp = folder.resolve("test.shp");
         final String name = temp.getFileName().toString().split("\\.")[0];
         try (final ShapefileStore store = new ShapefileStore(temp)) {
-            Path[] componentFiles = store.getComponentFiles();
-            assertEquals(0, componentFiles.length);
+            assertTrue(store.getFileSet().orElseThrow().getPaths().isEmpty());
 
             {//create type
                 final DefaultFeatureType type = createType();
@@ -206,13 +205,13 @@ public class ShapefileStoreTest {
             }
 
             {//check files have been created
-                componentFiles = store.getComponentFiles();
-                assertEquals(5, componentFiles.length);
-                assertTrue(componentFiles[0].toString().endsWith(name+".shp"));
-                assertTrue(componentFiles[1].toString().endsWith(name+".shx"));
-                assertTrue(componentFiles[2].toString().endsWith(name+".dbf"));
-                assertTrue( componentFiles[3].toString().endsWith(name+".prj"));
-                assertTrue(componentFiles[4].toString().endsWith(name+".cpg"));
+                Iterator<Path> componentFiles = store.getFileSet().orElseThrow().getPaths().iterator();
+                assertTrue(componentFiles.next().toString().endsWith(name+".shp"));
+                assertTrue(componentFiles.next().toString().endsWith(name+".shx"));
+                assertTrue(componentFiles.next().toString().endsWith(name+".dbf"));
+                assertTrue(componentFiles.next().toString().endsWith(name+".prj"));
+                assertTrue(componentFiles.next().toString().endsWith(name+".cpg"));
+                assertFalse(componentFiles.hasNext());
             }
 
             {// check created type

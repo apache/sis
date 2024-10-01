@@ -16,6 +16,8 @@
  */
 package org.apache.sis.test;
 
+import java.util.Map;
+import java.util.function.Predicate;
 import org.opengis.metadata.Metadata;
 
 // Test dependencies
@@ -32,11 +34,24 @@ public class ContentVerifier {
         abort("This test requires GeoAPI 3.1.");
     }
 
+    public void addPropertyToIgnore(Predicate<String> ignore) {
+        abort("This test requires GeoAPI 3.1.");
+    }
+
+    public void addExpectedValue(String property, Object value) {
+        abort("This test requires GeoAPI 3.1.");
+    }
+
+    @SafeVarargs
+    public final void addExpectedValues(final Map.Entry<String,?>... properties) {
+        abort("This test requires GeoAPI 3.1.");
+    }
+
     public void addMetadataToVerify(Metadata actual) {
         abort("This test requires GeoAPI 3.1.");
     }
 
-    public void assertMetadataEquals(final String path, final Object value, final Object... others) {
+    public void assertMetadataEquals() {
         abort("This test requires GeoAPI 3.1.");
     }
 }

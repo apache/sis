@@ -32,7 +32,7 @@ public final class Attitude extends StructClass {
     private static final AddressLayout LAYOUT_ROLL;
     private static final AddressLayout LAYOUT_HEAVE;
     private static final AddressLayout LAYOUT_HEADING;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_NUM_MEASUREMENTS = GSF.C_SHORT.withName("num_measurements"),
         MemoryLayout.paddingLayout(6),
         LAYOUT_ATTITUDE_TIME = GSF.C_POINTER.withName("attitude_time"),
@@ -42,19 +42,14 @@ public final class Attitude extends StructClass {
         LAYOUT_HEADING = GSF.C_POINTER.withName("heading")
     ).withName("t_gsfAttitude");
 
-    public Attitude(MemorySegment struct) {
+    Attitude(MemorySegment struct) {
         super(struct);
-    }
-
-    public Attitude(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
     protected MemoryLayout getLayout() {
         return LAYOUT;
     }
-
 
     public int getNumMeasurements() {
         return struct.get(LAYOUT_NUM_MEASUREMENTS, 0);
@@ -84,6 +79,4 @@ public final class Attitude extends StructClass {
         final MemorySegment resolvedAddress = struct.get(LAYOUT_HEADING, 40);
         return getDoubles(resolvedAddress, 0, getNumMeasurements());
     }
-
 }
-

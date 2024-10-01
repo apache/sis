@@ -18,6 +18,7 @@ package org.apache.sis.storage.geopackage;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
@@ -40,7 +41,6 @@ import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.sql.DataAccess;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.metadata.sql.privy.ScriptRunner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -76,7 +76,7 @@ import org.apache.sis.util.Workaround;
  *
  * @see <a href="https://www.geopackage.org/spec140/index.html">OGC® GeoPackage Encoding Standard version 1.4.0</a>
  */
-public class GpkgStore extends SQLStore implements WritableAggregate, ResourceOnFileSystem {
+public class GpkgStore extends SQLStore implements WritableAggregate {
     /**
      * Type of data which for which {@code GpkgStore} will delegate the handling to the {@code SQLStore} parent.
      * A data type is a values of the {@value Content#DATA_TYPE} column of the {@value Content#TABLE_NAME} table.
@@ -87,7 +87,7 @@ public class GpkgStore extends SQLStore implements WritableAggregate, ResourceOn
      * Path to the SQLite file, or {@code null} if the store was opened with a {@link DataSource}.
      * This is for information purpose only.
      *
-     * @see #getComponentFiles()
+     * @see #getFileSet()
      */
     private final Path path;
 
@@ -154,21 +154,23 @@ public class GpkgStore extends SQLStore implements WritableAggregate, ResourceOn
     }
 
     /**
-     * Returns the path to the main file and its auxiliary files, or an empty array if unknown.
+     * Returns the path to the main file and its auxiliary files, or an empty value if unknown.
      *
-     * @return the Geopackage file and auxiliary files, or an empty array if unknown.
+     * @return the Geopackage file and auxiliary files, or an empty value if unknown.
      */
     @Override
-    public Path[] getComponentFiles() {
+    public Optional<FileSet> getFileSet() {
         if (path == null) {
-            return new Path[0];
+            return Optional.empty();
         }
+        final var paths = new ArrayList<Path>(3);
+        paths.add(path);
         final String filename = path.getFileName().toString();
-        return new Path[] {
-            path,
-            path.resolveSibling(filename.concat(Initializer.WAL_SUFFIX)),
-            path.resolveSibling(filename.concat(Initializer.SHM_SUFFIX))
-        };
+        for (String suffix : new String[] {Initializer.WAL_SUFFIX, Initializer.SHM_SUFFIX}) {
+            Path aux = path.resolveSibling(filename.concat(suffix));
+            if (Files.exists(aux)) paths.add(aux);
+        }
+        return Optional.of(new FileSet(paths));
     }
 
     /**

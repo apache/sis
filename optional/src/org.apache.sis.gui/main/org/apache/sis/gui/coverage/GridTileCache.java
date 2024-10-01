@@ -18,7 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.coverage.privy.ImageLayout;
 
 
 /**
@@ -45,7 +45,7 @@ final class GridTileCache extends LinkedHashMap<GridTile,GridTile> {
      */
     @Override
     protected boolean removeEldestEntry(final Map.Entry<GridTile,GridTile> entry) {
-        if (size() > ImageUtilities.SUGGESTED_TILE_CACHE_SIZE) {
+        if (size() > ImageLayout.SUGGESTED_TILE_CACHE_SIZE) {
             return entry.getValue().clearTile();
         }
         return false;

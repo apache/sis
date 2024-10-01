@@ -126,4 +126,10 @@ public abstract class NamedElement {
     public String toString() {
         return Strings.bracket(getClass().getSimpleName(), getName());
     }
+
+    /*
+     * Do not override `equals(Object)` and `hashCode()`. Some subclasses are
+     * used in `HashSet` and the identity comparison is well suited for them.
+     * For example, `Variable` is used as keys in `GridMapping.forVariable(…)`.
+     */
 }

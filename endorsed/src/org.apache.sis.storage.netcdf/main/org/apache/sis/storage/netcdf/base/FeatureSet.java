@@ -209,26 +209,26 @@ final class FeatureSet extends DiscreteSampling {
          *    - Trajectory as a geometric object, potentially with a time characteristic.
          *    - Time-varying properties (i.e. properties having a value per instant).
          */
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder(
-                decoder.nameFactory, decoder.geomlib, decoder.listeners.getLocale());
+        final var builder = new FeatureTypeBuilder(decoder.nameFactory, decoder.geomlib, decoder.listeners.getLocale());
         /*
          * Identifier and other static properties (one value per feature instance).
          */
         for (int i = getReferencingDimension(false); i < properties.length; i++) {
             final Variable v = properties[i];
-            final Class<?> type;
+            final Class<?> t;
             if (v.getEnumeration() != null) {
-                type = String.class;
+                t = String.class;
             } else {
-                type = v.getDataType().getClass(v.getNumDimensions() > 1);
+                t = v.getDataType().getClass(v.getNumDimensions() > 1);
             }
-            describe(v, builder.addAttribute(type));
+            describe(v, builder.addAttribute(t));
         }
         /*
          * Geometry object as a single point or a trajectory, associated with:
          *   - A Coordinate Reference System (CRS) characteristic.
          *   - A "datetimes" characteristic if a time axis exists.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         DefaultTemporalCRS timeCRS = null;
         if (referencingDimension != 0) {
             final AttributeTypeBuilder<?> geometry;
@@ -256,8 +256,8 @@ final class FeatureSet extends DiscreteSampling {
          */
         for (int i = getReferencingDimension(true); i < dynamicProperties.length; i++) {
             final Variable v = dynamicProperties[i];
-            final Class<?> type = (v.getEnumeration() != null || v.isString()) ? String.class : Number.class;
-            describe(v, builder.addAttribute(type).setMaximumOccurs(Integer.MAX_VALUE));
+            final Class<?> t = (v.getEnumeration() != null || v.isString()) ? String.class : Number.class;
+            describe(v, builder.addAttribute(t).setMaximumOccurs(Integer.MAX_VALUE));
         }
         /*
          * By default, `name` is a netCDF dimension name (see method javadoc), usually all lower-cases.
@@ -302,8 +302,8 @@ final class FeatureSet extends DiscreteSampling {
      */
     static FeatureSet[] create(final Decoder decoder, final DataStore lock) throws IOException, DataStoreException {
         assert Thread.holdsLock(lock);
-        final List<FeatureSet> features = new ArrayList<>(3);     // Will usually contain at most one element.
-        final Map<Dimension,Boolean> done = new HashMap<>();      // Whether a dimension has already been used.
+        final var features = new ArrayList<FeatureSet>(3);      // Will usually contain at most one element.
+        final var done = new HashMap<Dimension,Boolean>();      // Whether a dimension has already been used.
         for (final Variable v : decoder.getVariables()) {
             if (v.getRole() != VariableRole.FEATURE_PROPERTY) {
                 continue;
@@ -444,7 +444,7 @@ final class FeatureSet extends DiscreteSampling {
          * support mixing both modes (e.g. X and Y coordinates as static properties and T as dynamic property).
          * The variables are reordered for making sure that X, Y, Z, T are first and in that order.
          */
-        final Reorder r = new Reorder();
+        final var r = new Reorder();
         features.add(new FeatureSet(decoder, featureName,
                      (counts != null) ? counts.read() : null,
                      r.toArray(properties, coordinates, false),
@@ -908,8 +908,8 @@ makeGeom:   if (!isEmpty) {
                     }
                     final Map<Integer,String> enumeration = p.getEnumeration();
                     if (enumeration != null && value instanceof Vector) {
-                        final Vector data = (Vector) value;
-                        final String[] meanings = new String[data.size()];
+                        final var data = (Vector) value;
+                        final var meanings = new String[data.size()];
                         for (int j=0; j<meanings.length; j++) {
                             String m = enumeration.get(data.intValue(j));
                             meanings[j] = (m != null) ? m : "";

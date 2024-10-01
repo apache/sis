@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
+import java.lang.reflect.Array;
 import java.io.IOException;
 import java.time.Instant;
 import ucar.nc2.constants.CDM;      // String constants are copied by the compiler with no UCAR reference left.
@@ -65,7 +66,7 @@ public abstract class Variable extends Node {
      * <p>All shared vectors shall be considered read-only.</p>
      *
      * @see #read()
-     * @see #setValues(Object)
+     * @see #setValues(Object, boolean)
      */
     private static final WeakHashSet<Vector> SHARED_VECTORS = new WeakHashSet<>(Vector.class);
 
@@ -166,7 +167,7 @@ public abstract class Variable extends Node {
      * (for example the values in coordinate system axes).
      *
      * @see #read()
-     * @see #setValues(Object)
+     * @see #setValues(Object, boolean)
      */
     private transient Vector values;
 
@@ -176,12 +177,12 @@ public abstract class Variable extends Node {
      * This is a different instance if this variable is a two-dimensional character array, in which case this field
      * is an instance of {@code List<String>}.
      *
-     * The difference between {@code values} and {@code valuesAnyType} is that {@code values.get(i)} may throw
-     * {@link NumberFormatException} because it always try to return its elements as {@link Number} instances,
-     * while {@code valuesAnyType.get(i)} can return {@link String} instances.
+     * <p>The difference between {@code values} and {@code valuesAnyType} is that {@code values.get(i)} may throw
+     * {@link NumberFormatException} because it always tries to return its elements as {@link Number} instances,
+     * while {@code valuesAnyType.get(i)} can return {@link String} instances.</p>
      *
      * @see #readAnyType()
-     * @see #setValues(Object)
+     * @see #setValues(Object, boolean)
      */
     private transient List<?> valuesAnyType;
 
@@ -356,26 +357,18 @@ public abstract class Variable extends Node {
     protected abstract Unit<?> parseUnit(String symbols) throws Exception;
 
     /**
-     * Sets the unit of measurement and the epoch to the same value as the given variable.
-     * This method is not used in CF-compliant files; it is reserved for the handling of some
-     * particular conventions, for example {@link HYCOM}.
+     * Sets the unit of measurement to the given value. This method is not used in CF-compliant files.
+     * It is reserved for the handling of some particular conventions, for example HYCOM.
      *
-     * @param  other      the variable from which to copy unit and epoch, or {@code null} if none.
-     * @param  overwrite  if non-null, set to the given unit instead of the unit of {@code other}.
-     * @return the epoch (may be {@code null}).
+     * @param  unit   the new unit of measurement.
+     * @param  epich  the epoch if the unit is temporal, or {@code null} otherwise.
      *
      * @see #getUnit()
      */
-    final Instant setUnit(final Variable other, Unit<?> overwrite) {
-        if (other != null) {
-            unit  = other.getUnit();        // May compute the epoch as a side effect.
-            epoch = other.epoch;
-        }
-        if (overwrite != null) {
-            unit = overwrite;
-        }
+    final void setUnit(final Unit<?> unit, final Instant epoch) {
+        this.unit  = unit;
+        this.epoch = epoch;
         unitParsed = true;
-        return epoch;
     }
 
     /**
@@ -483,7 +476,7 @@ public abstract class Variable extends Node {
      * @see #STRING_DIMENSION
      */
     final boolean isString() {
-        return getDataType() == DataType.CHAR && getNumDimensions() >= STRING_DIMENSION;
+        return getNumDimensions() >= STRING_DIMENSION && getDataType() == DataType.CHAR;
     }
 
     /**
@@ -1004,7 +997,7 @@ public abstract class Variable extends Node {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Vector read() throws IOException, DataStoreException {
         if (values == null) {
-            setValues(readFully());
+            setValues(readFully(), false);
         }
         return values;
     }
@@ -1012,8 +1005,11 @@ public abstract class Variable extends Node {
     /**
      * Reads all the data for this variable and returns them as a list of any object.
      * The difference between {@code read()} and {@code readAnyType()} is that {@code vector.get(i)} may throw
-     * {@link NumberFormatException} because it always try to return its elements as {@link Number} instances,
+     * {@link NumberFormatException} because it always tries to return its elements as {@link Number} instances,
      * while {@code list.get(i)} can return {@link String} instances.
+     *
+     * @todo Consider extending to {@link java.time} objects as well. It would be useful in particular for
+     *       climatological data, where objects may be {@link java.time.Month} or {@link java.time.MonthDay}.
      *
      * @return the data as a list of numbers or strings.
      * @throws IOException if an error occurred while reading the data.
@@ -1023,7 +1019,7 @@ public abstract class Variable extends Node {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final List<?> readAnyType() throws IOException, DataStoreException {
         if (valuesAnyType == null) {
-            setValues(readFully());
+            setValues(readFully(), false);
         }
         return valuesAnyType;
     }
@@ -1050,11 +1046,13 @@ public abstract class Variable extends Node {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public abstract Vector read(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
+    public abstract Vector read(GridExtent area, long[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Reads a subsampled sub-area of the variable and returns them as a list of any object.
      * Elements in the returned list may be {@link Number} or {@link String} instances.
+     *
+     * @todo Consider extending to {@link java.time} objects as well.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  subsampling along each dimension, or {@code null} if none.
@@ -1063,7 +1061,7 @@ public abstract class Variable extends Node {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public abstract List<?> readAnyType(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
+    public abstract List<?> readAnyType(GridExtent area, long[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
@@ -1076,28 +1074,44 @@ public abstract class Variable extends Node {
     protected abstract Object readFully() throws IOException, DataStoreException;
 
     /**
-     * Sets the values in this variable. The values are normally read from the netCDF file by the {@link #read()} method,
-     * but this {@code setValues(Object)} method may also be invoked if the caller wants to overwrite those values.
+     * Sets the values in this variable. The values are normally read from the netCDF file by {@link #read()},
+     * but this {@code setValues(…)} method may also be invoked if the caller wants to overwrite those values.
      *
-     * @param  array  the values as an array of primitive type (for example {@code float[]}.
+     * @param  array          the values as an array of primitive type (for example {@code float[]}.
+     * @param  forceNumerics  whether to force the replacement of character strings by real numbers.
      * @throws ArithmeticException if the dimensions of this variable are too large.
      */
-    final void setValues(final Object array) {
+    final void setValues(final Object array, final boolean forceNumerics) {
         final DataType dataType = getDataType();
         if (dataType == DataType.CHAR) {
             int n = getNumDimensions();
             if (n >= STRING_DIMENSION) {
                 final List<Dimension> dimensions = getGridDimensions();
-                final int length = Math.toIntExact(dimensions.get(--n).length());
-                long count = dimensions.get(--n).length();
-                while (n > 0) {
+                final int length = Math.toIntExact(dimensions.get(--n).length());   // Number of characters per value.
+                long count = dimensions.get(--n).length();                          // Number of values.
+                while (n > 0) {                                                     // In case of matrix of strings.
                     count = Math.multiplyExact(count, dimensions.get(--n).length());
                 }
-                final String[] strings = createStringArray(array, Math.toIntExact(count), length);
                 /*
-                 * Following method calls take the array reference without cloning it.
+                 * The character strings may have been replaced by real numbers by the caller.
+                 * In such case, we need to take the vector as-is.
+                 */
+                if (forceNumerics) {
+                    assert Array.getLength(array) == count : getName();
+                    values = SHARED_VECTORS.unique(Vector.create(array, false));
+                    valuesAnyType = values;
+                    return;
+                }
+                /*
+                 * Standard case. The `createStringArray(…)` method expects either `byte[]` or `char[]`,
+                 * depending on the subclass. It may throw `ClassCastException` if the array is not of
+                 * the expected class, but it should not happen unless there is a bug in our algorithm.
+                 *
+                 * The `Vector.create(…)` and `wrap(…)` method calls take the array reference without cloning it.
                  * Consequently, creating those two objects now (even if we may not use them) is reasonably cheap.
                  */
+                assert Array.getLength(array) == count * length : getName();
+                final String[] strings = createStringArray(array, Math.toIntExact(count), length);
                 values        = Vector.create(strings, false);
                 valuesAnyType = UnmodifiableArrayList.wrap(strings);
                 return;
@@ -1162,7 +1176,7 @@ public abstract class Variable extends Node {
     protected final List<String> createStringList(final Object chars, final GridExtent area) {
         final int length = Math.toIntExact(area.getSize(0));
         long count = area.getSize(1);
-        for (int i = area.getDimension(); --i >= 2;) {          // As a safety, but should never enter in this loop.
+        for (int i = area.getDimension(); --i >= STRING_DIMENSION;) {   // As a safety, but should never enter in this loop.
             count = Math.multiplyExact(count, area.getSize(i));
         }
         return UnmodifiableArrayList.wrap(createStringArray(chars, Math.toIntExact(count), length));
@@ -1272,7 +1286,7 @@ public abstract class Variable extends Node {
      * @return the exception to throw.
      */
     protected final DataStoreContentException canNotComputePosition(final ArithmeticException cause) {
-        return new DataStoreContentException(resources().getString(
+        return new DataStoreContentException(decoder.resources().getString(
                 Resources.Keys.CanNotComputeVariablePosition_2, getFilename(), getName()), cause);
     }
 
@@ -1310,7 +1324,7 @@ public abstract class Variable extends Node {
     }
 
     /*
-     * Do not override Object.equals(Object) and Object.hashCode(),
-     * because Variables are used as keys by GridMapping.forVariable(…).
+     * Do not override `Object.equals(Object)` and `Object.hashCode()`,
+     * because variables are used as keys by `GridMapping.forVariable(…)`.
      */
 }

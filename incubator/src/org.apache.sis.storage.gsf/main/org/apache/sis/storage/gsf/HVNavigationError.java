@@ -33,7 +33,7 @@ public final class HVNavigationError extends StructClass {
     private static final OfDouble LAYOUT_SEP_UNCERTAINTY;
     private static final SequenceLayout LAYOUT_SPARE;
     private static final AddressLayout LAYOUT_POSITION_TYPE;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_NAV_ERROR_TIME = TimeSpec.LAYOUT.withName("nav_error_time"),
         LAYOUT_RECORD_ID = GSF.C_INT.withName("record_id"),
         MemoryLayout.paddingLayout(4),
@@ -45,12 +45,8 @@ public final class HVNavigationError extends StructClass {
         LAYOUT_POSITION_TYPE = GSF.C_POINTER.withName("position_type")
     ).withName("t_gsfHVNavigationError");
 
-    public HVNavigationError(MemorySegment struct) {
+    HVNavigationError(MemorySegment struct) {
         super(struct);
-    }
-
-    public HVNavigationError(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -85,5 +81,4 @@ public final class HVNavigationError extends StructClass {
     public MemorySegment getPositionType() {
         return struct.get(LAYOUT_POSITION_TYPE, 56);
     }
-
 }

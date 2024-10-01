@@ -22,7 +22,6 @@ import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.image.Raster;
 import static java.lang.Math.toIntExact;
-import static java.lang.Math.multiplyFull;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.geotiff.inflater.Inflater;
@@ -53,7 +52,7 @@ final class CompressedSubset extends DataSubset {
      * <em>first</em> pixel in a row. For computing the actual number of sample values to skip,
      * the number of sample values read or skipped before the last pixel must be subtracted.
      */
-    private final int afterLastBand;
+    private final long afterLastBand;
 
     /**
      * Number of sample values to skip after a chunk has been read, or {@code null} if none.
@@ -105,11 +104,12 @@ final class CompressedSubset extends DataSubset {
      * @param  rasters  potentially shared cache of rasters read by this {@code DataSubset}.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(source, subset);
-        scanlineStride    = multiplyFull(getTileSize(X_DIMENSION), sourcePixelStride);
-        final int between = sourcePixelStride * (getSubsampling(X_DIMENSION) - 1);
-        int afterLastBand = sourcePixelStride * (getTileSize(X_DIMENSION) - 1);
+        scanlineStride     = Math.multiplyExact(sourcePixelStride, getTileSize(X_DIMENSION));
+        final int between  = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(X_DIMENSION) - 1));
+        long afterLastBand = scanlineStride - sourcePixelStride;
         if (includedBands != null && sourcePixelStride > 1) {
             final int[] skips = new int[includedBands.length];
             final int m = skips.length - 1;
@@ -169,7 +169,7 @@ final class CompressedSubset extends DataSubset {
      * Computes the number of pixels to read in dimension <var>i</var>.
      * The arguments given to this method are the ones given to the {@code readSlice(…)} method.
      */
-    private static int pixelCount(final long[] lower, final long[] upper, final int[] subsampling, final int i) {
+    private static int pixelCount(final long[] lower, final long[] upper, final long[] subsampling, final int i) {
         final int n = toIntExact((upper[i] - lower[i] - 1) / subsampling[i] + 1);
         assert (n > 0) : n;
         return n;
@@ -188,13 +188,13 @@ final class CompressedSubset extends DataSubset {
      */
     @Override
     Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
-                     final int[] subsampling, final Point location) throws IOException, DataStoreException
+                     final long[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType dataType = getDataType();
         final int  width        = pixelCount(lower, upper, subsampling, X_DIMENSION);
         final int  height       = pixelCount(lower, upper, subsampling, Y_DIMENSION);
         final int  chunksPerRow = width * (targetPixelStride / samplesPerChunk);
-        final int  betweenRows  = subsampling[1] - 1;
+        final int  betweenRows  = Math.toIntExact(subsampling[1] - 1);
         final long head         = beforeFirstBand + sourcePixelStride * (lower[X_DIMENSION]);
         final long tail         = afterLastBand   - sourcePixelStride * (lower[X_DIMENSION] + (width-1)*subsampling[X_DIMENSION]);
         /*
@@ -212,10 +212,20 @@ final class CompressedSubset extends DataSubset {
         final int pixelsPerElement = getPixelsPerElement();                 // Always ≥ 1 and usually = 1.
         assert (head % pixelsPerElement) == 0 : head;
         if (inflater == null) {
-            inflater = Inflater.create(source.listeners(), input(), source.getCompression(), source.getPredictor(),
-                        sourcePixelStride, getTileSize(X_DIMENSION), chunksPerRow, samplesPerChunk, skipAfterChunks,
-                        pixelsPerElement, dataType);
+            inflater = Inflater.create(
+                    source.listeners(),                   // Object where to report warnings.
+                    input(),                              // The source of data to decompress.
+                    source.getCompression(),              // The compression method.
+                    source.getPredictor(),                // The mathematical operator to apply after decompression.
+                    sourcePixelStride,                    // Number of sample values per pixel in the source image.
+                    toIntExact(getTileSize(X_DIMENSION)), // Number of pixels in a row of source image.
+                    chunksPerRow,                         // Number of pixels per row in target image.
+                    samplesPerChunk,                      // Number of sample values per pixel.
+                    skipAfterChunks,                      // Number of sample values to skip between pixels.
+                    pixelsPerElement,                     // Number of pixels per primitive element (for packed.
+                    dataType);                            // Primitive type used for storing data elements in the bank.
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Inflater inflater = this.inflater;
         final int      capacity = getBankCapacity(pixelsPerElement);
         final Buffer[] banks    = new Buffer[numBanks];
@@ -243,7 +253,7 @@ final class CompressedSubset extends DataSubset {
             }
             inflater.skip(head);                        // Last iteration without the trailing `skip(…)` calls.
             inflater.uncompressRow();
-            fillRemainingRows(bank.flip());
+            fillRemainingRows(bank.flip(), b);
             banks[b] = bank;
         }
         return createWritableRaster(RasterFactory.wrap(dataType, banks), location);

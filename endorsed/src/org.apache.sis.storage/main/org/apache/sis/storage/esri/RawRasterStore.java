@@ -18,6 +18,7 @@ package org.apache.sis.storage.esri;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
@@ -193,11 +194,11 @@ final class RawRasterStore extends RasterStore {
     /**
      * Returns the {@linkplain #location} as a {@code Path} component together with auxiliary files.
      *
-     * @return the main file and auxiliary files as paths, or an empty array if unknown.
+     * @return the main file and auxiliary files as paths, or an empty value if unknown.
      * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
-    public Path[] getComponentFiles() throws DataStoreException {
+    public Optional<FileSet> getFileSet() throws DataStoreException {
         return listComponentFiles(RawRasterStoreProvider.HDR, PRJ, STX, CLR);
     }
 

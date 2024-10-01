@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import java.io.IOException;
@@ -40,6 +39,7 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.Utilities;
@@ -196,7 +196,10 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @throws DataStoreException if an error occurred while interpreting the netCDF file content.
      */
     public final void applyOtherConventions() throws IOException, DataStoreException {
-        HYCOM.convert(this, getVariables());
+        final var t = new VariableTransformer(this);
+        for (Variable variable : getVariables()) {
+            t.analyze(variable);
+        }
     }
 
     /**
@@ -228,19 +231,15 @@ public abstract class Decoder extends ReferencingFactoryContainer {
     public abstract String getFilename();
 
     /**
-     * Returns an identification of the file format. This method should returns an array of length 1, 2 or 3 as below:
+     * Adds to the given metadata an identification of the file format.
+     * Subclasses should invoke the following methods:
      *
      * <ul>
-     *   <li>One of the following identifier in the first element: {@code "NetCDF"}, {@code "NetCDF-4"} or other values
-     *       defined by the UCAR library. If known, it will be used as an identifier for a more complete description to
-     *       be provided by {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.</li>
-     *   <li>Optionally a human-readable description in the second array element.</li>
-     *   <li>Optionally a version in the third array element.</li>
+     *   <li>{@link MetadataBuilder#setPredefinedFormat(String, StoreListeners, boolean)}</li>
+     *   <li>{@link MetadataBuilder#addFormatReaderSIS(String)} (if applicable)</li>
      * </ul>
-     *
-     * @return identification of the file format, human-readable description and version number.
      */
-    public abstract String[] getFormatDescription();
+    public abstract void addFormatDescription(MetadataBuilder builder);
 
     /**
      * Defines the groups where to search for named attributes, in preference order.
@@ -325,7 +324,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @param  value  the illegal value.
      * @param  e      the exception, or {@code null} if none.
      */
-    final void illegalAttributeValue(final String name, final String value, final NumberFormatException e) {
+    final void illegalAttributeValue(final String name, final String value, final Exception e) {
         listeners.warning(resources().getString(Resources.Keys.IllegalAttributeValue_3, getFilename(), name, value), e);
     }
 
@@ -352,7 +351,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      *
      * @return the timezone for dates.
      */
-    public ZoneId getTimeZone() {
+    public ZoneOffset getTimeZone() {
         return ZoneOffset.UTC;
     }
 
@@ -437,7 +436,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @throws DataStoreException if a logical error occurred.
      */
     public final List<CoordinateReferenceSystem> getReferenceSystemInfo() throws IOException, DataStoreException {
-        final List<CoordinateReferenceSystem> list = new ArrayList<>();
+        final var list = new ArrayList<CoordinateReferenceSystem>();
         for (final Variable variable : getVariables()) {
             final GridMapping m = GridMapping.forVariable(variable);
             if (m != null) {
@@ -450,7 +449,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
          * Consequently, if such information is present, grid CRS may be inaccurate.
          */
         if (list.isEmpty()) {
-            final List<Exception> warnings = new ArrayList<>();     // For internal usage by Grid.
+            final var warnings = new ArrayList<Exception>();    // For internal usage by Grid.
             for (final Grid grid : getGridCandidates()) {
                 addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings, null, null));
             }
@@ -527,7 +526,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      *
      * @return the localized error resource bundle.
      */
-    final Resources resources() {
+    public final Resources resources() {
         return Resources.forLocale(getLocale());
     }
 

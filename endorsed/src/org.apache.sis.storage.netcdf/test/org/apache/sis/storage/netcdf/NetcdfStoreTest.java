@@ -66,7 +66,7 @@ public final class NetcdfStoreTest extends TestCaseWithLogs {
             metadata = store.getMetadata();
             assertSame(metadata, store.getMetadata(), "Should be cached.");
         }
-        MetadataReaderTest.compareToExpected(metadata, false);
+        MetadataReaderTest.compareToExpected(metadata, false).assertMetadataEquals();
         loggings.skipNextLogIfContains("EPSG:4019");        // Deprecated EPSG code.
         loggings.assertNoUnexpectedLog();
     }

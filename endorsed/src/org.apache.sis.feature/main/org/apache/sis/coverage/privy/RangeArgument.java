@@ -24,8 +24,6 @@ import java.awt.image.RasterFormatException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.privy.ColorModelFactory;
-import org.apache.sis.coverage.privy.SampleModelFactory;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -59,7 +57,7 @@ public final class RangeArgument {
      * the {@code insertFoo(…)} methods are invoked.
      *
      * @see #insertBandDimension(GridExtent, int)
-     * @see #insertSubsampling(int[], int)
+     * @see #insertSubsampling(long[], int)
      */
     private int first, last, interval;
 
@@ -142,7 +140,7 @@ public final class RangeArgument {
 
     /**
      * Returns {@code true} if user specified all bands in increasing order.
-     * This method always return {@code false} if {@link #insertSubsampling(int[], int)} has been invoked.
+     * This method always return {@code false} if {@link #insertSubsampling(long[], int)} has been invoked.
      *
      * @return whether user specified all bands in increasing order without subsampling inserted.
      */
@@ -223,7 +221,7 @@ public final class RangeArgument {
     /**
      * Returns the i<sup>th</sup> index of the band to read from the resource, after subsampling has been applied.
      * The subsampling results from calls to {@link #insertBandDimension(GridExtent, int)} and
-     * {@link #insertSubsampling(int[], int)} methods.
+     * {@link #insertSubsampling(long[], int)} methods.
      *
      * {@snippet lang="java" :
      *     areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
@@ -258,7 +256,7 @@ public final class RangeArgument {
     /**
      * Returns the given extent with a new dimension added for the bands. The extent in the new dimension
      * will range from the minimum {@code range} value to the maximum {@code range} value inclusive.
-     * This method should be used together with {@link #insertSubsampling(int[], int)}.
+     * This method should be used together with {@link #insertSubsampling(long[], int)}.
      *
      * <h4>Use case</h4>
      * This method is useful for reading a <var>n</var>-dimensional data cube with values stored in a
@@ -296,7 +294,7 @@ public final class RangeArgument {
      * @param  bandDimension  index of the band dimension.
      * @return a new subsampling array with the same values as the given array plus one dimension for bands.
      */
-    public int[] insertSubsampling(int[] subsampling, final int bandDimension) {
+    public long[] insertSubsampling(long[] subsampling, final int bandDimension) {
         final int[] delta = new int[packed.length - 1];
         for (int i=0; i<delta.length; i++) {
             delta[i] = getSourceIndex(i+1) - getSourceIndex(i);
@@ -316,7 +314,7 @@ public final class RangeArgument {
      * @return bands selected by user, in user-specified order.
      */
     public SampleDimension[] select(final List<? extends SampleDimension> sourceBands) {
-        final SampleDimension[] bands = new SampleDimension[getNumBands()];
+        final var bands = new SampleDimension[getNumBands()];
         for (int i=0; i<bands.length; i++) {
             bands[getTargetIndex(i)] = sourceBands.get(getSourceIndex(i));
         }
@@ -357,7 +355,7 @@ public final class RangeArgument {
         if (view) {
             return model.createSubsetSampleModel(bands);
         } else {
-            final SampleModelFactory factory = new SampleModelFactory(model);
+            final var factory = new SampleModelFactory(model);
             factory.subsetAndCompress(bands);
             return factory.build();
         }

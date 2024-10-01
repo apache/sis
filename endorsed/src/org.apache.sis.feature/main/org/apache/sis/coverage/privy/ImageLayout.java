@@ -43,33 +43,53 @@ import org.apache.sis.system.Configuration;
  */
 public class ImageLayout {
     /**
-     * The minimum tile size. The {@link #toTileSize(int, int, boolean)} method will not suggest tiles
-     * smaller than this size. This size must be smaller than {@link ImageUtilities#DEFAULT_TILE_SIZE}.
+     * The minimum tile width or height. The {@link #toTileSize(int, int, boolean)} method will not
+     * suggest tiles smaller than this size. This size must be smaller than {@link #DEFAULT_TILE_SIZE}.
      *
      * <p>Tiles of 180×180 pixels consume about 127 kB, assuming 4 bytes per pixel. This is about half
      * the consumption of tiles of 256×256 pixels. We select a size which is a multiple of 90 because
      * images are often used with a resolution of e.g. ½° per pixel.</p>
      *
-     * @see ImageUtilities#DEFAULT_TILE_SIZE
+     * @see #DEFAULT_TILE_SIZE
      */
     @Configuration
     private static final int MIN_TILE_SIZE = 180;
 
     /**
-     * The default instance which will target {@value ImageUtilities#DEFAULT_TILE_SIZE} pixels as tile
-     * width and height.
+     * Arbitrary number of pixels for considering a tile as too large.
+     * Tile larger than this size should be divided in smaller tiles.
+     */
+    @Configuration
+    public static final int LARGE_TILE_SIZE = 1024 * 1024 * 16;
+
+    /**
+     * Default width and height of tiles, in pixels.
+     */
+    @Configuration
+    public static final int DEFAULT_TILE_SIZE = 256;
+
+    /**
+     * Suggested size for a tile cache in number of tiles. This value can be used for very simple caching mechanism,
+     * keeping the most recently used tiles up to 10 Mb of memory. This is not for sophisticated caching mechanism;
+     * instead the "real" caching should be done by {@link org.apache.sis.image.ComputedImage}.
+     */
+    @Configuration
+    public static final int SUGGESTED_TILE_CACHE_SIZE = 10 * (1024 * 1024) / (DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE);
+
+    /**
+     * The default instance which will target {@value #DEFAULT_TILE_SIZE} pixels as tile width and height.
      */
     public static final ImageLayout DEFAULT = new ImageLayout(null, false);
 
     /**
-     * Same as {@link #DEFAULT}, but makes image size an integer number of tiles.
+     * Same as {@link #DEFAULT}, but can modify the image size for forcing it to an integer number of tiles.
      */
     public static final ImageLayout SIZE_ADJUST = new ImageLayout(null, true);
 
     /**
      * Preferred size for tiles.
      *
-     * @see ImageUtilities#DEFAULT_TILE_SIZE
+     * @see #DEFAULT_TILE_SIZE
      */
     protected final int preferredTileWidth, preferredTileHeight;
 
@@ -95,8 +115,8 @@ public class ImageLayout {
             preferredTileWidth  = Math.max(1, preferredTileSize.width);
             preferredTileHeight = Math.max(1, preferredTileSize.height);
         } else {
-            preferredTileWidth  = ImageUtilities.DEFAULT_TILE_SIZE;
-            preferredTileHeight = ImageUtilities.DEFAULT_TILE_SIZE;
+            preferredTileWidth  = DEFAULT_TILE_SIZE;
+            preferredTileHeight = DEFAULT_TILE_SIZE;
         }
         this.isBoundsAdjustmentAllowed = isBoundsAdjustmentAllowed;
     }
@@ -193,7 +213,7 @@ public class ImageLayout {
      * method returns a size that minimize the number of empty pixels in the last tile.
      *
      * @param  imageSize          the image size (width or height).
-     * @param  preferredTileSize  the preferred tile size, which is often {@value ImageUtilities#DEFAULT_TILE_SIZE}.
+     * @param  preferredTileSize  the preferred tile size, which is often {@value #DEFAULT_TILE_SIZE}.
      * @param  allowPartialTiles  whether to allow tiles that are only partially filled.
      * @return the suggested tile size, or {@code imageSize} if none.
      */

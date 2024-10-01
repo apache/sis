@@ -32,7 +32,6 @@ import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.util.GenericName;
@@ -71,7 +70,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.measure.Units;
 
@@ -137,13 +135,6 @@ final class Store extends URIDataStore implements FeatureSet {
      * @see #readLine()
      */
     private BufferedReader source;
-
-    /**
-     * The character encoding, or {@code null} if unspecified (in which case the platform default is assumed).
-     * Note that the default value is different than the moving feature specification, which requires UTF-8.
-     * See "Departures from Moving Features specification" in package javadoc.
-     */
-    private final Charset encoding;
 
     /**
      * The metadata object, or {@code null} if not yet created.
@@ -233,9 +224,9 @@ final class Store extends URIDataStore implements FeatureSet {
         source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.factory(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
         dissociate = connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION) == FoliationRepresentation.FRAGMENTED;
-        GeneralEnvelope envelope    = null;
-        DefaultFeatureType featureType = null;
-        Foliation       foliation   = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable") GeneralEnvelope envelope    = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable") DefaultFeatureType featureType = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable") Foliation       foliation   = null;
         try {
             final List<String> elements = new ArrayList<>();
             source.mark(StorageConnector.READ_AHEAD_LIMIT);
@@ -294,7 +285,6 @@ final class Store extends URIDataStore implements FeatureSet {
         } catch (IllegalArgumentException | DateTimeException e) {
             throw new DataStoreContentException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         }
-        this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = ImmutableEnvelope.castOrCopy(envelope);
         this.featureType = featureType;
         this.foliation   = foliation;
@@ -347,8 +337,10 @@ final class Store extends URIDataStore implements FeatureSet {
      */
     @SuppressWarnings("fallthrough")
     private GeneralEnvelope parseEnvelope(final List<String> elements) throws DataStoreException, FactoryException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        int spatialDimensionCount = 2;      // Another result of this method to be computed as a side-effect.
+
         CoordinateReferenceSystem crs = null;
-        int spatialDimensionCount = 2;
         boolean    isDimExplicit  = false;
         double[]   lowerCorner    = ArraysExt.EMPTY_DOUBLE;
         double[]   upperCorner    = ArraysExt.EMPTY_DOUBLE;
@@ -408,7 +400,8 @@ final class Store extends URIDataStore implements FeatureSet {
          *   Assumed never part of the authority code. We need to build the temporal component ourselves
          *   in order to set the origin to the start time.
          */
-        final GeneralEnvelope envelope;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final GeneralEnvelope envelope;     // Value will be assigned to `this.envelope` by the caller.
         if (crs != null) {
             int count = 0;
             final CoordinateReferenceSystem[] components = new CoordinateReferenceSystem[3];
@@ -630,12 +623,8 @@ final class Store extends URIDataStore implements FeatureSet {
         if (metadata == null) {
             final MetadataBuilder builder = new MetadataBuilder();
             final String format = (timeEncoding != null) && hasTrajectories ? StoreProvider.MOVING : StoreProvider.NAME;
-            try {
-                builder.setPredefinedFormat(format);
-            } catch (MetadataStoreException e) {
-                builder.addFormatName(format);
-                listeners.warning(e);
-            }
+            builder.setPredefinedFormat(format, listeners, true);
+            builder.addFormatReaderSIS(format);
             builder.addLanguage(Locale.ENGLISH, encoding, MetadataBuilder.Scope.ALL);
             builder.addResourceScope(ScopeCode.FEATURE, null);
             builder.addExtent(envelope, listeners);

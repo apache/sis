@@ -81,7 +81,7 @@ tasks.compileJava {
 }
 tasks.compileTestJava {
     options.compilerArgs.add("-source")         // "source", not "release", because we accept any target version.
-    options.compilerArgs.add("16")              // For consistency with the value set in the `endorsed` modules.
+    options.compilerArgs.add("22")
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,org.junit.jupiter.api")
     }
@@ -129,6 +129,8 @@ fun addExportForTests(args : MutableList<String>) {
  */
 tasks.test {
     val args = mutableListOf("-enableassertions")
+    args.add("--enable-native-access")
+    args.add("org.apache.sis.storage.gsf")
     addExportForTests(args)
     setAllJvmArgs(args)
     testLogging {

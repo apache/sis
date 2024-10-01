@@ -90,7 +90,6 @@ import org.apache.sis.storage.Query;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.WritableFeatureSet;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
@@ -126,7 +125,7 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ShapefileStore extends DataStore implements WritableFeatureSet, ResourceOnFileSystem {
+public final class ShapefileStore extends DataStore implements WritableFeatureSet {
 
     private static final String GEOMETRY_NAME = "geometry";
     private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.shapefile");
@@ -269,11 +268,11 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
      * {@inheritDoc }
      */
     @Override
-    public Path[] getComponentFiles() throws DataStoreException {
-        return featureSetView.getComponentFiles();
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        return featureSetView.getFileSet();
     }
 
-    private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet, ResourceOnFileSystem {
+    private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
 
         private final Rectangle2D.Double filter;
         private final Set<String> dbfProperties;
@@ -854,8 +853,8 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         }
 
         @Override
-        public Path[] getComponentFiles() throws DataStoreException {
-            final List<Path> paths = new ArrayList<>();
+        public Optional<FileSet> getFileSet() throws DataStoreException {
+            final var paths = new ArrayList<Path>(5);
             final Path shp = files.shpFile;
             final Path shx = files.getShx(false);
             final Path dbf = files.getDbf(false);
@@ -866,7 +865,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             if (dbf != null && Files.exists(dbf)) paths.add(dbf);
             if (prj != null && Files.exists(prj)) paths.add(prj);
             if (cpg != null && Files.exists(cpg)) paths.add(cpg);
-            return paths.toArray(Path[]::new);
+            return Optional.of(new FileSet(paths));
         }
     }
 
@@ -950,7 +949,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          * Create a set of temporary files for edition.
          */
         private ShpFiles createTempFiles() throws IOException{
-            final Path tmp = Files.createTempFile("tmp", ".shp");
+            final Path tmp = Files.createTempFile(this.shpFile.getParent(), ".write-session-" + baseName + "-", ".shp");
             Files.delete(tmp);
             return new ShpFiles(tmp);
         }

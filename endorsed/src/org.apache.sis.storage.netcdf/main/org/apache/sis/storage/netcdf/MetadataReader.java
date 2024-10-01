@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
@@ -51,7 +50,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
-import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
@@ -69,6 +67,7 @@ import org.apache.sis.system.Configuration;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
@@ -653,22 +652,30 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             addBoundingPolygon(new StoreFormat(null, null, decoder.geomlib, decoder.listeners).parseGeometry(wkt,
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
         }
-        final String[] format = decoder.getFormatDescription();
-        String id = format[0];
-        if (NetcdfStoreProvider.NAME.equalsIgnoreCase(id)) try {
-            setPredefinedFormat(NetcdfStoreProvider.NAME);
-            id = null;
-        } catch (MetadataStoreException e) {
-            // Will add `id` at the end of this method.
-            warning(e);
+        /*
+         * Add a description of the format. The description is determined by the decoder in use.
+         * That decoder may itself infer that description from another library such as UCAR.
+         */
+        decoder.addFormatDescription(this);
+    }
+
+    /**
+     * Adds the format description with a check about whether the given format identifier is recognized.
+     * This is a helper method for {@link Decoder#addFormatDescription(MetadataBuilder)} implementations.
+     *
+     * @param  format     format identifier. Recognized value is {@value NetcdfStoreProvider#NAME}.
+     * @param  listeners  ignored. Will be replaced by the listeners of the decoder.
+     * @param  fallback   whether to use a fallback if the description was not found.
+     * @return whether the format description has been added.
+     */
+    @Override
+    public boolean setPredefinedFormat(String format, StoreListeners listeners, boolean fallback) {
+        if (Constants.NETCDF.equalsIgnoreCase(format)) {
+            return super.setPredefinedFormat(format, decoder.listeners, fallback);
+        } else if (fallback) {
+            addFormatName(format);
         }
-        if (format.length >= 2) {
-            addFormatName(format[1]);
-            if (format.length >= 3) {
-                setFormatEdition(format[2]);
-            }
-        }
-        addFormatName(id);          // Do nothing is `id` is null.
+        return false;
     }
 
     /**
@@ -859,23 +866,39 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds information about all netCDF variables. This is the {@code <mdb:contentInfo>} element in XML.
-     * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
+     * This method groups variables by their domains, i.e. variables having the same set of axes, ignoring order,
+     * are grouped together. Variables having only a subset of axes are also grouped together with the variables
+     * having more dimension.
+     *
+     * <p><b>Example:</b> a netCDF file may contain variables for both static and dynamic phenomenons.
+     * The dynamic phenomenons are associated to (<var>x</var>, <var>y</var>, <var>t</var>) axes,
+     * while the static phenomenons have only the (<var>x</var>, <var>y</var>) axes.
+     * But we still want to group them together. Not doing so appear to be confusing.</p>
      */
     private void addContentInfo() {
         /*
          * Prepare a list of features and coverages, but without writing metadata now.
          * We differ metadata writing for giving us a chance to group related contents.
          */
-        final Set<Dimension> features = new LinkedHashSet<>();
-        final Map<List<String>, List<Variable>> coverages = new LinkedHashMap<>(4);
+        final var features  = new LinkedHashSet<Dimension>();
+        final var coverages = new LinkedHashMap<Set<String>, List<Variable>>();
         for (final Variable variable : decoder.getVariables()) {
             if (VariableRole.isCoverage(variable)) {
-                final List<org.apache.sis.storage.netcdf.base.Dimension> dimensions = variable.getGridDimensions();
+                final var dimensions = variable.getGridDimensions();
                 final String[] names = new String[dimensions.size()];
                 for (int i=0; i<names.length; i++) {
                     names[i] = dimensions.get(i).getName();
                 }
-                CollectionsExt.addToMultiValuesMap(coverages, Arrays.asList(names), variable);
+                coverages.computeIfAbsent(Set.of(names), (key) -> {
+                    for (Map.Entry<Set<String>, List<Variable>> entry : coverages.entrySet()) {
+                        final Set<String> previous = entry.getKey();
+                        if (previous.containsAll(key) || key.containsAll(previous)) {
+                            // Share with all keys that are subset or superset.
+                            return entry.getValue();
+                        }
+                    }
+                    return new ArrayList<>();
+                }).add(variable);
                 hasGridCoverages = true;
             } else if (variable.getRole() == VariableRole.FEATURE_PROPERTY) {
                 /*
@@ -898,6 +921,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addFeatureType(decoder.nameFactory.createLocalName(decoder.namespace, name), feature.length());
             }
         }
+        newFeatureTypes();   // See Javadoc about confusing ordering.
         final String processingLevel = stringValue(PROCESSING_LEVEL);
         for (final List<Variable> group : coverages.values()) {
             /*

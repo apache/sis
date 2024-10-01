@@ -105,7 +105,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *   <li>A {@code Number[]} array.</li>
      *   <li>A {@code String[]} array (not recommended, but happen with some file formats).</li>
      *   <li>A {@code Vector}, in which case it is returned unchanged.</li>
-     *   <li>A {@link Buffer} backed by an array.</li>
+     *   <li>A {@link Buffer} backed by a Java array. Wrap the part between buffer's position and limit.</li>
      *   <li>The {@code null} value, in which case {@code null} is returned.</li>
      * </ul>
      *

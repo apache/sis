@@ -367,6 +367,7 @@ public class BufferedGridCoverage extends GridCoverage {
             } catch (ArithmeticException | FactoryException | TransformException ex) {
                 throw new CannotEvaluateException(ex.getMessage(), ex);
             }
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final double[] values = this.values;
             if (banded) {
                 for (int i=0; i<values.length; i++) {

@@ -34,7 +34,7 @@ public final class SwathBathySummary extends StructClass{
     private static final OfDouble LAYOUT_MAX_LONGITUDE;
     private static final OfDouble LAYOUT_MIN_DEPTH;
     private static final OfDouble LAYOUT_MAX_DEPTH;
-    public static final GroupLayout LAYOUT = MemoryLayout.structLayout(
+    static final GroupLayout LAYOUT = MemoryLayout.structLayout(
         LAYOUT_START_TIME = TimeSpec.LAYOUT.withName("start_time"),
         LAYOUT_END_TIME = TimeSpec.LAYOUT.withName("end_time"),
         LAYOUT_MIN_LATITUDE = GSF.C_DOUBLE.withName("min_latitude"),
@@ -45,12 +45,8 @@ public final class SwathBathySummary extends StructClass{
         LAYOUT_MAX_DEPTH = GSF.C_DOUBLE.withName("max_depth")
     ).withName("t_gsfSwathBathySummary");
 
-    public SwathBathySummary(MemorySegment struct) {
+    SwathBathySummary(MemorySegment struct) {
         super(struct);
-    }
-
-    public SwathBathySummary(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -89,6 +85,4 @@ public final class SwathBathySummary extends StructClass{
     public double getMaxDepth() {
         return struct.get(LAYOUT_MAX_DEPTH, 72);
     }
-
 }
-

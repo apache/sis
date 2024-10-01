@@ -61,30 +61,27 @@ public abstract class MatrixGridRessource extends TiledGridResource {
     }
 
     @Override
-    protected int[] getTileSize() {
-        try {
-            initialize();
-        } catch (DataStoreException ex) {
-            throw new RuntimeException(ex);
-        }
+    protected int[] getTileSize() throws DataStoreException {
+        initialize();
         return tileSize.clone();
     }
 
     @Override
-    protected SampleModel getSampleModel() throws DataStoreException {
+    protected SampleModel getSampleModel(int[] bands) throws DataStoreException {
+        if (bands != null) {
+            return null;
+        }
         initialize();
         return sampleModel;
     }
 
     @Override
-    protected ColorModel getColorModel() throws DataStoreException {
+    protected ColorModel getColorModel(int[] bands) throws DataStoreException {
+        if (bands != null) {
+            return null;
+        }
         initialize();
         return colorModel;
-    }
-
-    @Override
-    protected Number getFillValue() throws DataStoreException {
-        return Double.NaN;
     }
 
     @Override
@@ -116,17 +113,18 @@ public abstract class MatrixGridRessource extends TiledGridResource {
         }
 
         @Override
-        protected Raster[] readTiles(AOI iterator) throws IOException, DataStoreException {
+        protected Raster[] readTiles(final TileIterator iterator) throws IOException, DataStoreException {
             final Raster[] result = new Raster[iterator.tileCountInQuery];
             synchronized (MatrixGridRessource.this.getSynchronizationLock()) {
                 do {
                     final Raster tile = iterator.getCachedTile();
                     if (tile != null) {
-                        result[iterator.getIndexInResultArray()] = tile;
+                        result[iterator.getTileIndexInResultArray()] = tile;
                     } else {
-                        long[] tileCoord = iterator.getPositionInSource();
+                        long[] tileCoord = iterator.getTileCoordinatesInResource();
                         final RenderedImage image = getTileImage(tileCoord);
-                        result[iterator.getIndexInResultArray()] = image instanceof BufferedImage ? ((BufferedImage)image).getRaster() : image.getData();
+                        result[iterator.getTileIndexInResultArray()] =
+                                (image instanceof BufferedImage) ? ((BufferedImage)image).getRaster() : image.getData();
                     }
                 } while (iterator.next());
             }

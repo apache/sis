@@ -90,7 +90,7 @@ public final class GimiProvider extends DataStoreProvider {
         final Path path = connector.getStorageAs(Path.class);
         if (path != null) {
             final String name = path.getFileName().toString().toLowerCase();
-            if (name.endsWith(".heij") || name.endsWith(".heif")) {
+            if (name.endsWith(".heij") || name.endsWith(".heif") || name.endsWith(".heic") || name.endsWith(".avif")) {
                 return new ProbeResult(true, MIME_TYPE, null);
             }
         }

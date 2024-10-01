@@ -18,8 +18,9 @@ package org.apache.sis.storage;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
 import org.opengis.util.GenericName;
@@ -86,7 +87,7 @@ import org.apache.sis.storage.internal.Resources;
  * The caller is typically the {@code DataStore} implementation which contains this {@code FeatureNaming} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.5
  *
  * @param <E>  the type of elements associated with the names.
  *
@@ -100,13 +101,13 @@ public class FeatureNaming<E> {
     /**
      * All aliases found for all names given to the {@link #add(DataStore, GenericName, Object)} method.
      * Keys are aliases and values are the complete names for which the key is an alias.
-     * Each {@code List<String>} instance contains exactly one name if there is no ambiguity.
+     * Each {@code Set<String>} instance contains exactly one name if there is no ambiguity.
      * If the list contains more than one name, this means that the alias is ambiguous.
      *
-     * <p>For saving space in common cases, a missing entry in this map is interpreted as synonymous of
-     * {@code (name, Collections.singletonList(name))} entry.</p>
+     * <p>For saving space in common cases, a missing entry in this map is interpreted
+     * as synonymous of the {@code (name, Collections.singleton(name))} entry.</p>
      */
-    private final Map<String, List<String>> aliases;
+    private final Map<String, Set<String>> aliases;
 
     /**
      * The user-specified values associated to names and aliases. If a value is absent, it may means either that the
@@ -160,13 +161,14 @@ public class FeatureNaming<E> {
         }
         final short key;
         final Object[] params;
-        final List<String> nc = aliases.get(name);
+        final Set<String> nc = aliases.get(name);
         if (nc == null) {
             key = Resources.Keys.FeatureNotFound_2;
             params = new CharSequence[] {name(store), name};
         } else if (nc.size() >= 2) {
             key = Resources.Keys.AmbiguousName_4;
-            params = new CharSequence[] {name(store), nc.get(0), nc.get(1), name};
+            final Iterator<String> it = nc.iterator();
+            params = new CharSequence[] {name(store), it.next(), it.next(), name};
         } else {
             return null;    // Name was explicitly associated to null value (actually not allowed by current API).
         }
@@ -186,7 +188,7 @@ public class FeatureNaming<E> {
         final String key = name.toString();
         final E previous = values.put(key, Objects.requireNonNull(value));
         if (previous != null) {
-            final List<String> fullNames = aliases.get(key);            // Null is synonymous of singletonList(key).
+            final Set<String> fullNames = aliases.get(key);             // Null is synonymous of singleton(key).
             if (fullNames == null || fullNames.contains(key)) {
                 /*
                  * If we already had a value for the given name and if that value was associated to a user-specified
@@ -206,7 +208,7 @@ public class FeatureNaming<E> {
         while (name instanceof ScopedName) {
             name = ((ScopedName) name).tail();
             final String alias = name.toString();
-            final List<String> fullNames = CollectionsExt.addToMultiValuesMap(aliases, alias, key);
+            final Set<String> fullNames = CollectionsExt.addToMultiValuesMap(aliases, alias, key);
             if (fullNames.size() > 1) {
                 /*
                  * If there is more than one GenericName for the same alias, we have an ambiguity.
@@ -245,13 +247,13 @@ public class FeatureNaming<E> {
         if (values.remove(key) == null) {
             return false;
         }
-        List<String> remaining = CollectionsExt.removeFromMultiValuesMap(aliases, key, key);
+        Set<String> remaining = CollectionsExt.removeFromMultiValuesMap(aliases, key, key);
         if (remaining != null && remaining.size() == 1) {
             /*
              * If there is exactly one remaining element, that element is a non-ambiguous alias.
              * So we can associate the value to that alias.
              */
-            final String select = remaining.get(0);
+            final String select = remaining.iterator().next();
             assert !select.equals(key) : select;     // Should have been removed by removeFromMultiValuesMap(…).
             if (values.put(key, values.get(select)) != null) {
                 throw new ConcurrentModificationException(name(store).toString());          // Paranoiac check.
@@ -271,7 +273,7 @@ public class FeatureNaming<E> {
             if (remaining == null || remaining.isEmpty()) {
                 error |= (values.remove(alias) == null);
             } else if (remaining.size() == 1) {
-                final String select = remaining.get(0);
+                final String select = remaining.iterator().next();
                 assert !select.equals(key) : select;     // Should have been removed by removeFromMultiValuesMap(…).
                 error |= (values.putIfAbsent(alias, values.get(select)) != null);
             }

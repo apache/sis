@@ -67,6 +67,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.AbstractInternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
@@ -90,9 +91,9 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.privy.Merger;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.AbstractGridCoverageResource;
@@ -107,6 +108,7 @@ import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
@@ -717,7 +719,10 @@ public class MetadataBuilder {
      * If there is no pending feature description, then invoking this method has no effect.
      * If new feature descriptions are added after this method call, they will be stored in a new element.
      *
-     * <p>This method does not need to be invoked unless a new "feature catalog description" node is desired.</p>
+     * <p>This method does not need to be invoked unless a new "feature catalog description" node is desired.
+     * It may also be useful when switching from writing feature types to writing coverage descriptions,
+     * because both classes appear under the same "content information" node.
+     * Invoking this method may avoid confusing ordering of those elements.</p>
      */
     public final void newFeatureTypes() {
         if (featureDescription != null) {
@@ -733,7 +738,10 @@ public class MetadataBuilder {
      * If new coverage descriptions are added after this method call, they will be stored in a new element.
      *
      * <p>This method does not need to be invoked unless a new "coverage description" node is desired,
-     * or the {@code electromagnetic} flag needs to be set to {@code true}.</p>
+     * or the {@code electromagnetic} flag needs to be set to {@code true}. It may also be useful when
+     * switching from writing coverage descriptions to writing feature types,
+     * because both classes appear under the same "content information" node.
+     * Invoking this method may avoid confusing ordering of those elements.</p>
      *
      * @param  electromagnetic  {@code true} if the next {@code CoverageDescription} to create
      *         will be a description of measurements in the electromagnetic spectrum.
@@ -842,12 +850,12 @@ public class MetadataBuilder {
      * @param  resource   the resource for which to add metadata.
      * @param  listeners  the listeners to notify in case of warning, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
-     *
-     * @see #addTitleOrIdentifier(Resource)
      */
     public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
-        // Note: title is mandatory in ISO metadata, contrarily to the identifier.
-        resource.getIdentifier().ifPresent((name) -> addTitle(new Sentence(name)));
+        if (!hasTitle()) {
+            // Note: title is mandatory in ISO metadata, contrarily to the identifier.
+            resource.getIdentifier().ifPresent((name) -> addTitle(new Sentence(name)));
+        }
         resource.getEnvelope().ifPresent((envelope) -> addExtent(envelope, listeners));
     }
 
@@ -1029,39 +1037,39 @@ public class MetadataBuilder {
      * </ul>
      *
      * This method should be invoked <strong>before</strong> any other method writing in the
-     * {@code identificationInfo/resourceFormat} node. If this exception throws an exception,
-     * than that exception should be reported as a warning. Example:
-     *
-     * {@snippet lang="java" :
-     *     try {
-     *         metadata.setPredefinedFormat("MyFormat");
-     *     } catch (MetadataStoreException e) {
-     *         metadata.addFormatName("MyFormat");
-     *         listeners.warning(null, e);
-     *     }
-     *     metadata.addCompression("decompression technique");
-     *     }
+     * {@code identificationInfo/resourceFormat} node.
      *
      * @param  abbreviation  the format short name or abbreviation, or {@code null} for no-operation.
-     * @throws MetadataStoreException  if this method cannot connect to the {@code jdbc/SpatialMetadata} database.
-     *         Callers should generally handle this exception as a recoverable one (i.e. log a warning and continue).
+     * @param  listeners     where to report a failure to connect to the {@code jdbc/SpatialMetadata} database.
+     * @param  fallback      whether to fallback on {@link #addFormatName(String)} if the description was not found.
+     * @return whether the format description has been added.
      *
      * @see #addCompression(CharSequence)
      * @see #addFormatName(CharSequence)
      */
-    public final void setPredefinedFormat(final String abbreviation) throws MetadataStoreException {
+    public boolean setPredefinedFormat(final String abbreviation, final StoreListeners listeners, boolean fallback) {
         if (abbreviation != null && abbreviation.length() != 0) {
-            if (format == null) {
+            if (format == null) try {
                 format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
                 /*
                  * Additional step for converting deprecated "name" and "specification" into non-deprecated properties.
                  * This step is not required on SIS branches that depend on development branches of GeoAPI 3.1 or 4.0.
                  */
                 format = DefaultFormat.castOrCopy(format);
-            } else {
+                return true;
+            } catch (MetadataStoreException e) {
+                if (listeners != null) {
+                    listeners.warning(Level.FINE, null, e);
+                } else {
+                    Logging.recoverableException(StoreUtilities.LOGGER, null, null, e);
+                }
+            }
+            if (fallback) {
                 addFormatName(abbreviation);
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -1246,7 +1254,7 @@ public class MetadataBuilder {
      */
     public final void addTitleOrIdentifier(final String code, Scope scope) {
         if (scope != Scope.METADATA) {
-            if (citation == null || citation.getTitle() == null) {
+            if (!hasTitle()) {
                 addTitle(code);
                 if (scope == Scope.RESOURCE) {
                     return;
@@ -1255,6 +1263,16 @@ public class MetadataBuilder {
             }
         }
         addIdentifier(null, code, scope);
+    }
+
+    /**
+     * Returns whether the current citation has a title. This method is typically used for deciding
+     * whether to use some fallback as title, because titles are mandatory in ISO 19115.
+     *
+     * @return whether a title is defined in the current citation.
+     */
+    public final boolean hasTitle() {
+        return (citation != null) && citation.getTitle() != null;
     }
 
     /**
@@ -3013,19 +3031,19 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a name to the resource format. Note that this method does not add a new format,
-     * but only an alternative name to current format. Storage location is:
+     * Adds a name to the resource format. If no format citation has been created yet,
+     * then the given value is used as the format title. Otherwise, the given value is
+     * used as an alternative name of the current formaT. Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setPredefinedFormat(String)},
-     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
+     * then the predefined format should be set <strong>before</strong> this method.
      *
      * @param value  the format name, or {@code null} for no-operation.
      *
-     * @see #setPredefinedFormat(String)
      * @see #setFormatEdition(CharSequence)
      * @see #addCompression(CharSequence)
      */
@@ -3045,31 +3063,84 @@ public class MetadataBuilder {
     }
 
     /**
+     * Returns the citation of the format as a modifiable object for allowing the caller to set properties.
+     */
+    private DefaultCitation getFormatCitation() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final DefaultFormat format = format();
+        DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+        if (c == null) {
+            c = new DefaultCitation();
+        }
+        format.setFormatSpecificationCitation(c);   // Unconditional because may replace a proxy.
+        return c;
+    }
+
+    /**
      * Sets a version number for the resource format. Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/edition}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setPredefinedFormat(String)},
-     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
+     * then the predefined format should be set <strong>before</strong> this method.
      *
      * @param value  the format edition, or {@code null} for no-operation.
      *
-     * @see #setPredefinedFormat(String)
      * @see #addFormatName(CharSequence)
      */
     public final void setFormatEdition(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
-            @SuppressWarnings("LocalVariableHidesMemberVariable")
-            final DefaultFormat format = format();
-            DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
-            if (c == null) {
-                c = new DefaultCitation();
-                format.setFormatSpecificationCitation(c);
+            getFormatCitation().setEdition(i18n);
+        }
+    }
+
+    /**
+     * Adds a note about which reader is used. This method should not be invoked before
+     * the {@linkplain #addFormatName format name} has been set. Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/identifier}</li>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/otherCitationDetails}</li>
+     * </ul>
+     *
+     * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
+     * then the predefined format should be set <strong>before</strong> this method.
+     *
+     * @param driver   library-specific way to identify the format (mandatory).
+     * @param version  the library version, or {@code null} if unknown.
+     */
+    public final void addFormatReader(final ReferenceIdentifier driver, final Version version) {
+        CharSequence title = null;
+        Citation authority = driver.getAuthority();
+        if (authority != null) {
+            title = authority.getTitle();
+            if (title != null) {
+                for (CharSequence t : authority.getAlternateTitles()) {
+                    if (t.length() < title.length()) {
+                        title = t;      // Alternate titles are often abbreviations.
+                    }
+                }
             }
-            c.setEdition(i18n);
+        }
+        final DefaultCitation c = getFormatCitation();
+        addIfNotPresent(c.getIdentifiers(), driver);
+        c.setOtherCitationDetails(
+                Resources.formatInternational(Resources.Keys.ReadBy_2, (title != null) ? title : driver.getCodeSpace(),
+                        (version != null) ? version : Vocabulary.formatInternational(Vocabulary.Keys.Unspecified)));
+    }
+
+    /**
+     * Adds a note saying that Apache <abbr>SIS</abbr> has been used for decoding the format.
+     * This method should not be invoked before the {@linkplain #addFormatName format name} has been set.
+     *
+     * @param  name  the format name, or {@code null} if unspecified.
+     */
+    public void addFormatReaderSIS(final String name) {
+        if (name != null) {
+            addFormatReader(new ImmutableIdentifier(Citations.SIS, Constants.SIS, name), Version.SIS);
         }
     }
 
@@ -3081,12 +3152,11 @@ public class MetadataBuilder {
      *   <li>{@code metadata/identificationInfo/resourceFormat/fileDecompressionTechnique}</li>
      * </ul>
      *
-     * If this method is used together with {@link #setPredefinedFormat(String)},
-     * then {@code setPredefinedFormat(…)} should be invoked <strong>before</strong> this method.
+     * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
+     * then the predefined format should be set <strong>before</strong> this method.
      *
      * @param value  the compression name, or {@code null} for no-operation.
      *
-     * @see #setPredefinedFormat(String)
      * @see #addFormatName(CharSequence)
      */
     public final void addCompression(final CharSequence value) {

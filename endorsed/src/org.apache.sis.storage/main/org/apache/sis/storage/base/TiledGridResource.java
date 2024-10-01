@@ -18,11 +18,14 @@ package org.apache.sis.storage.base;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
+import java.lang.reflect.Array;
 import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
+import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
@@ -33,12 +36,18 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.RangeArgument;
+import org.apache.sis.image.DataType;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import static org.apache.sis.storage.base.TiledGridCoverage.X_DIMENSION;
 import static org.apache.sis.storage.base.TiledGridCoverage.Y_DIMENSION;
@@ -51,6 +60,29 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * Base class of grid coverage resource storing data in tiles.
  * The word "tile" is used for simplicity but can be understood
  * as "chunk" in a <var>n</var>-dimensional generalization.
+ * Subclasses need to implement the following methods:
+ *
+ * <ul>
+ *   <li>{@link #getGridGeometry()}</li>
+ *   <li>{@link #getSampleDimensions()}</li>
+ *   <li>{@link #getTileSize()}</li>
+ *   <li>{@link #getSampleModel(int[])} (optional but recommended)</li>
+ *   <li>{@link #getColorModel(int[])} (optional but recommended)</li>
+ *   <li>{@link #read(GridGeometry, int...)}</li>
+ * </ul>
+ *
+ * The read method can be implemented simply as below:
+ *
+ * {@snippet lang="java" :
+ *     @Override
+ *     public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
+ *         synchronized (getSynchronizationLock()) {
+ *             var subset = new Subset(domain, ranges);
+ *             var result = new MySubclassOfTiledGridCoverage(this, subset);
+ *             return preload(result);
+ *         }
+ *     }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -60,14 +92,14 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * Each key shall be unique within its enclosing {@link TiledGridResource} instance.
      */
     static final class CacheKey {
-        /** Index in a row-major array of tiles. */ private final int   indexInTileVector;
-        /** Bands in strictly increasing order.  */ private final int[] includedBands;
-        /** Subsampling factors at read time.    */ private final int[] subsampling;
-        /** Remainder of subsampling divisions.  */ private final int[] subsamplingOffsets;
+        /** Index in a row-major array of tiles. */ private final int    indexInTileVector;
+        /** Bands in strictly increasing order.  */ private final int[]  includedBands;
+        /** Subsampling factors at read time.    */ private final long[] subsampling;
+        /** Remainder of subsampling divisions.  */ private final long[] subsamplingOffsets;
 
         /** Creates a key with given arrays hold be reference (no copy). */
         CacheKey(final int indexInTileVector, final int[] includedBands,
-                 final int[] subsampling, final int[] subsamplingOffsets)
+                 final long[] subsampling, final long[] subsamplingOffsets)
         {
             this.indexInTileVector  = indexInTileVector;
             this.includedBands      = includedBands;
@@ -105,7 +137,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * @see TiledGridCoverage#rasters
      * @see TiledGridCoverage.AOI#getCachedTile()
      */
-    private final WeakValueHashMap<CacheKey, Raster> rasters;
+    private final WeakValueHashMap<CacheKey, Raster> rasters = new WeakValueHashMap<>(CacheKey.class);
 
     /**
      * Whether all tiles should be loaded at {@code read(…)} method call or deferred to a later time.
@@ -119,42 +151,102 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     /**
      * Creates a new resource.
      *
+     * @param  parent  the parent resource, or {@code null} if none.
+     */
+    protected TiledGridResource(final Resource parent) {
+        super(parent);
+    }
+
+    /**
+     * Creates a new resource.
+     *
      * @param  parent  listeners of the parent resource, or {@code null} if none.
      *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
      *         that created this resource.
+     * @param  hidden  {@code false} if this resource shall use its own {@link StoreListeners}
+     *         with the specified parent, or {@code true} for using {@code parentListeners} directly.
      */
-    protected TiledGridResource(final StoreListeners parent) {
-        super(parent, false);
-        rasters = new WeakValueHashMap<>(CacheKey.class);
+    protected TiledGridResource(final StoreListeners parent, final boolean hidden) {
+        super(parent, hidden);
     }
 
     /**
      * Returns the size of tiles in this resource.
-     * The length of the returned array is the number of dimensions.
+     * The length of the returned array is the number of dimensions,
+     * which must be {@value TiledGridCoverage#BIDIMENSIONAL} or more.
      *
      * @return the size of tiles (in pixels) in this resource.
+     * @throws DataStoreException if an error occurred while fetching the tile size.
      */
-    protected abstract int[] getTileSize();
+    protected abstract int[] getTileSize() throws DataStoreException;
+
+    /**
+     * Returns the tile size to use for a read operation using the given subsampling.
+     * The default implementation returns the real tile size, as returned by {@link #getTileSize()}.
+     * Subclasses may override if it is easy for them to read many tiles as if they were a single tile.
+     * Such coalescing can be useful for avoiding that a read operation produces tiles that become too
+     * small after the subsampling.
+     *
+     * <p>Note that {@link TiledGridCoverage} aligns its {@link GridExtent} on the boundaries of "real" tiles
+     * (i.e. on tiles of the size returned by {@link #getTileSize()}), not on the boundaries of virtual tiles.
+     * Therefore, subclasses should override this method only if they are prepared to read regions covering a
+     * fraction of the virtual tiles. A simple and efficient strategy is to simply multiply {@code tileSize[i]}
+     * by {@code subsampling[i]} for each dimension <var>i</var> so that each virtual tile contains only whole
+     * real tiles.
+     *
+     * @param  subsampling  the subsampling which will be applied in a read operation.
+     * @return the size of tiles (in pixels) in this resource.
+     * @throws DataStoreException if an error occurred while fetching the tile size.
+     */
+    protected long[] getVirtualTileSize(long[] subsampling) throws DataStoreException {
+        return ArraysExt.copyAsLongs(getTileSize());
+    }
 
     /**
      * Returns the number of sample values in an indivisible element of a tile.
      * An element is a primitive type such as {@code byte}, {@code int} or {@code float}.
-     * This value is usually 1 because each sample value is usually stored in a separated element.
+     * This value is usually 1 when each sample value is stored in a separated element.
      * However, in multi-pixels packed sample model (e.g. bilevel image with 8 pixels per byte),
      * it is difficult to start reading an image at <var>x</var> location other than a byte boundary.
-     * By declaring an "atom" size of 8 sample values in dimension X, the {@link Subset} constructor
-     * will ensure than the sub-region to read starts at a byte boundary when reading a bilevel image.
+     * By declaring an "atom" size of 8 sample values in dimension 0 (<var>x</var>), the {@link Subset}
+     * constructor will ensure that the sub-region to read starts at a byte boundary when reading a bilevel image.
      *
      * <p>The default implementation returns the {@linkplain TiledGridCoverage#getPixelsPerElement()
-     * number of pixels per data element} for dimension X and returns 1 for all other dimensions.</p>
+     * number of pixels per data element} for dimension 0 and returns 1 for all other dimensions.</p>
      *
-     * @param  xdim  {@code true} for the size on <var>x</var> dimension, {@code false} for any other dimension.
+     * @param  dim  the dimension: 0 for <var>x</var>, 1 for <var>y</var>, <i>etc.</i>
      * @return indivisible number of sample values to read in the specified dimension. Must be ≥ 1.
      *         This is in units of sample values (may be bits, bytes, floats, <i>etc</i>).
      * @throws DataStoreException if an error occurred while fetching the sample model.
      */
-    protected int getAtomSize(final boolean xdim) throws DataStoreException {
-        return xdim ? TiledGridCoverage.getPixelsPerElement(getSampleModel()) : 1;
+    protected int getAtomSize(final int dim) throws DataStoreException {
+        return (dim == 0) ? TiledGridCoverage.getPixelsPerElement(getSampleModel(null)) : 1;
+    }
+
+    /**
+     * Returns {@code true} if the reader can load truncated tiles. Truncated tiles may happen in the
+     * last row and last column of a tile matrix when the image size is not a multiple of the tile size.
+     * Some file formats, such as GeoTIFF, unconditionally stores full tiles, in which case this method
+     * should return {@code false}. At the opposite, some implementations, such as <abbr>GDAL</abbr>,
+     * accept only requests over the valid area, in which case this method should return {@code true}.
+     *
+     * <h4>Suggested value</h4>
+     * The {@code suggested} argument is a value computed by the caller based on common usages.
+     * The default implementation of {@link TiledGridCoverage} suggests {@code true}
+     * if the read operation is inside a single big tile, or {@code false} otherwise.
+     * The default implementation of this method returns {@code suggested} unchanged.
+     *
+     * <p>Note that even for subclasses that generally do not support the reading of truncated tiles,
+     * it is often safe to return {@code true} for the last dimension (for example, <var>y</var> in a
+     * two-dimensional image), because there is no data after that dimension.
+     * Therefore, it is often safe to stop the reading process in that dimension.
+     *
+     * @param  dim        the dimension: 0 for <var>x</var>, 1 for <var>y</var>, <i>etc.</i>
+     * @param  suggested  suggested response to return (see above heuristic rules).
+     * @return whether the reader can load truncated tiles along the specified dimension.
+     */
+    protected boolean canReadTruncatedTiles(int dim, boolean suggested) {
+        return suggested;
     }
 
     /**
@@ -164,10 +256,10 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      *
      * <ul class="verbose">
      *   <li>If {@code false}, then {@link TiledGridCoverage#model} will expect the same {@link DataBuffer}
-     *       than the one expected by the {@linkplain #getSampleModel() sample model of this resource}.
+     *       than the one expected by the {@linkplain #getSampleModel(int[]) sample model of this resource}.
      *       All bands will be loaded but the coverage sample model will ignore the bands that were not
      *       enumerated in the {@code range} argument. This strategy is convenient when skipping bands
-     *       at reading time is hard.</li>
+     *       at reading time is difficult.</li>
      *   <li>If {@code true}, then {@link TiledGridCoverage#model} will have its band indices and bit masks
      *       "compressed" for making them consecutive. For example if the {@code range} argument specifies that
      *       the bands to read are {1, 3, 4, 6}, then after "compression" band indices become {0, 1, 2, 3}.
@@ -175,7 +267,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * </ul>
      *
      * <p>The default implementation returns {@code true} if the sample model is a {@link ComponentSampleModel}
-     * and {@code false} if all other cases, because skipping bands in a packed sample model is more difficult
+     * and {@code false} in all other cases, because skipping bands in a packed sample model is more difficult
      * to implement.</p>
      *
      * @return {@code true} if the reader can load only the requested bands and skip other bands, or
@@ -184,50 +276,132 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      *
      * @see RangeArgument#select(SampleModel, boolean)
      */
-    protected boolean getDissociableBands() throws DataStoreException {
-        return getSampleModel() instanceof ComponentSampleModel;
+    protected boolean canSeparateBands() throws DataStoreException {
+        return getSampleModel(null) instanceof ComponentSampleModel;
     }
 
     /**
-     * Returns the Java2D sample model describing pixel type and layout for all bands.
-     * The raster size is the {@linkplain #getTileSize() tile size} as stored in the resource.
+     * Returns the Java2D sample model describing pixel type and layout for the specified bands.
+     * The raster size shall be the two first dimensions of the {@linkplain #getTileSize() tile size}.
+     * This is the size of tiles as stored in the resource, i.e. ignoring sub-sampling.
      *
-     * <h4>Multi-dimensional data cube</h4>
-     * If this resource has more than 2 dimensions, then this model is for the two first ones (usually horizontal).
-     * The images for all levels in additional dimensions shall use the same sample model.
+     * <p>If the {@code bands} argument is {@code null}, then this method <em>shall</em> return the sample model
+     * for all bands and cannot return {@code null}. If the {@code bands} argument is non-null, then this method
+     * <em>may</em> compute the sample model for the specified bands, or return {@code null} for instructing the
+     * caller to derive the sample model from {@code getSampleModel(null)}.</p>
      *
-     * <h4>Performance note</h4>
-     * Implementation should return a cached value, because this method may be invoked many times.
+     * <h4>Implementation note</h4>
+     * The default implementation creates a sample model compatible with the {@linkplain #getColorModel(int[])
+     * color model} if available, or otherwise defaults to a {@link BandedSampleModel} which stores samples as
+     * floating point values. This is okay for prototyping, but it is recommended to override this method with
+     * a simple model that better matches the data. A simple implementation can be as below:
      *
-     * @return the sample model for tiles at full resolution with all their bands.
+     * {@snippet lang="java" :
+     *     private SampleModel sampleModel;
+     *
+     *     @Override
+     *     protected SampleModel getSampleModel(int[] bands) throws DataStoreException {
+     *         if (bands != null) {
+     *             return null;
+     *         }
+     *         synchronized (getSynchronizationLock()) {
+     *             if (sampleModel == null) {
+     *                 sampleModel = ...;   // Compute and cache, because requested many times.
+     *             }
+     *             return sampleModel;
+     *         }
+     *     }
+     *     }
+     *
+     * @param  bands  indices (not necessarily in increasing order) of desired bands, or {@code null} for all bands.
+     * @return the sample model for tiles at full resolution with the specified bands.
+     *         Shall be non-null if {@code bands} is null (i.e. the caller is requesting the main sample model).
      * @throws DataStoreException if an error occurred during sample model construction.
      */
-    protected abstract SampleModel getSampleModel() throws DataStoreException;
+    protected SampleModel getSampleModel(final int[] bands) throws DataStoreException {
+        final int[] tileSize = getTileSize();
+        final int width  = tileSize[X_DIMENSION];
+        final int height = tileSize[Y_DIMENSION];
+        final ColorModel colors = getColorModel(bands);
+        if (colors != null) {
+            return colors.createCompatibleSampleModel(width, height);
+        }
+        int numBands = (bands != null) ? bands.length : getSampleDimensions().size();
+        return new BandedSampleModel(DataBuffer.TYPE_FLOAT, width, height, numBands);
+    }
 
     /**
      * Returns the Java2D color model for rendering images, or {@code null} if none.
-     * The color model shall be compatible with the sample model returned by {@link #getSampleModel()}.
+     * The color model shall be compatible with the sample model returned by {@link #getSampleModel(int[])}.
      *
-     * @return a color model compatible with {@link #getSampleModel()}, or {@code null} if none.
+     * <p>The default implementation returns a gray scale color model if there is only one band
+     * to show and the range of the {@linkplain #getSampleDimensions() sample dimension} is known.
+     * OTherwise, this method returns {@code null}.
+     * This is okay for prototyping, but it is recommended to override.</p>
+     *
+     * @param  bands  indices (not necessarily in increasing order) of desired bands, or {@code null} for all bands.
+     * @return a color model compatible with {@link #getSampleModel(int[])}, or {@code null} if none.
      * @throws DataStoreException if an error occurred during color model construction.
      */
-    protected abstract ColorModel getColorModel() throws DataStoreException;
+    protected ColorModel getColorModel(final int[] bands) throws DataStoreException {
+        final List<SampleDimension> sd = getSampleDimensions();
+        if ((bands != null && bands.length == 1) || sd.size() == 1) {
+            NumberRange<?> range = sd.get((bands != null) ? bands[0] : 0).getSampleRange().orElse(null);
+            if (range != null) {
+                final double min = range.getMinDouble();
+                final double max = range.getMaxDouble();
+                if (Double.isFinite(min) && Double.isFinite(max)) {
+                    return ColorModelFactory.createGrayScale(DataBuffer.TYPE_FLOAT, 1, 0, min, max);
+                }
+            }
+        }
+        return null;
+    }
 
     /**
-     * Returns the value to use for filling empty spaces in rasters,
-     * or {@code null} if none, not different than zero or not valid for the target data type.
-     * This value is used if a tile contains less pixels than expected.
-     * The zero value is excluded because tiles are already initialized to zero by default.
+     * Returns the values to use for filling empty spaces in rasters, with one value per band.
+     * The returned array can be {@code null} if there is no fill value, or if the fill values
+     * are not different than zero, or are not valid for the image data type.
      *
-     * @return the value to use for filling empty spaces in rasters.
+     * <p>Fill values are used when a tile contains less pixels than expected.
+     * A null array is a shortcut for skipping the filling of new tiles,
+     * because new tiles are already initialized with zero values by default.</p>
+     *
+     * <p>The default implementation returns an array of {@link DataType#fillValue()} except
+     * for the {@linkplain IndexColorModel#getTransparentPixel() transparent pixel} if any.
+     * If the array would contain only zero values, the default implementation returns null.</p>
+     *
+     * @param  bands  indices (not necessarily in increasing order) of desired bands, or {@code null} for all bands.
+     * @return the value to use for filling empty spaces in each band, or {@code null} for defaulting to zero.
      * @throws DataStoreException if an error occurred while fetching filling information.
      */
-    protected abstract Number getFillValue() throws DataStoreException;
+    protected Number[] getFillValues(final int[] bands) throws DataStoreException {
+        final SampleModel model = getSampleModel(bands);
+        final var dataType = DataType.forDataBufferType(model.getDataType());
+        IndexColorModel icm = null;
+check:  if (dataType.isInteger()) {
+            final ColorModel colors = getColorModel(bands);
+            if (colors instanceof IndexColorModel) {
+                icm = (IndexColorModel) colors;
+                if (icm.getTransparentPixel() > 0) {
+                    break check;
+                }
+            }
+            return null;
+        }
+        final Number fill = dataType.fillValue();
+        final var fillValues = (Number[]) Array.newInstance(fill.getClass(), model.getNumBands());
+        Arrays.fill(fillValues, fill);
+        if (icm != null) {
+            fillValues[ImageUtilities.getVisibleBand(icm)] = icm.getTransparentPixel();
+        }
+        return fillValues;
+    }
 
     /**
      * Parameters that describe the resource subset to be accepted by the {@link TiledGridCoverage} constructor.
-     * This is a temporary class used only for transferring information from {@link TiledGridResource}.
-     * This class does not perform I/O operations.
+     * Instances of this class are temporary and used only for transferring information from {@link TiledGridResource}
+     * to {@link TiledGridCoverage}. This class does not perform I/O operations.
      */
     public final class Subset {
         /**
@@ -278,17 +452,21 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
          * This array contains the factors by which to divide {@link TiledGridResource}
          * cell coordinates in order to obtain {@link TiledGridCoverage} cell coordinates.
          */
-        final int[] subsampling;
+        final long[] subsampling;
 
         /**
          * Remainder of the divisions of {@link TiledGridResource} cell coordinates by subsampling factors.
          */
-        final int[] subsamplingOffsets;
+        final long[] subsamplingOffsets;
 
         /**
          * Size of tiles (or chunks) in the resource, without clipping and subsampling.
+         * May be a virtual tile size (i.e., tiles larger than the real tiles) if the
+         * resource can easily coalesce many tiles in a single read operation.
+         *
+         * @see #getVirtualTileSize(long[])
          */
-        final int[] tileSize;
+        final long[] virtualTileSize;
 
         /**
          * The sample model for the bands to read (not the full set of bands in the resource).
@@ -304,10 +482,10 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
         final ColorModel colorsForBandSubset;
 
         /**
-         * Value to use for filling empty spaces in rasters, or {@code null} if none,
+         * Values to use for filling empty spaces in rasters, or {@code null} if none,
          * not different than zero or not valid for the target data type.
          */
-        final Number fillValue;
+        final Number[] fillValues;
 
         /**
          * Cache to use for tiles loaded by the {@link TiledGridCoverage}.
@@ -332,13 +510,13 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
             final RangeArgument   rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
             final GridGeometry    gridGeometry = getGridGeometry();
             sourceExtent = gridGeometry.getExtent();
-            tileSize = getTileSize();
+            final int[] tileSize = getTileSize();
             boolean sharedCache = true;
             if (domain == null) {
                 domain             = gridGeometry;
                 readExtent         = sourceExtent;
-                subsamplingOffsets = new int[gridGeometry.getDimension()];
-                subsampling        = new int[subsamplingOffsets.length];
+                subsamplingOffsets = new long[gridGeometry.getDimension()];
+                subsampling        = new long[subsamplingOffsets.length];
                 Arrays.fill(subsampling, 1);
             } else {
                 /*
@@ -348,33 +526,28 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
                  * Note that it is possible to disable this restriction in a single dimension, typically the X one
                  * when reading a TIFF image using strips instead of tiles.
                  */
-                final int atomSizeX = getAtomSize(true);
-                final int atomSizeY = getAtomSize(false);
-                int tileWidth   = tileSize[X_DIMENSION];
-                int tileHeight  = tileSize[Y_DIMENSION];
-                if (tileWidth  >= sourceExtent.getSize(X_DIMENSION)) {tileWidth  = atomSizeX; sharedCache = false;}
-                if (tileHeight >= sourceExtent.getSize(Y_DIMENSION)) {tileHeight = atomSizeY; sharedCache = false;}
-                /*
-                 * Note: if we allow X_DIMENSION and Y_DIMENSION to be anything in the future, then
-                 * BIDIMENSIONAL must become `max(xDim, yDim) + 1` and array must be initialized to 1.
-                 */
-                final int[] chunkSize  = new int[TiledGridCoverage.BIDIMENSIONAL];
-                chunkSize[X_DIMENSION] = tileWidth;
-                chunkSize[Y_DIMENSION] = tileHeight;
-                /*
-                 * Maximal subsampling supported. We put no restriction if subsamplig can occur anywhere
-                 * ("atome size" of 1) and disable subsampling otherwise for avoiding code complexity.
-                 */
-                final int[] maximumSubsampling = new int[chunkSize.length];
-                Arrays.fill(maximumSubsampling, Integer.MAX_VALUE);
-                if (atomSizeX != 1) maximumSubsampling[X_DIMENSION] = 1;
-                if (atomSizeY != 1) maximumSubsampling[Y_DIMENSION] = 1;
+                final var chunkSize = new int [tileSize.length];
+                final var maxSubsmp = new long[tileSize.length];
+                for (int i=0; i < tileSize.length; i++) {
+                    final int atomSize = getAtomSize(i);
+                    int span = tileSize[i];
+                    if (span >= sourceExtent.getSize(i)) {
+                        span = atomSize;
+                        sharedCache = false;
+                    }
+                    /*
+                     * We put no restriction on the maximum subsampling if subsamplig can occur anywhere
+                     * ("atome size" of 1) and disable subsampling otherwise for avoiding code complexity.
+                     */
+                    maxSubsmp[i] = (atomSize == 1) ? Long.MAX_VALUE : 1;
+                    chunkSize[i] = (i == X_DIMENSION || i == Y_DIMENSION) ? span : 1;
+                }
                 /*
                  * Build the domain in units of subsampled pixels, and get the same extent (`readExtent`)
                  * without subsampling, i.e. in units of cells of the original grid resource.
                  */
                 final GridDerivation target = gridGeometry.derive().chunkSize(chunkSize)
-                            .maximumSubsampling(maximumSubsampling)
+                            .maximumSubsampling(maxSubsmp)
                             .rounding(GridRoundingMode.ENCLOSING)
                             .subgrid(domain);
 
@@ -384,39 +557,72 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
                 subsamplingOffsets = target.getSubsamplingOffsets();
             }
             /*
+             * Virtual tile size is usually the same as the real tile size.
+             */
+            virtualTileSize = getVirtualTileSize(subsampling);
+            for (int i=0; i < virtualTileSize.length; i++) {
+                virtualTileSize[i] = Math.min(sourceExtent.getSize(i), Math.max(tileSize[i], virtualTileSize[i]));
+            }
+            /*
              * Get the bands selected by user in strictly increasing order of source band index.
              * If user has specified bands in a different order, that change of band order will
-             * be handled by the `SampleModel`, not in `includedBands` array.
+             * be handled by the `SampleModel`, not by the `includedBands` array.
              */
-            int[] includedBands = null;
+            int[] requestedBands = null;          // Same as `includedBands` but in user-specified order.
+            @SuppressWarnings("LocalVariableHidesMemberVariable") int[]       includedBands       = null;
+            @SuppressWarnings("LocalVariableHidesMemberVariable") SampleModel modelForBandSubset  = null;
+            @SuppressWarnings("LocalVariableHidesMemberVariable") ColorModel  colorsForBandSubset = null;
             boolean loadAllBands = rangeIndices.isIdentity();
             if (!loadAllBands) {
                 bands = Arrays.asList(rangeIndices.select(bands));
-                loadAllBands = !getDissociableBands();
+                loadAllBands = !canSeparateBands();
                 if (!loadAllBands) {
                     sharedCache = false;
-                    includedBands = new int[rangeIndices.getNumBands()];
-                    for (int i=0; i<includedBands.length; i++) {
-                        includedBands[i] = rangeIndices.getSourceIndex(i);
+                    if (!rangeIndices.hasAllBands) {
+                        includedBands = new int[rangeIndices.getNumBands()];
+                        for (int i=0; i<includedBands.length; i++) {
+                            includedBands[i] = rangeIndices.getSourceIndex(i);
+                        }
+                        assert ArraysExt.isSorted(includedBands, true);
                     }
-                    assert ArraysExt.isSorted(includedBands, true);
-                    if (rangeIndices.hasAllBands) {
-                        assert ArraysExt.isRange(0, includedBands);
-                        includedBands = null;
-                    }
+                    requestedBands = rangeIndices.getSelectedBands();
+                    modelForBandSubset   = getSampleModel(requestedBands);
+                    colorsForBandSubset  = getColorModel (requestedBands);
                 }
+            }
+            if (modelForBandSubset == null) {
+                modelForBandSubset = rangeIndices.select(getSampleModel(null), loadAllBands);
+            }
+            if (colorsForBandSubset == null) {
+                colorsForBandSubset = rangeIndices.select(getColorModel(null));
             }
             this.domain              = domain;
             this.ranges              = bands;
             this.includedBands       = includedBands;
-            this.modelForBandSubset  = rangeIndices.select(getSampleModel(), loadAllBands);
-            this.colorsForBandSubset = rangeIndices.select(getColorModel());
-            this.fillValue           = getFillValue();
+            this.modelForBandSubset  = Objects.requireNonNull(modelForBandSubset);
+            this.colorsForBandSubset = colorsForBandSubset;
+            this.fillValues          = getFillValues(requestedBands);
             /*
              * All `TiledGridCoverage` instances can share the same cache if they read all tiles fully.
              * If they read only sub-regions or apply subsampling, then they will need their own cache.
              */
             cache = sharedCache ? rasters : new WeakValueHashMap<>(CacheKey.class);
+        }
+
+        /**
+         * Returns flags telling, for each dimension, whether the read region should be an integer number of tiles.
+         *
+         * @param  subSize  tile size after subsampling.
+         * @return a bitmask with the flag for the first dimension in the lowest bit.
+         */
+        final long forceWholeTiles(final int[] subSize) {
+            long forceWholeTiles = 0;
+            for (int i=0; i<subSize.length; i++) {
+                if (!canReadTruncatedTiles(i, Math.multiplyExact(subsampling[i], subSize[i]) != virtualTileSize[i])) {
+                    forceWholeTiles |= Numerics.bitmask(i);
+                }
+            }
+            return forceWholeTiles;
         }
 
         /**
@@ -446,7 +652,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
                 return false;
             }
             for (int i = subsampling.length; --i >= 0;) {
-                if (subsampling[i] >= tileSize[i]) {
+                if (subsampling[i] >= virtualTileSize[i]) {
                     return false;
                 }
             }
@@ -504,7 +710,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * Current implementation does not support immediate loading if the data cube has more than 2 dimensions.
      * Non-immediate loading allows users to specify two-dimensional slices.
      */
-    private boolean supportImmediateLoading() {
+    private boolean supportImmediateLoading() throws DataStoreException {
         return getTileSize().length == TiledGridCoverage.BIDIMENSIONAL;
     }
 

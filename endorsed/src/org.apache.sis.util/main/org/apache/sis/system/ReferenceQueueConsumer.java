@@ -24,10 +24,10 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * A thread processing all {@link Reference} instances enqueued in a {@link ReferenceQueue}.
- * This is the central place where <em>every</em> weak references produced by the SIS library
- * are consumed. This thread will invoke the {@link Disposable#dispose()} method for each
- * references enqueued by the garbage collector. Those references <strong>must</strong>
- * implement the {@link Disposable} interface.
+ * This is the central place where weak references produced by the SIS library are consumed.
+ * This thread will invoke the {@link Disposable#dispose()} method for each references
+ * enqueued by the garbage collector.
+ * Those references <strong>must</strong> implement the {@link Disposable} interface.
  *
  * Example:
  *
@@ -44,6 +44,11 @@ import org.apache.sis.util.logging.Logging;
  *         }
  *     }
  *     }
+ *
+ * <h2>When to use</h2>
+ * This class is useful when the caller need to keep the weak reference.
+ * If a phantom reference is sufficient, consider using {@link Cleaners} instead.
+ * The latter is based on standard <abbr>JDK</abbr> classes and provides more safety.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

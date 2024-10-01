@@ -36,7 +36,6 @@ import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.base.StoreUtilities;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.IOUtilities;
 
@@ -142,7 +141,7 @@ final class WritableStore extends Store implements WritableAggregate {
 
     /**
      * Removes a {@code Resource} from this store. The resource must be a part of this {@code Aggregate}.
-     * For a folder store, this means that the resource must be a direct children of the directory managed
+     * For a folder store, this means that the resource must be a direct child of the directory managed
      * by this store.
      *
      * This operation is destructive: the {@link Resource} and it's related files will be deleted.
@@ -158,25 +157,25 @@ final class WritableStore extends Store implements WritableAggregate {
                     children.remove(path);
                     return;
                 }
-            } else if (resource instanceof ResourceOnFileSystem) {
-                final Path[] componentPaths = ((ResourceOnFileSystem) resource).getComponentFiles().clone();
-                for (Path root : componentPaths) {
-                    root = root.getParent();
-                    if (Files.isSameFile(root, location)) {
-                        /*
-                         * If we enter in this block, we have determined that at least one file is located in the
-                         * directory managed by this store - NOT in a subdirectory since they could be managed by
-                         * different folder stores. We assume that this root file is the "main" file. Other files
-                         * could be in subdirectories, but we need to verify - we do not delete files outside.
-                         */
-                        for (final Path path : componentPaths) {
-                            if (path.startsWith(root)) {
-                                Files.delete(path);
-                            }
+            } else {
+                final FileSet fileset = resource.getFileSet().orElse(null);
+                if (fileset != null) {
+                    for (Path root : fileset.getPaths()) {
+                        root = root.getParent();
+                        if (root != null && Files.isSameFile(root, location)) {
+                            /*
+                             * If we enter in this block, we have determined that the main file is located in the
+                             * directory managed by this store - NOT in a subdirectory because they could be managed
+                             * by different folder stores. Note that the default implementation of `FileSet.delete()`
+                             * will not delete any file in the parent directory. This is the desired behavior because
+                             * such file could be shared by many resources (e.g. a global `metadata.xml` file).
+                             */
+                            fileset.delete();
+                            children.values().removeIf((e) -> e == resource);
+                            components = null;      // Clear cache. TODO: we should do something more efficient.
+                            return;
                         }
-                        children.values().removeIf((e) -> e == resource);
-                        components = null;      // Clear cache. TODO: we should do something more efficient.
-                        return;
+                        break;          // Check only the first file, which should be the main file.
                     }
                 }
             }

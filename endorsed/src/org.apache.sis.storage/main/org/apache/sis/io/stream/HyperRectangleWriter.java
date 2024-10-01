@@ -199,7 +199,7 @@ public class HyperRectangleWriter {
             };
             regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
             regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
-            var subset = new Region(sourceSize, regionLower, regionUpper, new int[] {1,1});
+            var subset = new Region(sourceSize, regionLower, regionUpper, new long[] {1,1});
             length = subset.length;
             if (bandOffsets == null || (bandOffsets.length == pixelStride && ArraysExt.isRange(0, bandOffsets))) {
                 return new HyperRectangleWriter(subset);

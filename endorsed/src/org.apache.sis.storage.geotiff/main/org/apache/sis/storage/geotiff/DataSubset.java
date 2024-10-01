@@ -29,7 +29,6 @@ import java.awt.image.DataBufferDouble;
 import java.awt.image.Raster;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
-import static java.lang.Math.multiplyFull;
 import static java.lang.Math.toIntExact;
 import org.opengis.util.GenericName;
 import org.apache.sis.image.DataType;
@@ -62,7 +61,7 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
  * <h2>Cell Coordinates</h2>
  * When there is no subsampling, {@code DataSubset} uses the same cell coordinates as {@link DataCube}.
  * When there is a subsampling, cell coordinates in this subset are divided by the subsampling factors.
- * Conversion is done by {@link #toFullResolution(long, int)}.
+ * Conversion is done by {@link #coverageToResourceCoordinate(long, int)}.
  *
  * <h2>Tile Matrix Coordinates</h2>
  * In each {@code DataSubset}, indices of tiles starts at (0, 0, …). This class does not use
@@ -237,7 +236,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     private static final class Tile extends Snapshot implements Comparable<Tile> {
         /**
-         * Value of {@link DataSubset#tileOffsets} at index {@link #indexInTileVector}.
+         * Value of {@link DataSubset#tileOffsets} at index {@link #getTileIndexInResource()}.
          * If pixel data are stored in different planes ("banks" in Java2D terminology),
          * then current implementation takes only the offset of the first bank to read.
          * This field contains the value that we want in increasing order.
@@ -256,7 +255,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          */
         Tile(final AOI domain, final Vector tileOffsets, final int[] includedBanks, final int numTiles) {
             super(domain);
-            int p = indexInTileVector;
+            int p = getTileIndexInResource();
             if (includedBanks != null) {
                 p += includedBanks[0] * numTiles;
             }
@@ -275,7 +274,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
         final void notifyInputChannel(final Vector tileOffsets, final Vector tileByteCounts,
                                       int b, final int numTiles, final ChannelDataInput input)
         {
-            b = indexInTileVector + b * numTiles;
+            b = getTileIndexInResource() + b * numTiles;
             final long offset = tileOffsets.longValue(b);
             final long length = tileByteCounts.longValue(b);
             input.rangeOfInterest(offset, Numerics.saturatingAdd(offset, length));
@@ -292,7 +291,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          */
         final void copyTileInfo(final Vector source, final long[] target, final int[] includedBanks, final int numTiles) {
             for (int j=0; j<target.length; j++) {
-                final int i = indexInTileVector + numTiles * (includedBanks != null ? includedBanks[j] : j);
+                final int i = getTileIndexInResource() + numTiles * (includedBanks != null ? includedBanks[j] : j);
                 target[j] = source.longValue(i);
             }
         }
@@ -324,7 +323,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     @Override
     @SuppressWarnings("try")
-    protected final Raster[] readTiles(final AOI iterator) throws IOException, DataStoreException {
+    protected final Raster[] readTiles(final TileIterator iterator) throws IOException, DataStoreException {
         /*
          * Prepare an array for all tiles to be returned. Tiles that are already in memory will be stored
          * in this array directly. Other tiles will be declared in the `missings` array and loaded later.
@@ -341,7 +340,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             do {
                 final Raster tile = iterator.getCachedTile();
                 if (tile != null) {
-                    result[iterator.getIndexInResultArray()] = tile;
+                    result[iterator.getTileIndexInResultArray()] = tile;
                 } else {
                     /*
                      * Tile not yet loaded. Add to a queue of tiles to load later.
@@ -371,14 +370,14 @@ class DataSubset extends TiledGridCoverage implements Localized {
                  */
                 final long[] lower       = new long[BIDIMENSIONAL];   // Coordinates of the first pixel to read relative to the tile.
                 final long[] upper       = new long[BIDIMENSIONAL];   // Coordinates after the last pixel to read relative to the tile.
-                final int[]  subsampling = new int [BIDIMENSIONAL];
+                final long[] subsampling = new long[BIDIMENSIONAL];
                 final Point  origin      = new Point();
                 final long[] offsets     = new long[numBanks];
                 final long[] byteCounts  = new long[numBanks];
                 try (Closeable finisher  = createInflater()) {
                     for (int i=0; i<numMissings; i++) {
                         final Tile tile = missings[i];
-                        if (tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL)) {
+                        if (tile.getRegionInsideTile(lower, upper, subsampling, false)) {
                             origin.x = tile.originX;
                             origin.y = tile.originY;
                             tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);
@@ -396,13 +395,18 @@ class DataSubset extends TiledGridCoverage implements Localized {
                             final Raster r;
                             if (isEmpty) {
                                 if (emptyTiles == null) {
-                                    emptyTiles = TilePlaceholder.filled(model, (fillValue != null) ? fillValue : 0);
+                                    Number[] values = fillValues;
+                                    if (values == null) {
+                                        values = new Number[model.getNumBands()];
+                                        Arrays.fill(values, 0);
+                                    }
+                                    emptyTiles = TilePlaceholder.filled(model, values);
                                 }
                                 r = emptyTiles.create(origin);
                             } else {
                                 r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
                             }
-                            result[tile.indexInResultArray] = tile.cache(r);
+                            result[tile.getTileIndexInResultArray()] = tile.cache(r);
                         } else {
                             needsCompaction = true;
                         }
@@ -479,7 +483,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @see DataCube#canReadDirect(TiledGridResource.Subset)
      */
     Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
-                     final int[] subsampling, final Point location) throws IOException, DataStoreException
+                     final long[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType type = getDataType();
         final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by preconditions.
@@ -492,7 +496,10 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * This length is used only for verification purpose so it does not need to be exact.
          */
         final long length = ceilDiv(width * height * sourcePixelStride * sampleSize, Byte.SIZE);
-        final long[] size = new long[] {multiplyFull(sourcePixelStride, getTileSize(X_DIMENSION)), getTileSize(Y_DIMENSION)};
+        final long[] size = new long[] {
+            multiplyExact(getTileSize(X_DIMENSION), sourcePixelStride),
+                          getTileSize(Y_DIMENSION)
+        };
         /*
          * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually a
          * group of `sourcePixelStride` values. Note that in such case, we cannot handle subsampling on the first axis.
@@ -508,9 +515,9 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * If that assumption was not true, we would have to adjust `capacity`, `lower[0]` and `upper[0]`
          * (we may do that as an optimization in a future version).
          */
-        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), input());
-        final Region region = new Region(size, lower, upper, subsampling);
-        final Buffer[] banks = new Buffer[numBanks];
+        final var hr     = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), input());
+        final var region = new Region(size, lower, upper, subsampling);
+        final var banks  = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             if (b < byteCounts.length && length > byteCounts[b]) {
                 throw new DataStoreContentException(source.reader.resources().getString(
@@ -519,7 +526,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             hr.setOrigin(offsets[b]);
             assert model.getSampleSize(b) == sampleSize;                        // See above comment.
             final Buffer bank = hr.readAsBuffer(region, getBankCapacity(1));
-            fillRemainingRows(bank);
+            fillRemainingRows(bank, b);
             banks[b] = bank;
         }
         final DataBuffer buffer = RasterFactory.wrap(type, banks);
@@ -532,15 +539,28 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * capacity if the current tile is smaller than the expected tile size (e.g. last tile is truncated).
      *
      * @param  bank  the buffer where to fill remaining rows.
+     * @param  band  index of the band to fill. Same as bank index in the particular case of {@code DataSubset} class.
      */
-    final void fillRemainingRows(final Buffer bank) {
-        if (fillValue != null) {
+    final void fillRemainingRows(final Buffer bank, final int band) {
+        if (fillValues != null) {
             final int limit    = bank.limit();
             final int capacity = bank.capacity();   // Equals `this.capacity` except for packed sample model.
             if (limit != capacity) {
-                Vector.create(bank.limit(capacity), ImageUtilities.isUnsignedType(model))
-                      .fill(limit, capacity, fillValue);
-                bank.limit(capacity);
+                final Vector v = Vector.create(bank.limit(capacity), ImageUtilities.isUnsignedType(model));
+                final Number f = fillValues[band];
+                /*
+                 * If all values are the same, we can delegate (indirectly) to an `Arrays.fill(…)` method.
+                 * Also, if the raster stores each band in a separated bank (banded sample model),
+                 * we have only one value to set in the given bank.
+                 */
+                if (ArraysExt.allEquals(fillValues, f) || model instanceof BandedSampleModel) {
+                    v.fill(limit, capacity, f);
+                } else {
+                    // Slow fallback for interleaved sample models.
+                    for (int i=limit; i<capacity; i++) {
+                        v.set(i, fillValues[i % fillValues.length]);
+                    }
+                }
             }
         }
     }

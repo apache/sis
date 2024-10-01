@@ -17,7 +17,9 @@
 package org.apache.sis.storage.gimi;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,10 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.PixelInCell;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -41,6 +47,8 @@ import org.apache.sis.storage.tiling.TileMatrix;
 import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.tiling.TiledResource;
 import org.apache.sis.util.iso.Names;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -74,8 +82,11 @@ final class ResourcePyramid extends AbstractGridCoverageResource implements Tile
         if (tileMatrixSet != null) {
             return;
         }
-        final GridCoverageResource first = (GridCoverageResource) store.getComponent(group.entitiesId[0]);
-        tileMatrixSet = new GimiTileMatrixSet(Names.createLocalName(null, null, getIdentifier().get().tip().toString() + "_tms"), first.getGridGeometry().getCoordinateReferenceSystem());
+
+        /*
+         * Find all resources of the pyramid
+         */
+        final List<ResourceGrid> candidates = new ArrayList<>();
         for (int i = 0; i < group.matrices.length; i++) {
             Resource res = store.getComponent(group.entitiesId[i]);
             if (res instanceof GridCoverageResource && !(res instanceof TiledResource)) {
@@ -97,12 +108,53 @@ final class ResourcePyramid extends AbstractGridCoverageResource implements Tile
             }
             if (res instanceof ResourceGrid) {
                 final ResourceGrid tr = (ResourceGrid) res;
-                final TileMatrix tm = tr.getTileMatrix();
-                grids.put(tm.getIdentifier(), tr);
-                tileMatrixSet.matrices.insertByScale(tm);
+                candidates.add(tr);
             } else {
                 throw new DataStoreException("A resource in the pyramid in not a coverage, itemId : " + group.entitiesId[i]);
             }
+        }
+
+        /*
+         * Sort by scale, lowest resolution at index 0.
+         * Only the most accurate matrix seems to contains georeferencing informations
+         */
+        Collections.sort(candidates, (ResourceGrid o1, ResourceGrid o2) -> {
+            return Long.compare(
+                    o2.getTileMatrix().getTilingScheme().getExtent().getSize(0),
+                    o1.getTileMatrix().getTilingScheme().getExtent().getSize(0));
+        });
+
+        /*
+         * Define each matrix CRS and transform based on the lowest one.
+         * each level is 2x resolution with the same tope left corner.
+         */
+        final TileMatrix referenceMatrix = candidates.get(0).getTileMatrix();
+        final GridGeometry reference = referenceMatrix.getTilingScheme();
+        final MathTransform referenceTransform = reference.isDefined(GridGeometry.GRID_TO_CRS) ? reference.getGridToCRS(PixelInCell.CELL_CENTER) : new AffineTransform2D(1, 0, 0, 1, 0, 0);
+        final CoordinateReferenceSystem crs = reference.isDefined(GridGeometry.CRS) ? referenceMatrix.getTilingScheme().getCoordinateReferenceSystem() : CommonCRS.Engineering.GRID.crs();
+
+        tileMatrixSet = new GimiTileMatrixSet(Names.createLocalName(null, null, getIdentifier().get().tip().toString() + "_tms"), crs);
+        grids.put(referenceMatrix.getIdentifier(), candidates.get(0));
+        tileMatrixSet.matrices.insertByScale(referenceMatrix);
+        final long[] tileSize = new long[]{group.tileSizeX, group.tileSizeY};
+
+        for (int i = 1, n = candidates.size(); i < n; i++) {
+            final ResourceGrid resource = candidates.get(i);
+
+            final double scale = Math.pow(2, i);
+            final MathTransform scaleTrs = new AffineTransform2D(scale, 0, 0, scale, 0, 0);
+
+            final GridGeometry fixed = new GridGeometry(
+                    resource.getTileMatrix().getTilingScheme().getExtent(),
+                    PixelInCell.CELL_CENTER,
+                    MathTransforms.concatenate(scaleTrs, referenceTransform),
+                    reference.getCoordinateReferenceSystem());
+
+            resource.amendTilingScheme(fixed, tileSize);
+            final TileMatrix matrix = resource.getTileMatrix();
+
+            grids.put(matrix.getIdentifier(), resource);
+            tileMatrixSet.matrices.insertByScale(matrix);
         }
     }
 

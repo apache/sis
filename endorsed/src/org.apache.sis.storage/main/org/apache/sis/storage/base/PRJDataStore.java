@@ -25,9 +25,9 @@ import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 import java.text.ParsePosition;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ArrayList;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -44,7 +44,6 @@ import org.apache.sis.storage.wkt.StoreFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.xml.privy.ExceptionSimplifier;
@@ -67,7 +66,7 @@ public abstract class PRJDataStore extends URIDataStore {
     /**
      * The filename extension of {@code "*.prj"} files.
      *
-     * @see #getComponentFiles()
+     * @see #getFileSet()
      */
     protected static final String PRJ = "prj";
 
@@ -218,46 +217,42 @@ public abstract class PRJDataStore extends URIDataStore {
      * The default implementation does the same computation as the super-class, then adds the sibling
      * file with {@code ".prj"} extension if it exists.
      *
-     * @return the main file and auxiliary files as paths, or an empty array if unknown.
+     * @return the main file and auxiliary files as paths, or an empty value if unknown.
      * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
-    public Path[] getComponentFiles() throws DataStoreException {
+    public Optional<FileSet> getFileSet() throws DataStoreException {
         return listComponentFiles(PRJ);
     }
 
     /**
      * Returns the {@linkplain #location} as a {@code Path} component together with auxiliary files.
-     * This method computes the path to the main file as {@link URIDataStore#getComponentFiles()},
-     * then add the sibling files with all extensions specified in the {@code auxiliaries} argument.
+     * This method computes the path to the main file as {@link URIDataStore#getFileSet()},
+     * then adds the sibling files with all extensions specified in the {@code auxiliaries} argument.
      * Each auxiliary file is tested for existence. Paths that are not regular files are omitted.
-     * This is a helper method for {@link #getComponentFiles()} implementation.
+     * This is a helper method for {@link #getFileSet()} implementations.
      *
      * @param  auxiliaries  filename extension (without leading dot) of all auxiliary files.
      *         Null elements are silently ignored.
      * @return the URI as a path, followed by all auxiliary files that exist.
      * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
-    protected final Path[] listComponentFiles(final String... auxiliaries) throws DataStoreException {
-        Path[] paths = super.getComponentFiles();
-        int count = paths.length;
-        if (count != 0) {
-            final Path path = paths[0];
+    protected final Optional<FileSet> listComponentFiles(final String... auxiliaries) throws DataStoreException {
+        return super.getFileSet().map((fileset) -> {
+            final var paths = new ArrayList<Path>(fileset.getPaths());
+            final Path path = paths.get(0);  // This list is ever empty.
             final String base = getBaseFilename(path);
+            boolean modified = false;
             for (final String extension : auxiliaries) {
                 if (extension != null) {
                     final Path p = path.resolveSibling(base.concat(extension));
                     if (Files.isRegularFile(p)) {
-                        if (count >= paths.length) {
-                            paths = Arrays.copyOf(paths, count + auxiliaries.length);
-                        }
-                        paths[count++] = p;
+                        modified |= paths.add(p);
                     }
                 }
             }
-            paths = ArraysExt.resize(paths, count);
-        }
-        return paths;
+            return modified ? new FileSet(paths) : fileset;
+        });
     }
 
     /**

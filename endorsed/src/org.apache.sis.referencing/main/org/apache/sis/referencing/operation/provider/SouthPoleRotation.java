@@ -30,6 +30,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -114,7 +115,7 @@ public final class SouthPoleRotation extends AbstractProvider {
      */
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = new ParameterBuilder().setCodeSpace(Citations.NETCDF, "NetCDF").setRequired(true);
+        final ParameterBuilder builder = new ParameterBuilder().setCodeSpace(Citations.NETCDF, Constants.NETCDF).setRequired(true);
 
         POLE_LATITUDE = builder
                 .addName(Citations.SIS, "Latitude of rotated pole")

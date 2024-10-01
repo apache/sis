@@ -33,11 +33,14 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.gimi.internal.MatrixGridRessource;
 import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.gimi.ModelTransformationProperty;
+import org.apache.sis.storage.gimi.isobmff.gimi.WellKnownText2Property;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.ImageSpatialExtents;
 import org.apache.sis.storage.tiling.TileMatrix;
 import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.tiling.TiledResource;
 import org.apache.sis.util.iso.Names;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -94,6 +97,8 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
     }
 
     private synchronized void initialize() throws DataStoreException {
+        if (tileMatrix != null) return;
+
         final Resource first = item.store.getComponent(item.references.get(0).toItemId[0]);
         if (first instanceof GridCoverageResource) {
             this.first = (GridCoverageResource) first;
@@ -101,23 +106,54 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
             throw new DataStoreException("Expecting a GridCoverageResource tile but was a " + first.getClass().getName());
         }
         final GridGeometry firstTileGridGeom = this.first.getGridGeometry();
-        this.crs = firstTileGridGeom.getCoordinateReferenceSystem();
+
         final GridExtent tileExtent = firstTileGridGeom.getExtent();
-        final int[] tileSize = new int[]{Math.toIntExact(tileExtent.getSize(0)), Math.toIntExact(tileExtent.getSize(1))};
-        final MathTransform matrixGridToCrs = firstTileGridGeom.derive().subgrid(null, tileSize).build().getGridToCRS(PixelInCell.CELL_CENTER);
-        for (Box b : item.properties) {
-            if (b instanceof ImageSpatialExtents) {
-                final ImageSpatialExtents ext = (ImageSpatialExtents) b;
-                final long matrixWidth = ext.imageWidth / tileExtent.getSize(0);
-                final long matrixHeight = ext.imageHeight / tileExtent.getSize(1);
-                //create tile matrix
-                final GridGeometry tilingScheme = new GridGeometry(new GridExtent(matrixWidth, matrixHeight), PixelInCell.CELL_CENTER, matrixGridToCrs, crs);
-                tileMatrix = new GimiTileMatrix(this, tilingScheme, tileSize);
-                //create tile matrix set
-                tileMatrixSet = new GimiTileMatrixSet(Names.createLocalName(null, null, identifier.tip().toString() + "_tms"), crs);
-                tileMatrixSet.matrices.insertByScale(tileMatrix);
+        final long[] tileSize = new long[]{tileExtent.getSize(0), tileExtent.getSize(1)};
+
+        ImageSpatialExtents imageExts = null;
+        ModelTransformationProperty modelTrs = null;
+        WellKnownText2Property modelWkt = null;
+
+        for (Box box : item.properties) {
+            if (box instanceof ImageSpatialExtents) {
+                imageExts = (ImageSpatialExtents) box;
+            } else if (box instanceof ModelTransformationProperty) {
+                modelTrs = (ModelTransformationProperty) box;
+            } else if (box instanceof WellKnownText2Property) {
+                modelWkt = (WellKnownText2Property) box;
             }
         }
+
+        if (modelWkt != null) {
+            try {
+                this.crs = modelWkt.toCRS();
+            } catch (FactoryException ex) {
+                throw new DataStoreException(ex.getMessage(), ex);
+            }
+        } else {
+            this.crs = null;
+        }
+
+        MathTransform matrixGridToCrs;
+        if (modelTrs != null) {
+            matrixGridToCrs = modelTrs.toMathTransform();
+        } else {
+            matrixGridToCrs = null;
+        }
+
+        //create tile matrix
+        GridGeometry tilingScheme = new GridGeometry(new GridExtent(imageExts.imageWidth, imageExts.imageHeight), PixelInCell.CELL_CENTER, matrixGridToCrs, crs);
+        tilingScheme = tilingScheme.derive().subgrid(null, tileSize).build(); //remove tile size from scheme
+        tileMatrix = new GimiTileMatrix(this, tilingScheme, tileSize);
+        //create tile matrix set
+        tileMatrixSet = new GimiTileMatrixSet(Names.createLocalName(null, null, identifier.tip().toString() + "_tms"), crs);
+        tileMatrixSet.matrices.insertByScale(tileMatrix);
+    }
+
+    void amendTilingScheme(GridGeometry tilingScheme, long[] tileSize) {
+        tileMatrix = new GimiTileMatrix(this, tilingScheme, tileSize);
+        tileMatrixSet = new GimiTileMatrixSet(Names.createLocalName(null, null, identifier.tip().toString() + "_tms"), crs);
+        tileMatrixSet.matrices.insertByScale(tileMatrix);
     }
 
     @Override

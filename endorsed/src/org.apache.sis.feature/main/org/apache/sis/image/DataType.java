@@ -32,7 +32,7 @@ import static org.apache.sis.util.privy.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOA
  * This is a type-safe version of the {@code TYPE_*} constants defined in {@link DataBuffer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  * @since   1.1
  */
 public enum DataType {
@@ -45,33 +45,41 @@ public enum DataType {
     /**
      * Unsigned 8-bits data.
      */
-    BYTE,
+    BYTE((byte) 0),
 
     /**
      * Unsigned 16-bits data.
      */
-    USHORT,
+    USHORT((short) 0),
 
     /**
      * Signed 16-bits data.
      */
-    SHORT,
+    SHORT((short) 0),
 
     /**
      * Signed 32-bits data. Also used for storing unsigned data; the Java2D API such as
      * {@link java.awt.image.Raster#getSample(int, int, int)} cannot distinguish the two cases.
      */
-    INT,
+    INT(0),
 
     /**
      * Single precision (32-bits) floating point data.
      */
-    FLOAT,
+    FLOAT(Float.NaN),
 
     /**
      * Double precision (64-bits) floating point data.
      */
-    DOUBLE;
+    DOUBLE(Double.NaN);
+
+    /**
+     * The default fill value, which is 0 for integer types and NaN for floating point types.
+     * The class of this number is the wrapper type corresponding to the type of sample values.
+     *
+     * @see #fillValue()
+     */
+    private final Number fillValue;
 
     /**
      * All enumeration values, cached for avoiding to recreate this array
@@ -82,7 +90,8 @@ public enum DataType {
     /**
      * Creates a new enumeration.
      */
-    private DataType() {
+    private DataType(final Number fillValue) {
+        this.fillValue = fillValue;
     }
 
     /**
@@ -314,5 +323,19 @@ public enum DataType {
      */
     public final int toDataBufferType() {
         return ordinal();
+    }
+
+    /**
+     * Returns the default fill value, which is 0 for integer types and NaN for floating point types.
+     * The class of this number is the wrapper class corresponding to the type of sample values,
+     * ignoring whether the type is signed or unsigned. For example, for {@link #USHORT},
+     * the returned fill value is an instance of the {@link Short} class.
+     *
+     * @return 0 of NaN in an instance of the wrapper class of the sample values.
+     *
+     * @since 1.5
+     */
+    public final Number fillValue() {
+        return fillValue;
     }
 }

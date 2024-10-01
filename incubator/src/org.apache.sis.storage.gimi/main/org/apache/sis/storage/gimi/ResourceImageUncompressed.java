@@ -19,6 +19,7 @@ package org.apache.sis.storage.gimi;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -30,7 +31,6 @@ import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.storage.AbstractGridCoverageResource;
@@ -44,7 +44,9 @@ import org.apache.sis.storage.gimi.isobmff.gimi.WellKnownText2Property;
 import org.apache.sis.storage.gimi.isobmff.iso23001_17.ComponentDefinition;
 import org.apache.sis.storage.gimi.isobmff.iso23001_17.UncompressedFrameConfig;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.ImageSpatialExtents;
+import org.apache.sis.storage.gimi.isobmff.iso23008_12.PixelInformationProperty;
 import org.apache.sis.util.iso.Names;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -58,8 +60,19 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
     protected final GimiStore store;
     protected final Item item;
     private final GenericName identifier;
-    protected ComponentDefinition compDef;
     protected ImageSpatialExtents imageExt;
+    /**
+     * Can be null
+     */
+    protected PixelInformationProperty pixelDef;
+    /**
+    /**
+     * Can be null
+     */
+    protected ComponentDefinition compDef;
+    /**
+     * Can be null
+     */
     protected UncompressedFrameConfig frameConf;
     /**
      * Can be null
@@ -73,6 +86,12 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
      * Can be null
      */
     protected WellKnownText2Property modelWkt;
+
+
+    //computed values for decoding
+    private final int tileWidth;
+    private final int tileHeight;
+    private final int tileByteArrayLength;
 
     public ResourceImageUncompressed(GimiStore store, Item item) throws DataStoreException {
         super(store);
@@ -91,12 +110,33 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
                 modelTp = (ModelTiePointProperty) box;
             } else if (box instanceof WellKnownText2Property) {
                 modelWkt = (WellKnownText2Property) box;
+            } else if (box instanceof PixelInformationProperty) {
+                pixelDef = (PixelInformationProperty) box;
             }
         }
         if (item.entry.itemName == null || item.entry.itemName.isBlank()) {
             this.identifier = Names.createLocalName(null, null, Integer.toString(item.entry.itemId));
         } else {
             this.identifier = Names.createLocalName(null, null, item.entry.itemName);
+        }
+
+        //pre-computed values
+        if (frameConf == null) {
+            //use a dumy one
+            frameConf = new UncompressedFrameConfig();
+            frameConf.numTileColsMinusOne = 0;
+            frameConf.numTileRowsMinusOne = 0;
+        }
+        tileWidth = imageExt.imageWidth / (frameConf.numTileColsMinusOne+1);
+        tileHeight = imageExt.imageHeight / (frameConf.numTileRowsMinusOne+1);
+
+        //TODO handle all kind of component length and subsampling
+        if (pixelDef != null) {
+            tileByteArrayLength = tileWidth * tileHeight * pixelDef.bitsPerChannel.length;
+        } else if (compDef != null) {
+            tileByteArrayLength = tileWidth * tileHeight * compDef.componentType.length;
+        } else {
+            throw new DataStoreException("Failed to compute tile sizein bytes");
         }
     }
 
@@ -114,21 +154,18 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
     public GridGeometry getGridGeometry() throws DataStoreException {
         try {
             final GridExtent extent = new GridExtent(imageExt.imageWidth, imageExt.imageHeight);
-            final AffineTransform2D gridToCrs;
+            final MathTransform gridToCrs;
             if (modelTrs == null) {
                 gridToCrs = new AffineTransform2D(1, 0, 0, 1, 0, 0);
             } else {
-                gridToCrs = new AffineTransform2D(modelTrs.transform[0], modelTrs.transform[3], modelTrs.transform[1], modelTrs.transform[4], modelTrs.transform[2], modelTrs.transform[5]);
+                gridToCrs = modelTrs.toMathTransform();
             }
             final CoordinateReferenceSystem crs;
             if (modelWkt == null) {
                 //TODO we should have an Image CRS
-                crs = CommonCRS.defaultGeographic();
+                crs = CommonCRS.Engineering.GRID.crs();
             } else {
-                String wkt = modelWkt.wkt2;
-                //TODO remove this hack when SIS support BASEGEOGCRS
-                wkt = wkt.replace("BASEGEOGCRS", "BASEGEODCRS");
-                crs = CRS.fromWKT(wkt);
+                crs = modelWkt.toCRS();
             }
             return new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCrs, crs);
         } catch (FactoryException ex) {
@@ -139,20 +176,28 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
     @Override
     public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         final List<SampleDimension> sd = new ArrayList<>();
-        for (int i = 0; i < compDef.componentType.length; i++) {
-            final SampleDimension.Builder sdb = new SampleDimension.Builder();
-            switch (compDef.componentType[i]) {
-                case 4:
-                    sdb.setName("Red");
-                    break;
-                case 5:
-                    sdb.setName("Green");
-                    break;
-                case 6:
-                    sdb.setName("Blue");
-                    break;
+        if (compDef != null) {
+            for (int i = 0; i < compDef.componentType.length; i++) {
+                final SampleDimension.Builder sdb = new SampleDimension.Builder();
+                switch (compDef.componentType[i]) {
+                    case 4:
+                        sdb.setName("Red");
+                        break;
+                    case 5:
+                        sdb.setName("Green");
+                        break;
+                    case 6:
+                        sdb.setName("Blue");
+                        break;
+                }
+                sd.add(sdb.build());
             }
-            sd.add(sdb.build());
+        } else if (pixelDef != null) {
+            for (int i = 0; i < pixelDef.bitsPerChannel.length; i++) {
+                final SampleDimension.Builder sdb = new SampleDimension.Builder();
+                sdb.setName(""+i);
+                sd.add(sdb.build());
+            }
         }
         return sd;
     }
@@ -160,15 +205,23 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
     @Override
     public GridCoverage read(GridGeometry gg, int... ints) throws DataStoreException {
         final byte[] data = item.getData();
-        final BufferedImage img = new BufferedImage(2048, 1024, BufferedImage.TYPE_3BYTE_BGR);
-        final WritableRaster raster = img.getRaster();
-        for (int y = 0; y < 1024; y++) {
-            for (int x = 0; x < 2048; x++) {
-                int offset = y * 2048 + x;
-                raster.setSample(x, y, 0, data[offset * 3] & 0xFF);
-                raster.setSample(x, y, 1, data[offset * 3 + 1] & 0xFF);
-                raster.setSample(x, y, 2, data[offset * 3 + 2] & 0xFF);
+
+        final BufferedImage img;
+        if ( (compDef != null && Arrays.equals(compDef.componentType, new int[]{4,5,6}))
+           || (pixelDef != null && pixelDef.bitsPerChannel.length == 3)
+           ) {
+            // RGB case
+            int width = imageExt.imageWidth;
+            int height = imageExt.imageHeight;
+            img = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+            final WritableRaster raster = img.getRaster();
+            for (int y = 0; y <= frameConf.numTileRowsMinusOne; y++) {
+                for (int x = 0; x <= frameConf.numTileColsMinusOne; x++) {
+                    readTile(data, x, y, raster, x*tileWidth, y*tileHeight);
+                }
             }
+        } else {
+            throw new DataStoreException("Unsupported component model");
         }
         final GridGeometry gridGeometry = getGridGeometry();
         GridCoverageBuilder gcb = new GridCoverageBuilder();
@@ -178,5 +231,26 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
         gcb.setValues(img);
         return gcb.build();
     }
+
+    /**
+     *
+     * @param data
+     * @param tileX starting from image left
+     * @param tileY starting from image top
+     */
+    private void readTile(byte[] data, int tileX, int tileY, WritableRaster raster, int offsetX, int offsetY) {
+        final int tileOffset = (tileX + tileY * (frameConf.numTileColsMinusOne+1)) * tileByteArrayLength;
+        for (int y = 0; y < tileHeight; y++) {
+            for (int x = 0; x < tileWidth; x++) {
+                final int offset = y * tileWidth + x;
+                final int finalX = offsetX + x;
+                final int finalY = offsetY + y;
+                raster.setSample(finalX, finalY, 0, data[tileOffset + offset * 3] & 0xFF);
+                raster.setSample(finalX, finalY, 1, data[tileOffset + offset * 3 + 1] & 0xFF);
+                raster.setSample(finalX, finalY, 2, data[tileOffset + offset * 3 + 2] & 0xFF);
+            }
+        }
+    }
+
 
 }

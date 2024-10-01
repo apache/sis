@@ -19,8 +19,8 @@ package org.apache.sis.storage.netcdf.classic;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
-import java.util.SortedMap;
 import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
@@ -30,7 +30,6 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Dimension;
 import org.apache.sis.storage.netcdf.internal.Resources;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
@@ -180,11 +179,12 @@ next:       for (final String name : axisNames) {
          * This is often the reverse order of range indices, but not necessarily. The intent is to reduce the
          * number of disk seek operations. Data loading may happen in this method through Axis constructor.
          */
-        final SortedMap<VariableInfo,Integer> variables = new TreeMap<>();
+        final var variables = new TreeMap<VariableInfo,Integer>();
         for (int i=0; i<range.length; i++) {
             final VariableInfo v = range[i];
             if (variables.put(v, i) != null) {
-                throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedAxis_2, getFilename(), v.getName()));
+                throw new DataStoreContentException(decoder.resources().getString(
+                        Resources.Keys.DuplicatedAxis_2, getFilename(), v.getName()));
             }
         }
         /*
@@ -192,13 +192,21 @@ next:       for (final String name : axisNames) {
          * So `sourceDim` is the grid (domain) dimension and `targetDim` is the CRS (range) dimension.
          */
         final Axis[] axes = new Axis[range.length];
-        for (final SortedMap.Entry<VariableInfo,Integer> entry : variables.entrySet()) {
+        for (final Map.Entry<VariableInfo,Integer> entry : variables.entrySet()) {
             final int targetDim = entry.getValue();
             final VariableInfo axis = entry.getKey();
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
              * the coordinate values along the current axis. There is exactly 1 such grid dimension in
              * straightforward netCDF files. However, some more complex files may have 2 dimensions.
+             *
+             * An axis may have two-dimensions but be conceptually one-dimensional if the coordinate values
+             * are given as character strings. While rare, this is sometime observed in practice for dates.
+             * In such case, the dimension used for indexing the characters in each value should not appear
+             * in the `domain` field of this grid. Therefore, that artificial dimension should be discarded
+             * by the loop below. This is okay because either the strings are automatically parsed as numbers
+             * by `org.apache.sis.math.ArrayVector.ASCII`, or either that variable have already been converted
+             * to a one-dimensional vector of numbers by `VariableTransformer`.
              */
             int i = 0;
             final DimensionInfo[] axisDomain = axis.dimensions;
@@ -213,8 +221,8 @@ next:       for (final String name : axisNames) {
                     }
                 }
             }
-            axes[targetDim] = new Axis(AxisType.abbreviation(axis), axis.getAttributeAsString(CF.POSITIVE),
-                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axis);
+            final char abbreviation = AxisType.abbreviation(axis);
+            axes[targetDim] = new Axis(abbreviation, axis.getAttributeAsString(CF.POSITIVE), indices, sizes, i, axis);
         }
         return axes;
     }

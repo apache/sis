@@ -42,7 +42,7 @@ public final class ScaleSortedMap<T extends TileMatrix> extends TreeMap<GenericN
         ArgumentChecks.ensureNonNull("identifier", id);
         final ScaleComparator comparator = (ScaleComparator) comparator();
         if (comparator.matricesByScale.containsKey(id)) {
-            throw new IllegalArgumentException("Key " + id + "already exist");
+            throw new IllegalArgumentException("Key already exist : " + id);
         }
         final double resolution = tileMatrix.getResolution()[0];
         comparator.matricesByScale.put(id, resolution);

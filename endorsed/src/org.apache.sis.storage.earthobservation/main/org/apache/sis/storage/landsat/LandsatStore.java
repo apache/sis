@@ -221,8 +221,9 @@ public class LandsatStore extends DataStore implements Aggregate {
         int count = 0;
         try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
             source = null;      // Will be closed at the end of this try-finally block.
-            final MetadataReader parser = new MetadataReader(this, getDisplayName(), listeners);
+            final var parser = new MetadataReader(this, getDisplayName(), listeners);
             parser.read(reader);
+            parser.addFormatReaderSIS(LandsatStoreProvider.NAME);
             metadata = parser.getMetadata();
             /*
              * Create the array of components. The resource identifier is the band name.

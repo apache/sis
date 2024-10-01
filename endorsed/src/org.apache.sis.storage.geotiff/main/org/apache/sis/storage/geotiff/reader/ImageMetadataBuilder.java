@@ -194,8 +194,6 @@ public final class ImageMetadataBuilder extends MetadataBuilder {
          *
          * Destination: metadata/resourceLineage/processStep/description
          */
-        final int cellWidth  = this.cellWidth;
-        final int cellHeight = this.cellHeight;
         switch (Math.min(cellWidth, cellHeight)) {
             case -1: {
                 // Nothing to report.

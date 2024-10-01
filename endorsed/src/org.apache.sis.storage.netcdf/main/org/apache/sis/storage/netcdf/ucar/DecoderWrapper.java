@@ -42,11 +42,19 @@ import ucar.nc2.ft.FeatureDataset;
 import ucar.nc2.ft.FeatureDatasetPoint;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.ft.DsgFeatureCollection;
+import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.storage.netcdf.base.Dimension;
@@ -55,7 +63,6 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Convention;
 import org.apache.sis.storage.netcdf.base.DiscreteSampling;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -64,6 +71,17 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
+    /**
+     * Version of the <abbr>UCAR</abbr> library, fetched when first requested.
+     * May be {@code null} if no version information was found.
+     */
+    private static Version version;
+
+    /**
+     * Whether {@link #version} has been initialized. The result may still be null.
+     */
+    private static boolean versionInitialized;
+
     /**
      * The netCDF file to read.
      * This file is set at construction time.
@@ -171,21 +189,45 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * Returns the file format information provided by the UCAR library.
+     * The information includes:
+     *
+     * <ol>
+     *   <li>{@code "NetCDF"}, {@code "NetCDF-4"} or other values defined by the UCAR library.
+     *       If known, it will be used as an identifier for a more complete description to be
+     *       provided by {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.</li>
+     *   <li>Optionally a human-readable description.</li>
+     *   <li>Optionally a file format version.</li>
+     * </ol>
      *
      * @return identification of the file format, human-readable description and version number.
      */
     @Override
-    @SuppressWarnings("fallthrough")
-    public String[] getFormatDescription() {
-        final String version = Utils.nonEmpty(file.getFileTypeVersion());
-        final String[] format = new String[version != null ? 3 : 2];
-        switch (format.length) {
-            default: format[2] = version;                           // Fallthrough everywhere.
-            case 2:  format[1] = file.getFileTypeDescription();
-            case 1:  format[0] = file.getFileTypeId();
-            case 0:  break;                                         // As a matter of principle.
+    public void addFormatDescription(MetadataBuilder builder) {
+        String name = Utils.nonEmpty(file.getFileTypeId());
+        if (builder.setPredefinedFormat(name, null, false)) {
+            name = null;
         }
-        return format;
+        builder.addFormatName(Utils.nonEmpty(file.getFileTypeDescription()));
+        builder.setFormatEdition(Utils.nonEmpty(file.getFileTypeVersion()));
+        builder.addFormatName(name);        // Do nothing if `name` is null.
+        Citation provider;
+        try {
+            provider = MetadataSource.getProvided().lookup(Citation.class, "Unidata");
+        } catch (MetadataStoreException e) {
+            provider = null;
+        }
+        builder.addFormatReader(new ImmutableIdentifier(provider, "UCAR", Constants.NETCDF), getVersion());
+    }
+
+    /**
+     * Returns the version number of the netCDF library, or {@code null} if not found.
+     */
+    private static synchronized Version getVersion() {
+        if (!versionInitialized) {
+            versionInitialized = true;
+            version = Version.ofLibrary(NetcdfFile.class).orElse(null);
+        }
+        return version;
     }
 
     /**
@@ -194,6 +236,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public void setSearchPath(final String... groupNames) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Group[] groups = new Group[groupNames.length];
         int count = 0;
         for (final String name : groupNames) {

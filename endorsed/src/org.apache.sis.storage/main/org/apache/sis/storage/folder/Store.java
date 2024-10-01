@@ -258,7 +258,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
     @Override
     public synchronized Metadata getMetadata() {
         if (metadata == null) {
-            final MetadataBuilder mb = new MetadataBuilder();
+            final var mb = new MetadataBuilder();
             mb.addResourceScope(ScopeCode.valueOf("COLLECTION"), Resources.formatInternational(Resources.Keys.DirectoryContent_1, getDisplayName()));
             mb.addLanguage(configuration.getOption(OptionKey.LOCALE),
                            configuration.getOption(OptionKey.ENCODING),
@@ -292,8 +292,8 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) {
-            final List<DataStore> resources = new ArrayList<>();
-            final NameFactory nameFactory = DefaultNameFactory.provider();
+            final var resources = new ArrayList<DataStore>();
+            final var nameFactory = DefaultNameFactory.provider();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(location, this)) {
                 for (final Path candidate : stream) {
                     /*

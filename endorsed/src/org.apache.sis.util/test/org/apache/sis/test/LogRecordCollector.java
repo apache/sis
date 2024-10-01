@@ -226,7 +226,7 @@ final class LogRecordCollector extends Handler implements Runnable {
      * If some tests in the class emitted unexpected log records,
      * prints a table showing which tests caused logging.
      *
-     * <p>Note: this was use to be a JUnit {@code afterAll(ExtensionContext)} method.
+     * <p>Note: this was used to be a JUnit {@code afterAll(ExtensionContext)} method.
      * But we want this method to be executed after all tests in the project,
      * not after each class.</p>
      */

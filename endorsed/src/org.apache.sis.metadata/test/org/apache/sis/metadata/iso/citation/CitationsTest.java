@@ -94,7 +94,7 @@ public final class CitationsTest extends TestCase {
         assertSame(IOGP,             fromName(Constants.IOGP));
         assertSame(IOGP,             fromName("OGP"));
         assertSame(ESRI,             fromName("ESRI"));          // Handled in a way very similar to "OGC".
-        assertSame(NETCDF,           fromName("NetCDF"));
+        assertSame(NETCDF,           fromName(Constants.NETCDF));
         assertSame(GEOTIFF,          fromName(Constants.GEOTIFF));
         assertSame(PROJ4,            fromName("Proj.4"));
         assertSame(PROJ4,            fromName("Proj4"));

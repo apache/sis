@@ -19,7 +19,6 @@ package org.apache.sis.storage.gsf;
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.SegmentAllocator;
 import java.lang.foreign.ValueLayout.OfLong;
 
 
@@ -36,12 +35,8 @@ public final class TimeSpec extends StructClass{
         tv_nsecLAYOUT
     ).withName("timespec");
 
-    public TimeSpec(MemorySegment struct) {
+    TimeSpec(MemorySegment struct) {
         super(struct);
-    }
-
-    public TimeSpec(SegmentAllocator allocator) {
-        super(allocator);
     }
 
     @Override
@@ -56,5 +51,4 @@ public final class TimeSpec extends StructClass{
     public long getTvNsec() {
         return struct.get(tv_nsecLAYOUT, 8L);
     }
-
 }

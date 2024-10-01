@@ -302,6 +302,7 @@ public class ImageRenderer {
      * @throws DisjointExtentException if the given extent does not intersect the given coverage.
      * @throws ArithmeticException if a stride calculation overflows the 32 bits integer capacity.
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {
         bands = coverage.getSampleDimensions().toArray(SampleDimension[]::new);
         geometry = coverage.getGridGeometry();
@@ -750,12 +751,12 @@ public class ImageRenderer {
     public RenderedImage createImage() {
         final Raster raster = createRaster();
         final var colorizer = new ColorModelBuilder(colors, null, false);
-        final ColorModel colors;
+        final ColorModel cm;
         final SampleModel sm = raster.getSampleModel();
         if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {
-            colors = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
+            cm = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
         } else {
-            colors = ColorModelBuilder.NULL_COLOR_MODEL;
+            cm = ColorModelBuilder.NULL_COLOR_MODEL;
         }
         SliceGeometry supplier = null;
         if (imageGeometry == null) {
@@ -766,8 +767,8 @@ public class ImageRenderer {
             }
         }
         final WritableRaster wr = (raster instanceof WritableRaster) ? (WritableRaster) raster : null;
-        if (wr != null && colors != null && (imageX | imageY) == 0) {
-            return new Untiled(colors, wr, properties, imageGeometry, supplier, bands);
+        if (wr != null && cm != null && (imageX | imageY) == 0) {
+            return new Untiled(cm, wr, properties, imageGeometry, supplier, bands);
         }
         if (properties == null) {
             properties = new Hashtable<>();
@@ -775,9 +776,9 @@ public class ImageRenderer {
         properties.putIfAbsent(GRID_GEOMETRY_KEY, (supplier != null) ? new DeferredProperty(supplier) : imageGeometry);
         properties.putIfAbsent(SAMPLE_DIMENSIONS_KEY, bands);
         if (wr != null) {
-            return new WritableTiledImage(properties, colors, width, height, 0, 0, wr);
+            return new WritableTiledImage(properties, cm, width, height, 0, 0, wr);
         } else {
-            return new TiledImage(properties, colors, width, height, 0, 0, raster);
+            return new TiledImage(properties, cm, width, height, 0, 0, raster);
         }
     }
 

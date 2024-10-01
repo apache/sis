@@ -36,6 +36,7 @@ CREATE TABLE metadata."OnlineResource" (
 INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
   ('EPSG',    'https://epsg.org/'),
   ('ESRI',    'https://www.esri.com/'),
+  ('GDAL',    'https://gdal.org/'),
   ('GeoTIFF', 'https://trac.osgeo.org/geotiff/'),
   ('IHO',     'https://www.iho.int/'),
   ('IOGP',    'https://www.iogp.org/'),
@@ -50,6 +51,7 @@ INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
   ('PostGIS', 'https://postgis.net/'),
   ('PROJ',    'https://proj.org/'),
   ('SIS',     'https://sis.apache.org/'),
+  ('Unidata', 'https://www.unidata.ucar.edu/'),
   ('WMO',     'https://www.wmo.int/'),
   ('WMS',     'https://www.ogc.org/standards/wms');
 
@@ -107,6 +109,7 @@ INSERT INTO metadata."Organisation" ("ID", "name") VALUES
   ('{org}NATO',   'North Atlantic Treaty Organization'),
   ('{org}OGC',    'Open Geospatial Consortium'),
   ('{org}OSGeo',  'The Open Source Geospatial Foundation'),
+  ('{org}UCAR',   'University Corporation for Atmospheric Research'),
   ('{org}WMO',    'World Meteorological Organization');
 
 INSERT INTO metadata."Responsibility" ("ID", "party", "role") VALUES
@@ -121,6 +124,7 @@ INSERT INTO metadata."Responsibility" ("ID", "party", "role") VALUES
   ('NATO',    '{org}NATO',   'principalInvestigator'),
   ('OGC',     '{org}OGC',    'principalInvestigator'),
   ('OSGeo',   '{org}OSGeo',  'resourceProvider'),
+  ('UCAR',    '{org}UCAR',   'resourceProvider'),
   ('WMO',     '{org}WMO',    'principalInvestigator');
 
 
@@ -193,21 +197,24 @@ INSERT INTO metadata."Identifier" ("ID", "code", "codeSpace", "version") VALUES
   ('ArcGIS',      'ArcGIS',  'ESRI',      NULL),
   ('MapInfo',     'MapInfo', 'Precisely', NULL),
   ('PROJ',        'PROJ',    'OSGeo',     NULL),
+  ('GDAL',        'GDAL',    'OSGeo',     NULL),
   ('SIS',         'SIS',     'Apache',    NULL);
 
 INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedResponsibleParty", "presentationForm", "alternateTitle" , "title") VALUES
-  ('ISBN',       'ISBN',  NULL,              'ISBN',    NULL,             'ISBN',         'International Standard Book Number'),
-  ('ISSN',       'ISSN',  NULL,              'ISSN',    NULL,             'ISSN',         'International Standard Serial Number'),
-  ('ISO 19115-1', NULL,  'ISO 19115-1:2014', 'ISO',    'documentDigital', 'ISO 19115-1',  'Geographic Information — Metadata Part 1: Fundamentals'),
-  ('ISO 19115-2', NULL,  'ISO 19115-2:2019', 'ISO',    'documentDigital', 'ISO 19115-2',  'Geographic Information — Metadata Part 2: Extensions for imagery and gridded data'),
-  ('IHO S-57',    NULL,  '3.1',              'IHO',    'documentDigital', 'S-57',         'IHO transfer standard for digital hydrographic data'),
-  ('MGRS',        NULL,   NULL,              'NATO',   'documentDigital',  NULL,          'Military Grid Reference System'),
-  ('WMS',        'WMS',  '1.3',              'OGC',    'documentDigital', 'WMS',          'Web Map Server'),
-  ('EPSG',       'EPSG',  NULL,              'IOGP',   'tableDigital',    'EPSG Dataset', 'EPSG Geodetic Parameter Dataset'),
-  ('ArcGIS',     'ESRI',  NULL,              'ESRI',    NULL,              NULL,          'ArcGIS'),
-  ('MapInfo',     NULL,   NULL,              'MapInfo', NULL,             'MapInfo',      'MapInfo Pro'),
-  ('PROJ',       'PROJ',  NULL,              'OSGeo',   NULL,             'Proj',         'PROJ coordinate transformation software library'),
-  ('SIS',        'SIS',   NULL,              'Apache',  NULL,             'Apache SIS',   'Apache Spatial Information System');
+  ('ISBN',       'ISBN',    NULL,              'ISBN',    NULL,             'ISBN',         'International Standard Book Number'),
+  ('ISSN',       'ISSN',    NULL,              'ISSN',    NULL,             'ISSN',         'International Standard Serial Number'),
+  ('ISO 19115-1', NULL,    'ISO 19115-1:2014', 'ISO',    'documentDigital', 'ISO 19115-1',  'Geographic Information — Metadata Part 1: Fundamentals'),
+  ('ISO 19115-2', NULL,    'ISO 19115-2:2019', 'ISO',    'documentDigital', 'ISO 19115-2',  'Geographic Information — Metadata Part 2: Extensions for imagery and gridded data'),
+  ('IHO S-57',    NULL,    '3.1',              'IHO',    'documentDigital', 'S-57',         'IHO transfer standard for digital hydrographic data'),
+  ('MGRS',        NULL,     NULL,              'NATO',   'documentDigital',  NULL,          'Military Grid Reference System'),
+  ('WMS',        'WMS',    '1.3',              'OGC',    'documentDigital', 'WMS',          'Web Map Server'),
+  ('EPSG',       'EPSG',    NULL,              'IOGP',   'tableDigital',    'EPSG Dataset', 'EPSG Geodetic Parameter Dataset'),
+  ('ArcGIS',     'ESRI',    NULL,              'ESRI',    NULL,              NULL,          'ArcGIS'),
+  ('MapInfo',     NULL,     NULL,              'MapInfo', NULL,             'MapInfo',      'MapInfo Pro'),
+  ('PROJ',       'PROJ',    NULL,              'OSGeo',   NULL,             'Proj',         'PROJ coordinate transformation software library'),
+  ('GDAL',       'GDAL',    NULL,              'OSGeo',   NULL,             'GDAL',         'Geospatial Data Abstraction Library'),
+  ('Unidata',    'Unidata', NULL,              'UCAR',    NULL,              NULL,          'Unidata netCDF library'),
+  ('SIS',        'SIS',     NULL,              'Apache',  NULL,             'Apache SIS',   'Apache Spatial Information System');
 
 
 
@@ -230,4 +237,4 @@ INSERT INTO metadata."Citation" ("ID", "onlineResource", "citedResponsibleParty"
   ('WMO',  'WMO',   'WMO',  'documentDigital', 'WMO Information System (WIS)'),
   ('IOGP', 'IOGP',  'IOGP', 'documentDigital', 'IOGP Surveying and Positioning Guidance Note 7');
 
-UPDATE metadata."Citation" SET "identifier" = "ID" WHERE "ID"<>'ISBN' AND "ID"<>'ISSN' AND "ID"<>'MGRS';
+UPDATE metadata."Citation" SET "identifier" = "ID" WHERE "ID"<>'ISBN' AND "ID"<>'ISSN' AND "ID"<>'MGRS' AND "ID"<>'Unidata';

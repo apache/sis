@@ -1182,6 +1182,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
          */
         @Override
         public void run() {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final V value = this.value;
             if (value != null) {
                 adjustReferences(key, value);
