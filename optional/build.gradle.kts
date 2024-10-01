@@ -83,11 +83,11 @@ dependencies {
 var srcDir = file("src")            // Must be the same as the hard-coded value in `BuildHelper.java`.
 tasks.compileJava {
     dependsOn(":endorsed:compileJava")
-    options.release.set(16)         // The version of both Java source code and compiled byte code.
+    options.release.set(22)         // The version of both Java source code and compiled byte code.
 }
 tasks.compileTestJava {
     options.compilerArgs.add("-source")         // "source", not "release", because we accept any target version.
-    options.compilerArgs.add("16")
+    options.compilerArgs.add("22")
     patchForTests(options.compilerArgs);
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.optional,org.junit.jupiter.api")
@@ -187,6 +187,8 @@ fun addLicenseEPSG() {
  */
 tasks.test {
     val args = mutableListOf("-enableassertions")
+    args.add("--enable-native-access")
+    args.add("org.apache.sis.storage.gdal")
     patchForTests(args);
     addRead  (args, "org.apache.sis.util",                                "ALL-UNNAMED")
     addExport(args, "org.apache.sis.util", "org.apache.sis.test",         "ALL-UNNAMED")
@@ -291,6 +293,19 @@ publishing {
                 description = "Client application for JavaFX. " +
                               "This module requires the JavaFX environment to be pre-installed. " +
                               "See https://openjfx.io/openjfx-docs/#install-javafx for details."
+            }
+        }
+        create<MavenPublication>("storage.gdal") {
+            var module = "org.apache.sis.storage.gdal"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-gdal"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS storage using GDAL through Panama"
+                description = "Read and write files using the GDAL library. " +
+                              "This module assumes that GDAL is pre-installed."
             }
         }
     }

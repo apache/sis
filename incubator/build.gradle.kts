@@ -85,7 +85,7 @@ tasks.compileJava {
 }
 tasks.compileTestJava {
     options.compilerArgs.add("-source")         // "source", not "release", because we accept any target version.
-    options.compilerArgs.add("16")              // For consistency with the value set in the `endorsed` modules.
+    options.compilerArgs.add("22")
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,org.junit.jupiter.api")
     }
@@ -140,7 +140,7 @@ fun addExportForTests(args : MutableList<String>) {
 tasks.test {
     val args = mutableListOf("-enableassertions")
     args.add("--enable-native-access")
-    args.add("org.apache.sis.storage.gdal")
+    args.add("org.apache.sis.storage.gsf")
     addExportForTests(args)
     addExport(args, "org.apache.sis.cql", "org.apache.sis.cql", "ALL-UNNAMED")
     setAllJvmArgs(args)
@@ -204,19 +204,6 @@ publishing {
             pom {
                 name        = "Apache SIS GeoPackage storage"
                 description = "Read and write files in the GeoPackage format."
-            }
-        }
-        create<MavenPublication>("storage.gdal") {
-            var module = "org.apache.sis.storage.gdal"
-            groupId    = "org.apache.sis.storage"
-            artifactId = "sis-gdal"
-            artifact(layout.buildDirectory.file("libs/${module}.jar"))
-            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
-            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
-            pom {
-                name        = "Apache SIS storage using GDAL through Panama"
-                description = "Read and write files using the GDAL library. " +
-                              "This module assumes that GDAL is pre-installed."
             }
         }
         create<MavenPublication>("storage.gsf") {
