@@ -40,9 +40,9 @@ final class GimiTileMatrix implements TileMatrix {
     private final ResourceGrid grid;
     private final GenericName identifier;
     private final GridGeometry tilingScheme;
-    private final int[] tileSize;
+    private final long[] tileSize;
 
-    public GimiTileMatrix(ResourceGrid grid, GridGeometry tilingScheme, int[] tileSize) {
+    public GimiTileMatrix(ResourceGrid grid, GridGeometry tilingScheme, long[] tileSize) {
         this.grid = grid;
         this.identifier = Names.createLocalName(null, null, grid.getIdentifier().get().tip().toString() + "_tm");
         this.tilingScheme = tilingScheme;

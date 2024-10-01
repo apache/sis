@@ -17,8 +17,10 @@
 package org.apache.sis.storage.gimi.isobmff.gimi;
 
 import java.io.IOException;
+import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -42,5 +44,12 @@ public final class ModelTransformationProperty extends ItemFullProperty {
         }
     }
 
+    public MathTransform toMathTransform() {
+        if (transform.length == 6) {
+            return new AffineTransform2D(transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]);
+        } else {
+            throw new UnsupportedOperationException("3D transform not supported yet");
+        }
+    }
 
 }
