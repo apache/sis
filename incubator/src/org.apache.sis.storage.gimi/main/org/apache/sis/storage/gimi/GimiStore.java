@@ -21,9 +21,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -41,6 +43,7 @@ import org.apache.sis.storage.gimi.isobmff.iso14496_12.GroupList;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfo;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfoEntry;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.Meta;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.SingleItemTypeReference;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.ImagePyramidEntityGroup;
 import org.apache.sis.util.iso.Names;
 
@@ -127,8 +130,11 @@ public final class GimiStore extends DataStore implements Aggregate {
 
         components = new ArrayList<>();
         componentIndex = new HashMap<>();
-        try {
 
+        //collect elements which should not be displayed since they are part of a larger image (grid or pyramid)
+        final Set<Integer> includedInParents = new HashSet<>();
+
+        try {
             final Box root = getRootBox();
             final Meta meta = (Meta) root.getChild(Meta.FCC, null);
 
@@ -146,6 +152,12 @@ public final class GimiStore extends DataStore implements Aggregate {
                 }  else if (ResourceGrid.TYPE.equals(iie.itemType)) {
                     //tiled image
                     resource = new ResourceGrid(item);
+
+                    for (SingleItemTypeReference refs : item.references) {
+                        for (int i :refs.toItemId) {
+                            includedInParents.add(i);
+                        }
+                    }
                 } else {
                     //TODO
                     resource = new ResourceUnknown(this, item);
@@ -167,12 +179,20 @@ public final class GimiStore extends DataStore implements Aggregate {
                         //force initialize now, pyramids may amend existing grids
                         pyramid.getGridGeometry();
 
+                        for (int i :img.entitiesId) {
+                            includedInParents.add(i);
+                        }
                     }
                 }
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+
+        //remove resources which are in a parent
+        for (Integer itemId : includedInParents) {
+            components.remove(componentIndex.get(itemId));
         }
 
         return components;

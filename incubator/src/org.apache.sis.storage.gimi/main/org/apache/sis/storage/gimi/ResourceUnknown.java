@@ -16,10 +16,13 @@
  */
 package org.apache.sis.storage.gimi;
 
+import java.util.Optional;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.StoreResource;
+import org.apache.sis.util.iso.Names;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -31,11 +34,23 @@ final class ResourceUnknown extends AbstractResource implements StoreResource {
 
     private final GimiStore store;
     private final Item item;
+    private final GenericName identifier;
 
     public ResourceUnknown(GimiStore store, Item item) throws DataStoreException {
         super(store);
         this.store = store;
         this.item = item;
+
+        if (item.entry.itemName == null || item.entry.itemName.isBlank()) {
+            this.identifier = Names.createLocalName(null, null, Integer.toString(item.entry.itemId));
+        } else {
+            this.identifier = Names.createLocalName(null, null, item.entry.itemName);
+        }
+    }
+
+    @Override
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        return Optional.of(identifier);
     }
 
     @Override

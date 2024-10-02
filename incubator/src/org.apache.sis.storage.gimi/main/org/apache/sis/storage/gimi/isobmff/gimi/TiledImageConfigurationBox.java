@@ -9,42 +9,31 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,z
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.gimi.isobmff.iso23001_17;
+package org.apache.sis.storage.gimi.isobmff.gimi;
 
 import java.io.IOException;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
-
 /**
- * From ISO/IEC 23001-17:2024 amendment 1
- * TODO : find box structure, it seems to have a variable size
+ * Definition from OGC TestBed 20 : tild.pdf
+ *
+ * CAUTION : this is not final and may be changed in HEIF specification.
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class TAIClockInfo extends FullBox {
+public final class TiledImageConfigurationBox extends FullBox {
 
-    public static final String FCC = "taic";
-
-    public int timeUncertainty;
-    public int clockResolution;
-    public int clockDriftRate;
-    public int unknown;
-    public int clockType;
+    public static final String FCC = "tilC";
 
     @Override
-    protected void readProperties(ISOBMFFReader reader) throws IOException {
-        timeUncertainty = reader.channel.readInt();
-        clockResolution = reader.channel.readInt();
-        clockDriftRate = reader.channel.readInt();
-        unknown = reader.channel.readInt();
-        clockType = (int) reader.channel.readBits(2);
-        reader.channel.skipRemainingBits();
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        throw new IOException("Not supported yet");
     }
 
 }

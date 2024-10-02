@@ -43,7 +43,7 @@ public final class ISO23001_17 implements BoxRegistry {
             DepthMappingInformation.FCC,
             FieldInterlaceType.FCC,
             FieldInterlaceProperty.FCC,
-            TAIClockInfo.FCC,
+            //TAIClockInfo.FCC, //TODO : find box structure, it seems to have a variable size
             TAITimeStamp.FCC
         );
     private static final Set<String> EXTENSIONS = Set.of();

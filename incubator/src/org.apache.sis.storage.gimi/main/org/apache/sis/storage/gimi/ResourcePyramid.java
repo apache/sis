@@ -75,7 +75,7 @@ final class ResourcePyramid extends AbstractGridCoverageResource implements Tile
 
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.of(Names.createLocalName(null, null, "" + group.groupId));
+        return Optional.of(Names.createLocalName(null, null, "ImagePyramidEntityGroup " + group.groupId));
     }
 
     private synchronized void initialize() throws DataStoreException {
