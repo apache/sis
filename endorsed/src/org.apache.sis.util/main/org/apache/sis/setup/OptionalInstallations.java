@@ -19,8 +19,11 @@ package org.apache.sis.setup;
 import java.util.Set;
 import java.util.Locale;
 import java.util.ServiceLoader;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -197,7 +200,12 @@ public abstract class OptionalInstallations extends InstallationResources implem
      */
     private InstallationResources download(final String authority) throws IOException {
         final String source = getDownloadURL(authority);
-        final URLClassLoader loader = new URLClassLoader(new URL[] {new URL(source)});
+        final URLClassLoader loader;
+        try {
+            loader = new URLClassLoader(new URL[] {new URI(source).toURL()});
+        } catch (URISyntaxException e) {
+            throw (MalformedURLException) new MalformedURLException().initCause(e);
+        }
         for (final InstallationResources c : ServiceLoader.load(InstallationResources.class, loader)) {
             if (!c.getClass().isAnnotationPresent(Fallback.class) && c.getAuthorities().contains(authority)) {
                 return c;

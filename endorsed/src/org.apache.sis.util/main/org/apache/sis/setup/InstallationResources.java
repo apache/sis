@@ -78,8 +78,11 @@ public abstract class InstallationResources {
     }
 
     /**
-     * {@return installation resources found on the module path}.
+     * Returns all installation resources found on the module path, regardless is supported or not.
+     * Callers should filter the services for executing only those where {@link #getAuthorities()}
+     * returns a non-empty set.
      *
+     * @return installation resources found on the module path.
      * @since 1.4
      */
     public static ServiceLoader<InstallationResources> load() {
@@ -98,17 +101,28 @@ public abstract class InstallationResources {
      *   <tr><td>{@code "Embedded"}</td> <td>Data source of embedded database containing EPSG and other resources.</td></tr>
      * </table>
      *
-     * <div class="note"><b>Note:</b>
+     * <b>Note:</b>
      * {@code "Embedded"} is a pseudo-authority for an embedded database containing EPSG and other data.
      * This embedded database is provided by the {@code org.apache.sis.referencing.database} module
      * as a convenience for avoiding the need to define a {@code SIS_DATA} directory on the local machine.
      * In this particular case, the resource is more for execution than for installation.
-     * </div>
      *
+     * <h4>Availability check</h4>
      * This method may return an empty set if this {@code InstallationResources} instance did not find the
      * resources (for example because of files not found) or does not have the permission to distribute them.
+     * For example, this method should return an empty set in the following circumstances:
      *
-     * @return identifiers of resources that this instance can distribute.
+     * <ul>
+     *   <li>The installation requires user's agreement, but this agreement cannot be asked because:
+     *     <ul>
+     *       <li>this class is a graphical installer but {@link java.awt.GraphicsEnvironment#isHeadless()} returns {@code true}, or</li>
+     *       <li>this class is a command-line installer but {@link java.io.Console#isTerminal()} returns {@code false}.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * @return identifiers of resources that this instance can distribute,
+     *         or an empty set if this {@code InstallationResources} cannot be used.
      */
     public abstract Set<String> getAuthorities();
 
