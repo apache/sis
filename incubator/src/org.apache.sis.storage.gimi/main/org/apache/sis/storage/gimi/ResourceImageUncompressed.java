@@ -16,7 +16,11 @@
  */
 package org.apache.sis.storage.gimi;
 
+import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -204,7 +208,6 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
 
     @Override
     public GridCoverage read(GridGeometry gg, int... ints) throws DataStoreException {
-        final byte[] data = item.getData();
 
         final BufferedImage img;
         if ( (compDef != null && Arrays.equals(compDef.componentType, new int[]{4,5,6}))
@@ -217,7 +220,7 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
             final WritableRaster raster = img.getRaster();
             for (int y = 0; y <= frameConf.numTileRowsMinusOne; y++) {
                 for (int x = 0; x <= frameConf.numTileColsMinusOne; x++) {
-                    readTile(data, x, y, raster, x*tileWidth, y*tileHeight);
+                    readTile(x, y, raster, x*tileWidth, y*tileHeight);
                 }
             }
         } else {
@@ -226,8 +229,7 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
         final GridGeometry gridGeometry = getGridGeometry();
         GridCoverageBuilder gcb = new GridCoverageBuilder();
         gcb.setDomain(gridGeometry);
-        //gcb.setRanges(getSampleDimensions());
-        //gcb.setValues(db, new Dimension((int)gridGeometry.getExtent().getSize(0), (int)gridGeometry.getExtent().getSize(1)));
+        gcb.setRanges(getSampleDimensions());
         gcb.setValues(img);
         return gcb.build();
     }
@@ -238,19 +240,14 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
      * @param tileX starting from image left
      * @param tileY starting from image top
      */
-    private void readTile(byte[] data, int tileX, int tileY, WritableRaster raster, int offsetX, int offsetY) {
+    private void readTile(int tileX, int tileY, WritableRaster raster, int offsetX, int offsetY) throws DataStoreException {
         final int tileOffset = (tileX + tileY * (frameConf.numTileColsMinusOne+1)) * tileByteArrayLength;
-        for (int y = 0; y < tileHeight; y++) {
-            for (int x = 0; x < tileWidth; x++) {
-                final int offset = y * tileWidth + x;
-                final int finalX = offsetX + x;
-                final int finalY = offsetY + y;
-                raster.setSample(finalX, finalY, 0, data[tileOffset + offset * 3] & 0xFF);
-                raster.setSample(finalX, finalY, 1, data[tileOffset + offset * 3 + 1] & 0xFF);
-                raster.setSample(finalX, finalY, 2, data[tileOffset + offset * 3 + 2] & 0xFF);
-            }
-        }
-    }
+        final byte[] data = item.getData(tileOffset, tileByteArrayLength);
 
+        final DataBuffer buffer = new DataBufferByte(data, tileByteArrayLength, 0);
+
+        final Raster tile = WritableRaster.createInterleavedRaster(buffer, tileWidth, tileHeight, tileWidth*3, 3, new int[]{0,1,2}, new Point(0,0));
+        raster.setDataElements(offsetX, offsetY, tile);
+    }
 
 }

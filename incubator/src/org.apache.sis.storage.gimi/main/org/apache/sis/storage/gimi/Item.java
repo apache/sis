@@ -167,25 +167,48 @@ final class Item {
         return location == NO_LOCATION ? null : location;
     }
 
-    public byte[] getData() throws DataStoreException {
+    /**
+     * @param offset start position to read from
+     * @param count number of bytes to read, -1 for all
+     * @return
+     * @throws DataStoreException
+     */
+    public byte[] getData(long dataOffset, int count) throws DataStoreException {
         try {
             final ItemLocation.Item location = getLocation();
             if (location == null) {
                 //read data from the default mediadata box
                 MediaData mediaData = (MediaData) store.getRootBox().getChild(MediaData.FCC, null);
-                return mediaData.getData();
+                return mediaData.getData(dataOffset, count);
             } else if (location.constructionMethod == 0) {
                 //absolute location
                 if (location.dataReferenceIndex == 0) {
                     //compute total size
                     final int length = IntStream.of(location.extentLength).sum();
                     //read datas
-                    final byte[] data = new byte[length];
+                    final byte[] data = new byte[count == -1 ? length : count];
                     final ISOBMFFReader reader = store.getReader();
                     synchronized (reader) {
-                        for (int i = 0, offset = 0; i < location.extentLength.length; i++) {
-                            reader.channel.seek(location.baseOffset + location.extentOffset[i]);
-                            reader.channel.readFully(data, offset, location.extentLength[i]);
+                        long remaining = data.length;
+                        int bufferOffset = 0;
+                        for (int i = 0, currentOffset = 0; i < location.extentLength.length && remaining > 0; i++) {
+                            if (dataOffset <= currentOffset) {
+                                reader.channel.seek(location.baseOffset + location.extentOffset[i]);
+                                final long toRead = Math.min(remaining, location.extentLength[i]);
+                                reader.channel.readFully(data, bufferOffset, Math.toIntExact(toRead));
+                                bufferOffset += toRead;
+                                remaining -= toRead;
+                            } else if (dataOffset >= (currentOffset + location.extentLength[i])) {
+                                //skip the full block
+                            } else if (dataOffset > currentOffset) {
+                                long toSkip = dataOffset - currentOffset;
+                                reader.channel.seek(location.baseOffset + location.extentOffset[i] + toSkip);
+                                final long toRead = Math.min(remaining, location.extentLength[i] - toSkip);
+                                reader.channel.readFully(data, bufferOffset, Math.toIntExact(toRead));
+                                bufferOffset += toRead;
+                                remaining -= toRead;
+                            }
+                            currentOffset += location.extentLength[i];
                         }
                     }
                     return data;
