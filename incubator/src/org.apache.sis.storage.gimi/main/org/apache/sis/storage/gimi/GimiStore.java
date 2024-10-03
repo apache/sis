@@ -34,11 +34,13 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.EntityToGroup;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.GroupList;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfo;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfoEntry;
@@ -57,6 +59,7 @@ public final class GimiStore extends DataStore implements Aggregate {
     private final Path gimiPath;
 
     private List<Resource> components;
+    private Map<Integer,Item> itemIndex;
     private Map<Integer,Resource> componentIndex;
     private Metadata metadata;
 
@@ -86,16 +89,6 @@ public final class GimiStore extends DataStore implements Aggregate {
             metadata = builder.buildAndFreeze();
         }
         return metadata;
-    }
-
-    @Override
-    public synchronized void close() throws DataStoreException {
-        try {
-            reader.channel.channel.close();
-            reader = null;
-        } catch (IOException ex) {
-            throw new DataStoreException("Fail to closed channel", ex);
-        }
     }
 
     synchronized ISOBMFFReader getReader() throws DataStoreException {
@@ -129,70 +122,76 @@ public final class GimiStore extends DataStore implements Aggregate {
         if (components != null) return components;
 
         components = new ArrayList<>();
+        itemIndex = new HashMap<>();
         componentIndex = new HashMap<>();
 
-        //collect elements which should not be displayed since they are part of a larger image (grid or pyramid)
+        /*
+         * Collect elements which should not be displayed since they are part of a larger image (grid or pyramid)
+         */
         final Set<Integer> includedInParents = new HashSet<>();
 
         try {
             final Box root = getRootBox();
             final Meta meta = (Meta) root.getChild(Meta.FCC, null);
-
-            //single items
+            final Box groups = meta.getChild(GroupList.FCC, null);
             final ItemInfo iinf = (ItemInfo) meta.getChild(ItemInfo.FCC, null);
+
+            /*
+             * Build item index.
+             * Create GridImages and collect used items.
+             */
             for (ItemInfoEntry iie : iinf.entries) {
                 final Item item = new Item(this, iie);
-                Resource resource;
-                if (ResourceImageUncompressed.TYPE.equals(iie.itemType)) {
-                    //uncompressed image
-                    resource = new ResourceImageUncompressed(this, item);
-                } else if (ResourceImageJpeg.TYPE.equals(iie.itemType)) {
-                    //jpeg image
-                    resource = new ResourceImageJpeg(this, item);
-                }  else if (ResourceGrid.TYPE.equals(iie.itemType)) {
-                    //tiled image
-                    resource = new ResourceGrid(item);
+                itemIndex.put(iie.itemId, item);
 
-                    for (SingleItemTypeReference refs : item.references) {
+                if (ResourceGrid.TYPE.equals(iie.itemType)) {
+                    for (SingleItemTypeReference refs : item.getReferences()) {
+                        final ResourceGrid resource = new ResourceGrid(item);
+                        componentIndex.put(iie.itemId, resource);
                         for (int i :refs.toItemId) {
                             includedInParents.add(i);
                         }
                     }
-                } else {
-                    //TODO
-                    resource = new ResourceUnknown(this, item);
                 }
-                components.add(resource);
-                componentIndex.put(iie.itemId, resource);
             }
 
-            //groups
-            final Box groups = meta.getChild(GroupList.FCC, null);
+            /*
+             * Read groups.
+             * Create pyramids and groups and collect used items.
+             */
             if (groups != null) {
                 for (Box b : groups.getChildren()) {
                     if (b instanceof ImagePyramidEntityGroup) {
                         final ImagePyramidEntityGroup img = (ImagePyramidEntityGroup) b;
                         final ResourcePyramid pyramid = new ResourcePyramid(this, img);
                         components.add(pyramid);
-                        componentIndex.put(pyramid.group.groupId, pyramid);
-
-                        //force initialize now, pyramids may amend existing grids
-                        pyramid.getGridGeometry();
 
                         for (int i :img.entitiesId) {
+                            includedInParents.add(i);
+                        }
+                    } else if (b instanceof EntityToGroup) {
+                        final EntityToGroup grp = (EntityToGroup) b;
+                        final Group group = new Group(this, grp);
+                        components.add(group);
+
+                        for (int i :grp.entitiesId) {
                             includedInParents.add(i);
                         }
                     }
                 }
             }
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+            /*
+             * Add all items not used by groups and grids.
+             */
+            final Set<Integer> keys = new HashSet<>(itemIndex.keySet());
+            keys.removeAll(includedInParents);
+            for (Integer k : keys) {
+                components.add(getComponent(k));
+            }
 
-        //remove resources which are in a parent
-        for (Integer itemId : includedInParents) {
-            components.remove(componentIndex.get(itemId));
+        } catch (IOException ex) {
+            throw new DataStoreException(ex.getMessage(), ex);
         }
 
         return components;
@@ -200,12 +199,48 @@ public final class GimiStore extends DataStore implements Aggregate {
 
     /**
      * Get file item as Resource.
+     *
      * @param itemId item identifier
-     * @return resource or null if not found
+     * @return resource current or created resource
      */
-    Resource getComponent(int itemId) throws DataStoreException {
+    synchronized Resource getComponent(int itemId) throws DataStoreException {
         components();
-        return componentIndex.get(itemId);
+        Resource resource = componentIndex.get(itemId);
+        if (resource == null) {
+            final Item item = itemIndex.get(itemId);
+            if (item == null) {
+                throw new IllegalNameException("No item for id : " + itemId);
+            }
+
+            if (ResourceImageUncompressed.TYPE.equals(item.entry.itemType)) {
+                //uncompressed image
+                resource = new ResourceImageUncompressed(this, item);
+            } else if (ResourceImageJpeg.TYPE.equals(item.entry.itemType)) {
+                //jpeg image
+                resource = new ResourceImageJpeg(this, item);
+            }  else if (ResourceGrid.TYPE.equals(item.entry.itemType)) {
+                //tiled image
+                resource = new ResourceGrid(item);
+            } else {
+                //TODO
+                resource = new ResourceUnknown(this, item);
+            }
+        }
+        componentIndex.put(itemId, resource);
+        return resource;
     }
 
+    /**
+     * Release internal reader.
+     * @throws DataStoreException if closing operation fails
+     */
+    @Override
+    public synchronized void close() throws DataStoreException {
+        try {
+            reader.channel.channel.close();
+            reader = null;
+        } catch (IOException ex) {
+            throw new DataStoreException("Fail to closed channel", ex);
+        }
+    }
 }

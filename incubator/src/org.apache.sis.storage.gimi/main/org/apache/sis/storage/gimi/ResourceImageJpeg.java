@@ -28,6 +28,7 @@ import org.apache.sis.storage.DataStoreException;
 
 
 /**
+ * A jpeg image as a GridCoverageResource.
  *
  * @author Johann Sorel (Geomatys)
  */

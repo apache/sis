@@ -50,7 +50,7 @@ import org.opengis.referencing.operation.MathTransform;
 
 
 /**
- * A single uncompressed image.
+ * A single uncompressed image as a GridCoverageResource.
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -97,7 +97,7 @@ class ResourceImageUncompressed extends AbstractGridCoverageResource implements 
         super(store);
         this.store = store;
         this.item = item;
-        for (Box box : item.properties) {
+        for (Box box : item.getProperties()) {
             if (box instanceof ComponentDefinition) {
                 compDef = (ComponentDefinition) box;
             } else if (box instanceof ImageSpatialExtents) {

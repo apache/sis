@@ -36,70 +36,140 @@ import org.apache.sis.storage.gimi.isobmff.iso14496_12.SingleItemTypeReference;
 
 
 /**
- * Regroup properties of a single item in the file.
+ * Regroup properties of a single item of the file.
  *
  * @author Johann Sorel (Geomatys)
  */
 final class Item {
 
+    private static final ItemLocation.Item NO_LOCATION = new ItemLocation.Item();
+
     public final GimiStore store;
     public final ItemInfoEntry entry;
-    public final boolean isPrimary;
-    public final List<Box> properties = new ArrayList<>();
-    public final List<SingleItemTypeReference> references = new ArrayList<>();
-    public final ItemLocation.Item location;
+
+    // caches
+    private List<Box> properties;
+    private List<SingleItemTypeReference> references;
+    private ItemLocation.Item location;
+    private Boolean isPrimary;
 
     public Item(GimiStore store, ItemInfoEntry entry) throws IllegalArgumentException, DataStoreException, IOException {
         this.store = store;
         this.entry = entry;
-        final Box meta = store.getRootBox().getChild(Meta.FCC, null);
-        //is item primary
-        final PrimaryItem primaryItem = (PrimaryItem) meta.getChild(PrimaryItem.FCC, null);
-        if (primaryItem != null) {
-            isPrimary = primaryItem.itemId == entry.itemId;
-        } else {
-            isPrimary = true;
+    }
+
+    /**
+     * @return true if this item is the primary item defined in the file
+     */
+    public synchronized boolean isPrimary() throws DataStoreException {
+        if (isPrimary != null) return isPrimary;
+        try {
+            final Box meta = store.getRootBox().getChild(Meta.FCC, null);
+            final PrimaryItem primaryItem = (PrimaryItem) meta.getChild(PrimaryItem.FCC, null);
+            if (primaryItem != null) {
+                isPrimary = primaryItem.itemId == entry.itemId;
+            } else {
+                isPrimary = true;
+            }
+        } catch (IOException ex) {
+            throw new DataStoreException(ex.getMessage(), ex);
         }
+
+        return isPrimary;
+    }
+
+    /**
+     * List all property boxes.
+     *
+     * @return list of property boxes, can be empty.
+     */
+    public synchronized List<Box> getProperties() throws DataStoreException {
+        if (properties != null) return properties;
+
         //extract properties
-        final Box itemProperties = meta.getChild(ItemProperties.FCC, null);
-        if (itemProperties != null) {
-            final ItemPropertyContainer itemPropertiesContainer = (ItemPropertyContainer) itemProperties.getChild(ItemPropertyContainer.FCC, null);
-            final List<Box> allProperties = itemPropertiesContainer.getChildren();
-            final ItemPropertyAssociation itemPropertiesAssociations = (ItemPropertyAssociation) itemProperties.getChild(ItemPropertyAssociation.FCC, null);
-            for (ItemPropertyAssociation.Entry en : itemPropertiesAssociations.entries) {
-                if (en.itemId == entry.itemId) {
-                    for (int i : en.propertyIndex) {
-                        properties.add(allProperties.get(i - 1)); //starts at 1
+        properties = new ArrayList<>();
+        try {
+            final Box meta = store.getRootBox().getChild(Meta.FCC, null);
+            final Box itemProperties = meta.getChild(ItemProperties.FCC, null);
+            if (itemProperties != null) {
+                final ItemPropertyContainer itemPropertiesContainer = (ItemPropertyContainer) itemProperties.getChild(ItemPropertyContainer.FCC, null);
+                final List<Box> allProperties = itemPropertiesContainer.getChildren();
+                final ItemPropertyAssociation itemPropertiesAssociations = (ItemPropertyAssociation) itemProperties.getChild(ItemPropertyAssociation.FCC, null);
+                for (ItemPropertyAssociation.Entry en : itemPropertiesAssociations.entries) {
+                    if (en.itemId == entry.itemId) {
+                        for (int i : en.propertyIndex) {
+                            properties.add(allProperties.get(i - 1)); //starts at 1
+                        }
+                        break;
                     }
-                    break;
                 }
             }
+        } catch (IOException ex) {
+            throw new DataStoreException(ex.getMessage(), ex);
         }
+        return properties;
+    }
+
+    /**
+     * Override property boxes.
+     *
+     * @param boxes not null
+     */
+    synchronized void setProperties(List<Box> boxes) {
+        this.properties = boxes;
+    }
+
+    public synchronized List<SingleItemTypeReference> getReferences() throws DataStoreException {
+        if (references != null) return references;
+
         //extract outter references
-        final ItemReference itemReferences = (ItemReference) meta.getChild(ItemReference.FCC, null);
-        if (itemReferences != null) {
-            for (SingleItemTypeReference sitr : itemReferences.references) {
-                if (sitr.fromItemId == entry.itemId) {
-                    references.add(sitr);
+        references = new ArrayList<>();
+        try {
+            final Box meta = store.getRootBox().getChild(Meta.FCC, null);
+            final ItemReference itemReferences = (ItemReference) meta.getChild(ItemReference.FCC, null);
+            if (itemReferences != null) {
+                for (SingleItemTypeReference sitr : itemReferences.references) {
+                    if (sitr.fromItemId == entry.itemId) {
+                        references.add(sitr);
+                    }
                 }
             }
+        } catch (IOException ex) {
+            throw new DataStoreException(ex.getMessage(), ex);
         }
+
+        return references;
+    }
+
+    synchronized void setReferences(List<SingleItemTypeReference> refs) {
+        this.references = refs;
+    }
+
+    public synchronized ItemLocation.Item getLocation() throws DataStoreException {
+        if (location != null) return location == NO_LOCATION ? null : location;
+
         //extract location
-        ItemLocation.Item loc = null;
-        final ItemLocation itemLocation = (ItemLocation) meta.getChild(ItemLocation.FCC, null);
-        if (itemLocation != null) {
-            for (ItemLocation.Item en : itemLocation.items) {
-                if (en.itemId == entry.itemId) {
-                    loc = en;
-                    break;
+        location = NO_LOCATION;
+        try {
+            final Box meta = store.getRootBox().getChild(Meta.FCC, null);
+            final ItemLocation itemLocation = (ItemLocation) meta.getChild(ItemLocation.FCC, null);
+            if (itemLocation != null) {
+                for (ItemLocation.Item en : itemLocation.items) {
+                    if (en.itemId == entry.itemId) {
+                        location = en;
+                        break;
+                    }
                 }
             }
+        } catch (IOException ex) {
+            throw new DataStoreException(ex.getMessage(), ex);
         }
-        this.location = loc;
+        return location == NO_LOCATION ? null : location;
     }
 
     public byte[] getData() throws DataStoreException {
         try {
+            final ItemLocation.Item location = getLocation();
             if (location == null) {
                 //read data from the default mediadata box
                 MediaData mediaData = (MediaData) store.getRootBox().getChild(MediaData.FCC, null);

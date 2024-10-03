@@ -52,6 +52,7 @@ import org.opengis.referencing.operation.MathTransform;
 
 
 /**
+ * Map an ImagePyramidEntityGroup as a GridCoverageResource and as a TiledResource.
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -97,10 +98,10 @@ final class ResourcePyramid extends AbstractGridCoverageResource implements Tile
                     final ItemInfoEntry entry = new ItemInfoEntry();
                     entry.itemId = -tileItemId; //fake id, should not be used
                     final Item item = new Item(store, entry);
-                    item.references.add(new SingleItemTypeReference(entry.itemId, new int[]{tileItemId}));
+                    item.setReferences(List.of(new SingleItemTypeReference(entry.itemId, new int[]{tileItemId})));
                     final GridExtent tileExtent = gcr.getGridGeometry().getExtent();
                     final ImageSpatialExtents ext = new ImageSpatialExtents(Math.toIntExact(tileExtent.getSize(0)), Math.toIntExact(tileExtent.getSize(1)));
-                    item.properties.add(ext);
+                    item.setProperties(List.of(ext));
                     res = new ResourceGrid(item);
                 } catch (IOException ex) {
                     throw new DataStoreException(ex);
