@@ -641,11 +641,11 @@ public class InfoStatements implements Localized, AutoCloseable {
                         if (error == null) error = e;
                         else error.addSuppressed(e);
                     }
-                    continue;                           // Ignore codes that are not integers.
+                    continue;       // Ignore codes that are not integers.
                 }
                 final SRID search = new SRID(crs, authority, code);
                 if (done.putIfAbsent(search, code > 0) != null) {
-                    continue;                           // Skip "authority:code" that we already tried.
+                    continue;       // Skip "authority:code" that we already tried.
                 }
                 /*
                  * Found an "authority:code" pair that we did not tested before.

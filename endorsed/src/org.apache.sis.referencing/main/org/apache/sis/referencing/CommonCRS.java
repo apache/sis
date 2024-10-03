@@ -2121,7 +2121,7 @@ public enum CommonCRS {
      * Returns the same properties as the given object, except for the identifier which is set to the given code.
      */
     private static Map<String,?> properties(final IdentifiedObject template, final short code) {
-        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, exclude()));
+        final var properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(template, exclude()));
         properties.put(GeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         return properties;
     }
@@ -2139,7 +2139,7 @@ public enum CommonCRS {
      */
     private static GeodeticAuthorityFactory factory() {
         if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            final GeodeticAuthorityFactory factory = AuthorityFactories.EPSG();
+            final GeodeticAuthorityFactory factory = AuthorityFactories.getEPSG();
             if (!(factory instanceof EPSGFactoryFallback)) {
                 return factory;
             }
@@ -2154,9 +2154,9 @@ public enum CommonCRS {
     private static void failure(final Object caller, final String method, final FactoryException e, final int code) {
         String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, (Constants.EPSG + ':') + code);
         message = Exceptions.formatChainedMessages(null, message, e);
-        final LogRecord record = new LogRecord(Level.WARNING, message);
-        if (!(e instanceof UnavailableFactoryException) || AuthorityFactories.failure((UnavailableFactoryException) e)) {
-            // Append the stack trace only if the exception is the one we expect when the factory is not available.
+        final var record = new LogRecord(Level.WARNING, message);
+        if (!(e instanceof UnavailableFactoryException && AuthorityFactories.isUnavailable((UnavailableFactoryException) e))) {
+            // Append the stack trace only if the exception is for a reason different than unavailable factory.
             record.setThrown(e);
         }
         Logging.completeAndLog(AuthorityFactories.LOGGER, caller.getClass(), method, record);

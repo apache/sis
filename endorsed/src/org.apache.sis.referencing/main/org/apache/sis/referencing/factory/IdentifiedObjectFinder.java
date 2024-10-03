@@ -554,7 +554,7 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Returns a set of authority codes that <strong>may</strong> identify the same object as the specified one.
+     * Returns a set of authority codes that <em>may</em> identify the same object as the specified one.
      * The returned set must contains <em>at least</em> the code of every objects that are
      * {@link ComparisonMode#APPROXIMATE approximately equal} to the specified one.
      * However, the set may conservatively contains the code for more objects if an exact search is too expensive.
@@ -589,5 +589,108 @@ public class IdentifiedObjectFinder {
          */
         Logging.completeAndLog(GeodeticAuthorityFactory.LOGGER, IdentifiedObjectFinder.class,
                                "find", new LogRecord(Level.FINER, exception.getMessage()));
+    }
+
+    /**
+     * An object finder which delegates some or all work to another object finder.
+     * The default implementation of all {@code Wrapper} methods delegates the work to the object finder
+     * specified at construction time or in the last call to {@link #delegate(IdentifiedObjectFinder)}.
+     * Subclasses can override methods for modifying some find operations.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.5
+     * @since   1.5
+     */
+    public static abstract class Wrapper extends IdentifiedObjectFinder {
+        /**
+         * The finder doing the actual work, or {@code this} for using the
+         * default method implementation provided by the parent class.
+         */
+        private IdentifiedObjectFinder delegate;
+
+        /**
+         * Creates a new object finder which will delegate the actual work to the given finder.
+         *
+         * @param  finder  the object finder to which to delegate the work.
+         */
+        protected Wrapper(final IdentifiedObjectFinder finder) {
+            super(finder.factory);
+            delegate = finder;
+        }
+
+        /**
+         * Sets a new finder to which to delegate the actual search operations.
+         * If the specified finder is {@code this}, then this class will delegate to the default
+         * method implementations provided by the {@code IdentifiedObjectFinder} parent class.
+         * Otherwise, the specified finder should be a new instance not in use by other code.
+         *
+         * @param  finder  the object finder to which to delegate the work. Can be {@code this}.
+         * @throws FactoryException if the delegate cannot be set.
+         */
+        protected void delegate(final IdentifiedObjectFinder finder) throws FactoryException {
+            if (delegate != null) {
+                delegate.wrapper = null;
+            }
+            delegate = Objects.requireNonNull(finder);
+        }
+
+        /**
+         * Returns the object finder to which to delegate the actual search operations.
+         * If this method returns {@code this}, then the search operations will be delegated
+         * to the default methods provided by the {@code IdentifiedObjectFinder} parent class.
+         *
+         * @return the object finder to which to delegate the work. May be {@code this}.
+         * @throws FactoryException if the delegate cannot be created.
+         */
+        protected IdentifiedObjectFinder delegate() throws FactoryException {
+            if (delegate != this) {
+                delegate.setWrapper(this);  // Done on each call because it also copies the configuration.
+            }
+            return delegate;
+        }
+
+        /**
+         * Lookups objects which are approximately equal to the specified object.
+         * The default method implementation delegates the work to the finder specified by {@link #delegate()}.
+         */
+        @Override
+        public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final IdentifiedObjectFinder delegate = delegate();
+            return (delegate != this) ? delegate.find(object) : super.find(object);
+        }
+
+        /**
+         * Lookups only one object which is approximately equal to the specified object.
+         * The default method implementation delegates the work to the finder specified by {@link #delegate()}.
+         */
+        @Override
+        public IdentifiedObject findSingleton(final IdentifiedObject object) throws FactoryException {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final IdentifiedObjectFinder delegate = delegate();
+            return (delegate != this) ? delegate.findSingleton(object) : super.findSingleton(object);
+        }
+
+        /**
+         * Creates an object equals (optionally ignoring metadata), to the specified object.
+         * The default method implementation delegates the work to the finder specified by {@link #delegate()}.
+         */
+        @Override
+        Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final IdentifiedObjectFinder delegate = delegate();
+            return (delegate != this) ? delegate.createFromCodes(object) : super.createFromCodes(object);
+        }
+
+        /**
+         * Returns a set of authority codes that <em>may</em> identify the same object as the specified one.
+         * The default method implementation delegates the work to the finder specified by {@link #delegate()}.
+         */
+        @Override
+        protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final IdentifiedObjectFinder delegate = delegate();
+            return (delegate != this) ? delegate.getCodeCandidates(object) : super.getCodeCandidates(object);
+        }
     }
 }

@@ -581,8 +581,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      */
     /*
      * This method is declared final for avoiding the false impression than overriding this method would change
-     * the behavior of MultiAuthoritiesFactory. It would not because the 'create(…)' method invokes the private
-     * 'getAuthorityFactory(…)' instead of the public one.
+     * the behavior of MultiAuthoritiesFactory. It would not because the `create(…)` method invokes the private
+     * `getAuthorityFactory(…)` instead of the public one.
      */
     public final <T extends AuthorityFactory> T getAuthorityFactory(final Class<T> type,
             final String authority, final String version) throws NoSuchAuthorityFactoryException
@@ -636,7 +636,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             final Iterable<? extends AuthorityFactory> provider = providers.get(request.type);
             if (provider != null) {
                 final Iterator<? extends AuthorityFactory> it;
-                synchronized (provider) {               // Should never be null because of the 'doneMask' check.
+                synchronized (provider) {               // Should never be null because of the `doneMask` check.
                     it = provider.iterator();
                     while (it.hasNext()) {
                         factory = it.next();
@@ -664,7 +664,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                                 /*
                                  * Before to cache the factory with a key containing the factory version, make sure
                                  * that we took in account the version of the default factory. This will prevent the
-                                 * call to 'cache(versioned, factory)' to overwrite the default factory.
+                                 * call to `cache(versioned, factory)` to overwrite the default factory.
                                  */
                                 if (factory != cached) {
                                     cache(unversioned.versionOf(cached.getAuthority()), cached);
@@ -786,7 +786,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * is present. The remainder steps are the same as if the user gave a simple code (e.g. "EPSG:4326").
              */
             if (uri.authority == null) {
-                // We want this check before the 'code' value is modified below.
+                // We want this check before the `code` value is modified below.
                 throw new NoSuchAuthorityCodeException(
                         Resources.format(Resources.Keys.MissingAuthority_1, code), null, uri.code, code);
             }
@@ -1540,7 +1540,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         /*
          * Identify the type requested by the user and create all components with the assumption that they will
          * be of that type. This is the most common case. If during iteration we find an object of another kind,
-         * then the array type will be downgraded to IdentifiedObject[]. The 'componentType' variable will keep
+         * then the array type will be downgraded to IdentifiedObject[]. The `componentType` variable will keep
          * its non-null value only if the array stay of the expected sub-type.
          */
         final AuthorityFactoryIdentifier.Type requestedType;
@@ -1823,8 +1823,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     ((ServiceLoader<?>) provider).reload();
                 }
                 /*
-                 * Clear the 'iterationCompleted' bit before to clear the cache so that if another thread
-                 * invokes 'getAuthorityFactory(…)', it will block on the synchronized(provider) statement
+                 * Clear the `iterationCompleted` bit before to clear the cache so that if another thread
+                 * invokes `getAuthorityFactory(…)`, it will block on the synchronized(provider) statement
                  * until we finished the cleanup.
                  */
                 final int type = entry.getKey().ordinal();

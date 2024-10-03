@@ -241,7 +241,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
      */
     @Configuration
     private static void setEPSGFactory(final GeodeticAuthorityFactory factory) {
-        AuthorityFactories.EPSG(factory);
+        AuthorityFactories.setEPSG(factory);
         for (final CommonCRS          crs : CommonCRS         .values()) crs.clear();
         for (final CommonCRS.Vertical crs : CommonCRS.Vertical.values()) crs.clear();
         for (final CommonCRS.Temporal crs : CommonCRS.Temporal.values()) crs.clear();
@@ -255,7 +255,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
      */
     @Test
     public void compareAllCodes() throws FactoryException {
-        final GeodeticAuthorityFactory EPSG = AuthorityFactories.EPSG();
+        final GeodeticAuthorityFactory EPSG = AuthorityFactories.getEPSG();
         try {
             setEPSGFactory(EPSGFactoryFallback.INSTANCE);
             final var codes = new ArrayList<String>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));
