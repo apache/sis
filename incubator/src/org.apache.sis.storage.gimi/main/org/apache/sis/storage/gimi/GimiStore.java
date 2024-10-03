@@ -17,6 +17,7 @@
 package org.apache.sis.storage.gimi;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ import org.apache.sis.util.iso.Names;
  */
 public final class GimiStore extends DataStore implements Aggregate {
 
+    private final URI gimiUri;
     private final Path gimiPath;
 
     private List<Resource> components;
@@ -67,8 +69,10 @@ public final class GimiStore extends DataStore implements Aggregate {
     private ISOBMFFReader reader;
     private Box root;
 
-    public GimiStore(Path path) {
-        this.gimiPath = path;
+    public GimiStore(StorageConnector connector) throws DataStoreException {
+        this.gimiUri = connector.getStorageAs(URI.class);
+        this.gimiPath = connector.getStorageAs(Path.class);
+        connector.closeAllExcept(null);
     }
 
     /**
@@ -77,7 +81,7 @@ public final class GimiStore extends DataStore implements Aggregate {
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
         final Parameters parameters = Parameters.castOrWrap(GimiProvider.PARAMETERS_DESCRIPTOR.createValue());
-        parameters.parameter(GimiProvider.LOCATION).setValue(gimiPath.toUri());
+        parameters.parameter(GimiProvider.LOCATION).setValue(gimiUri);
         return Optional.of(parameters);
     }
 
@@ -85,7 +89,8 @@ public final class GimiStore extends DataStore implements Aggregate {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             final MetadataBuilder builder = new MetadataBuilder();
-            builder.addIdentifier(Names.createLocalName(null, null, IOUtilities.filenameWithoutExtension(gimiPath.getFileName().toString())), MetadataBuilder.Scope.ALL);
+            final String path = gimiPath == null ? gimiUri.toString() : gimiPath.getFileName().toString();
+            builder.addIdentifier(Names.createLocalName(null, null, IOUtilities.filenameWithoutExtension(path)), MetadataBuilder.Scope.ALL);
             metadata = builder.buildAndFreeze();
         }
         return metadata;
@@ -93,7 +98,7 @@ public final class GimiStore extends DataStore implements Aggregate {
 
     synchronized ISOBMFFReader getReader() throws DataStoreException {
         if (reader == null) {
-            final StorageConnector cnx = new StorageConnector(gimiPath);
+            final StorageConnector cnx = new StorageConnector(gimiPath == null ? gimiUri : gimiPath);
             final ChannelDataInput cdi = cnx.getStorageAs(ChannelDataInput.class);
             reader = new ISOBMFFReader(cdi);
         }
@@ -228,6 +233,14 @@ public final class GimiStore extends DataStore implements Aggregate {
         }
         componentIndex.put(itemId, resource);
         return resource;
+    }
+
+    @Override
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        if (gimiPath != null) {
+            return Optional.of(new FileSet(gimiPath));
+        }
+        return Optional.empty();
     }
 
     /**

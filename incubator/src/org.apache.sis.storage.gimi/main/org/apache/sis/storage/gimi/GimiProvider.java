@@ -112,8 +112,7 @@ public final class GimiProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(StorageConnector connector) throws DataStoreException {
-        final Path path = connector.getStorageAs(Path.class);
-        return new GimiStore(path);
+        return new GimiStore(connector);
     }
 
 }
