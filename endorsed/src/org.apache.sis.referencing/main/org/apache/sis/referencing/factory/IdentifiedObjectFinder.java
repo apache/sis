@@ -167,7 +167,7 @@ public class IdentifiedObjectFinder {
      *
      * @see #getSearchDomain()
      */
-    private Domain domain = Domain.VALID_DATASET;
+    private Domain domain;
 
     /**
      * {@code true} if the search should ignore coordinate system axes.
@@ -189,6 +189,7 @@ public class IdentifiedObjectFinder {
      */
     protected IdentifiedObjectFinder(final AuthorityFactory factory) {
         this.factory = Objects.requireNonNull(factory);
+        this.domain  = Domain.VALID_DATASET;
     }
 
     /**

@@ -477,14 +477,13 @@ public class InfoStatements implements Localized, AutoCloseable {
             return 0;
         }
         final SRID result;
-        final Integer srid;
         synchronized (database.cacheOfSRID) {
             final Integer cached = database.cacheOfSRID.get(crs);
             if (cached != null) {
                 return cached;
             }
             result = findOrAddCRS(crs);
-            database.cacheOfSRID.put(crs, srid = result.srid);
+            database.cacheOfSRID.put(crs, result.srid);
         }
         CommonExecutor.instance().submit((Runnable) result);
         return result.srid;
@@ -619,6 +618,11 @@ public class InfoStatements implements Localized, AutoCloseable {
         boolean tryWithGivenCRS = true;
         final var sridFounInUse = new HashSet<Integer>();
         final var done = new LinkedHashMap<SRID, Boolean>();    // Value tells whether the SRID may be valid.
+        /*
+         * The following loop begins with an iterator of only one element (which makes the loop
+         * apparently useless), but the iterator will be replaced by another iterator with more
+         * elements during the loop.
+         */
         for (Iterator<IdentifiedObject> it = Set.<IdentifiedObject>of(crs).iterator(); it.hasNext();) {
             final IdentifiedObject candidate = it.next();
             /*
