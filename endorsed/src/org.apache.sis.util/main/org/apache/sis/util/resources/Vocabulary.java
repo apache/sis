@@ -1250,6 +1250,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Thermal = 260;
 
         /**
+         * Tile matrix sets
+         */
+        public static final short TileMatrixSets = 282;
+
+        /**
          * Tile size
          */
         public static final short TileSize = 194;

@@ -50,6 +50,7 @@ import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.gui.metadata.StandardMetadataTree;
 import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.gui.coverage.CoverageExplorer;
+import org.apache.sis.gui.coverage.TileMatrixSetPane;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.internal.BackgroundThreads;
@@ -93,10 +94,21 @@ public class ResourceExplorer extends Widget {
     private final MetadataTree nativeMetadata;
 
     /**
+     * The widget showing selected resource tile matrix sets.
+     * Its content will be updated only when the tab is visible.
+     */
+    private final TileMatrixSetPane matrices;
+
+    /**
      * The tab containing {@link #nativeMetadata}.
      * The table title will change depending on the selected resource.
      */
     private final Tab nativeMetadataTab;
+
+    /**
+     * The tab containing TileMatrixSet view.
+     */
+    private final Tab tileMatrixSetTab;
 
     /**
      * Default label for {@link #nativeMetadataTab} when no resource is selected.
@@ -190,6 +202,7 @@ public class ResourceExplorer extends Widget {
          */
         metadata = new MetadataSummary();
         nativeMetadata = new MetadataTree(metadata);
+        matrices = new TileMatrixSetPane();
         final LogViewer logging = new LogViewer(vocabulary);
         selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
         logging.source.bind(selectedResource);
@@ -200,6 +213,7 @@ public class ResourceExplorer extends Widget {
             tableTab          = new Tab(vocabulary.getString(Vocabulary.Keys.Data)),
             metadataTab       = new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata)),
             nativeMetadataTab = new Tab(vocabulary.getString(Vocabulary.Keys.Format),   nativeMetadata),
+            tileMatrixSetTab  = new Tab(vocabulary.getString(Vocabulary.Keys.TileMatrixSets),   matrices),
             loggingTab        = new Tab(vocabulary.getString(Vocabulary.Keys.Logs),     logging.getView()));
 
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -467,6 +481,7 @@ public class ResourceExplorer extends Widget {
      * @see #updateDataTabWithDefault(Resource)
      */
     private boolean updateDataTab(final Resource resource) {
+        if (resource != null) System.out.println(resource.getClass().getName());
         Region       image  = null;
         Region       table  = null;
         FeatureSet   data   = null;
@@ -487,6 +502,7 @@ public class ResourceExplorer extends Widget {
             }
             grid = new ImageRequest((GridCoverageResource) resource, null, null);
             cpanes = coverage.getControls(type);
+            matrices.setContent(resource);
         } else if (resource instanceof FeatureSet) {
             data = (FeatureSet) resource;
             if (features == null) {
