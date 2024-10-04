@@ -28,6 +28,7 @@ import org.apache.sis.storage.DataStoreException;
 
 
 /**
+ * A jpeg image as a GridCoverageResource.
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -41,7 +42,7 @@ final class ResourceImageJpeg extends ResourceImageUncompressed {
 
     @Override
     public GridCoverage read(GridGeometry gg, int... ints) throws DataStoreException {
-        final byte[] data = item.getData();
+        final byte[] data = item.getData(0,-1, null, 0);
         ImageInputStream iis;
         BufferedImage img;
         try {

@@ -75,7 +75,7 @@ final class GimiTileMatrix implements TileMatrix {
     @Override
     public Optional<Tile> getTile(long... indices) throws DataStoreException {
         final int itemIdx = Math.toIntExact(indices[0] + indices[1] * tilingScheme.getExtent().getSize(0));
-        return Optional.of(new GimiTile(grid.getItem().store, indices, grid.getItem().references.get(0).toItemId[itemIdx]));
+        return Optional.of(new GimiTile(grid.getItem().store, indices, grid.getItem().getReferences().get(0).toItemId[itemIdx]));
     }
 
     @Override

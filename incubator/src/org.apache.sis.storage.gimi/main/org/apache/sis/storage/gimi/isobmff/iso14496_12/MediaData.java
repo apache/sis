@@ -37,4 +37,25 @@ public final class MediaData extends Box {
         }
     }
 
+    public byte[] getData(long offset, int count, byte[] target, int targetOffset) throws IOException {
+        synchronized (reader) {
+            reader.channel.seek(payloadOffset + offset);
+            long nb = (boxOffset + size) - payloadOffset;
+            if (count == -1) {
+                nb = nb - offset;
+            } else {
+                if (nb < (offset + count)) {
+                    throw new IOException("Trying to read more data then what is available");
+                }
+                nb = count;
+            }
+            if (target == null) {
+                return reader.channel.readBytes(Math.toIntExact(nb));
+            } else {
+                reader.channel.readFully(target, targetOffset, Math.toIntExact(nb));
+                return target;
+            }
+        }
+    }
+
 }

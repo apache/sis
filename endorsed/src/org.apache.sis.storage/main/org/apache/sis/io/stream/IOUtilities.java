@@ -46,7 +46,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Constants;
@@ -415,8 +414,8 @@ public final class IOUtilities extends Static {
         } catch (MalformedURLException cause) {
             ex = cause;
         } catch (IllegalArgumentException | URISyntaxException cause) {
-            ex = (MalformedURLException) new MalformedURLException(Exceptions.formatChainedMessages(null,
-                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "path", path), cause)).initCause(cause);
+            ex = new MalformedURLException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "path", path));
+            ex.initCause(cause);
         }
         if (suppressed != null) {
             ex.addSuppressed(suppressed);

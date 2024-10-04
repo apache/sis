@@ -345,7 +345,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
          * or {@code "unavailable"} otherwise.
          *
          * @return {@code "EPSG"} if the SQL scripts for installing the EPSG dataset are available,
-         *         or {@code "unavailable"} otherwise.
+         *         or an empty set otherwise.
          */
         @Override
         public Set<String> getAuthorities() {

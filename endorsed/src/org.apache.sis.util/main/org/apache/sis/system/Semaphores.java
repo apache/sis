@@ -44,7 +44,7 @@ public final class Semaphores {
     public static final int METADATA_ONLY = 2;
 
     /**
-     * A lock for avoiding never-ending recursivity in the {@code equals} method of {@code AbstractDerivedCRS}
+     * A lock for avoiding never-ending recursion in the {@code equals} method of {@code AbstractDerivedCRS}
      * and {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.
      * It is set to {@code true} when a comparison is in progress. This lock is necessary because
      * {@code AbstractDerivedCRS} objects contain a {@code conversionFromBase} field, which contains a

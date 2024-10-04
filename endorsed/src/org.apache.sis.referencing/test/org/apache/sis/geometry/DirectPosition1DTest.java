@@ -43,7 +43,7 @@ public final class DirectPosition1DTest extends TestCase {
      */
     @Test
     public void testWktFormatting() {
-        final DirectPosition1D position = new DirectPosition1D(8.5);
+        final var position = new DirectPosition1D(8.5);
         assertEquals("POINT(8.5)", position.toString());
         validate(position);
     }
@@ -53,7 +53,7 @@ public final class DirectPosition1DTest extends TestCase {
      */
     @Test
     public void testWktParsing() {
-        final DirectPosition1D position = new DirectPosition1D("POINT(8)");
+        final var position = new DirectPosition1D("POINT(8)");
         assertEquals("POINT(8)", position.toString());
         validate(position);
     }

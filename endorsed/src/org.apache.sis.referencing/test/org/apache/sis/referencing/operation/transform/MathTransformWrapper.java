@@ -51,7 +51,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
     private static final long serialVersionUID = -5180954407422828265L;
 
     /**
-     * The math transform on which to delegate the work.
+     * The math transform to which to delegate the work.
      */
     @SuppressWarnings("serial")             // Most Apache SIS implementations are serializable.
     public final MathTransform transform;
@@ -59,7 +59,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
     /**
      * Creates a new wrapper which delegates its work to the specified math transform.
      *
-     * @param transform the math transform on which to delegate the work.
+     * @param transform the math transform to which to delegate the work.
      */
     public MathTransformWrapper(final MathTransform transform) {
         this.transform = Objects.requireNonNull(transform);

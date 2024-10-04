@@ -23,6 +23,7 @@ import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  * From ISO/IEC 23001-17:2024 amendment 1
+ * TODO : find box structure, it seems to have a variable size
  *
  * @author Johann Sorel (Geomatys)
  */

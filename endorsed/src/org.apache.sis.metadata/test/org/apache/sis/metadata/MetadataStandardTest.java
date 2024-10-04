@@ -222,7 +222,7 @@ public final class MetadataStandardTest extends TestCase {
 
     /**
      * Tests the {@link MetadataStandard#equals(Object, Object, ComparisonMode)} method on an object
-     * having cyclic associations. In absence of safety guard against infinite recursivity, this test
+     * having cyclic associations. In absence of safety guard against infinite recursion, this test
      * would produce {@link StackOverflowError}.
      */
     @Test
@@ -292,7 +292,7 @@ public final class MetadataStandardTest extends TestCase {
 
     /**
      * Tests the {@link MetadataStandard#hashCode(Object)} method on an object having cyclic associations.
-     * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
+     * In absence of safety guard against infinite recursion, this test would produce {@link StackOverflowError}.
      *
      * @see AbstractMetadataTest#testHashCodeOnCyclicMetadata()
      */

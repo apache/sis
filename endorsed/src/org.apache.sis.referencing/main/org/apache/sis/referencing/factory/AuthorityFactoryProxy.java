@@ -65,15 +65,14 @@ abstract class AuthorityFactoryProxy<T> {
     final Class<T> type;
 
     /**
-     * The type of factory needed for creating objects,
-     * as one of the constants defined in {@link AuthorityFactoryIdentifier}.
+     * The type of factory needed for creating objects.
      */
-    final byte factoryType;
+    final AuthorityFactoryIdentifier.Type factoryType;
 
     /**
      * Creates a new proxy for objects of the given type.
      */
-    AuthorityFactoryProxy(final Class<T> type, final byte factoryType) {
+    AuthorityFactoryProxy(final Class<T> type, final AuthorityFactoryIdentifier.Type factoryType) {
         this.type = type;
         this.factoryType = factoryType;
     }
@@ -177,7 +176,7 @@ abstract class AuthorityFactoryProxy<T> {
      * @param  classe  the type of object for which to get a description.
      */
     static final AuthorityFactoryProxy<InternationalString> description(final Class<? extends IdentifiedObject> classe) {
-        return new AuthorityFactoryProxy<InternationalString>(InternationalString.class, AuthorityFactoryIdentifier.ANY) {
+        return new AuthorityFactoryProxy<InternationalString>(InternationalString.class, AuthorityFactoryIdentifier.Type.ANY) {
             @Override InternationalString create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.getDescriptionText(classe, code).orElse(null);
             }
@@ -194,14 +193,14 @@ abstract class AuthorityFactoryProxy<T> {
      * The proxy for the {@link GeodeticAuthorityFactory#createObject(String)} method.
      */
     static final AuthorityFactoryProxy<IdentifiedObject> OBJECT =
-        new AuthorityFactoryProxy<IdentifiedObject>(IdentifiedObject.class, AuthorityFactoryIdentifier.ANY) {
+        new AuthorityFactoryProxy<IdentifiedObject>(IdentifiedObject.class, AuthorityFactoryIdentifier.Type.ANY) {
             @Override IdentifiedObject createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                 return factory.createObject(code);
             }
     };
 
     static final AuthorityFactoryProxy<Datum> DATUM =
-        new AuthorityFactoryProxy<Datum>(Datum.class, AuthorityFactoryIdentifier.DATUM) {
+        new AuthorityFactoryProxy<Datum>(Datum.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override Datum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createDatum(code);
             }
@@ -211,7 +210,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<EngineeringDatum> ENGINEERING_DATUM =
-        new AuthorityFactoryProxy<EngineeringDatum>(EngineeringDatum.class, AuthorityFactoryIdentifier.DATUM) {
+        new AuthorityFactoryProxy<EngineeringDatum>(EngineeringDatum.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override EngineeringDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createEngineeringDatum(code);
             }
@@ -222,7 +221,7 @@ abstract class AuthorityFactoryProxy<T> {
 
     @SuppressWarnings("deprecation")
     static final AuthorityFactoryProxy<ImageDatum> IMAGE_DATUM =
-        new AuthorityFactoryProxy<ImageDatum>(ImageDatum.class, AuthorityFactoryIdentifier.DATUM) {
+        new AuthorityFactoryProxy<ImageDatum>(ImageDatum.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override ImageDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createImageDatum(code);
             }
@@ -232,7 +231,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<VerticalDatum> VERTICAL_DATUM =
-        new AuthorityFactoryProxy<VerticalDatum>(VerticalDatum.class, AuthorityFactoryIdentifier.DATUM) {
+        new AuthorityFactoryProxy<VerticalDatum>(VerticalDatum.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override VerticalDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createVerticalDatum(code);
             }
@@ -242,7 +241,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<TemporalDatum> TEMPORAL_DATUM =
-        new AuthorityFactoryProxy<TemporalDatum>(TemporalDatum.class, AuthorityFactoryIdentifier.DATUM) {
+        new AuthorityFactoryProxy<TemporalDatum>(TemporalDatum.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override TemporalDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createTemporalDatum(code);
             }
@@ -252,7 +251,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<GeodeticDatum> GEODETIC_DATUM =
-        new AuthorityFactoryProxy<GeodeticDatum>(GeodeticDatum.class, AuthorityFactoryIdentifier.DATUM) {
+        new AuthorityFactoryProxy<GeodeticDatum>(GeodeticDatum.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override GeodeticDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createGeodeticDatum(code);
             }
@@ -262,7 +261,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<Ellipsoid> ELLIPSOID =
-        new AuthorityFactoryProxy<Ellipsoid>(Ellipsoid.class, AuthorityFactoryIdentifier.DATUM) {
+        new AuthorityFactoryProxy<Ellipsoid>(Ellipsoid.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override Ellipsoid create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createEllipsoid(code);
             }
@@ -272,7 +271,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<PrimeMeridian> PRIME_MERIDIAN =
-        new AuthorityFactoryProxy<PrimeMeridian>(PrimeMeridian.class, AuthorityFactoryIdentifier.DATUM) {
+        new AuthorityFactoryProxy<PrimeMeridian>(PrimeMeridian.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override PrimeMeridian create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createPrimeMeridian(code);
             }
@@ -282,7 +281,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<Extent> EXTENT =
-        new AuthorityFactoryProxy<Extent>(Extent.class, AuthorityFactoryIdentifier.GEODETIC) {
+        new AuthorityFactoryProxy<Extent>(Extent.class, AuthorityFactoryIdentifier.Type.GEODETIC) {
             @Override Extent create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createExtent(code);
             }
@@ -292,7 +291,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<CoordinateSystem> COORDINATE_SYSTEM =
-        new AuthorityFactoryProxy<CoordinateSystem>(CoordinateSystem.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<CoordinateSystem>(CoordinateSystem.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override CoordinateSystem create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createCoordinateSystem(code);
             }
@@ -302,7 +301,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<CartesianCS> CARTESIAN_CS =
-        new AuthorityFactoryProxy<CartesianCS>(CartesianCS.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<CartesianCS>(CartesianCS.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override CartesianCS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createCartesianCS(code);
             }
@@ -312,7 +311,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<PolarCS> POLAR_CS =
-        new AuthorityFactoryProxy<PolarCS>(PolarCS.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<PolarCS>(PolarCS.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override PolarCS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createPolarCS(code);
             }
@@ -322,7 +321,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<CylindricalCS> CYLINDRICAL_CS =
-        new AuthorityFactoryProxy<CylindricalCS>(CylindricalCS.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<CylindricalCS>(CylindricalCS.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override CylindricalCS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createCylindricalCS(code);
             }
@@ -332,7 +331,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<SphericalCS> SPHERICAL_CS =
-        new AuthorityFactoryProxy<SphericalCS>(SphericalCS.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<SphericalCS>(SphericalCS.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override SphericalCS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createSphericalCS(code);
             }
@@ -342,7 +341,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<EllipsoidalCS> ELLIPSOIDAL_CS =
-        new AuthorityFactoryProxy<EllipsoidalCS>(EllipsoidalCS.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<EllipsoidalCS>(EllipsoidalCS.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override EllipsoidalCS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createEllipsoidalCS(code);
             }
@@ -352,7 +351,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<VerticalCS> VERTICAL_CS =
-        new AuthorityFactoryProxy<VerticalCS>(VerticalCS.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<VerticalCS>(VerticalCS.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override VerticalCS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createVerticalCS(code);
             }
@@ -362,7 +361,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<TimeCS> TIME_CS =
-        new AuthorityFactoryProxy<TimeCS>(TimeCS.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<TimeCS>(TimeCS.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override TimeCS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createTimeCS(code);
             }
@@ -372,7 +371,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<CoordinateSystemAxis> AXIS =
-        new AuthorityFactoryProxy<CoordinateSystemAxis>(CoordinateSystemAxis.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<CoordinateSystemAxis>(CoordinateSystemAxis.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override CoordinateSystemAxis create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createCoordinateSystemAxis(code);
             }
@@ -383,7 +382,7 @@ abstract class AuthorityFactoryProxy<T> {
 
     @SuppressWarnings({"rawtypes","unchecked"})
     static final AuthorityFactoryProxy<Unit<?>> UNIT =
-        new AuthorityFactoryProxy<Unit<?>>((Class) Unit.class, AuthorityFactoryIdentifier.CS) {
+        new AuthorityFactoryProxy<Unit<?>>((Class) Unit.class, AuthorityFactoryIdentifier.Type.CS) {
             @Override Unit<?> create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createUnit(code);
             }
@@ -393,7 +392,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<CoordinateReferenceSystem> CRS =
-        new AuthorityFactoryProxy<CoordinateReferenceSystem>(CoordinateReferenceSystem.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<CoordinateReferenceSystem>(CoordinateReferenceSystem.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override CoordinateReferenceSystem create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createCoordinateReferenceSystem(code);
             }
@@ -403,7 +402,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<CompoundCRS> COMPOUND_CRS =
-        new AuthorityFactoryProxy<CompoundCRS>(CompoundCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<CompoundCRS>(CompoundCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override CompoundCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createCompoundCRS(code);
             }
@@ -413,7 +412,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<DerivedCRS> DERIVED_CRS =
-        new AuthorityFactoryProxy<DerivedCRS>(DerivedCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<DerivedCRS>(DerivedCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override DerivedCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createDerivedCRS(code);
             }
@@ -423,7 +422,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<EngineeringCRS> ENGINEERING_CRS =
-        new AuthorityFactoryProxy<EngineeringCRS>(EngineeringCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<EngineeringCRS>(EngineeringCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override EngineeringCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createEngineeringCRS(code);
             }
@@ -433,7 +432,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<GeographicCRS> GEOGRAPHIC_CRS =
-        new AuthorityFactoryProxy<GeographicCRS>(GeographicCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<GeographicCRS>(GeographicCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override GeographicCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createGeographicCRS(code);
             }
@@ -443,7 +442,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<GeocentricCRS> GEOCENTRIC_CRS =
-        new AuthorityFactoryProxy<GeocentricCRS>(GeocentricCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<GeocentricCRS>(GeocentricCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override GeocentricCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createGeocentricCRS(code);
             }
@@ -454,7 +453,7 @@ abstract class AuthorityFactoryProxy<T> {
 
     @SuppressWarnings("deprecation")
     static final AuthorityFactoryProxy<ImageCRS> IMAGE_CRS =
-        new AuthorityFactoryProxy<ImageCRS>(ImageCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<ImageCRS>(ImageCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override ImageCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createImageCRS(code);
             }
@@ -464,7 +463,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<ProjectedCRS> PROJECTED_CRS =
-        new AuthorityFactoryProxy<ProjectedCRS>(ProjectedCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<ProjectedCRS>(ProjectedCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override ProjectedCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createProjectedCRS(code);
             }
@@ -474,7 +473,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<TemporalCRS> TEMPORAL_CRS =
-        new AuthorityFactoryProxy<TemporalCRS>(TemporalCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<TemporalCRS>(TemporalCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override TemporalCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createTemporalCRS(code);
             }
@@ -484,7 +483,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<VerticalCRS> VERTICAL_CRS =
-        new AuthorityFactoryProxy<VerticalCRS>(VerticalCRS.class, AuthorityFactoryIdentifier.CRS) {
+        new AuthorityFactoryProxy<VerticalCRS>(VerticalCRS.class, AuthorityFactoryIdentifier.Type.CRS) {
             @Override VerticalCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createVerticalCRS(code);
             }
@@ -495,7 +494,7 @@ abstract class AuthorityFactoryProxy<T> {
 
     @SuppressWarnings("rawtypes")
     static final AuthorityFactoryProxy<ParameterDescriptor> PARAMETER =
-        new AuthorityFactoryProxy<ParameterDescriptor>(ParameterDescriptor.class, AuthorityFactoryIdentifier.GEODETIC) {
+        new AuthorityFactoryProxy<ParameterDescriptor>(ParameterDescriptor.class, AuthorityFactoryIdentifier.Type.GEODETIC) {
             @Override ParameterDescriptor<?> create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createParameterDescriptor(code);
             }
@@ -505,7 +504,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<OperationMethod> METHOD =
-        new AuthorityFactoryProxy<OperationMethod>(OperationMethod.class, AuthorityFactoryIdentifier.OPERATION) {
+        new AuthorityFactoryProxy<OperationMethod>(OperationMethod.class, AuthorityFactoryIdentifier.Type.OPERATION) {
             @Override OperationMethod create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createOperationMethod(code);
             }
@@ -515,7 +514,7 @@ abstract class AuthorityFactoryProxy<T> {
     };
 
     static final AuthorityFactoryProxy<CoordinateOperation> OPERATION =
-        new AuthorityFactoryProxy<CoordinateOperation>(CoordinateOperation.class, AuthorityFactoryIdentifier.OPERATION) {
+        new AuthorityFactoryProxy<CoordinateOperation>(CoordinateOperation.class, AuthorityFactoryIdentifier.Type.OPERATION) {
             @Override CoordinateOperation create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createCoordinateOperation(code);
             }

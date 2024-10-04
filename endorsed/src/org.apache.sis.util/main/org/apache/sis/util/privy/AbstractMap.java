@@ -189,7 +189,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     protected static class IteratorAdapter<K,V> extends EntryIterator<K,V> {
         /**
-         * The standard iterator on which to delegate the work.
+         * The standard iterator to which to delegate the work.
          * It is safe to change this value before to invoke {@link #next()}.
          */
         protected Iterator<Entry<K,V>> it;

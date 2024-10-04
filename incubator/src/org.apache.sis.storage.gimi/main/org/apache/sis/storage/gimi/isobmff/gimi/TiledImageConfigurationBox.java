@@ -14,40 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.gimi;
+package org.apache.sis.storage.gimi.isobmff.gimi;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.nio.file.Path;
-import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.FullBox;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
-
 /**
+ * Definition from OGC TestBed 20 : tild.pdf
+ *
+ * CAUTION : this is not final and may be changed in HEIF specification.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class GimiUtils {
+public final class TiledImageConfigurationBox extends FullBox {
 
-    public static void printAll(Path path) throws IllegalArgumentException, DataStoreException, IOException {
+    public static final String FCC = "tilC";
 
-        final StorageConnector cnx = new StorageConnector(path);
-        final ChannelDataInput cdi = cnx.getStorageAs(ChannelDataInput.class);
-        final ISOBMFFReader reader = new ISOBMFFReader(cdi);
-
-        try {
-            while(true) {
-                final Box box = reader.readBox();
-                System.out.println(box);
-                cdi.seek(box.boxOffset + box.size);
-
-            }
-        } catch (EOFException ex) {
-            //do nothing
-        }
+    @Override
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        throw new IOException("Not supported yet");
     }
 
 }

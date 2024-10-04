@@ -677,7 +677,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Returns the builder on which to delegate the {@code MathTransform} creation.
+         * Returns the builder to which to delegate the {@code MathTransform} creation.
          */
         final ParameterizedTransformBuilder builder() throws FactoryException {
             if (builder == null) {

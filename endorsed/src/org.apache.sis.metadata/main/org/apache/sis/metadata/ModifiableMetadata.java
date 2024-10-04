@@ -232,7 +232,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * but can be changed by a call to {@link #transitionTo(State)}.
      *
      * <p>{@link State#FINAL} implies that all properties are also final.
-     * This recursivity does not necessarily apply to other states. For example, {@link State#EDITABLE}
+     * This recursion does not necessarily apply to other states. For example, {@link State#EDITABLE}
      * does <strong>not</strong> imply that all {@code ModifiableMetadata} children are also editable.</p>
      *
      * <div class="note"><b>API note:</b>

@@ -16,47 +16,51 @@
  */
 package org.apache.sis.storage.gimi;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.apache.sis.storage.AbstractResource;
-import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.StoreResource;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.EntityToGroup;
 import org.apache.sis.util.iso.Names;
 import org.opengis.util.GenericName;
 
-
 /**
- * Unknown item type.
- * We display those items as Resource even if we have only minimal support.
+ * An unidentified group of entities.
  *
  * @author Johann Sorel (Geomatys)
  */
-final class ResourceUnknown extends AbstractResource implements StoreResource {
+public final class Group extends AbstractResource implements Aggregate {
 
     private final GimiStore store;
-    private final Item item;
-    private final GenericName identifier;
+    final EntityToGroup group;
 
-    public ResourceUnknown(GimiStore store, Item item) throws DataStoreException {
-        super(store);
+    //cache linked resources
+    private List<Resource> components;
+
+    public Group(GimiStore store, EntityToGroup group) {
+        super(null);
         this.store = store;
-        this.item = item;
-
-        if (item.entry.itemName == null || item.entry.itemName.isBlank()) {
-            this.identifier = Names.createLocalName(null, null, Integer.toString(item.entry.itemId));
-        } else {
-            this.identifier = Names.createLocalName(null, null, item.entry.itemName);
-        }
+        this.group = group;
     }
 
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.of(identifier);
+        return Optional.of(Names.createLocalName(null, null, "EntityGroup " + group.groupId));
     }
 
     @Override
-    public DataStore getOriginator() {
-        return store;
+    public synchronized Collection<? extends Resource> components() throws DataStoreException {
+        if (components != null) return components;
+
+        components = new ArrayList<>(group.entitiesId.length);
+        for (int entityId : group.entitiesId) {
+            components.add(store.getComponent(entityId));
+        }
+        return components;
     }
 
 }

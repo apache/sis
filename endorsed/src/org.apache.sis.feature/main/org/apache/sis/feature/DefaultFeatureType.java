@@ -566,7 +566,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                         continue;
                     }
                     /*
-                     * Resolve recursively the associated features, with a check against infinite recursivity.
+                     * Resolve recursively the associated features, with a check against infinite recursion.
                      * If we fall in a loop (for example A → B → C → A), conservatively returns `false`. This
                      * may not be the most accurate answer, but will not cause any more hurt than checking more
                      * often than necessary.

@@ -81,7 +81,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * then insert the {@code "……"} string, repeat the {@code '…'} character as many time as needed
  * (may be zero), and finally insert a space</q>.
  *
- * <h2>Safety against infinite recursivity</h2>
+ * <h2>Safety against infinite recursion</h2>
  * Some {@code TreeTable} implementations generate the nodes dynamically as wrappers around Java objects.
  * Such Java objects may contain cyclic associations (<var>A</var> contains <var>B</var> contains <var>C</var>
  * contains <var>A</var>), which result in a tree of infinite depth. Some examples can be found in ISO 19115
@@ -168,7 +168,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * The set to be given to {@link Writer} constructor,
      * created when first needed and reused for subsequent formatting.
      */
-    private transient Set<TreeTable.Node> recursivityGuard;
+    private transient Set<TreeTable.Node> recursionGuard;
 
     /**
      * A clone of the number format to be used with different settings (number of fraction digits, scientific notation).
@@ -659,9 +659,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         private final boolean multiLineCells;
 
         /**
-         * The node that have already been formatted. We use this map as a safety against infinite recursivity.
+         * The node that have already been formatted. We use this map as a safety against infinite recursion.
          */
-        private final Set<TreeTable.Node> recursivityGuard;
+        private final Set<TreeTable.Node> recursionGuard;
 
         /**
          * Creates a new instance which will write to the given appendable.
@@ -669,10 +669,10 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          * @param  out               where to format the tree.
          * @param  tree              the tree table to format.
          * @param  columns           the columns of the tree table to format.
-         * @param  recursivityGuard  an initially empty set.
+         * @param  recursionGuard  an initially empty set.
          */
         Writer(final Appendable out, final TreeTable tree, final TableColumn<?>[] columns,
-               final Set<TreeTable.Node> recursivityGuard)
+               final Set<TreeTable.Node> recursionGuard)
         {
             super(columns.length >= 2 ? new TableAppender(out, "") : out);
             multiLineCells = (super.out == out);
@@ -680,7 +680,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             this.formats = getFormats(columns, false);
             this.values  = new Object[columns.length];
             this.isLast  = new boolean[8];
-            this.recursivityGuard = recursivityGuard;
+            this.recursionGuard = recursionGuard;
 
             @SuppressWarnings("LocalVariableHidesMemberVariable")   // To be stored in the field if successful.
             Predicate<TreeTable.Node> filter = nodeFilter;
@@ -792,7 +792,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 isLast = Arrays.copyOf(isLast, level*2);
             }
             /*
-             * Format the children only if we do not detect an infinite recursivity. Our recursivity detection
+             * Format the children only if we do not detect an infinite recursion. Our recursion detection
              * algorithm assumes that the Node.equals(Object) method has been implemented as specified in its javadoc.
              * In particular, the implementation may compare the values and children but shall not compare the parent.
              *
@@ -801,7 +801,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
              * particular case.
              */
             final boolean omitCheck = node.getClass().isAnnotationPresent(Acyclic.class);
-            if (omitCheck || recursivityGuard.add(node)) {
+            if (omitCheck || recursionGuard.add(node)) {
                 boolean needLineSeparator = multiLineCells;
                 final String lineSeparator = needLineSeparator ? getLineSeparator() : null;
                 final Iterator<? extends TreeTable.Node> it = node.getChildren().iterator();
@@ -818,7 +818,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 if (lineSeparator != null) {
                     setLineSeparator(lineSeparator);            // Restore previous state.
                 }
-                if (!omitCheck && !recursivityGuard.remove(node)) {
+                if (!omitCheck && !recursionGuard.remove(node)) {
                     /*
                      * Assuming that Node.hashCode() and Node.equals(Object) implementation are not broken,
                      * this exception may happen only if the node content changed during this method execution.
@@ -827,7 +827,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 }
             } else {
                 /*
-                 * Detected a recursivity. Format "(cycle omitted)" just below the node.
+                 * Detected a recursion. Format "(cycle omitted)" just below the node.
                  */
                 for (int i=0; i<level; i++) {
                     out.append(getTreeSymbols(true, isLast[i]));
@@ -882,15 +882,15 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         } else {
             columns = tree.getColumns().toArray(TableColumn<?>[]::new);
         }
-        if (recursivityGuard == null) {
-            recursivityGuard = new HashSet<>();
+        if (recursionGuard == null) {
+            recursionGuard = new HashSet<>();
         }
         try {
-            final Writer out = new Writer(toAppendTo, tree, columns, recursivityGuard);
+            final Writer out = new Writer(toAppendTo, tree, columns, recursionGuard);
             out.format(tree.getRoot(), 0);
             out.flush();
         } finally {
-            recursivityGuard.clear();
+            recursionGuard.clear();
         }
     }
 
@@ -960,7 +960,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     @Override
     public TreeTableFormat clone() {
         final TreeTableFormat c = (TreeTableFormat) super.clone();
-        c.recursivityGuard = null;
+        c.recursionGuard = null;
         return c;
     }
 }

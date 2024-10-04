@@ -131,7 +131,7 @@ public final class ParametersTest extends TestCase {
     public void testCopy() {
         /*
          * The descriptor to be used for this test. This descriptor contain at least
-         * one subgroup, for testing the Parameters.copy(...) method recursivity.
+         * one subgroup, for testing the Parameters.copy(...) method recursion.
          */
         final String subgroupName = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.getName().getCode();
         final DefaultParameterDescriptorGroup descriptor = new DefaultParameterDescriptorGroup(

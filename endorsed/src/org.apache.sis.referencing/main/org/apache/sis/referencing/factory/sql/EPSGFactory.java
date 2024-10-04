@@ -246,10 +246,10 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *                     or {@code null} for the default values.
      * @throws ClassCastException if a property value is not of the expected class.
      * @throws IllegalArgumentException if a property value is invalid.
-     * @throws FactoryException if an error occurred while creating the EPSG factory.
+     * @throws UnavailableFactoryException if an error occurred while creating the EPSG factory.
      */
     @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
-    public EPSGFactory(Map<String,?> properties) throws FactoryException {
+    public EPSGFactory(Map<String,?> properties) throws UnavailableFactoryException {
         super(EPSGDataAccess.class);
         if (properties == null) {
             properties = Map.of();
@@ -266,11 +266,12 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         this.locale = locale;
         if (ds == null) try {
             ds = Initializer.getDataSource();
-            if (ds == null) {
-                throw new UnavailableFactoryException(String.valueOf(Initializer.unspecified(locale, false)));
-            }
         } catch (Exception e) {
             throw new UnavailableFactoryException(canNotUse(e), e);
+        }
+        if (ds == null) {
+            // Must be outside the above `try` block.
+            throw new UnavailableFactoryException(String.valueOf(Initializer.unspecified(locale, false)));
         }
         final var c = new ReferencingFactoryContainer(properties);
         dataSource   = ds;
@@ -406,7 +407,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                     }
                 }
             } catch (IOException | SQLException e) {
-                message = installer.failure(locale, e);
+                message = installer.failure(locale);
                 failure = e;
             }
         } catch (SQLException e) {
@@ -418,7 +419,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
              * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
-            UnavailableFactoryException exception = new UnavailableFactoryException(message, Exceptions.unwrap(failure));
+            var exception = new UnavailableFactoryException(message, Exceptions.unwrap(failure));
             exception.setUnavailableFactory(this);
             throw exception;
         }

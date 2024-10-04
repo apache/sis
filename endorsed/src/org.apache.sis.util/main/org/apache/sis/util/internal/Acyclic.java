@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * Marker annotation for implementation that promise to not introduce a cyclic graph
  * in a structure that could potentially contains such cycles. If this annotation is
  * present, then some Apache SIS classes may skip the safety checks against infinite
- * recursivity.
+ * recursion.
  *
  * <p>This annotation is not inherited, since a promise that a particular class will not
  * introduce cyclic graphs does not mean that subclasses will hold the same promise.</p>

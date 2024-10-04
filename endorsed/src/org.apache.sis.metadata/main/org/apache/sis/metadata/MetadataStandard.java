@@ -1077,7 +1077,7 @@ public class MetadataStandard implements Serializable {
         /*
          * At this point, we have to perform the actual property-by-property comparison.
          * Cycle may exist in metadata tree, so we have to keep trace of pair in process
-         * of being compared for avoiding infinite recursivity.
+         * of being compared for avoiding infinite recursion.
          */
         final ObjectPair pair = new ObjectPair(metadata1, metadata2);
         final Set<ObjectPair> inProgress = ObjectPair.CURRENT.get();

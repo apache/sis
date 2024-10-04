@@ -16,9 +16,11 @@
  */
 package org.apache.sis.storage.gimi.isobmff;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
@@ -27,7 +29,9 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.UUID;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.Extension;
 
 
@@ -153,6 +157,24 @@ public final class ISOBMFFReader {
         String str = channel.readString(size, StandardCharsets.UTF_8);
         channel.readByte(); //skip string 0/null terminal marker
         return str;
+    }
+
+
+    public static void printAll(Path path) throws IllegalArgumentException, DataStoreException, IOException {
+
+        final StorageConnector cnx = new StorageConnector(path);
+        final ChannelDataInput cdi = cnx.getStorageAs(ChannelDataInput.class);
+        final ISOBMFFReader reader = new ISOBMFFReader(cdi);
+
+        try {
+            while(true) {
+                final Box box = reader.readBox();
+                System.out.println(box);
+                cdi.seek(box.boxOffset + box.size);
+            }
+        } catch (EOFException ex) {
+            //do nothing
+        }
     }
 
 }

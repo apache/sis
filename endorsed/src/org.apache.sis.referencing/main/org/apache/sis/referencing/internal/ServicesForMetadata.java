@@ -62,6 +62,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.system.Modules;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Constants;
@@ -599,7 +600,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                     authority = CRS.getAuthorityFactory(Constants.EPSG).getAuthority();
                 } catch (FactoryException e) {
                     final String msg = Exceptions.getLocalizedMessage(e, locale);
-                    return (msg != null) ? msg : e.toString();
+                    return (msg != null) ? msg : Classes.getShortClassName(e);
                 }
                 if (authority instanceof DefaultCitation) {
                     final OnLineFunction f = OnLineFunction.valueOf(CONNECTION);

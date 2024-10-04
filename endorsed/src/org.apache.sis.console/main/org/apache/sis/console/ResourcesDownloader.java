@@ -27,6 +27,7 @@ import org.apache.sis.util.privy.X364;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.system.Environment;
 import org.apache.sis.setup.OptionalInstallations;
+import org.apache.sis.pending.jdk.JDK22;
 
 
 /**
@@ -102,14 +103,14 @@ public class ResourcesDownloader extends OptionalInstallations {
     /**
      * Returns the name of the authority who provides data under non-Apache terms of use.
      * If this {@code ResourcesDownloader} cannot ask user's agreement because there is
-     * no {@link Console} attached to the current Java virtual machine, then this method
-     * returns an empty set.
+     * no {@link Console} attached to the current Java virtual machine or the console is
+     * not {@linkplain Console#isTerminal() a terminal}, then this method returns an empty set.
      *
-     * @return {@code "EPSG"} or an empty set.
+     * @return {@code "EPSG"} or an empty set in this class cannot ask user's agreement.
      */
     @Override
     public Set<String> getAuthorities() {
-        return (console != null) ? super.getAuthorities() : Set.of();
+        return (console != null && JDK22.isTerminal(console)) ? super.getAuthorities() : Set.of();
     }
 
     /**

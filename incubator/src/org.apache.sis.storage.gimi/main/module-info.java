@@ -27,6 +27,8 @@ module org.apache.sis.storage.gimi {
 
     exports org.apache.sis.storage.gimi.isobmff;
 
+    uses org.apache.sis.storage.gimi.isobmff.BoxRegistry;
+
     provides org.apache.sis.storage.DataStoreProvider
             with org.apache.sis.storage.gimi.GimiProvider;
 

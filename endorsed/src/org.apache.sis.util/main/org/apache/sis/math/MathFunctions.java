@@ -774,7 +774,7 @@ public final class MathFunctions extends Static {
             /*
              * Other NaN values might have a meaning (e.g. NaN(1) = forest, NaN(2) = lake, etc.)
              * See above toNanFloat(int) and toNaNOrdinal(float) methods. When truncating the value we
-             * might change the meaning, which could cause several issues later. Therefor we conservatively
+             * might change the meaning, which could cause several issues later. Therefore we conservatively
              * collapse all NaNs to the default NaN for now (this may be revisited in a future SIS version).
              */
             return Double.NaN;

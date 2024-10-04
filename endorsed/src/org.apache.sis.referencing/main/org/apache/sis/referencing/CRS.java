@@ -712,7 +712,7 @@ public final class CRS extends Static {
         try {
             return factory.createOperation(sourceCRS, targetCRS, context);
         } catch (UnavailableFactoryException e) {
-            if (AuthorityFactories.failure(e)) {
+            if (AuthorityFactories.isUnavailable(e)) {
                 throw e;
             } else try {
                 // Above method call replaced the EPSG factory by a fallback. Try again.
@@ -754,9 +754,10 @@ public final class CRS extends Static {
         try {
             return factory.createOperations(sourceCRS, targetCRS, context);
         } catch (UnavailableFactoryException e) {
-            if (AuthorityFactories.failure(e)) {
+            if (AuthorityFactories.isUnavailable(e)) {
                 throw e;
             } else try {
+                // Above method call replaced the EPSG factory by a fallback. Try again.
                 return List.of(factory.createOperation(sourceCRS, targetCRS, context));
             } catch (FactoryException ex) {
                 ex.addSuppressed(e);

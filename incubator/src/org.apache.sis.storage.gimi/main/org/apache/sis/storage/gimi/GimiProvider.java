@@ -21,24 +21,34 @@ import java.nio.file.Path;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import static org.apache.sis.storage.DataStoreProvider.LOCATION;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.storage.tiling.TiledResource;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
+@StoreMetadata(formatName    = GimiProvider.NAME,
+               capabilities  = {Capability.READ},
+               fileSuffixes  = {"heij", "heif", "heic", "avif"},
+               resourceTypes = {Aggregate.class, GridCoverageResource.class, TiledResource.class},
+               yieldPriority = false)
 public final class GimiProvider extends DataStoreProvider {
 
     /**
      * Format name.
      */
-    public static final String NAME = "gimi";
+    public static final String NAME = "GIMI";
 
     /**
      * Format mime type.
@@ -102,8 +112,7 @@ public final class GimiProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(StorageConnector connector) throws DataStoreException {
-        final Path path = connector.getStorageAs(Path.class);
-        return new GimiStore(path);
+        return new GimiStore(connector);
     }
 
 }

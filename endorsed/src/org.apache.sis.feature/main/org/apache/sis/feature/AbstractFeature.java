@@ -831,7 +831,7 @@ public abstract class AbstractFeature implements Serializable {
      *     }
      *
      * @return {@code true} if hash code or equality comparison can proceed, or
-     *         {@code false} if a recursivity is detected.
+     *         {@code false} if a recursion is detected.
      */
     final boolean comparisonStart() {
         return COMPARING.get().put(this, Boolean.TRUE) == null;

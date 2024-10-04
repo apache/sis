@@ -324,7 +324,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         /*
          * Create a cache using soft references and allowing key collisions.
          *
-         * NOTE 1: key collision is usually an error. But in this case we allow them in order to enable recursivity.
+         * NOTE 1: key collision is usually an error. But in this case we allow them in order to enable recursion.
          * If during the creation of an object the program asks to this ConcurrentAuthorityFactory for the same object
          * (using the same key), then the default Cache implementation considers that situation as an error unless the
          * above property has been set to `true`.
@@ -430,8 +430,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 if (usage == null) {
                     final DAO factory = newDataAccess();
                     if (factory == null) {
-                        UnavailableFactoryException e = new UnavailableFactoryException(Errors.format(
-                                Errors.Keys.FactoryNotFound_1, GeodeticAuthorityFactory.class));
+                        var e = new UnavailableFactoryException(
+                                Errors.format(Errors.Keys.FactoryNotFound_1, GeodeticAuthorityFactory.class));
                         e.setUnavailableFactory(this);
                         throw e;
                     }
@@ -752,7 +752,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
              * Do not log the stack trace if we failed because of UnavailableFactoryException since it may be
              * normal (the EPSG geodetic dataset is optional, even if strongly recommended).
              */
-            final LogRecord record = new LogRecord(c == null ? Level.WARNING : Level.FINE, e.getLocalizedMessage());
+            final var record = new LogRecord(c == null ? Level.WARNING : Level.FINE, e.getLocalizedMessage());
             if (!(e instanceof UnavailableFactoryException)) {
                 record.setThrown(e);
             }
@@ -1806,7 +1806,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         private static final int DOMAIN_COUNT = 4;
 
         /**
-         * The finder on which to delegate the work. This is acquired by {@link #acquire()}
+         * The finder to which to delegate the work. This is acquired by {@link #acquire()}
          * <strong>and must be released</strong> by call to {@link #release()} once finished.
          */
         private transient IdentifiedObjectFinder finder;

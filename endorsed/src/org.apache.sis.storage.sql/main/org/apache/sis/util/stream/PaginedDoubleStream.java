@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  */
 public final class PaginedDoubleStream extends DoubleStreamWrapper {
     /**
-     * The root stream on which to delegate {@code skip} and {@code limit} operations.
+     * The root stream to which to delegate {@code skip} and {@code limit} operations.
      */
     private Stream<?> root;
 
@@ -40,7 +40,7 @@ public final class PaginedDoubleStream extends DoubleStreamWrapper {
      * Creates a new mapped stream.
      *
      * @param  source  the stream to wrap.
-     * @param  root    the stream on which to delegate {@code skip} and {@code limit} operations.
+     * @param  root    the stream to which to delegate {@code skip} and {@code limit} operations.
      */
     public PaginedDoubleStream(final DoubleStream source, final Stream<?> root) {
         super(source);

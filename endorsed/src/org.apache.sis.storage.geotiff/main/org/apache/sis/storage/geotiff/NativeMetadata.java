@@ -123,7 +123,7 @@ final class NativeMetadata extends GeoKeysLoader {
             int imageNumber = 0;
             while ((nextIFD = readInt(false)) != 0) {
                 if (!doneIFD.add(nextIFD)) {
-                    // Safety against infinite recursivity.
+                    // Safety against infinite recursion.
                     break;
                 }
                 final TreeTable.Node image = root.newChild();

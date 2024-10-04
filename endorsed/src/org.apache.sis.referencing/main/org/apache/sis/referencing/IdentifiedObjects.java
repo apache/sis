@@ -714,6 +714,8 @@ public final class IdentifiedObjects extends Static {
         final GeodeticAuthorityFactory factory;
         if (authority == null) {
             factory = AuthorityFactories.ALL;
+        } else if (authority.equalsIgnoreCase(Constants.EPSG)) {
+            return AuthorityFactories.finderForEPSG();
         } else {
             factory = AuthorityFactories.ALL.getAuthorityFactory(GeodeticAuthorityFactory.class, authority, null);
         }

@@ -382,7 +382,7 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * If this table imports the inverse of the given relation, returns the imported relation.
-     * Otherwise returns {@code null}. This method is used for preventing infinite recursivity.
+     * Otherwise returns {@code null}. This method is used for preventing infinite recursion.
      *
      * @param  exported       the relation exported by another table.
      * @param  exportedOwner  {@code exported.owner.name}: table that contains the {@code exported} relation.

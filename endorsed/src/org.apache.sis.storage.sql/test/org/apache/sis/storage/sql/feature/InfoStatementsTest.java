@@ -139,8 +139,12 @@ public final class InfoStatementsTest extends TestCase {
                            CoordinateReferenceSystem.IDENTIFIERS_KEY, new ImmutableIdentifier(null, "FOO", "4326")),
                     HardCodedDatum.SPHERE, null, HardCodedCS.GEODETIC_2D);
 
-            c.setReadOnly(false); assertEquals(1, info.findSRID(clash));
-            c.setReadOnly(true);  assertEquals(1, info.findSRID(clash));
+            c.setReadOnly(false);
+            final int code = info.findSRID(clash);
+            assertNotEquals(4326, code);
+            assertTrue(code > 0);
+            c.setReadOnly(true);
+            assertEquals(code, info.findSRID(clash));
         }
     }
 

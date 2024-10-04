@@ -21,7 +21,7 @@ import org.apache.sis.util.privy.AbstractIterator;
 
 
 /**
- * An iterator over all elements given by an array of {@code Iterable<E>}, skipping null elements.
+ * An iterator over all elements given by an array of {@code Iterable<E>}.
  * All uses of an {@code Iterable<E>} (including its iterator) is synchronized on that {@code Iterable} instance.
  *
  * <p>Note that despite the above-cited synchronization, this iterator is <strong>not</strong> thread-safe:
@@ -35,31 +35,33 @@ import org.apache.sis.util.privy.AbstractIterator;
  */
 final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
     /**
-     * The providers of iterators. This array shall not be modified by {@code LazySynchronizedSetIterator},
-     * since this is a direct reference to the array given to the constructor (not a copy).
+     * The providers of iterators.
      */
-    private final Iterable<? extends E>[] providers;
+    private final Iterator<Iterable<? extends E>> providers;
 
     /**
-     * Index of the {@code Iterable<E>} instance that provides the {@link #it} value.
+     * The current instance that provides the {@link #it} value.
      * This is also the instance to use as a synchronization lock.
      */
-    private int providerIndex;
+    private Iterable<? extends E> provider;
 
     /**
-     * The iterator on which to delegate calls to {@link #hasNext()} and {@link #next()}.
+     * The iterator to which to delegate calls to {@link #hasNext()} and {@link #next()}.
      * This iterator is provided by {@code providers[providerIndex].iterator()}.
      */
     private Iterator<? extends E> it;
 
     /**
      * Creates a new iterator over all elements returned by the given providers.
-     * Null elements in the given array will be ignored.
      *
-     * @param  providers  the providers of iterators. This array is <strong>not</strong> cloned.
+     * @param  providers  the providers of iterators.
      */
-    public LazySynchronizedIterator(final Iterable<? extends E>[] providers) {
+    public LazySynchronizedIterator(final Iterator<Iterable<? extends E>> providers) {
         this.providers = providers;
+        if (providers.hasNext()) {
+            provider = providers.next();
+            it = provider.iterator();
+        }
     }
 
     /**
@@ -70,27 +72,25 @@ final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
      * @return {@code true} if there is more elements to return.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public boolean hasNext() {
         if (next != null) {
             return true;
         }
-        while (providerIndex < providers.length) {
-            final Iterable<? extends E> provider = providers[providerIndex];
-            if (provider != null) {
-                synchronized (provider) {
-                    if (it == null) {
-                        it = provider.iterator();
+        while (it != null) {
+            synchronized (provider) {
+                while (it.hasNext()) {
+                    next = it.next();
+                    if (next != null) {
+                        return true;
                     }
-                    while (it.hasNext()) {
-                        next = it.next();
-                        if (next != null) {
-                            return true;
-                        }
-                    }
-                    it = null;
                 }
+                it = null;
             }
-            providerIndex++;
+            if (providers.hasNext()) {
+                provider = providers.next();
+                it = provider.iterator();
+            }
         }
         return false;
     }

@@ -196,7 +196,7 @@ final class FeatureAdapter {
             for (final Relation dependency : table.importedKeys) {
                 if (dependency.excluded) continue;
                 if (dependency != noFollow) {
-                    dependency.startFollowing(following);                   // Safety against never-ending recursivity.
+                    dependency.startFollowing(following);                   // Safety against never-ending recursion.
                     associationNames   [count] = dependency.propertyName;
                     foreignerKeyIndices[count] = getColumnIndices(sql, dependency, columnIndices);
                     dependencies       [count] = new FeatureAdapter(dependency.getSearchTable(), metadata, following, noFollow);
@@ -215,7 +215,7 @@ final class FeatureAdapter {
              */
             for (final Relation dependency : table.exportedKeys) {
                 if (dependency.excluded) continue;
-                dependency.startFollowing(following);                   // Safety against never-ending recursivity.
+                dependency.startFollowing(following);                   // Safety against never-ending recursion.
                 final Table foreigner  = dependency.getSearchTable();
                 final Relation inverse = foreigner.getInverseOf(dependency, table.name);
                 associationNames   [count] = dependency.propertyName;

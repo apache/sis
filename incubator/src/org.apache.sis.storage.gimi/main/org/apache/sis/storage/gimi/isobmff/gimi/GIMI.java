@@ -28,7 +28,9 @@ import org.apache.sis.storage.gimi.isobmff.BoxRegistry;
  */
 public final class GIMI implements BoxRegistry {
 
-    private static final Set<String> BOXES = Set.of();
+    private static final Set<String> BOXES = Set.of(
+            TiledImageConfigurationBox.FCC
+        );
     private static final Set<String> EXTENSIONS = Set.of(
             ModelTiePointProperty.UUID,
             ModelTransformationProperty.UUID,
@@ -52,6 +54,8 @@ public final class GIMI implements BoxRegistry {
 
     @Override
     public Box create(String fourCC) throws IllegalNameException {
+        //TODO replace by String switch when SIS minimum java is updated
+        if (TiledImageConfigurationBox.FCC.equals(fourCC)) return new TiledImageConfigurationBox();
         throw new IllegalNameException();
     }
 

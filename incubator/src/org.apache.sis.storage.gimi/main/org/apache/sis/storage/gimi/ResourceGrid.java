@@ -44,12 +44,14 @@ import org.opengis.util.FactoryException;
 
 
 /**
+ * A Grid as a GridCoverageResource and as a TiledResource.
  *
  * @author Johann Sorel (Geomatys)
  */
 final class ResourceGrid extends MatrixGridRessource implements TiledResource, StoreResource {
 
     public static final String TYPE = "grid";
+
     private final Item item;
     private final GenericName identifier;
     //filled after initialize
@@ -72,7 +74,7 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
      *
      * @return item, never null.
      */
-    public Item getItem() {
+    Item getItem() {
         return item;
     }
 
@@ -99,7 +101,7 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
     private synchronized void initialize() throws DataStoreException {
         if (tileMatrix != null) return;
 
-        final Resource first = item.store.getComponent(item.references.get(0).toItemId[0]);
+        final Resource first = item.store.getComponent(item.getReferences().get(0).toItemId[0]);
         if (first instanceof GridCoverageResource) {
             this.first = (GridCoverageResource) first;
         } else {
@@ -114,7 +116,7 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
         ModelTransformationProperty modelTrs = null;
         WellKnownText2Property modelWkt = null;
 
-        for (Box box : item.properties) {
+        for (Box box : item.getProperties()) {
             if (box instanceof ImageSpatialExtents) {
                 imageExts = (ImageSpatialExtents) box;
             } else if (box instanceof ModelTransformationProperty) {
