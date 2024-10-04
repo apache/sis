@@ -117,7 +117,7 @@ public class ImagePropertyExplorer extends Widget {
      * after a {@link ResampledImage} is found. Images not present in this map are implicitly associated to the
      * {@code false} value.
      *
-     * <p>This map is also opportunistically used for avoiding never-ending recursivity
+     * <p>This map is also opportunistically used for avoiding never-ending recursion
      * during the traversal of image sources.</p>
      *
      * @see #setImage(RenderedImage, Rectangle)
@@ -577,7 +577,7 @@ public class ImagePropertyExplorer extends Widget {
      * immediately after an {@linkplain #image} change; the update may be deferred until the tree become visible.
      *
      * @param  imageUseBoundsCS  the {@link #imageUseBoundsCS} as an initially empty map. This map is
-     *         populated by this method and opportunistically used for avoiding infinite recursivity.
+     *         populated by this method and opportunistically used for avoiding infinite recursion.
      */
     private static void setTreeNode(final TreeItem<RenderedImage> root, final RenderedImage image,
             final Map<RenderedImage,Boolean> imageUseBoundsCS, Boolean boundsApplicable)

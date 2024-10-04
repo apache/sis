@@ -836,7 +836,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     Objects.equals(transform,                   that.transform)        &&
                     Objects.equals(coordinateOperationAccuracy, that.coordinateOperationAccuracy))
                 {
-                    // Check against never-ending recursivity with DerivedCRS.
+                    // Check against never-ending recursion with DerivedCRS.
                     if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                         return true;
                     } else try {
@@ -865,7 +865,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      * from AbstractDerivedCRS, otherwise we would fall in an infinite recursive loop
                      * (because targetCRS is the DerivedCRS, which in turn wants to compare this operation).
                      *
-                     * We also opportunistically use this "anti-recursivity" check for another purpose.
+                     * We also opportunistically use this "anti-recursion" check for another purpose.
                      * The Semaphores.COMPARING flag should be set only when AbstractDerivedCRS is comparing
                      * its "from base" conversion. The flag should never be set in any other circumstance,
                      * since this is an internal Apache SIS mechanism. If we know that we are comparing the

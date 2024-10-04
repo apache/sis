@@ -686,7 +686,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * <h4>Implementation note</h4>
          * This method ignores the parent because:
          * <ul>
-         *   <li>When comparing the children recursively, comparing the parents would cause infinite recursivity.</li>
+         *   <li>When comparing the children recursively, comparing the parents would cause infinite recursion.</li>
          *   <li>For consistency with the {@link #clone()} method, which cannot clone the parent.</li>
          *   <li>For making possible to compare branches instead of only whole trees.</li>
          * </ul>

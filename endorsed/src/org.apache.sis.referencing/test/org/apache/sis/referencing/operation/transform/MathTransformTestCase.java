@@ -73,7 +73,7 @@ import org.opengis.test.referencing.TransformTestCase;
  * </ul>
  *
  * <h2>Life cycle</h2>
- * GeoAPI tests have a state. Therefor, a new instance of {@code MathTransformTestCase} should be created
+ * GeoAPI tests have a state. Therefore, a new instance of {@code MathTransformTestCase} should be created
  * for each test method to execute. However, it may be costly if the constructor requires large resources
  * (e.g., a connection to an EPSG database). For making easier to reuse the same {@code TestCase} instance,
  * a {@link #reset()} method is provided. Subclasses are responsible to override that method with the

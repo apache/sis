@@ -27,7 +27,7 @@ import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
 /**
- * A visitor of metadata properties with a safety against infinite recursivity.
+ * A visitor of metadata properties with a safety against infinite recursion.
  * The visitor may compute a result, for example a hash code value or a boolean
  * testing whether the metadata is empty. Each {@code MetadataVisitor} instance
  * is used by one thread; this class does not need to be thread-safe.
@@ -46,17 +46,17 @@ abstract class MetadataVisitor<R> {
     static final Object SKIP_SIBLINGS = InterruptedException.class;     // The choice of this type is arbitrary.
 
     /**
-     * A guard against infinite recursivity in {@link #walk(MetadataStandard, Class, Object, boolean)}.
+     * A guard against infinite recursion in {@link #walk(MetadataStandard, Class, Object, boolean)}.
      * Keys are visited metadata instances and values are computed value.
      * The value may be null if the computation is in progress.
      *
      * <h4>The problem</h4>
      * Cyclic associations can exist in ISO 19115 metadata. For example, {@code Instrument} has a reference
      * to the platform it is mounted on, and the {@code Platform} has a list of instruments mounted on it.
-     * Consequently, walking down the metadata tree can cause infinite recursivity, unless we keep trace of
+     * Consequently, walking down the metadata tree can cause infinite recursion, unless we keep trace of
      * previously visited metadata objects in order to avoid visiting them again.
      *
-     * We use an {@link IdentityHashMap} for that purpose, since the recursivity problem exists only when revisiting
+     * We use an {@link IdentityHashMap} for that purpose, since the recursion problem exists only when revisiting
      * the exact same instance. Furthermore, {@code HashMap} would not suit since it invokes {@code equals(Object)}
      * and {@code hashCode()}, which are among the methods that we want to avoid invoking twice.
      */

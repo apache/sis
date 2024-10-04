@@ -288,7 +288,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
 
     /**
      * A safety guard for preventing never-ending loops in recursive calls to some {@code createFoo(String)} methods.
-     * Recursivity may happen while creating Bursa-Wolf parameters, projected CRS if the database has erroneous data,
+     * Recursion may happen while creating Bursa-Wolf parameters, projected CRS if the database has erroneous data,
      * compound CRS if there is cycles, or coordinate operations.
      *
      * <h4>Example</h4>
@@ -1025,9 +1025,9 @@ codes:  for (int i=0; i<codes.length; i++) {
     }
 
     /**
-     * Invoked after the block protected against infinite recursivity.
+     * Invoked after the block protected against infinite recursion.
      */
-    private void endOfRecursivity(final Class<?> type, final Integer code) throws FactoryException {
+    private void endOfRecursion(final Class<?> type, final Integer code) throws FactoryException {
         if (safetyGuard.remove(code) != type) {
             throw new FactoryException(String.valueOf(code));   // Would be an EPSGDataAccess bug if it happen.
         }
@@ -1389,7 +1389,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             try {
                                 datum = owner.createGeographicCRS(geoCode).getDatum();
                             } finally {
-                                endOfRecursivity(GeographicCRS.class, epsg);
+                                endOfRecursion(GeographicCRS.class, epsg);
                             }
                         }
                         crs = crsFactory.createGeographicCRS(createProperties("Coordinate Reference System",
@@ -1477,7 +1477,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                                 Semaphores.clear(Semaphores.SUSPEND_PARAMETER_CHECK, suspendParamChecks);
                             }
                         } finally {
-                            endOfRecursivity(ProjectedCRS.class, epsg);
+                            endOfRecursion(ProjectedCRS.class, epsg);
                         }
                         break;
                     }
@@ -1521,7 +1521,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             crs1 = owner.createCoordinateReferenceSystem(code1);
                             crs2 = owner.createCoordinateReferenceSystem(code2);
                         } finally {
-                            endOfRecursivity(CompoundCRS.class, epsg);
+                            endOfRecursion(CompoundCRS.class, epsg);
                         }
                         // Note: Do not invoke `createProperties` sooner.
                         crs  = crsFactory.createCompoundCRS(createProperties("Coordinate Reference System",
@@ -1763,7 +1763,7 @@ codes:  for (int i=0; i<codes.length; i++) {
     {
         /*
          * We do not provide TOWGS84 information for WGS84 itself or for any other datum on our list of target datum,
-         * in order to avoid infinite recursivity. The `ensureNonRecursive` call is an extra safety check which should
+         * in order to avoid infinite recursion. The `ensureNonRecursive` call is an extra safety check which should
          * never fail, unless TARGET_CRS and TARGET_DATUM values do not agree with database content.
          */
         if (code == BursaWolfInfo.TARGET_DATUM) {
@@ -1824,7 +1824,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             try {
                 datum = owner.createGeodeticDatum(String.valueOf(info.target));
             } finally {
-                endOfRecursivity(BursaWolfParameters.class, code);
+                endOfRecursion(BursaWolfParameters.class, code);
             }
             /*
              * Accept only Bursa-Wolf parameters between datum that use the same prime meridian.
@@ -2924,7 +2924,7 @@ next:                   while (r.next()) {
                                 operations[i] = owner.createCoordinateOperation(codes.get(i));
                             }
                         } finally {
-                            endOfRecursivity(CoordinateOperation.class, epsg);
+                            endOfRecursion(CoordinateOperation.class, epsg);
                         }
                         return copFactory.createConcatenatedOperation(opProperties, operations);
                     } else {

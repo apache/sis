@@ -428,7 +428,7 @@ public final class ClenshawSummation {
             multiplicands = new int[length][length];
             multiplicands[length - 1][0] = 1;
             if (b2 != null) {
-                // Add −bₙ₊₂ — we add terms at the same power of cos(θ), therefor all indices match.
+                // Add −bₙ₊₂ — we add terms at the same power of cos(θ), therefore all indices match.
                 for (int term=0; term < b2.multiplicands.length; term++) {
                     final int max = b2.multiplicands[term].length;
                     for (int power=0; power<max; power++) {

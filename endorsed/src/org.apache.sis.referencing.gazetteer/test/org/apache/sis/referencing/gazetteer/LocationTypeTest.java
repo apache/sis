@@ -237,7 +237,7 @@ public final class LocationTypeTest extends TestCase {
     }
 
     /**
-     * Tests the safety against infinite recursivity.
+     * Tests the safety against infinite recursion.
      * This method attempts to add "town" as a child of "street".
      */
     @Test

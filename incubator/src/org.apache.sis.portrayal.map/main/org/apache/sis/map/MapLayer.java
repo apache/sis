@@ -222,7 +222,7 @@ public class MapLayer extends MapItem {
     /**
      * Returns the global opacity of this layer.
      * Based on the rendering context this property may be impossible to implement,
-     * it is therefor recommended to modify the style symbolizer opacity properties.
+     * it is therefore recommended to modify the style symbolizer opacity properties.
      *
      * @return opacity between 0.0 and 1.0
      */

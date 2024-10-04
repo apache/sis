@@ -150,7 +150,7 @@ public final class PrunerTest extends TestCase {
 
     /**
      * Tests the {@link AbstractMetadata#isEmpty()} method on a metadata object having a cycle association.
-     * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
+     * In absence of safety guard against infinite recursion, this test would produce {@link StackOverflowError}.
      */
     @Test
     public void testIsEmptyOnCyclicMetadata() {
@@ -196,7 +196,7 @@ public final class PrunerTest extends TestCase {
 
     /**
      * Tests the {@link AbstractMetadata#prune()} method on a metadata object having a cycle association.
-     * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
+     * In absence of safety guard against infinite recursion, this test would produce {@link StackOverflowError}.
      */
     @Test
     public void testPruneOnCyclicMetadata() {

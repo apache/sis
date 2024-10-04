@@ -224,7 +224,7 @@ public class MetadataWriter extends MetadataSource {
 
     /**
      * Implementation of the {@link #add(Object)} method. This method invokes itself recursively,
-     * and maintains a map of metadata inserted up to date in order to avoid infinite recursivity.
+     * and maintains a map of metadata inserted up to date in order to avoid infinite recursion.
      *
      * @param  stmt      the statement to use for inserting data.
      * @param  metadata  the metadata object to add.

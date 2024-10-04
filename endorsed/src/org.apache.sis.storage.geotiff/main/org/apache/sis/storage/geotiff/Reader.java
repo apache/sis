@@ -102,7 +102,7 @@ final class Reader extends IOBase {
 
     /**
      * Offsets of all <i>Image File Directory</i> (IFD) that have been read so far.
-     * This field is used only as a protection against infinite recursivity, by preventing
+     * This field is used only as a protection against infinite recursion, by preventing
      * the same offset to appear twice.
      *
      * @see #readNextImageOffset()

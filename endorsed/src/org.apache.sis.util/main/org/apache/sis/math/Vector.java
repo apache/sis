@@ -586,7 +586,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * patterns that at repeated at a regular interval on the whole vector; this method does not search for repetitions
      * occurring at irregular intervals. This method returns an array of typically 0, 1 or 2 elements where zero element
      * means that no repetition has been found, one element describes a repetition (see the example below), and two elements
-     * describes a repetition of the repetitions (examples below). More elements (deeper recursivity) are theoretically
+     * describes a repetition of the repetitions (examples below). More elements (deeper recursion) are theoretically
      * possible but not yet implemented.
      *
      * <p>If the values in this vector are of the form (<var>x</var>, <var>x</var>, …, <var>x</var>, <var>y</var>, <var>y</var>,

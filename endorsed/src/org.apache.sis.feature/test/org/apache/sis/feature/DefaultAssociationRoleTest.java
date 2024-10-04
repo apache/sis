@@ -144,7 +144,7 @@ public final class DefaultAssociationRoleTest extends TestCase {
     /**
      * Tests {@link DefaultFeatureType#isAssignableFrom(FeatureType)} and {@link DefaultFeatureType#equals(Object)}
      * on a feature type having a bidirectional association to another feature. This test will fall in an infinite
-     * loop if the implementation does not have proper guard against infinite recursivity.
+     * loop if the implementation does not have proper guard against infinite recursion.
      */
     @Test
     public void testCyclicAssociation() {

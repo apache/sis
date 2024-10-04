@@ -413,7 +413,7 @@ final class Relation extends TableReference {
 
     /**
      * Adds this relation to the given list, making sure that the relation has not already been added.
-     * The check for previous existence of {@code this} relation is for preventing infinite recursivity.
+     * The check for previous existence of {@code this} relation is for preventing infinite recursion.
      */
     final void startFollowing(final List<Relation> following) throws InternalDataStoreException {
         for (int i = following.size(); --i >= 0;) {

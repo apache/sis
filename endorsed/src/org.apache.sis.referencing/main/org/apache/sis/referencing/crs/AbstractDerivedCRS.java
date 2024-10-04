@@ -214,7 +214,7 @@ abstract class AbstractDerivedCRS extends AbstractCRS implements DerivedCRS {
         if (super.equals(object, mode)) {
             final boolean strict = (mode == ComparisonMode.STRICT);
             /*
-             * Avoid never-ending recursivity: Conversion has a `targetCRS` field (inherited from
+             * Avoid never-ending recursion: Conversion has a `targetCRS` field (inherited from
              * the AbstractCoordinateOperation super-class) that is set to this AbstractDerivedCRS.
              *
              * Do NOT compare the baseCRS explicitly. This is done implicitely in the comparison of the Conversion

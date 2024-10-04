@@ -66,10 +66,10 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
     protected abstract Object getSynchronizationLock();
 
     /**
-     * Creates the resource on which to delegate operations.
+     * Creates the resource to which to delegate operations.
      * This method is invoked in a synchronized block when first needed and the result is cached.
      *
-     * @return the resource on which to delegate operations.
+     * @return the resource to which to delegate operations.
      * @throws DataStoreException if the resource cannot be created.
      */
     protected abstract GridCoverageResource createSource() throws DataStoreException;
@@ -78,7 +78,7 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      * Returns the potentially cached source.
      * This method invokes {@link #createSource()} when first needed and caches the result.
      *
-     * @return the resource on which to delegate operations.
+     * @return the resource to which to delegate operations.
      * @throws DataStoreException if the resource cannot be created.
      */
     protected final GridCoverageResource source() throws DataStoreException {

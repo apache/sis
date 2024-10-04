@@ -46,7 +46,7 @@ final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
     private Iterable<? extends E> provider;
 
     /**
-     * The iterator on which to delegate calls to {@link #hasNext()} and {@link #next()}.
+     * The iterator to which to delegate calls to {@link #hasNext()} and {@link #next()}.
      * This iterator is provided by {@code providers[providerIndex].iterator()}.
      */
     private Iterator<? extends E> it;

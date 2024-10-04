@@ -139,7 +139,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
 
     /**
      * The pair of source and target CRS for which we already searched a coordinate operation.
-     * This is used as a safety against infinite recursivity.
+     * This is used as a safety against infinite recursion.
      */
     private final Map<CRSPair,Boolean> previousSearches;
 
@@ -247,7 +247,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * We do not perform this verification on the first invocation because it was already verified by
          * DefaultCoordinateOperationFactory.createOperation(…). We do not block if the operation is in
          * process of being computed in another thread because of the risk of deadlock. If the operation
-         * is not in the cache, store the key in our internal map for preventing infinite recursivity.
+         * is not in the cache, store the key in our internal map for preventing infinite recursion.
          */
         final CRSPair key = new CRSPair(sourceCRS, targetCRS);
         if (useCache && stopAtFirst && !previousSearches.isEmpty()) {

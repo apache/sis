@@ -246,7 +246,7 @@ public interface TreeTable {
          *
          * The node returned by {@link #getParent()} shall <strong>not</strong> be taken in account.
          * It is necessary to ignore the parent for consistency with {@linkplain DefaultTreeTable#clone() clone}
-         * and for avoiding infinite recursivity when comparing the children.
+         * and for avoiding infinite recursion when comparing the children.
          * A third reason is given below.
          *
          * <h4>Purpose of this method: example with ISO metadata</h4>
@@ -274,7 +274,7 @@ public interface TreeTable {
          * <p>In this use case, the {@code Node.equals(Object)} implementation needs only to compare the wrapped
          * metadata (usually given by the {@linkplain #getUserObject() user object}) since the node content,
          * including the list of children, is fully determined by those metadata. An identity comparison
-         * (with {@code ==}) is sufficient for the purpose of avoiding infinite recursivity.</p>
+         * (with {@code ==}) is sufficient for the purpose of avoiding infinite recursion.</p>
          *
          * <h4>Flexibility in implementations</h4>
          * The above list specifies minimal conditions that must be true when two nodes are considered equal.
@@ -299,7 +299,7 @@ public interface TreeTable {
          * Implementation details may vary, for example in the way to compare {@code null} user objects or by invoking
          * {@link Object#equals(Object)} instead of performing identity comparisons. Note however that since this
          * method purpose is to detect cyclic graphs (see above example), user objects should be compared with
-         * {@code equals(Object)} only if their implementations are known to be safe against infinite recursivity.
+         * {@code equals(Object)} only if their implementations are known to be safe against infinite recursion.
          *
          * @param  other  the other object to compare with this node.
          * @return whether the two objects are nodes with equal values and equal children, ignoring parents.

@@ -166,7 +166,7 @@ final class Localization {
             int largestPart = 0;
             for (int i=0; i<indices.length; i++) {
                 final int length = lengths[i];
-                if (length >= size) throw e;                        // Safety against infinite recursivity.
+                if (length >= size) throw e;                        // Safety against infinite recursion.
                 indices[i] = Arrays.copyOf(indices[i], length);
                 if (length > maxLength) {
                     maxLength = length;
