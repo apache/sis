@@ -752,7 +752,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
              * Do not log the stack trace if we failed because of UnavailableFactoryException since it may be
              * normal (the EPSG geodetic dataset is optional, even if strongly recommended).
              */
-            final LogRecord record = new LogRecord(c == null ? Level.WARNING : Level.FINE, e.getLocalizedMessage());
+            final var record = new LogRecord(c == null ? Level.WARNING : Level.FINE, e.getLocalizedMessage());
             if (!(e instanceof UnavailableFactoryException)) {
                 record.setThrown(e);
             }

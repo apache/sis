@@ -363,7 +363,7 @@ public final class Warnings implements Localized, Serializable {
                 if (cause != null) {
                     String details = Exceptions.getLocalizedMessage(cause, locale);
                     if (details == null) {
-                        details = cause.toString();
+                        details = Classes.getShortClassName(cause);
                     }
                     buffer.append(lineSeparator).append("   ").append(details);
                 }

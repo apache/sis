@@ -482,14 +482,16 @@ public class StoreListeners implements Localized {
         if (exception == null) {
             ArgumentChecks.ensureNonEmpty("message", message);
         } else {
-            message = Exceptions.formatChainedMessages(getLocale(), message, exception);
             if (message == null) {
-                message = exception.toString();
+                message = Exceptions.getLocalizedMessage(exception, getLocale());
+                if (message == null) {
+                    message = Classes.getShortClassName(exception);
+                }
             }
         }
-        final LogRecord record = new LogRecord(level, message);
+        final var record = new LogRecord(level, message);
         if (exception == null) {
-           StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) -> stream.filter(
+            StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) -> stream.filter(
                    (frame) -> setPublicSource(record, frame.getDeclaringClass(), frame.getMethodName())).findFirst());
          } else try {
             record.setThrown(exception);

@@ -59,7 +59,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short AllowedDrivers_1 = 1;
 
         /**
-         * Cannot initialize {0}.
+         * Cannot initialize the {0} native library.
          */
         public static final short CannotInitialize_1 = 2;
 

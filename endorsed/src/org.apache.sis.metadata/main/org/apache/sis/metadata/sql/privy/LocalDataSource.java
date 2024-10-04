@@ -290,7 +290,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                 }
             }
         } catch (SQLException e) {                              // This is the expected exception.
-            final LogRecord record = new LogRecord(Level.FINE, e.getMessage());
+            final var record = new LogRecord(Level.FINER, e.getMessage());
             if (dialect != Dialect.DERBY || !isSuccessfulShutdown(e)) {
                 record.setLevel(Level.WARNING);
                 record.setThrown(e);
@@ -311,8 +311,8 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
      */
     public static boolean isSuccessfulShutdown(final SQLException e) {
         final String state = e.getSQLState();
-        return "08006".equals(state) ||     // Database "SpatialMetadata" shutdown.
-               "XJ004".equals(state);       // Database "SpatialMetadata" not found (may happen if we failed to open it in the first place).
+        return "08006".equals(state) ||     // Database shutdown.
+               "XJ004".equals(state);       // Database not found (may happen if we failed to open it in the first place).
     }
 
     /**

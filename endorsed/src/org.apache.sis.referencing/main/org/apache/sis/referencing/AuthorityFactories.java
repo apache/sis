@@ -206,19 +206,20 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      */
     static boolean isUnavailable(final UnavailableFactoryException e) {
         final AuthorityFactory unavailable = e.getUnavailableFactory();
-        if (!(unavailable instanceof EPSGFactoryFallback)) {
-            if (e.getCause() instanceof SQLTransientException) {
-                return false;
-            }
-            synchronized (AuthorityFactories.class) {
-                if (unavailable == EPSG) {
-                    ALL.reload();   // Must be before setting the `EPSG` field.
-                    EPSG = EPSGFactoryFallback.INSTANCE;
-                    return false;
-                }
+        if (unavailable instanceof EPSGFactoryFallback) {
+            return true;
+        }
+        if (e.getCause() instanceof SQLTransientException) {
+            // Not definitive, but caller should still throw an exception or log a warning.
+            return true;
+        }
+        synchronized (AuthorityFactories.class) {
+            if (unavailable == EPSG) {
+                ALL.reload();   // Must be before setting the `EPSG` field.
+                EPSG = EPSGFactoryFallback.INSTANCE;
             }
         }
-        return true;
+        return false;
     }
 
     /**

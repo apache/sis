@@ -35,7 +35,6 @@ import java.io.ByteArrayOutputStream;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Static;
 
@@ -119,8 +118,8 @@ public final class Assertions extends Static {
                 for (int i=0; i<length; i++) try {
                     assertEqualsIgnoreMetadata(expected[i], actual[i]);
                 } catch (AssertionError e) {
-                    throw new AssertionError(Exceptions.formatChainedMessages(null, "Comparison failure at index "
-                            + i + " (a " + Classes.getShortClassName(actual[i]) + ").", e), e);
+                    throw new AssertionError("Comparison failure at index " + i
+                            + " (a " + Classes.getShortClassName(actual[i]) + "): " + e, e);
                 }
                 assertEquals(expected.length, actual.length, "Unexpected array length.");
             }

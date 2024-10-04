@@ -111,16 +111,22 @@ public final class Exceptions extends Static {
     }
 
     /**
-     * Returns a string which contains the given message on the first line, followed by the
-     * {@linkplain #getLocalizedMessage(Throwable, Locale) localized message} of the given exception
-     * on the next line. If the exception has a {@linkplain Throwable#getCause() causes}, then
-     * the class name and the localized message of the cause are formatted on the next line
-     * and the process is repeated for the whole cause chain, omitting duplicated messages.
+     * Returns a string which contains the given message on the first line,
+     * followed by the localized message of the given exception on the next line.
+     * If the exception has a {@linkplain Throwable#getCause() causes}, then the class name and the
+     * {@linkplain #getLocalizedMessage(Throwable, Locale) localized message} of the cause are formatted
+     * on the next line. The process is repeated for the whole cause chain, omitting duplicated messages.
+     * This method does not format the stack trace.
      *
-     * <p>{@link SQLException} is handled especially in order to process the
-     * {@linkplain SQLException#getNextException() next exception} instead of the cause.</p>
+     * <h4>Special cases</h4>
+     * {@link SQLException} is handled is a special way by giving precedence to
+     * {@link SQLException#getNextException()} over {@link Throwable#getCause()}.
      *
-     * <p>This method does not format the stack trace.</p>
+     * <h4>When to use</h4>
+     * This method should not be used when the given exception will be reported through, for example,
+     * {@link Throwable#initCause(Throwable)} or {@link java.util.logging.LogRecord#setThrown(Throwable)},
+     * because the redundancy may be confusing. This method is rather for situations where the exception
+     * will be discarded or hidden.
      *
      * @param  locale  the preferred locale for the exception message, or {@code null}.
      * @param  header  the message to insert on the first line, or {@code null} if none.
@@ -129,7 +135,7 @@ public final class Exceptions extends Static {
      *         and no exception provide a message.
      */
     public static String formatChainedMessages(final Locale locale, final String header, Throwable cause) {
-        final List<String> previousLines = new ArrayList<>();
+        final var previousLines = new ArrayList<String>();
         StringBuilder buffer = null;
         Vocabulary resources = null;
         while (cause != null) {

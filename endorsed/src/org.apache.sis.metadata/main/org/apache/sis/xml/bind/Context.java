@@ -837,6 +837,7 @@ public final class Context extends MarshalContext {
                 if (!logFilter.isLoggable(record)) {
                     return;
                 }
+                record.setThrown(null);
             }
         }
         /*

@@ -367,7 +367,7 @@ public final class XML extends Static {
      * Specifies a listener to be notified when a non-fatal error occurred during the (un)marshalling.
      * The value for this property shall be an instance of {@link Filter}.
      *
-     * <p>By default, warnings that occur during the (un)marshalling process are logged. However if a
+     * <p>By default, warnings that occur during the (un)marshalling process are logged. However, if a
      * property is set for this key, then the {@link Filter#isLoggable(LogRecord)} method will be invoked.
      * If that method returns {@code false}, then the warning will not be logged by the (un)marshaller.</p>
      *

@@ -26,6 +26,7 @@ import java.text.NumberFormat;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
@@ -435,7 +436,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
         if (error != null) {
             message = Exceptions.getLocalizedMessage(error, locale);
             if (message == null) {
-                message = error.getClass().getSimpleName();
+                message = Classes.getShortClassName(error);
             }
         } else if (correlation > 0) {
             if (nf == null) {

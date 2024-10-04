@@ -321,15 +321,17 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
                      * different Java implementation, but it doesn't matter here since
                      * we use the result only for logging purpose.
                      */
-                    String language = null;
-                    if (locale != null) {
-                        language = locale.getDisplayName(Locale.US);
+                    if (LOGGER.isLoggable(record.getLevel())) {
+                        String language = null;
+                        if (locale != null) {
+                            language = locale.getDisplayName(Locale.US);
+                        }
+                        if (Strings.isNullOrEmpty(language)) {
+                            language = "<root>";
+                        }
+                        record.setParameters(new String[] {language, baseName});
+                        Logging.completeAndLog(LOGGER, IndexedResourceBundle.class, methodName, record);
                     }
-                    if (Strings.isNullOrEmpty(language)) {
-                        language = "<root>";
-                    }
-                    record.setParameters(new String[] {language, baseName});
-                    Logging.completeAndLog(LOGGER, IndexedResourceBundle.class, methodName, record);
                 }
                 this.values = values;
             }

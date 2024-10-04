@@ -116,7 +116,8 @@ public enum DataDirectory {
     private static void warning(final Exception e, final short key, final Object... parameters) {
         if (key != lastWarning) {
             lastWarning = key;
-            log(Level.WARNING, e, key, parameters);
+            boolean config = (key == Messages.Keys.DataDirectoryNotSpecified_1);
+            log(config ? Level.CONFIG : Level.WARNING, e, key, parameters);
         }
     }
 

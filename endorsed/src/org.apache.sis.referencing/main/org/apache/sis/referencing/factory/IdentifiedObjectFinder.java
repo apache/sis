@@ -583,12 +583,14 @@ public class IdentifiedObjectFinder {
      * Invoked when an exception occurred during the creation of a candidate from a code.
      */
     private static void exceptionOccurred(final FactoryException exception) {
-        /*
-         * use `getMessage()` instead of `getLocalizedMessage()` for
-         * giving preference to the locale of system administrator.
-         */
-        Logging.completeAndLog(GeodeticAuthorityFactory.LOGGER, IdentifiedObjectFinder.class,
-                               "find", new LogRecord(Level.FINER, exception.getMessage()));
+        if (GeodeticAuthorityFactory.LOGGER.isLoggable(Level.FINER)) {
+            /*
+             * use `getMessage()` instead of `getLocalizedMessage()` for
+             * giving preference to the locale of system administrator.
+             */
+            Logging.completeAndLog(GeodeticAuthorityFactory.LOGGER, IdentifiedObjectFinder.class,
+                                   "find", new LogRecord(Level.FINER, exception.getMessage()));
+        }
     }
 
     /**
