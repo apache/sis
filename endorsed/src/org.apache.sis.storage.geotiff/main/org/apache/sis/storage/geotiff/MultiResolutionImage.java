@@ -110,7 +110,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
     }
 
     /**
-     * Creates the resource on which to delegate operations.
+     * Creates the resource to which to delegate operations.
      * The source is the first image, the one having finest resolution.
      * By Cloud Optimized GeoTIFF (COG) convention, this is the image containing metadata (CRS).
      * This method is invoked in a synchronized block when first needed and the result is cached.

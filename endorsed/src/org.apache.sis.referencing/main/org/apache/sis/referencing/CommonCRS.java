@@ -359,35 +359,35 @@ public enum CommonCRS {
      * on which method has been invoked. The kind of object stored in this field may change during the
      * application execution.
      */
-    private transient volatile IdentifiedObject cached;
+    private transient IdentifiedObject cached;
 
     /**
      * The normalized geographic CRS, created when first needed.
      *
      * @see #normalizedGeographic()
      */
-    private transient volatile GeographicCRS cachedNormalized;
+    private transient GeographicCRS cachedNormalized;
 
     /**
      * The three-dimensional geographic CRS, created when first needed.
      *
      * @see #geographic3D()
      */
-    private transient volatile GeographicCRS cachedGeo3D;
+    private transient GeographicCRS cachedGeo3D;
 
     /**
      * The geocentric CRS using Cartesian coordinate system, created when first needed.
      *
      * @see #geocentric()
      */
-    private transient volatile GeodeticCRS cachedGeocentric;
+    private transient GeodeticCRS cachedGeocentric;
 
     /**
      * The geocentric CRS using spherical coordinate system, created when first needed.
      *
      * @see #spherical()
      */
-    private transient volatile GeodeticCRS cachedSpherical;
+    private transient GeodeticCRS cachedSpherical;
 
     /**
      * The Universal Transverse Mercator (UTM) or Universal Polar Stereographic (UPS) projections,
@@ -455,6 +455,7 @@ public enum CommonCRS {
         cachedGeo3D      = null;
         cachedNormalized = null;
         cachedGeocentric = null;
+        cachedSpherical  = null;
         synchronized (cachedProjections) {
             cachedProjections.clear();
         }
@@ -601,19 +602,19 @@ public enum CommonCRS {
      * @see DefaultGeographicCRS#forConvention(AxesConvention)
      * @see AxesConvention#NORMALIZED
      */
-    public GeographicCRS normalizedGeographic() {
-        GeographicCRS object = cachedNormalized;
-        if (object == null) {
+    public synchronized GeographicCRS normalizedGeographic() {
+        /*
+         * Note on synchronization: a previous version of this class was using volatile fields for the caches,
+         * and kept the synchronized blocks as small as possible. It has been replaced by simpler synchronized
+         * methods in order to avoid race conditions which resulted in duplicated and confusing log messages
+         * when the EPSG factory is not available.
+         */
+        if (cachedNormalized == null) {
             DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(geographic());
             crs = crs.forConvention(AxesConvention.RIGHT_HANDED);       // Equivalent to NORMALIZED in our cases, but faster.
-            synchronized (this) {
-                object = cachedNormalized;
-                if (object == null) {
-                    cachedNormalized = object = crs;
-                }
-            }
+            cachedNormalized = crs;
         }
-        return object;
+        return cachedNormalized;
     }
 
     /**
@@ -641,12 +642,11 @@ public enum CommonCRS {
      * @see CRS#forCode(String)
      * @see DefaultGeographicCRS
      */
-    public GeographicCRS geographic() {
+    public synchronized GeographicCRS geographic() {
         GeographicCRS object = geographic(cached);
         if (object == null) {
             final GeodeticAuthorityFactory factory = factory();
             if (factory != null) try {
-                // Synchronization provided by the cache of the factory.
                 cached = object = factory.createGeographicCRS(String.valueOf(geographic));
                 return object;
             } catch (FactoryException e) {
@@ -658,20 +658,13 @@ public enum CommonCRS {
              * We will arbitrarily create this CS only for the most frequently created CRS,
              * and share that CS instance for all other constants.
              */
-            EllipsoidalCS cs = null;
+            final EllipsoidalCS cs;
             if (this != DEFAULT) {
                 cs = DEFAULT.geographic().getCoordinateSystem();
+            } else {
+                cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.ELLIPSOIDAL_2D, true);
             }
-            synchronized (this) {
-                object = geographic(cached);
-                if (object == null) {
-                    if (cs == null) {
-                        cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.ELLIPSOIDAL_2D, true);
-                    }
-                    object = StandardDefinitions.createGeographicCRS(geographic, frame, cs);
-                    cached = object;
-                }
-            }
+            cached = object = StandardDefinitions.createGeographicCRS(geographic, frame, cs);
         }
         return object;
     }
@@ -700,15 +693,12 @@ public enum CommonCRS {
      * @see CRS#forCode(String)
      * @see DefaultGeographicCRS
      */
-    public GeographicCRS geographic3D() {
-        GeographicCRS object = cachedGeo3D;
-        if (object == null) {
+    public synchronized GeographicCRS geographic3D() {
+        if (cachedGeo3D == null) {
             if (geo3D != 0) {
                 final GeodeticAuthorityFactory factory = factory();
                 if (factory != null) try {
-                    // Synchronization provided by the cache of the factory.
-                    cachedGeo3D = object = factory.createGeographicCRS(String.valueOf(geo3D));
-                    return object;
+                    return cachedGeo3D = factory.createGeographicCRS(String.valueOf(geo3D));
                 } catch (FactoryException e) {
                     failure(this, "geographic3D", e, geo3D);
                 }
@@ -719,23 +709,16 @@ public enum CommonCRS {
              * We will arbitrarily create this CS only for the most frequently created CRS,
              * and share that CS instance for all other constants.
              */
-            EllipsoidalCS cs = null;
+            final EllipsoidalCS cs;
             if (this != DEFAULT) {
                 cs = DEFAULT.geographic3D().getCoordinateSystem();
+            } else {
+                cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.ELLIPSOIDAL_3D, true);
             }
-            synchronized (this) {
-                object = cachedGeo3D;
-                if (object == null) {
-                    if (cs == null) {
-                        cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.ELLIPSOIDAL_3D, true);
-                    }
-                    // Use same name and datum than the geographic CRS.
-                    object = new DefaultGeographicCRS(properties(base, geo3D), base.getDatum(), base.getDatumEnsemble(), cs);
-                    cachedGeo3D = object;
-                }
-            }
+            // Use same name and datum than the geographic CRS.
+            cachedGeo3D = new DefaultGeographicCRS(properties(base, geo3D), base.getDatum(), base.getDatumEnsemble(), cs);
         }
-        return object;
+        return cachedGeo3D;
     }
 
     /**
@@ -761,15 +744,12 @@ public enum CommonCRS {
      * @see CRS#forCode(String)
      * @see DefaultGeocentricCRS
      */
-    public GeodeticCRS geocentric() {
-        GeodeticCRS object = cachedGeocentric;
-        if (object == null) {
+    public synchronized GeodeticCRS geocentric() {
+        if (cachedGeocentric == null) {
             if (geocentric != 0) {
                 final GeodeticAuthorityFactory factory = factory();
                 if (factory != null) try {
-                    // Synchronization provided by the cache of the factory.
-                    cachedGeocentric = object = factory.createGeodeticCRS(String.valueOf(geocentric));
-                    return object;
+                    return cachedGeocentric = factory.createGeodeticCRS(String.valueOf(geocentric));
                 } catch (FactoryException e) {
                     failure(this, "geocentric", e, geocentric);
                 }
@@ -781,22 +761,15 @@ public enum CommonCRS {
              * We will arbitrarily create this CS only for the most frequently created CRS,
              * and share that CS instance for all other constants.
              */
-            CartesianCS cs = null;
+            final CartesianCS cs;
             if (this != DEFAULT) {
                 cs = (CartesianCS) DEFAULT.geocentric().getCoordinateSystem();
+            } else {
+                cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.EARTH_CENTRED, true);
             }
-            synchronized (this) {
-                object = cachedGeocentric;
-                if (object == null) {
-                    if (cs == null) {
-                        cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.EARTH_CENTRED, true);
-                    }
-                    object = new DefaultGeocentricCRS(properties(base, geocentric), base.getDatum(), base.getDatumEnsemble(), cs);
-                    cachedGeocentric = object;
-                }
-            }
+            cachedGeocentric = new DefaultGeocentricCRS(properties(base, geocentric), base.getDatum(), base.getDatumEnsemble(), cs);
         }
-        return object;
+        return cachedGeocentric;
     }
 
     /**
@@ -814,9 +787,8 @@ public enum CommonCRS {
      *
      * @since 0.7
      */
-    public GeodeticCRS spherical() {
-        GeodeticCRS object = cachedSpherical;
-        if (object == null) {
+    public synchronized GeodeticCRS spherical() {
+        if (cachedSpherical == null) {
             /*
              * All constants defined in this enumeration use the same coordinate system, EPSG:6404.
              * We will arbitrarily create this CS only for the most frequently created CRS,
@@ -828,29 +800,22 @@ public enum CommonCRS {
             } else {
                 final GeodeticAuthorityFactory factory = factory();
                 if (factory != null) try {
-                    // Synchronization provided by the cache of the factory.
                     cs = factory.createSphericalCS(Short.toString(StandardDefinitions.SPHERICAL));
                 } catch (FactoryException e) {
                     failure(this, "spherical", e, StandardDefinitions.SPHERICAL);
                 }
+                if (cs == null) {
+                    cs = (SphericalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.SPHERICAL, true);
+                }
             }
             // Use same name and datum than the geographic CRS.
             final GeographicCRS base = geographic();
-            synchronized (this) {
-                object = cachedSpherical;
-                if (object == null) {
-                    if (cs == null) {
-                        cs = (SphericalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.SPHERICAL, true);
-                    }
-                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()),
-                                                      base.getDatum(),
-                                                      base.getDatumEnsemble(),
-                                                      cs);
-                    cachedSpherical = object;
-                }
-            }
+            cachedSpherical = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()),
+                                              base.getDatum(),
+                                              base.getDatumEnsemble(),
+                                              cs);
         }
-        return object;
+        return cachedSpherical;
     }
 
     /**
@@ -876,12 +841,11 @@ public enum CommonCRS {
      * @see #forDatum(CoordinateReferenceSystem)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
      */
-    public GeodeticDatum datum() {
+    public synchronized GeodeticDatum datum() {
         GeodeticDatum object = datum(cached);
         if (object == null) {
             final GeodeticAuthorityFactory factory = factory();
             if (factory != null) try {
-                // Synchronization provided by the cache of the factory.
                 cached = object = factory.createGeodeticDatum(String.valueOf(datum));
                 return object;
             } catch (FactoryException e) {
@@ -889,13 +853,7 @@ public enum CommonCRS {
             }
             final var ei = ellipsoid();
             final var pm = primeMeridian();
-            synchronized (this) {
-                object = datum(cached);
-                if (object == null) {
-                    object = StandardDefinitions.createGeodeticDatum(datum, ei, pm);
-                    cached = object;
-                }
-            }
+            cached = object = StandardDefinitions.createGeodeticDatum(datum, ei, pm);
         }
         return object;
     }
@@ -931,28 +889,22 @@ public enum CommonCRS {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid
      */
-    public Ellipsoid ellipsoid() {
+    public synchronized Ellipsoid ellipsoid() {
         Ellipsoid object = ellipsoid(cached);
         if (object == null) {
             if (this == NAD83) {
-                cached = object = ETRS89.ellipsoid();       // Share the same instance for NAD83 and ETRS89.
-                return object;
-            }
-            final GeodeticAuthorityFactory factory = factory();
-            if (factory != null) try {
-                // Synchronization provided by the cache of the factory.
-                cached = object = factory.createEllipsoid(String.valueOf(ellipsoid));
-                return object;
-            } catch (FactoryException e) {
-                failure(this, "ellipsoid", e, ellipsoid);
-            }
-            synchronized (this) {
-                object = ellipsoid(cached);
-                if (object == null) {
-                    object = StandardDefinitions.createEllipsoid(ellipsoid);
-                    cached = object;
+                object = ETRS89.ellipsoid();       // Share the same instance for NAD83 and ETRS89.
+            } else {
+                final GeodeticAuthorityFactory factory = factory();
+                if (factory != null) try {
+                    cached = object = factory.createEllipsoid(String.valueOf(ellipsoid));
+                    return object;
+                } catch (FactoryException e) {
+                    failure(this, "ellipsoid", e, ellipsoid);
                 }
+                object = StandardDefinitions.createEllipsoid(ellipsoid);
             }
+            cached = object;
         }
         return object;
     }
@@ -972,28 +924,22 @@ public enum CommonCRS {
      *
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
      */
-    public PrimeMeridian primeMeridian() {
+    public synchronized PrimeMeridian primeMeridian() {
         PrimeMeridian object = primeMeridian(cached);
         if (object == null) {
             if (this != DEFAULT) {
-                cached = object = DEFAULT.primeMeridian();          // Share the same instance for all constants.
-                return object;
-            }
-            final GeodeticAuthorityFactory factory = factory();
-            if (factory != null) try {
-                // Synchronization provided by the cache of the factory.
-                cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
-                return object;
-            } catch (FactoryException e) {
-                failure(this, "primeMeridian", e, Constants.EPSG_GREENWICH);
-            }
-            synchronized (this) {
-                object = primeMeridian(cached);
-                if (object == null) {
-                    object = StandardDefinitions.primeMeridian();
-                    cached = object;
+                object = DEFAULT.primeMeridian();          // Share the same instance for all constants.
+            } else {
+                final GeodeticAuthorityFactory factory = factory();
+                if (factory != null) try {
+                    cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
+                    return object;
+                } catch (FactoryException e) {
+                    failure(this, "primeMeridian", e, Constants.EPSG_GREENWICH);
                 }
+                object = StandardDefinitions.primeMeridian();
             }
+            cached = object;
         }
         return object;
     }
@@ -1366,7 +1312,7 @@ public enum CommonCRS {
          * on which method has been invoked. The kind of object stored in this field may change during the
          * application execution.
          */
-        private transient volatile IdentifiedObject cached;
+        private transient IdentifiedObject cached;
 
         /**
          * Creates a new enumeration value of the given name.
@@ -1420,31 +1366,25 @@ public enum CommonCRS {
          *
          * @see DefaultVerticalCRS
          */
-        public VerticalCRS crs() {
+        public synchronized VerticalCRS crs() {
             VerticalCRS object = crs(cached);
             if (object == null) {
                 if (isEPSG) {
                     final GeodeticAuthorityFactory factory = factory();
                     if (factory != null) try {
-                        // Synchronization provided by the cache of the factory.
                         cached = object = factory.createVerticalCRS(String.valueOf(crs));
                         return object;
                     } catch (FactoryException e) {
                         failure(this, "crs", e, crs);
                     }
                 }
-                synchronized (this) {
-                    object = crs(cached);
-                    if (object == null) {
-                        if (isEPSG) {
-                            object = StandardDefinitions.createVerticalCRS(crs, datum());
-                        } else {
-                            final VerticalCS cs = cs();
-                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs, exclude()), datum(), null, cs);
-                        }
-                        cached = object;
-                    }
+                if (isEPSG) {
+                    object = StandardDefinitions.createVerticalCRS(crs, datum());
+                } else {
+                    final VerticalCS cs = cs();
+                    object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs, exclude()), datum(), null, cs);
                 }
+                cached = object;
             }
             return object;
         }
@@ -1488,39 +1428,33 @@ public enum CommonCRS {
          *
          * @see DefaultVerticalDatum
          */
-        public VerticalDatum datum() {
+        public synchronized VerticalDatum datum() {
             VerticalDatum object = datum(cached);
             if (object == null) {
                 if (isEPSG) {
                     final GeodeticAuthorityFactory factory = factory();
                     if (factory != null) try {
-                        // Synchronization provided by the cache of the factory.
                         cached = object = factory.createVerticalDatum(String.valueOf(datum));
                         return object;
                     } catch (FactoryException e) {
                         failure(this, "datum", e, datum);
                     }
                 }
-                synchronized (this) {
-                    object = datum(cached);
-                    if (object == null) {
-                        if (isEPSG) {
-                            object = StandardDefinitions.createVerticalDatum(datum);
-                        } else {
-                            /*
-                             * All cases where the first constructor argument is `false`, currently BAROMETRIC and
-                             * ELLIPSOIDAL. The way to construct the ellipsoidal pseudo-method shall be equivalent
-                             * to a call to `VerticalDatumTypes.ellipsoidal()`.
-                             */
-                            RealizationMethod method = null;
-                            if (this != OTHER_SURFACE) {
-                                method = RealizationMethod.valueOf(name());
-                            }
-                            object = new DefaultVerticalDatum(properties(datum), method);
-                        }
-                        cached = object;
+                if (isEPSG) {
+                    object = StandardDefinitions.createVerticalDatum(datum);
+                } else {
+                    /*
+                     * All cases where the first constructor argument is `false`, currently BAROMETRIC and
+                     * ELLIPSOIDAL. The way to construct the ellipsoidal pseudo-method shall be equivalent
+                     * to a call to `VerticalDatumTypes.ellipsoidal()`.
+                     */
+                    RealizationMethod method = null;
+                    if (this != OTHER_SURFACE) {
+                        method = RealizationMethod.valueOf(name());
                     }
+                    object = new DefaultVerticalDatum(properties(datum), method);
                 }
+                cached = object;
             }
             return object;
         }
@@ -1691,7 +1625,7 @@ public enum CommonCRS {
          * on which method has been invoked. The kind of object stored in this field may change during the
          * application execution.
          */
-        private transient volatile IdentifiedObject cached;
+        private transient IdentifiedObject cached;
 
         /**
          * Creates a new enumeration value of the given name with time counted since the given epoch.
@@ -1796,26 +1730,20 @@ public enum CommonCRS {
          *
          * @see DefaultTemporalCRS
          */
-        public TemporalCRS crs() {
+        public synchronized TemporalCRS crs() {
             TemporalCRS object = crs(cached);
             if (object == null) {
-                synchronized (this) {
-                    object = crs(cached);
-                    if (object == null) {
-                        final TemporalDatum datum = datum();
-                        final Map<String,?> source;
-                        if (this == JAVA) {
-                            source = properties(Vocabulary.formatInternational(key, "Java"));
-                        } else {
-                            source = IdentifiedObjects.getProperties(datum, exclude());
-                        }
-                        final Map<String,Object> properties = new HashMap<>(source);
-                        properties.put(TemporalCRS.IDENTIFIERS_KEY,
-                                new NamedIdentifier(isOGC ? Citations.OGC : Citations.SIS, identifier));
-                        object = new DefaultTemporalCRS(properties, datum, null, cs());
-                        cached = object;
-                    }
+                final TemporalDatum datum = datum();
+                final Map<String,?> source;
+                if (this == JAVA) {
+                    source = properties(Vocabulary.formatInternational(key, "Java"));
+                } else {
+                    source = IdentifiedObjects.getProperties(datum, exclude());
                 }
+                final Map<String,Object> properties = new HashMap<>(source);
+                properties.put(TemporalCRS.IDENTIFIERS_KEY,
+                        new NamedIdentifier(isOGC ? Citations.OGC : Citations.SIS, identifier));
+                cached = object = new DefaultTemporalCRS(properties, datum, null, cs());
             }
             return object;
         }
@@ -1868,26 +1796,20 @@ public enum CommonCRS {
          *
          * @see DefaultTemporalDatum
          */
-        public TemporalDatum datum() {
+        public synchronized TemporalDatum datum() {
             TemporalDatum object = datum(cached);
             if (object == null) {
                 if (this == UNIX) {
                     cached = object = JAVA.datum();         // Share the same instance for UNIX and JAVA.
                     return object;
                 }
-                synchronized (this) {
-                    object = datum(cached);
-                    if (object == null) {
-                        final Map<String,?> properties;
-                        if (key == Vocabulary.Keys.Time_1) {
-                            properties = properties(Vocabulary.formatInternational(key, "Unix/POSIX"));
-                        } else {
-                            properties = properties(key);
-                        }
-                        object = new DefaultTemporalDatum(properties, Instant.ofEpochSecond(epoch));
-                        cached = object;
-                    }
+                final Map<String,?> properties;
+                if (key == Vocabulary.Keys.Time_1) {
+                    properties = properties(Vocabulary.formatInternational(key, "Unix/POSIX"));
+                } else {
+                    properties = properties(key);
                 }
+                cached = object = new DefaultTemporalDatum(properties, Instant.ofEpochSecond(epoch));
             }
             return object;
         }
@@ -2121,7 +2043,7 @@ public enum CommonCRS {
      * Returns the same properties as the given object, except for the identifier which is set to the given code.
      */
     private static Map<String,?> properties(final IdentifiedObject template, final short code) {
-        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, exclude()));
+        final var properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(template, exclude()));
         properties.put(GeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         return properties;
     }
@@ -2139,7 +2061,7 @@ public enum CommonCRS {
      */
     private static GeodeticAuthorityFactory factory() {
         if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            final GeodeticAuthorityFactory factory = AuthorityFactories.EPSG();
+            final GeodeticAuthorityFactory factory = AuthorityFactories.getEPSG();
             if (!(factory instanceof EPSGFactoryFallback)) {
                 return factory;
             }
@@ -2152,11 +2074,25 @@ public enum CommonCRS {
      * After invoking this method, the caller will fallback on hard-coded values.
      */
     private static void failure(final Object caller, final String method, final FactoryException e, final int code) {
+        final LogRecord record;
         String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, (Constants.EPSG + ':') + code);
-        message = Exceptions.formatChainedMessages(null, message, e);
-        final LogRecord record = new LogRecord(Level.WARNING, message);
-        if (!(e instanceof UnavailableFactoryException) || AuthorityFactories.failure((UnavailableFactoryException) e)) {
-            // Append the stack trace only if the exception is the one we expect when the factory is not available.
+        if (e instanceof UnavailableFactoryException && !AuthorityFactories.isUnavailable((UnavailableFactoryException) e)) {
+            /*
+             * This exception may be normal if the user didn't installed the EPSG geodetic dataset.
+             * However, we use the `WARNING` level anyway because this exception happens only when
+             * user specified some from of data source, e.g with the SIS_DATA environment variable,
+             * in which case she may want to know that it didn't worked. This exception should not
+             * occur when the user did not configured anything.
+             *
+             * This exception usually happens only once, because the failure should be recorded in the
+             * `AuthorityFactories.EPSG` field.  This exception may nevertheless happen more than once
+             * if there is a race condition (many calls to `CommonCRS` in different threads before the
+             * failure get recorded). It happens during tests.
+             */
+            record = new LogRecord(Level.WARNING, Exceptions.formatChainedMessages(null, message, e));
+        } else {
+            // Append the stack trace only if the exception is for a reason different than unavailable factory.
+            record = new LogRecord(Level.WARNING, message);
             record.setThrown(e);
         }
         Logging.completeAndLog(AuthorityFactories.LOGGER, caller.getClass(), method, record);

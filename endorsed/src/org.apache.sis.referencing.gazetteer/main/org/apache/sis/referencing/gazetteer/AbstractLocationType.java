@@ -75,7 +75,7 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
     /**
      * Implementation of {@link #checkForCycles()} to be invoked recursively for each children.
      *
-     * @throws IllegalArgumentException if an infinite recursivity is detected.
+     * @throws IllegalArgumentException if an infinite recursion is detected.
      */
     private static void checkForCycles(final LocationType type, final Map<LocationType,Boolean> parents) {
         if (parents.put(type, Boolean.TRUE) != null) {
@@ -91,7 +91,7 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
      * Verifies that there is not cycles in the children.
      * This method should be invoked for validating a user argument.
      *
-     * @throws IllegalArgumentException if an infinite recursivity is detected.
+     * @throws IllegalArgumentException if an infinite recursion is detected.
      */
     final void checkForCycles() {
         checkForCycles(this, new IdentityHashMap<>());
@@ -144,7 +144,7 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
                 final LocationType that = (LocationType) object;
                 if (Objects.equals(getName(), that.getName())) {
                     /*
-                     * To be safe, we should apply some check against infinite recursivity here.
+                     * To be safe, we should apply some check against infinite recursion here.
                      * We do not on the assumption that subclasses verified that we do not have
                      * any cycle.
                      */
@@ -184,7 +184,7 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
     public int hashCode() {
         int code = Objects.hashCode(getName());
         for (final LocationType child : getChildren()) {
-            // Take only children name without recursivity over their own children.
+            // Take only children name without recursion over their own children.
             code = code*31 + Objects.hashCode(child.getName());
         }
         return code;
@@ -214,7 +214,7 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
 
     /**
      * Invoked recursively for formatting the given type in the given tree.
-     * This method does not perform any check against infinite recursivity
+     * This method does not perform any check against infinite recursion
      * on the assumption that subclasses verified this constraint by calls
      * to {@link #checkForCycles()}.
      */

@@ -41,7 +41,7 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
      * This coverage will take the same sample dimensions as the source.
      * The {@code domain} size must be the same as the source grid geometry size.
      *
-     * @param  source       the source on which to delegate rendering operations.
+     * @param  source       the source to which to delegate rendering operations.
      * @param  domain       the grid extent, CRS and conversion from cell indices to CRS.
      * @param  translation  translation to apply on the argument given to {@link #render(GridExtent)}.
      */
@@ -57,7 +57,7 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
      * <p>If {@code domain} is non-null, then it should have the same size as the source grid geometry size.
      * If this is not the case, then this method returns {@code null}.</p>
      *
-     * @param  source       the source on which to delegate rendering operations.
+     * @param  source       the source to which to delegate rendering operations.
      * @param  domain       the geometry of the grid coverage to return, or {@code null} for automatic.
      * @param  translation  translation to apply on the argument given to {@link #render(GridExtent)}.
      * @return the coverage, or {@code null} if {@code domain} is non-null but does not have the expected size.

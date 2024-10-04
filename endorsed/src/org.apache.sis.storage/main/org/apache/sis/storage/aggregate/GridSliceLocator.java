@@ -142,7 +142,7 @@ final class GridSliceLocator {
      * Returns the extent to use for querying a coverage from the slice at the given index.
      *
      * @param  extent  extent in units of aggregated grid coverage cells.
-     * @param  slice   index of the slice on which to delegate an operation.
+     * @param  slice   index of the slice to which to delegate an operation.
      * @return extent in units of the slice grid coverage.
      */
     final GridExtent toSliceExtent(final GridExtent extent, final int slice) {

@@ -36,6 +36,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
@@ -481,7 +482,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 final Code code = new Code(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Errors));
                 String message = Exceptions.getLocalizedMessage(e, locale);
                 if (message == null) {
-                    message = e.getClass().getSimpleName();
+                    message = Classes.getShortClassName(e);
                 }
                 code.name().set(message);
                 add(code);

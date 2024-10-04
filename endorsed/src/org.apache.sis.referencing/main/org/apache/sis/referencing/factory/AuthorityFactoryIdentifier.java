@@ -47,54 +47,68 @@ final class AuthorityFactoryIdentifier {
     private static final Locale IDENTIFIER_LOCALE = Locale.US;
 
     /**
-     * Factory needed is {@link CRSAuthorityFactory}.
+     * The type of the authority factory. Order matter: specialized factories shall be first.
+     * If two factories are equally specialized, the most frequently used ones should be first.
+     *
+     * @see MultiAuthoritiesFactory#providers
      */
-    static final byte CRS = 0;
+    static enum Type {
+        /**
+         * Factory needed is {@link CRSAuthorityFactory}.
+        */
+        CRS(CRSAuthorityFactory.class),
 
-    /**
-     * Factory needed is {@link CSAuthorityFactory}.
-     */
-    static final byte CS = 1;
+        /**
+         * Factory needed is {@link CSAuthorityFactory}.
+         */
+        CS(CSAuthorityFactory.class),
 
-    /**
-     * Factory needed is {@link DatumAuthorityFactory}.
-     */
-    static final byte DATUM = 2;
+        /**
+         * Factory needed is {@link DatumAuthorityFactory}.
+         */
+        DATUM(DatumAuthorityFactory.class),
 
-    /**
-     * Factory needed is {@link CoordinateOperationAuthorityFactory}.
-     */
-    static final byte OPERATION = 3;
+        /**
+         * Factory needed is {@link CoordinateOperationAuthorityFactory}.
+         */
+        OPERATION(CoordinateOperationAuthorityFactory.class),
 
-    /**
-     * Factory needed is the Apache-SIS specific {@link GeodeticAuthorityFactory}.
-     */
-    static final byte GEODETIC = 4;
+        /**
+         * Factory needed is the Apache-SIS specific {@link GeodeticAuthorityFactory}.
+         */
+        GEODETIC(GeodeticAuthorityFactory.class),
 
-    /**
-     * Factory needed is {@link AuthorityFactory}, the base interface of all factories.
-     */
-    static final byte ANY = 5;
+        /**
+         * Factory needed is {@link AuthorityFactory}, the base interface of all factories.
+         */
+        ANY(AuthorityFactory.class);
 
-    /**
-     * The interfaces or abstract base classes for the above constants.
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static final Class<? extends AuthorityFactory>[] TYPES = new Class[6];
-    static {
-        TYPES[CRS]       = CRSAuthorityFactory.class;
-        TYPES[CS]        = CSAuthorityFactory.class;
-        TYPES[DATUM]     = DatumAuthorityFactory.class;
-        TYPES[OPERATION] = CoordinateOperationAuthorityFactory.class;
-        TYPES[GEODETIC]  = GeodeticAuthorityFactory.class;
-        TYPES[ANY]       = AuthorityFactory.class;
+        /**
+         * The interface of the authority factory.
+         */
+        final Class<? extends AuthorityFactory> api;
+
+        /**
+         * Creates a new enumeration value.
+         *
+         * @param  base  the interface of the authority factory.
+         */
+        private Type(final Class<? extends AuthorityFactory> api) {
+            this.api = api;
+        }
+
+        /**
+         * Returns whether the <abbr>API</abbr> can create any or unspecified type of objects.
+         */
+        final boolean isGeneric() {
+            return ordinal() >= GEODETIC.ordinal();
+        }
     }
 
     /**
-     * The type of the factory needed, as one of the {@link #CRS}, {@link #CS}, {@link #DATUM},
-     * {@link #OPERATION}, {@link #GEODETIC} or {@link #ANY} constants.
+     * The type of the factory needed.
      */
-    final byte type;
+    final Type type;
 
     /**
      * The authority of the factory, in upper case. The upper case policy should be kept
@@ -126,7 +140,7 @@ final class AuthorityFactoryIdentifier {
      * The given authority shall be already in upper cases and the version in lower cases
      * (this is not verified by this constructor).
      */
-    private AuthorityFactoryIdentifier(final byte type, final String authority, final String version) {
+    private AuthorityFactoryIdentifier(final Type type, final String authority, final String version) {
         this.type      = type;
         this.authority = authority;
         this.version   = version;
@@ -139,8 +153,8 @@ final class AuthorityFactoryIdentifier {
     static AuthorityFactoryIdentifier create(final Class<? extends AuthorityFactory> type,
             final String authority, final String version)
     {
-        for (byte i=0; i<TYPES.length; i++) {
-            if (TYPES[i].isAssignableFrom(type)) {
+        for (Type i : Type.values()) {
+            if (i.api.isAssignableFrom(type)) {
                 return create(i, authority, version);
             }
         }
@@ -151,7 +165,7 @@ final class AuthorityFactoryIdentifier {
      * Creates a new identifier for a factory of the given type, authority and version.
      * Only the version can be null.
      */
-    static AuthorityFactoryIdentifier create(final byte type, final String authority, final String version) {
+    static AuthorityFactoryIdentifier create(final Type type, final String authority, final String version) {
         return new AuthorityFactoryIdentifier(type, authority.toUpperCase(IDENTIFIER_LOCALE),
                            (version == null) ? null : version.toLowerCase(IDENTIFIER_LOCALE));
     }
@@ -188,7 +202,7 @@ final class AuthorityFactoryIdentifier {
     /**
      * Creates a new identifier for the same authority and version than this identifier, but a different factory.
      */
-    AuthorityFactoryIdentifier newType(final byte newType) {
+    AuthorityFactoryIdentifier newType(final Type newType) {
         return new AuthorityFactoryIdentifier(newType, authority, version);
     }
 
@@ -209,7 +223,7 @@ final class AuthorityFactoryIdentifier {
      */
     @Override
     public int hashCode() {
-        return type + 31*authority.hashCode() + Objects.hashCode(version);
+        return type.hashCode() + 31*authority.hashCode() + Objects.hashCode(version);
     }
 
     /**
@@ -260,7 +274,7 @@ final class AuthorityFactoryIdentifier {
      */
     void logConflict(final AuthorityFactory used) {
         log(Resources.forLocale(null).getLogRecord(Level.WARNING, Resources.Keys.IgnoredServiceProvider_3,
-                TYPES[type], getAuthorityAndVersion(), Classes.getClass(used)));
+                type.api, getAuthorityAndVersion(), Classes.getClass(used)));
     }
 
     /**
@@ -288,7 +302,7 @@ final class AuthorityFactoryIdentifier {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
-        buffer.append(Classes.getShortName(TYPES[type])).append(Constants.DEFAULT_SEPARATOR).append(authority);
+        buffer.append(type).append(Constants.DEFAULT_SEPARATOR).append(authority);
         if (version != null) {
             buffer.append(Constants.DEFAULT_SEPARATOR).append(version);
         }

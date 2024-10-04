@@ -157,7 +157,7 @@ public final class SystemRegistry extends ConverterRegistry {
          * to java.util.Date was created by the super class, that conversion would not contain
          * an inverse conversion from java.util.Date to java.sql.Date.
          */
-        if (tryInverse(targetClass) && !tryInverse(sourceClass)) {     // The ! is for preventing infinite recursivity.
+        if (tryInverse(targetClass) && !tryInverse(sourceClass)) {     // The ! is for preventing infinite recursion.
             try {
                 return findExact(targetClass, sourceClass).inverse();
             } catch (UnconvertibleObjectException e) {

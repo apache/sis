@@ -259,7 +259,7 @@ public class ReferenceResolver {
      * The default implementation keeps a cache during the execution of an {@code XML.unmarshall(…)} method
      * (or actually, during a {@linkplain MarshallerPool pooled unmarshaller} method).
      * If an exception is thrown during the document unmarshalling, this failure is also recorded in the cache.
-     * Therefor, the exception is thrown only during the first attempt to read the document
+     * Therefore, the exception is thrown only during the first attempt to read the document
      * and {@code null} is returned directly on next attempts for the same source.
      * Exceptions thrown by this method are caught by {@link #resolve(MarshalContext, Class, XLink) resolve(…)}
      * and reported as warnings.

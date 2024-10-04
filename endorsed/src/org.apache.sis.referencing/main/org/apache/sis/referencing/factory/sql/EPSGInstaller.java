@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.metadata.sql.privy.ScriptRunner;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.util.privy.Constants;
@@ -297,12 +296,12 @@ final class EPSGInstaller extends ScriptRunner {
      * caught an exception. This method completes the exception message with the file name and line number where the
      * error occurred, if such information is available.
      */
-    final String failure(final Locale locale, final Exception cause) {
+    final String failure(final Locale locale) {
         String message = Messages.forLocale(locale).getString(Messages.Keys.CanNotCreateSchema_1, EPSG);
         String status = status(locale);
         if (status != null) {
             message = message + ' ' + status;
         }
-        return Exceptions.formatChainedMessages(locale, message, cause);
+        return message;
     }
 }

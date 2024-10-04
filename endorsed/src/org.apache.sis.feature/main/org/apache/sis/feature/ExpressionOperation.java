@@ -60,7 +60,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
     private static final ParameterDescriptorGroup PARAMETERS = FeatureUtilities.parameters("Expression");
 
     /**
-     * The expression on which to delegate the execution of this operation.
+     * The expression to which to delegate the execution of this operation.
      */
     @SuppressWarnings("serial")                         // Not statically typed as serializable.
     private final Function<? super Feature, ? extends V> expression;

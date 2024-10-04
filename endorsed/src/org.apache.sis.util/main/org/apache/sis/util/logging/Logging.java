@@ -275,10 +275,12 @@ public final class Logging extends Static {
             buffer.append(": ").append(message);
         }
         message = buffer.toString();
-        message = Exceptions.formatChainedMessages(null, message, error);
-        final LogRecord record = new LogRecord(level, message);
+        final LogRecord record;
         if (level.intValue() >= LEVEL_THRESHOLD_FOR_STACKTRACE) {
+            record = new LogRecord(level, message);
             record.setThrown(error);
+        } else {
+            record = new LogRecord(level, Exceptions.formatChainedMessages(null, message, error));
         }
         if (logger == null || classe == null || method == null) {
             logger = inferCaller(logger, classe, method, Arrays.stream(error.getStackTrace()), record);

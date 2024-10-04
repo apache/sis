@@ -38,7 +38,7 @@ public final class JDK22 {
         try {
             return (Boolean) Console.class.getMethod("isTerminal").invoke(c);
         } catch (ReflectiveOperationException e) {
-            return false;
+            return true;
         }
     }
 }

@@ -56,7 +56,7 @@ public final class Cloner {
 
     /**
      * Results of cloning instances previously meet during this {@code Cloner} lifetime.
-     * This is used for preserving reference graph, and also as a safety against infinite recursivity.
+     * This is used for preserving reference graph, and also as a safety against infinite recursion.
      * Keys must be compared using identity comparison, not {@link Object#equals(Object)}.
      */
     private final IdentityHashMap<Object,Object> cloneResults;

@@ -27,7 +27,6 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.SymbolLookup;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.system.Shutdown;
-import org.apache.sis.util.Exceptions;
 
 
 /**
@@ -215,8 +214,7 @@ create: try {
         if (error == null) {
             return Optional.empty();
         }
-        String msg = "Cannot initialize the " + name + " library.";
-        var record = new LogRecord(Level.CONFIG, Exceptions.formatChainedMessages(null, msg, error));
+        LogRecord record = Resources.forLocale(null).getLogRecord(Level.CONFIG, Resources.Keys.CannotInitialize_1, name);
         record.setThrown(error);
         return Optional.of(record);
     }

@@ -50,7 +50,7 @@ public final class AbstractMetadataTest extends TestCase {
 
     /**
      * Tests the {@link AbstractMetadata#toString()} method on an object having cyclic associations.
-     * In absence of safety guard against infinite recursivity, this test would produce either a
+     * In absence of safety guard against infinite recursion, this test would produce either a
      * {@link StackOverflowError} or an {@link OutOfMemoryError} (after quite a long time).
      *
      * <p>The tree formatted by this test is:</p>

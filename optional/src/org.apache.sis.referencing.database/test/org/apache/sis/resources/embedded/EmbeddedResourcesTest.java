@@ -76,7 +76,6 @@ public final strictfp class EmbeddedResourcesTest {
         } catch (Exception e) {
             throw new AssertionError(e);
         }
-
         InstallationResources provider = null;
         for (InstallationResources candidate : ServiceLoader.load(InstallationResources.class)) {
             if (candidate instanceof EmbeddedResources) {

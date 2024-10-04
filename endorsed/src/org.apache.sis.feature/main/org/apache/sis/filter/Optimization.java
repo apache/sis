@@ -67,7 +67,7 @@ import org.opengis.feature.FeatureType;
  * Optimizations are specific to each expression and filter type.
  * For optimizations to happen, classes must implement the {@link OnExpression} or {@link OnFilter} interface.
  * The {@link #apply(Filter)} and {@link #apply(Expression)} methods in this {@code Optimization} class merely
- * delegate to the methods defined in above-cited interfaces, with safety guards against infinite recursivity.
+ * delegate to the methods defined in above-cited interfaces, with safety guards against infinite recursion.
  *
  * <h2>Behavioral changes</h2>
  * Optimized filters shall produce the same results as non-optimized filters.

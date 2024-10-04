@@ -615,7 +615,7 @@ pathTree:   for (int j=0; ; j++) {
                                         attributes.getValue(Attributes.Name.SPECIFICATION_VERSION), false);
                                 if (title == null) {
                                     // We really need a non-null value in order to protect this code
-                                    // against infinite recursivity.
+                                    // against infinite recursion.
                                     title = "";
                                 }
                             }

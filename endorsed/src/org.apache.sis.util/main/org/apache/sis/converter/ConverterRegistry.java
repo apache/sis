@@ -264,7 +264,7 @@ public class ConverterRegistry {
              * for the place where to put the given converter in the hierarchy of converters.
              */
             if (!isInitialized) {
-                isInitialized = true;           // Before 'initialize()' for preventing infinite recursivity.
+                isInitialized = true;           // Before 'initialize()' for preventing infinite recursion.
                 initialize();
             }
             for (Class<? super T> i=targetClass; i!=null && i!=stopAt; i=i.getSuperclass()) {
@@ -451,7 +451,7 @@ public class ConverterRegistry {
              * declared in all `modules-info.class` files found on the module path and try again.
              */
             if (!isInitialized) {
-                isInitialized = true;       // Before 'initialize()' for preventing infinite recursivity.
+                isInitialized = true;       // Before 'initialize()' for preventing infinite recursion.
                 initialize();
                 converter = get(key);
                 if (converter != null) {

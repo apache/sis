@@ -26,7 +26,6 @@ import java.lang.foreign.SymbolLookup;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.gsf.GSF;
 import org.apache.sis.system.Shutdown;
-import org.apache.sis.util.Exceptions;
 
 
 /**
@@ -117,8 +116,7 @@ public final class LibraryLoader {
         if (error == null) {
             return Optional.empty();
         }
-        String msg = "Cannot initialize the GSF library.";
-        var record = new LogRecord(Level.CONFIG, Exceptions.formatChainedMessages(null, msg, error));
+        var record = new LogRecord(Level.CONFIG, "Cannot initialize the GSF library.");
         record.setThrown(error);
         return Optional.of(record);
     }

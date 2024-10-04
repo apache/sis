@@ -16,11 +16,13 @@
  */
 package org.apache.sis.gui.internal.io;
 
+import java.util.Set;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.web.WebView;
+import java.awt.GraphicsEnvironment;
 import org.opengis.util.FactoryException;
 import org.apache.sis.gui.DataViewer;
 import org.apache.sis.gui.internal.BackgroundThreads;
@@ -53,6 +55,19 @@ public final class OptionalDataDownloader extends OptionalInstallations {
      */
     public OptionalDataDownloader() {
         super("text/html");
+    }
+
+    /**
+     * Returns the name of the authority who provides data under non-Apache terms of use.
+     * If this {@code OptionalDataDownloader} cannot ask user's agreement because the
+     * environment {@linkplain GraphicsEnvironment#isHeadless() is headless},
+     * then this method returns an empty set.
+     *
+     * @return {@code "EPSG"} or an empty set in this class cannot ask user's agreement.
+     */
+    @Override
+    public Set<String> getAuthorities() {
+        return GraphicsEnvironment.isHeadless() ? Set.of(): super.getAuthorities();
     }
 
     /**

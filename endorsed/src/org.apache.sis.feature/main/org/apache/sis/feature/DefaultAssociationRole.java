@@ -490,7 +490,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
         /*
          * Do not use the full `valueType` object for computing hash code,
          * because it may change before and after `resolve` is invoked. In
-         * addition, this avoid infinite recursivity in case of cyclic graph.
+         * addition, this avoid infinite recursion in case of cyclic graph.
          */
         return super.hashCode() + valueType.getName().hashCode();
     }

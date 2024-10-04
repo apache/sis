@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -158,19 +159,17 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory
 {
     /**
-     * The factory providers given at construction time. Elements in the array are for {@link CRSAuthorityFactory},
+     * The factory providers given at construction time. Elements in the map are for {@link CRSAuthorityFactory},
      * {@link CSAuthorityFactory}, {@link DatumAuthorityFactory} and {@link CoordinateOperationAuthorityFactory}
-     * in that order. That order is defined by the constant values in {@link AuthorityFactoryIdentifier}.
+     * in that order. That order is defined by the constant values in {@link AuthorityFactoryIdentifier.Type}.
+     * Note that the map should not contain the last {@link AuthorityFactoryIdentifier.Type} values,
+     * which are handled in a special way.
      *
-     * <p>Note that this array is shorter than the number of {@link AuthorityFactoryIdentifier} values.
-     * The last {@link AuthorityFactoryIdentifier} values are handled in a special way.</p>
-     *
-     * <p>The array may contain {@code null} elements when there is no provider for a given type.
-     * Content of this array shall be immutable after construction time in order to avoid the need
-     * for synchronization when reading the array. However, usage of an {@code Iterable} element
-     * shall be synchronized on that {@code Iterable}.</p>
+     * <p>Content of this map shall be immutable after construction time in order to avoid the need
+     * for synchronization. However, usage of an {@code Iterable} element shall be synchronized on
+     * that {@code Iterable}.</p>
      */
-    private final Iterable<? extends AuthorityFactory>[] providers;
+    private final EnumMap<AuthorityFactoryIdentifier.Type, Iterable<? extends AuthorityFactory>> providers;
 
     /**
      * The factories obtained from {@link #getAuthorityFactory(Class, String, String)} and similar methods.
@@ -179,8 +178,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
 
     /**
      * A bit masks identifying which providers have given us all their factories.
-     * The value {@code (1 << type)} is set when {@code MultiAuthoritiesFactory}
-     * has iterated until the end of {@code providers[type].iterator()}.
+     * For each iterator given by {@code providers.get(type).iterator()}, the value
+     * {@code (1 << type.ordinal())} is set when {@code MultiAuthoritiesFactory} has
+     * iterated until the end of that iterator.
+     *
+     * <p><b>Design note:</b> this is equivalent to {@link java.util.EnumSet}.
+     * But we use a bitmask for the convenience of using {@link AtomicInteger}.</p>
      */
     private final AtomicInteger isIterationCompleted;
 
@@ -240,25 +243,25 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                                    final Iterable<? extends DatumAuthorityFactory> datumFactories,
                                    final Iterable<? extends CoordinateOperationAuthorityFactory> copFactories)
     {
-        final Iterable<? extends AuthorityFactory>[] p = new Iterable[4];
-        p[AuthorityFactoryIdentifier.CRS]       = crsFactories;
-        p[AuthorityFactoryIdentifier.CS]        = csFactories;
-        p[AuthorityFactoryIdentifier.DATUM]     = datumFactories;
-        p[AuthorityFactoryIdentifier.OPERATION] = copFactories;
+        providers = new EnumMap<>(AuthorityFactoryIdentifier.Type.class);
+        providers.put(AuthorityFactoryIdentifier.Type.CRS,       crsFactories);
+        providers.put(AuthorityFactoryIdentifier.Type.CS,        csFactories);
+        providers.put(AuthorityFactoryIdentifier.Type.DATUM,     datumFactories);
+        providers.put(AuthorityFactoryIdentifier.Type.OPERATION, copFactories);
         /*
          * Mark null Iterables as if we already iterated over all their elements.
-         * Opportunistically reduce the array size by trimming trailing null elements.
-         * The memory gain is negligible, but this will reduce the number of iterations in loops.
          */
-        int length = 0, nullMask = 0;
-        for (int i=0; i < p.length; i++) {
-            if (p[i] != null) length = i+1;
-            else nullMask |= (1 << i);
+        int nullMask = 0;
+        for (final var it = providers.entrySet().iterator(); it.hasNext();) {
+            final var entry = it.next();
+            if (entry.getValue() == null) {
+                nullMask |= (1 << entry.getKey().ordinal());
+                it.remove();
+            }
         }
-        providers = ArraysExt.resize(p, length);
+        isIterationCompleted = new AtomicInteger(nullMask);
         factories = new ConcurrentHashMap<>();
         warnings  = new HashMap<>();
-        isIterationCompleted = new AtomicInteger(nullMask);
     }
 
     /**
@@ -459,7 +462,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * Used by {@link #contains(Object)} for delegating its work to the most appropriate factory.
              */
             private final AuthorityFactoryProxy<Boolean> contains =
-                new AuthorityFactoryProxy<Boolean>(Boolean.class, AuthorityFactoryIdentifier.ANY) {
+                new AuthorityFactoryProxy<Boolean>(Boolean.class, AuthorityFactoryIdentifier.Type.ANY) {
                     @Override Boolean createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                         return getAuthorityCodes(factory).contains(code);
                     }
@@ -560,8 +563,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * thread-safe: each thread needs to use its own iterator instance. However, provided that the above
      * condition is met, threads can safely use their iterators concurrently.</p>
      */
-    final Iterator<AuthorityFactory> getAllFactories() {
-        return new LazySynchronizedIterator<>(providers);
+    private Iterator<AuthorityFactory> getAllFactories() {
+        return new LazySynchronizedIterator<>(providers.values().iterator());
     }
 
     /**
@@ -578,8 +581,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      */
     /*
      * This method is declared final for avoiding the false impression than overriding this method would change
-     * the behavior of MultiAuthoritiesFactory. It would not because the 'create(…)' method invokes the private
-     * 'getAuthorityFactory(…)' instead of the public one.
+     * the behavior of MultiAuthoritiesFactory. It would not because the `create(…)` method invokes the private
+     * `getAuthorityFactory(…)` instead of the public one.
      */
     public final <T extends AuthorityFactory> T getAuthorityFactory(final Class<T> type,
             final String authority, final String version) throws NoSuchAuthorityFactoryException
@@ -628,12 +631,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * cached instances.
          */
         int doneMask = isIterationCompleted.get();
-        final int type = request.type;
-        if ((doneMask & (1 << type)) == 0) {
-            if (type >= 0 && type < providers.length) {
-                final Iterable<? extends AuthorityFactory> provider = providers[type];
+        final int bitmask = (1 << request.type.ordinal());
+        if ((doneMask & bitmask) == 0) {
+            final Iterable<? extends AuthorityFactory> provider = providers.get(request.type);
+            if (provider != null) {
                 final Iterator<? extends AuthorityFactory> it;
-                synchronized (provider) {               // Should never be null because of the 'doneMask' check.
+                synchronized (provider) {               // Should never be null because of the `doneMask` check.
                     it = provider.iterator();
                     while (it.hasNext()) {
                         factory = it.next();
@@ -661,7 +664,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                                 /*
                                  * Before to cache the factory with a key containing the factory version, make sure
                                  * that we took in account the version of the default factory. This will prevent the
-                                 * call to 'cache(versioned, factory)' to overwrite the default factory.
+                                 * call to `cache(versioned, factory)` to overwrite the default factory.
                                  */
                                 if (factory != cached) {
                                     cache(unversioned.versionOf(cached.getAuthority()), cached);
@@ -691,25 +694,17 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                         }
                     }
                 }
-            } else if (type >= AuthorityFactoryIdentifier.GEODETIC) {
+            } else if (request.type.isGeneric()) {
                 /*
                  * Special cases: if the requested factory is ANY, take the first factory that we can find
                  * regardless of its type. We will try CRS, CS, DATUM and OPERATION factories in that order.
                  * The GEODETIC type is like ANY except for the additional restriction that the factory shall
                  * be an instance of the SIS-specific GeodeticAuthorityFactory class.
                  */
-                assert providers.length <= Math.min(type, Byte.MAX_VALUE) : type;
-                for (byte i=0; i < providers.length; i++) {
-                    factory = getAuthorityFactory(request.newType(i));
-                    switch (type) {
-                        case AuthorityFactoryIdentifier.ANY: {
-                            return factory;
-                        }
-                        case AuthorityFactoryIdentifier.GEODETIC: {
-                            if (factory instanceof GeodeticAuthorityFactory) {
-                                return factory;
-                            }
-                        }
+                for (final var entry : providers.entrySet()) {
+                    factory = getAuthorityFactory(request.newType(entry.getKey()));
+                    if (request.type.api.isInstance(factory)) {
+                        return factory;
                     }
                 }
             }
@@ -718,7 +713,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * Note that the mask values may also be modified in other threads for other providers, so we
              * need to atomically verify that the current value has not been modified before to set it.
              */
-            while (!isIterationCompleted.compareAndSet(doneMask, doneMask | (1 << type))) {
+            while (!isIterationCompleted.compareAndSet(doneMask, doneMask | bitmask)) {
                 doneMask = isIterationCompleted.get();
             }
         }
@@ -791,7 +786,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * is present. The remainder steps are the same as if the user gave a simple code (e.g. "EPSG:4326").
              */
             if (uri.authority == null) {
-                // We want this check before the 'code' value is modified below.
+                // We want this check before the `code` value is modified below.
                 throw new NoSuchAuthorityCodeException(
                         Resources.format(Resources.Keys.MissingAuthority_1, code), null, uri.code, code);
             }
@@ -1565,7 +1560,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * but instead stores information for later execution.
      */
     private static final class Deferred extends AuthorityFactoryProxy<CoordinateOperationAuthorityFactory> {
-        Deferred() {super(CoordinateOperationAuthorityFactory.class, AuthorityFactoryIdentifier.OPERATION);}
+        Deferred() {super(CoordinateOperationAuthorityFactory.class, AuthorityFactoryIdentifier.Type.OPERATION);}
 
         /** The authority code saved by the {@code createFromAPI(…)} method. */
         String code;
@@ -1606,18 +1601,18 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         /*
          * Identify the type requested by the user and create all components with the assumption that they will
          * be of that type. This is the most common case. If during iteration we find an object of another kind,
-         * then the array type will be downgraded to IdentifiedObject[]. The 'componentType' variable will keep
+         * then the array type will be downgraded to IdentifiedObject[]. The `componentType` variable will keep
          * its non-null value only if the array stay of the expected sub-type.
          */
-        final byte requestedType;
+        final AuthorityFactoryIdentifier.Type requestedType;
         IdentifiedObject[] components;
         Class<? extends IdentifiedObject> componentType;
         if (CoordinateReferenceSystem.class.isAssignableFrom(type)) {
-            requestedType = AuthorityFactoryIdentifier.CRS;
+            requestedType = AuthorityFactoryIdentifier.Type.CRS;
             componentType = CoordinateReferenceSystem.class;
             components    = new CoordinateReferenceSystem[references.length];       // Intentional covariance.
         } else if (CoordinateOperation.class.isAssignableFrom(type)) {
-            requestedType = AuthorityFactoryIdentifier.OPERATION;
+            requestedType = AuthorityFactoryIdentifier.Type.OPERATION;
             componentType = CoordinateOperation.class;
             components    = new CoordinateOperation[references.length];             // Intentional covariance.
         } else {
@@ -1641,7 +1636,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          */
         IdentifiedObject combined = null;
         switch (requestedType) {
-            case AuthorityFactoryIdentifier.OPERATION: {
+            case OPERATION: {
                 if (componentType != null) {
                     /*
                      * URN combined references for concatenated operations. We build an operation name from
@@ -1658,7 +1653,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 }
                 break;
             }
-            case AuthorityFactoryIdentifier.CRS: {
+            case CRS: {
                 if (componentType != null) {
                     /*
                      * URN combined references for compound coordinate reference systems.
@@ -1880,37 +1875,36 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * Java virtual machine.</p>
      */
     public void reload() {
-        for (int type=0; type < providers.length; type++) {
-            final Iterable<?> provider = providers[type];
-            if (provider != null) {
-                synchronized (provider) {
-                    if (provider instanceof LazySet<?>) {
-                        ((LazySet<?>) provider).reload();
-                    }
-                    if (provider instanceof ServiceLoader<?>) {
-                        ((ServiceLoader<?>) provider).reload();
-                    }
-                    /*
-                     * Clear the 'iterationCompleted' bit before to clear the cache so that if another thread
-                     * invokes 'getAuthorityFactory(…)', it will block on the synchronized(provider) statement
-                     * until we finished the cleanup.
-                     */
-                    applyAndMask(~(1 << type));
-                    /*
-                     * Clear the cache on a provider-by-provider basis, not by a call to factories.clear().
-                     * This is needed because this MultiAuthoritiesFactory instance may be used concurrently
-                     * by other threads, and we have no global lock for the whole factory.
-                     */
-                    final Iterator<AuthorityFactoryIdentifier> it = factories.keySet().iterator();
-                    while (it.hasNext()) {
-                        if (it.next().type == type) {
-                            it.remove();
-                        }
+        for (final var entry : providers.entrySet()) {
+            final Iterable<?> provider = entry.getValue();
+            synchronized (provider) {
+                if (provider instanceof LazySet<?>) {
+                    ((LazySet<?>) provider).reload();
+                } else if (provider instanceof ServiceLoader<?>) {
+                    ((ServiceLoader<?>) provider).reload();
+                }
+                /*
+                 * Clear the `iterationCompleted` bit before to clear the cache so that if another thread
+                 * invokes `getAuthorityFactory(…)`, it will block on the synchronized(provider) statement
+                 * until we finished the cleanup.
+                 */
+                final int type = entry.getKey().ordinal();
+                applyAndMask(~(1 << type));
+                /*
+                 * Clear the cache on a provider-by-provider basis, not by a call to factories.clear().
+                 * This is needed because this MultiAuthoritiesFactory instance may be used concurrently
+                 * by other threads, and we have no global lock for the whole factory.
+                 */
+                final Iterator<AuthorityFactoryIdentifier> it = factories.keySet().iterator();
+                while (it.hasNext()) {
+                    if (it.next().type.ordinal() == type) {
+                        it.remove();
                     }
                 }
             }
         }
-        applyAndMask(providers.length - 1);     // Clears all bits other than the bits for providers.
+        // Clears all bits other than the bits for providers.
+        applyAndMask((1 << AuthorityFactoryIdentifier.Type.GEODETIC.ordinal()) - 1);
     }
 
     /**
