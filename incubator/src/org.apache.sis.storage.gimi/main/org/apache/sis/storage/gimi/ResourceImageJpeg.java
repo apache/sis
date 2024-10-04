@@ -42,7 +42,7 @@ final class ResourceImageJpeg extends ResourceImageUncompressed {
 
     @Override
     public GridCoverage read(GridGeometry gg, int... ints) throws DataStoreException {
-        final byte[] data = item.getData(0,-1);
+        final byte[] data = item.getData(0,-1, null, 0);
         ImageInputStream iis;
         BufferedImage img;
         try {

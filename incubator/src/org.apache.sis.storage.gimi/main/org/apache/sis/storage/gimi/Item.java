@@ -170,32 +170,36 @@ final class Item {
     /**
      * @param offset start position to read from
      * @param count number of bytes to read, -1 for all
-     * @return
+     * @param target Optional array to write into
+     * @param targetOffset if target is provided, offset to start writing at
+     * @return new or provided array
      * @throws DataStoreException
      */
-    public byte[] getData(long dataOffset, int count) throws DataStoreException {
+    public byte[] getData(long dataOffset, int count, byte[] target, int targetOffset) throws DataStoreException {
         try {
             final ItemLocation.Item location = getLocation();
             if (location == null) {
                 //read data from the default mediadata box
                 MediaData mediaData = (MediaData) store.getRootBox().getChild(MediaData.FCC, null);
-                return mediaData.getData(dataOffset, count);
+                return mediaData.getData(dataOffset, count, target, targetOffset);
             } else if (location.constructionMethod == 0) {
                 //absolute location
                 if (location.dataReferenceIndex == 0) {
                     //compute total size
                     final int length = IntStream.of(location.extentLength).sum();
                     //read datas
-                    final byte[] data = new byte[count == -1 ? length : count];
+                    if (count == -1) count = length;
+                    if (target == null) targetOffset = 0; //ignore user value if array is null
+                    final byte[] data = target == null ? new byte[count] : target;
                     final ISOBMFFReader reader = store.getReader();
                     synchronized (reader) {
-                        long remaining = data.length;
+                        long remaining = count;
                         int bufferOffset = 0;
                         for (int i = 0, currentOffset = 0; i < location.extentLength.length && remaining > 0; i++) {
                             if (dataOffset <= currentOffset) {
                                 reader.channel.seek(location.baseOffset + location.extentOffset[i]);
                                 final long toRead = Math.min(remaining, location.extentLength[i]);
-                                reader.channel.readFully(data, bufferOffset, Math.toIntExact(toRead));
+                                reader.channel.readFully(data, bufferOffset + targetOffset, Math.toIntExact(toRead));
                                 bufferOffset += toRead;
                                 remaining -= toRead;
                             } else if (dataOffset >= (currentOffset + location.extentLength[i])) {
@@ -204,7 +208,7 @@ final class Item {
                                 long toSkip = dataOffset - currentOffset;
                                 reader.channel.seek(location.baseOffset + location.extentOffset[i] + toSkip);
                                 final long toRead = Math.min(remaining, location.extentLength[i] - toSkip);
-                                reader.channel.readFully(data, bufferOffset, Math.toIntExact(toRead));
+                                reader.channel.readFully(data, bufferOffset + targetOffset, Math.toIntExact(toRead));
                                 bufferOffset += toRead;
                                 remaining -= toRead;
                             }

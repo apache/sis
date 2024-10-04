@@ -157,7 +157,7 @@ class ResourceImageUncompressed extends TiledGridResource implements StoreResour
             // RGB case
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
             final int[] nBits = {8, 8, 8};
-            final int[] bOffs = {2, 1, 0};
+            final int[] bOffs = {0, 1, 2};
             colorModel = new ComponentColorModel(
                     cs,
                     nBits,
@@ -268,12 +268,17 @@ class ResourceImageUncompressed extends TiledGridResource implements StoreResour
      */
     private void readTile(long tileX, long tileY, WritableRaster raster, int offsetX, int offsetY) throws DataStoreException {
         final long tileOffset = (tileX + tileY * (frameConf.numTileColsMinusOne+1)) * tileByteArrayLength;
-        final byte[] data = item.getData(tileOffset, tileByteArrayLength);
 
-        final DataBuffer buffer = new DataBufferByte(data, tileByteArrayLength, 0);
-
-        final Raster tile = WritableRaster.createInterleavedRaster(buffer, tileWidth, tileHeight, tileWidth*3, 3, new int[]{0,1,2}, new Point(0,0));
-        raster.setDataElements(offsetX, offsetY, tile);
+        final DataBuffer targetBuffer = raster.getDataBuffer();
+        if (targetBuffer instanceof DataBufferByte) {
+            final DataBufferByte dbb = (DataBufferByte) targetBuffer;
+            item.getData(tileOffset, tileByteArrayLength, dbb.getData(), 0);
+        } else {
+            final byte[] data = item.getData(tileOffset, tileByteArrayLength, null, 0);
+            final DataBuffer buffer = new DataBufferByte(data, tileByteArrayLength, 0);
+            final Raster tile = WritableRaster.createInterleavedRaster(buffer, tileWidth, tileHeight, tileWidth*3, 3, new int[]{0,1,2}, new Point(0,0));
+            raster.setDataElements(offsetX, offsetY, tile);
+        }
     }
 
     @Override
