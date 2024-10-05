@@ -380,13 +380,13 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     public synchronized void install(final Connection connection) throws UnavailableFactoryException {
         String    message = null;
         Exception failure = null;
+        boolean   success = false;
         try (EPSGInstaller installer = new EPSGInstaller(Objects.requireNonNull(connection))) {
             final boolean ac = connection.getAutoCommit();
             if (ac) {
                 connection.setAutoCommit(false);
             }
             try {
-                boolean success = false;
                 try {
                     if (!"".equals(schema)) {                                           // Schema may be null.
                         installer.setSchema(schema != null ? schema : Constants.EPSG);
@@ -394,8 +394,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                             installer.prependNamespace(catalog);
                         }
                     }
-                    installer.run(scriptProvider, locale);
-                    success = true;
+                    success = installer.run(scriptProvider, locale);
                 } finally {
                     if (ac) {
                         if (success) {
@@ -411,10 +410,14 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 failure = e;
             }
         } catch (SQLException e) {
-            message = Messages.forLocale(locale).getString(Messages.Keys.CanNotCreateSchema_1, Constants.EPSG);
             failure = e;
         }
-        if (failure != null) {
+        if (!success) {
+            if (message == null) {
+                message = Messages.forLocale(locale).getString(
+                        (failure != null) ? Messages.Keys.CanNotCreateSchema_1
+                                          : Messages.Keys.NoDataSourceFound_1, Constants.EPSG);
+            }
             /*
              * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.

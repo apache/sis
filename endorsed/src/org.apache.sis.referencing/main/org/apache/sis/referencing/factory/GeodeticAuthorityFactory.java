@@ -1324,8 +1324,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
-                .append("[“").append(Citations.getIdentifier(getAuthority())).append('”');
+        final var buffer = new StringBuilder(Classes.getShortClassName(this));
+        // Do not append `getAuthority()` because it may perform database access.
         appendStringTo(buffer);
         return buffer.append(']').toString();
     }

@@ -17,7 +17,6 @@
 package org.apache.sis.resources.embedded;
 
 import java.util.Set;
-import java.util.Collections;
 import java.util.Locale;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -63,7 +62,7 @@ public class EmbeddedResources extends InstallationResources {
      */
     @Override
     public Set<String> getAuthorities() {
-        return Collections.singleton(MetadataServices.EMBEDDED);
+        return Set.of(MetadataServices.EMBEDDED);
     }
 
     /**

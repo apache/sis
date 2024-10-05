@@ -35,9 +35,9 @@ import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -241,21 +241,18 @@ public class ScriptRunner implements AutoCloseable {
      * Name of the SQL script under execution, or {@code null} if unknown.
      * This is used only for error reporting.
      */
-    @Debug
     private String currentFile;
 
     /**
      * The line number of the SQL statement being executed. The first line in a file is numbered 1.
      * This is used only for error reporting.
      */
-    @Debug
     private int currentLine;
 
     /**
      * The SQL statement being executed.
      * This is used only for error reporting.
      */
-    @Debug
     private String currentSQL;
 
     /**
@@ -464,7 +461,7 @@ public class ScriptRunner implements AutoCloseable {
         if (in == null) {
             throw new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, filename));
         }
-        try (BufferedReader reader = new LineNumberReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+        try (var reader = new LineNumberReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             return run(filename, reader);
         }
     }
@@ -487,7 +484,7 @@ public class ScriptRunner implements AutoCloseable {
         int     statementCount     = 0;         // For informative purpose only.
         int     posOpeningQuote    = -1;        // -1 if we are not inside a text.
         boolean isInsideIdentifier = false;
-        final StringBuilder buffer = new StringBuilder();
+        final var buffer = new StringBuilder();
         String line;
         while ((line = in.readLine()) != null) {
             /*
@@ -812,7 +809,7 @@ parseLine:  while (pos < length) {
                     (currentLine != 0) ? currentLine : '?');
         }
         if (currentSQL != null) {
-            final StringBuilder buffer = new StringBuilder();
+            final var buffer = new StringBuilder();
             if (position != null) {
                 buffer.append(position).append('\n');
             }
@@ -822,15 +819,12 @@ parseLine:  while (pos < length) {
     }
 
     /**
-     * Returns a string representation of this runner for debugging purpose. Current implementation returns the
-     * current position in the script being executed, and the SQL statement. This method may be invoked after a
-     * {@link SQLException} occurred in order to determine the line in the SQL script that caused the error.
+     * Returns a string representation of this runner for debugging purpose.
      *
-     * @return the current position in the script being executed.
+     * @return a string representation for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
-        return status(null);
+        return Strings.toString(getClass(), "status", status(null));
     }
 }

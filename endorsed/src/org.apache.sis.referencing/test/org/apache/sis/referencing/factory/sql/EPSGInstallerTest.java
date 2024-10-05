@@ -104,7 +104,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      * or skip the JUnit test if those scripts are not found.
      */
     private static InstallationScriptProvider getScripts() throws IOException {
-        final InstallationScriptProvider scripts = new InstallationScriptProvider.Default(null);
+        final var scripts = new InstallationScriptProvider.Default(null);
         assumeTrue(scripts.getAuthorities().contains(Constants.EPSG),
                 "EPSG scripts not found in Databases/ExternalSources directory.");
         return scripts;

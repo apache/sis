@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.NoSuchFileException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.setup.InstallationResources;
@@ -62,7 +63,7 @@ import org.apache.sis.util.privy.Constants;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.7
  */
 public abstract class InstallationScriptProvider extends InstallationResources {
@@ -208,16 +209,21 @@ public abstract class InstallationScriptProvider extends InstallationResources {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnknownAuthority_1, authority));
         }
         String name = resources[resource];
-        final InputStream in;
+        InputStream in;
+        NoSuchFileException cause = null;
         if (PREPARE.equals(name) || FINISH.equals(name)) {
             name = authority + '_' + name + ".sql";
             in = InstallationScriptProvider.class.getResourceAsStream(name);
-        } else {
+        } else try {
             in = openStream(name);
-            name = name.concat(".sql");
+        } catch (NoSuchFileException e) {
+            cause = e;
+            in = null;
         }
         if (in == null) {
-            throw new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, name));
+            var e = new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, name));
+            e.initCause(cause);
+            throw e;
         }
         return new LineNumberReader(new InputStreamReader(in, StandardCharsets.UTF_8));
     }
@@ -267,7 +273,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
 
 
     /**
-     * The default implementation which use the scripts in the {@code $SIS_DATA/Databases/ExternalSources}
+     * The default implementation which uses the scripts in the {@code $SIS_DATA/Databases/ExternalSources}
      * directory, if present. This class expects the files to have those exact names where {@code *} stands
      * for any characters provided that there is no ambiguity:
      *
@@ -284,7 +290,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
         /**
          * The directory containing the scripts, or {@code null} if it does not exist.
          */
-        private Path directory;
+        private final Path directory;
 
         /**
          * Index of the first real file in the array given to the constructor.
@@ -305,44 +311,53 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                     "FKeys",
                     FINISH);
 
-            Path dir = DataDirectory.DATABASES.getDirectory();
-            if (dir != null) {
-                dir = dir.resolve("ExternalSources");
-                if (Files.isDirectory(dir)) {
-                    final String[] resources = super.resources;
-                    final String[] found = new String[resources.length - FIRST_FILE - 1];
-                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "EPSG_*.sql")) {
-                        for (final Path path : stream) {
-                            final String name = path.getFileName().toString();
-                            for (int i=0; i<found.length; i++) {
-                                final String part = resources[FIRST_FILE + i];
-                                if (name.contains(part)) {
-                                    if (found[i] != null) {
-                                        log(Errors.forLocale(locale)
-                                                  .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedFileReference_1, part));
-                                        return;   // Stop the search because of duplicated file.
-                                    }
+            final String[] resources = super.resources;
+            final String[] found = new String[resources.length - (FIRST_FILE + 1)];
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            Path directory = DataDirectory.DATABASES.getDirectory();
+            if (directory == null || Files.isDirectory(directory = directory.resolve("ExternalSources"))) {
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, "EPSG_*.sql")) {
+                    for (final Path path : stream) {
+                        final String name = path.getFileName().toString();
+                        for (int i=0; i<found.length; i++) {
+                            final String part = resources[FIRST_FILE + i];
+                            if (name.contains(part)) {
+                                if (found[i] == null) {
                                     found[i] = name;
+                                } else {
+                                    log(Errors.forLocale(locale)
+                                              .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedFileReference_1, part));
                                 }
                             }
                         }
                     }
-                    for (int i=0; i<found.length; i++) {
-                        final String file = found[i];
-                        if (file != null) {
-                            resources[FIRST_FILE + i] = file;
-                        } else {
-                            dir = null;
-                        }
-                    }
-                    directory = dir;
                 }
+            } else {
+                directory = null;
+            }
+            this.directory = directory;
+            /*
+             * Store the actual file names including the target database and EPSG dataset version. Example:
+             *
+             *   - PostgreSQL_Table_Script.sql
+             *   - PostgreSQL_Data_Script.sql
+             *   - PostgreSQL_FKey_Script.sql
+             *
+             * If a file was not found, use the "EPSG_Foo_Script.sql" name pattern for giving some hints
+             * to users about which file was expected. This filename will appear in the exception message.
+             */
+            for (int i=0; i<found.length; i++) {
+                String file = found[i];
+                if (file == null) {
+                    file = "EPSG_" + resources[FIRST_FILE + i] + "_Script.sql";
+                }
+                resources[FIRST_FILE + i] = file;
             }
         }
 
         /**
          * Returns {@code "EPSG"} if the scripts exist in the {@code ExternalSources} subdirectory,
-         * or {@code "unavailable"} otherwise.
+         * or an empty set otherwise.
          *
          * @return {@code "EPSG"} if the SQL scripts for installing the EPSG dataset are available,
          *         or an empty set otherwise.
