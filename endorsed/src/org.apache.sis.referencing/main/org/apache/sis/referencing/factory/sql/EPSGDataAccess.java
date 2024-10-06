@@ -1091,7 +1091,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String,Object> createProperties(final String table, String name, final Integer code,
-            CharSequence remarks, final boolean deprecated) throws SQLException, FactoryDataException
+            CharSequence remarks, final boolean deprecated) throws SQLException, FactoryException
     {
         /*
          * Search for aliases. Note that searching for the object code is not sufficient. We also need to check if the

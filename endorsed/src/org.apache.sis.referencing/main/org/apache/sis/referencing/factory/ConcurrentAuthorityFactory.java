@@ -56,12 +56,14 @@ import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.system.Cleaners;
 import org.apache.sis.system.DelayedExecutor;
 import org.apache.sis.system.DelayedRunnable;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Shutdown;
+
+// Specific to the geoapi-3.1 and master branches:
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -118,13 +120,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     private static final long DURATION_FOR_LOGGING = 10_000_000L;       // 10 milliseconds.
 
     /**
-     * Sentinel value when {@link #authority} cannot be determined because the data access object
-     * cannot be constructed.
-     */
-    private static final Citation UNAVAILABLE = new SimpleCitation("unavailable");
-
-    /**
      * The authority, cached after first requested.
+     *
+     * @see #getAuthority()
      */
     private transient volatile Citation authority;
 
@@ -726,15 +724,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *   </li>
      * </ul>
      *
-     * If this method cannot get a Data Access Object (for example because no database connection is available),
-     * then this method returns {@code null}.
-     *
      * @return the organization responsible for definition of the database, or {@code null} if unavailable.
      */
     @Override
     public Citation getAuthority() {
         Citation c = authority;
-        if (c == null || c == UNAVAILABLE) try {
+        if (c == null) try {
             final DAO factory = getDataAccess();
             try {
                 /*
@@ -746,18 +741,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 release("getAuthority", Citation.class, null);
             }
         } catch (FactoryException e) {
-            authority = UNAVAILABLE;
-            /*
-             * Use the warning level only on the first failure, then the fine level on all subsequent failures.
-             * Do not log the stack trace if we failed because of UnavailableFactoryException since it may be
-             * normal (the EPSG geodetic dataset is optional, even if strongly recommended).
-             */
-            final var record = new LogRecord(c == null ? Level.WARNING : Level.FINE, e.getLocalizedMessage());
-            if (!(e instanceof UnavailableFactoryException)) {
-                record.setThrown(e);
-            }
-            Logging.completeAndLog(LOGGER, ConcurrentAuthorityFactory.class, "getAuthority", record);
-            c = null;
+            throw new BackingStoreException(e);
         }
         return c;
     }

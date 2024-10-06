@@ -192,6 +192,12 @@ public class Messages extends IndexedResourceBundle {
         public static final short LocalesDiscarded = 25;
 
         /**
+         * No source of {0} data has been found. Those data may require an optional module or manual
+         * installation.
+         */
+        public static final short NoDataSourceFound_1 = 37;
+
+        /**
          * This “{0}” formatting is a departure from standard format.
          */
         public static final short NonConformFormatting_1 = 26;

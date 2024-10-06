@@ -35,6 +35,7 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.metadata.sql.privy.Reflection;
 
 // Test dependencies
@@ -104,7 +105,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      * or skip the JUnit test if those scripts are not found.
      */
     private static InstallationScriptProvider getScripts() throws IOException {
-        final InstallationScriptProvider scripts = new InstallationScriptProvider.Default(null);
+        final var scripts = new InstallationScriptProvider.Default(null);
         assumeTrue(scripts.getAuthorities().contains(Constants.EPSG),
                 "EPSG scripts not found in Databases/ExternalSources directory.");
         return scripts;
@@ -229,6 +230,8 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
             codes = new HashSet<>(codes);
             assertTrue (codes.contains("4979"));
             assertFalse(codes.contains("4329"));
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         }
         assertEquals(1, countCRSTables(ds), "Should contain EPSG tables after we created them.");
     }

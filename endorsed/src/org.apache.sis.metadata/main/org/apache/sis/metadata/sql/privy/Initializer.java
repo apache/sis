@@ -393,7 +393,7 @@ public abstract class Initializer {
     }
 
     /**
-     * Prepares a log record saying that a connection to the spatial metadata database has been created.
+     * Logs a record saying that a connection to the spatial metadata database has been created.
      * This method can be invoked after {@link DataSource#getConnection()}. When invoked for the first time,
      * the record level is set to {@link Level#CONFIG}. On next calls, the level become {@link Level#FINE}.
      *

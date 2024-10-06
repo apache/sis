@@ -273,7 +273,11 @@ class CoordinateOperationRegistry {
             if (registry instanceof GeodeticAuthorityFactory) {
                 codeFinder = ((GeodeticAuthorityFactory) registry).newIdentifiedObjectFinder();
             } else try {
-                codeFinder = IdentifiedObjects.newFinder(Citations.toCodeSpace(registry.getAuthority()));
+                try {
+                    codeFinder = IdentifiedObjects.newFinder(Citations.toCodeSpace(registry.getAuthority()));
+                } catch (BackingStoreException e) {
+                    throw e.unwrapOrRethrow(FactoryException.class);
+                }
             } catch (NoSuchAuthorityFactoryException e) {
                 recoverableException("<init>", e);
             }
@@ -328,8 +332,13 @@ class CoordinateOperationRegistry {
                     ? IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET
                     : IdentifiedObjectFinder.Domain.VALID_DATASET);
             int matchCount = 0;
-            final Citation authority = registry.getAuthority();
             try {
+                final Citation authority;
+                try {
+                    authority = registry.getAuthority();
+                } catch (BackingStoreException e) {
+                    throw e.unwrapOrRethrow(FactoryException.class);
+                }
                 for (final IdentifiedObject candidate : codeFinder.find(crs)) {
                     final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, authority);
                     if (identifier != null) {

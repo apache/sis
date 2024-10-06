@@ -72,6 +72,9 @@ import org.apache.sis.util.logging.Logging;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
 
+// Specific to the geoapi-3.1 and master branches:
+import org.apache.sis.util.collection.BackingStoreException;
+
 
 /**
  * Implements the referencing services needed by the {@code org.apache.sis.metadata} module.
@@ -502,7 +505,11 @@ public final class ServicesForMetadata extends ReferencingServices {
             case Constants.EPSG: {
                 final Citation authority;
                 try {
-                    authority = CRS.getAuthorityFactory(Constants.EPSG).getAuthority();
+                    try {
+                        authority = CRS.getAuthorityFactory(Constants.EPSG).getAuthority();
+                    } catch (BackingStoreException e) {
+                        throw e.unwrapOrRethrow(FactoryException.class);
+                    }
                 } catch (FactoryException e) {
                     final String msg = Exceptions.getLocalizedMessage(e, locale);
                     return (msg != null) ? msg : Classes.getShortClassName(e);

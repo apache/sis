@@ -141,8 +141,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * all factory lifetime.
      *
      * @return the namespaces recognized by this factory, or an empty set if none.
+     * @throws FactoryException if an error occurred while listing the code spaces managed by this factory.
      */
-    public Set<String> getCodeSpaces() {
+    public Set<String> getCodeSpaces() throws FactoryException {
         final String authority = Citations.toCodeSpace(getAuthority());
         return (authority != null) ? Set.of(authority) : Set.of();
     }
@@ -1320,12 +1321,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * are removed, together with {@link Character#isIdentifierIgnorable(int) ignorable characters}.
      *
      * @param  code  the code to trim.
-     * @return the code with the namespace part removed if that part matched one of the values given by
-     *         {@link #getCodeSpaces()}.
+     * @return the code with the namespace part removed if that part matched one of the values given by {@link #getCodeSpaces()}.
+     * @throws FactoryException if an error occurred while listing the code spaces managed by this factory.
      *
      * @since 0.8
      */
-    protected final String trimNamespace(String code) {
+    protected final String trimNamespace(String code) throws FactoryException {
         code = CharSequences.trimIgnorables(code).toString();
         int s = code.indexOf(Constants.DEFAULT_SEPARATOR);
         if (s >= 0) {
@@ -1359,10 +1360,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @param  code    the authority code, used only for formatting an error message.
      * @return the object casted to the given type.
      * @throws NoSuchAuthorityCodeException if the given object is not an instance of the given type.
+     * @throws FactoryException if an error occurred while listing the code spaces managed by this factory.
      */
     @SuppressWarnings("unchecked")
     private <T> T cast(final Class<T> type, final IdentifiedObject object, final String code)
-            throws NoSuchAuthorityCodeException
+            throws FactoryException
     {
         if (type.isInstance(object)) {
             return (T) object;
@@ -1390,8 +1392,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
-                .append("[“").append(Citations.getIdentifier(getAuthority())).append('”');
+        final var buffer = new StringBuilder(Classes.getShortClassName(this));
+        // Do not append `getAuthority()` because it may perform database access.
         appendStringTo(buffer);
         return buffer.append(']').toString();
     }

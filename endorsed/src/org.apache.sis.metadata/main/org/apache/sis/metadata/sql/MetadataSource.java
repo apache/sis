@@ -374,6 +374,7 @@ public class MetadataSource implements AutoCloseable {
     {
         ArgumentChecks.ensureNonNull("standard",   standard);
         ArgumentChecks.ensureNonNull("dataSource", dataSource);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         ClassLoader classloader;
         Integer maxStatements;
 
@@ -453,6 +454,7 @@ public class MetadataSource implements AutoCloseable {
      * @throws SQLException if an error occurred while inserting the metadata.
      */
     final synchronized void install() throws IOException, SQLException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Connection connection = connection();
         final DatabaseMetaData md = connection.getMetaData();
         if (md.storesUpperCaseIdentifiers()) {
@@ -541,6 +543,7 @@ public class MetadataSource implements AutoCloseable {
         if (tableName == null) {
             tableName = getTableName(type);
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final SQLBuilder helper = helper();
         final String query = helper.clear().append("SELECT * FROM ")
                 .appendIdentifier(schema, tableName).append(" WHERE ")

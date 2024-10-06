@@ -554,6 +554,12 @@ public class Resources extends IndexedResourceBundle {
         public static final short SyntaxErrorForAlias_1 = 97;
 
         /**
+         * Cannot use the {0} geodetic dataset because the database at “{1}” does not contain a “{2}”
+         * table and no script for automatic installation was found.
+         */
+        public static final short TableNotFound_3 = 107;
+
+        /**
          * Combined URI contains unexpected components.
          */
         public static final short UnexpectedComponentInURI = 80;

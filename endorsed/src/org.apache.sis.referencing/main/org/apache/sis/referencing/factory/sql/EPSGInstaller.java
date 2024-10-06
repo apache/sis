@@ -225,17 +225,21 @@ final class EPSGInstaller extends ScriptRunner {
      *
      * @param  scriptProvider  user-provided scripts, or {@code null} for automatic lookup.
      * @param  locale          the locale for information or warning messages, if any.
+     * @return whether the database has been installed.
      * @throws FileNotFoundException if a SQL script has not been found.
      * @throws IOException  if another error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
-    public void run(InstallationResources scriptProvider, final Locale locale) throws SQLException, IOException {
+    public boolean run(InstallationResources scriptProvider, final Locale locale) throws SQLException, IOException {
         long time = System.nanoTime();
-        InstallationScriptProvider.log(Messages.forLocale(locale).getLogRecord(Level.INFO,
-                Messages.Keys.CreatingSchema_2, EPSG, SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
         if (scriptProvider == null) {
             scriptProvider = lookupProvider(locale);
+            if (scriptProvider == null) {
+                return false;
+            }
         }
+        InstallationScriptProvider.log(Messages.forLocale(locale).getLogRecord(Level.INFO,
+                Messages.Keys.CreatingSchema_2, EPSG, SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
         final String[] scripts = scriptProvider.getResourceNames(EPSG);
         int numRows = 0;
         for (int i=0; i<scripts.length; i++) {
@@ -247,6 +251,7 @@ final class EPSGInstaller extends ScriptRunner {
         InstallationScriptProvider.log(Messages.forLocale(locale).getLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
                 Messages.Keys.InsertDuration_2, numRows, time / (float) Constants.NANOS_PER_SECOND));
+        return true;
     }
 
     /**
@@ -266,6 +271,7 @@ final class EPSGInstaller extends ScriptRunner {
      * </ol>
      *
      * @param  locale  the locale for information or warning messages, if any.
+     * @return the SQL preferred script provider, or {@code null} if none.
      */
     private static InstallationResources lookupProvider(final Locale locale) throws IOException {
         InstallationResources fallback = null;
@@ -284,11 +290,8 @@ final class EPSGInstaller extends ScriptRunner {
          * the user if (s)he accepts EPSG terms of use. But before to use those fallbacks, check if the
          * data have not been downloaded manually in the "$SIS_DATA/Databases/ExternalSources" directory.
          */
-        final InstallationResources manual = new InstallationScriptProvider.Default(locale);
-        if (fallback != null && manual.getAuthorities().isEmpty()) {
-            return fallback;
-        }
-        return manual;
+        final var manual = new InstallationScriptProvider.Default(locale);
+        return manual.getAuthorities().isEmpty() ? fallback : manual;
     }
 
     /**

@@ -34,6 +34,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
+import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.simple.SimpleCitation;
@@ -125,10 +126,11 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      * Returns the geodetic object for the given code.
      *
      * @throws NoSuchAuthorityCodeException if the given code is unknown.
+     * @throws FactoryException if the creation failed for another reason.
      */
     @Override
     @SuppressWarnings("removal")
-    public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
+    public IdentifiedObject createObject(final String code) throws FactoryException {
         assertFalse(isClosed());
         final int n;
         try {
@@ -163,9 +165,10 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      *
      * @return the unit of measurement.
      * @throws NoSuchAuthorityCodeException if the given code is unknown.
+     * @throws FactoryException if the creation failed for another reason.
      */
     @Override
-    public Unit<?> createUnit(final String code) throws NoSuchAuthorityCodeException {
+    public Unit<?> createUnit(final String code) throws FactoryException {
         assertFalse(isClosed());
         final int n;
         try {
@@ -185,9 +188,10 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      *
      * @return the spatial extent.
      * @throws NoSuchAuthorityCodeException if the given code is unknown.
+     * @throws FactoryException if the creation failed for another reason.
      */
     @Override
-    public Extent createExtent(final String code) throws NoSuchAuthorityCodeException {
+    public Extent createExtent(final String code) throws FactoryException {
         assertFalse(isClosed());
         final int n;
         try {

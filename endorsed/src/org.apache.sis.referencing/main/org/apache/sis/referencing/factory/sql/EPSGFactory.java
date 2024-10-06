@@ -292,14 +292,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         if (message == null) {
             message = Classes.getShortClassName(e);
         }
-        return canNotUse(message);
-    }
-
-    /**
-     * Returns the message to put in an {@link UnavailableFactoryException} having the given cause.
-     */
-    private String canNotUse(final String cause) {
-        return Resources.forLocale(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, cause);
+        return Resources.forLocale(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, message);
     }
 
     /**
@@ -380,13 +373,13 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     public synchronized void install(final Connection connection) throws UnavailableFactoryException {
         String    message = null;
         Exception failure = null;
+        boolean   success = false;
         try (EPSGInstaller installer = new EPSGInstaller(Objects.requireNonNull(connection))) {
             final boolean ac = connection.getAutoCommit();
             if (ac) {
                 connection.setAutoCommit(false);
             }
             try {
-                boolean success = false;
                 try {
                     if (!"".equals(schema)) {                                           // Schema may be null.
                         installer.setSchema(schema != null ? schema : Constants.EPSG);
@@ -394,8 +387,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                             installer.prependNamespace(catalog);
                         }
                     }
-                    installer.run(scriptProvider, locale);
-                    success = true;
+                    success = installer.run(scriptProvider, locale);
                 } finally {
                     if (ac) {
                         if (success) {
@@ -411,10 +403,14 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 failure = e;
             }
         } catch (SQLException e) {
-            message = Messages.forLocale(locale).getString(Messages.Keys.CanNotCreateSchema_1, Constants.EPSG);
             failure = e;
         }
-        if (failure != null) {
+        if (!success) {
+            if (message == null) {
+                message = Messages.forLocale(locale).getString(
+                        (failure != null) ? Messages.Keys.CanNotCreateSchema_1
+                                          : Messages.Keys.NoDataSourceFound_1, Constants.EPSG);
+            }
             /*
              * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
@@ -470,8 +466,13 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             if (tr.isTableFound()) {
                 return newDataAccess(connection, tr);
             } else {
-                connection.close();
-                exception = new UnavailableFactoryException(canNotUse(SQLTranslator.tableNotFound(locale)));
+                String cause;
+                try {
+                    cause = SQLTranslator.tableNotFound(connection.getMetaData(), locale);
+                } finally {
+                    connection.close();
+                }
+                exception = new UnavailableFactoryException(cause);
             }
         } catch (Exception e) {                     // Really want to catch all exceptions here.
             if (connection != null) try {

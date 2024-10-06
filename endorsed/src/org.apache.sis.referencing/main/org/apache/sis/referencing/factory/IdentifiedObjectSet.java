@@ -31,6 +31,7 @@ import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -76,7 +77,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * if they intent to cache {@code IdentifiedObjectSet} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @param <T>  the type of objects to be included in this set.
  *
@@ -503,9 +504,11 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *
      * @param  object  the object for which to get the authority code.
      * @return the authority code of the given identified object.
+     * @throws BackingStoreException if an error occurred while fetching the authority code.
      */
     protected String getAuthorityCode(final T object) {
-        final Identifier id = IdentifiedObjects.getIdentifier(object, factory.getAuthority());
+        final Citation authority = factory.getAuthority();
+        final Identifier id = IdentifiedObjects.getIdentifier(object, authority);
         return (id != null) ? id.getCode() : IdentifiedObjects.getIdentifierOrName(object);
     }
 
