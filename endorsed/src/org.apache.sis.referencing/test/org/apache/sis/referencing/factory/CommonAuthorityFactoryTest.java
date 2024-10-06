@@ -34,6 +34,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
@@ -81,7 +82,11 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      */
     @Test
     public void testGetAuthorityCodes() throws FactoryException {
-        assertTrue(factory.getAuthorityCodes(Datum.class).isEmpty());
+        try {
+            assertTrue(factory.getAuthorityCodes(Datum.class).isEmpty());
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
+        }
         assertSetEquals(List.of("CRS:1", "CRS:27", "CRS:83", "CRS:84", "CRS:88",
                                 "AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005",
                                 "OGC:JulianDate", "OGC:TruncatedJulianDate", "OGC:UnixTime"),
@@ -121,8 +126,12 @@ public final class CommonAuthorityFactoryTest extends TestCase {
             assertTrue(expected.add(IdentifiedObjects.toString(getSingleton(e.crs().getIdentifiers()))));
         }
         assertFalse(expected.isEmpty());
-        for (final String code : factory.getAuthorityCodes(TemporalCRS.class)) {
-            assertTrue(expected.remove(code), code);
+        try {
+            for (final String code : factory.getAuthorityCodes(TemporalCRS.class)) {
+                assertTrue(expected.remove(code), code);
+            }
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         }
         for (final String remaining : expected) {
             assertFalse(remaining.startsWith(Constants.OGC), remaining);

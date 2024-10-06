@@ -108,8 +108,7 @@ public final class TestFactorySource {
             assertNotNull(crsFactory.createGeographicCRS("4326"));
         } catch (UnavailableFactoryException e) {
             isUnavailable = true;
-            GeodeticAuthorityFactory.LOGGER.warning(e.toString());
-            abort("No connection to EPSG dataset.");
+            abort("No connection to EPSG dataset. Caused by:" + System.lineSeparator() + e);
         }
         return (EPSGFactory) crsFactory;
     }
@@ -144,7 +143,9 @@ public final class TestFactorySource {
                     success = true;
                 } catch (UnavailableFactoryException e) {
                     isUnavailable = true;
-                    GeodeticAuthorityFactory.LOGGER.warning(e.toString());
+                    String message = "Tests that require the EPSG database cannot be run. Caused by:"
+                                   + System.lineSeparator() + e;
+                    GeodeticAuthorityFactory.LOGGER.config(message);
                 } finally {
                     if (!success && factory != null) {
                         factory.close();

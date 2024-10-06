@@ -52,6 +52,7 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.util.collection.BackingStoreException;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;
@@ -554,10 +555,13 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
          * Most basic objects.
          * Note: the numbers in 'size() >= x' checks were determined from the content of EPSG dataset version 7.9.
          */
-        final Set<String> axes = factory.getAuthorityCodes(CoordinateSystemAxis.class);
-        assertFalse(axes.isEmpty(),       "Axes not found.");
-        assertTrue (axes.contains("115"), "Shall contain Geocentric X.");
-
+        try {
+            final Set<String> axes = factory.getAuthorityCodes(CoordinateSystemAxis.class);
+            assertFalse(axes.isEmpty(),       "Axes not found.");
+            assertTrue (axes.contains("115"), "Shall contain Geocentric X.");
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
+        }
         final Set<String> coordinateSystems = factory.getAuthorityCodes(CoordinateSystem.class);
         assertFalse(coordinateSystems.isEmpty(),        "Coordinate systems not found.");
         assertTrue (coordinateSystems.contains("6422"), "Shall contain ellipsoidal CS.");

@@ -30,6 +30,7 @@ import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.util.privy.Strings.isNullOrEmpty;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
+import org.apache.sis.referencing.internal.Resources;
 
 
 /**
@@ -385,8 +386,18 @@ public class SQLTranslator implements Function<String,String> {
     /**
      * Returns the error message for the exception to throw if the EPSG tables are not found and we cannot create them.
      */
-    static String tableNotFound(final Locale locale) {
-        return Errors.forLocale(locale).getString(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]);
+    static String tableNotFound(final DatabaseMetaData md, final Locale locale) throws SQLException {
+        String db = md.getURL();
+        if (db == null) {
+            db = "?";
+        } else {
+            int s = db.indexOf('?');
+            if (s >= 0 || (s = db.indexOf('#')) >= 0) {
+                db = db.substring(9, s);
+            }
+        }
+        return Resources.forLocale(locale).getString(Resources.Keys.TableNotFound_3,
+                Constants.EPSG, db, SENTINEL[MIXED_CASE]);
     }
 
     /**

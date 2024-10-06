@@ -36,6 +36,7 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.util.collection.BackingStoreException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -92,12 +93,16 @@ public final class WKTDictionaryTest extends TestCase {
          */
         assertArrayEquals(new String[] {"TEST"}, factory.getCodeSpaces().toArray(), "getCodeSpaces()");
         assertEquals("TEST", factory.getAuthority().getTitle().toString(), "getAuthority()");
-        Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
-        assertSame( codes,  factory.getAuthorityCodes(SingleCRS.class));
-        assertSame( codes,  factory.getAuthorityCodes(GeodeticCRS.class));
-        assertSame( codes,  factory.getAuthorityCodes(GeographicCRS.class));
-        assertEquals(0, factory.getAuthorityCodes(ProjectedCRS.class).size());
-        assertSetEquals(List.of("21", "E1"), codes);
+        try {
+            Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
+            assertSame( codes,  factory.getAuthorityCodes(SingleCRS.class));
+            assertSame( codes,  factory.getAuthorityCodes(GeodeticCRS.class));
+            assertSame( codes,  factory.getAuthorityCodes(GeographicCRS.class));
+            assertEquals(0, factory.getAuthorityCodes(ProjectedCRS.class).size());
+            assertSetEquals(List.of("21", "E1"), codes);
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
+        }
         /*
          * Tests CRS creation, potentially with expected error.
          */
@@ -118,7 +123,7 @@ public final class WKTDictionaryTest extends TestCase {
      */
     @Test
     public void testLoad() throws IOException, FactoryException {
-        final WKTDictionary factory = new WKTDictionary(null);
+        final var factory = new WKTDictionary(null);
         try (BufferedReader source = new BufferedReader(new InputStreamReader(
                 WKTFormatTest.class.getResourceAsStream("ExtraCRS.txt"), "UTF-8")))
         {
@@ -137,15 +142,19 @@ public final class WKTDictionaryTest extends TestCase {
          */
         assertArrayEquals(new String[] {"TEST", "ESRI"}, factory.getCodeSpaces().toArray(), "getCodeSpaces()");
         assertEquals("TEST", factory.getAuthority().getTitle().toString(), "getAuthority()");
-        Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
-        assertSame( codes,  factory.getAuthorityCodes(IdentifiedObject.class));     // Test caching.
-        assertSame( codes,  factory.getAuthorityCodes(SingleCRS.class));            // Test sharing.
-        assertSetEquals(List.of("102018", "ESRI::102021", "TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
-        assertSetEquals(List.of("102018", "ESRI::102021"), factory.getAuthorityCodes(ProjectedCRS.class));
-        codes = factory.getAuthorityCodes(GeographicCRS.class);
-        assertSetEquals(List.of("TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
-        assertSame(codes, factory.getAuthorityCodes(GeodeticCRS.class));            // Test sharing.
-        assertSame(codes, factory.getAuthorityCodes(GeographicCRS.class));          // Test caching.
+        try {
+            Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
+            assertSame( codes,  factory.getAuthorityCodes(IdentifiedObject.class));     // Test caching.
+            assertSame( codes,  factory.getAuthorityCodes(SingleCRS.class));            // Test sharing.
+            assertSetEquals(List.of("102018", "ESRI::102021", "TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
+            assertSetEquals(List.of("102018", "ESRI::102021"), factory.getAuthorityCodes(ProjectedCRS.class));
+            codes = factory.getAuthorityCodes(GeographicCRS.class);
+            assertSetEquals(List.of("TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
+            assertSame(codes, factory.getAuthorityCodes(GeodeticCRS.class));            // Test sharing.
+            assertSame(codes, factory.getAuthorityCodes(GeographicCRS.class));          // Test caching.
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
+        }
         /*
          * Test descriptions before CRS creation.
          * Implementation fetches them from `StoredTree` instances.

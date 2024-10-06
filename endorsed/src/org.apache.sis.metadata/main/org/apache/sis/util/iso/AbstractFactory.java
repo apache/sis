@@ -21,6 +21,9 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.util.privy.Strings;
 
+// Specific to the geoapi-3.1 and master branches:
+import org.apache.sis.util.collection.BackingStoreException;
+
 
 /**
  * Base class of factories provided in the Apache SIS library.
@@ -68,10 +71,15 @@ public abstract class AbstractFactory implements Factory {
     @Override
     public String toString() {
         final var args = new Object[2];
-        Citation c = getVendor();
-        if (c != null) {
-            args[0] = "vendor";
-            args[1] = c.getTitle();
+        try {
+            Citation c = getVendor();
+            if (c != null) {
+                args[0] = "vendor";
+                args[1] = c.getTitle();
+            }
+        } catch (BackingStoreException e) {
+            args[0] = "exception";
+            args[1] = e.toString();
         }
         return Strings.toString(getClass(), args);
     }

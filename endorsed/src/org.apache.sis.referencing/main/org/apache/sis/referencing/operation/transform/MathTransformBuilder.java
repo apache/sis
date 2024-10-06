@@ -21,9 +21,9 @@ import java.util.Optional;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.Classes;
 
 // Specific to the main branch:
 import org.opengis.util.FactoryException;
@@ -190,7 +190,7 @@ public abstract class MathTransformBuilder {
     @Override
     public String toString() {
         return Strings.toString(getClass(),
-                "factory", Citations.getIdentifier(factory.getVendor()),
+                "factory", Classes.getShortClassName(factory),
                 "method", IdentifiedObjects.getDisplayName(provider, null));
     }
 }

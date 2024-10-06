@@ -131,7 +131,7 @@ public class Errors extends IndexedResourceBundle {
         /**
          * Cannot parse the Coordinate Reference System of “{0}”.
          */
-        public static final short CanNotParseCRS_1 = 208;
+        public static final short CanNotParseCRS_1 = 155;
 
         /**
          * Cannot parse “{0}”.
@@ -853,11 +853,6 @@ public class Errors extends IndexedResourceBundle {
          * Thread “{0}” seems stalled.
          */
         public static final short StalledThread_1 = 154;
-
-        /**
-         * Table “{0}” has not been found.
-         */
-        public static final short TableNotFound_1 = 155;
 
         /**
          * Expected at least {0,number} argument{0,choice,1#|2#s}, but got {1,number}.

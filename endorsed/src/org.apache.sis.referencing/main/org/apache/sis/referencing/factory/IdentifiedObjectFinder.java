@@ -523,6 +523,8 @@ public class IdentifiedObjectFinder {
                     result.add(candidate);
                 }
             }
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         } finally {
             Semaphores.clear(Semaphores.FINER_OBJECT_CREATION_LOGS, finer);
         }

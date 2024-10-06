@@ -36,6 +36,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.collection.BackingStoreException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -80,18 +81,22 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
             CoordinateReferenceSystem.class,
             IdentifiedObject.class
         };
-        for (final Class<?> type : types) {
+        for (final Class<?> type : types) try {
             for (final String code : factory.getAuthorityCodes(type.asSubclass(IdentifiedObject.class))) {
                 assertInstanceOf(type, factory.createObject(code), code);
             }
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         }
     }
 
     /**
      * Tests {@link MultiAuthoritiesFactory#getCodeSpaces()}.
+     *
+     * @throws FactoryException if a problem occurred with the factory to test.
      */
     @Test
-    public void testGetCodeSpaces() {
+    public void testGetCodeSpaces() throws FactoryException {
         final var mock1 = new AuthorityFactoryMock("MOCK1", "2.3");
         final var mock2 = new AuthorityFactoryMock("MOCK2", null);
         final var mock3 = new AuthorityFactoryMock("MOCK3", null);
@@ -106,9 +111,10 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
      * Tests {@link MultiAuthoritiesFactory#getAuthorityFactory(Class, String, String)}.
      *
      * @throws NoSuchAuthorityFactoryException if an authority is not recognized.
+     * @throws FactoryException if a problem occurred with the factory to test.
      */
     @Test
-    public void testGetAuthorityFactory() throws NoSuchAuthorityFactoryException {
+    public void testGetAuthorityFactory() throws FactoryException {
         final var mock1 = new AuthorityFactoryMock("MOCK1", null);
         final var mock2 = new AuthorityFactoryMock("MOCK2", "1.2");
         final var mock3 = new AuthorityFactoryMock("MOCK1", "2.3");
@@ -141,9 +147,10 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
      * with a conflict in the factory namespace.
      *
      * @throws NoSuchAuthorityFactoryException if an authority is not recognized.
+     * @throws FactoryException if a problem occurred with the factory to test.
      */
     @Test
-    public void testConflict() throws NoSuchAuthorityFactoryException {
+    public void testConflict() throws FactoryException {
         final var mock1 = new AuthorityFactoryMock("MOCK1", "2.3");
         final var mock2 = new AuthorityFactoryMock("MOCK1", "2.3");
         final var mock3 = new AuthorityFactoryMock("MOCK3", "1.2");
@@ -331,15 +338,19 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
                 new AuthorityFactoryMock("MOCK", null),
                 new AuthorityFactoryMock("MOCK", "2.3"));
         final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
-        final Set<String> codes = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
+        try {
+            final Set<String> codes = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
 
-        assertTrue(codes.contains("MOCK:4979"));     // A geocentric CRS.
-        assertTrue(codes.contains(" mock :: 84"));   // A geographic CRS.
-        assertTrue(codes.contains("http://www.opengis.net/gml/srs/mock.xml#4326"));
+            assertTrue(codes.contains("MOCK:4979"));     // A geocentric CRS.
+            assertTrue(codes.contains(" mock :: 84"));   // A geographic CRS.
+            assertTrue(codes.contains("http://www.opengis.net/gml/srs/mock.xml#4326"));
 
-        assertFalse(codes.contains("MOCK:6326"));    // A geodetic reference frame.
-        assertFalse(codes.isEmpty());
-        assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
+            assertFalse(codes.contains("MOCK:6326"));    // A geodetic reference frame.
+            assertFalse(codes.isEmpty());
+            assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
+        }
         loggings.assertNoUnexpectedLog();
     }
 
