@@ -328,8 +328,8 @@ class CoordinateOperationRegistry {
                     ? IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET
                     : IdentifiedObjectFinder.Domain.VALID_DATASET);
             int matchCount = 0;
-            final Citation authority = registry.getAuthority();
             try {
+                final Citation authority = registry.getAuthority();
                 for (final IdentifiedObject candidate : codeFinder.find(crs)) {
                     final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, authority);
                     if (identifier != null) {

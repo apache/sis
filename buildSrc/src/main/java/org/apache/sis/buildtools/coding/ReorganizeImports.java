@@ -147,7 +147,6 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         "org.junit",
         "org.opentest4j",
         "org.opengis.test",
-        "org.apache.sis.image.TiledImageMock",
         "org.apache.sis.referencing.cs.HardCodedAxes",
         "org.apache.sis.referencing.cs.HardCodedCS",
         "org.apache.sis.referencing.crs.HardCodedCRS",
@@ -454,6 +453,9 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                     return true;
                 }
                 if (element.regionMatches(element.lastIndexOf('.')+1, "Test", 0, 4)) {
+                    return true;
+                }
+                if (element.endsWith("Mock")) {
                     return true;
                 }
                 if (element.contains("Assert") && !element.contains("ArgumentCheckByAssertion")) {

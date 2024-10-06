@@ -22,7 +22,6 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.referencing.GeodeticException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Optional;
@@ -43,21 +42,13 @@ public abstract class EPSGFactoryProxy implements AuthorityFactory {
     abstract AuthorityFactory factory() throws FactoryException;
 
     @Override
-    public final Citation getAuthority() {
-        try {
-            return factory().getAuthority();
-        } catch (FactoryException e) {
-            throw new GeodeticException(e);
-        }
+    public final Citation getAuthority() throws FactoryException {
+        return factory().getAuthority();
     }
 
     @Override
     public final Citation getVendor() throws FactoryException {
-        try {
-            return factory().getVendor();
-        } catch (FactoryException e) {
-            throw new GeodeticException(e);
-        }
+        return factory().getVendor();
     }
 
     @Override
