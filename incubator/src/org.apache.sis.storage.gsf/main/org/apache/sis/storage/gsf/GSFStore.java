@@ -19,14 +19,15 @@ package org.apache.sis.storage.gsf;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
-import org.opengis.metadata.Metadata;
-import org.opengis.parameter.ParameterValueGroup;
+
 
 /**
  *

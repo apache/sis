@@ -34,6 +34,7 @@ import org.apache.sis.storage.gsf.panama.LibraryStatus;
 import org.apache.sis.storage.gsf.panama.NativeFunctions;
 import org.apache.sis.util.logging.Logging;
 
+
 /**
  * Binding for GSFLib version 3.09.
  * Version 3.10 introduce breaking changes.

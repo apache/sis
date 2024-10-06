@@ -21,12 +21,12 @@ import java.util.HashMap;
 import static org.opengis.referencing.IdentifiedObject.*;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
 // Test dependencies
-import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

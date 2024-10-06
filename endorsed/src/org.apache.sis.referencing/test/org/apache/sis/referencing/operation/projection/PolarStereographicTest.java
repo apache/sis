@@ -28,11 +28,11 @@ import org.apache.sis.referencing.operation.provider.PolarStereographicC;
 import org.apache.sis.referencing.operation.provider.PolarStereographicNorth;
 import org.apache.sis.referencing.operation.provider.PolarStereographicSouth;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 
 /**

@@ -17,12 +17,12 @@
 package org.apache.sis.storage.gimi;
 
 import java.util.Optional;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.util.iso.Names;
-import org.opengis.util.GenericName;
 
 
 /**

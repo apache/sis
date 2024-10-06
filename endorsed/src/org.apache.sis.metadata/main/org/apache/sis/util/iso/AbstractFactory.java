@@ -17,10 +17,12 @@
 package org.apache.sis.util.iso;
 
 import org.opengis.util.Factory;
-import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.util.privy.Strings;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.util.FactoryException;
 
 
 /**

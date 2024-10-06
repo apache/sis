@@ -16,8 +16,9 @@
  */
 package org.apache.sis.cloud.aws.s3;
 
-// Test dependencies
 import java.util.Locale;
+
+// Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
