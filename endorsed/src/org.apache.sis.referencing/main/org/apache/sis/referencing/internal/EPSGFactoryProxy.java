@@ -52,7 +52,7 @@ public abstract class EPSGFactoryProxy implements AuthorityFactory {
     }
 
     @Override
-    public final Citation getVendor() {
+    public final Citation getVendor() throws FactoryException {
         try {
             return factory().getVendor();
         } catch (FactoryException e) {

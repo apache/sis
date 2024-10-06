@@ -17,6 +17,7 @@
 package org.apache.sis.util.iso;
 
 import org.opengis.util.Factory;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.util.privy.Strings;
@@ -42,11 +43,12 @@ public abstract class AbstractFactory implements Factory {
      * manifest associated to the package of {@code this.getClass()}.
      *
      * @return the vendor for this factory implementation, or {@code null} if unknown.
+     * @throws FactoryException if an error occurred while fetching the vendor information.
      *
      * @see Package#getImplementationVendor()
      */
     @Override
-    public Citation getVendor() {
+    public Citation getVendor() throws FactoryException {
         final Package p = getClass().getPackage();
         if (p != null) {
             final String vendor = p.getImplementationVendor();
@@ -68,10 +70,15 @@ public abstract class AbstractFactory implements Factory {
     @Override
     public String toString() {
         final var args = new Object[2];
-        Citation c = getVendor();
-        if (c != null) {
-            args[0] = "vendor";
-            args[1] = c.getTitle();
+        try {
+            Citation c = getVendor();
+            if (c != null) {
+                args[0] = "vendor";
+                args[1] = c.getTitle();
+            }
+        } catch (FactoryException e) {
+            args[0] = "exception";
+            args[1] = e.toString();
         }
         return Strings.toString(getClass(), args);
     }

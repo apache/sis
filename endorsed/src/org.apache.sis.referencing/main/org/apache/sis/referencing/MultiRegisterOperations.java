@@ -180,12 +180,13 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
      * @param authority  identification of the registry to use (e.g., "EPSG").
      * @param version    the registry version to use, or {@code null} for the default version.
      * @throws NoSuchAuthorityFactoryException if the specified registry has not been found.
+     * @throws FactoryException if an error occurred while initializing this factory.
      *
      * @see #withAuthority(String)
      * @see #withVersion(String)
      */
     protected MultiRegisterOperations(final MultiRegisterOperations source, final String authority, final String version)
-            throws NoSuchAuthorityFactoryException
+            throws FactoryException
     {
         this.authority      = Objects.requireNonNull(authority);
         this.version        = version;
@@ -205,10 +206,11 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
      * @param  newValue  the desired authority, or {@code null} for all of them.
      * @return register operations for the specified authority.
      * @throws NoSuchAuthorityFactoryException if the given authority is unknown to SIS.
+     * @throws FactoryException if the factory cannot be created for another reason.
      *
      * @see CRS#getAuthorityFactory(String)
      */
-    public MultiRegisterOperations withAuthority(final String newValue) throws NoSuchAuthorityFactoryException {
+    public MultiRegisterOperations withAuthority(final String newValue) throws FactoryException {
         if (version == null && Objects.equals(authority, newValue)) {
             return this;
         } else if (newValue == null) {
@@ -227,8 +229,9 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
      * @return register operations for the specified version of the geodetic registry.
      * @throws IllegalStateException if the version is non-null and no authority has been specified previously.
      * @throws NoSuchAuthorityFactoryException if the given version is unknown to SIS.
+     * @throws FactoryException if the factory cannot be created for another reason.
      */
-    public MultiRegisterOperations withVersion(final String newValue) throws NoSuchAuthorityFactoryException {
+    public MultiRegisterOperations withVersion(final String newValue) throws FactoryException {
         if (Objects.equals(version, newValue)) {
             return this;
         } else if (newValue == null && authority == null) {
@@ -365,9 +368,10 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
      * @return factory of the specified type.
      * @throws NullPointerException if the specified type is null.
      * @throws IllegalArgumentException if the specified type is not one of the above-cited values.
+     * @throws FactoryException if an error occurred while searching or preparing the requested factory.
      */
     @Override
-    public <T extends Factory> Optional<T> getFactory(final Class<? extends T> type) {
+    public <T extends Factory> Optional<T> getFactory(final Class<? extends T> type) throws FactoryException {
         final Factory factory;
         final Boolean b = FACTORY_TYPES.get(type);
         if (b != null) {

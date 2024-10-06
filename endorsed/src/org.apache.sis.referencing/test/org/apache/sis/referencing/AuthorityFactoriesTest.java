@@ -24,9 +24,10 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.system.Loggers;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.internal.EPSGFactoryProxy;
 import org.apache.sis.referencing.factory.CommonAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
@@ -235,10 +236,14 @@ public final class AuthorityFactoriesTest extends TestCaseWithLogs {
     @Test
     public void testGetAuthorityCodes() throws FactoryException {
         final CRSAuthorityFactory factory = AuthorityFactories.ALL;
-        final Collection<String> codes = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
-        assertFalse(codes.isEmpty());
-        assertTrue(codes.contains("CRS:84"));
-        assertTrue(codes.contains("AUTO:42001") || codes.contains("AUTO2:42001"));
+        try {
+            final Collection<String> codes = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
+            assertFalse(codes.isEmpty());
+            assertTrue(codes.contains("CRS:84"));
+            assertTrue(codes.contains("AUTO:42001") || codes.contains("AUTO2:42001"));
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
+        }
         loggings.assertNoUnexpectedLog();
     }
 

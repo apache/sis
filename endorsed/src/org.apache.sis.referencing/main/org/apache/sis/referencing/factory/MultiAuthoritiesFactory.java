@@ -464,7 +464,11 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             private final AuthorityFactoryProxy<Boolean> contains =
                 new AuthorityFactoryProxy<Boolean>(Boolean.class, AuthorityFactoryIdentifier.Type.ANY) {
                     @Override Boolean createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
-                        return getAuthorityCodes(factory).contains(code);
+                        try {
+                            return getAuthorityCodes(factory).contains(code);
+                        } catch (BackingStoreException e) {
+                            throw e.unwrapOrRethrow(FactoryException.class);
+                        }
                     }
                     @Override AuthorityFactoryProxy<Boolean> specialize(String typeName) {
                         return this;
@@ -500,10 +504,11 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * The current implementation may be relatively costly because it implies instantiation of all factories.
      *
      * @return the code spaces of all factories.
+     * @throws FactoryException if an error occurred while listing the code spaces managed by this factory.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Set<String> getCodeSpaces() {
+    public Set<String> getCodeSpaces() throws FactoryException {
         Set<String> union = codeSpaces;
         if (union == null) {
             union = new LinkedHashSet<>();
@@ -520,7 +525,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * This method delegates to {@link GeodeticAuthorityFactory#getCodeSpaces()} if possible,
      * or reproduces its default implementation otherwise.
      */
-    private static Set<String> getCodeSpaces(final AuthorityFactory factory) {
+    private static Set<String> getCodeSpaces(final AuthorityFactory factory) throws FactoryException {
         if (factory instanceof GeodeticAuthorityFactory) {
             return ((GeodeticAuthorityFactory) factory).getCodeSpaces();
         } else {
@@ -531,12 +536,19 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
 
     /**
      * Returns the "main" namespace of the given factory, or {@code null} if none.
+     * The purpose of this method is to get a unique identifier of a factory, ignoring version number.
      * Current implementation returns the first namespace, but this may be changed in any future SIS version.
      *
-     * <p>The purpose of this method is to get a unique identifier of a factory, ignoring version number.</p>
+     * @param  factory  the factory for which to get the main code space.
+     * @return the main code space of the given factory, or {@code null} if none.
+     * @throws BackingStoreException if an error occurred while listing the code spaces managed by this factory.
      */
     static String getCodeSpace(final AuthorityFactory factory) {
-        return CollectionsExt.first(getCodeSpaces(factory));
+        try {
+            return CollectionsExt.first(getCodeSpaces(factory));
+        } catch (FactoryException e) {
+            throw new BackingStoreException(e);
+        }
     }
 
     /**
@@ -578,6 +590,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @param  version    the version of the desired factory, or {@code null} for the default version.
      * @return the factory for the given type, authority and version.
      * @throws NoSuchAuthorityFactoryException if no suitable factory has been found.
+     * @throws FactoryException if an error occurred while getting the authority or code spaces managed by this factory.
      */
     /*
      * This method is declared final for avoiding the false impression than overriding this method would change
@@ -585,7 +598,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * `getAuthorityFactory(…)` instead of the public one.
      */
     public final <T extends AuthorityFactory> T getAuthorityFactory(final Class<T> type,
-            final String authority, final String version) throws NoSuchAuthorityFactoryException
+            final String authority, final String version) throws FactoryException
     {
         ArgumentChecks.ensureNonNull("type", type);
         ArgumentChecks.ensureNonNull("authority", authority);
@@ -599,10 +612,9 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @param  request  the type, authority and version of the desired factory.
      * @return the factory for the given type, authority and version.
      * @throws NoSuchAuthorityFactoryException if no suitable factory has been found.
+     * @throws FactoryException if an error occurred while getting the authority or code spaces managed by this factory.
      */
-    private AuthorityFactory getAuthorityFactory(final AuthorityFactoryIdentifier request)
-            throws NoSuchAuthorityFactoryException
-    {
+    private AuthorityFactory getAuthorityFactory(final AuthorityFactoryIdentifier request) throws FactoryException {
         AuthorityFactory factory = factories.get(request);
         if (factory != null) {
             return factory;

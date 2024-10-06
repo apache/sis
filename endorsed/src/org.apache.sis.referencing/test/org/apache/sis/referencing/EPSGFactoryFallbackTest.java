@@ -39,6 +39,7 @@ import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.collection.BackingStoreException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -265,6 +266,8 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
                 final CoordinateReferenceSystem expected = EPSG.createCoordinateReferenceSystem(code);
                 assertTrue(Utilities.deepEquals(expected, crs, ComparisonMode.DEBUG), code);
             }
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         } finally {
             setEPSGFactory(EPSG);
         }
