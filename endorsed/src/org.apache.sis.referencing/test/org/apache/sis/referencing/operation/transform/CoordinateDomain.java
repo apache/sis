@@ -20,8 +20,10 @@ import java.util.Random;
 import static java.lang.StrictMath.*;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
+
+// Test dependencies
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 
 /**

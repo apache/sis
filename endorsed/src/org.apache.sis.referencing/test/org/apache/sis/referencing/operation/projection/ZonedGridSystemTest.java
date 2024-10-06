@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.referencing.operation.provider.ZonedTransverseMercator;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.util.privy.Constants;
@@ -30,6 +29,7 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 
 /**

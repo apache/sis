@@ -20,13 +20,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.EntityToGroup;
 import org.apache.sis.util.iso.Names;
-import org.opengis.util.GenericName;
+
 
 /**
  * An unidentified group of entities.

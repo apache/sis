@@ -21,11 +21,11 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.xml.ReferenceResolverMock;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.xml.ReferenceResolverMock;
 import org.apache.sis.xml.test.TestCase;
 
 

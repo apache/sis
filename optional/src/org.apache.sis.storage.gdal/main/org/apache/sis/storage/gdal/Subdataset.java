@@ -18,8 +18,8 @@ package org.apache.sis.storage.gdal;
 
 import java.util.List;
 import java.util.Optional;
-import org.apache.sis.storage.DataStoreException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**

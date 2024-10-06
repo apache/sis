@@ -17,9 +17,9 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.Collection;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
-import java.io.IOException;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.util.GenericName;
@@ -41,6 +41,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 
+// Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
+import static java.util.Map.entry;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
@@ -32,17 +33,16 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.base.Decoder;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.base.TestCase;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static java.util.Map.entry;
 import org.opengis.test.dataset.ContentVerifier;
 import org.opengis.test.dataset.TestData;
 

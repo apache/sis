@@ -30,14 +30,14 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

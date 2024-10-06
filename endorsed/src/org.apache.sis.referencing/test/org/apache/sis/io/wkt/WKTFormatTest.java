@@ -29,11 +29,11 @@ import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
