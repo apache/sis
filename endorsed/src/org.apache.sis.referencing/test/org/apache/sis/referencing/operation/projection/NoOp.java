@@ -20,12 +20,14 @@ import java.util.Map;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.privy.Constants;
+
+// Test dependencies
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 
 /**

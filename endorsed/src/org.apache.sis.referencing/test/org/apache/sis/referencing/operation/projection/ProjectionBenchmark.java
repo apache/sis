@@ -31,9 +31,9 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 // Test dependencies
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.test.Benchmark;
 
 

@@ -29,13 +29,13 @@ import org.apache.sis.referencing.operation.provider.MercatorAuxiliarySphere;
 import org.apache.sis.referencing.operation.provider.PseudoMercator;
 import org.apache.sis.referencing.operation.provider.MillerCylindrical;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.parameter.Parameters;
 import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 // Specific to the main branch:
 import static org.junit.jupiter.api.Assumptions.assumeTrue;

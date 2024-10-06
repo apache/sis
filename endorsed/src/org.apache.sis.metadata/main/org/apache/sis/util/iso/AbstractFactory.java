@@ -21,7 +21,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.util.privy.Strings;
 
-// Specific to the geoapi-3.1 and master branches:
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.util.collection.BackingStoreException;
 
 

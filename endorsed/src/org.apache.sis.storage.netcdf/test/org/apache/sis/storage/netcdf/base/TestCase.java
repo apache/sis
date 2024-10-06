@@ -28,7 +28,6 @@ import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dataset.NetcdfDataset;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.temporal.TemporalDate;
@@ -41,6 +40,7 @@ import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.apache.sis.storage.DataStoreMock;
 
 
 /**

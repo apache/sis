@@ -19,11 +19,11 @@ package org.apache.sis.storage.event;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.DataStoreMock;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.test.TestCase;
 
 

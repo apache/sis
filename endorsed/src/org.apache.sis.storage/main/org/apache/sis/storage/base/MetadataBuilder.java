@@ -107,8 +107,8 @@ import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
-import org.apache.sis.feature.DefaultFeatureType;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.feature.DefaultFeatureType;
 
 
 /**

@@ -62,7 +62,7 @@ import org.apache.sis.system.DelayedRunnable;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Shutdown;
 
-// Specific to the geoapi-3.1 and master branches:
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.util.collection.BackingStoreException;
 
 

@@ -69,6 +69,9 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.util.collection.BackingStoreException;
+
 // Specific to the main branch:
 import java.util.Map;
 import org.opengis.util.TypeName;
@@ -83,9 +86,6 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-
-// Specific to the geoapi-3.1 and master branches:
-import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**

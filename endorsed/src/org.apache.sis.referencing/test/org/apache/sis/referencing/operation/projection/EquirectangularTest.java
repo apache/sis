@@ -25,12 +25,12 @@ import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.operation.provider.Equirectangular;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.referencing.Assertions;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 
 /**

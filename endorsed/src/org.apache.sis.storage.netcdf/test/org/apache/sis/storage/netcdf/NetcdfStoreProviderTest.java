@@ -21,7 +21,6 @@ import ucar.nc2.NetcdfFile;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoder;
@@ -30,6 +29,7 @@ import org.apache.sis.util.Version;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.base.TestCase;
 
 // Specific to the main branch:

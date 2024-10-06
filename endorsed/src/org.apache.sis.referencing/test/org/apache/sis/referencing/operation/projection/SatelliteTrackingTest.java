@@ -26,11 +26,11 @@ import org.apache.sis.referencing.privy.NilReferencingObject;
 import org.apache.sis.referencing.operation.provider.SatelliteTracking;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 
 /**

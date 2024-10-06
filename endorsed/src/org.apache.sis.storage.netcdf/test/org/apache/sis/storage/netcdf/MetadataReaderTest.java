@@ -33,12 +33,12 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.base.Decoder;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.netcdf.base.TestCase;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
 

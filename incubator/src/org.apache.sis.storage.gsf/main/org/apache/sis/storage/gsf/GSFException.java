@@ -18,6 +18,7 @@ package org.apache.sis.storage.gsf;
 
 import org.apache.sis.storage.DataStoreException;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

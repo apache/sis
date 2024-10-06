@@ -21,7 +21,6 @@ import static java.lang.StrictMath.*;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.parameter.Parameters;
@@ -32,6 +31,7 @@ import static org.apache.sis.referencing.privy.Formulas.ANGULAR_TOLERANCE;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 
 /**
