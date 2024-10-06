@@ -333,7 +333,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                     }
                 }
             } else {
-                directory = null;
+                directory = null;       // Does not exist or is not a directory.
             }
             this.directory = directory;
             /*

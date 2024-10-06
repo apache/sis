@@ -292,14 +292,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         if (message == null) {
             message = Classes.getShortClassName(e);
         }
-        return canNotUse(message);
-    }
-
-    /**
-     * Returns the message to put in an {@link UnavailableFactoryException} having the given cause.
-     */
-    private String canNotUse(final String cause) {
-        return Resources.forLocale(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, cause);
+        return Resources.forLocale(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, message);
     }
 
     /**
@@ -473,8 +466,13 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             if (tr.isTableFound()) {
                 return newDataAccess(connection, tr);
             } else {
-                connection.close();
-                exception = new UnavailableFactoryException(canNotUse(SQLTranslator.tableNotFound(locale)));
+                String cause;
+                try {
+                    cause = SQLTranslator.tableNotFound(connection.getMetaData(), locale);
+                } finally {
+                    connection.close();
+                }
+                exception = new UnavailableFactoryException(cause);
             }
         } catch (Exception e) {                     // Really want to catch all exceptions here.
             if (connection != null) try {
