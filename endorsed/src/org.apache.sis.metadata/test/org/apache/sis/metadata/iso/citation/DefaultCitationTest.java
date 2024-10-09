@@ -28,7 +28,6 @@ import java.time.ZoneOffset;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Role;
@@ -54,6 +53,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the main branch:
+import org.opengis.util.CodeList;
 import org.opengis.metadata.citation.ResponsibleParty;
 
 
@@ -308,8 +308,8 @@ public final class DefaultCitationTest extends TestUsingFile {
 
         final var date = (DefaultCitationDate) getSingleton(c.getDates());
         assertEquals(date.getReferenceDate(), OffsetDateTime.of(2015, 10, 17, 2, 0, 0, 0, ZoneOffset.ofHours(2)));
-        assertEquals(DateType.valueOf("adopted"), date.getDateType());
-        assertEquals(PresentationForm.valueOf("physicalObject"), getSingleton(c.getPresentationForms()));
+        assertEqualsIgnoreCase(DateType.valueOf("adopted"), date.getDateType());
+        assertEqualsIgnoreCase(PresentationForm.valueOf("physicalObject"), getSingleton(c.getPresentationForms()));
 
         final Iterator<? extends ResponsibleParty> it = c.getCitedResponsibleParties().iterator();
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
@@ -330,9 +330,19 @@ public final class DefaultCitationTest extends TestUsingFile {
      * Asserts that the given responsibility has the expected properties, then returns its contact info.
      */
     private static Contact assertResponsibilityEquals(final Role role, final String name, final ResponsibleParty actual) {
-        assertEquals(role, actual.getRole());
+        assertEqualsIgnoreCase(role, actual.getRole());
         final AbstractParty p = getSingleton(((DefaultResponsibleParty) actual).getParties());
         assertEquals(name, String.valueOf(p.getName()));
         return getSingleton(p.getContactInfo());
+    }
+
+    /**
+     * Asserts that two codes are equal, ignoring case and underscore. This method is used for comparing instances
+     * created by {@code valueOf(String)}, because it is difficult to guarantee that they have the expected case.
+     * It depends on the test order execution, because other tests create the same codes with different cases.
+     */
+    private static void assertEqualsIgnoreCase(CodeList<?> expected, CodeList<?> actual) {
+        assertEquals(expected.getClass(), actual.getClass());
+        assertTrue(expected.name().equalsIgnoreCase(actual.name().replace("_", "")));
     }
 }
