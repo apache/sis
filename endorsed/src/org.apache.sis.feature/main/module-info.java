@@ -55,6 +55,7 @@ module org.apache.sis.feature {
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
+            org.apache.sis.storage.gdal,            // In the "optional" sub-project.
             org.apache.sis.gui;                     // In the "optional" sub-project.
 
     exports org.apache.sis.geometry.wrapper to

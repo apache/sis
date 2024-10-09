@@ -275,6 +275,86 @@ final class GDAL extends NativeFunctions {
     final MethodHandle adviseRead;
 
     /**
+     * <abbr>GDAL</abbr> {@code CPLErr GDALDatasetGetLayerCount(Pointer hDS)}.
+     * Get the number of layers in this dataset.
+     */
+    final MethodHandle datasetGetLayerCount;
+
+    /**
+     * <abbr>GDAL</abbr> {@code CPLErr GDALDatasetGetLayer(Pointer hDS, int index)}.
+     * Fetch a layer by index.
+     */
+    final MethodHandle datasetGetLayer;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_L_GetLayerDefn(Pointer hDS)}.
+     * Fetch the schema information for this layer.
+     */
+    final MethodHandle ogrLayerGetLayerDefn;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_L_GetName(Pointer hDS)}.
+     * Return the layer name.
+     */
+    final MethodHandle ogrLayerGetName;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_FD_GetFieldCount(Pointer hDS)}.
+     * Fetch number of fields on the passed feature definition.
+     */
+    final MethodHandle ogrFeatureDefinitionGetFieldCount;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_FD_GetFieldDefn(Pointer hDS)}.
+     * Fetch field definition of the passed feature definition.
+     */
+    final MethodHandle ogrFeatureDefinitionGetFieldDefinition;
+
+    /**
+     * <abbr>OGR</abbr> {@code int CPLErr OGR_Fld_GetType(Pointer hDS, int index)}.
+     * Fetch type of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetFieldType;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_Fld_GetNameRef(Pointer hDS)}.
+     * Fetch name of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetFieldName;
+
+    /**
+     * <abbr>OGR</abbr> {@code int CPLErr OGR_FD_GetGeomFieldCount(Pointer hDS)}.
+     * Fetch number of geometry fields on this feature.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldCount;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRGeomFieldDefnH OGR_FD_GetGeomFieldDefn(OGRFeatureDefnH hDefn, int iGeomField)}.
+     * Fetch geometry field definition of the passed feature definition.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldDefinition;
+
+    /**
+     * <abbr>OGR</abbr> {@code int CPLErr OGR_Fld_GetType(Pointer hDS, int index)}.
+     * Fetch geometry type of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldType;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRwkbGeometryType   CPL_DLL OGR_GFld_GetType( OGRGeomFieldDefnH )}.
+     * Fetch name of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldName;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRSpatialReferenceH CPL_DLL OGR_GFld_GetSpatialRef(OGRGeomFieldDefnH)}.
+     * Fetch spatial reference system of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldSpatialRef;
+
+
+
+    /**
      * Creates the handles for all <abbr>GDAL</abbr> functions which will be needed.
      *
      * @param  loader  the object used for loading the library.
@@ -288,6 +368,7 @@ final class GDAL extends NativeFunctions {
         final var acceptPointerReturnInt     = FunctionDescriptor.of(ValueLayout.JAVA_INT,    ValueLayout.ADDRESS);
         final var acceptTwoPtrsReturnDouble  = FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE, ValueLayout.ADDRESS, ValueLayout.ADDRESS);
         final var acceptTwoPtrsReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS,     ValueLayout.ADDRESS, ValueLayout.ADDRESS);
+        final var acceptPointerAndIntReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_INT);
 
         // Memory management
         free    = lookup("VSIFree",    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
@@ -393,6 +474,35 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.JAVA_INT,       // int nBYSize
                 ValueLayout.JAVA_INT,       // GDALDataType eBDataType
                 ValueLayout.ADDRESS));      // CSLConstList papszOptions
+
+        // Dataset layer API
+        datasetGetLayerCount = lookup("GDALDatasetGetLayerCount",  acceptPointerReturnInt);
+
+        datasetGetLayer = lookup("GDALDatasetGetLayer",  acceptPointerAndIntReturnPointer);
+
+        // OGR API
+        ogrLayerGetLayerDefn = lookup("OGR_L_GetLayerDefn",  acceptPointerReturnPointer);
+
+        ogrLayerGetName = lookup("OGR_L_GetName",  acceptPointerReturnPointer);
+
+        ogrFeatureDefinitionGetFieldCount = lookup("OGR_FD_GetFieldCount",  acceptPointerReturnInt);
+
+        ogrFeatureDefinitionGetFieldDefinition = lookup("OGR_FD_GetFieldDefn",  acceptPointerAndIntReturnPointer);
+
+        ogrFeatureDefinitionGetFieldType = lookup("OGR_Fld_GetType",  acceptPointerReturnInt);
+
+        ogrFeatureDefinitionGetFieldName = lookup("OGR_Fld_GetNameRef",  acceptPointerReturnPointer);
+
+        ogrFeatureDefinitionGetGeomFieldCount = lookup("OGR_FD_GetGeomFieldCount",  acceptPointerReturnInt);
+
+        ogrFeatureDefinitionGetGeomFieldDefinition = lookup("OGR_FD_GetGeomFieldDefn",  acceptPointerAndIntReturnPointer);
+
+        ogrFeatureDefinitionGetGeomFieldType = lookup("OGR_GFld_GetType",  acceptPointerReturnInt);
+
+        ogrFeatureDefinitionGetGeomFieldName = lookup("OGR_GFld_GetNameRef",  acceptPointerReturnPointer);
+
+        ogrFeatureDefinitionGetGeomFieldSpatialRef = lookup("OGR_GFld_GetSpatialRef",  acceptPointerReturnPointer);
+
 
         // Set error handling first in order to redirect initialization warnings.
         setErrorHandler(null);
