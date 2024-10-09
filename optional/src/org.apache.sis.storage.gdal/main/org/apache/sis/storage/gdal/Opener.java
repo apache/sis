@@ -69,7 +69,7 @@ final class Opener implements Runnable {
      * @throws DataStoreException if <var>GDAL</var> cannot open the data set.
      */
     Opener(final GDALStoreProvider owner, final String url, final String... allowedDrivers) throws DataStoreException {
-        this(owner, url, new OpenFlag[] {OpenFlag.RASTER, OpenFlag.SHARED}, allowedDrivers, null, null);
+        this(owner, url, new OpenFlag[] {OpenFlag.RASTER, OpenFlag.VECTOR, OpenFlag.SHARED}, allowedDrivers, null, null);
     }
 
     /**

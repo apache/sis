@@ -50,6 +50,7 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.system.Cleaners;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -373,7 +374,9 @@ public class GDALStore extends DataStore implements Aggregate {
             if (subdatasets != null && !subdatasets.isEmpty()) {
                 components = subdatasets;
             } else {
-                components = UnmodifiableArrayList.wrap(TiledResource.groupBySizeAndType(this, gdal, handle()));
+                final TiledResource[] rasters = TiledResource.groupBySizeAndType(this, gdal, handle());
+                final OGRFeatureSet[] vectors = OGRFeatureSet.listVectors(this, gdal, handle());
+                components = UnmodifiableArrayList.wrap(ArraysExt.concatenate(new Resource[0], rasters, vectors));
             }
         } finally {
             ErrorHandler.throwOnFailure(this, "components");

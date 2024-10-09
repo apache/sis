@@ -52,6 +52,10 @@ module org.apache.sis.storage.gdal {
     requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
 
+    // Optional dependencies to be provided by user.
+    requires static esri.geometry.api;
+    requires static org.locationtech.jts;
+    
     exports org.apache.sis.storage.gdal;
 
     provides org.apache.sis.storage.DataStoreProvider

@@ -275,6 +275,183 @@ final class GDAL extends NativeFunctions {
     final MethodHandle adviseRead;
 
     /**
+     * <abbr>GDAL</abbr> {@code CPLErr GDALDatasetGetLayerCount(Pointer hDS)}.
+     * Get the number of layers in this dataset.
+     */
+    final MethodHandle datasetGetLayerCount;
+
+    /**
+     * <abbr>GDAL</abbr> {@code CPLErr GDALDatasetGetLayer(Pointer hDS, int index)}.
+     * Fetch a layer by index.
+     */
+    final MethodHandle datasetGetLayer;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_L_GetLayerDefn(Pointer hDS)}.
+     * Fetch the schema information for this layer.
+     */
+    final MethodHandle ogrLayerGetLayerDefn;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_L_GetName(Pointer hDS)}.
+     * Return the layer name.
+     */
+    final MethodHandle ogrLayerGetName;
+
+    /**
+     * <abbr>OGR</abbr> {@code GIntBig CPL_DLL OGR_L_GetFeatureCount(OGRLayerH, int)}.
+     * Fetch the feature count in this layer.
+     */
+    final MethodHandle ogrLayerGetFeatureCount;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRErr CPL_DLL OGR_L_GetExtent(OGRLayerH, OGREnvelope *, int)}.
+     * Fetch spatial extent.
+     */
+    final MethodHandle ogrLayerGetExtent;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRFeatureH CPL_DLL OGR_L_GetNextFeature(OGRLayerH) CPL_WARN_UNUSED_RESULT}.
+     * Fetch the next available feature from this layer.
+     */
+    final MethodHandle ogrLayerGetNextFeature;
+
+    /**
+     * <abbr>OGR</abbr> {@code GIntBig CPL_DLL OGR_F_GetFID(OGRFeatureH)}.
+     * Get feature identifier.
+     */
+    final MethodHandle ogrFeatureGetFid;
+
+    /**
+     * <abbr>OGR</abbr> {@code int CPL_DLL OGR_F_GetFieldAsInteger(OGRFeatureH, int)}.
+     * Fetch field value as integer.
+     */
+    final MethodHandle ogrFeatureGetFieldAsInteger;
+
+    /**
+     * <abbr>OGR</abbr> {@code GIntBig CPL_DLL OGR_F_GetFieldAsInteger64(OGRFeatureH, int)}.
+     * Fetch field value as integer 64 bit.
+     */
+    final MethodHandle ogrFeatureGetFieldAsInteger64;
+
+    /**
+     * <abbr>OGR</abbr> {@code double CPL_DLL OGR_F_GetFieldAsDouble(OGRFeatureH, int)}.
+     * Fetch field value as a double.
+     */
+    final MethodHandle ogrFeatureGetFieldAsDouble;
+
+    /**
+     * <abbr>OGR</abbr> {@code const char CPL_DLL *OGR_F_GetFieldAsString(OGRFeatureH, int)}.
+     * Fetch field value as a string.
+     */
+    final MethodHandle ogrFeatureGetFieldAsString;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRGeometryH OGR_F_GetGeometryRef(OGRFeatureH hFeat)}.
+     * Fetch a handle to feature geometry.
+     */
+    final MethodHandle ogrFeatureGetGeometryRef;
+
+    /**
+     * <abbr>OGR</abbr> {@code void OGR_F_Destroy(OGRFeatureH hFeat)}.
+     * Destroy feature.
+     */
+    final MethodHandle ogrFeatureDestroy;
+
+    /**
+     * <abbr>OGR</abbr> {@code void OGR_DS_Destroy(OGRDataSourceH hDS)}.
+     * Closes opened datasource and releases allocated resources.
+     */
+    final MethodHandle ogrDataSourceDestroy;
+
+    /**
+     * <abbr>OGR</abbr> {@code const char * OGR_G_GetGeometryName(OGRGeometryH hGeom)}.
+     * Fetch WKT name for geometry type.
+     */
+    final MethodHandle ogrGeometryGetGeometryName;
+
+    /**
+     * <abbr>OGR</abbr> {@code int CPL_DLL OGR_G_GetPoints(OGRGeometryH hGeom, void *pabyX, int nXStride,
+     *                                  void *pabyY, int nYStride, void *pabyZ, int nZStride);}.
+     * Returns all points of line string.
+     */
+    final MethodHandle ogrGeometryGetPoints;
+
+    /**
+     * <abbr>OGR</abbr> {@code int OGR_G_GetPointCount(OGRGeometryH hGeom)}.
+     * Fetch number of points from a Point or a LineString/LinearRing geometry.
+     */
+    final MethodHandle ogrGeometryGetPointCount;
+
+    /**
+     * <abbr>OGR</abbr> {@code int OGR_G_GetGeometryCount(OGRGeometryH hGeom)}.
+     * Fetch the number of elements in a geometry or number of geometries in container.
+     */
+    final MethodHandle ogrGeometryGetGeometryCount;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRGeometryH OGR_G_GetGeometryRef(OGRGeometryH hGeom, int iSubGeom)}.
+     * Fetch geometry from a geometry container.
+     */
+    final MethodHandle ogrGeometryGetGeometryRef;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_FD_GetFieldCount(Pointer hDS)}.
+     * Fetch number of fields on the passed feature definition.
+     */
+    final MethodHandle ogrFeatureDefinitionGetFieldCount;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_FD_GetFieldDefn(Pointer hDS)}.
+     * Fetch field definition of the passed feature definition.
+     */
+    final MethodHandle ogrFeatureDefinitionGetFieldDefinition;
+
+    /**
+     * <abbr>OGR</abbr> {@code int CPLErr OGR_Fld_GetType(Pointer hDS, int index)}.
+     * Fetch type of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetFieldType;
+
+    /**
+     * <abbr>OGR</abbr> {@code Pointer CPLErr OGR_Fld_GetNameRef(Pointer hDS)}.
+     * Fetch name of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetFieldName;
+
+    /**
+     * <abbr>OGR</abbr> {@code int CPLErr OGR_FD_GetGeomFieldCount(Pointer hDS)}.
+     * Fetch number of geometry fields on this feature.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldCount;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRGeomFieldDefnH OGR_FD_GetGeomFieldDefn(OGRFeatureDefnH hDefn, int iGeomField)}.
+     * Fetch geometry field definition of the passed feature definition.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldDefinition;
+
+    /**
+     * <abbr>OGR</abbr> {@code int CPLErr OGR_Fld_GetType(Pointer hDS, int index)}.
+     * Fetch geometry type of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldType;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRwkbGeometryType   CPL_DLL OGR_GFld_GetType( OGRGeomFieldDefnH )}.
+     * Fetch name of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldName;
+
+    /**
+     * <abbr>OGR</abbr> {@code OGRSpatialReferenceH CPL_DLL OGR_GFld_GetSpatialRef(OGRGeomFieldDefnH)}.
+     * Fetch spatial reference system of this field.
+     */
+    final MethodHandle ogrFeatureDefinitionGetGeomFieldSpatialRef;
+
+
+
+    /**
      * Creates the handles for all <abbr>GDAL</abbr> functions which will be needed.
      *
      * @param  loader  the object used for loading the library.
@@ -288,6 +465,7 @@ final class GDAL extends NativeFunctions {
         final var acceptPointerReturnInt     = FunctionDescriptor.of(ValueLayout.JAVA_INT,    ValueLayout.ADDRESS);
         final var acceptTwoPtrsReturnDouble  = FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE, ValueLayout.ADDRESS, ValueLayout.ADDRESS);
         final var acceptTwoPtrsReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS,     ValueLayout.ADDRESS, ValueLayout.ADDRESS);
+        final var acceptPointerAndIntReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS, ValueLayout.JAVA_INT);
 
         // Memory management
         free    = lookup("VSIFree",    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
@@ -393,6 +571,97 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.JAVA_INT,       // int nBYSize
                 ValueLayout.JAVA_INT,       // GDALDataType eBDataType
                 ValueLayout.ADDRESS));      // CSLConstList papszOptions
+
+        // Dataset layer API
+        datasetGetLayerCount = lookup("GDALDatasetGetLayerCount",  acceptPointerReturnInt);
+
+        datasetGetLayer = lookup("GDALDatasetGetLayer",  acceptPointerAndIntReturnPointer);
+
+        // OGR API
+        ogrLayerGetLayerDefn = lookup("OGR_L_GetLayerDefn",  acceptPointerReturnPointer);
+
+        ogrLayerGetName = lookup("OGR_L_GetName",  acceptPointerReturnPointer);
+
+        ogrLayerGetFeatureCount = lookup("OGR_L_GetFeatureCount",  FunctionDescriptor.of(
+                ValueLayout.JAVA_LONG,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT)); //flag to force computtion
+
+        ogrLayerGetExtent = lookup("OGR_L_GetExtent",  FunctionDescriptor.of(
+                ValueLayout.JAVA_INT,
+                ValueLayout.ADDRESS,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT));
+
+        ogrLayerGetNextFeature = lookup("OGR_L_GetNextFeature",  acceptPointerReturnPointer);
+
+        ogrFeatureGetFid = lookup("OGR_F_GetFID",  FunctionDescriptor.of(
+                ValueLayout.JAVA_LONG,
+                ValueLayout.ADDRESS));
+
+        ogrFeatureDefinitionGetFieldCount = lookup("OGR_FD_GetFieldCount",  acceptPointerReturnInt);
+
+        ogrFeatureDefinitionGetFieldDefinition = lookup("OGR_FD_GetFieldDefn",  acceptPointerAndIntReturnPointer);
+
+        ogrFeatureDefinitionGetFieldType = lookup("OGR_Fld_GetType",  acceptPointerReturnInt);
+
+        ogrFeatureDefinitionGetFieldName = lookup("OGR_Fld_GetNameRef",  acceptPointerReturnPointer);
+
+        ogrFeatureDefinitionGetGeomFieldCount = lookup("OGR_FD_GetGeomFieldCount",  acceptPointerReturnInt);
+
+        ogrFeatureDefinitionGetGeomFieldDefinition = lookup("OGR_FD_GetGeomFieldDefn",  acceptPointerAndIntReturnPointer);
+
+        ogrFeatureDefinitionGetGeomFieldType = lookup("OGR_GFld_GetType",  acceptPointerReturnInt);
+
+        ogrFeatureDefinitionGetGeomFieldName = lookup("OGR_GFld_GetNameRef",  acceptPointerReturnPointer);
+
+        ogrFeatureDefinitionGetGeomFieldSpatialRef = lookup("OGR_GFld_GetSpatialRef",  acceptPointerReturnPointer);
+
+        ogrFeatureGetFieldAsInteger = lookup("OGR_F_GetFieldAsInteger",  FunctionDescriptor.of(
+                ValueLayout.JAVA_INT,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT));
+
+        ogrFeatureGetFieldAsInteger64 = lookup("OGR_F_GetFieldAsInteger64",  FunctionDescriptor.of(
+                ValueLayout.JAVA_LONG,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT));
+
+        ogrFeatureGetFieldAsDouble = lookup("OGR_F_GetFieldAsDouble",  FunctionDescriptor.of(
+                ValueLayout.JAVA_DOUBLE,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT));
+
+        ogrFeatureGetFieldAsString = lookup("OGR_F_GetFieldAsString",  FunctionDescriptor.of(
+                ValueLayout.ADDRESS,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT));
+
+        ogrFeatureGetGeometryRef = lookup("OGR_F_GetGeometryRef",  acceptPointerReturnPointer);
+
+        ogrFeatureDestroy = lookup("OGR_F_Destroy",  FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+
+        ogrDataSourceDestroy = lookup("OGR_DS_Destroy",  FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+
+        ogrGeometryGetGeometryName = lookup("OGR_G_GetGeometryName",  acceptPointerReturnPointer);
+
+        ogrGeometryGetPoints = lookup("OGR_G_GetPoints",  FunctionDescriptor.of(
+                ValueLayout.JAVA_INT,
+                ValueLayout.ADDRESS,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT,
+                ValueLayout.ADDRESS,
+                ValueLayout.JAVA_INT));
+
+        ogrGeometryGetPointCount = lookup("OGR_G_GetPointCount",  acceptPointerReturnInt);
+
+        ogrGeometryGetGeometryCount = lookup("OGR_G_GetGeometryCount",  acceptPointerReturnInt);
+
+        ogrGeometryGetGeometryRef = lookup("OGR_G_GetGeometryRef",  acceptPointerAndIntReturnPointer);
+
+
 
         // Set error handling first in order to redirect initialization warnings.
         setErrorHandler(null);

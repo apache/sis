@@ -50,6 +50,8 @@ dependencies {
     // Mandatory dependencies
     api           (libs.units)
     api           (libs.geoapi)
+    api		  (libs.jts.core)                  // Should be an optional dependency.
+    api		  (libs.esri.geometry)             // Idem.
     implementation(libs.jaxb.api)                  // Transitive dependency.
     runtimeOnly   (libs.jaxb.impl)
     api           (files(File(pathToFX, "javafx.base.jar")))

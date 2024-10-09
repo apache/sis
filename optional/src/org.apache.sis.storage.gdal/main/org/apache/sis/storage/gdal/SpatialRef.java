@@ -98,6 +98,19 @@ final class SpatialRef {
     }
 
     /**
+     * Creates a new instance.
+     *
+     * @param  owner    the dataset which is providing the <abbr>CRS</abbr> definition.
+     * @param  gdal     sets of handles for invoking <abbr>GDAL</abbr> functions.
+     * @param  spatialRefHandle  pointer to native SpatialRef.
+     * @return wrapper for the <abbr>CRS</abbr> definition provided by <abbr>GDAL</abbr>, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while fetching information from <abbr>GDAL</abbr>.
+     */
+    static SpatialRef createWithHandle(final GDALStore owner, final GDAL gdal, final MemorySegment spatialRefHandle) throws DataStoreException {
+        return new SpatialRef(owner, gdal, spatialRefHandle);
+    }
+
+    /**
      * Parses the <abbr>CRS</abbr> of the data set by parsing its <abbr>WKT</abbr> representation.
      * This method must be invoked from a method synchronized on {@link GDALStore}.
      *
