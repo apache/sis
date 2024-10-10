@@ -37,7 +37,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -50,7 +49,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class StandardDefinitionsTest extends TestCase {
+public final class StandardDefinitionsTest extends EPSGDependentTestCase {
     /**
      * Creates a new test case.
      */

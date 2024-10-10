@@ -25,7 +25,7 @@ import org.opengis.geometry.DirectPosition;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.referencing.Assertions.assertContains;
 import static org.apache.sis.referencing.Assertions.assertDisjoint;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
@@ -37,7 +37,7 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class AbstractEnvelopeTest extends TestCase {
+public final class AbstractEnvelopeTest extends EPSGDependentTestCase {
     /**
      * Creates a new test case.
      */

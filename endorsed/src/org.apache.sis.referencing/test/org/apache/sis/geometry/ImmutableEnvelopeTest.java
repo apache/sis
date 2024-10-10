@@ -20,7 +20,7 @@ package org.apache.sis.geometry;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
@@ -32,7 +32,7 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class ImmutableEnvelopeTest extends TestCase {
+public final class ImmutableEnvelopeTest extends EPSGDependentTestCase {
     /**
      * Creates a new test case.
      */
@@ -44,7 +44,7 @@ public final class ImmutableEnvelopeTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final ImmutableEnvelope e1 = new ImmutableEnvelope(
+        final var e1 = new ImmutableEnvelope(
                 new double[] {-20, -10},
                 new double[] { 20,  10}, WGS84);
         final ImmutableEnvelope e2 = assertSerializedEquals(e1);

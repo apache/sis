@@ -42,7 +42,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
@@ -56,7 +56,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class WKTDictionaryTest extends TestCase {
+public final class WKTDictionaryTest extends EPSGDependentTestCase {
     /**
      * Creates a new test case.
      */

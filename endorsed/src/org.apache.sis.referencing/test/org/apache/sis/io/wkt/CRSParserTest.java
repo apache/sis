@@ -26,6 +26,7 @@ import org.apache.sis.system.Loggers;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.referencing.WKTParserTest;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.FailureDetailsReporter;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 
 
 /**
@@ -62,6 +64,15 @@ public final class CRSParserTest extends WKTParserTest {
     public CRSParserTest() {
         super(GeodeticObjectFactory.provider());
         loggings = new LoggingWatcher(Loggers.WKT);
+    }
+
+    /**
+     * Forces the check of whether of EPSG database exists before to start any tests.
+     * This is done for avoiding race conditions logging the same message many times.
+     */
+    @BeforeAll
+    public static void forceCheckForEPSG() {
+        EPSGDependentTestCase.forceCheckForEPSG();
     }
 
     /**

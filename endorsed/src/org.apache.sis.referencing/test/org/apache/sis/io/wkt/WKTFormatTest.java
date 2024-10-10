@@ -34,7 +34,7 @@ import org.apache.sis.parameter.Parameterized;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -45,7 +45,7 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class WKTFormatTest extends TestCase {
+public final class WKTFormatTest extends EPSGDependentTestCase {
     /**
      * The instance to use for the test, or {@code null} if none.
      */

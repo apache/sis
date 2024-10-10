@@ -22,10 +22,10 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.referencing.GeodeticException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Optional;
+import org.apache.sis.referencing.GeodeticException;
 
 
 /**
