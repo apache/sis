@@ -22,6 +22,8 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.referencing.GeodeticException;
 
 

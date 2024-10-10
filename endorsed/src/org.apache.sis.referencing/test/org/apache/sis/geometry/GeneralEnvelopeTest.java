@@ -28,7 +28,7 @@ import org.apache.sis.math.MathFunctions;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
@@ -49,7 +49,7 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-public class GeneralEnvelopeTest extends TestCase {
+public class GeneralEnvelopeTest extends EPSGDependentTestCase {
     /**
      * Tolerance threshold for floating point comparisons.
      */

@@ -41,8 +41,10 @@ import org.apache.sis.referencing.privy.AffineTransform2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
@@ -60,6 +62,15 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      * Creates a new test case.
      */
     public EnvelopesTest() {
+    }
+
+    /**
+     * Forces the check of whether of EPSG database exists before to start any tests.
+     * This is done for avoiding race conditions logging the same message many times.
+     */
+    @BeforeAll
+    public static void forceCheckForEPSG() {
+        EPSGDependentTestCase.forceCheckForEPSG();
     }
 
     /**
