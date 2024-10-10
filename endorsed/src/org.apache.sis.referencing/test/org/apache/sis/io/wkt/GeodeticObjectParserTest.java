@@ -48,7 +48,7 @@ import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
@@ -61,7 +61,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class GeodeticObjectParserTest extends TestCase {
+public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     /**
      * The parser to use for the test.
      */

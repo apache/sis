@@ -46,7 +46,6 @@ import static org.apache.sis.util.privy.Constants.UTC;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.*;
@@ -61,7 +60,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class CommonCRSTest extends TestCase {
+public final class CommonCRSTest extends EPSGDependentTestCase {
     /**
      * Creates a new test case.
      */

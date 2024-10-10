@@ -31,7 +31,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.sis.referencing.factory.TestFactorySource;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 
 
 /**
@@ -41,7 +41,7 @@ import org.apache.sis.test.TestCase;
  */
 @Execution(ExecutionMode.CONCURRENT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public final class ComparisonWithEPSG extends TestCase {
+public final class ComparisonWithEPSG extends EPSGDependentTestCase {
     /**
      * The source of the EPSG factory.
      */
