@@ -124,8 +124,17 @@ public abstract class MatrixGridRessource extends TiledGridResource {
                         long[] tileCoord = iterator.getTileCoordinatesInResource();
                         final RenderedImage image = getTileImage(tileCoord);
                         var s = new Snapshot(iterator);
-                        Raster raster = (image instanceof BufferedImage) ? ((BufferedImage)image).getRaster() : image.getData();
-                        raster = raster.createTranslatedChild(s.originX, s.originY);
+                        Raster raster;
+                        if (image instanceof BufferedImage) {
+                            raster = ((BufferedImage)image).getRaster();
+                        } else if (image.getNumXTiles() == 1 && image.getNumYTiles() == 1) {
+                            raster = image.getTile(0, 0);
+                        } else {
+                            raster = image.getData();
+                        }
+                        if (s.originX != 0 || s.originY != 0) {
+                            raster = raster.createTranslatedChild(s.originX, s.originY);
+                        }
                         result[iterator.getTileIndexInResultArray()] = raster;
                     }
                 } while (iterator.next());
