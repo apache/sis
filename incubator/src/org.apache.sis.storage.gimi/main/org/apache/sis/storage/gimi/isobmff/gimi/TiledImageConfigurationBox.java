@@ -20,7 +20,6 @@ import java.io.IOException;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
-
 /**
  * Definition from OGC TestBed 20 : tild.pdf
  *

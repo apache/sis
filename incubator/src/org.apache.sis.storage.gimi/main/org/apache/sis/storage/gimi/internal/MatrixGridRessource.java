@@ -25,7 +25,9 @@ import java.io.IOException;
 import java.util.logging.Logger;
 import org.opengis.util.GenericName;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Resource;
@@ -40,9 +42,9 @@ import org.apache.sis.storage.tiling.TileMatrix;
  */
 public abstract class MatrixGridRessource extends TiledGridResource {
 
-    private int[] tileSize;
-    private SampleModel sampleModel;
-    private ColorModel colorModel;
+    protected int[] tileSize;
+    protected SampleModel sampleModel;
+    protected ColorModel colorModel;
 
     protected static final Logger LOGGER = Logger.getLogger("org.geotoolkit.storage.coverage");
 
@@ -52,7 +54,7 @@ public abstract class MatrixGridRessource extends TiledGridResource {
 
     protected abstract TileMatrix getTileMatrix();
 
-    private void initialize() throws DataStoreException {
+    protected void initialize() throws DataStoreException {
         if (sampleModel != null) return;
         final RenderedImage image = getTileImage(0,0);
         colorModel = image.getColorModel();
@@ -91,6 +93,13 @@ public abstract class MatrixGridRessource extends TiledGridResource {
 
     @Override
     public GridCoverage read(GridGeometry domain, int ... range) throws DataStoreException {
+        if (domain != null) {
+            GridGeometry grid = getGridGeometry();
+            final GridExtent intersection = grid.derive()
+                    .rounding(GridRoundingMode.ENCLOSING)
+                    .subgrid(domain).getIntersection();
+            domain = grid.derive().subgrid(intersection).build();
+        }
         return new MatrixCoverage(new Subset(domain, range));
     }
 
@@ -132,9 +141,7 @@ public abstract class MatrixGridRessource extends TiledGridResource {
                         } else {
                             raster = image.getData();
                         }
-                        if (s.originX != 0 || s.originY != 0) {
-                            raster = raster.createTranslatedChild(s.originX, s.originY);
-                        }
+                        raster = raster.createTranslatedChild(s.originX, s.originY);
                         result[iterator.getTileIndexInResultArray()] = raster;
                     }
                 } while (iterator.next());
