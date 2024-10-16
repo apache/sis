@@ -142,7 +142,7 @@ public abstract class MatrixGridRessource extends TiledGridResource {
                             raster = image.getData();
                         }
                         raster = raster.createTranslatedChild(s.originX, s.originY);
-                        result[iterator.getTileIndexInResultArray()] = raster;
+                        result[iterator.getTileIndexInResultArray()] = iterator.cache(raster);
                     }
                 } while (iterator.next());
             }

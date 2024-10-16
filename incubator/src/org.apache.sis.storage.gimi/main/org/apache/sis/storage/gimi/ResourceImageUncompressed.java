@@ -309,7 +309,7 @@ class ResourceImageUncompressed extends TiledGridResource implements StoreResour
                         long[] tileCoord = iterator.getTileCoordinatesInResource();
                         final WritableRaster raster = iterator.createRaster();
                         readTile(tileCoord[0], tileCoord[1], raster, Math.toIntExact(tileCoord[0]* tileWidth), Math.toIntExact(tileCoord[1]* tileHeight));
-                        result[iterator.getTileIndexInResultArray()] = raster;
+                        result[iterator.getTileIndexInResultArray()] = iterator.cache(raster);
                     }
                 } while (iterator.next());
             }
