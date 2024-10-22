@@ -150,6 +150,7 @@ final class FeatureAdapter {
      * @param following  the relations that we are following. Used for avoiding never ending loop.
      * @param noFollow   relation to not follow, or {@code null} if none.
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     private FeatureAdapter(final Table table, final DatabaseMetaData metadata,
                            final List<Relation> following, final Relation noFollow)
              throws SQLException, InternalDataStoreException
@@ -161,13 +162,13 @@ final class FeatureAdapter {
         } else {
             keyComponentClass = null;
         }
-        final Map<String,Integer> columnIndices = new HashMap<>();
+        final var columnIndices = new HashMap<String,Integer>();
         /*
          * Create a SELECT clause with all columns that are ordinary attributes.
          * Order matter, because `FeatureIterator` iterator will map the columns
          * to the attributes listed in the `attributes` array in that order.
          */
-        final SQLBuilder sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT);
+        final var sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT);
         for (final Column column : attributes) {
             appendColumn(sql, column.label, columnIndices);
         }
@@ -185,9 +186,9 @@ final class FeatureAdapter {
             deferredAssociation = null;
         } else {
             String deferredAssociation = null;
-            final FeatureAdapter[] dependencies        = new FeatureAdapter[count];
-            final String[]         associationNames    = new String[count];
-            final int[][]          foreignerKeyIndices = new int[count][];
+            final var dependencies        = new FeatureAdapter[count];
+            final var associationNames    = new String[count];
+            final var foreignerKeyIndices = new int[count][];
             /*
              * For each foreigner key to another table, append all columns of that foreigner key
              * and the name of the single feature property where the association will be stored.

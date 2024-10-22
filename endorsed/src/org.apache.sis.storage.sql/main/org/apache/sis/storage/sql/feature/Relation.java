@@ -204,7 +204,7 @@ final class Relation extends TableReference {
               analyzer.getUniqueString(reflect, dir.table),
               analyzer.getUniqueString(reflect, Reflection.FK_NAME));
 
-        final Map<String,String> m = new LinkedHashMap<>();
+        final var m = new LinkedHashMap<String,String>();
         do {
             final String column = analyzer.getUniqueString(reflect, dir.column);
             if (m.put(column, analyzer.getUniqueString(reflect, dir.containerColumn)) != null) {
@@ -216,9 +216,16 @@ final class Relation extends TableReference {
                 break;
             }
         } while (table.equals(reflect.getString(dir.table)) &&                  // Table name is mandatory.
-                 Objects.equals(schema,  reflect.getString(dir.schema)) &&      // Schema and catalog may be null.
-                 Objects.equals(catalog, reflect.getString(dir.catalog)));
-
+                 Objects.equals(schema,   reflect.getString(dir.schema)) &&     // Schema and catalog may be null.
+                 Objects.equals(catalog,  reflect.getString(dir.catalog)) &&
+                 Objects.equals(freeText, reflect.getString(Reflection.FK_NAME)));
+        /*
+         * In above conditions, the comparison of `FK_NAME` is actually the only mandatory check.
+         * The "catalog.schema.table" comparaison is a paranoiac check added as a safety in case
+         * the foreigner key is null or empty in some JDBC implementations.  Note that the table
+         * name is not a sufficient condition, because we could have more than one foreigner key
+         * referencing the same table.
+         */
         columns = CollectionsExt.compact(m);
         /*
          * If the foreigner key uses exactly one column, we can use the name of that column.
@@ -308,7 +315,7 @@ final class Relation extends TableReference {
              * relations declare different column order in their foreigner key. Note that the 'columns' map
              * is unmodifiable if its size is less than 2, and modifiable otherwise.
              */
-            final Map<String,String> copy = new HashMap<>(columns);
+            final var copy = new HashMap<String,String>(columns);
             columns.clear();
             for (String key : pkColumns) {
                 String value = key;
