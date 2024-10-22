@@ -165,7 +165,7 @@ public final class Analyzer {
          * Finds the keyword used for identifying tables and views.
          * Derby, HSQLDB and PostgreSQL uses the "TABLE" type, but H2 uses "BASE TABLE".
          */
-        final Set<String> types = new HashSet<>(4);
+        final var types = new HashSet<String>(4);
         try (ResultSet reflect = metadata.getTableTypes()) {
             while (reflect.next()) {
                 final String type = reflect.getString(Reflection.TABLE_TYPE);

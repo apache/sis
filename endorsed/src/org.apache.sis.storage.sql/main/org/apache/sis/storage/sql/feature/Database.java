@@ -304,7 +304,6 @@ public class Database<G> extends Syntax  {
      * @return names of the standard tables defined by the spatial schema.
      */
     final Set<String> detectSpatialSchema(final DatabaseMetaData metadata, final String[] tableTypes) throws SQLException {
-        final String escape = metadata.getSearchStringEscape();
         /*
          * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
          * Note that the standard specified those names in upper-case letters, which is also

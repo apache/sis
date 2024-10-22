@@ -80,7 +80,7 @@ public enum FunctionProperty {
     /**
      * A function is <i>injective</i> if each value of <var>T</var> is either unrelated
      * to <var>S</var>, or is the output of exactly one value of <var>S</var>.
-     * For example an {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link Integer}
+     * For example, an {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link Integer}
      * to {@link String} is an injective function, because no pair of integers can produce the same string.
      *
      * <p>A function which is both injective and {@linkplain #SURJECTIVE surjective} is a
@@ -95,7 +95,7 @@ public enum FunctionProperty {
     /**
      * A function is <i>surjective</i> if any value of <var>T</var> can be created
      * from one or many values of <var>S</var>.
-     * For example an {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link String}
+     * For example, an {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link String}
      * to {@link Integer} is a surjective function, because there is always at least one string for each integer value.
      * Note that such function cannot be injective since many different strings can represent the same integer value.
      *
