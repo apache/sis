@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.util.List;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
@@ -38,6 +39,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.referencing.ExportableTransform;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
@@ -75,7 +77,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @since 0.5
  */
-public class PassThroughTransform extends AbstractMathTransform implements Serializable {
+public class PassThroughTransform extends AbstractMathTransform implements Serializable, ExportableTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -674,6 +676,47 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             inverse.inverse = this;
         }
         return inverse;
+    }
+
+    @Override
+    public String toECMAScript() throws UnsupportedOperationException {
+
+        final int subDimSource = subTransform.getSourceDimensions();
+        final int subDimTarget = subTransform.getTargetDimensions();
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+
+        final List<MathTransform> steps = MathTransforms.getSteps(subTransform);
+
+        final StringBuilder trsSb = new StringBuilder();
+        trsSb.append(
+            "\ttransform : function(src) {\n" +
+            "\t\tlet subsrc = [...src.slice(" + firstAffectedCoordinate +"," + (firstAffectedCoordinate+subDimSource) +")];\n");
+
+        for (int i = 0, n = steps.size(); i < n; i++) {
+            final MathTransform step = steps.get(i);
+
+            final String stepObj;
+            if (step instanceof ExportableTransform) {
+                final ExportableTransform exp = (ExportableTransform) step;
+                stepObj = exp.toECMAScript();
+            } else {
+                throw new UnsupportedOperationException(step.getClass().getName() + " is not an ExportableTransform.");
+            }
+            sb.append("\t_step").append(i).append(" : ").append(stepObj.replaceAll("\n", "\n\t")).append(",\n");
+            trsSb.append("\t\tsubsrc = this._step").append(i).append(".transform(subsrc);\n");
+        }
+
+        trsSb.append(
+            "\t\tconst before = src.slice(0," +firstAffectedCoordinate+");\n"+
+            "\t\tconst after = src.slice(-"+numTrailingCoordinates+");\n"+
+            "\t\treturn before.concat(subsrc).concat(after);\n" +
+            "\t}\n");
+
+        sb.append(trsSb.toString());
+        sb.append("}");
+        return sb.toString();
     }
 
     /**

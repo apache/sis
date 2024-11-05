@@ -16,50 +16,51 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.Map;
-import java.util.List;
-import java.util.Arrays;
 import java.io.Serializable;
 import static java.lang.Math.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.util.FactoryException;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.datum.Ellipsoid;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.SphericalCS;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.referencing.privy.Formulas;
-import org.apache.sis.referencing.privy.DirectPositionView;
-import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.datum.DefaultEllipsoid;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.provider.MapProjection;
-import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
-import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
-import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.metadata.iso.citation.Citations;
-import static org.apache.sis.referencing.operation.provider.MapProjection.ECCENTRICITY;
+import org.apache.sis.referencing.ExportableTransform;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetweenGeographic.DIMENSION;
+import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
+import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
+import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
+import org.apache.sis.referencing.operation.provider.MapProjection;
+import static org.apache.sis.referencing.operation.provider.MapProjection.ECCENTRICITY;
+import org.apache.sis.referencing.privy.DirectPositionView;
+import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.resources.Errors;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -103,7 +104,7 @@ import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetw
  * @version 1.5
  * @since   0.7
  */
-public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
+public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable, ExportableTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -946,8 +947,98 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
         return false;
     }
 
+    @Override
+    public String toECMAScript() throws UnsupportedOperationException {
+        return toECMAScript(false);
+    }
 
+    private String toECMAScript(boolean inverse) throws UnsupportedOperationException {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
 
+        if (!inverse) {
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tconst eccentricitySquared = " + Double.toString(eccentricitySquared) + ";\n" +
+                "\t\tconst λ     = src[0];// Longitude\n" +
+                "\t\tconst φ     = src[1];// Latitude\n" +
+                "\t\tconst h     = " + (withHeight ? "src[2]" : "0.0") + ";// Height above the ellipsoid\n" +
+                "\t\tconst sinφ  = Math.sin(φ);\n" +
+                "\t\tconst ν     = 1.0/Math.sqrt(1 - eccentricitySquared * (sinφ*sinφ)); // Prime vertical radius of curvature at latitude φ\n" +
+                "\t\tconst rcosφ = (ν + h) * Math.cos(φ);\n" +
+                "\t\tconst d0 = rcosφ * Math.cos(λ); // X: Toward prime meridian\n" +
+                "\t\tconst d1 = rcosφ * Math.sin(λ); // Y: Toward 90° east\n" +
+                "\t\tconst d2 = (ν * (1 - eccentricitySquared) + h) * sinφ; // Z: Toward north pole\n" +
+                "\t\treturn [d0,d1,d2];\n" +
+                "\t}\n"
+                );
+        } else {
+            //constants
+            sb.append("\t_ANGULAR_TOLERANCE : ").append(Double.toString(Formulas.ANGULAR_TOLERANCE)).append(",\n");
+            sb.append("\t_MAXIMUM_ITERATIONS : ").append(Formulas.MAXIMUM_ITERATIONS).append(",\n");
+            sb.append("\t_eccentricitySquared : ").append(Double.toString(eccentricitySquared)).append(",\n");
+            sb.append("\t_axisRatio : ").append(Double.toString(axisRatio)).append(",\n");
+            //utils functions
+            sb.append(
+              "\t_copySign : function(x, y) {\n" +
+              "\t\treturn Math.sign(x) === Math.sign(y) ? x : -x;\n" +
+              "\t},\n");
+
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tlet dst = new Array("+getTargetDimensions()+");\n" +
+                "\t\tconst X = src[0];\n" +
+                "\t\tconst Y = src[1];\n" +
+                "\t\tconst Z = src[2];\n" +
+                "\t\tconst p = Math.hypot(X, Y);\n" +
+                "\t\tconst tanq  = Z / (p*this._axisRatio);\n" +
+                "\t\tconst cos2q = 1.0/(1.0 + tanq*tanq);\n" +
+                "\t\tconst sin2q = 1.0 - cos2q;\n" +
+                "\t\tlet φ = Math.atan((Z + this._copySign(this._eccentricitySquared * sin2q*Math.sqrt(sin2q), tanq) / this._axisRatio) /\n" +
+                "                (p -          this._eccentricitySquared * cos2q*Math.sqrt(cos2q)));\n" +
+                "\t\t\n");
+            if (!useIterations) {
+                sb.append(
+                    "\t\tdst[0] = Math.atan2(Y, X);\n" +
+                    "\t\tdst[1] = φ;\n");
+                if (withHeight) {
+                    sb.append(
+                        "\t\tconst sinφ = Math.sin(φ);\n" +
+                        "\t\tconst ν = 1.0/Math.sqrt(1 - this._eccentricitySquared * (sinφ*sinφ));\n" +
+                        "\t\tdst[2] = p/Math.cos(φ) - ν;\n");
+                }
+            } else {
+                sb.append(
+                    "\t\tlet found = false;\n" +
+                    "\t\tfor (let it = this._MAXIMUM_ITERATIONS; !found && it >= 0; it--) {\n" +
+                    "\t\t\tconst sinφ = Math.sin(φ);\n" +
+                    "\t\t\tconst ν = 1/sqrt(1 - this._eccentricitySquared * (sinφ*sinφ));\n" +
+                    "\t\t\tconst Δφ = φ - (φ = atan((Z + this._eccentricitySquared * ν * sinφ) / p));\n" +
+                    "\t\t\tif (!(abs(Δφ) >= this._ANGULAR_TOLERANCE * (Math.PI/180) * 0.25)) { // Use ! for accepting NaN.\n" +
+                    "\t\t\t\tdst[0] = Math.atan2(Y, X);\n" +
+                    "\t\t\t\tdst[1] = φ;\n");
+                if (withHeight) {
+                    sb.append(
+                        "\t\t\t\tdst[2] = p/Math.cos(φ) - ν;\n");
+                }
+                sb.append(
+                    "\t\t\t\tfound = true;\n" +
+                    "\t\t\t}\n" +
+                    "\t\t}\n" +
+                    "\t\tif (!found) {\n" +
+                    "\t\t\tdst[0] = Number.NaN;\n" +
+                    "\t\t\tdst[1] = Number.NaN;\n" +
+                    "\t\t}\n"
+                    );
+            }
+            sb.append(
+                "\t\treturn dst;\n" +
+                "\t}\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
 
     /**
      * The descriptor of the inverse transform.
@@ -963,7 +1054,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      */
-    private final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
+    private final class Inverse extends AbstractMathTransform.Inverse implements Serializable, ExportableTransform {
         /**
          * Serial number for inter-operability with different versions.
          */
@@ -1124,6 +1215,12 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
                 transforms.add(++index, new Geographic3Dto2D.WKT(false));
             }
             return index;
+        }
+
+
+        @Override
+        public String toECMAScript() throws UnsupportedOperationException {
+            return EllipsoidToCentricTransform.this.toECMAScript(true);
         }
     }
 

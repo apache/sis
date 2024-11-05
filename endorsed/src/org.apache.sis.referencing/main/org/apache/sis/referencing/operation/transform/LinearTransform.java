@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import org.apache.sis.referencing.ExportableTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -71,7 +72,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  *
  * @since 0.4
  */
-public interface LinearTransform extends MathTransform {
+public interface LinearTransform extends MathTransform, ExportableTransform{
     /**
      * Returns {@code true} if this transform is affine.
      * An affine transform preserves parallelism and has the same
@@ -134,4 +135,54 @@ public interface LinearTransform extends MathTransform {
      */
     @Override
     LinearTransform inverse() throws NoninvertibleTransformException;
+
+    @Override
+    public default String toECMAScript() throws UnsupportedOperationException {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+
+        sb.append("\ttransform : function(src) {\n");
+        sb.append("\t\tlet dst = new Array(").append(getTargetDimensions()).append(");\n");
+
+
+        final Matrix matrix = getMatrix();
+        sb.append("\t\t/*\n\t\t").append(matrix.toString().replaceAll("\n", "\n\t\t")).append("*/\n");
+
+        final int sourceDimensions = getSourceDimensions();
+        final int numCol = matrix.getNumCol();
+        final int targetDimensions = getTargetDimensions();
+
+        for (int k = 0; k < targetDimensions; k++) {
+            sb.append("\t\tdst[").append(k).append("] = ");
+            boolean first = true;
+            for (int c = 0; c < numCol; c++) {
+                final double element = matrix.getElement(k, c);
+                if (element != 0.0) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        sb.append(" + ");
+                    }
+                    if (c >= sourceDimensions) {
+                        //implicite  * 1
+                        sb.append(element);
+                    } else {
+                        sb.append(element).append(" * src[").append(c).append("]");
+                    }
+                }
+            }
+            if (first) {
+                //all matrix row values are 0.0
+                sb.append("0.0");
+            }
+
+            sb.append(";\n");
+        }
+        sb.append("\t\treturn dst;\n\t}\n");
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+
 }

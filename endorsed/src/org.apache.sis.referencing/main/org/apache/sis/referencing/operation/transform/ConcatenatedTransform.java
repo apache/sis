@@ -46,6 +46,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.referencing.ExportableTransform;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
@@ -65,7 +66,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @see MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
  */
-class ConcatenatedTransform extends AbstractMathTransform implements Serializable {
+class ConcatenatedTransform extends AbstractMathTransform implements Serializable, ExportableTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -839,6 +840,39 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             dstOff += numBuf * targetDim;
             numPts -= numBuf;
         } while (numPts != 0);
+    }
+
+    @Override
+    public String toECMAScript() throws UnsupportedOperationException {
+        final int sub1DimSource = transform1.getSourceDimensions();
+        final int sub2DimSource = transform2.getSourceDimensions();
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+
+        if (transform1 instanceof ExportableTransform) {
+            final ExportableTransform exp = (ExportableTransform) transform1;
+            sb.append("\t_sub1 : ").append(exp.toECMAScript().replace("\n", "\n\t")).append(",\n");
+        } else {
+            throw new UnsupportedOperationException(transform1.getClass().getName() + " is not an ExportableTransform.");
+        }
+
+        if (transform2 instanceof ExportableTransform) {
+            final ExportableTransform exp = (ExportableTransform) transform2;
+            sb.append("\t_sub2 : ").append(exp.toECMAScript().replace("\n", "\n\t")).append(",\n");
+        } else {
+            throw new UnsupportedOperationException(transform2.getClass().getName() + " is not an ExportableTransform.");
+        }
+
+        sb.append(
+            "\ttransform : function(src) {\n" +
+            "\t\tsrc = this._sub1.transform(src);\n" +
+            "\t\tsrc = this._sub2.transform(src);\n" +
+            "\t\treturn src;\n" +
+            "\t}\n");
+
+        sb.append("}");
+        return sb.toString();
     }
 
     /**

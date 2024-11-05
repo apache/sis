@@ -34,6 +34,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.referencing.ExportableTransform;
 
 
 /**
@@ -68,7 +69,7 @@ import org.apache.sis.measure.Longitude;
  * @see org.apache.sis.referencing.operation.transform.WraparoundTransform
  * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
  */
-final class LongitudeWraparound extends AbstractMathTransform2D implements Serializable {
+final class LongitudeWraparound extends AbstractMathTransform2D implements Serializable, ExportableTransform {
     /**
      * For cross-version compatibility.
      */
@@ -226,13 +227,18 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
         return inverse;
     }
 
+    @Override
+    public String toECMAScript() throws UnsupportedOperationException {
+        return projection.toECMAScript();
+    }
+
     /**
      * Longitude wraparound applied on reverse projection.
      * This is a copy of {@code NormalizedProjection.Inverse} with longitude wraparound added after conversion.
      *
      * @author  Martin Desruisseaux (Geomatys)
      */
-    private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
+    private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable, ExportableTransform {
         /**
          * For cross-version compatibility.
          */
@@ -311,6 +317,11 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
                     dstOff += DIMENSION;
                 }
             }
+        }
+
+        @Override
+        public String toECMAScript() throws UnsupportedOperationException {
+            return forward.projection.toECMAScript(true);
         }
     }
 

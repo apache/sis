@@ -372,6 +372,92 @@ public class PolarStereographic extends ConformalProjection {
         dstPts[dstOff+1] = -φ(fastHypot(x, y));
     }
 
+    @Override
+    protected String toECMAScript(boolean inverse) {
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+
+        if (!inverse) {
+            //constants
+            sb.append("\t_eccentricity : ").append(Double.toString(eccentricity)).append(",\n");
+            //utils functions
+            sb.append(
+              "\t_expΨ : function(φ, ℯsinφ) {\n" +
+              "\t\treturn Math.tan(Math.PI/4 + 0.5*φ) * Math.pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*this._eccentricity);\n" +
+              "\t},\n");
+        } else {
+            //constants
+            if (isUseIterations()) {
+                sb.append("\t_MAXIMUM_ITERATIONS : ").append(MAXIMUM_ITERATIONS).append(",\n");
+                sb.append("\t_ITERATION_TOLERANCE : ").append(Double.toString(ITERATION_TOLERANCE)).append(",\n");
+                sb.append("\t_eccentricity : ").append(Double.toString(eccentricity)).append(",\n");
+            }
+            //utils functions
+            sb.append(
+              "\t_fastHypot : function(x, y) {\n" +
+              "\t\treturn Math.sqrt(x*x + y*y);\n" +
+              "\t},\n");
+
+
+            final double[] exp = getExpansionFirstTerms();
+            sb.append(
+                "\t_φ : function(rexpΨ) {\n" +
+                "\t\tlet φ = (Math.PI/2) - 2*Math.atan(rexpΨ);\n" +
+                "\t\tconst sin_2φ = Math.sin(2*φ);\n" +
+                "\t\tconst cos_2φ = Math.cos(2*φ);\n" +
+                "\t\tφ += sin_2φ * ("+Double.toString(exp[0])+" + cos_2φ * ("+Double.toString(exp[1])+" + cos_2φ * ("+Double.toString(exp[2])+" + cos_2φ * "+Double.toString(exp[3])+")));\n");
+
+            if (!isUseIterations()) {
+                sb.append(
+                    "\t\treturn φ;\n" +
+                    "\t},\n");
+            } else {
+                sb.append(
+                    "\t\tconst hℯ = 0.5 * this._eccentricity;\n" +
+                    "\t\tfor (let it=0; it<this._MAXIMUM_ITERATIONS; it++) {\n" +
+                    "\t\t\tconst ℯsinφ = this._eccentricity * Math.sin(φ);\n" +
+                    "\t\t\tconst Δφ = φ - (φ = Math.PI/2 - 2*Math.atan(rexpΨ * Math.pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ)));\n" +
+                    "\t\t\tif (!(Math.abs(Δφ) > this._ITERATION_TOLERANCE)) { // Use '!' for accepting NaN.\n" +
+                    "\t\t\t\treturn φ;\n" +
+                    "\t\t\t}\n" +
+                    "\t\t}\n" +
+                    "\t\treturn Number.NaN;\n" +
+                    "\t},\n");
+            }
+        }
+
+
+        //transform function
+        if (!inverse) {
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tconst θ    = src[0];\n" +
+                "\t\tconst φ    = src[1];\n" +
+                "\t\tconst sinθ = Math.sin(θ);\n" +
+                "\t\tconst cosθ = Math.cos(θ);\n" +
+                "\t\tconst sinφ = Math.sin(φ);\n" +
+                "\t\tconst t = this._expΨ(φ, this._eccentricity*sinφ);\n" +
+                "\t\tconst x = t * sinθ;\n" +
+                "\t\tconst y = t * cosθ;\n" +
+                "\t\treturn [x,y];\n" +
+                "\t}\n"
+                );
+        } else {
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tconst x = src[0];\n" +
+                "\t\tconst y = src[1];\n" +
+                "\t\tconst d0 = Math.atan2(x, y);\n" +
+                "\t\tconst d1 = -this._φ(this._fastHypot(x, y));\n" +
+                "\t\treturn [d0, d1];\n" +
+                "\t}\n"
+                );
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
 
     /**
      * Provides the transform equations for the spherical case of the polar stereographic projection.

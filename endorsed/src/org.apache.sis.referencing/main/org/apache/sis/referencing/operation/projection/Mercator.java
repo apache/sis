@@ -482,6 +482,87 @@ subst:  if (variant.spherical || eccentricity == 0) {
         dstPts[dstOff+1] = φ(exp(-y));
     }
 
+    @Override
+    protected String toECMAScript(boolean inverse) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+
+        if (!inverse) {
+            //constants
+            sb.append("\t_ANGULAR_TOLERANCE : ").append(Double.toString(ANGULAR_TOLERANCE)).append(",\n");
+            sb.append("\t_eccentricity : ").append(Double.toString(eccentricity)).append(",\n");
+            //utils functions
+            sb.append(
+              "\t_expΨ : function(φ, ℯsinφ) {\n" +
+              "\t\treturn Math.tan(Math.PI/4 + 0.5*φ) * Math.pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*this._eccentricity);\n" +
+              "\t},\n");
+            sb.append(
+              "\t_copySign : function(x, y) {\n" +
+              "\t\treturn Math.sign(x) === Math.sign(y) ? x : -x;\n" +
+              "\t},\n");
+
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tlet φ = src[1];\n"+
+                "\t\tlet sinφ = Math.sin(φ);\n"+
+                "\t\tlet y = 0.0;\n"+
+                "\t\tlet a = 0.0;\n"+
+                "\t\tif (φ == 0.0) {\n"+
+                "\t\t\ty = φ;\n"+
+                "\t\t} else {\n"+
+                "\t\t\ta = Math.abs(φ);\n"+
+                "\t\t\tif (a < Math.PI / 2.0) {\n"+
+                "\t\t\t\ty = Math.log(this._expΨ(φ, this._eccentricity * sinφ));\n"+
+                "\t\t\t} else if (a <= (Math.PI/2 + this._ANGULAR_TOLERANCE)) {\n"+
+                "\t\t\t\ty = this._copySign(Number.POSITIVE_INFINITY, φ);\n"+
+                "\t\t\t} else {\n"+
+                "\t\t\t\ty = NaN;\n"+
+                "\t\t\t}\n"+
+                "\t\t}\n"+
+                "\t\treturn [src[0], y];\n" +
+                "\t}\n"
+                );
+
+        } else {
+
+            final double[] exp = getExpansionFirstTerms();
+            sb.append(
+                "\t_φ : function(rexpΨ) {\n" +
+                "\t\tlet φ = (Math.PI/2) - 2*Math.atan(rexpΨ);\n" +
+                "\t\tconst sin_2φ = Math.sin(2*φ);\n" +
+                "\t\tconst cos_2φ = Math.cos(2*φ);\n" +
+                "\t\tφ += sin_2φ * ("+Double.toString(exp[0])+" + cos_2φ * ("+Double.toString(exp[1])+" + cos_2φ * ("+Double.toString(exp[2])+" + cos_2φ * "+Double.toString(exp[3])+")));\n");
+
+            if (!isUseIterations()) {
+                sb.append(
+                    "\t\treturn φ;\n" +
+                    "\t},\n");
+            } else {
+                sb.append(
+                    "\t\tconst hℯ = 0.5 * this._eccentricity;\n" +
+                    "\t\tfor (let it=0; it<this._MAXIMUM_ITERATIONS; it++) {\n" +
+                    "\t\t\tconst ℯsinφ = this._eccentricity * Math.sin(φ);\n" +
+                    "\t\t\tconst Δφ = φ - (φ = Math.PI/2 - 2*Math.atan(rexpΨ * Math.pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ)));\n" +
+                    "\t\t\tif (!(Math.abs(Δφ) > this._ITERATION_TOLERANCE)) { // Use '!' for accepting NaN.\n" +
+                    "\t\t\t\treturn φ;\n" +
+                    "\t\t\t}\n" +
+                    "\t\t}\n" +
+                    "\t\treturn Number.NaN;\n" +
+                    "\t},\n");
+            }
+
+
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tlet y = src[1];\n"+
+                "\t\treturn [src[0], this._φ(Math.exp(-y))];\n" +
+                "\t}\n"
+                );
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
 
     /**
      * Provides the transform equations for the spherical case of the Mercator projection.

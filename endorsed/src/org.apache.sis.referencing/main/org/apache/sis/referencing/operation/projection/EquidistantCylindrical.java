@@ -258,4 +258,36 @@ public class EquidistantCylindrical extends NormalizedProjection {
         dstPts[dstOff  ] = srcPts[srcOff];
         dstPts[dstOff+1] = y + μ;
     }
+
+    @Override
+    protected String toECMAScript(boolean inverse) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+
+        if (!inverse) {
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tconst φ = src[1];\n" +
+                "\t\tconst sinθ = Math.sin(2*φ);\n" +
+                "\t\tconst cosθ = Math.cos(2*φ);\n" +
+                "\t\tconst y = (((((("+Double.toString(cf7)+"*cosθ + "+Double.toString(cf6)+")*cosθ + "+Double.toString(cf5)+")*cosθ + "+Double.toString(cf4)+")*cosθ + "+Double.toString(cf3)+")*cosθ + "+Double.toString(cf2)+")*cosθ + "+Double.toString(cf1)+")*sinθ + "+Double.toString(c0)+"*φ;\n" +
+                "\t\treturn [src[0], y];\n" +
+                "\t}\n"
+                );
+        } else {
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tconst μ = src[1] / "+Double.toString(c0)+";\n" +
+                "\t\tconst sinθ = Math.sin(2*μ);\n" +
+                "\t\tconst cosθ = Math.cos(2*μ);\n" +
+                "\t\tconst y = (((((("+Double.toString(ci7)+"*cosθ + "+Double.toString(ci6)+")*cosθ + "+Double.toString(ci5)+")*cosθ + "+Double.toString(ci4)+")*cosθ + "+Double.toString(ci3)+")*cosθ + "+Double.toString(ci2)+")*cosθ + "+Double.toString(ci1)+")*sinθ;\n" +
+                "\t\treturn [src[0], y + μ];\n" +
+                "\t}\n"
+                );
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
 }

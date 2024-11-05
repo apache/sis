@@ -47,6 +47,7 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.provider.MapProjection;
+import org.apache.sis.referencing.ExportableTransform;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.privy.Constants;
@@ -123,7 +124,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @see ContextualParameters
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  */
-public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
+public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable, ExportableTransform {
     /**
      * For cross-version compatibility.
      */
@@ -771,6 +772,15 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         return inverse;
     }
 
+    protected String toECMAScript(boolean inverse) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String toECMAScript() throws UnsupportedOperationException {
+        return toECMAScript(false);
+    }
+
     /**
      * Reverse of a normalized map projection.
      * Note that a slightly modified copy of this class is in {@code LongitudeWraparound.Inverse}.
@@ -778,7 +788,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * @author  Martin Desruisseaux (Geomatys)
      */
-    private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
+    private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable, ExportableTransform {
         /**
          * For cross-version compatibility.
          */
@@ -853,6 +863,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             if (!forward.tryInverseConcatenate(context)) {
                 super.tryConcatenate(context);
             }
+        }
+
+        @Override
+        public String toECMAScript() throws UnsupportedOperationException {
+            return forward.toECMAScript(true);
         }
     }
 

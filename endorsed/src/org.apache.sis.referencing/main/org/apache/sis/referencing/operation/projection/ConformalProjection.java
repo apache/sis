@@ -328,4 +328,12 @@ abstract class ConformalProjection extends NormalizedProjection {
     final double dy_dφ(final double sinφ, final double cosφ) {
         return (1 / cosφ)  -  eccentricitySquared * cosφ / (1 - eccentricitySquared * (sinφ*sinφ));
     }
+
+    final double[] getExpansionFirstTerms() {
+        return new double[]{c2χ, c4χ, c6χ, c8χ};
+    }
+
+    final boolean isUseIterations() {
+        return useIterations;
+    }
 }

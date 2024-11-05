@@ -733,8 +733,144 @@ public class TransverseMercator extends NormalizedProjection {
         throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
     }
 
+    @Override
+    protected String toECMAScript(boolean inverse) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
 
+        if (!inverse) {
+            //constants
+            sb.append("\t_eccentricity : ").append(Double.toString(eccentricity)).append(",\n");
+            sb.append("\t_cf2 : ").append(Double.toString(cf2)).append(",\n");
+            sb.append("\t_cf4 : ").append(Double.toString(cf4)).append(",\n");
+            sb.append("\t_cf6 : ").append(Double.toString(cf6)).append(",\n");
+            sb.append("\t_cf8 : ").append(Double.toString(cf8)).append(",\n");
 
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tlet dst = new Array("+getTargetDimensions()+");\n" +
+                "\t\tconst λ = src[0];\n" +
+                "\t\tconst φ = src[1];\n" +
+                "\t\tif (Math.abs(λ) > 90 * (Math.PI/180) && Math.abs(Math.IEEEremainder(λ, 2*PI)) > 90 * (Math.PI/180)) {\n" +
+                "\t\t\tdst[0] = Number.NaN;\n" +
+                "\t\t\tdst[1] = Number.NaN;\n" +
+                "\t\t} else {\n" +
+                "\t\t\tconst sinλ  = Math.sin(λ);\n" +
+                "\t\t\tconst ℯsinφ = Math.sin(φ) * this._eccentricity;\n" +
+                "\t\t\tconst Q     = Math.asinh(Math.tan(φ)) - Math.atanh(ℯsinφ) * this._eccentricity;\n" +
+                "\t\t\tconst coshQ = Math.cosh(Q);\n" +
+                "\t\t\tconst η0    = Math.atanh(sinλ / coshQ);\n" +
+                "\t\t\tconst coshη0 = Math.cosh(η0);\n" +
+                "\t\t\tconst ξ0     = Math.asin(Math.tanh(Q) * coshη0);\n" +
+                "\t\t\tconst sin_2ξ0 = Math.sin(2*ξ0);\n" +
+                "\t\t\tconst cos_2ξ0 = Math.cos(2*ξ0);\n" +
+                "\t\t\tconst sin2 = sin_2ξ0 * sin_2ξ0;\n" +
+                "\t\t\tconst cos2 = cos_2ξ0 * cos_2ξ0;\n" +
+                "\t\t\tconst sin_4ξ0 = sin_2ξ0 * cos_2ξ0;\n" +
+                "\t\t\tconst cos_4ξ0 = (cos2  - sin2)   * 0.5;\n" +
+                "\t\t\tconst sin_6ξ0 = (0.75  - sin2)   * sin_2ξ0;\n" +
+                "\t\t\tconst cos_6ξ0 = (cos2  - 0.75)   * cos_2ξ0;\n" +
+                "\t\t\tconst sin_8ξ0 =          sin_4ξ0 * cos_4ξ0;\n" +
+                "\t\t\tconst cos_8ξ0 =  0.125 - sin_4ξ0 * sin_4ξ0;\n" +
+                "\t\t\tconst sinh_2η0 = Math.sinh(2*η0);\n" +
+                "\t\t\tconst cosh_2η0 = Math.cosh(2*η0);\n" +
+                "\t\t\tconst sinh2 = sinh_2η0 * sinh_2η0;\n" +
+                "\t\t\tconst cosh2 = cosh_2η0 * cosh_2η0;\n" +
+                "\t\t\tconst cosh_4η0 = (cosh2 + sinh2) * 0.5;\n" +
+                "\t\t\tconst sinh_4η0 = cosh_2η0 * sinh_2η0;\n" +
+                "\t\t\tconst cosh_6η0 = cosh_2η0 * (cosh2   - 0.75);\n" +
+                "\t\t\tconst sinh_6η0 = sinh_2η0 * (sinh2   + 0.75);\n" +
+                "\t\t\tconst cosh_8η0 = sinh_4η0 * sinh_4η0 + 0.125;\n" +
+                "\t\t\tconst sinh_8η0 = sinh_4η0 * cosh_4η0;\n" +
+                "\t\t\t// η(λ,φ)\n" +
+                "\t\t\tdst[0] = this._cf8 * cos_8ξ0 * sinh_8η0\n" +
+                "\t\t\t       + this._cf6 * cos_6ξ0 * sinh_6η0\n" +
+                "\t\t\t       + this._cf4 * cos_4ξ0 * sinh_4η0\n" +
+                "\t\t\t       + this._cf2 * cos_2ξ0 * sinh_2η0\n" +
+                "\t\t\t       + η0;\n" +
+                "\t\t\t// ξ(λ,φ)\n" +
+                "\t\t\tdst[1] = this._cf8 * sin_8ξ0 * cosh_8η0\n" +
+                "\t\t\t       + this._cf6 * sin_6ξ0 * cosh_6η0\n" +
+                "\t\t\t       + this._cf4 * sin_4ξ0 * cosh_4η0\n" +
+                "\t\t\t       + this._cf2 * sin_2ξ0 * cosh_2η0\n" +
+                "\t\t\t       + ξ0;\n" +
+                "\t\t}\n" +
+                "\t\treturn dst;\n" +
+                "\t}\n"
+                );
+        } else {
+            //constants
+            sb.append("\t_ITERATION_TOLERANCE : ").append(Double.toString(ITERATION_TOLERANCE)).append(",\n");
+            sb.append("\t_MAXIMUM_ITERATIONS : ").append(MAXIMUM_ITERATIONS).append(",\n");
+            sb.append("\t_eccentricity : ").append(Double.toString(eccentricity)).append(",\n");
+            sb.append("\t_ci2 : ").append(Double.toString(ci2)).append(",\n");
+            sb.append("\t_ci4 : ").append(Double.toString(ci4)).append(",\n");
+            sb.append("\t_ci6 : ").append(Double.toString(ci6)).append(",\n");
+            sb.append("\t_ci8 : ").append(Double.toString(ci8)).append(",\n");
+
+            sb.append(
+                "\ttransform : function(src){\n" +
+                "\t\tlet dst = new Array("+getTargetDimensions()+");\n" +
+                "\t\tconst η = src[0];\n" +
+                "\t\tconst ξ = src[1];\n" +
+                "\t\tconst sin_2ξ  = Math.sin(2*ξ);\n" +
+                "\t\tconst cos_2ξ  = Math.cos(2*ξ);\n" +
+                "\t\tconst sinh_2η = Math.sinh(2*η);\n" +
+                "\t\tconst cosh_2η = Math.cosh(2*η);\n" +
+                "\t\tconst sin2 = sin_2ξ * sin_2ξ;\n" +
+                "\t\tconst cos2 = cos_2ξ * cos_2ξ;\n" +
+                "\t\tconst sin_4ξ = sin_2ξ * cos_2ξ;\n" +
+                "\t\tconst cos_4ξ = (cos2  - sin2)   * 0.5;\n" +
+                "\t\tconst sin_6ξ = (0.75  - sin2)   * sin_2ξ;\n" +
+                "\t\tconst cos_6ξ = (cos2  - 0.75)   * cos_2ξ;\n" +
+                "\t\tconst sin_8ξ =          sin_4ξ * cos_4ξ;\n" +
+                "\t\tconst cos_8ξ =  0.125 - sin_4ξ * sin_4ξ;\n" +
+                "\t\t\n" +
+                "\t\tconst sinh2 = sinh_2η * sinh_2η;\n" +
+                "\t\tconst cosh2 = cosh_2η * cosh_2η;\n" +
+                "\t\tconst cosh_4η = (cosh2 + sinh2) * 0.5;\n" +
+                "\t\tconst sinh_4η = cosh_2η * sinh_2η;\n" +
+                "\t\tconst cosh_6η = cosh_2η * (cosh2   - 0.75);\n" +
+                "\t\tconst sinh_6η = sinh_2η * (sinh2   + 0.75);\n" +
+                "\t\tconst cosh_8η = sinh_4η * sinh_4η + 0.125;\n" +
+                "\t\tconst sinh_8η = sinh_4η * cosh_4η;\n" +
+                "\t\tconst ξ0 = ξ - (this._ci8 * sin_8ξ * cosh_8η\n" +
+                "\t\t              + this._ci6 * sin_6ξ * cosh_6η\n" +
+                "\t\t              + this._ci4 * sin_4ξ * cosh_4η\n" +
+                "\t\t              + this._ci2 * sin_2ξ * cosh_2η);\n" +
+                "\t\t\n" +
+                "\t\tconst η0 = η - (this._ci8 * cos_8ξ * sinh_8η\n" +
+                "\t\t              + this._ci6 * cos_6ξ * sinh_6η\n" +
+                "\t\t              + this._ci4 * cos_4ξ * sinh_4η\n" +
+                "\t\t              + this._ci2 * cos_2ξ * sinh_2η);\n" +
+                "\t\t\n" +
+                "\t\tconst β = Math.asin(Math.sin(ξ0) / Math.cosh(η0));\n" +
+                "\t\tconst Q = Math.asinh(Math.tan(β));\n" +
+                "\t\tlet p = this._eccentricity * Math.atanh(this._eccentricity * Math.tanh(Q));\n" +
+                "\t\tlet Qp = Q + p;\n" +
+                "\t\tlet found = false;\n" +
+                "\t\tfor (let it=0; !found && it<this._MAXIMUM_ITERATIONS; it++) {\n" +
+                "\t\t\tconst c = this._eccentricity * Math.atanh(this._eccentricity * Math.tanh(Qp));\n" +
+                "\t\t\tQp = Q + c;\n" +
+                "\t\t\tif (Math.abs(c - p) <= this._ITERATION_TOLERANCE) {\n" +
+                "\t\t\t\tdst[0] = Math.asin(Math.tanh(η0) / Math.cos(β));\n" +
+                "\t\t\t\tdst[1] = Math.atan(Math.sinh(Qp));\n" +
+                "\t\t\t\tfound = true;\n" +
+                "\t\t\t}\n" +
+                "\t\t\tp = c;\n" +
+                "\t\t}\n" +
+                "\t\tif (!found) {\n" +
+                "\t\t\tdst[0] = Number.NaN;\n" +
+                "\t\t\tdst[1] = Number.NaN;\n" +
+                "\t\t}\n" +
+                "\t\treturn dst;\n" +
+                "\t}\n"
+                );
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
 
     /**
      * Provides the transform equations for the spherical case of the Transverse Mercator projection.
