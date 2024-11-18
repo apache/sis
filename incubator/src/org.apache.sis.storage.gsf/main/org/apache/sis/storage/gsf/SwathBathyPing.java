@@ -273,12 +273,12 @@ public final class SwathBathyPing extends StructClass {
         return getDoubles(struct.get(LAYOUT_ALONG_TRACK_ERROR, 960), 0, getNumberBeams());
     }
 
-    public double[] getQualityFlags() {
-        return getDoubles(struct.get(LAYOUT_QUALITY_FLAGS, 968), 0, getNumberBeams());
+    public int[] getQualityFlags() {
+        return getUBytes(struct.get(LAYOUT_QUALITY_FLAGS, 968), 0, getNumberBeams());
     }
 
-    public double[] getBeamFlags() {
-        return getDoubles(struct.get(LAYOUT_BEAM_FLAGS, 976), 0, getNumberBeams());
+    public int[] getBeamFlags() {
+        return getUBytes(struct.get(LAYOUT_BEAM_FLAGS, 976), 0, getNumberBeams());
     }
 
     public double[] getSignalToNoise() {

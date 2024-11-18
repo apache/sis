@@ -113,6 +113,16 @@ public abstract class StructClass {
         return dst;
     }
 
+    static int[] getUBytes(MemorySegment segment, int offset, int nb) {
+        if (segment.address() == 0L) return null; //C null adress
+        final ByteBuffer db = segment.asSlice(offset, nb).asByteBuffer();
+        final byte[] dst = new byte[nb];
+        db.get(0, dst);
+        final int[] uchar = new int[nb];
+        for (int i = 0; i < uchar.length;i++) uchar[i] = dst[i] & 0xFF;
+        return uchar;
+    }
+
     protected final short[] getShorts(int offset, int nb) {
         return getShorts(struct, offset, nb);
     }
