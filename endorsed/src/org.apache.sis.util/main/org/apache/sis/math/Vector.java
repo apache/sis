@@ -268,6 +268,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     /**
      * Returns {@code true} if values in this vector can be casted to single-precision floating point numbers
      * ({@code float}) without precision lost. In case of doubt, this method conservatively returns {@code false}.
+     * This information is inferred from the {@linkplain #getElementType() element type} only.
+     * This method does not check the actual values contained in this vector.
      *
      * @return whether values in this vector can be casted to {@code float} primitive type.
      *

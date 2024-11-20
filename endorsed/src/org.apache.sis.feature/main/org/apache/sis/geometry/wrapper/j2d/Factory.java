@@ -24,8 +24,11 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.io.ObjectStreamException;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.geometry.wrapper.Capability;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
@@ -33,7 +36,6 @@ import org.apache.sis.referencing.privy.AbstractShape;
 import org.apache.sis.referencing.privy.ShapeUtilities;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.math.Vector;
 
 
 /**
@@ -68,7 +70,7 @@ public final class Factory extends Geometries<Shape> {
      * Creates the singleton instance.
      */
     private Factory() {
-        super(GeometryLibrary.JAVA2D, Shape.class, Point2D.class, Shape.class, Shape.class);
+        super(GeometryLibrary.JAVA2D, Shape.class, Point2D.class);
     }
 
     /**
@@ -103,11 +105,34 @@ public final class Factory extends Geometries<Shape> {
     }
 
     /**
+     * Returns the geometry class of the given type.
+     *
+     * @param  type  type of geometry for which the class is desired.
+     * @return implementation class for the geometry of the specified type.
+     */
+    @Override
+    public Class<?> getGeometryClass(final GeometryType type) {
+        return (type == GeometryType.POINT) ? Point2D.class : Shape.class;
+    }
+
+    /**
+     * Returns the geometry type of the given implementation class.
+     *
+     * @param  type  class of geometry for which the type is desired.
+     * @return implementation-neutral type for the geometry of the specified class.
+     */
+    @Override
+    public GeometryType getGeometryType(final Class<?> type) {
+        return Point2D.class.isAssignableFrom(type) ? GeometryType.POINT : GeometryType.GEOMETRY;
+    }
+
+    /**
+     * Notifies that this library cannot create 2.5-dimensional objects.
      * Notifies that this library can create geometry objects backed by single-precision type.
      */
     @Override
-    public boolean supportSinglePrecision() {
-        return true;
+    public boolean supports(final Capability feature) {
+        return feature == Capability.SINGLE_PRECISION;
     }
 
     /**
@@ -127,10 +152,37 @@ public final class Factory extends Geometries<Shape> {
     }
 
     /**
-     * Unsupported operation with Java2D.
+     * Creates a two-dimensional point from the given coordinate.
+     * The <var>z</var> value is lost.
      */
     @Override
     public Object createPoint(final double x, final double y, final double z) {
+        return new Point2D.Double(x, y);
+    }
+
+    /**
+     * Creates a single point from the given coordinates with the given dimensions.
+     * While the returned point is always two-dimensional, the buffer position is
+     * advanced by the number specified of dimensions.
+     *
+     * @param  isFloat      whether to cast and store numbers to single-precision.
+     * @param  dimensions   the dimensions of the coordinate tuple.
+     * @param  coordinates  a (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuple.
+     * @return the point for the given coordinate values.
+     */
+    @Override
+    public Object createPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
+        final double x = coordinates.get();
+        final double y = coordinates.get();
+        coordinates.position(coordinates.position() + (dimensions.count - BIDIMENSIONAL));
+        return isFloat ? new Point2D.Float((float) x, (float) y) : new Point2D.Double(x, y);
+    }
+
+    /**
+     * Unsupported operation with Java2D.
+     */
+    @Override
+    public Shape createMultiPoint(boolean isFloat, Dimensions dimensions, DoubleBuffer coordinates) {
         throw new UnsupportedOperationException();
     }
 
@@ -153,27 +205,18 @@ public final class Factory extends Geometries<Shape> {
      * depending on the type used by the given vectors.
      *
      * @param  polygon      whether to return the path as a polygon instead of polyline.
-     * @param  dimension    the number of dimensions ({@value #BIDIMENSIONAL} or {@value #TRIDIMENSIONAL}).
-     * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
-     * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
+     * @param  isFloat      whether to cast and store numbers to single-precision.
+     * @param  dimensions   the dimensions of the coordinate tuples.
+     * @param  coordinates  sequence of (x,y) coordinate tuples.
      */
     @Override
-    public Shape createPolyline(final boolean polygon, final int dimension, final Vector... coordinates) {
-        if (dimension != BIDIMENSIONAL) {
-            throw new UnsupportedOperationException(unsupported(dimension));
-        }
-        /*
-         * Computes the total length of all vectors and verifies if any vector
-         * requires double-precision numbers instead of single-precision.
-         */
+    public Shape createPolyline(final boolean polygon, final boolean isFloat,
+            final Dimensions dimensions, final DoubleBuffer... coordinates)
+    {
         int length = 0;
-        boolean isFloat = true;
-        for (final Vector v : coordinates) {
+        for (final DoubleBuffer v : coordinates) {
             if (v != null) {
-                length = Math.addExact(length, v.size());
-                if (isFloat) {
-                    isFloat = v.isSinglePrecision();
-                }
+                length = Math.addExact(length, v.remaining());
             }
         }
         /*
@@ -182,13 +225,14 @@ public final class Factory extends Geometries<Shape> {
          */
         length /= BIDIMENSIONAL;
         if (length == 2 && coordinates.length == 1) {
-            final Vector v = coordinates[0];
+            final DoubleBuffer v = coordinates[0];
             final double x1, y1, x2, y2;
-            if (!Double.isNaN(x1 = v.doubleValue(0)) &&
-                !Double.isNaN(y1 = v.doubleValue(1)) &&
-                !Double.isNaN(x2 = v.doubleValue(2)) &&
-                !Double.isNaN(y2 = v.doubleValue(3)))
+            if (!Double.isNaN(x1 = v.get(0)) &&
+                !Double.isNaN(y1 = v.get(1)) &&
+                !Double.isNaN(x2 = v.get(dimensions.count)) &&
+                !Double.isNaN(y2 = v.get(dimensions.count + 1)))
             {
+                v.position(v.position() + dimensions.count * 2);
                 final Line2D path = isFloat ? new Line2D.Float() : new Line2D.Double();
                 path.setLine(x1, y1, x2, y2);
                 return path;
@@ -197,13 +241,14 @@ public final class Factory extends Geometries<Shape> {
         /*
          * General case if we could not use a shortcut.
          */
+        final int skip = dimensions.count - BIDIMENSIONAL;
         final Path2D path = createPath(isFloat, length);
         boolean lineTo = false;
-        for (final Vector v : coordinates) {
-            final int size = v.size();
-            for (int i=0; i<size;) {
-                final double x = v.doubleValue(i++);
-                final double y = v.doubleValue(i++);
+        for (final DoubleBuffer v : coordinates) {
+            while (v.hasRemaining()) {
+                final double x = v.get();
+                final double y = v.get();
+                v.position(v.position() + skip);
                 if (Double.isNaN(x) || Double.isNaN(y)) {
                     if (polygon) {
                         path.closePath();
@@ -256,10 +301,10 @@ public final class Factory extends Geometries<Shape> {
 
     /**
      * Creates a geometry from components.
-     * The expected {@code components} type depend on the target geometry type:
+     * The expected {@code components} type depends on the target geometry type:
      * <ul>
      *   <li>If {@code type} is a multi-geometry, then the components shall be an array of {@link Shape} elements.</li>
-     *   <li>Otherwise the components shall be an array or collection of {@link Point2D} instances.</li>
+     *   <li>Otherwise, the components shall be an array or collection of {@link Point2D} instances.</li>
      * </ul>
      *
      * @param  type        type of geometry to create.
@@ -268,7 +313,6 @@ public final class Factory extends Geometries<Shape> {
      * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
      */
     @Override
-    @SuppressWarnings("fallthrough")
     public GeometryWrapper createFromComponents(final GeometryType type, final Object components) {
         /*
          * No exhaustive `if (x instanceof y)` checks in this method.

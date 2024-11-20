@@ -744,17 +744,12 @@ public class FeatureTypeBuilder extends TypeBuilder {
      */
     public AttributeTypeBuilder<?> addAttribute(final GeometryType type) {
         ensureNonNull("type", type);
-        final Class<?> c;
-        if (type.equals(GeometryType.POINT)) {
-            c = geometries.pointClass;
-        } else if (type.equals(GeometryType.LINEAR)) {
-            c = geometries.polylineClass;
-        } else if (type.equals(GeometryType.AREAL)) {
-            c = geometries.polygonClass;
+        var t = org.apache.sis.geometry.wrapper.GeometryType.forISO(type);
+        if (t != null) {
+            return addAttribute(geometries.getGeometryClass(t));
         } else {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.UnsupportedArgumentValue_1, type));
         }
-        return addAttribute(c);
     }
 
     /**
@@ -841,7 +836,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
         } else if (template instanceof FeatureAssociationRole) {
             return addAssociation((FeatureAssociationRole) template);
         } else {
-            final PropertyTypeBuilder property = new OperationWrapper(this, template);
+            final var property = new OperationWrapper(this, template);
             properties.add(property);
             clearCache();
             return property;

@@ -16,8 +16,13 @@
  */
 package org.apache.sis.geometry.wrapper.esri;
 
+import com.esri.core.geometry.Geometry;
+import com.esri.core.geometry.Point;
+import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
+import com.esri.core.geometry.MultiPoint;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.StringBuilders;
 
@@ -39,6 +44,35 @@ public final class FactoryTest extends GeometriesTestCase {
      */
     public FactoryTest() {
         super(Factory.INSTANCE);
+    }
+
+    /**
+     * Tests {@link Factory#getGeometryClass(GeometryType)}.
+     */
+    @Test
+    public void testGetGeometryClass() {
+        assertEquals(Point.class,      factory.getGeometryClass(GeometryType.POINT));
+        assertEquals(Polygon.class,    factory.getGeometryClass(GeometryType.POLYGON));
+        assertEquals(Polyline.class,   factory.getGeometryClass(GeometryType.LINESTRING));
+        assertEquals(MultiPoint.class, factory.getGeometryClass(GeometryType.MULTIPOINT));
+        assertEquals(Polygon.class,    factory.getGeometryClass(GeometryType.MULTIPOLYGON));
+        assertEquals(Polyline.class,   factory.getGeometryClass(GeometryType.MULTILINESTRING));
+        assertEquals(Geometry.class,   factory.getGeometryClass(GeometryType.TRIANGLE));
+    }
+
+    /**
+     * Tests {@link Factory#getGeometryType(Class)}.
+     */
+    @Test
+    public void testGetGeometryType() {
+        assertEquals(GeometryType.POINT,           factory.getGeometryType(Point.class));
+        assertEquals(GeometryType.POLYGON,         factory.getGeometryType(Polygon.class));
+        assertEquals(GeometryType.LINESTRING,      factory.getGeometryType(Polyline.class));
+        assertEquals(GeometryType.MULTIPOINT,      factory.getGeometryType(MultiPoint.class));
+        assertEquals(GeometryType.MULTIPOINT,      factory.getGeometryType(Point[].class));
+        assertEquals(GeometryType.MULTIPOLYGON,    factory.getGeometryType(Polygon[].class));
+        assertEquals(GeometryType.MULTILINESTRING, factory.getGeometryType(Polyline[].class));
+        assertEquals(GeometryType.MULTIPOINT,      factory.getGeometryType(MultiPoint[].class));
     }
 
     /**

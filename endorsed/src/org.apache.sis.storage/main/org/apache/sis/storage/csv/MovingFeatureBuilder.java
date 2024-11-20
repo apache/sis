@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import java.lang.reflect.Array;
 import java.time.Instant;
 import org.apache.sis.math.Vector;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.privy.MovingFeatures;
 import org.apache.sis.storage.internal.Resources;
@@ -196,7 +197,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
             final Geometries<G> factory, final Attribute<G> dest, final Consumer<LogRecord> warningListener)
     {
         int n = count[index];
-        final Vector[] vectors = new Vector[n];
+        final var vectors = new Vector[n];
         for (Period p = properties[index]; p != null; p = p.previous) {
             vectors[--n] = Vector.create(p.value, false);
         }
@@ -230,7 +231,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
              */
             if (previous != null) {
                 if (equals(previous, v, dimension)) {
-                    v = v.subList(dimension, length);                               // Skip the first coordinate.
+                    v = v.subList(dimension, length);   // Skip the first coordinate.
                     length -= dimension;
                     if (length == 0) {
                         vectors[i] = null;
@@ -272,7 +273,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
         /*
          * Store the geometry and characteristics in the attribute.
          */
-        dest.setValue(factory.createPolyline(false, dimension, vectors));
+        dest.setValue(factory.createPolyline(false, Dimensions.forCount(dimension, false), vectors));
         setInstants(dest, times);
     }
 

@@ -1149,7 +1149,7 @@ public final class ArraysExt extends Static {
      * @param  <T>     the type of arrays.
      * @param  arrays  the arrays to concatenate, or {@code null}.
      * @return the concatenation of all non-null arrays (may be a direct reference to one
-     *         of the given array if it can be returned with no change), or {@code null}.
+     *         of the given arrays if it can be returned with no change), or {@code null}.
      *
      * @see #append(Object[], Object)
      * @see #unionOfSorted(int[], int[])
@@ -1171,7 +1171,20 @@ public final class ArraysExt extends Static {
                         if (array.length == length) {
                             return array;
                         }
-                        result = Arrays.copyOf(array, length);
+                        if (array.length == 0) {    // Must be after the `array.length == length` test.
+                            continue;               // For avoiding potentially unnecessary array copy.
+                        }
+                        /*
+                         * A copy is needed. Search for a base class which is assignable from all other classes.
+                         * Take all arrays in account, including the empty ones, because a suitable base type may
+                         * be specified only in an empty array.
+                         */
+                        Class<? extends T[]> type = Classes.getClass(array);
+                        for (T[] other : arrays) {
+                            Class<? extends T[]> c = Classes.getClass(other);
+                            if (c != null && c.isAssignableFrom(type)) type = c;
+                        }
+                        result = Arrays.copyOf(array, length, type);
                     } else {
                         System.arraycopy(array, 0, result, offset, array.length);
                     }

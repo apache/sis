@@ -47,24 +47,18 @@ public enum GeometryType {
      * Zero-dimensional geometry containing a single point.
      * Note that this is not necessarily a subtype of {@link #GEOMETRY}.
      * The notable exception is Java2D.
-     *
-     * @see Geometries#pointClass
      */
     POINT("Point", false),
 
     /**
      * Sequence of points connected by straight, non-self intersecting line pieces.
      * This is a one-dimensional geometry.
-     *
-     * @see Geometries#polylineClass
      */
     LINESTRING("LineString", false),
 
     /**
      * Geometry with a positive area (two-dimensional).
      * The sequence of points form a closed, non-self intersecting ring.
-     *
-     * @see Geometries#polygonClass
      */
     POLYGON("Polygon", false),
 
@@ -179,6 +173,33 @@ public enum GeometryType {
      */
     BREPSOLID("BrepSolid", false);
 
+    /*
+     * Set the `related` fields after initialization of all enumeration values.
+     * It needs to be done that way because there is some forward references.
+     */
+    static {
+        MULTIPOINT        .contains(POINT);
+        MULTILINESTRING   .contains(LINESTRING);
+        MULTIPOLYGON      .contains(POLYGON);
+        GEOMETRYCOLLECTION.contains(GEOMETRY);
+        COMPOUNDCURVE     .contains(CURVE);
+        MULTICURVE        .contains(CURVE);     // Must be the last `CURVE` collection.
+        POLYHEDRALSURFACE .contains(SURFACE);
+        COMPOUNDSURFACE   .contains(SURFACE);
+        MULTISURFACE      .contains(SURFACE);   // Must be the last `SURFACE` collection.
+        TIN               .contains(TRIANGLE);
+    }
+
+    /**
+     * Declares that this enumeration value identifies a collection containing the components of the given class.
+     * Invocation order matter: the last call for a given {@code component} will determine the collection class
+     * associated to that component.
+     */
+    private void contains(final GeometryType component) {
+        related = component;
+        component.related = this;
+    }
+
     /**
      * All enumeration values, fetched at construction time for avoiding array copies.
      */
@@ -196,6 +217,23 @@ public enum GeometryType {
      * {@link #MULTIPOLYGON} or {@link #GEOMETRYCOLLECTION}.
      */
     public final boolean isCollection;
+
+    /**
+     * The component type or collection type related to this type.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>If {@link #isCollection} is {@code false}, then this is the collection type.</li>
+     *   <li>If {@link #isCollection} is {@code true}, then this is the component type.</li>
+     * </ul>
+     *
+     * This field is shall be considered final after class initialization.
+     * This field may be null if there is no related type.
+     *
+     * @see #component()
+     * @see #collection()
+     */
+    private GeometryType related;
 
     /**
      * The geometry types as ISO 19103 type names, created when first needed.
@@ -256,6 +294,24 @@ public enum GeometryType {
     }
 
     /**
+     * Returns the type of geometry collection if this type is for a component.
+     * If this enumeration value is not a component type, returns {@code null}.
+     */
+    public final GeometryType collection() {
+        return isCollection ? null : related;
+    }
+
+    /**
+     * Returns the type of geometry components if this type is some kind of collection.
+     * Example of collection types are {@link #MULTIPOINT}, {@link #MULTILINESTRING},
+     * {@link #MULTIPOLYGON} or {@link #GEOMETRYCOLLECTION}.
+     * If this enumeration value is not a collection type, returns {@code null}.
+     */
+    public final GeometryType component() {
+        return isCollection ? related : null;
+    }
+
+    /**
      * The type of this geometry as specified in Well-Known Binary (WKB) specification.
      * This is also the integer value declared in the {@code "GEOMETRY_TYPE"} column of
      * the {@code "GEOMETRY_COLUMNS} table of a spatial database.
@@ -273,6 +329,27 @@ public enum GeometryType {
     }
 
     /**
+     * Returns whether the given <abbr>WKB</abbr> type has a <var>z</var> coordinates.
+     *
+     * @param  type  the <abbr>WKB</abbr> type to test.
+     * @return whether the given type has a <var>z</var> coordinates.
+     */
+    public static boolean hasZ(final int type) {
+        return (type < 0) || (type >= 1000 && type < 2000) || (type >= 3000 && type < 4000);
+    }
+
+    /**
+     * Returns whether the given <abbr>WKB</abbr> type has a <var>m</var> coordinates.
+     *
+     * @param  type  the <abbr>WKB</abbr> type to test.
+     * @return whether the given type has a <var>m</var> coordinates.
+     */
+    public static boolean hasM(int type) {
+        type &= Integer.MAX_VALUE;      // Clear a 2.5D bit mask which was used in some software.
+        return (type >= 2000 && type < 4000);
+    }
+
+    /**
      * Returns the enumeration value for the given WKB type, or {@code null} if unknown.
      * Types for geometries having <var>Z</var> and <var>M</var> are replaced by 2D types.
      *
@@ -282,11 +359,12 @@ public enum GeometryType {
      * @see #binaryType()
      */
     public static GeometryType forBinaryType(int type) {
-        if (type >= 1000 && type < 4000) {
+        type &= Integer.MAX_VALUE;      // Clear a 2.5D bit mask which was used in some software.
+        if (type < 4000) {
             type %= 1000;
-        }
-        if (type >= 0 && type < VALUES.length) {
-            return VALUES[type];
+            if (type < VALUES.length) {
+                return VALUES[type];
+            }
         }
         return null;
     }
@@ -315,6 +393,24 @@ public enum GeometryType {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the enumeration value for the given ISO type.
+     *
+     * @param  type  the ISO 19115 geometry type, or {@code null}.
+     * @return the geometry type from this enumeration, or {@code null} if none.
+     */
+    public static GeometryType forISO(final org.opengis.metadata.acquisition.GeometryType type) {
+        if (org.opengis.metadata.acquisition.GeometryType.POINT.equals(type)) {
+            return POINT;
+        } else if (org.opengis.metadata.acquisition.GeometryType.LINEAR.equals(type)) {
+            return LINESTRING;
+        } else if (org.opengis.metadata.acquisition.GeometryType.AREAL.equals(type)) {
+            return POLYGON;
+        } else {
+            return null;
+        }
     }
 
     /**

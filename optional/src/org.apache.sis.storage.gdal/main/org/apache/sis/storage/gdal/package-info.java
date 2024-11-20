@@ -31,13 +31,20 @@
  * to the {@link org.apache.sis.storage.gdal.GDALStoreProvider} constructor.</p>
  *
  * <h2>Limitations</h2>
- * The current implementation can only read two-dimensional rasters.
- * It does not yet support vector data, cannot write any data,
- * and does not yet use the multi-dimensional <abbr>API</abbr> of <abbr>GDAL</abbr>.
+ * The current implementation can only read vector data and two-dimensional rasters.
+ * It cannot yet write any data,
+ * and does not yet use the multi-dimensional raster <abbr>API</abbr> of <abbr>GDAL</abbr>.
  * Those operations will be added progressively in future versions of this module.
+ *
+ * <p>For any <abbr>GDAL</abbr> layer, only one {@link java.util.stream.Stream} returned by
+ * {@link org.apache.sis.storage.FeatureSet#features(boolean)} can be executed at a given time.
+ * This is because the <abbr>GDAL</abbr> {@code OGRLayerH} C/C++ <abbr>API</abbr> provides only one cursor.
+ * If two iterations are executed in same time on the feature instances of the same {@code FeatureSet},
+ * then a {@link org.apache.sis.storage.ConcurrentReadException} is thrown on the second iteration.</p>
  *
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.5
  * @since   1.5
  */

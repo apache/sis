@@ -17,9 +17,9 @@
 package org.apache.sis.geometry.wrapper.jts;
 
 import java.awt.Shape;
-import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.OptionalInt;
 import java.util.function.BiFunction;
@@ -61,6 +61,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.filter.sqlmm.SQLMM;
+import static org.apache.sis.geometry.wrapper.GeometryType.POINT;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.SpatialOperatorName;
@@ -221,7 +222,7 @@ final class Wrapper extends GeometryWrapper {
                 return new GeneralDirectPosition(c.x, c.y, z);
             }
         } else if (ReferencingUtilities.getDimension(crs) != Factory.BIDIMENSIONAL) {
-            final GeneralDirectPosition point = new GeneralDirectPosition(crs);
+            final var point = new GeneralDirectPosition(crs);
             point.setCoordinate(0, c.x);
             point.setCoordinate(1, c.y);
             point.setCoordinate(2, c.getZ());
@@ -261,7 +262,7 @@ final class Wrapper extends GeometryWrapper {
     @Override
     public double[] getAllCoordinates() {
         final Coordinate[] points = geometry.getCoordinates();
-        final double[] coordinates = new double[points.length * Factory.BIDIMENSIONAL];
+        final var coordinates = new double[points.length * Factory.BIDIMENSIONAL];
         int i = 0;
         for (final Coordinate p : points) {
             coordinates[i++] = p.x;
@@ -277,8 +278,8 @@ final class Wrapper extends GeometryWrapper {
      */
     @Override
     public Geometry mergePolylines(final Iterator<?> polylines) {
-        final List<Coordinate> coordinates = new ArrayList<>();
-        final List<Geometry> lines = new ArrayList<>();
+        final var coordinates = new ArrayList<Coordinate>();
+        final var lines = new ArrayList<Geometry>();
         boolean isFloat = true;
 add:    for (Geometry next = geometry;;) {
             if (next instanceof Point) {
@@ -287,20 +288,20 @@ add:    for (Geometry next = geometry;;) {
                     isFloat = Factory.isFloat(isFloat, (Point) next);
                     coordinates.add(pt);
                 } else {
-                    Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
+                    Factory.INSTANCE.addPolyline(coordinates, lines, false, isFloat);
                     coordinates.clear();
                     isFloat = true;
                 }
             } else {
                 final int n = next.getNumGeometries();
                 for (int i=0; i<n; i++) {
-                    final LineString ls = (LineString) next.getGeometryN(i);
+                    final var ls = (LineString) next.getGeometryN(i);
                     if (coordinates.isEmpty()) {
                         lines.add(ls);
                     } else {
                         if (isFloat) isFloat = Factory.isFloat(ls.getCoordinateSequence());
                         coordinates.addAll(Arrays.asList(ls.getCoordinates()));
-                        Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
+                        Factory.INSTANCE.addPolyline(coordinates, lines, false, isFloat);
                         coordinates.clear();
                         isFloat = true;
                     }
@@ -313,8 +314,8 @@ add:    for (Geometry next = geometry;;) {
             do if (!polylines.hasNext()) break add;
             while ((next = (Geometry) polylines.next()) == null);
         }
-        Factory.INSTANCE.toLineString(coordinates, lines, false, isFloat);
-        return Factory.INSTANCE.toGeometry(lines, false, isFloat);
+        Factory.INSTANCE.addPolyline(coordinates, lines, false, isFloat);
+        return Factory.INSTANCE.groupPolylines(lines, false, isFloat);
     }
 
     /**
@@ -460,7 +461,7 @@ add:    for (Geometry next = geometry;;) {
             }
             case ST_CoordDim: {
                 final Coordinate c = geometry.getCoordinate();
-                return (c != null) ? Double.isNaN(c.z) ? 2 : 3 : null;
+                return (c != null) ? Double.isNaN(c.z) ? Geometries.BIDIMENSIONAL : Geometries.TRIDIMENSIONAL : null;
             }
             case ST_GeometryType: {
                 for (int i=0; i < TYPES.length; i++) {
@@ -562,21 +563,58 @@ add:    for (Geometry next = geometry;;) {
     }
 
     /**
-     * Returns the geometry class of the given instance.
+     * Mapping from implementation-neutral geometry types to their JTS classes.
+     */
+    private static final EnumMap<GeometryType, Class<?>> GEOMETRY_CLASSES = new EnumMap<>(GeometryType.class);
+    static {
+        final var m = GEOMETRY_CLASSES;
+        /*
+         * Following types are intentionally omitted:
+         *   - GEOMETRY  because it is the first enumeration value, which is too early for `isAssignableFrom(Class)` checks.
+         *   - TRIANGLE  because it is not a geometry in JTS class hierarchy.
+         */
+        m.put(GeometryType.POINT,              Point.class);
+        m.put(GeometryType.LINESTRING,         LineString.class);
+        m.put(GeometryType.POLYGON,            Polygon.class);
+        m.put(GeometryType.MULTIPOINT,         MultiPoint.class);
+        m.put(GeometryType.MULTILINESTRING,    MultiLineString.class);
+        m.put(GeometryType.MULTIPOLYGON,       MultiPolygon.class);
+        m.put(GeometryType.GEOMETRYCOLLECTION, GeometryCollection.class);
+        // If other collection types are added, verify if they are enumerated before `GEOMETRYCOLLECTION`.
+    }
+
+    /**
+     * Returns the JTS geometry class for the given implementation-neutral type.
+     * If the given type has no specific JTS classes, then the generic {@link Geometry} is returned.
      *
      * @param  type  type of geometry for which the class is desired.
      * @return implementation class for the geometry of the specified type.
      */
     static Class<?> getGeometryClass(final GeometryType type) {
-        switch (type) {
-            default:              return Geometry.class;
-            case POINT:           return Point.class;
-            case LINESTRING:      return LineString.class;
-            case POLYGON:         return Polygon.class;
-            case MULTIPOINT:      return MultiPoint.class;
-            case MULTILINESTRING: return MultiLineString.class;
-            case MULTIPOLYGON:    return MultiPolygon.class;
+        return GEOMETRY_CLASSES.getOrDefault(type, Geometry.class);
+    }
+
+    /**
+     * Returns the implementation-neutral type for the given JTS class or array class.
+     * If the given class is not recognized, then {@link GeometryType#GEOMETRY} is returned.
+     *
+     * @param  type  the JTS class, or an array type having a JTS class as components.
+     * @return the implementation-neutral type for the given class, or {@code GEOMETRY} if not recognized.
+     */
+    static GeometryType getGeometryType(final Class<?> type) {
+        Class<?> componentType = type.getComponentType();
+        if (componentType == null) componentType = type;
+        for (final EnumMap.Entry<GeometryType, Class<?>> entry : GEOMETRY_CLASSES.entrySet()) {
+            if (entry.getValue().isAssignableFrom(componentType)) {
+                final GeometryType gt = entry.getKey();
+                if (!gt.isCollection && componentType != type) {
+                    var ct = gt.collection();   // If the given type was an array, return a geometry collection type.
+                    if (ct != null) return ct;
+                }
+                return gt;
+            }
         }
+        return GeometryType.GEOMETRY;
     }
 
     /**

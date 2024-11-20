@@ -21,9 +21,15 @@ import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemorySegment;
 import java.text.ParseException;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -64,7 +70,18 @@ final class SpatialRef {
     private final MemorySegment handle;
 
     /**
+     * The result of the call to {@code OSRGetDataAxisToSRSAxisMapping}, computed when first needed.
+     *
+     * @see #getDataAxisToCRSAxis(int)
+     */
+    private int[] dataAxisToCRSAxis;
+
+    /**
      * Creates a new instance.
+     *
+     * @param  owner   the dataset which is providing the <abbr>CRS</abbr> definition.
+     * @param  gdal    sets of handles for invoking <abbr>GDAL</abbr> functions.
+     * @param  handle  pointer to native {@code OGRSpatialReferenceH}.
      */
     private SpatialRef(final GDALStore owner, final GDAL gdal, final MemorySegment handle) {
         this.owner  = owner;
@@ -98,23 +115,42 @@ final class SpatialRef {
     }
 
     /**
-     * Creates a new instance.
+     * Fetches the reference system of a (potentially null) {@code OGRSpatialReferenceH}.
      *
-     * @param  owner    the dataset which is providing the <abbr>CRS</abbr> definition.
-     * @param  gdal     sets of handles for invoking <abbr>GDAL</abbr> functions.
-     * @param  spatialRefHandle  pointer to native SpatialRef.
+     * @param  owner   the dataset which is providing the <abbr>CRS</abbr> definition.
+     * @param  gdal    sets of handles for invoking <abbr>GDAL</abbr> functions.
+     * @param  handle  pointer to native {@code OGRSpatialReferenceH}.
      * @return wrapper for the <abbr>CRS</abbr> definition provided by <abbr>GDAL</abbr>, or {@code null} if none.
-     * @throws DataStoreException if an error occurred while fetching information from <abbr>GDAL</abbr>.
      */
-    static SpatialRef createWithHandle(final GDALStore owner, final GDAL gdal, final MemorySegment spatialRefHandle) throws DataStoreException {
-        return new SpatialRef(owner, gdal, spatialRefHandle);
+    static CoordinateReferenceSystem parseCRS(final GDALStore owner, final GDAL gdal, final MemorySegment handle)
+            throws Throwable
+    {
+        if (GDAL.isNull(handle)) {
+            return null;
+        }
+        final var ref = new SpatialRef(owner, gdal, handle);
+        final var crs = ref.parseCRS("components");
+        if (crs != null) {
+            final AxisDirection[] directions = ref.getDataAxisDirections(crs.getCoordinateSystem());
+            if (directions != null) {
+                final AbstractCRS sc = AbstractCRS.castOrCopy(crs);
+                for (AxesConvention c : AxesConvention.valuesForOrder()) {
+                    final AbstractCRS candidate = sc.forConvention(c);
+                    if (AxisDirections.hasPrefix(candidate.getCoordinateSystem(), directions)) {
+                        return candidate;
+                    }
+                }
+                // TODO: create a derived CRS.
+            }
+        }
+        return crs;
     }
 
     /**
      * Parses the <abbr>CRS</abbr> of the data set by parsing its <abbr>WKT</abbr> representation.
      * This method must be invoked from a method synchronized on {@link GDALStore}.
      *
-     * @param  caller  name of the {@code GDALStore} method invoking this method.
+     * @param  caller  the method in {@code GDALStore} to report as the emitter of the warning.
      * @return the parsed <abbr>CRS</abbr>, or {@code null} if none.
      * @throws DataStoreException if a fatal error occurred according <abbr>GDAL</abbr>.
      */
@@ -141,10 +177,74 @@ final class SpatialRef {
             if (wkt != null && !wkt.isBlank()) try {
                 return (CoordinateReferenceSystem) owner.wktFormat().parseObject(wkt);
             } catch (ParseException | ClassCastException e) {
-                owner.warning(caller, Errors.format(Errors.Keys.CanNotParseCRS_1, owner.getDisplayName()), e);
+                owner.warning(caller, Errors.forLocale(owner.getLocale())
+                        .getString(Errors.Keys.CanNotParseCRS_1, owner.getDisplayName()), e);
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the mapping from data axis order to CRS axis order. Numbering starts at 1.
+     * Negative values mean that the axis direction needs to be flipped.
+     * This is typically an array of length 2 with the following values:
+     *
+     * <ul>
+     *   <li>{@code mapping[0]} (data axis number for the first  axis of the CRS) is usually 1, 2, -1, -2.</li>
+     *   <li>{@code mapping[1]} (data axis number for the second axis of the CRS) is usually 1, 2, -1, -2.</li>
+     * </ul>
+     *
+     * By convention, an array of length 0 means that no change is needed.
+     *
+     * @param  dimension  maximal number of dimensions of the <abbr>CRS</abbr>.
+     * @return axis mapping using GDAL convention (axis numbering starts at 1).
+     */
+    @SuppressWarnings({"restricted", "ReturnOfCollectionOrArrayField"})
+    private int[] getDataAxisToCRSAxis(int dimension) {
+        if (dataAxisToCRSAxis == null) {
+            dataAxisToCRSAxis = ArraysExt.EMPTY_INT;
+            try (Arena arena = Arena.ofConfined()) {
+                final var layout = ValueLayout.JAVA_INT;
+                final MemorySegment count  = arena.allocate(layout);
+                final MemorySegment vector = (MemorySegment) gdal.getDataAxisToCRSAxis.invokeExact(handle, count);
+                if (!GDAL.isNull(vector)) {
+                    dimension = Math.min(count.get(layout, 0), dimension);
+                    if (dimension > 0) {
+                        int[] indices = vector.reinterpret(layout.byteSize() * dimension).toArray(layout);
+                        if (!ArraysExt.isRange(1, indices)) {
+                            dataAxisToCRSAxis = indices;
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                throw GDAL.propagate(e);
+            }
+        }
+        return dataAxisToCRSAxis;
+    }
+
+    /**
+     * Returns the axis directions of the data, or {@code null} if there is no change compared to the CRS.
+     *
+     * @param  cs  coordinate system of the CRS.
+     * @return data axis directions, or {@code null} if there is no change compared to the CRS.
+     */
+    private AxisDirection[] getDataAxisDirections(final CoordinateSystem cs) {
+        final int[] indices = getDataAxisToCRSAxis(cs.getDimension());
+        final int length = indices.length;
+        if (length == 0) {
+            return null;
+        }
+        final var directions = new AxisDirection[length];
+        for (int i=0; i<length; i++) {
+            AxisDirection dir = cs.getAxis(i).getDirection();
+            int t = indices[i];
+            if (t < 0) {
+                dir = AxisDirections.opposite(dir);
+            }
+            directions[Math.abs(t) - 1] = dir;
+        }
+        return directions;
     }
 
     /**
@@ -152,23 +252,14 @@ final class SpatialRef {
      * This method also takes care of adding a dimension to the "grid to CRS" transform if needed.
      *
      * @param  dimension  maximal number of dimensions of the <abbr>CRS</abbr>.
-     * @return axis swapping as an affine transform matrix.
+     * @return axis swapping as an affine transform matrix, or {@code null} if unspecified or identity.
      */
-    @SuppressWarnings("restricted")
     final Matrix getDataToCRS(final int dimension) {
-        final int length;
-        MemorySegment vector;
-        final var layout = ValueLayout.JAVA_INT;
-        try (Arena arena = Arena.ofConfined()) {
-            final MemorySegment ptr = arena.allocate(layout);
-            vector = (MemorySegment) gdal.getDataAxisToCRSAxis.invokeExact(handle, ptr);
-            if (GDAL.isNull(vector) || (length = Math.min(ptr.get(layout, 0), dimension)) < 0) {
-                return null;
-            }
-        } catch (Throwable e) {
-            throw GDAL.propagate(e);
+        final int[] indices = getDataAxisToCRSAxis(dimension);
+        final int length = indices.length;
+        if (length == 0) {
+            return null;
         }
-        vector = vector.reinterpret(layout.byteSize() * length);
         /*
          * From GDAL documentation: The number of elements of the vector will be the number of axis of the CRS.
          * Values start at 1. A negative value can also be used to ask for a sign reversal during coordinate
@@ -177,7 +268,7 @@ final class SpatialRef {
         final Matrix swap = Matrices.createZero(length+1, BIDIMENSIONAL + 1);
         swap.setElement(length, BIDIMENSIONAL, 1);
         for (int i=0; i<length; i++) {
-            final int p = vector.getAtIndex(layout, i);
+            final int p = indices[i];
             if (p != 0) {
                 swap.setElement(i, Math.abs(p) - 1, Integer.signum(p));
             }

@@ -506,7 +506,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short UnspecifiedTransform = 75;
 
         /**
-         * Unsupported geometry {0}D object.
+         * Unsupported {0}-dimensional geometry.
          */
         public static final short UnsupportedGeometryObject_1 = 76;
 

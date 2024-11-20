@@ -265,6 +265,7 @@ parse:  while (reader.hasNext()) {
      * This is a convenience method for GPX 1.0 metadata parsing.
      */
     private Person author() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Metadata metadata = metadata();
         if (metadata.author == null) {
             metadata.author = new Person();
@@ -277,6 +278,7 @@ parse:  while (reader.hasNext()) {
      * This is a convenience method for GPX 1.0 metadata parsing.
      */
     private Link link() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Metadata metadata = metadata();
         List<Link> links = metadata.links;
         if (links == null) {
@@ -410,7 +412,7 @@ parse:  while (reader.hasNext()) {
         feature.setPropertyValue(AttributeConvention.IDENTIFIER, index);
         feature.setPropertyValue(AttributeConvention.GEOMETRY, types.geometries.createPoint(parseDouble(lon), parseDouble(lat)));
         List<Link> links = null;
-        while (true) {
+        for (;;) {
             /*
              * We do not need to check 'reader.hasNext()' in above loop
              * since this check is done by the END_DOCUMENT case below.
