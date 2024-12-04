@@ -283,15 +283,15 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
          * may need to be reduced.
          */
         int n = (crs != null) ? crs.getCoordinateSystem().getDimension() : 2;
-        final DimensionNameType[] axisTypes = new DimensionNameType[n];
-        final long[] high = new long[n];
+        final var axisTypes = new DimensionNameType[n];
+        final var high = new long[n];
         switch (n) {
             default: axisTypes[2] = DimensionNameType.VERTICAL; // Fallthrough everywhere.
             case 2:  axisTypes[1] = DimensionNameType.ROW;      high[1] = height - 1;
             case 1:  axisTypes[0] = DimensionNameType.COLUMN;   high[0] = width  - 1;
             case 0:  break;
         }
-        final GridExtent extent = new GridExtent(axisTypes, null, high, true);
+        final var extent = new GridExtent(axisTypes, null, high, true);
         boolean pixelIsPoint = (cellGeometry == CellGeometry.POINT);
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         GridGeometry gridGeometry;

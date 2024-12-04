@@ -551,7 +551,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
             case GeoCodes.ModelTypeGeographic: crs = createGeographicCRS(); break;
             default: warning(Resources.Keys.UnsupportedCoordinateSystemKind_1, crsType); break;
         }
-        if (crsType != GeoCodes.ModelTypeGeocentric) {
+        if (crsType != GeoCodes.ModelTypeGeocentric) try {
             final VerticalCRS vertical = createVerticalCRS();
             if (vertical != null) {
                 if (crs == null) {
@@ -559,6 +559,14 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                 } else {
                     crs = getCRSFactory().createCompoundCRS(Map.of(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
                 }
+            }
+        } catch (Exception e) {
+            if (crs == null) {
+                throw e;
+            }
+            // A vertical CRS is not strictly needed with GeoTIFF if we have the horizontal component.
+            if (!alreadyReported) {
+                listeners.warning(e);
             }
         }
         /*
@@ -1538,10 +1546,12 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     private VerticalDatum createVerticalDatum() throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.VerticalDatum);
         switch (epsg) {
-            case GeoCodes.undefined:
-            case GeoCodes.userDefined: {
+            case GeoCodes.undefined: {
                 alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.VerticalDatum));
+            }
+            case GeoCodes.userDefined: {
+                return CommonCRS.Vertical.OTHER_SURFACE.datum();
             }
             default: {
                 return getDatumAuthorityFactory().createVerticalDatum(String.valueOf(epsg));
@@ -1578,7 +1588,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                 final String name = getAsString(GeoKeys.VerticalCitation);
                 final VerticalDatum datum = createVerticalDatum();
                 final Unit<Length> unit = createLinearUnit(UnitKey.VERTICAL);
-                VerticalCS cs = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs().getCoordinateSystem();
+                VerticalCS cs = CommonCRS.Vertical.OTHER_SURFACE.crs().getCoordinateSystem();
                 if (!Units.METRE.equals(unit)) {
                     cs = (VerticalCS) CoordinateSystems.replaceLinearUnit(cs, unit);
                 }

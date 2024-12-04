@@ -240,8 +240,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
     protected TiledGridCoverage(final TiledGridResource.Subset subset) {
         super(subset.domain, subset.ranges);
         final GridExtent extent = subset.domain.getExtent();
-        final int dimension = subset.sourceExtent.getDimension();
-        deferredTileReading = subset.deferredTileReading();
+        final int dimension = subset.virtualTileSize.length;
+        deferredTileReading = subset.deferredTileReading();     // May be shorter than other arrays of grid geometry.
         readExtent          = subset.readExtent;
         subsampling         = subset.subsampling;
         subsamplingOffsets  = subset.subsamplingOffsets;
@@ -449,7 +449,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     @Override
     public RenderedImage render(GridExtent sliceExtent) {
         final GridExtent available = gridGeometry.getExtent();
-        final int dimension = available.getDimension();
+        final int dimension = virtualTileSize.length;       // May be shorter than grid geometry dimension.
         if (sliceExtent == null) {
             sliceExtent = available;
         } else {
