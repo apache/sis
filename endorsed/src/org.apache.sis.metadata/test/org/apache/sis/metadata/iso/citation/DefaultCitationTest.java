@@ -28,7 +28,6 @@ import java.time.ZoneOffset;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Role;
@@ -54,6 +53,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
 
