@@ -107,8 +107,8 @@ final class QueryAnalyzer extends FeatureAnalyzer {
     @Override
     Relation[] getForeignerKeys(final Relation.Direction direction) throws SQLException, DataStoreException {
         final boolean isImport = (direction == Relation.Direction.IMPORT);
-        List<String> primaryKeyColumns = isImport ? new ArrayList<>() : null;
-        final List<Relation> relations = new ArrayList<>();
+        var primaryKeyColumns = isImport ? new ArrayList<String>() : null;
+        final var relations = new ArrayList<Relation>();
         for (final Map.Entry<TableReference, Map<String,Column>> entry : columnsPerTable.entrySet()) {
             final Set<String> columnNames = entry.getValue().keySet();
             final TableReference src = entry.getKey();
@@ -121,7 +121,7 @@ final class QueryAnalyzer extends FeatureAnalyzer {
                                               : analyzer.metadata.getExportedKeys(src.catalog, src.schema, src.table))
             {
                 if (reflect.next()) do {
-                    final Relation relation = new Relation(analyzer, direction, reflect);
+                    final var relation = new Relation(analyzer, direction, reflect);
                     if (columnNames.containsAll(relation.getOwnerColumns())) {
                         if (isImport) {
                             addForeignerKeys(relation);

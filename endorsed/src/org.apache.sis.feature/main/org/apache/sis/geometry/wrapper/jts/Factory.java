@@ -23,9 +23,12 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.io.ObjectStreamException;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateXY;
+import org.locationtech.jts.geom.CoordinateXYM;
+import org.locationtech.jts.geom.CoordinateXYZM;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -37,12 +40,13 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.geometry.wrapper.Capability;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Strings;
-import org.apache.sis.math.Vector;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -90,7 +94,7 @@ public final class Factory extends Geometries<Geometry> {
      * Creates the singleton instance.
      */
     private Factory() {
-        super(GeometryLibrary.JTS, Geometry.class, Point.class, LineString.class, Polygon.class);
+        super(GeometryLibrary.JTS, Geometry.class, Point.class);
         factory = new GeometryFactory(new PackedCoordinateSequenceFactory(true));
         fctry32 = new GeometryFactory(new PackedCoordinateSequenceFactory(false));
     }
@@ -113,7 +117,7 @@ public final class Factory extends Geometries<Geometry> {
     }
 
     /**
-     * Returns the geometry class of the given instance.
+     * Returns the geometry class of the given type.
      *
      * @param  type  type of geometry for which the class is desired.
      * @return implementation class for the geometry of the specified type.
@@ -121,6 +125,17 @@ public final class Factory extends Geometries<Geometry> {
     @Override
     public Class<?> getGeometryClass(final GeometryType type) {
         return Wrapper.getGeometryClass(type);
+    }
+
+    /**
+     * Returns the geometry type of the given implementation class.
+     *
+     * @param  type  class of geometry for which the type is desired.
+     * @return implementation-neutral type for the geometry of the specified class.
+     */
+    @Override
+    public GeometryType getGeometryType(Class<?> type) {
+        return Wrapper.getGeometryType(type);
     }
 
     /**
@@ -148,6 +163,15 @@ public final class Factory extends Geometries<Geometry> {
     @Override
     protected GeometryWrapper createWrapper(final Geometry geometry) {
         return new Wrapper(geometry);
+    }
+
+    /**
+     * Notifies that this library supports <var>z</var> and <var>m</var> coordinates.
+     * Notifies that single-precision floating point type is also supported.
+     */
+    @Override
+    public boolean supports(Capability feature) {
+        return true;
     }
 
     /**
@@ -213,59 +237,188 @@ public final class Factory extends Geometries<Geometry> {
     }
 
     /**
+     * Creates a single point from the given coordinates with the given dimensions.
+     * Note that when the number of dimensions is known at compile-time, the other
+     * {@code createPoint(…)} methods should be more efficient.
+     *
+     * @param  isFloat      whether single-precision instead of double-precision floating point numbers.
+     * @param  dimensions   the dimensions of the coordinate tuple.
+     * @param  coordinates  a (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuple.
+     * @return the point for the given coordinate values.
+     */
+    @Override
+    public Object createPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
+        return factory(isFloat).createPoint(createCoordinateTuple(dimensions, coordinates));
+    }
+
+    /**
+     * Creates a coordinate tuple from the given coordinates with the given dimensions.
+     *
+     * @param  dimensions   the dimensions of the coordinate tuple.
+     * @param  coordinates  a (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuple.
+     * @return the single coordinate tuple for the given coordinate values.
+     */
+    private static Coordinate createCoordinateTuple(final Dimensions dimensions, final DoubleBuffer coordinates) {
+        final double x = coordinates.get();
+        final double y = coordinates.get();
+        if (dimensions.hasZ) {
+            final double z = coordinates.get();
+            if (dimensions.hasM) {
+                return new CoordinateXYZM(x, y, z, coordinates.get());
+            } else {
+                return new Coordinate(x, y, z);
+            }
+        } else if (dimensions.hasM) {
+            return new CoordinateXYM(x, y, coordinates.get());
+        } else {
+            return new CoordinateXY(x, y);
+        }
+    }
+
+    /**
+     * Creates a collection of points from the given coordinate values.
+     * The buffer position is advanced by {@code dimensions.count} × the number of points.
+     *
+     * @param  isFloat      whether single-precision instead of double-precision floating point numbers.
+     * @param  dimensions   the dimensions of the coordinate tuples.
+     * @param  coordinates  sequence of (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuples.
+     * @return the collection of points for the given points.
+     */
+    @Override
+    public Geometry createMultiPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
+        final var coordList = new Coordinate[coordinates.remaining() / dimensions.count];
+        int n = 0;
+        while (coordinates.hasRemaining()) {
+            coordList[n++] = createCoordinateTuple(dimensions, coordinates);
+        }
+        return factory(isFloat).createMultiPointFromCoords(coordList);
+    }
+
+    /**
      * Creates a polyline from the given coordinate values.
      * Each {@link Double#NaN} coordinate value starts a new path.
      *
      * @param  polygon      whether to return the path as a polygon instead of polyline.
-     * @param  dimension    the number of dimensions ({@value #BIDIMENSIONAL} or {@value #TRIDIMENSIONAL}).
-     * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
+     * @param  isFloat      whether to cast and store numbers to single-precision.
+     * @param  dimensions   the dimensions of the coordinate tuples.
+     * @param  coordinates  sequence of (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuples.
      * @return the geometric object for the given points.
-     * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
-    public Geometry createPolyline(final boolean polygon, final int dimension, final Vector... coordinates) {
-        final boolean is3D = (dimension == TRIDIMENSIONAL);
-        if (!is3D && dimension != BIDIMENSIONAL) {
-            throw new UnsupportedOperationException(unsupported(dimension));
-        }
-        boolean isFloat = true;
-        for (final Vector v : coordinates) {
-            if (v != null && !v.isSinglePrecision()) {
-                isFloat = false;
-                break;
+    public Geometry createPolyline(final boolean polygon, final boolean isFloat,
+            final Dimensions dimensions, final DoubleBuffer... coordinates)
+    {
+        final var coordList = new ArrayList<Coordinate>(32);
+        final var lines = new ArrayList<Geometry>();
+        for (final DoubleBuffer v : coordinates) {
+            if (v == null) {
+                continue;
             }
-        }
-        final List<Coordinate> coordList = new ArrayList<>(32);
-        final List<Geometry> lines = new ArrayList<>();
-        for (final Vector v : coordinates) {
-            if (v != null) {
-                final int size = v.size();
-                for (int i=0; i<size;) {
-                    final double x = v.doubleValue(i++);
-                    final double y = v.doubleValue(i++);
-                    if (!Double.isNaN(x) && !Double.isNaN(y)) {
-                        final Coordinate c;
-                        if (is3D) {
-                            c = new Coordinate(x, y, v.doubleValue(i++));
-                        } else {
-                            c = new CoordinateXY(x, y);
-                        }
-                        coordList.add(c);
-                    } else {
-                        if (is3D) i++;
-                        toLineString(coordList, lines, polygon, isFloat);
-                        coordList.clear();
-                    }
+            while (v.hasRemaining()) {
+                final Coordinate c = createCoordinateTuple(dimensions, v);
+                if (!Double.isNaN(c.x) && !Double.isNaN(c.y)) {
+                    coordList.add(c);
+                } else {
+                    addPolyline(coordList, lines, polygon, isFloat);
+                    coordList.clear();
                 }
             }
         }
-        toLineString(coordList, lines, polygon, isFloat);
-        return toGeometry(lines, polygon, isFloat);
+        addPolyline(coordList, lines, polygon, isFloat);
+        return groupPolylines(lines, polygon, isFloat);
     }
 
     /**
-     * Creates a multi-polygon from an array of JTS {@link Polygon} or {@link LinearRing}.
-     * If some geometries are actually linear rings, they will be converted to polygons.
+     * Makes a line string or linear ring from the given coordinates, and adds the line string to the given list.
+     * If the {@code polygon} argument is {@code true}, then this method creates polygons instead of line strings.
+     * If the given coordinates list is empty, then this method does nothing.
+     * This method does not modify the given coordinates list.
+     *
+     * @param  coordinates  coordinates of the line string or polygon to create.
+     * @param  addTo        where to add the created line string or polygon, if such object is created.
+     * @param  polygon      {@code true} for creating a polygon, or {@code false} for creating a line string.
+     * @param  isFloat      whether to use single-precision instead of double-precision coordinate numbers.
+     */
+    final void addPolyline(final List<Coordinate> coordinates, final List<Geometry> addTo,
+                           final boolean polygon, final boolean isFloat)
+    {
+        final int s = coordinates.size();
+        if (s >= 2) {
+            final Coordinate[] ca = coordinates.toArray(new Coordinate[s]);
+            final GeometryFactory gf = factory(isFloat);
+            final Geometry geometry;
+            if (polygon) {
+                geometry = gf.createPolygon(ca);
+            } else if (ca.length > 3 && ca[0].equals2D(ca[s-1])) {
+                geometry = gf.createLinearRing(ca);
+            } else {
+                geometry = gf.createLineString(ca);         // Throws an exception if contains duplicated point.
+            }
+            addTo.add(geometry);
+        }
+    }
+
+    /**
+     * Returns the given list of polygons or line strings as a single geometry.
+     * If the given list contains more than one geometry, then some kind of multi-geometry is returned.
+     *
+     * @param  polylines  the polygons or lines strings.
+     * @return {@code true} if the given list contains {@link Polygon} instances, or
+     *         {@code false} if it contains {@link LineString} instances.
+     * @throws ArrayStoreException if the geometries in the given list are not instances
+     *         of the type specified by the {@code polygon} argument.
+     */
+    @SuppressWarnings("SuspiciousToArrayCall")      // Type controlled by `polygon`.
+    final Geometry groupPolylines(final List<Geometry> polylines, final boolean polygon, final boolean isFloat) {
+        final int s = polylines.size();
+        switch (s) {
+            case 0:  {
+                // Create an empty polygon or linear ring.
+                final GeometryFactory gf = factory(isFloat);
+                return polygon ? gf.createPolygon   ((Coordinate[]) null)
+                               : gf.createLinearRing((Coordinate[]) null);
+            }
+            case 1: {
+                return polylines.get(0);
+            }
+            default: {
+                // An ArrayStoreException here would be a bug in our use of `polygon` boolean.
+                final GeometryFactory gf = factory(isFloat);
+                return polygon ? gf.createMultiPolygon   (polylines.toArray(new Polygon   [s]))
+                               : gf.createMultiLineString(polylines.toArray(new LineString[s]));
+            }
+        }
+    }
+
+    /**
+     * Creates a polygon from an array of rings. The first ring is taken as the shell,
+     * and all other rings are taken as the holes.
+     *
+     * <h4>API note</h4>
+     * The {@code rings} argument is not of type {@code LinearRing[]} because {@code LinearRing}
+     * is a JTS-specific type not in the {@link GeometryType} enumeration.
+     *
+     * @param  factory  the factory to use for creating the polygon.
+     * @param  rings    the shell followed by the holes.
+     * @return the polygon.
+     * @throws ClassCastException if the first array element is not a {@link LinearRing}.
+     * @throws ArrayStoreException if one of the holes is not a {@link LinearRing}.
+     */
+    @SuppressWarnings("fallthrough")
+    private static Polygon createPolygon(final GeometryFactory factory, final LineString[] rings) {
+        LinearRing   shell = null;
+        LinearRing[] holes = null;
+        switch (rings.length) {
+            default: holes = Arrays.copyOfRange(rings, 1, rings.length, LinearRing[].class);  // Fall through
+            case 1:  shell = (LinearRing) rings[0];  // Fall through
+            case 0:  break;
+        }
+        return factory.createPolygon(shell, holes);
+    }
+
+    /**
+     * Creates a multi-polygon from an array of JTS {@link Polygon} or {@link LineString} instances.
+     * If some geometries are actually {@link LinearRing}s, they will be converted to polygons.
      *
      * @param  geometries  the polygons or linear rings to put in a multi-polygons.
      * @throws ClassCastException if an element in the array is not a JTS geometry.
@@ -273,7 +426,7 @@ public final class Factory extends Geometries<Geometry> {
      */
     @Override
     public GeometryWrapper createMultiPolygon(final Object[] geometries) {
-        final Polygon[] polygons = new Polygon[geometries.length];
+        final var polygons = new Polygon[geometries.length];
         boolean isFloat = true;
         for (int i=0; i < geometries.length; i++) {
             final Object polyline = implementation(geometries[i]);
@@ -284,7 +437,7 @@ public final class Factory extends Geometries<Geometry> {
                 final boolean fs;
                 final CoordinateSequence cs;
                 if (polyline instanceof LinearRing) {
-                    final LinearRing ring = (LinearRing) polyline;
+                    final var ring = (LinearRing) polyline;
                     cs      = ring.getCoordinateSequence();
                     fs      = isFloat(cs);
                     polygon = factory(fs).createPolygon(ring);
@@ -306,59 +459,83 @@ public final class Factory extends Geometries<Geometry> {
     }
 
     /**
-     * Makes a line string or linear ring from the given coordinates, and adds the line string to the given list.
-     * If the {@code polygon} argument is {@code true}, then this method creates polygons instead of line strings.
-     * If the given coordinates list is empty, then this method does nothing.
-     * This method does not modify the given coordinates list.
-     */
-    final void toLineString(final List<Coordinate> coordinates, final List<Geometry> addTo,
-                            final boolean polygon, final boolean isFloat)
-    {
-        final int s = coordinates.size();
-        if (s >= 2) {
-            final Coordinate[] ca = coordinates.toArray(new Coordinate[s]);
-            final GeometryFactory gf = factory(isFloat);
-            final Geometry geometry;
-            if (polygon) {
-                geometry = gf.createPolygon(ca);
-            } else if (ca.length > 3 && ca[0].equals2D(ca[s-1])) {
-                geometry = gf.createLinearRing(ca);
-            } else {
-                geometry = gf.createLineString(ca);         // Throws an exception if contains duplicated point.
-            }
-            addTo.add(geometry);
-        }
-    }
-
-    /**
-     * Returns the given list of polygons or line strings as a single geometry.
+     * Creates a geometry from components.
+     * The expected {@code components} type depends on the target geometry type:
+     * <ul>
+     *   <li>If {@code type} is a multi-geometry, then the components shall be {@code Point[]}, {@code Geometry[]},
+     *       {@code LineString[]} or {@code Polygon[]} array, depending on the desired target type.</li>
+     *   <li>Otherwise, if {@code type} is {@link GeometryType#POLYGON}, then the components shall be a
+     *       {@link LineString[]} with the first ring taken as the shell and all other rings as holes.</li>
+     *   <li>Otherwise, the components shall be an array or collection of {@link Point} or {@link Coordinate}
+     *       instances, or a JTS-specific {@link CoordinateSequence}.</li>
+     * </ul>
      *
-     * @param  lines  the polygons or lines strings.
-     * @return {@code true} if the given list contains {@link Polygon} instances, or
-     *         {@code false} if it contains {@link LineString} instances.
-     * @throws ArrayStoreException if the geometries in the given list are not instances
-     *         of the type specified by the {@code polygon} argument.
+     * @param  type        type of geometry to create.
+     * @param  components  the components. Valid classes depend on the type of geometry to create.
+     * @return geometry built from the given components.
+     * @throws IllegalArgumentException if the given geometry type is not supported.
+     * @throws ClassCastException if {@code components} is not an array or a collection of supported geometry components.
+     * @throws ArrayStoreException if {@code components} is an array with invalid component type.
      */
-    @SuppressWarnings("SuspiciousToArrayCall")      // Type controlled by `polygon`.
-    final Geometry toGeometry(final List<Geometry> lines, final boolean polygon, final boolean isFloat) {
-        final int s = lines.size();
-        switch (s) {
-            case 0:  {
-                // Create an empty polygon or linear ring.
-                final GeometryFactory gf = factory(isFloat);
-                return polygon ? gf.createPolygon   ((Coordinate[]) null)
-                               : gf.createLinearRing((Coordinate[]) null);
+    @Override
+    public GeometryWrapper createFromComponents(final GeometryType type, final Object components) {
+        final Geometry geometry;
+        switch (type) {
+            case POINT: {
+                geometry = createFromCoordinateSequence(components, GeometryFactory::createMultiPoint).getCentroid();
+                break;
             }
-            case 1: {
-                return lines.get(0);
+            case LINESTRING: {
+                geometry = createFromCoordinateSequence(components, GeometryFactory::createLineString);
+                break;
+            }
+            case POLYGON: {
+                if (components instanceof LineString[]) {
+                    geometry = createFromComponentArray((LineString[]) components,
+                                LineString::getCoordinateSequence,
+                                Factory::createPolygon);
+                } else {
+                    geometry = createFromCoordinateSequence(components, GeometryFactory::createPolygon);
+                }
+                break;
+            }
+            case MULTIPOINT: {
+                if (components instanceof Point[]) {
+                    geometry = createFromComponentArray((Point[]) components,
+                                Point::getCoordinateSequence,
+                                GeometryFactory::createMultiPoint);
+                } else {
+                    geometry = createFromCoordinateSequence(components, GeometryFactory::createMultiPoint);
+                }
+                break;
+            }
+            case MULTILINESTRING: {
+                // The ClassCastException that may happen here is part of method contract.
+                geometry = createFromComponentArray((LineString[]) components,
+                            LineString::getCoordinateSequence,
+                            GeometryFactory::createMultiLineString);
+                break;
+            }
+            case MULTIPOLYGON: {
+                // The ClassCastException that may happen here is part of method contract.
+                geometry = createFromComponentArray((Polygon[]) components,
+                            (g) -> g.getExteriorRing().getCoordinateSequence(),
+                            GeometryFactory::createMultiPolygon);
+                break;
+            }
+            case GEOMETRYCOLLECTION: {
+                // The ClassCastException that may happen here is part of method contract.
+                geometry = factory.createGeometryCollection((Geometry[]) components);
+                break;
+            }
+            case GEOMETRY: {
+                return createFromComponents(components);
             }
             default: {
-                // An ArrayStoreException here would be a bug in our use of `polygon` boolean.
-                final GeometryFactory gf = factory(isFloat);
-                return polygon ? gf.createMultiPolygon   (lines.toArray(new Polygon   [s]))
-                               : gf.createMultiLineString(lines.toArray(new LineString[s]));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, type));
             }
         }
+        return new Wrapper(geometry);
     }
 
     /**
@@ -367,117 +544,73 @@ public final class Factory extends Geometries<Geometry> {
      *
      * <p>We have to use generic type because JTS does not provide an
      * {@code Geometry.getCoordinateSequence()} abstract method.</p>
+     *
+     * @param  <G>          the type of components in the geometry to create.
+     * @param  components   the array of components to give to the geometry constructor.
+     * @param  cseqGetter   the method returning the coordinate sequence of a component.
+     * @param  constructor  the factory method which will create a geometry from the given components.
      */
-    private <G extends Geometry> Geometry createFromComponents(
-            final G[] geometries,
-            final Function<G,CoordinateSequence> csGetter,
-            final BiFunction<GeometryFactory, G[], Geometry> builder)
+    private <G extends Geometry> Geometry createFromComponentArray(
+            final G[] components,
+            final Function<G, CoordinateSequence> cseqGetter,
+            final BiFunction<GeometryFactory, G[], Geometry> constructor)
     {
         boolean isFloat = true;
-        for (final G geometry : geometries) {
-            if (!isFloat(csGetter.apply(geometry))) {
+        for (final G component : components) {
+            if (!isFloat(cseqGetter.apply(component))) {
                 isFloat = false;
                 break;
             }
         }
-        return builder.apply(factory(isFloat), geometries);
+        return constructor.apply(factory(isFloat), components);
     }
 
     /**
-     * Creates a geometry from components.
-     * The expected {@code components} type depend on the target geometry type:
-     * <ul>
-     *   <li>If {@code type} is a multi-geometry, then the components shall be an array of {@link Point},
-     *       {@link Geometry}, {@link LineString} or {@link Polygon} elements, depending on the desired
-     *       target type.</li>
-     *   <li>Otherwise the components shall be an array or collection of {@link Point} or {@link Coordinate}
-     *       instances, or a JTS-specific {@link CoordinateSequence}.</li>
-     * </ul>
+     * Creates a geometry from a coordinate sequence.
+     * Coordinate arrays or collections are also accepted and converted to coordinate sequence.
      *
-     * @param  type        type of geometry to create.
-     * @param  components  the components. Valid classes depend on the type of geometry to create.
-     * @return geometry built from the given components.
-     * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
+     * @param  sequence     the coordinate sequences, or array, or collection.
+     * @param  constructor  the factory method which will create a geometry from the given coordinate sequences.
+     * @return geometry built from the given coordinate sequence.
      */
-    @Override
-    @SuppressWarnings("fallthrough")
-    public GeometryWrapper createFromComponents(final GeometryType type, final Object components) {
-        final Geometry geometry;
-        switch (type) {
-            case GEOMETRYCOLLECTION: {
+    private Geometry createFromCoordinateSequence(final Object sequence,
+            final BiFunction<GeometryFactory, CoordinateSequence, Geometry> constructor)
+    {
+        final GeometryFactory gf;
+        final CoordinateSequence cs;
+        if (sequence instanceof CoordinateSequence) {
+            cs = (CoordinateSequence) sequence;
+            gf = factory(isFloat(cs));
+        } else {
+            final Coordinate[] coordinates;
+            if (sequence instanceof Coordinate[]) {
+                coordinates = (Coordinate[]) sequence;
+                gf = factory;
+            } else {
                 // The ClassCastException that may happen here is part of method contract.
-                geometry = factory.createGeometryCollection((Geometry[]) components);
-                break;
-            }
-            case MULTILINESTRING: {
-                // The ClassCastException that may happen here is part of method contract.
-                geometry = createFromComponents((LineString[]) components,
-                            LineString::getCoordinateSequence,
-                            GeometryFactory::createMultiLineString);
-                break;
-            }
-            case MULTIPOLYGON: {
-                // The ClassCastException that may happen here is part of method contract.
-                geometry = createFromComponents((Polygon[]) components,
-                            (g) -> g.getExteriorRing().getCoordinateSequence(),
-                            GeometryFactory::createMultiPolygon);
-                break;
-            }
-            case MULTIPOINT: {
-                if (components instanceof Point[]) {
-                    geometry = createFromComponents((Point[]) components,
-                                Point::getCoordinateSequence,
-                                GeometryFactory::createMultiPoint);
-                    break;
-                }
-                // Else fallthrough
-            }
-            default: {
-                final GeometryFactory gf;
-                final CoordinateSequence cs;
-                if (components instanceof CoordinateSequence) {
-                    cs = (CoordinateSequence) components;
-                    gf = factory(isFloat(cs));
-                } else {
-                    final Coordinate[] coordinates;
-                    if (components instanceof Coordinate[]) {
-                        coordinates = (Coordinate[]) components;
-                        gf = factory;
+                final Collection<?> source = (sequence instanceof Collection<?>)
+                        ? (Collection<?>) sequence : Arrays.asList((Object[]) sequence);
+                coordinates = new Coordinate[source.size()];
+                boolean isFloat = true;
+                int n = 0;
+                for (final Object obj : source) {
+                    final Coordinate c;
+                    if (obj instanceof Point) {
+                        final Point p = (Point) obj;
+                        isFloat = isFloat(isFloat, p);
+                        c = p.getCoordinate();
                     } else {
                         // The ClassCastException that may happen here is part of method contract.
-                        final Collection<?> source = (components instanceof Collection<?>)
-                                ? (Collection<?>) components : Arrays.asList((Object[]) components);
-                        coordinates = new Coordinate[source.size()];
-                        boolean isFloat = true;
-                        int n = 0;
-                        for (final Object obj : source) {
-                            final Coordinate c;
-                            if (obj instanceof Point) {
-                                final Point p = (Point) obj;
-                                isFloat = isFloat(isFloat, p);
-                                c = p.getCoordinate();
-                            } else {
-                                // The ClassCastException that may happen here is part of method contract.
-                                c = (Coordinate) obj;
-                                isFloat = false;
-                            }
-                            coordinates[n++] = c;
-                        }
-                        gf = factory(isFloat);
+                        c = (Coordinate) obj;
+                        isFloat = false;
                     }
-                    cs = gf.getCoordinateSequenceFactory().create(coordinates);
+                    coordinates[n++] = c;
                 }
-                switch (type) {
-                    case GEOMETRY:   // Default to multi-points for now.
-                    case MULTIPOINT: geometry = gf.createMultiPoint(cs); break;
-                    case LINESTRING: geometry = gf.createLineString(cs); break;
-                    case POLYGON:    geometry = gf.createPolygon(cs); break;
-                    case POINT:      geometry = gf.createMultiPoint(cs).getCentroid(); break;
-                    default:         throw new AssertionError(type);
-                }
+                gf = factory(isFloat);
             }
+            cs = gf.getCoordinateSequenceFactory().create(coordinates);
         }
-        return new Wrapper(geometry);
+        return constructor.apply(gf, cs);
     }
 
     /**

@@ -30,6 +30,7 @@ import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.DoubleBuffer;
 import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
@@ -42,6 +43,8 @@ import org.apache.sis.feature.privy.MovingFeatures;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.geometry.wrapper.Capability;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -812,7 +815,7 @@ skip:           for (final Variable v : properties) {
              * The use of single-precision when possible can help to reduce memory usage.
              */
             boolean isEmpty = isTrajectory;                     // Skip `isEmptyOrNaN()` test for points.
-            boolean isFloat = factory.supportSinglePrecision();
+            boolean isFloat = factory.supports(Capability.SINGLE_PRECISION);
             for (final Vector vc : coordinateValues) {
                 if (isEmpty) isEmpty = vc.isEmptyOrNaN();
                 if (isFloat) isFloat = vc.isSinglePrecision();
@@ -826,21 +829,12 @@ makeGeom:   if (!isEmpty) {
                      * are read every time that a feature instance is created.
                      */
                     final int n = Math.multiplyExact(length, geometryDimension);
-                    final Vector vc;
-                    if (isFloat) {
-                        final float[] c = new float[n];
-                        for (int i=0; i<n; i++) {
-                            c[i] = coordinateValues[i % geometryDimension].floatValue(i / geometryDimension);
-                        }
-                        vc = Vector.create(c, false);
-                    } else {
-                        final double[] c = new double[n];
-                        for (int i=0; i<n; i++) {
-                            c[i] = coordinateValues[i % geometryDimension].doubleValue(i / geometryDimension);
-                        }
-                        vc = Vector.create(c);
+                    final double[] c = new double[n];
+                    for (int i=0; i<n; i++) {
+                        c[i] = coordinateValues[i % geometryDimension].doubleValue(i / geometryDimension);
                     }
-                    geometry = factory.createPolyline(false, geometryDimension, vc);
+                    final DoubleBuffer vc = DoubleBuffer.wrap(c);
+                    geometry = factory.createPolyline(false, isFloat, Dimensions.forCount(geometryDimension, false), vc);
                 } else {
                     /*
                      * Case when the geometry is a single point. Note that the X and Y coordinates

@@ -17,7 +17,9 @@
 package org.apache.sis.geometry.wrapper;
 
 import java.io.Serializable;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.util.Optional;
 import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
@@ -92,11 +94,6 @@ public abstract class Geometries<G> implements Serializable {
     public final transient Class<?> pointClass;
 
     /**
-     * The class for polylines and polygons.
-     */
-    public final transient Class<? extends G> polylineClass, polygonClass;
-
-    /**
      * The fallback implementation to use if the default one is not available.
      * This is set by {@link GeometryFactories} and should not change after initialization.
      * We do not synchronize accesses to this field because we keep it stable after
@@ -118,23 +115,14 @@ public abstract class Geometries<G> implements Serializable {
     /**
      * Creates a new adapter for the given root geometry class.
      *
-     * @param  library        the enumeration value that identifies which geometry library is used.
-     * @param  rootClass      the root geometry class.
-     * @param  pointClass     the class for points.
-     * @param  polylineClass  the class for polylines.
-     * @param  polygonClass   the class for polygons.
+     * @param  library     the enumeration value that identifies which geometry library is used.
+     * @param  rootClass   the root geometry class.
+     * @param  pointClass  the class for points.
      */
-    protected Geometries(final GeometryLibrary library,
-                         final Class<G> rootClass,
-                         final Class<?> pointClass,
-                         final Class<? extends G> polylineClass,
-                         final Class<? extends G> polygonClass)
-    {
+    protected Geometries(final GeometryLibrary library, final Class<G> rootClass, final Class<?> pointClass) {
         this.library         = library;
         this.rootClass       = rootClass;
         this.pointClass      = pointClass;
-        this.polylineClass   = polylineClass;
-        this.polygonClass    = polygonClass;
         isPointClassDistinct = !rootClass.isAssignableFrom(pointClass);
     }
 
@@ -193,22 +181,26 @@ public abstract class Geometries<G> implements Serializable {
     }
 
     /**
-     * Returns the geometry class of the given type.
+     * Returns the implementation-specific geometry class for the given implementation-neutral type.
      * This is the type of instances returned by {@link GeometryWrapper#implementation()}.
+     * If the type is not recognized, then {@link #rootClass} is returned (never null).
      *
      * @param  type  type of geometry for which the class is desired.
      * @return implementation class for the geometry of the specified type.
      *
      * @see #getGeometry(GeometryWrapper)
      */
-    public Class<?> getGeometryClass(final GeometryType type) {
-        switch (type) {
-            default:         return rootClass;
-            case POINT:      return pointClass;
-            case LINESTRING: return polylineClass;
-            case POLYGON:    return polygonClass;
-        }
-    }
+    public abstract Class<?> getGeometryClass(GeometryType type);
+
+    /**
+     * Returns the implementation-neutral type for the given implementation-specific class.
+     * This is the converse of {@link #getGeometryClass(GeometryType)}. The given class can
+     * be an array, in which case this method returns some kind of multi-geometry type.
+     *
+     * @param  type  class of geometry for which the implementation-neutral type is desired.
+     * @return implementation-neutral identifier for the given implementation class.
+     */
+    public abstract GeometryType getGeometryType(Class<?> type);
 
     /**
      * Returns the geometry object to return to the user in public API.
@@ -286,7 +278,7 @@ public abstract class Geometries<G> implements Serializable {
 
     /**
      * If the given object is an instance of {@link GeometryWrapper}, returns the wrapped geometry implementation.
-     * Otherwise returns the given geometry unchanged.
+     * Otherwise, returns the given geometry unchanged.
      *
      * @param  geometry  the geometry to unwrap (can be {@code null}).
      * @return the geometry implementation, or the given geometry as-is.
@@ -320,6 +312,15 @@ public abstract class Geometries<G> implements Serializable {
     public abstract GeometryWrapper parseWKB(ByteBuffer data) throws Exception;
 
     /**
+     * Returns whether the library supports the specified feature.
+     * Examples are whether <var>z</var> and/or <var>m</var> coordinate values can be stored.
+     *
+     * @param  feature  the feature for which to get support information.
+     * @return whether the given feature is supported.
+     */
+    public abstract boolean supports(Capability feature);
+
+    /**
      * Creates and wraps a point from the given position.
      *
      * @param  point  the point to convert to a geometry.
@@ -329,29 +330,17 @@ public abstract class Geometries<G> implements Serializable {
         final Object geometry;
         final int n = point.getDimension();
         switch (n) {
-            case 2: geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1)); break;
-            case 3: geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1), point.getOrdinate(2)); break;
-            default: throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "point", (n <= 2) ? 2 : 3, n));
+            case BIDIMENSIONAL:  geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1)); break;
+            case TRIDIMENSIONAL: geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1), point.getOrdinate(2)); break;
+            default: throw new MismatchedDimensionException(
+                    Errors.format(Errors.Keys.MismatchedDimension_3, "point",
+                    (n <= BIDIMENSIONAL) ? BIDIMENSIONAL : TRIDIMENSIONAL, n));
         }
         final GeometryWrapper wrapper = castOrWrap(geometry);
         if (point.getCoordinateReferenceSystem() != null) {
             wrapper.setCoordinateReferenceSystem(point.getCoordinateReferenceSystem());
         }
         return wrapper;
-    }
-
-    /**
-     * Returns whether this library can produce geometry backed by the {@code float} primitive type
-     * instead of the {@code double} primitive type. If single-precision mode is supported, using
-     * that mode may reduce memory usage. This method is used for checking whether it is worth to
-     * invoke {@link Vector#isSinglePrecision()} for example.
-     *
-     * @return whether the library support single-precision values.
-     *
-     * @see Vector#isSinglePrecision()
-     */
-    public boolean supportSinglePrecision() {
-        return false;
     }
 
     /**
@@ -362,7 +351,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  y  the second coordinate value.
      * @return the point for the given coordinate values.
      *
-     * @see #supportSinglePrecision()
+     * @see Capability#SINGLE_PRECISION
      */
     public Object createPoint(float x, float y) {
         return createPoint((double) x, (double) y);
@@ -391,36 +380,106 @@ public abstract class Geometries<G> implements Serializable {
      * @param  z  the third coordinate value.
      * @return the point for the given coordinate values.
      *
+     * @see Capability#Z_COORDINATE
      * @see GeometryWrapper#getPointCoordinates()
      */
     public abstract Object createPoint(double x, double y, double z);
 
     /**
+     * Creates a single point from the given coordinates with the given dimensions.
+     * The {@code isFloat} argument may be ignored if the geometry implementations
+     * does not support single-precision floating point numbers. The created point
+     * may contain less dimensions if the given {@code dimensions} is not supported.
+     * However, the buffer position is always advanced by {@code dimensions.count}.
+     *
+     * @param  isFloat      whether single-precision instead of double-precision floating point numbers.
+     * @param  dimensions   the dimensions of the coordinate tuple.
+     * @param  coordinates  a (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuple.
+     * @return the point for the given coordinate values.
+     */
+    public abstract Object createPoint(boolean isFloat, Dimensions dimensions, DoubleBuffer coordinates);
+
+    /**
+     * Creates a collection of points from the given coordinate values.
+     * The buffer position is advanced by {@code dimensions.count} × the number of points.
+     *
+     * <h4>Memory safety</h4>
+     * The given buffer may be wrapping native memory, or may be a temporary buffer to be
+     * reused for more data after this method call. This method shall copy the coordinate
+     * values and shall not keep a reference to the buffer.
+     *
+     * @param  isFloat      whether to cast and store numbers to single-precision.
+     * @param  dimensions   the dimensions of the coordinate tuples.
+     * @param  coordinates  sequence of (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuples.
+     * @return the collection of points for the given points.
+     */
+    public abstract G createMultiPoint(boolean isFloat, Dimensions dimensions, DoubleBuffer coordinates);
+
+    /**
      * Creates a path, polyline or polygon from the given coordinate values.
      * The array of coordinate values will be handled as if all vectors were
      * concatenated in a single vector, ignoring {@code null} array elements.
-     * Each {@link Double#NaN} coordinate value in the concatenated vector starts a new path.
+     * Each {@link Double#NaN} coordinate value in the concatenated buffer starts a new path.
      * The implementation returned by this method is an instance of {@link #rootClass}.
      *
      * <p>If the {@code polygon} argument is {@code true}, then the coordinates should
      * make a closed line (e.g: a linear ring), otherwise an exception is thrown.
      *
+     * <h4>Memory safety</h4>
+     * The given buffer may be wrapping native memory, or may be a temporary buffer to be
+     * reused for more data after this method call. This method shall copy the coordinate
+     * values and shall not keep a reference to the buffer.
+     *
      * @param  polygon      whether to return the path as a polygon instead of polyline.
-     * @param  dimension    the number of dimensions ({@value #BIDIMENSIONAL} or {@value #TRIDIMENSIONAL}).
-     * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
+     * @param  isFloat      whether to cast and store numbers to single-precision.
+     * @param  dimensions   the dimensions of the coordinate tuples.
+     * @param  coordinates  sequence of (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuples.
      * @return the geometric object for the given points.
-     * @throws UnsupportedOperationException if the geometry library cannot create the requested path.
+     * @throws UnsupportedOperationException if the geometry library cannot create the requested collection.
      * @throws IllegalArgumentException if a polygon was requested but the given coordinates do not make
      *         a closed shape (linear ring).
      */
-    public abstract G createPolyline(final boolean polygon, int dimension, Vector... coordinates);
+    public abstract G createPolyline(boolean polygon, boolean isFloat, Dimensions dimensions, DoubleBuffer... coordinates);
+
+    /**
+     * Creates a path, polyline or polygon from the given coordinate values as vectors of arbitrary type.
+     * This method converts the vectors to {@link DoubleBuffer} (may involve a copy to a temporary array),
+     * check if single-precision would be sufficient, then delegates to the abstract method.
+     *
+     * @param  polygon      whether to return the path as a polygon instead of polyline.
+     * @param  dimensions   the dimensions of the coordinate tuples.
+     * @param  coordinates  sequence of (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuples.
+     * @return the geometric object for the given points.
+     * @throws UnsupportedOperationException if the geometry library cannot create the requested collection.
+     * @throws IllegalArgumentException if a polygon was requested but the given coordinates do not make
+     *         a closed shape (linear ring).
+     */
+    public final G createPolyline(final boolean polygon, final Dimensions dimensions, final Vector... coordinates) {
+        boolean isFloat = true;
+        final var buffers = new DoubleBuffer[coordinates.length];
+        for (int i=0; i<coordinates.length; i++) {
+            final Vector v = coordinates[i];
+            if (v != null) {
+                final Buffer b = v.buffer().orElse(null);
+                if (b instanceof DoubleBuffer) {
+                    buffers[i] = (DoubleBuffer) b;
+                } else {
+                    buffers[i] = DoubleBuffer.wrap(v.doubleValues());
+                }
+                if (isFloat) {
+                    isFloat = v.isSinglePrecision();
+                }
+            }
+        }
+        return createPolyline(polygon, isFloat, dimensions, buffers);
+    }
 
     /**
      * Creates a multi-polygon from an array of geometries (polygons or linear rings).
      * Callers must ensure that the given objects are instances of geometric classes
      * of the underlying library.
      *
-     * If some geometries are actually linear rings, current behavior is not well defined.
+     * If some geometries are actually line strings, current behavior is not well defined.
      * Some implementations may convert polylines to polygons but this is not guaranteed.
      *
      * @param  geometries  the polygons or linear rings to put in a multi-polygons.
@@ -431,25 +490,48 @@ public abstract class Geometries<G> implements Serializable {
      *       or returning a more primitive geometry type if the given array contains only one element.
      *       We may want to return null if the array is empty (to be decided later).
      */
-    public abstract GeometryWrapper createMultiPolygon(final Object[] geometries);
+    public abstract GeometryWrapper createMultiPolygon(Object[] geometries);
 
     /**
      * Creates a geometry from components.
-     * The expected {@code components} type depend on the target geometry type:
+     * The expected {@code components} type depends on the target geometry type:
      * <ul>
-     *   <li>If {@code type} is a multi-geometry, then the components should be implementation-specific
-     *       {@code Point[]}, {@code Geometry[]}, {@code LineString[]} or {@code Polygon[]},
+     *   <li>If {@code type} is a multi-geometry, then the components shall be implementation-specific
+     *       {@code Point[]}, {@code Geometry[]}, {@code LineString[]} or {@code Polygon[]} array,
      *       depending on the desired target type.</li>
-     *   <li>Otherwise the components should be an array or collection of {@code Point} or {@code Coordinate}
+     *   <li>Otherwise, if {@code type} is {@link GeometryType#POLYGON}, then the components shall be an
+     *       implementation-specific {@link LineString[]} with the first ring taken as the shell and all
+     *       other rings (if any) taken as holes.</li>
+     *   <li>Otherwise, the components shall be an array or collection of {@code Point} or {@code Coordinate}
      *       instances, or some implementation-specific object such as {@code CoordinateSequence}.</li>
      * </ul>
      *
      * @param  type        type of geometry to create.
      * @param  components  the components. Valid classes depend on the type of geometry to create.
      * @return geometry built from the given components.
-     * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
+     * @throws IllegalArgumentException if the given geometry type is not supported.
+     * @throws ClassCastException if {@code components} is not an array or a collection of supported geometry components.
+     * @throws ArrayStoreException if {@code components} is an array with invalid component type.
      */
     public abstract GeometryWrapper createFromComponents(GeometryType type, Object components);
+
+    /**
+     * Creates a geometry from components with a type inferred from the component class.
+     *
+     * @param  components  the components.
+     * @return geometry built from the given components.
+     * @throws IllegalArgumentException if the library has no specific type for the given components.
+     * @throws ClassCastException if {@code components} is not an array or a collection of supported geometry components.
+     * @throws ArrayStoreException if {@code components} is an array with invalid component type.
+     */
+    protected final GeometryWrapper createFromComponents(final Object components) {
+        final Class<?> c = components.getClass();
+        final GeometryType type = getGeometryType(c);
+        if (type != GeometryType.GEOMETRY) {
+            return createFromComponents(type, components);
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, c));
+    }
 
     /**
      * Creates a polyline made of points describing a rectangle whose start point is the lower left corner.
@@ -525,7 +607,7 @@ public abstract class Geometries<G> implements Serializable {
         } else {
             coordinates = new double[] {xmin, ymin,  xmin, ymax,  xmax, ymax,  xmax, ymin,  xmin, ymin};
         }
-        return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(coordinates)));
+        return createWrapper(createPolyline(true, false, Dimensions.XY, DoubleBuffer.wrap(coordinates)));
     }
 
     /**
@@ -579,7 +661,7 @@ public abstract class Geometries<G> implements Serializable {
                 break;
             }
             default: {
-                final GeneralEnvelope ge = new GeneralEnvelope(envelope);
+                final var ge = new GeneralEnvelope(envelope);
                 ge.normalize();
                 ge.wraparound(strategy);
                 result = createGeometry2D(ge, xd, yd, true, false);
@@ -592,7 +674,7 @@ public abstract class Geometries<G> implements Serializable {
                     break;
                 }
                 @SuppressWarnings({"unchecked", "rawtypes"})
-                final GeometryWrapper[] polygons = new GeometryWrapper[parts.length];
+                final var polygons = new GeometryWrapper[parts.length];
                 for (int i=0; i<parts.length; i++) {
                     polygons[i] = createGeometry2D(parts[i], xd, yd, true, false);
                     polygons[i].setCoordinateReferenceSystem(crs);
@@ -627,15 +709,5 @@ public abstract class Geometries<G> implements Serializable {
      */
     protected static String unsupported(final String operation) {
         return Errors.format(Errors.Keys.UnsupportedOperation_1, operation);
-    }
-
-    /**
-     * Returns an error message for an unsupported number of dimensions in a geometry object.
-     *
-     * @param  dimension  number of dimensions (2 or 3) requested for the geometry object.
-     * @return error message to put in the exception to be thrown.
-     */
-    protected static String unsupported(final int dimension) {
-        return Resources.format(Resources.Keys.UnsupportedGeometryObject_1, dimension);
     }
 }

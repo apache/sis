@@ -163,12 +163,14 @@ final class StringJoinOperation extends AbstractOperation {
      * It is caller's responsibility to ensure that {@code delimiter} and {@code singleAttributes} are not null.
      * This private constructor does not verify that condition on the assumption that the public API did.
      *
+     * @throws UnconvertibleObjectException if at least one attributes is not convertible from a string.
+     * @throws IllegalArgumentException if the operation failed for another reason.
+     *
      * @see FeatureOperations#compound(Map, String, String, String, AbstractIdentifiedType...)
      */
     @SuppressWarnings({"rawtypes", "unchecked"})                                        // Generic array creation.
     StringJoinOperation(final Map<String,?> identification, final String delimiter,
             final String prefix, final String suffix, final AbstractIdentifiedType[] singleAttributes)
-            throws UnconvertibleObjectException
     {
         super(identification);
         attributeNames = new String[singleAttributes.length];
@@ -221,8 +223,14 @@ final class StringJoinOperation extends AbstractOperation {
              * We need only their names and how to convert from String to their values.
              */
             attributeNames[i] = name.toString();
-            ObjectConverter<? super String, ?> converter = ObjectConverters.find(
-                    String.class, ((DefaultAttributeType<?>) propertyType).getValueClass());
+            final Class<?> valueClass = ((DefaultAttributeType<?>) propertyType).getValueClass();
+            ObjectConverter<? super String, ?> converter;
+            try {
+                converter = ObjectConverters.find(String.class, valueClass);
+            } catch (UnconvertibleObjectException e) {
+                throw new UnconvertibleObjectException(Resources.forProperties(identification)
+                        .getString(Resources.Keys.IllegalPropertyType_2, name, valueClass), e);
+            }
             if (isAssociation) {
                 converter = new ForFeature(converter);
             }

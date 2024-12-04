@@ -448,7 +448,7 @@ loop:   for (int convention=0;; convention++) {
      * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
-    public Optional<FileSet> getFileSet() throws DataStoreException {
+    public synchronized Optional<FileSet> getFileSet() throws DataStoreException {
         if (suffixWLD == null) try {
             getGridGeometry(MAIN_IMAGE);                // Will compute `suffixWLD` as a side effect.
         } catch (URISyntaxException | IOException e) {

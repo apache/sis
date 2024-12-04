@@ -286,4 +286,17 @@ public enum AxesConvention implements AxisFilter {
      * @since 1.5
      */
     ORIGINAL;
+
+    /**
+     * Returns the conventions that only change axis order.
+     * Units of measurement and ranges of values are not modified.
+     * The current implementation returns {@link #RIGHT_HANDED} and {@link #DISPLAY_ORIENTED}, in that order.
+     *
+     * @return the conventions that only change axis order.
+     *
+     * @since 1.5
+     */
+    public static AxesConvention[] valuesForOrder() {
+        return new AxesConvention[] {RIGHT_HANDED, DISPLAY_ORIENTED};
+    }
 }

@@ -51,7 +51,7 @@ public class Syntax {
      * The string that can be used to escape wildcard characters.
      * This is the value returned by {@link DatabaseMetaData#getSearchStringEscape()}.
      */
-    final String escape;
+    protected final String escape;
 
     /**
      * Creates a new {@code Syntax} initialized from the given database metadata.

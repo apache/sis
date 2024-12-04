@@ -154,9 +154,12 @@ final class ErrorHandler {
      *             throws GDAL.propagate(e);
      *         } finally {
      *             ErrorHandler.report(store, "myPublicMethod");
-     *         =
+     *         }
      *     }
      *     }
+     *
+     * Except that the call to this method does not need to be immediately below {@code GDAL.propagate(e)},
+     * but may be done in a caller method.
      *
      * @param store   the store where to redirect the <abbr>GDAL</abbr> warnings, or {@code null} if none.
      * @param method  name of the {@code GDALStore} method to declare as the source of the warning, or {@code null}.
@@ -188,7 +191,7 @@ final class ErrorHandler {
                 if (m.message != null) {
                     final var r = new LogRecord(level, m.message);
                     if (store != null) {
-                        store.warning(method, r);
+                        store.warning(GDALStore.class, method, r);
                     } else {
                         Class<?> src = (method != null) ? GDALStore.class : null;
                         Logging.completeAndLog(GDALStoreProvider.LOGGER, src, method, r);
@@ -200,6 +203,7 @@ final class ErrorHandler {
 
     /**
      * Invoked after the execution of <abbr>GDAL</abbr> functions when failures are considered errors.
+     * See {@link #report(GDALStore, String)} for usage pattern.
      *
      * @param store   the store where to redirect the <abbr>GDAL</abbr> warnings, or {@code null} if none.
      * @param method  name of the {@code GDALStore} method to declare as the source of the warning, or {@code null}.

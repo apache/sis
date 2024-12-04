@@ -35,7 +35,6 @@ import java.util.Optional;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -57,6 +56,7 @@ import org.apache.sis.storage.gimi.isobmff.iso23001_17.UncompressedFrameConfig;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.ImageSpatialExtents;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.PixelInformationProperty;
 import org.apache.sis.util.iso.Names;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -205,7 +205,7 @@ class ResourceImageUncompressed extends TiledGridResource implements StoreResour
             } else {
                 crs = modelWkt.toCRS();
             }
-            return new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCrs, crs);
+            return new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCrs, crs);
         } catch (FactoryException ex) {
             throw new DataStoreException(ex);
         }
@@ -309,7 +309,7 @@ class ResourceImageUncompressed extends TiledGridResource implements StoreResour
                         long[] tileCoord = iterator.getTileCoordinatesInResource();
                         final WritableRaster raster = iterator.createRaster();
                         readTile(tileCoord[0], tileCoord[1], raster, Math.toIntExact(tileCoord[0]* tileWidth), Math.toIntExact(tileCoord[1]* tileHeight));
-                        result[iterator.getTileIndexInResultArray()] = raster;
+                        result[iterator.getTileIndexInResultArray()] = iterator.cache(raster);
                     }
                 } while (iterator.next());
             }

@@ -19,6 +19,7 @@ package org.apache.sis.converter;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.IllformedLocaleException;
+import java.time.format.DateTimeParseException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
@@ -229,6 +230,87 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         @Override java.math.BigInteger doConvert(String source) throws NumberFormatException {
             return new java.math.BigInteger(source);
+        }
+    }
+
+    public static final class Instant extends StringConverter<java.time.Instant> {
+        private static final long serialVersionUID = -786622578610861924L;
+        public Instant() {super(java.time.Instant.class);}
+
+        @Override java.time.Instant doConvert(String source) throws DateTimeParseException {
+            return java.time.Instant.parse(source);
+        }
+    }
+
+    public static final class ZonedDateTime extends StringConverter<java.time.ZonedDateTime> {
+        private static final long serialVersionUID = 4547600422615778462L;
+        public ZonedDateTime() {super(java.time.ZonedDateTime.class);}
+
+        @Override java.time.ZonedDateTime doConvert(String source) throws DateTimeParseException {
+            return java.time.ZonedDateTime.parse(source);
+        }
+    }
+
+    public static final class OffsetDateTime extends StringConverter<java.time.OffsetDateTime> {
+        private static final long serialVersionUID = 6438936715171368273L;
+        public OffsetDateTime() {super(java.time.OffsetDateTime.class);}
+
+        @Override java.time.OffsetDateTime doConvert(String source) throws DateTimeParseException {
+            return java.time.OffsetDateTime.parse(source);
+        }
+    }
+
+    public static final class LocalDateTime extends StringConverter<java.time.LocalDateTime> {
+        private static final long serialVersionUID = 4020225109842204445L;
+        public LocalDateTime() {super(java.time.LocalDateTime.class);}
+
+        @Override java.time.LocalDateTime doConvert(String source) throws DateTimeParseException {
+            return java.time.LocalDateTime.parse(source);
+        }
+    }
+
+    public static final class LocalDate extends StringConverter<java.time.LocalDate> {
+        private static final long serialVersionUID = -2160961842632015681L;
+        public LocalDate() {super(java.time.LocalDate.class);}
+
+        @Override java.time.LocalDate doConvert(String source) throws DateTimeParseException {
+            return java.time.LocalDate.parse(source);
+        }
+    }
+
+    public static final class LocalTime extends StringConverter<java.time.LocalTime> {
+        private static final long serialVersionUID = -4872647331214579728L;
+        public LocalTime() {super(java.time.LocalTime.class);}
+
+        @Override java.time.LocalTime doConvert(String source) throws DateTimeParseException {
+            return java.time.LocalTime.parse(source);
+        }
+    }
+
+    public static final class Year extends StringConverter<java.time.Year> {
+        private static final long serialVersionUID = 9014595771888427112L;
+        public Year() {super(java.time.Year.class);}
+
+        @Override java.time.Year doConvert(String source) throws DateTimeParseException {
+            return java.time.Year.parse(source);
+        }
+    }
+
+    public static final class YearMonth extends StringConverter<java.time.YearMonth> {
+        private static final long serialVersionUID = -8552019996811990307L;
+        public YearMonth() {super(java.time.YearMonth.class);}
+
+        @Override java.time.YearMonth doConvert(String source) throws DateTimeParseException {
+            return java.time.YearMonth.parse(source);
+        }
+    }
+
+    public static final class MonthDay extends StringConverter<java.time.MonthDay> {
+        private static final long serialVersionUID = 7647193120429326557L;
+        public MonthDay() {super(java.time.MonthDay.class);}
+
+        @Override java.time.MonthDay doConvert(String source) throws DateTimeParseException {
+            return java.time.MonthDay.parse(source);
         }
     }
 

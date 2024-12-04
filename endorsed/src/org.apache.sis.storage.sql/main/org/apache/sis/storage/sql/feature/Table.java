@@ -227,9 +227,7 @@ final class Table extends AbstractFeatureSet {
                      * have been set to association names. If `ClassCastException` occurs here, it is a bug
                      * in our object constructions.
                      */
-                    final DefaultAssociationRole association =
-                            (DefaultAssociationRole) featureType.getProperty(relation.propertyName);
-
+                    final var association = (DefaultAssociationRole) featureType.getProperty(relation.propertyName);
                     final Table table = tables.get(association.getValueType().getName());
                     if (table == null) {
                         throw new InternalDataStoreException(association.toString());

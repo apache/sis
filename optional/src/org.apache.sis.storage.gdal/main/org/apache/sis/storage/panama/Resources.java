@@ -87,6 +87,11 @@ public class Resources extends IndexedResourceBundle {
          * Apache SIS has not been authorized to call native functions.
          */
         public static final short NativeAccessNotAllowed = 7;
+
+        /**
+         * This implementation cannot execute two iterations in same time.
+         */
+        public static final short UnsupportedConcurrentIteration = 8;
     }
 
     /**

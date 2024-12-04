@@ -17,11 +17,11 @@
 package org.apache.sis.geometry.wrapper;
 
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.math.Vector;
 
 
 /**
@@ -47,7 +47,7 @@ final class StandardGeometries<G> extends Geometries<Geometry> {
      * Creates a new factory backed by the given implementation.
      */
     StandardGeometries(final Geometries<G> implementation) {
-        super(GeometryLibrary.GEOAPI, Geometry.class, Geometry.class, Geometry.class, Geometry.class);
+        super(GeometryLibrary.GEOAPI, Geometry.class, Geometry.class);
         this.implementation = implementation;
     }
 
@@ -86,11 +86,34 @@ final class StandardGeometries<G> extends Geometries<Geometry> {
     }
 
     /**
-     * Returns whether this library can produce geometry backed by the {@code float} primitive type.
+     * Returns the geometry class of the given type.
+     *
+     * @param  type  type of geometry for which the class is desired.
+     * @return implementation class for the geometry of the specified type.
      */
     @Override
-    public boolean supportSinglePrecision() {
-        return implementation.supportSinglePrecision();
+    public Class<?> getGeometryClass(final GeometryType type) {
+        return implementation.getGeometryClass(type);
+    }
+
+    /**
+     * Returns the geometry type of the given implementation class.
+     *
+     * @param  type  class of geometry for which the type is desired.
+     * @return implementation-neutral type for the geometry of the specified class.
+     */
+    @Override
+    public GeometryType getGeometryType(Class<?> type) {
+        return implementation.getGeometryType(type);
+    }
+
+    /**
+     * Returns whether the library supports the specified feature.
+     * Examples are whether <var>z</var> and/or <var>m</var> coordinate values can be stored.
+     */
+    @Override
+    public boolean supports(final Capability feature) {
+        return implementation.supports(feature);
     }
 
     /**
@@ -118,11 +141,27 @@ final class StandardGeometries<G> extends Geometries<Geometry> {
     }
 
     /**
+     * Creates a single point from the given coordinates with the given dimensions.
+     */
+    @Override
+    public Object createPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
+        return implementation.createPoint(isFloat, dimensions, coordinates);
+    }
+
+    /**
+     * Creates a collection of points from the given coordinate values.
+     */
+    @Override
+    public Geometry createMultiPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
+        return implementation.createWrapper(implementation.createMultiPoint(isFloat, dimensions, coordinates));
+    }
+
+    /**
      * Creates a polyline from the given coordinate values.
      */
     @Override
-    public Geometry createPolyline(final boolean polygon, final int dimension, final Vector... coordinates) {
-        return implementation.createWrapper(implementation.createPolyline(polygon, dimension, coordinates));
+    public Geometry createPolyline(boolean polygon, boolean isFloat, Dimensions dimensions, DoubleBuffer... coordinates) {
+        return implementation.createWrapper(implementation.createPolyline(polygon, isFloat, dimensions, coordinates));
     }
 
     /**

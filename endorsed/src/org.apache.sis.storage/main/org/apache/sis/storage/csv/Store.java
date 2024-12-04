@@ -69,6 +69,7 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.measure.Units;
@@ -553,7 +554,7 @@ final class Store extends URIDataStore implements FeatureSet {
                             if (dissociate) {
                                 type = double[].class;
                             } else {
-                                type = geometries.polylineClass;
+                                type = geometries.getGeometryClass(GeometryType.LINESTRING);
                                 characteristics = new DefaultAttributeType[] {MovingFeatureBuilder.TIME_AS_INSTANTS};
                             }
                             minOccurrence = 1;

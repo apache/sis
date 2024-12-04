@@ -120,11 +120,11 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
             } else {
                 result = library.createFromComponents(operation.getGeometryType().get(), value);
             }
-            final Object   geometry = library.getGeometry(result);
+            final Object   geomImpl = library.getGeometry(result);
             final Class<?> expected = operation.getReturnType(library);
-            if (!expected.isInstance(geometry)) {
+            if (!expected.isInstance(geomImpl)) {
                 throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.IllegalArgumentClass_3, "geom", expected, Classes.getClass(geometry)));
+                        Errors.Keys.IllegalArgumentClass_3, "geom", expected, Classes.getClass(geomImpl)));
             }
             if (srid != null) {
                 final CoordinateReferenceSystem crs = getTargetCRS(input);
@@ -132,7 +132,7 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
                     result.setCoordinateReferenceSystem(crs);
                 }
             }
-            return geometry;
+            return geomImpl;
         } catch (Exception e) {
             warning(e, false);
         }

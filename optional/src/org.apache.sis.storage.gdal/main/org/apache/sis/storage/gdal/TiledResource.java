@@ -205,13 +205,13 @@ final class TiledResource extends TiledGridResource {
      * The raster having the same size as the {@code GDALDataset} is first.
      * Rasters having a different size may be lower-resolution images.
      *
-     * @param  caller  name of the method invoking this method.
+     * @param  parent  wrapper for the {@code GDALDatasetH} of <abbr>GDAL</abbr> C/C++ <abbr>API</abbr>.
+     * @param  gdal    set of <abbr>GDAL</abbr> native functions.
      * @return pointers to the band ({@code GDALRasterBandH}).
      * @throws DataStoreException if an error occurred.
      */
-    static TiledResource[] groupBySizeAndType(final GDALStore parent, final GDAL gdal, final MemorySegment dataset)
-            throws DataStoreException
-    {
+    static TiledResource[] groupBySizeAndType(final GDALStore parent, final GDAL gdal) throws DataStoreException {
+        final MemorySegment dataset = parent.handle();
         final var bands = new LinkedHashMap<SizeAndType, ArrayList<Band>>();
         final int mainWidth, mainHeight;
         try (Arena arena = Arena.ofConfined()) {

@@ -26,6 +26,7 @@ import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.setup.GeometryLibrary;
 
@@ -129,7 +130,8 @@ final class GroupAsPolylineOperation extends AbstractOperation {
         synchronized (TYPES) {
             return TYPES.computeIfAbsent(geometries.library, (library) -> {
                 var name = Map.of(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
-                return new DefaultAttributeType<>(name, geometries.polylineClass, 1, 1, null);
+                var type = geometries.getGeometryClass(GeometryType.LINESTRING);
+                return new DefaultAttributeType<>(name, type, 1, 1, null);
             });
         }
     }

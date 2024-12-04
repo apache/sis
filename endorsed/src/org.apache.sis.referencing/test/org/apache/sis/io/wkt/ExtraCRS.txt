@@ -1,5 +1,5 @@
 #
-# Test file for org.apache.sis.io.wkt.ReferencingFactory.
+# Test file for org.apache.sis.io.wkt.WKTDictionary.
 # See "doc-files/ESRI.txt" for file syntax.
 #
 

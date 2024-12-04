@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.sql.feature;
 
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.sql.SQLException;
@@ -106,7 +104,7 @@ final class TableAnalyzer extends FeatureAnalyzer {
      */
     @Override
     final Relation[] getForeignerKeys(final Relation.Direction direction) throws SQLException, DataStoreException {
-        final List<Relation> relations = new ArrayList<>();
+        final var relations = new ArrayList<Relation>();
         final boolean isImport = (direction == Relation.Direction.IMPORT);
         try (ResultSet reflect = isImport ? analyzer.metadata.getImportedKeys(id.catalog, id.schema, id.table)
                                           : analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table))
@@ -153,11 +151,11 @@ final class TableAnalyzer extends FeatureAnalyzer {
          * Get all columns in advance because `completeIntrospection(…)`
          * needs to be invoked before to invoke `database.getMapping(column)`.
          */
-        final Map<String,Column> columns = new LinkedHashMap<>();
+        final var columns = new LinkedHashMap<String,Column>();
         final String quote = analyzer.metadata.getIdentifierQuoteString();
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
-                final Column column = new Column(analyzer, reflect, quote);
+                final var column = new Column(analyzer, reflect, quote);
                 if (columns.put(column.name, column) != null) {
                     throw duplicatedColumn(column);
                 }
@@ -170,7 +168,7 @@ final class TableAnalyzer extends FeatureAnalyzer {
         /*
          * Analyze the type of each column, which may be geometric as a consequence of above call.
          */
-        final List<Column> attributes = new ArrayList<>();
+        final var attributes = new ArrayList<Column>();
         for (final Column column : columns.values()) {
             if (createAttribute(column)) {
                 attributes.add(column);

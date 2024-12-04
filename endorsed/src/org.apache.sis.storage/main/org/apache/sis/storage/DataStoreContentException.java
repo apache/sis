@@ -20,7 +20,7 @@ import java.util.Locale;
 
 
 /**
- * Thrown when a store cannot be read because the stream contains invalid data.
+ * Thrown when a store cannot be read because the stream or database contains invalid data.
  * It may be for example a logical inconsistency, or a reference not found,
  * or an unsupported file format version, <i>etc.</i>
  *

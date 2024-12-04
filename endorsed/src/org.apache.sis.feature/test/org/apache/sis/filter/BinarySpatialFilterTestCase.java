@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.nio.DoubleBuffer;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -23,10 +24,10 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.math.Vector;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -87,20 +88,20 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
      * Creates the polygon identified by the given enumeration value.
      */
     private Literal<AbstractFeature,G> literal(final Polygon p) {
-        final byte[] coordinates;
+        final double[] coordinates;
         boolean polygon = true;
         switch (p) {
-            case RIGHT:      coordinates = new byte[] {5,  5,    5, 10,   10, 10,   10, 5,   5,  5}; break;
-            case DISTANCE_1: coordinates = new byte[] {5, +1,   10, +1,   10,  4,   5,  4,   5, +1}; break;
-            case DISTANCE_3: coordinates = new byte[] {5, -1,   10, -1,   10,  2,   5,  2,   5, -1}; break;
-            case INTERSECT:  coordinates = new byte[] {7,  3,    9,  3,    9,  6,   7,  6,   7,  3}; break;
-            case CONTAINS:   coordinates = new byte[] {1,  1,   11,  1,   11, 20,   1, 20,   1,  1}; break;
-            case CROSSES:    coordinates = new byte[] {4,  6,    7,  8,   12,  9};  polygon = false; break;
-            case TOUCHES:    coordinates = new byte[] {4,  2,    7,  5,    9,  3};  polygon = false; break;
+            case RIGHT:      coordinates = new double[] {5,  5,    5, 10,   10, 10,   10, 5,   5,  5}; break;
+            case DISTANCE_1: coordinates = new double[] {5, +1,   10, +1,   10,  4,   5,  4,   5, +1}; break;
+            case DISTANCE_3: coordinates = new double[] {5, -1,   10, -1,   10,  2,   5,  2,   5, -1}; break;
+            case INTERSECT:  coordinates = new double[] {7,  3,    9,  3,    9,  6,   7,  6,   7,  3}; break;
+            case CONTAINS:   coordinates = new double[] {1,  1,   11,  1,   11, 20,   1, 20,   1,  1}; break;
+            case CROSSES:    coordinates = new double[] {4,  6,    7,  8,   12,  9};  polygon = false; break;
+            case TOUCHES:    coordinates = new double[] {4,  2,    7,  5,    9,  3};  polygon = false; break;
             default: throw new AssertionError(p);
         }
         return (Literal<AbstractFeature,G>)
-                factory.literal(library.createPolyline(polygon, 2, Vector.create(coordinates, false)));
+                factory.literal(library.createPolyline(polygon, false, Dimensions.XY, DoubleBuffer.wrap(coordinates)));
     }
 
     /**

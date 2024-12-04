@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Locale;
 import java.net.URI;
@@ -61,6 +62,13 @@ final class Opener implements Runnable {
     final MemorySegment handle;
 
     /**
+     * Arenas which will need to be closed when the {@link GDALStore} is garbage-collected.
+     * This is a safety in case the user forgot to close the feature streams.
+     * May contain null elements.
+     */
+    Arena[] arenasToClose;
+
+    /**
      * Creates a new instance for read operations on the given file or <abbr>URL</abbr>.
      *
      * @param  owner           owner of the set of handles for invoking <abbr>GDAL</abbr> functions.
@@ -69,7 +77,7 @@ final class Opener implements Runnable {
      * @throws DataStoreException if <var>GDAL</var> cannot open the data set.
      */
     Opener(final GDALStoreProvider owner, final String url, final String... allowedDrivers) throws DataStoreException {
-        this(owner, url, new OpenFlag[] {OpenFlag.RASTER, OpenFlag.SHARED}, allowedDrivers, null, null);
+        this(owner, url, new OpenFlag[] {OpenFlag.RASTER, OpenFlag.VECTOR, OpenFlag.SHARED}, allowedDrivers, null, null);
     }
 
     /**
@@ -100,6 +108,7 @@ final class Opener implements Runnable {
            final String[]   siblingFiles) throws DataStoreException
     {
         this.owner = owner;
+        arenasToClose = new Arena[4];
         final GDAL gdal = owner.GDAL();
         try (var arena = Arena.ofConfined()) {
             handle = (MemorySegment) gdal.open.invokeExact(
@@ -187,7 +196,13 @@ final class Opener implements Runnable {
      */
     @Override
     public void run() {
-        if (handle != null) {
+        RuntimeException error = null;
+        try {
+            /*
+             * Closes the `GDALDatasetH`. This operation may be skipped if the GDAL library has been unloaded.
+             * It may be because `GDALStoreProvider` has been garbage-collected, or because a GDAL fatal error
+             * occurred.
+             */
             owner.tryGDAL(GDALStore.class, "close").ifPresent((gdal) -> {
                 final int err;
                 try {
@@ -199,6 +214,25 @@ final class Opener implements Runnable {
                     ErrorHandler.errorOccurred(err);
                 }
             });
+        } catch (RuntimeException e) {
+            error = e;
+        } finally {
+            /*
+             * Closes temporary arenas that may have been created by `FeatureIterator`.
+             * This is a safety in case the user forgot to invoke `Stream.close()`.
+             */
+            for (Arena arena : arenasToClose) {
+                if (arena != null) try {
+                    arena.close();
+                } catch (RuntimeException e) {
+                    if (error == null) error = e;
+                    else error.addSuppressed(e);
+                }
+            }
+            Arrays.fill(arenasToClose, null);
+        }
+        if (error != null) {
+            throw error;
         }
     }
 }
