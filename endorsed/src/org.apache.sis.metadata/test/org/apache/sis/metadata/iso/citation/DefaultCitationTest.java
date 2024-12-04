@@ -53,8 +53,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the main branch:
-import org.opengis.util.CodeList;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.util.CodeList;
 
 
 /**
