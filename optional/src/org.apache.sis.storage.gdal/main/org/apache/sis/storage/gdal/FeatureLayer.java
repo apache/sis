@@ -23,8 +23,6 @@ import java.util.stream.StreamSupport;
 import java.lang.foreign.Arena;
 import java.lang.foreign.AddressLayout;
 import java.lang.foreign.MemorySegment;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.builder.AttributeRole;
@@ -40,6 +38,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 
 
 /**

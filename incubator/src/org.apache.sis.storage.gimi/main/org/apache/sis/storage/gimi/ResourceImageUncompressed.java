@@ -35,6 +35,7 @@ import java.util.Optional;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -56,7 +57,6 @@ import org.apache.sis.storage.gimi.isobmff.iso23001_17.UncompressedFrameConfig;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.ImageSpatialExtents;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.PixelInformationProperty;
 import org.apache.sis.util.iso.Names;
-import org.opengis.referencing.operation.MathTransform;
 
 
 /**

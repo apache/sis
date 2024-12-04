@@ -29,9 +29,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.apache.sis.referencing.EPSGDependentTestCase;
 import org.apache.sis.referencing.factory.TestFactorySource;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 
 
 /**

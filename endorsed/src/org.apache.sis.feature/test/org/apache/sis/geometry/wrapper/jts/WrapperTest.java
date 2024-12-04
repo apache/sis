@@ -23,11 +23,11 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.MultiLineString;
+import org.apache.sis.geometry.wrapper.GeometryType;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.test.TestCase;
 
 
