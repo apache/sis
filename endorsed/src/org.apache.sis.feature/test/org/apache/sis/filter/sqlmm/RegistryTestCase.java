@@ -17,6 +17,7 @@
 package org.apache.sis.filter.sqlmm;
 
 import java.util.List;
+import java.nio.DoubleBuffer;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -28,9 +29,10 @@ import org.apache.sis.filter.Optimization;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.filter.internal.Node;
+import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.math.Vector;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -148,7 +150,7 @@ public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
      * The geometry is stored in the {@link #geometry} field?
      */
     private void setGeometry(final boolean polygon, final double... coordinates) {
-        geometry = library.createPolyline(polygon, 2, Vector.create(coordinates, false));
+        geometry = library.createPolyline(polygon, false, Dimensions.XY, DoubleBuffer.wrap(coordinates));
     }
 
     /**
@@ -223,7 +225,7 @@ public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
     {
         final GeneralEnvelope env;
         if (isPolygon) {
-            assertInstanceOf(library.polygonClass, result);
+            assertInstanceOf(library.getGeometryClass(GeometryType.POLYGON), result);
             final GeometryWrapper wrapped = library.castOrWrap(result);
             if (supportCRS) {
                 assertEquals(crs, wrapped.getCoordinateReferenceSystem());
@@ -250,7 +252,7 @@ public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
      * @param  coordinates  expected (x,y) tuples.
      */
     private void assertPolylineEquals(final Object result, final CoordinateReferenceSystem crs, final double... coordinates) {
-        assertInstanceOf(library.polylineClass, result);
+        assertInstanceOf(library.getGeometryClass(GeometryType.LINESTRING), result);
         final GeometryWrapper wrapped = library.castOrWrap(result);
         if (supportCRS) {
             assertEquals(crs, wrapped.getCoordinateReferenceSystem());
@@ -346,8 +348,9 @@ public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
         assertEnvelopeEquals(result, false, null, 12, 3.3, 13.1, 5.7);
 
         // After testing literal data, try to extract data from a feature.
-        Feature instance = createFeatureWithGeometry(library.polylineClass);
-        function = factory.function("ST_Envelope", factory.property(P_NAME, library.polylineClass));
+        final Class<?> polylineClass = library.getGeometryClass(GeometryType.LINESTRING);
+        var instance = createFeatureWithGeometry(polylineClass);
+        function = factory.function("ST_Envelope", factory.property(P_NAME, polylineClass));
         result = function.apply(instance);
         assertEnvelopeEquals(result, false, null, 12, 3.3, 13.1, 5.7);
 
@@ -367,8 +370,9 @@ public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
         assertEquals(Boolean.FALSE, evaluate("ST_Intersects", point, geometry));
 
         // Border should intersect. Also use Feature instead of Literal as a source.
-        final Feature instance = createFeatureWithGeometry(library.polygonClass);
-        final var reference = factory.property(P_NAME, library.polygonClass);
+        final Class<?> polygonClass = library.getGeometryClass(GeometryType.POLYGON);
+        final var instance = createFeatureWithGeometry(polygonClass);
+        final var reference = factory.property(P_NAME, polygonClass);
         point = library.createPoint(0.2, 0.3);
         function = factory.function("ST_Intersects", reference, factory.literal(point));
         assertEquals(Boolean.TRUE, function.apply(instance));
@@ -517,8 +521,8 @@ public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
         setGeometryCRS(HardCodedCRS.WGS84_LATITUDE_FIRST);
         function = factory.function("ST_Union", factory.property(P_NAME), factory.literal(geometry));
 
-        final Optimization optimization = new Optimization();
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        final var optimization = new Optimization();
+        final var ftb = new FeatureTypeBuilder();
         ftb.addAttribute(library.pointClass).setName(P_NAME).setCRS(HardCodedCRS.WGS84);
         optimization.setFeatureType(ftb.setName("Test").build());
         final var optimized = optimization.apply(function);

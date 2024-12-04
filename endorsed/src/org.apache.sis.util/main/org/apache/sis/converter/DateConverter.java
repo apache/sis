@@ -21,18 +21,13 @@ import java.util.Set;
 import java.util.EnumSet;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.UnconvertibleObjectException;
 
 
 /**
  * Handles conversions from {@link Date} to various objects.
- *
- * <h2>String representation</h2>
- * There is currently no converter between {@link String} and {@link java.util.Date} because the
- * date format is not yet defined (we are considering the ISO format for a future SIS version).
- *
- * <h2>Special cases</h2>
- * The converter from dates to timestamps is not injective, because the same date could be mapped
- * to many timestamps since timestamps have an additional nanoseconds field.
+ * Note that there is no converter between {@link String} and {@link java.util.Date}.
+ * The {@link java.time.Instant} class should be used instead.
  *
  * <h2>Immutability and thread safety</h2>
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
@@ -61,12 +56,14 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
     }
 
     /**
-     * Returns the function properties.
+     * Returns the function properties. The function from {@code Date} instances to {@code Timestamp} or
+     * {@code Instant} instances is <em>injective</em> because each instant is either unrelated to dates
+     * (if the instant contains a nanosecond field), or is the output of exactly one {@code Date} with
+     * nanoseconds assumed to be zero.
      */
     @Override
     public Set<FunctionProperty> properties() {
-        return EnumSet.of(FunctionProperty.SURJECTIVE, FunctionProperty.ORDER_PRESERVING,
-                FunctionProperty.INVERTIBLE);
+        return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
     }
 
     /**
@@ -171,12 +168,30 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
         }
     }
 
-    /*
-     * We do not yet provide converter to java.time.Instant. If we do so, we need to create an InstantConverter class
-     * doing the inverse conversion.  Reminder: java.sql.Date and java.sql.Time are not convertible to Instant (their
-     * Date.toInstant() method throws UnsupportedOperationException), but java.sql.Timestamp is.
-     *
-     * If conversion to/from java.time.Instant is added, see if some code can be shared with
-     * org.apache.sis.filter.ComparisonFilter.
+    /**
+     * From {@code Date} to {@code Instant}.
      */
+    public static final class Instant extends DateConverter<java.time.Instant> {
+        private static final long serialVersionUID = 5727173560137117677L;
+
+        static final Instant INSTANCE = new Instant();      // Invoked by ServiceLoader when using module-path.
+        public static Instant provider() {
+            return INSTANCE;
+        }
+
+        public Instant() {                                  // Instantiated by ServiceLoader when using class-path.
+            super(java.time.Instant.class);
+            inverse = InstantConverter.Date.INSTANCE;
+        }
+
+        @Override public java.time.Instant apply(final Date source) {
+            if (source != null) try {
+                return source.toInstant();
+            } catch (UnsupportedOperationException e) {
+                // Thrown by `java.sql.Date` and `java.sql.Time`, but not `java.sql.Timestamp`.
+                throw new UnconvertibleObjectException(formatErrorMessage(source), e);
+            }
+            return null;
+        }
+    }
 }

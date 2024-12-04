@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Collection;
 import java.util.Objects;
@@ -38,6 +39,9 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -46,6 +50,7 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -77,6 +82,11 @@ public class GDALStore extends DataStore implements Aggregate {
     private final Path path;
 
     /**
+     * The library used for creating geometry objects, or {@code null} for the default library.
+     */
+    final GeometryLibrary library;
+
+    /**
      * The factory to use for creating the identifiers.
      */
     final NameFactory factory;
@@ -90,13 +100,13 @@ public class GDALStore extends DataStore implements Aggregate {
     NameSpace namespace;
 
     /**
-     * Pointer to the <abbr>GDAL</abbr> object in native memory, or {@code null} if disposed.
+     * Wrapper for the pointer to the <abbr>GDAL</abbr> object in native memory.
      * This is a {@code GDALDatasetH} in the C/C++ <abbr>API</abbr>.
      *
      * @see #handle()
      * @see #dispose()
      */
-    private MemorySegment handle;
+    private final Opener opener;
 
     /**
      * The action to execute for closing the {@link GDALStore}.
@@ -144,11 +154,8 @@ public class GDALStore extends DataStore implements Aggregate {
     @SuppressWarnings("this-escape")
     public GDALStore(final GDALStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(Objects.requireNonNull(provider), connector);
+        library = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         factory = DefaultNameFactory.provider();
-        final String filename = IOUtilities.filename(connector.getStorage());
-        if (filename != null) {
-            namespace = factory.createNameSpace(factory.createLocalName(null, filename), null);
-        }
         final String[] drivers;
         drivers    = connector.getOption(GDALStoreProvider.DRIVERS_OPTION_KEY);
         location   = connector.getStorageAs(URI.class);
@@ -157,10 +164,10 @@ public class GDALStore extends DataStore implements Aggregate {
         if (location != null) {
             url = Opener.toURL(location, path, true);
         }
-        Opener opener;
+        final String filename = IOUtilities.filenameWithoutExtension(url);
+        namespace = factory.createNameSpace(factory.createLocalName(null, filename), null);
         opener = new Opener(provider, url, drivers);
         closer = Cleaners.SHARED.register(this, opener);    // Must do now in case of exception before completion.
-        handle = opener.handle;
     }
 
     /**
@@ -175,24 +182,26 @@ public class GDALStore extends DataStore implements Aggregate {
     @SuppressWarnings("this-escape")
     GDALStore(final GDALStore parent, final String url, final String driver) throws DataStoreException {
         super(parent, parent.getProvider(), new StorageConnector(url), false);
-        final Opener opener;
         path     = parent.path;
         location = parent.location;
         factory  = parent.factory;
+        library  = parent.library;
         opener   = new Opener(getProvider(), url, driver);
         closer   = Cleaners.SHARED.register(this, opener);      // Must do now in case of exception before completion.
-        handle   = opener.handle;
     }
 
     /**
      * Returns the <abbr>GDAL</abbr> handle, or throws an exception if the data set is closed.
      * Must be invoked from a method synchronized on {@code this}.
      *
+     * @return pointer to the {@code GDALDatasetH} of <abbr>GDAL</abbr> C/C++ <abbr>API</abbr>.
+     *
      * @see #close()
      */
     final MemorySegment handle() throws DataStoreClosedException {
         assert Thread.holdsLock(this);
-        if (handle != null) return handle;
+        final MemorySegment handle = opener.handle;
+        if (handle.scope().isAlive()) return handle;
         throw new DataStoreClosedException(getLocale(), Constants.GDAL);
     }
 
@@ -234,7 +243,7 @@ public class GDALStore extends DataStore implements Aggregate {
      * @param  gdal  set of handles for invoking <abbr>GDAL</abbr> functions.
      * @return name of the <abbr>GDAL</abbr> driver used for opening the file, or {@code null} if none.
      */
-    private String getDriverName(final GDAL gdal) {
+    final String getDriverName(final GDAL gdal) {
         try {
             var result = (MemorySegment) gdal.getDatasetDriver.invokeExact(handle());
             if (!GDAL.isNull(result)) {     // Paranoiac check.
@@ -373,7 +382,9 @@ public class GDALStore extends DataStore implements Aggregate {
             if (subdatasets != null && !subdatasets.isEmpty()) {
                 components = subdatasets;
             } else {
-                components = UnmodifiableArrayList.wrap(TiledResource.groupBySizeAndType(this, gdal, handle()));
+                final TiledResource[] rasters = TiledResource.groupBySizeAndType(this, gdal);
+                final FeatureLayer[] vectors = FeatureLayer.listLayers(this, gdal);
+                components = UnmodifiableArrayList.wrap(ArraysExt.concatenate(rasters, vectors, new AbstractResource[0]));
             }
         } finally {
             ErrorHandler.throwOnFailure(this, "components");
@@ -426,28 +437,70 @@ public class GDALStore extends DataStore implements Aggregate {
     /**
      * Sends a warning to the listeners registered in the {@code GDALStore}.
      *
-     * @param caller   the method to report as the emitted of the warning.
+     * @param caller   the method in {@code GDALStore} to report as the emitter of the warning.
      * @param message  the message.
      * @param cause    the cause of the warning.
      */
-    final void warning(final String caller, final String message, final Exception cause) {
+    final void warning(final String caller, final String message, final Throwable cause) {
         var record = new LogRecord(Level.WARNING, message);
         record.setThrown(cause);
-        warning(caller, record);
+        warning(GDALStore.class, caller, record);
     }
 
     /**
      * Sends a warning to the listeners, or log the warning if there is no listeners.
      * This method set the logger name, source class and method class on the record.
      *
-     * @param  caller  the {@code GDALStore} method to report as the emitter.
+     * @param  classe  the public class to report as the source of the warning.
+     * @param  caller  the method in the specified class to report as the emitter of the warning.
      * @param  record  the warning to report.
      */
-    final void warning(final String caller, final LogRecord record) {
+    final void warning(final Class<?> classe, final String caller, final LogRecord record) {
         record.setLoggerName(GDALStoreProvider.LOGGER.getName());
-        record.setSourceClassName(GDALStore.class.getCanonicalName());
+        record.setSourceClassName(classe.getCanonicalName());
         record.setSourceMethodName(caller);
         listeners.warning(record);
+    }
+
+    /**
+     * Closes the old arena (if non-null) and optionally creates a new one.
+     * The arena is registered for being closed at garbage-collection time
+     * in case the user forgot to close the feature stream.
+     *
+     * @param  oldArena  the previous arena to close, or {@code null} if none.
+     * @param  create    whether to create a new arena.
+     * @return the new arena, or {@code null} if {@code create} was {@code false}.
+     */
+    final Arena changeArena(final Arena oldArena, final boolean create) {
+        assert Thread.holdsLock(this);
+        Arena[] arenasToClose = opener.arenasToClose;
+        if (oldArena != null) try {
+            oldArena.close();
+        } finally {
+            for (int i=0; i<arenasToClose.length; i++) {
+                if (arenasToClose[i] == oldArena) {
+                    arenasToClose[i] = null;
+                    break;
+                }
+            }
+        }
+        if (create) {
+            /*
+             * Creates a new arena only after we have make sure that there is room for it in the array.
+             * We do that for making sure that `Opener.run()` will close the arena. By contrast, if we
+             * used `ArrayList.add(arena)` instead, we would have a memory leak if `OutOfMemoryError`
+             * or other exception was thrown during the `add` method.
+             */
+            int i = 0;
+            while (arenasToClose[i] != null) {
+                if (++i >= arenasToClose.length) {
+                    opener.arenasToClose = arenasToClose = Arrays.copyOf(arenasToClose, i*2);
+                    break;
+                }
+            }
+            return arenasToClose[i] = Arena.ofConfined();
+        }
+        return null;
     }
 
     /**
@@ -457,6 +510,7 @@ public class GDALStore extends DataStore implements Aggregate {
      */
     @Override
     public void close() throws DataStoreException {
+        // Do not synchronize. Synchronization is done inside `closeRecursively()`.
         final class Flush implements AutoCloseable {
             @Override public void close() throws DataStoreException {
                 ErrorHandler.throwOnFailure(GDALStore.this, "close");
@@ -487,19 +541,18 @@ public class GDALStore extends DataStore implements Aggregate {
                     children = delayed.getOpenedComponents();
                 }
                 if (children != null) {
-                    for (Resource child : children) {
+                    for (Resource child : children) try {
                         // Note: child may be null if not yet opened.
-                        if (child instanceof GDALStore subdataset) try {
+                        if (child instanceof GDALStore subdataset) {
                             subdataset.closeRecursively();
-                        } catch (RuntimeException e) {
-                            if (error == null) error = e;
-                            else error.addSuppressed(e);
                         }
+                    } catch (RuntimeException e) {
+                        if (error == null) error = e;
+                        else error.addSuppressed(e);
                     }
                 }
             } finally {
                 synchronized (this) {
-                    handle = null;
                     closer.clean();     // Important to always invoke, even if an exception occurred before.
                 }
             }

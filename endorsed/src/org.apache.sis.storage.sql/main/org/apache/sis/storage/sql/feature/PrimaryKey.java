@@ -18,6 +18,8 @@ package org.apache.sis.storage.sql.feature;
 
 import java.util.List;
 import java.util.Collection;
+import java.util.StringJoiner;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 
@@ -104,5 +106,15 @@ abstract class PrimaryKey {
         public List<String> getColumns() {
             return columns;
         }
+    }
+
+    /**
+     * Returns a string representation of this primary key for debugging purposes.
+     */
+    @Override
+    public String toString() {
+        var buffer = new StringJoiner(", ", "(", ")");
+        getColumns().forEach(buffer::add);
+        return buffer + " as " + Classes.getShortName(valueClass);
     }
 }

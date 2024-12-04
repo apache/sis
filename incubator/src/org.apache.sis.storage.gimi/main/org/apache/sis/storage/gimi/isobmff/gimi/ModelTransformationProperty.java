@@ -17,10 +17,10 @@
 package org.apache.sis.storage.gimi.isobmff.gimi;
 
 import java.io.IOException;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**

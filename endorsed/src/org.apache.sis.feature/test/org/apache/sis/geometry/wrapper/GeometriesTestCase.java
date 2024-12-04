@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.EnumSet;
 import java.util.Iterator;
 import static java.lang.Double.NaN;
+import java.nio.DoubleBuffer;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.Envelope2D;
@@ -93,21 +94,28 @@ public abstract class GeometriesTestCase extends TestCase {
     }
 
     /**
+     * Creates a line string or polygon with the specified (x,y) tuples.
+     * The geometry is stored in the {@link #geometry} field?
+     */
+    private void setGeometry(final double... coordinates) {
+        geometry = factory.createPolyline(false, false, Dimensions.XY, DoubleBuffer.wrap(coordinates));
+    }
+
+    /**
      * Tests {@link Geometries#createPolyline(boolean, int, Vector...)}.
      * This method verifies the polylines by a call to {@link GeometryWrapper#getEnvelope()}.
      * Subclasses should perform more extensive tests by verifying the {@link #geometry} field.
      */
     @Test
     public void testCreatePolyline() {
-        geometry = factory.createPolyline(false, 2, Vector.create(new double[] {
-                  4,   5,
-                  7,   9,
-                  9,   3,
-                  4,   5,
-                NaN, NaN,
-                 -3,  -2,
-                 -2,  -5,
-                 -1,  -6}));
+        setGeometry(4,   5,
+                    7,   9,
+                    9,   3,
+                    4,   5,
+                  NaN, NaN,
+                   -3,  -2,
+                   -2,  -5,
+                   -1,  -6);
 
         createWrapper();
         final GeneralEnvelope env = wrapper.getEnvelope();
@@ -156,7 +164,11 @@ public abstract class GeometriesTestCase extends TestCase {
      */
     @Test
     public void testFormatWKT() {
-        geometry = factory.createPolyline(false, 2, Vector.create(new double[] {4,5, 7,9, 9,3, -1,-6}));
+        setGeometry(4,  5,
+                    7,  9,
+                    9,  3,
+                   -1, -6);
+
         createWrapper();
         final String text = wrapper.formatWKT(0);
         assertNotNull(text);

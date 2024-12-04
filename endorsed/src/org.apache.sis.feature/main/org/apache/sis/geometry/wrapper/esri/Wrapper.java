@@ -252,7 +252,7 @@ add:    for (Geometry next = geometry;;) {
         final Geometry result;
         switch (operation) {
             case ST_Dimension:        return geometry.getDimension();
-            case ST_CoordDim:         return geometry.hasZ() ? 3 : 2;
+            case ST_CoordDim:         return geometry.hasZ() ? Geometries.TRIDIMENSIONAL : Geometries.BIDIMENSIONAL;
             case ST_GeometryType:     return geometry.getType().name();
             case ST_IsEmpty:          return geometry.isEmpty();
             case ST_Is3D:             return geometry.hasZ();

@@ -16,13 +16,13 @@
  */
 package org.apache.sis.storage.gimi;
 
+import java.awt.image.RenderedImage;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.GenericName;
-import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -41,6 +41,7 @@ import org.apache.sis.storage.tiling.TileMatrix;
 import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.tiling.TiledResource;
 import org.apache.sis.util.iso.Names;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -59,6 +60,7 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
     private CoordinateReferenceSystem crs;
     private TileMatrix tileMatrix;
     private GimiTileMatrixSet tileMatrixSet;
+    private GridGeometry gridGeometry;
 
     public ResourceGrid(Item item) throws DataStoreException {
         this.item = item;
@@ -98,7 +100,14 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
         return item.store;
     }
 
-    private synchronized void initialize() throws DataStoreException {
+    @Override
+    public GridGeometry getGridGeometry() throws DataStoreException {
+        initialize();
+        return gridGeometry;
+    }
+
+    @Override
+    protected synchronized void initialize() throws DataStoreException {
         if (tileMatrix != null) return;
 
         final Resource first = item.store.getComponent(item.getReferences().get(0).toItemId[0]);
@@ -107,6 +116,19 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
         } else {
             throw new DataStoreException("Expecting a GridCoverageResource tile but was a " + first.getClass().getName());
         }
+
+        if (first instanceof ResourceImageUncompressed) {
+            ResourceImageUncompressed riu = (ResourceImageUncompressed) first;
+            colorModel = riu.getColorModel(null);
+            sampleModel = riu.getSampleModel(null);
+            tileSize = riu.getTileSize();
+        } else {
+            final RenderedImage image = this.first.read(null).render(null);
+            colorModel = image.getColorModel();
+            sampleModel = image.getSampleModel();
+            tileSize = new int[]{image.getWidth(), image.getHeight()};
+        }
+
         final GridGeometry firstTileGridGeom = this.first.getGridGeometry();
 
         final GridExtent tileExtent = firstTileGridGeom.getExtent();
@@ -144,7 +166,8 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
         }
 
         //create tile matrix
-        GridGeometry tilingScheme = new GridGeometry(new GridExtent(imageExts.imageWidth, imageExts.imageHeight), PixelInCell.CELL_CENTER, matrixGridToCrs, crs);
+        GridGeometry tilingScheme = new GridGeometry(new GridExtent(imageExts.imageWidth, imageExts.imageHeight), PixelInCell.CELL_CORNER, matrixGridToCrs, crs);
+        this.gridGeometry = tilingScheme;
         tilingScheme = tilingScheme.derive().subgrid(null, tileSize).build(); //remove tile size from scheme
         tileMatrix = new GimiTileMatrix(this, tilingScheme, tileSize);
         //create tile matrix set
@@ -156,6 +179,7 @@ final class ResourceGrid extends MatrixGridRessource implements TiledResource, S
         tileMatrix = new GimiTileMatrix(this, tilingScheme, tileSize);
         tileMatrixSet = new GimiTileMatrixSet(Names.createLocalName(null, null, identifier.tip().toString() + "_tms"), crs);
         tileMatrixSet.matrices.insertByScale(tileMatrix);
+        this.gridGeometry = tilingScheme.upsample(tileSize);
     }
 
     @Override

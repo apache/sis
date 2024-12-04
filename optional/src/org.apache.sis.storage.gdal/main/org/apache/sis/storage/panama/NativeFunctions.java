@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.panama;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.Callable;
@@ -27,6 +29,8 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.UndeclaredThrowableException;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -90,7 +94,7 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
      * @throws IllegalArgumentException if the given function has not been found.
      */
     @SuppressWarnings("restricted")
-    protected final MethodHandle lookup(final String function, final FunctionDescriptor signature) {
+    public final MethodHandle lookup(final String function, final FunctionDescriptor signature) {
         return symbols.find(function).map((method) -> linker.downcallHandle(method, signature)).orElseThrow();
     }
 
@@ -217,9 +221,11 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
      */
     public static RuntimeException propagate(final Throwable exception) {
         switch (exception) {
-            case Error e: throw e;
-            case RuntimeException e: return e;
-            default: throw new UndeclaredThrowableException(exception);
+            case Error e:              throw e;
+            case RuntimeException e:   return e;
+            case IOException e:        return new UncheckedIOException(e);
+            case DataStoreException e: return new BackingStoreException(e);
+            default: return new UndeclaredThrowableException(exception);
         }
     }
 }

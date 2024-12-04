@@ -44,6 +44,8 @@ import org.apache.sis.storage.panama.Resources;
  *
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://gdal.org/en/latest/api/raster_c_api.html">GDAL Raster C API</a>
  */
 final class GDAL extends NativeFunctions {
     /**
@@ -150,7 +152,7 @@ final class GDAL extends NativeFunctions {
     final MethodHandle exportToWkt;
 
     /**
-     * <abbr>GDAL</abbr> {@code nt *OSRGetDataAxisToSRSAxisMapping(OGRSpatialReferenceH hSRS, int *pnCount)}.
+     * <abbr>GDAL</abbr> {@code int* OSRGetDataAxisToSRSAxisMapping(OGRSpatialReferenceH hSRS, int *pnCount)}.
      * Return the data axis to SRS axis mapping.
      * Requires <abbr>GDAL</abbr> 3.0.
      */
@@ -275,6 +277,20 @@ final class GDAL extends NativeFunctions {
     final MethodHandle adviseRead;
 
     /**
+     * <abbr>GDAL</abbr> {@code int GDALDatasetGetLayerCount(GDALDatasetH)}.
+     * Get the number of vector layers in the dataset.
+     */
+    final MethodHandle getLayerCount;
+
+    /**
+     * Pointers to native methods for the <abbr>OGR</abbr> part of <abbr>GDAL</abbr>.
+     * Stores in a separated object for avoiding to load those symbols before needed.
+     *
+     * @see #ogr()
+     */
+    private OGR ogr;
+
+    /**
      * Creates the handles for all <abbr>GDAL</abbr> functions which will be needed.
      *
      * @param  loader  the object used for loading the library.
@@ -393,6 +409,9 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.JAVA_INT,       // int nBYSize
                 ValueLayout.JAVA_INT,       // GDALDataType eBDataType
                 ValueLayout.ADDRESS));      // CSLConstList papszOptions
+
+        // Dataset layer API
+        getLayerCount = lookup("GDALDatasetGetLayerCount", acceptPointerReturnInt);
 
         // Set error handling first in order to redirect initialization warnings.
         setErrorHandler(null);
@@ -586,6 +605,16 @@ final class GDAL extends NativeFunctions {
         }
         array.setAtIndex(layout, items.length, MemorySegment.NULL);
         return array;
+    }
+
+    /**
+     * Returns the pointers to native methods for the <abbr>OGR</abbr> part of <abbr>GDAL</abbr>.
+     */
+    final synchronized OGR ogr() {
+        if (ogr == null) {
+            ogr = new OGR(this);
+        }
+        return ogr;
     }
 
     /**

@@ -397,6 +397,40 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns whether the given coordinate system has the given axis directions in the same order.
+     * The coordinate system must have a number of axes at least equal to {@code directions.length}.
+     * If the coordinate system has more dimensions, the extraneous axes are ignored.
+     *
+     * @param  cs          the coordinate system for which to check axis directions.
+     * @param  directions  the expected axis directions.
+     * @return whether the coordinate system has the given axis direction, in the same order.
+     */
+    public static boolean hasPrefix(final CoordinateSystem cs, final AxisDirection... directions) {
+        if (cs.getDimension() < directions.length) {
+            return false;
+        }
+        for (int i=0; i<directions.length; i++) {
+            if (!directions[i].equals(cs.getAxis(i).getDirection())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns whether the second axis is colinear with the first axis. This method returns {@code true}
+     * if the {@linkplain #absolute absolute} direction of the given directions are equal.
+     * For example, "down" is considered colinear with "up".
+     *
+     * @param  d1  the first axis direction to compare.
+     * @param  d2  the second axis direction to compare.
+     * @return {@code true} if both directions are colinear.
+     */
+    public static boolean isColinear(final AxisDirection d1, final AxisDirection d2) {
+        return Objects.equals(absolute(d1), absolute(d2));
+    }
+
+    /**
      * Finds the dimension of an axis having the given direction or its opposite.
      * If more than one axis has the given direction, only the first occurrence is returned.
      * If both the given direction and its opposite exist, then the dimension for the given
@@ -477,19 +511,6 @@ next:       for (int i=0; i <= limit; i++) {
             }
         }
         return fallback;
-    }
-
-    /**
-     * Returns whether the second axis is colinear with the first axis. This method returns {@code true}
-     * if the {@linkplain #absolute absolute} direction of the given directions are equal.
-     * For example, "down" is considered colinear with "up".
-     *
-     * @param  d1  the first axis direction to compare.
-     * @param  d2  the second axis direction to compare.
-     * @return {@code true} if both directions are colinear.
-     */
-    public static boolean isColinear(final AxisDirection d1, final AxisDirection d2) {
-        return Objects.equals(absolute(d1), absolute(d2));
     }
 
     /**

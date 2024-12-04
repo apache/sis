@@ -1,5 +1,5 @@
 #
-# Example file for org.apache.sis.io.wkt.ReferencingFactory.
+# Example file for org.apache.sis.io.wkt.WKTDictionary.
 # This file provides Coordinate Reference System definitions
 # in Well-Known Text (WKT) format. One or many files can be
 # used for extending the set of CRS with custom definitions.

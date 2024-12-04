@@ -25,12 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.opengis.util.GenericName;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -49,6 +48,8 @@ import org.apache.sis.storage.tiling.TileMatrix;
 import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.tiling.TiledResource;
 import org.apache.sis.util.iso.Names;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -131,7 +132,7 @@ final class ResourcePyramid extends AbstractGridCoverageResource implements Tile
          */
         final TileMatrix referenceMatrix = candidates.get(0).getTileMatrix();
         final GridGeometry reference = referenceMatrix.getTilingScheme();
-        final MathTransform referenceTransform = reference.isDefined(GridGeometry.GRID_TO_CRS) ? reference.getGridToCRS(PixelInCell.CELL_CENTER) : new AffineTransform2D(1, 0, 0, 1, 0, 0);
+        final MathTransform referenceTransform = reference.isDefined(GridGeometry.GRID_TO_CRS) ? reference.getGridToCRS(PixelInCell.CELL_CORNER) : new AffineTransform2D(1, 0, 0, 1, 0, 0);
         final CoordinateReferenceSystem crs = reference.isDefined(GridGeometry.CRS) ? referenceMatrix.getTilingScheme().getCoordinateReferenceSystem() : CommonCRS.Engineering.GRID.crs();
 
         tileMatrixSet = new GimiTileMatrixSet(Names.createLocalName(null, null, getIdentifier().get().tip().toString() + "_tms"), crs);
@@ -147,7 +148,7 @@ final class ResourcePyramid extends AbstractGridCoverageResource implements Tile
 
             final GridGeometry fixed = new GridGeometry(
                     resource.getTileMatrix().getTilingScheme().getExtent(),
-                    PixelInCell.CELL_CENTER,
+                    PixelInCell.CELL_CORNER,
                     MathTransforms.concatenate(scaleTrs, referenceTransform),
                     reference.getCoordinateReferenceSystem());
 
@@ -174,8 +175,11 @@ final class ResourcePyramid extends AbstractGridCoverageResource implements Tile
     @Override
     public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
         initialize();
+
         ResourceGrid bestMatch = grids.get(tileMatrixSet.getTileMatrices().lastKey());
         if (domain != null && domain.isDefined(GridGeometry.RESOLUTION)) {
+            //transpose it to this pyramid
+            domain = getGridGeometry().derive().rounding(GridRoundingMode.ENCLOSING).subgrid(domain).build();
             final double[] resolution = domain.getResolution(true);
             for (Map.Entry<GenericName, ? extends TileMatrix> entry : tileMatrixSet.getTileMatrices().entrySet()) {
                 final ResourceGrid grid = grids.get(entry.getKey());

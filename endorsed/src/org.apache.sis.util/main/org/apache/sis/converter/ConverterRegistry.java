@@ -245,7 +245,7 @@ public class ConverterRegistry {
          * ConverterRegistry), unwraps it and registers its component individually.
          */
         if (converter instanceof FallbackConverter<?,?>) {
-            final FallbackConverter<S,T> fc = (FallbackConverter<S,T>) converter;
+            final var fc = (FallbackConverter<S,T>) converter;
             register(fc.primary);
             register(fc.fallback);
             return;
@@ -282,12 +282,14 @@ public class ConverterRegistry {
                      */
                     continue;
                 }
-                if (i.getName().startsWith("java.lang.constant")) {
+                switch (i.getPackageName()) {
                     /*
-                     * The Constable and ConstantDesc interfaces (introduced in Java 12)
-                     * are internal mechanic for handling byte codes.
+                     * The Constable and ConstantDesc interfaces (introduced in Java 12) are internal mechanic
+                     * for handling byte codes. The temporal interfaces are unusual in that users are advised
+                     * to use a specific implementation class instead of the interface.
                      */
-                    continue;
+                    case "java.lang.constant":
+                    case "java.time.temporal": continue;
                 }
                 if (Cloneable.class.isAssignableFrom(i)) {
                     /*

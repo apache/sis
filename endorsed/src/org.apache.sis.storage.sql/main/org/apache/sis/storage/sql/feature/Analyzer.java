@@ -165,7 +165,7 @@ public final class Analyzer {
          * Finds the keyword used for identifying tables and views.
          * Derby, HSQLDB and PostgreSQL uses the "TABLE" type, but H2 uses "BASE TABLE".
          */
-        final Set<String> types = new HashSet<>(4);
+        final var types = new HashSet<String>(4);
         try (ResultSet reflect = metadata.getTableTypes()) {
             while (reflect.next()) {
                 final String type = reflect.getString(Reflection.TABLE_TYPE);
@@ -227,8 +227,7 @@ public final class Analyzer {
          * specified name. During this iteration, we may discover new tables to analyze because of dependencies
          * (foreigner keys).
          */
-        final List<Table> tableList;
-        tableList = new ArrayList<>(tableNames.length);
+        final var tableList = new ArrayList<Table>(tableNames.length);
         for (final TableReference reference : declared) {
             // Adds only the table explicitly required by the user.
             tableList.add(table(reference, reference.getName(this), null));
@@ -246,8 +245,8 @@ public final class Analyzer {
     /**
      * Reads a string from the given result set and return a unique instance of that string.
      * This method should be invoked only for {@code String} instances that are going to be
-     * stored in {@link Table} or {@link Relation} structures; there is no point to invoke
-     * this method for example before to parse the string as a boolean.
+     * stored in {@link Table} or {@link Relation} structures. There is no point to invoke
+     * this method for example before to parse the string as a Boolean.
      *
      * @param  reflect  the result set from which to read a string.
      * @param  column   the column to read.
