@@ -1038,14 +1038,19 @@ public class StorageConnector implements Serializable {
      * This method may return {@code true} if all the following conditions are true:
      *
      * <ul>
-     *   <li>A previous {@link #getStorageAs(Class)} call requested some kind of input stream
-     *       (e.g. {@link InputStream}, {@link ImageInputStream}, {@link DataInput}, {@link Reader}).</li>
-     *   <li>The {@linkplain #getStorage() storage} is an object convertible to a {@link Path} and the
-     *       file identified by that path {@linkplain java.nio.file.Files#notExists does not exist}.</li>
-     *   <li>The {@linkplain #getOption(OptionKey) optons} given to this {@code StorageConnector} include
+     *   <li>The {@linkplain #getOption(OptionKey) options} given to this {@code StorageConnector} include
      *       {@link java.nio.file.StandardOpenOption#CREATE} or {@code CREATE_NEW}.</li>
      *   <li>The {@code getStorageAs(…)} and {@code wasProbingAbsentFile()} calls happened in the context of
      *       {@link DataStores} probing the storage content in order to choose a {@link DataStoreProvider}.</li>
+     *   <li>A previous {@link #getStorageAs(Class)} call requested some kind of input stream
+     *       (e.g. {@link InputStream}, {@link ImageInputStream}, {@link DataInput}, {@link Reader}).</li>
+     *   <li>One of the following conditions is true:
+     *     <ul>
+     *       <li>The input stream is empty.</li>
+     *       <li>The {@linkplain #getStorage() storage} is an object convertible to a {@link Path} and the
+     *           file identified by that path {@linkplain java.nio.file.Files#notExists does not exist}.</li>
+     *     </ul>
+     *   </li>
      * </ul>
      *
      * If all above conditions are true, then {@link #getStorageAs(Class)} returns {@code null} instead of creating

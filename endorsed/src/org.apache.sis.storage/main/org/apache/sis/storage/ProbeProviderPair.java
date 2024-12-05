@@ -54,14 +54,14 @@ final class ProbeProviderPair {
 
     /**
      * Sets the {@linkplain #probe} result for a file that does not exist yet.
-     * The result will be {@link ProbeResult#SUPPORTED} or {@code UNSUPPORTED_STORAGE},
+     * The result will be {@link ProbeResult#CREATE_NEW} or {@code UNSUPPORTED_STORAGE},
      * depending on whether the {@linkplain #provider} supports the creation of new storage.
      * In both cases, {@link StorageConnector#wasProbingAbsentFile()} will return {@code true}.
      *
      * <p>This method is invoked for example if the storage is a file, the file does not exist
      * but {@link StandardOpenOption#CREATE} or {@link StandardOpenOption#CREATE_NEW CREATE_NEW}
      * option was provided and the data store has write capability. Note however that declaring
-     * {@code SUPPORTED} is not a guarantee that the data store will successfully create the resource.
+     * {@code CREATE_NEW} is not a guarantee that the data store will successfully create the resource.
      * For example we do not verify if the file system grants write permission to the application.</p>
      *
      * @see StorageConnector#wasProbingAbsentFile()
@@ -69,7 +69,7 @@ final class ProbeProviderPair {
     final void setProbingAbsentFile() {
         final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
         if (md == null || ArraysExt.contains(md.capabilities(), Capability.CREATE)) {
-            probe = ProbeResult.SUPPORTED;
+            probe = ProbeResult.CREATE_NEW;
         } else {
             probe = ProbeResult.UNSUPPORTED_STORAGE;
         }

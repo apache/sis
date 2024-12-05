@@ -41,10 +41,12 @@ import java.nio.file.Path;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.charset.StandardCharsets;
 import javax.imageio.stream.ImageInputStream;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamReader;
+import org.apache.sis.pending.jdk.JDK20;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
@@ -556,6 +558,20 @@ check:  if (stream instanceof ChannelData) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the file at the specified path is absent or an empty file.
+     * If the file exists but is not a regular file, then this method returns {@code false}.
+     *
+     * @param  path  the path to test.
+     * @return whether the file is absent or empty.
+     * @throws IOException if an error occurred while fetching the attributes.
+     */
+    public static boolean isAbsentOrEmpty(final Path path) throws IOException {
+        final BasicFileAttributes attributes = JDK20.readAttributesIfExists(
+                path.getFileSystem().provider(), path, BasicFileAttributes.class);
+        return (attributes == null) || (attributes.isRegularFile() && attributes.size() == 0);
     }
 
     /**

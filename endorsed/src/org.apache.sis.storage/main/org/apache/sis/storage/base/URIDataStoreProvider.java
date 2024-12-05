@@ -19,11 +19,11 @@ package org.apache.sis.storage.base;
 import java.util.Optional;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
@@ -221,9 +221,11 @@ public abstract class URIDataStoreProvider extends DataStoreProvider {
             if (ArraysExt.contains(options, StandardOpenOption.CREATE_NEW)) {
                 return IOUtilities.isKindOfPath(storage);
             }
-            if (ArraysExt.contains(options, StandardOpenOption.CREATE)) {
+            if (ArraysExt.contains(options, StandardOpenOption.CREATE)) try {
                 final Path path = connector.getStorageAs(Path.class);
-                return (path != null) && Files.notExists(path);
+                return (path != null) && IOUtilities.isAbsentOrEmpty(path);
+            } catch (IOException e) {
+                throw new DataStoreException(e);
             }
         }
         return false;
