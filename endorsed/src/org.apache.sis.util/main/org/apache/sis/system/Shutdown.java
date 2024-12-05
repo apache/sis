@@ -16,8 +16,8 @@
  */
 package org.apache.sis.system;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Deque;
+import java.util.ArrayDeque;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import org.apache.sis.util.logging.Logging;
@@ -44,7 +44,7 @@ public final class Shutdown extends Thread {
     /**
      * The resources to dispose. Most recently added resources are last.
      */
-    private static final List<Callable<?>> resources = new ArrayList<>();
+    private static final Deque<Callable<?>> resources = new ArrayDeque<>();
 
     /**
      * Creates the thread to be executed at shutdown time.
@@ -83,7 +83,7 @@ public final class Shutdown extends Thread {
 
     /**
      * Invoked if the Apache SIS library is executed from an environment that provide its own shutdown hook.
-     * Example of such environments are OSG and servlet containers. In such case, the shutdown hook will not
+     * Example of such environments are OSGi and servlet containers. In such case, the shutdown hook will not
      * be registered to the JVM {@link Runtime}.
      *
      * @param  env  a description of the container. Should contain version information if possible.
@@ -108,10 +108,13 @@ public final class Shutdown extends Thread {
     public static void register(final Callable<?> resource) {
         synchronized (resources) {
             assert !resources.contains(resource);
-            resources.add(resource);
-            if (hook == null && container == null) {
+            resources.addLast(resource);
+            if (hook == null && container == null) try {
                 hook = new Shutdown();
                 Runtime.getRuntime().addShutdownHook(hook);
+            } catch (SecurityException e) {
+                hook = null;
+                Logging.recoverableException(SystemListener.LOGGER, Shutdown.class, "register", e);
             }
         }
     }
@@ -121,26 +124,22 @@ public final class Shutdown extends Thread {
      */
     private static void removeShutdownHook() {
         assert Thread.holdsLock(resources);
-        if (hook != null) {
+        if (hook != null) try {
             Runtime.getRuntime().removeShutdownHook(hook);
             hook = null;
+        } catch (SecurityException e) {
+            Logging.recoverableException(SystemListener.LOGGER, Shutdown.class, "removeShutdownHook", e);
         }
     }
 
     /**
      * Unregisters a code from execution at JVM shutdown time.
-     * This method uses identity comparison (it does not use {@link Object#equals(Object)}).
      *
      * @param  resource  the resource disposal to cancel execution.
      */
     public static void unregister(final Callable<?> resource) {
         synchronized (resources) {
-            for (int i = resources.size(); --i>=0;) {       // Check most recently added resources first.
-                if (resources.get(i) == resource) {
-                    resources.remove(i);
-                    break;
-                }
-            }
+            resources.removeLastOccurrence(resource);
         }
     }
 
@@ -148,8 +147,8 @@ public final class Shutdown extends Thread {
      * Unregisters the supervisor MBean, executes the disposal tasks and shutdowns the {@code org.apache.sis.util} threads.
      * This method may be invoked at JVM shutdown, or if a container like OSGi is unloaded the SIS library.
      *
-     * @param  caller  the class invoking this method, to be used only for logging purpose, or {@code null}
-     *         if the logging system is not available anymore (i.e. the JVM itself is shutting down).
+     * @param  caller  the class invoking this method (used for logging purpose), or {@code null} if this method
+     *         is invoked at JVM shutdown time (in which case the logging system is not available anymore).
      * @throws Exception if an error occurred during unregistration of the supervisor MBean
      *         or during a resource disposal.
      */
@@ -157,6 +156,7 @@ public final class Shutdown extends Thread {
         synchronized (resources) {
             container = "Shutdown";
             if (caller != null) {
+                // Remove only if JVM shutdown is not already in progress.
                 removeShutdownHook();
             }
         }
@@ -176,9 +176,9 @@ public final class Shutdown extends Thread {
          * invoke Shutdown.[un]register(Disposable), but we nevertheless make the loop robust to this case.
          */
         synchronized (resources) {
-            int i;
-            while ((i = resources.size()) != 0) try {       // In case run() modifies the resources list.
-                resources.remove(i - 1).call();             // Dispose most recently added resources first.
+            Callable<?> r;
+            while ((r = resources.pollLast()) != null) try {
+                r.call();
             } catch (Exception e) {
                 if (exception != null) {
                     e.addSuppressed(exception);

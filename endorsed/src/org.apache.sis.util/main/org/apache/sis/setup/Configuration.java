@@ -23,6 +23,9 @@ import java.util.function.Supplier;
 import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import org.apache.sis.system.Shutdown;
+import org.apache.sis.system.SystemListener;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.MetadataServices;
 
 
@@ -54,7 +57,7 @@ import org.apache.sis.util.privy.MetadataServices;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  * @since   1.0
  */
 public final class Configuration {
@@ -145,5 +148,28 @@ public final class Configuration {
      */
     public void setDatabase(final Supplier<DataSource> source) {
         MetadataServices.getInstance().setDataSource(Objects.requireNonNull(source));
+    }
+
+    /**
+     * Shutdowns the Apache SIS library.
+     * This method close database connections and stops daemon threads.
+     * <strong>The Apache SIS library shall not be used anymore after this method call.</strong>
+     * Any use of Apache SIS after this method call may cause undermined behavior.
+     * In particular, it may cause memory leaks.
+     *
+     * <h4>When to use</h4>
+     * This method should generally <strong>not</strong> be invoked, because Apache SIS registers itself
+     * a {@linkplain Runtime#addShutdownHook(Thread) shutdown hook} to the Java Virtual Machine.
+     * This method may be useful in environments that do not allow the use of shutdown hooks,
+     * or when waiting for the <abbr>JVM</abbr> shutdown is overly conservative.
+     *
+     * @since 1.5
+     */
+    public void shutdown() {
+        try {
+            Shutdown.stop(Configuration.class);
+        } catch (Exception e) {
+            Logging.unexpectedException(SystemListener.LOGGER, Configuration.class, "stop", e);
+        }
     }
 }
