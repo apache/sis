@@ -490,9 +490,12 @@ public class StoreListeners implements Localized {
             }
         }
         final var record = new LogRecord(level, message);
-        if (exception == null) {
+        if (exception == null) try {
             StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) -> stream.filter(
                    (frame) -> setPublicSource(record, frame.getDeclaringClass(), frame.getMethodName())).findFirst());
+         } catch (SecurityException e) {
+            // Temporary catch to be removed after Apache SIS requires Java 24.
+            Logging.ignorableException(StoreUtilities.LOGGER, StoreListeners.class, "warning", e);
          } else try {
             record.setThrown(exception);
             for (final StackTraceElement e : exception.getStackTrace()) {

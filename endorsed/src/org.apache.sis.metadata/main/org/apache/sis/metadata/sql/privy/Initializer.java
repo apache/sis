@@ -111,7 +111,12 @@ public abstract class Initializer {
      * {@return initializers found on the module path}.
      */
     public static ServiceLoader<Initializer> load() {
-        return ServiceLoader.load(Initializer.class, Reflect.getContextClassLoader());
+        try {
+            return ServiceLoader.load(Initializer.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(Initializer.class, "load", e);
+            return ServiceLoader.load(Initializer.class);
+        }
     }
 
     /**

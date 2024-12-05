@@ -171,7 +171,13 @@ public abstract class TypeRegistration {
     private static ServiceLoader<TypeRegistration> services() {
         ServiceLoader<TypeRegistration> s = services;
         if (s == null) {
-            services = s = ServiceLoader.load(TypeRegistration.class, Reflect.getContextClassLoader());
+            try {
+                s = ServiceLoader.load(TypeRegistration.class, Reflect.getContextClassLoader());
+            } catch (SecurityException e) {
+                Reflect.log(TypeRegistration.class, "services", e);
+                s = ServiceLoader.load(TypeRegistration.class);
+            }
+            services = s;
             DelayedExecutor.schedule(new DelayedRunnable(1, TimeUnit.MINUTES) {
                 @Override public void run() {services = null;}
             });

@@ -104,7 +104,15 @@ public final class SystemRegistry extends ConverterRegistry {
      */
     @Override
     protected void initialize() {
-        for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, Reflect.getContextClassLoader())) {
+        @SuppressWarnings("rawtypes")
+        ServiceLoader<ObjectConverter> loader;
+        try {
+            loader = ServiceLoader.load(ObjectConverter.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(SystemRegistry.class, "initialize", e);
+            loader = ServiceLoader.load(ObjectConverter.class);
+        }
+        for (ObjectConverter<?,?> converter : loader) {
             if (converter instanceof SystemConverter<?,?>) {
                 converter = ((SystemConverter<?,?>) converter).unique();
             }

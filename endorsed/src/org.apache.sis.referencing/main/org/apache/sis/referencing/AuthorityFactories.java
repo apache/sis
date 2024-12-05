@@ -114,7 +114,14 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      */
     @Override
     protected Iterator<? extends T> createSourceIterator() {
-        return ServiceLoader.load(service, Reflect.getContextClassLoader()).iterator();
+        ServiceLoader<T> loader;
+        try {
+            loader = ServiceLoader.load(service, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(AuthorityFactories.class, "createSourceIterator", e);
+            loader = ServiceLoader.load(service);
+        }
+        return loader.iterator();
     }
 
     /**

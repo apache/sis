@@ -73,7 +73,15 @@ final class DataStoreRegistry extends LazySet<DataStoreProvider> {
      * provided that it can access at least the Apache SIS stores.
      */
     public DataStoreRegistry() {
-        this.loader = ServiceLoader.load(DataStoreProvider.class, Reflect.getContextClassLoader());
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        ServiceLoader<DataStoreProvider> loader;
+        try {
+            loader = ServiceLoader.load(DataStoreProvider.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(DataStoreRegistry.class, "<init>", e);
+            loader = ServiceLoader.load(DataStoreProvider.class);
+        }
+        this.loader = loader;
     }
 
     /**

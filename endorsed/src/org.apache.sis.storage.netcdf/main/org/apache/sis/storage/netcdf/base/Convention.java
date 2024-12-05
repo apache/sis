@@ -72,8 +72,17 @@ public class Convention {
     /**
      * All conventions found on the module path.
      */
-    private static final ServiceLoader<Convention> AVAILABLES =
-            ServiceLoader.load(Convention.class, Reflect.getContextClassLoader());
+    private static final ServiceLoader<Convention> AVAILABLES;
+    static {
+        ServiceLoader<Convention> loader;
+        try {
+            loader = ServiceLoader.load(Convention.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(Convention.class, "<clinit>", e);
+            loader = ServiceLoader.load(Convention.class);
+        }
+        AVAILABLES = loader;
+    }
 
     /**
      * The convention to use when no specific conventions were found.
