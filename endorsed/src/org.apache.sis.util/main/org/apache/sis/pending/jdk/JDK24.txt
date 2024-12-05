@@ -1,0 +1,1 @@
+Reminder: Remove all usages of `SecurityException` when Apache SIS will require Java 24 or later.

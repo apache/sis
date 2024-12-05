@@ -28,6 +28,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Configuration;
+import org.apache.sis.system.SystemListener;
 
 
 /**
@@ -141,7 +142,7 @@ public final class Logging extends Static {
         if (classe != null && method != null) {
             record.setSourceClassName(classe.getCanonicalName());
             record.setSourceMethodName(method);
-        } else {
+        } else try {
             /*
              * If the given class or method is null, infer them from stack trace. We do not document this feature
              * in public API because the rules applied here are heuristic and may change in any future SIS version.
@@ -151,6 +152,8 @@ public final class Logging extends Static {
                     inferCaller(fl, (classe != null) ? classe.getCanonicalName() : null, method,
                             stream.filter((frame) -> Modifier.isPublic(frame.getDeclaringClass().getModifiers()))
                                   .map((StackWalker.StackFrame::toStackTraceElement)), record));
+        } catch (SecurityException e) {
+            ignorableException(SystemListener.LOGGER, Logging.class, "completeAndLog", e);
         }
         logger.log(record);
     }

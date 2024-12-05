@@ -180,7 +180,7 @@ public class MarshallerPool {
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
-        replacements = ServiceLoader.load(AdapterReplacement.class, Reflect.getContextClassLoader());
+        replacements = loader();
         implementation = Implementation.detect(context);
         /*
          * Prepares a copy of the property map (if any), then removes the
@@ -190,6 +190,16 @@ public class MarshallerPool {
         marshallers        = new ConcurrentLinkedDeque<>();
         unmarshallers      = new ConcurrentLinkedDeque<>();
         isRemovalScheduled = new AtomicBoolean();
+    }
+
+    /** Temporary method to be removed after Apache SIS requires Java 24. */
+    private static ServiceLoader<AdapterReplacement> loader() {
+        try {
+            return ServiceLoader.load(AdapterReplacement.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(AdapterReplacement.class, "<init>", e);
+            return ServiceLoader.load(AdapterReplacement.class);
+        }
     }
 
     /**

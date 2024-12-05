@@ -20,6 +20,9 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -100,5 +103,29 @@ public final class Reflect implements Consumer<StackWalker.StackFrame> {
                 setClassLoader(c);
             }
         }
+    }
+
+    /**
+     * Whether the security exception warning has already been reported.
+     * Used for avoiding to pollute the logs with the same message repeated many times.
+     */
+    private static volatile boolean warningAlreadyReported;
+
+    /**
+     * Logs a warning saying that the context class loader cannot be obtained because of security constraints.
+     * While the security manager is deprecated and removed in Java 24, it is still used by a few applications
+     * on older releases.
+     *
+     * @param  caller  the class to report as the log source.
+     * @param  method  the method to report as the log source.
+     * @param  e       the exception that occurred.
+     */
+    public static void log(final Class<?> caller, final String method, final SecurityException e) {
+        boolean r = warningAlreadyReported;
+        warningAlreadyReported = true;
+        var record = new LogRecord(r ? Level.FINER : Level.CONFIG,
+                "Cannot get the context class loader. The Apache SIS services may be incomplete.");
+        record.setThrown(e);
+        Logging.completeAndLog(SystemListener.LOGGER, caller, method, record);
     }
 }
