@@ -194,10 +194,12 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
      * @see ImageFileDirectory#validateMandatoryTags()
      */
     public boolean validateMandatoryTags() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final MatrixSIS affine = this.affine;
         if (affine == null || completeMatrixSpecified) {
             return true;
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Vector modelTiePoints = this.modelTiePoints;
         if (modelTiePoints != null) {
             /*
@@ -296,10 +298,10 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         GridGeometry gridGeometry;
         try {
-            MathTransform gridToCRS;
+            MathTransform gridToCRS = null;
             if (affine != null) {
                 gridToCRS = factory.createAffineTransform(Matrices.resizeAffine(affine, ++n, n));
-            } else {
+            } else if (modelTiePoints != null) {
                 pixelIsPoint = true;
                 gridToCRS = Localization.nonLinear(modelTiePoints);
                 gridToCRS = factory.createPassThroughTransform(0, gridToCRS, n - 2);

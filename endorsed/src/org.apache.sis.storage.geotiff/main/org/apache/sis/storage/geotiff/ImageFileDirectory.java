@@ -1350,11 +1350,11 @@ final class ImageFileDirectory extends DataCube {
                     filename(), expectedCount, actualCount));
         }
         /*
-         * If a "grid to CRS" conversion has been specified with only the scale factor, we need to compute
-         * the translation terms now.
+         * If a "grid to CRS" conversion has been specified with only the scale factor,
+         * we need to compute the translation terms now.
          */
         if (referencing != null && !referencing.validateMandatoryTags()) {
-            throw missingTag((short) TAG_MODEL_TIE_POINT);
+            listeners.warning(missingTag((short) TAG_MODEL_TIE_POINT));
         }
         isValidated = true;
         return true;
