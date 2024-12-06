@@ -151,17 +151,34 @@ public final class Configuration {
     }
 
     /**
-     * Shutdowns the Apache SIS library.
-     * This method close database connections and stops daemon threads.
-     * <strong>The Apache SIS library shall not be used anymore after this method call.</strong>
-     * Any use of Apache SIS after this method call may cause undermined behavior.
+     * Shutdowns the Apache <abbr>SIS</abbr> library.
+     * This method closes database connections and stops the daemon threads that were started by <abbr>SIS</abbr>.
+     * <strong>The Apache <abbr>SIS</abbr> library shall not be used anymore after this method call.</strong>
+     * Any use of Apache <abbr>SIS</abbr> after this method call may have unexpected effects.
      * In particular, it may cause memory leaks.
      *
      * <h4>When to use</h4>
-     * This method should generally <strong>not</strong> be invoked, because Apache SIS registers itself
-     * a {@linkplain Runtime#addShutdownHook(Thread) shutdown hook} to the Java Virtual Machine.
-     * This method may be useful in environments that do not allow the use of shutdown hooks,
+     * This method should generally <strong>not</strong> be invoked, because Apache <abbr>SIS</abbr> registers
+     * itself a {@linkplain Runtime#addShutdownHook(Thread) shutdown hook} to the Java Virtual Machine.
+     * This method may be useful in embedded environments that do not allow the use of shutdown hooks,
      * or when waiting for the <abbr>JVM</abbr> shutdown is overly conservative.
+     *
+     * <h4>Complete shutdown</h4>
+     * This method shutdowns only the databases used by Apache <abbr>SIS</abbr>.
+     * If Apache Derby is used for the <abbr>EPSG</abbr> database, some Derby daemon threads may still be running.
+     * Those daemons can be ignored in standalone applications, but may need to be stopped in embedded environments.
+     * A complete Derby shutdown can be requested with the following code:
+     *
+     * {@snippet lang="java" :
+     *     Configuration.current().shutdown();
+     *     try {
+     *         DriverManager.getConnection("jdbc:derby:;shutdown=true");
+     *     } catch (SQLException e) {
+     *         // Expected exception as per Derby documentation.
+     *     }
+     *     }
+     *
+     * @see <a href="https://db.apache.org/derby/docs/10.15/devguide/tdevdvlp40464.html">Shutting down Derby</a>
      *
      * @since 1.5
      */

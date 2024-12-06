@@ -84,6 +84,7 @@ dependencyResolutionManagement {
             version("derby") {
                 strictly("[10.0, 11.0[")
                 prefer("10.15.2.0")         // 10.15 is the last series compatible with JDK 11.
+                // If the derby version is updated, search for that version number in Javadoc.
             }
             // Derby vulnerabiliy: https://nvd.nist.gov/vuln/detail/CVE-2022-46337
             // Fix would require an upgrade to Java 21.
