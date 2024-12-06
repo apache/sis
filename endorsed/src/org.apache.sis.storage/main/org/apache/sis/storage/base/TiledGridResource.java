@@ -506,17 +506,29 @@ check:  if (dataType.isInteger()) {
          *         such as creating the {@code SampleModel} subset for selected bands.
          */
         public Subset(GridGeometry domain, final int[] range) throws DataStoreException {
-            List<SampleDimension> bands        = getSampleDimensions();
-            final RangeArgument   rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
-            final GridGeometry    gridGeometry = getGridGeometry();
-            sourceExtent = gridGeometry.getExtent();
+            // Validate argument first, before more expensive computations.
+            List<SampleDimension> bands = getSampleDimensions();
+            final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
+            /*
+             * Normally, the number of dimensions of `tileSize` should be equal to the number of dimensions
+             * of the grid geometry (determined by its `GridExtent`). However, we are tolerant to situation
+             * where the `TiledGridResource` is a two dimensional image associated to a 3-dimensional CRS.
+             * This is not recommended, but can happen with GeoTIFF for example. What to do with the extra
+             * dimension is unclear (the GeoTIFF specification itself said nothing), so we just ignore it.
+             */
             final int[] tileSize = getTileSize();
+            final int dimension = tileSize.length;          // May be shorter than the grid geometry dimension.
+            GridGeometry gridGeometry = getGridGeometry();
+            if ((domain == null || domain.getDimension() == dimension) && gridGeometry.getDimension() > dimension) {
+                gridGeometry = gridGeometry.selectDimensions(ArraysExt.range(0, dimension));
+            }
+            sourceExtent = gridGeometry.getExtent();
             boolean sharedCache = true;
             if (domain == null) {
                 domain             = gridGeometry;
                 readExtent         = sourceExtent;
-                subsamplingOffsets = new long[gridGeometry.getDimension()];
-                subsampling        = new long[subsamplingOffsets.length];
+                subsamplingOffsets = new long[dimension];
+                subsampling        = new long[dimension];
                 Arrays.fill(subsampling, 1);
             } else {
                 /*
@@ -526,9 +538,9 @@ check:  if (dataType.isInteger()) {
                  * Note that it is possible to disable this restriction in a single dimension, typically the X one
                  * when reading a TIFF image using strips instead of tiles.
                  */
-                final var chunkSize = new int [tileSize.length];
-                final var maxSubsmp = new long[tileSize.length];
-                for (int i=0; i < tileSize.length; i++) {
+                final var chunkSize = new int [dimension];
+                final var maxSubsmp = new long[dimension];
+                for (int i=0; i < dimension; i++) {
                     final int atomSize = getAtomSize(i);
                     int span = tileSize[i];
                     if (span >= sourceExtent.getSize(i)) {

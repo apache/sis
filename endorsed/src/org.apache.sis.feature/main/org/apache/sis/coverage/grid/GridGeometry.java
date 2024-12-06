@@ -609,8 +609,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * <h4>Dimension order</h4>
      * The given envelope shall always declare dimensions in same order as the given extent.
-     * This constructor may reorder axes if {@code orientation} is (for example) {@link GridOrientation#DISPLAY},
-     * but in such case this constructor will derive itself an envelope and a CRS with reordered axes.
+     * This constructor may reorder axes if {@code orientation} is {@link GridOrientation#DISPLAY},
+     * but in such case this constructor will derive a new envelope and a new CRS from the given envelope.
      *
      * @param  extent       the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  envelope     the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
@@ -618,6 +618,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *                      Ignored (can be null) if {@code envelope} is null.
      * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null,
      *         or if {@code envelope} is non-null but {@code orientation} is null.
+     * @throws MismatchedDimensionException if the envelope does not have the same number of dimensions than the grid extent.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">Axis-aligned object on Wikipedia</a>
      *
@@ -634,6 +635,9 @@ public class GridGeometry implements LenientComparable, Serializable {
         ImmutableEnvelope target = null;    // May have different axis order than the specified `envelope` CRS.
         int[] sourceDimensions = null;      // Indices in source envelope of axes colinear with the target envelope.
         if (envelope != null) {
+            if (extent != null) {
+                ArgumentChecks.ensureDimensionMatches("envelope", extent.getDimension(), envelope);
+            }
             ArgumentChecks.ensureNonNull("orientation", orientation);
             if (orientation.crsVariant != null) {
                 final AbstractCRS sourceCRS = AbstractCRS.castOrCopy(envelope.getCoordinateReferenceSystem());
