@@ -175,6 +175,14 @@ public class GridGeometry implements LenientComparable, Serializable {
     public static final int GRID_TO_CRS = 8;
 
     /**
+     * A bitmask to specify the validity of the "real world" coordinates of cell at indices (0, 0, …, 0).
+     *
+     * @see #getOrigin()
+     * @since 1.5
+     */
+    public static final int ORIGIN = 128;
+
+    /**
      * A bitmask to specify the validity of the grid resolution.
      *
      * @see #isDefined(int)
@@ -999,10 +1007,17 @@ public class GridGeometry implements LenientComparable, Serializable {
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #ENVELOPE})</code> returned {@code false}.
      */
     public Envelope getEnvelope() {
-        if (envelope != null && !envelope.isAllNaN()) {
+        if (!isEnvelopeUndefined()) {
             return envelope;
         }
         throw incomplete(ENVELOPE, (extent == null) ? Resources.Keys.UnspecifiedGridExtent : Resources.Keys.UnspecifiedTransform);
+    }
+
+    /**
+     * Returns {@code true} if the envelope is null or undefined (all coordinates set to NaN).
+     */
+    private boolean isEnvelopeUndefined() {
+        return (envelope == null) || envelope.isAllNaN();
     }
 
     /**
@@ -1144,6 +1159,46 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Returns the "real world" coordinates of the cell at indices (0, 0, … 0).
+     * The returned coordinates map the {@linkplain PixelInCell#CELL_CORNER cell corner}.
+     * This method computes the origin from the "grid to CRS" transform if available.
+     * If that transform is not available, then the minimal coordinate values of the
+     * {@linkplain #getEnvelope() envelope} are returned.
+     *
+     * @return the "real world" coordinates of the cell at indices (0, 0, … 0).
+     * @throws IncompleteGridGeometryException if this grid geometry has no origin —
+     *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #ORIGIN})</code> returned {@code false}.
+     *
+     * @since 1.5
+     */
+    public double[] getOrigin() {
+        if (cornerToCRS == null) {
+            if (isEnvelopeUndefined()) {
+                throw incomplete(ORIGIN, Resources.Keys.UnspecifiedTransform);
+            }
+            return getEnvelope().getLowerCorner().getCoordinates();
+        }
+        final double[] origin = new double[cornerToCRS.getTargetDimensions()];
+        final Matrix matrix = MathTransforms.getMatrix(cornerToCRS);
+        if (matrix != null) {
+            final int lastColumn = matrix.getNumCol() - 1;
+            for (int j=0; j < origin.length; j++) {
+                if (Double.isNaN(origin[j] = matrix.getElement(j, lastColumn))) {
+                    final Matrix other = MathTransforms.getMatrix(gridToCRS);
+                    if (other != null) {
+                        origin[j] = other.getElement(j, lastColumn);
+                    }
+                }
+            }
+        } else try {
+            cornerToCRS.transform(new double[cornerToCRS.getSourceDimensions()], 0, origin, 0, 1);
+        } catch (TransformException e) {
+            throw new IllegalGridGeometryException(e, "gridToCRS");
+        }
+        return origin;
+    }
+
+    /**
      * Returns an <em>estimation</em> of the grid resolution, in units of the coordinate reference system axes.
      * The length of the returned array is the number of CRS dimensions, with {@code resolution[0]}
      * being the resolution along the first CRS axis, {@code resolution[1]} the resolution along the second CRS
@@ -1266,8 +1321,8 @@ public class GridGeometry implements LenientComparable, Serializable {
     private static long findNonLinearTargets(final MathTransform gridToCRS) {
         long nonLinearDimensions = 0;
         for (final MathTransform step : MathTransforms.getSteps(gridToCRS)) {
-            final Matrix mat = MathTransforms.getMatrix(step);
-            if (mat != null) {
+            final Matrix matrix = MathTransforms.getMatrix(step);
+            if (matrix != null) {
                 /*
                  * For linear transforms there are no bits to set. However if some bits were set by a previous
                  * iteration, we may need to move them (for example the transform may swap axes). We take the
@@ -1277,8 +1332,8 @@ public class GridGeometry implements LenientComparable, Serializable {
                 nonLinearDimensions = 0;
                 while (mask != 0) {
                     final int i = Long.numberOfTrailingZeros(mask);         // Source dimension of non-linear part
-                    for (int j = mat.getNumRow() - 1; --j >= 0;) {          // Possible target dimensions
-                        if (mat.getElement(j, i) != 0) {
+                    for (int j = matrix.getNumRow() - 1; --j >= 0;) {       // Possible target dimensions
+                        if (matrix.getElement(j, i) != 0) {
                             if (j >= Long.SIZE) {
                                 throw excessiveDimension(gridToCRS);
                             }
@@ -1393,7 +1448,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * methods will not throw {@link IncompleteGridGeometryException}.
      *
      * @param  bitmask  any combination of {@link #CRS}, {@link #ENVELOPE}, {@link #EXTENT},
-     *         {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+     *         {@link #GRID_TO_CRS} and derived bit masks.
      * @return {@code true} if all specified properties are defined (i.e. invoking the
      *         corresponding getter methods will not throw {@link IncompleteGridGeometryException}).
      * @throws IllegalArgumentException if the specified bitmask is not a combination of known masks.
@@ -1405,13 +1460,14 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #getGridToCRS(PixelInCell)
      */
     public boolean isDefined(final int bitmask) {
-        if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT)) != 0) {
+        if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS | ORIGIN | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT)) != 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
         }
         return ((bitmask & CRS)               == 0 || (null != getCoordinateReferenceSystem(envelope)))
-            && ((bitmask & ENVELOPE)          == 0 || (null != envelope && !envelope.isAllNaN()))
+            && ((bitmask & ENVELOPE)          == 0 || !isEnvelopeUndefined())
             && ((bitmask & EXTENT)            == 0 || (null != extent))
             && ((bitmask & GRID_TO_CRS)       == 0 || (null != gridToCRS))
+            && ((bitmask & ORIGIN)            == 0 || (null != gridToCRS || !isEnvelopeUndefined()))
             && ((bitmask & RESOLUTION)        == 0 || (null != resolution))
             && ((bitmask & GEOGRAPHIC_EXTENT) == 0 || (null != geographicBBox()))
             && ((bitmask & TEMPORAL_EXTENT)   == 0 || (timeRange().length != 0));
@@ -1809,14 +1865,36 @@ public class GridGeometry implements LenientComparable, Serializable {
     /**
      * Returns the default set of flags to use for {@link #toString()} implementations.
      * Current implementation returns all core properties, augmented with only derived
-     * properties that are defined.
+     * properties that are defined and that are not redundant with other properties.
      */
     final int defaultFlags() {
         int flags = EXTENT | GRID_TO_CRS | CRS;
-        if (null != envelope)         flags |= ENVELOPE;
-        if (null != resolution)       flags |= RESOLUTION;
-        if (null != geographicBBox()) flags |= GEOGRAPHIC_EXTENT;
-        if (timeRange().length != 0)  flags |= TEMPORAL_EXTENT;
+        if (envelope != null) flags |= ENVELOPE;
+        final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
+        if (matrix != null) {
+            final int lastColumn = matrix.getNumCol() - 1;
+            for (int j = matrix.getNumRow() - 1; --j >= 0;) {
+                if (Double.isNaN(matrix.getElement(j, lastColumn))) {
+                    final Matrix other = MathTransforms.getMatrix(cornerToCRS);
+                    if (other != null && !Double.isNaN(other.getElement(j, lastColumn))) {
+                        // Found an information which will not be visible in the "Conversion" section.
+                        flags |= ORIGIN;
+                        break;
+                    }
+                }
+            }
+        } else if (gridToCRS != null) {
+            flags |= ORIGIN;
+        }
+        if (resolution != null && isEnvelopeUndefined()) {
+            flags |= RESOLUTION;
+        }
+        if (geographicBBox() != null) {
+            flags |= GEOGRAPHIC_EXTENT;
+        }
+        if (timeRange().length != 0) {
+            flags |= TEMPORAL_EXTENT;
+        }
         return flags;
     }
 
@@ -1839,7 +1917,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  locale   the locale to use for textual labels.
      * @param  bitmask  combination of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS},
-     *                  {@link #RESOLUTION}, {@link #GEOGRAPHIC_EXTENT} and {@link #TEMPORAL_EXTENT}.
+     *                  {@link #ORIGIN}, {@link #RESOLUTION}, {@link #GEOGRAPHIC_EXTENT} and {@link #TEMPORAL_EXTENT}.
      * @return a tree representation of the specified elements.
      */
     @Debug
@@ -1856,7 +1934,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Formats a string representation of this grid geometry in the specified tree.
      */
     final void formatTo(final Locale locale, final Vocabulary vocabulary, final int bitmask, final TreeTable.Node root) {
-        if ((bitmask & ~(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT)) != 0) {
+        if ((bitmask & ~(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | ORIGIN | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT)) != 0) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
         }
@@ -1872,8 +1950,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     private final class Formatter {
         /**
-         * Combination of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS},
-         * {@link #RESOLUTION}, {@link #GEOGRAPHIC_EXTENT} and {@link #TEMPORAL_EXTENT}.
+         * Combination of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS} and derived bit masks.
          */
         private final int bitmask;
 
@@ -1914,17 +1991,32 @@ public class GridGeometry implements LenientComparable, Serializable {
         private final CoordinateSystem cs;
 
         /**
+         * The format to use for formatting numbers. Created when first needed.
+         */
+        private NumberFormat numberFormat;
+
+        /**
          * Creates a new formatter for the given combination of {@link #EXTENT}, {@link #ENVELOPE},
-         * {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+         * {@link #CRS}, {@link #GRID_TO_CRS} and derived bit masks.
          */
         Formatter(final Locale locale, final Vocabulary vocabulary, final int bitmask, final TreeTable.Node out) {
-            this.root          = out;
-            this.bitmask       = bitmask;
-            this.buffer        = new StringBuilder(256);
-            this.locale        = locale;
-            this.vocabulary    = vocabulary;
-            this.crs           = getCoordinateReferenceSystem(envelope);
-            this.cs            = (crs != null) ? crs.getCoordinateSystem() : null;
+            this.root       = out;
+            this.bitmask    = bitmask;
+            this.buffer     = new StringBuilder(256);
+            this.locale     = locale;
+            this.vocabulary = vocabulary;
+            this.crs        = getCoordinateReferenceSystem(envelope);
+            this.cs         = (crs != null) ? crs.getCoordinateSystem() : null;
+        }
+
+        /**
+         * Returns the object to use for formatting numbers.
+         */
+        private NumberFormat numberFormat() {
+            if (numberFormat == null) {
+                numberFormat = NumberFormat.getNumberInstance(locale);
+            }
+            return numberFormat;
         }
 
         /**
@@ -2005,10 +2097,10 @@ public class GridGeometry implements LenientComparable, Serializable {
              * Those numbers vary for each line depending on the envelope values and the resolution at that line.
              */
             if (section(ENVELOPE, Vocabulary.Keys.Envelope, true, false)) {
-                final boolean appendResolution = (bitmask & RESOLUTION) != 0 && resolution != null;
+                final boolean appendResolution = (bitmask & RESOLUTION) != 0 && (resolution != null);
                 final TableAppender table = new TableAppender(buffer, "");
                 final int dimension = envelope.getDimension();
-                final NumberFormat nf = NumberFormat.getNumberInstance(locale);
+                final NumberFormat nf = numberFormat();
                 for (int i=0; i<dimension; i++) {
                     final double lower = envelope.getLower(i);
                     final double upper = envelope.getUpper(i);
@@ -2031,26 +2123,33 @@ public class GridGeometry implements LenientComparable, Serializable {
                         }
                         table.nextColumn();
                         table.append(' ').append(isLinear ? '=' : '≈').append(' ');
-                        appendResolution(table, nf, delta, i);
+                        append(table, delta, Double.NaN, i);
                     }
                     table.nextLine();
                 }
                 table.flush();
                 writeNodes();
-            } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, true, false)) {
+                nf.setMinimumFractionDigits(0);
+            }
+            if (section(ORIGIN, Vocabulary.Keys.Origin, true, false)) {
+                /*
+                 * Example: Origin
+                 * └─ 20° 30°
+                 */
+                buffer.append('(');
+                append(getOrigin(), resolution, "  ");
+                buffer.append(')');
+                writeNode();
+            }
+            if (section(RESOLUTION, Vocabulary.Keys.Resolution, true, false)) {
                 /*
                  * Example: Resolution
                  * └─ 0.5° × 0.5°
                  *
-                 * Formatted only as a fallback if the envelope was not formatted.
+                 * By default, this is formatted only as a fallback if the envelope was not formatted.
                  * Otherwise, this information is already part of above envelope.
                  */
-                String separator = "";
-                final NumberFormat nf = NumberFormat.getNumberInstance(locale);
-                for (int i=0; i < resolution.length; i++) {
-                    appendResolution(buffer.append(separator), nf, resolution[i], i);
-                    separator = " × ";
-                }
+                append(resolution, null, " × ");
                 writeNode();
             }
             /*
@@ -2094,7 +2193,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         /**
          * Starts a new section for the given property.
          *
-         * @param  property    one of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+         * @param  property    one of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS} and derived bit masks.
          * @param  title       the {@link Vocabulary} key for the title to show for this section, if formatted.
          * @param  mandatory   whether to write "undefined" if the property is undefined.
          * @param  cellCenter  whether to add a "origin in cell center" text in the title. This is relevant only for conversion.
@@ -2150,19 +2249,39 @@ public class GridGeometry implements LenientComparable, Serializable {
         }
 
         /**
-         * Appends a single value on the resolution line, together with its unit of measurement.
+         * Appends the given values with their units of measurement.
          *
-         * @param  out  where to write the resolution.
-         * @param  nf   number format to use for writing the number.
-         * @param  res  the resolution to write, or {@link Double#NaN}.
-         * @param  dim  index of the coordinate system axis of the resolution.
+         * @param  values      the values to write.
+         * @param  resolution  the resolution of the values, or {@link Double#NaN} is unknown.
+         * @param  separator   the separator to insert between values.
          */
-        private void appendResolution(final Appendable out, final NumberFormat nf, final double res, final int dim) throws IOException {
-            if (Double.isNaN(res)) {
+        private void append(final double[] values, final double[] resolution, final String separator) throws IOException {
+            for (int i=0; i < values.length; i++) {
+                if (i != 0) buffer.append(separator);
+                double delta = (resolution != null) ? resolution[i] : Double.NaN;
+                append(buffer, values[i], delta, i);
+            }
+        }
+
+        /**
+         * Appends a single value with a number of digits determined by the resolution.
+         * Appends also the unit of measurement.
+         *
+         * @param  out    where to write the value.
+         * @param  value  the value to write (may be {@link Double#NaN}).
+         * @param  delta  the resolution of the value, or {@link Double#NaN} is unknown.
+         * @param  dim    index of the coordinate system axis of the value.
+         */
+        private void append(final Appendable out, final double value, final double delta, final int dim) throws IOException {
+            if (Double.isNaN(value)) {
                 out.append('?');
             } else {
-                nf.setMaximumFractionDigits(Numerics.suggestFractionDigits(res) / 2);
-                out.append(nf.format(res));
+                final NumberFormat nf = numberFormat();
+                final int n = Double.isNaN(delta)
+                        ? Numerics.suggestFractionDigits(value) / 2
+                        : Numerics.fractionDigitsForDelta(delta);
+                nf.setMaximumFractionDigits(n + 1);
+                out.append(nf.format(value));
             }
             if (cs != null) {
                 final String unit = String.valueOf(cs.getAxis(dim).getUnit());
