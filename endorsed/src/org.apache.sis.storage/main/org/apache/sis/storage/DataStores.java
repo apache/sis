@@ -37,7 +37,10 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.5
- * @since   0.4
+ *
+ * <a href="https://sis.apache.org/formats.html">Data formats supported by Apache SIS</a>
+ *
+ * @since 0.4
  */
 public final class DataStores extends Static {
     /**
@@ -84,6 +87,9 @@ public final class DataStores extends Static {
      *   <li>An existing {@link StorageConnector} instance.</li>
      * </ul>
      *
+     * The file format is detected automatically by inspection of the file header.
+     * The file suffix may also be used in case of ambiguity.
+     *
      * @param  storage  the input object as a URL, file, image input stream, <i>etc.</i>.
      * @return the object to use for reading geospatial data from the given storage.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for the given storage object.
@@ -91,6 +97,61 @@ public final class DataStores extends Static {
      */
     public static DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
         return DataStoreRegistry.INSTANCE.open(storage, Capability.READ, null);
+    }
+
+    /**
+     * Creates a {@link DataStore} capable to read the given storage, with a preference for the specified reader.
+     * The {@code storage} argument can be of the same types as documented in {@link #open(Object)}.
+     * The {@code preferredFormat} argument can be one of the following (non-exhaustive list).
+     * Note that which formats are available depend on which modules are on the module-path.
+     *
+     * <table class="sis">
+     *   <caption>Common formats</caption>
+     *   <tr><th>Format</th> <th>Description</th></tr>
+     *   <tr><td>{@code "ASCII Grid"}</td>  <td>ESRI ASCII Grid raster format</td></tr>
+     *   <tr><td>{@code "BIL/BIP/BSQ"}</td> <td>ESRI RAW binary encoding</td></tr>
+     *   <tr><td>{@code "CSV"}</td>         <td>Comma-Separated Values, optionally with Moving Features</td></tr>
+     *   <tr><td>{@code "folder"}</td>      <td>Directory of more files</td></tr>
+     *   <tr><td>{@code "GDAL"}</td>        <td>Binding to the <abbr>GDAL</abbr> C/C++ library</td></tr>
+     *   <tr><td>{@code "GeoTIFF"}</td>     <td>GeoTIFF, including big and <abbr>COG</abbr> variants</td></tr>
+     *   <tr><td>{@code "GPX"}</td>         <td><abbr>GPS</abbr> Exchange Format</td></tr>
+     *   <tr><td>{@code "Landsat"}</td>     <td>Landsat 8 level 1-2 data</td></tr>
+     *   <tr><td>{@code "NetCDF"}</td>      <td>NetCDF 3 (or 4 if UCAR dependency is included)</td></tr>
+     *   <tr><td>{@code "SQL"}</td>         <td>Connection to a <abbr>SQL</abbr> database</td></tr>
+     *   <tr><td>{@code "WKT"}</td>         <td>CRS definition in Well-Known Text format</td></tr>
+     *   <tr><td>{@code "World file"}</td>  <td>World File image read through Java Image I/O</td></tr>
+     *   <tr><td>{@code "XML"}</td>         <td>Metadata in <abbr>GML</abbr> format</td></tr>
+     * </table>
+     *
+     * The preferred format is only a hint. If the {@link DataStore} identified by {@code preferredFormat}
+     * cannot open the given storage, another data store will be searched as with {@link #open(Object)}.
+     * The actual format which has been selected is given by {@code DataStore.getProvider().getShortName()}.
+     *
+     * <h4>Example</h4>
+     * If both the {@code org.apache.sis.storage.geotiff} and {@code org.apache.sis.storage.gdal} modules
+     * are present on the module-path, then the Apache <abbr>SIS</abbr> implementation is used by default
+     * for opening GeoTIFF files. For using <abbr>GDAL</abbr> instead, use this method with {@code "GDAL"}
+     * argument value.
+     *
+     * @param  storage          the input object as a URL, file, image input stream, <i>etc.</i>.
+     * @param  preferredFormat  identification of the preferred {@code DataStore} implementation, or {@code null}.
+     * @return the object to use for reading geospatial data from the given storage.
+     * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for the given storage object.
+     * @throws DataStoreException if an error occurred while opening the storage in read mode.
+     *
+     * @see DataStore#getProvider()
+     * @see DataStoreProvider#getShortName()
+     *
+     * @since 1.5
+     */
+    public static DataStore open(final Object storage, final String preferredFormat)
+            throws UnsupportedStorageException, DataStoreException
+    {
+        Predicate<DataStoreProvider> preferred = null;
+        if (preferredFormat != null) {
+            preferred = new DataStoreFilter(preferredFormat, false);
+        }
+        return DataStoreRegistry.INSTANCE.open(storage, Capability.READ, preferred);
     }
 
     /**

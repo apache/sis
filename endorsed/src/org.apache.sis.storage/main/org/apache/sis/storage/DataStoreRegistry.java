@@ -269,7 +269,7 @@ search:     for (final Category category : Category.values()) {
                     if (md == null) {
                         accept = isFirstIteration;      // If no metadata, test only during one iteration.
                     } else {
-                        accept = (md.yieldPriority() == category.yieldPriority) &&
+                        accept = (category.preferred || md.yieldPriority() == category.yieldPriority) &&
                                  ArraysExt.contains(md.capabilities(), capability);
                         if (accept & useSuffix) {
                             accept = ArraysExt.containsIgnoreCase(md.fileSuffixes(), extension) == category.useSuffix;
