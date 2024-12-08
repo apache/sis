@@ -46,6 +46,7 @@
     @XmlJavaTypeAdapter(DQM_Description.class),
     @XmlJavaTypeAdapter(DQM_ValueStructure.class),
     @XmlJavaTypeAdapter(SV_ParameterDirection.class),
+    @XmlJavaTypeAdapter(MD_ReferenceSystemTypeCode.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(StringAdapter.class),
@@ -68,5 +69,6 @@ import org.apache.sis.xml.bind.metadata.DQM_Description;
 import org.apache.sis.xml.bind.gco.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.xml.bind.metadata.code.MD_ReferenceSystemTypeCode;
 import org.apache.sis.xml.bind.metadata.code.SV_ParameterDirection;
 import org.apache.sis.xml.bind.metadata.code.DQM_ValueStructure;
