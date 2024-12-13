@@ -31,6 +31,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.IndexColorModel;
+import java.awt.image.RasterFormatException;
 import javax.imageio.plugins.tiff.TIFFTag;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
@@ -45,6 +46,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.base.MetadataFetcher;
+import org.apache.sis.storage.geotiff.writer.TagValue;
+import org.apache.sis.storage.geotiff.writer.TileMatrix;
+import org.apache.sis.storage.geotiff.writer.GeoEncoder;
+import org.apache.sis.storage.geotiff.writer.ReformattedImage;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.UpdatableWrite;
 import org.apache.sis.util.CharSequences;
@@ -52,10 +57,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.storage.geotiff.writer.TagValue;
-import org.apache.sis.storage.geotiff.writer.TileMatrix;
-import org.apache.sis.storage.geotiff.writer.GeoEncoder;
-import org.apache.sis.storage.geotiff.writer.ReformattedImage;
 
 
 /**
@@ -168,6 +169,7 @@ final class Writer extends IOBase implements Flushable {
 
     /**
      * Creates a new GeoTIFF writer which will write data in the given output.
+     * The byte order of the given output determines the byte order of the GeoTIFF file to write.
      *
      * @param  store    the store writing data.
      * @param  output   where to write the bytes.
@@ -276,6 +278,8 @@ final class Writer extends IOBase implements Flushable {
      * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata  title, author and other information, or {@code null} if none.
      * @return offset if {@link #output} where the Image File Directory (IFD) starts.
+     * @throws RasterFormatException if the raster uses an unsupported sample model.
+     * @throws ArithmeticException if an integer overflow occurs.
      * @throws IOException if an error occurred while writing to the output.
      * @throws DataStoreException if the given {@code image} has a property
      *         which is not supported by TIFF specification or by this writer.

@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.awt.image.RenderedImage;
+import java.awt.image.RasterFormatException;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
@@ -46,6 +47,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.WriteOnlyStorageException;
+import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
@@ -258,7 +260,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         path        = connector.getStorageAs(Path.class);
         try {
             if (URIDataStoreProvider.isWritable(connector, true)) {
-                ChannelDataOutput output = connector.commit(ChannelDataOutput.class, Constants.GEOTIFF);
+                ChannelDataOutput output = URIDataStoreProvider.openAndSetNativeByteOrder(connector, Constants.GEOTIFF);
                 writer = new Writer(this, output, connector.getOption(FormatModifier.OPTION_KEY));
             } else {
                 ChannelDataInput input = connector.commit(ChannelDataInput.class, Constants.GEOTIFF);
@@ -705,8 +707,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 reader.offsetOfWrittenIFD(offsetIFD);
             }
             index = writer.imageIndex++;
+        } catch (RasterFormatException | ArithmeticException e) {
+            throw new IncompatibleResourceException(cannotWrite(), e);
         } catch (IOException e) {
-            throw new DataStoreException(errors().getString(Errors.Keys.CanNotWriteFile_2, Constants.GEOTIFF, getDisplayName()), e);
+            throw new DataStoreException(cannotWrite(), e);
         }
         if (components != null) {
             components.incrementSize(1);
@@ -779,6 +783,13 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     final DataStoreException errorIO(final IOException e) {
         return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, getDisplayName()), e);
+    }
+
+    /**
+     * Returns the error message for a file that cannot be written.
+     */
+    private String cannotWrite() {
+        return errors().getString(Errors.Keys.CanNotWriteFile_2, Constants.GEOTIFF, getDisplayName());
     }
 
     /**

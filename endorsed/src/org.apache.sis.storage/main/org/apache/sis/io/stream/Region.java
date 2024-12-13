@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io.stream;
 
+import java.util.Arrays;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
@@ -254,6 +255,35 @@ public final class Region {
      */
     public final int getTargetSize(final int dimension) {
         return targetSize[dimension];
+    }
+
+    /**
+     * Compares this region with the given object for equality.
+     *
+     * @return the object to compare with this region.
+     * @return whether this region and the given object are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof Region) {
+            final var r = (Region) obj;
+            return length == r.length && startAt == r.startAt
+                    && Arrays.equals(targetSize, r.targetSize)
+                    && Arrays.equals(skips,      r.skips)
+                    && Arrays.equals(skipBytes,  r.skipBytes);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this region.
+     *
+     * @return a hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(targetSize) + 7*Arrays.hashCode(skips) + 37*Arrays.hashCode(skipBytes)
+                + Long.hashCode(startAt);   // Rarely different than zero.
     }
 
     /**

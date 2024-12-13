@@ -125,7 +125,7 @@ found:  if (property instanceof Statistics[]) {
      * @throws IncompatibleResourceException if the color model is not supported.
      */
     public int getColorInterpretation() throws IncompatibleResourceException {
-        final ColorModel  cm = visibleBands.getColorModel();
+        final ColorModel cm = visibleBands.getColorModel();
         if (cm instanceof IndexColorModel) {
             final var   icm   = (IndexColorModel) cm;
             final int   last  = icm.getMapSize() - 1;
@@ -142,17 +142,20 @@ found:  if (property instanceof Statistics[]) {
             if (white) return PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO;
             return PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR;
         }
-        switch (cm.getColorSpace().getType()) {
-            case ColorSpace.TYPE_GRAY: {
-                return PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO;
-            }
-            case ColorSpace.TYPE_RGB: {
-                return PHOTOMETRIC_INTERPRETATION_RGB;
-            }
-            default: {
+        if (cm != null) {
+            switch (cm.getColorSpace().getType()) {
+                case ColorSpace.TYPE_GRAY:  return PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO;
+                case ColorSpace.TYPE_RGB:   return PHOTOMETRIC_INTERPRETATION_RGB;
+                case ColorSpace.TYPE_CMY:   return PHOTOMETRIC_INTERPRETATION_CMYK;
+                case ColorSpace.TYPE_Lab:   return PHOTOMETRIC_INTERPRETATION_CIELAB;
+                case ColorSpace.TYPE_YCbCr: return PHOTOMETRIC_INTERPRETATION_Y_CB_CR;
                 // A future version may add support for more color models.
-                throw new IncompatibleResourceException("Unsupported color model");
             }
+        }
+        if (ImageUtilities.getNumBands(visibleBands) >= 3) {
+            return PHOTOMETRIC_INTERPRETATION_RGB;
+        } else {
+            return PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO;
         }
     }
 }
