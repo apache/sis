@@ -316,7 +316,7 @@ public final class RasterReader extends RasterFormat {
         final int dataType = sm.getDataType();
         final int numBands = sm.getNumBands();
         if ((numBands == 3) && (dataType == DataBuffer.TYPE_BYTE)) {
-            cm = ColorModelFactory.createRGB(Byte.SIZE, false, false);
+            cm = ColorModelFactory.createBandedRGB(Byte.SIZE, -1, false);
         } else {
             final int visibleBand = 0;              // Arbitrary value (could be configurable).
             final double minimum, maximum;

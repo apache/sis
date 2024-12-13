@@ -54,7 +54,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.SampleModelFactory;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
@@ -98,6 +97,11 @@ final class ImageFileDirectory extends DataCube {
      * Default value is {@link #UNSIGNED}.
      */
     private static final byte SIGNED = 1, UNSIGNED = 0, FLOAT = 3;
+
+    /**
+     * The band to make visible. May become configurable in a future version.
+     */
+    private static final int VISIBLE_BAND = ColorModelFactory.DEFAULT_VISIBLE_BAND;
 
     /**
      * Index of the (potentially pyramided) image containing this Image File Directory (IFD).
@@ -724,7 +728,7 @@ final class ImageFileDirectory extends DataCube {
             }
             /*
              * The number of components per pixel. Usually 1 for bilevel, grayscale, and palette-color images,
-             * and 3 for RGB images. Default value is 1.
+             * and 3 for RGB images. Default value is 1. May be greater than 3 if there is extra samples.
              */
             case TAG_SAMPLES_PER_PIXEL: {
                 samplesPerPixel = type.readAsShort(input(), count);
@@ -1599,6 +1603,7 @@ final class ImageFileDirectory extends DataCube {
      * A sample model of different size or number of bands can be derived after construction
      * by call to one of {@code SampleModel.create…} methods.
      *
+     * @param  bands  should always be {@code null} if this implementation.
      * @throws DataStoreContentException if the data type is not supported.
      *
      * @see SampleModel#createCompatibleSampleModel(int, int)
@@ -1713,9 +1718,28 @@ final class ImageFileDirectory extends DataCube {
             return null;    // Let `TileGridResource` derive a model itself.
         }
         if (colorModel == null) {
-            final SampleModel sm  = getSampleModel(null);
-            final int dataType    = sm.getDataType();
-            final int visibleBand = 0;      // May be configurable in a future version.
+            /*
+             * The index of the alpha band is relative to extra samples.
+             * Before to be used, the number of color bands must be added.
+             * That number depends on the color interpretation.
+             *
+             * The alpha channel information should be used for all color models.
+             * However, this is only partially honored in current implementation.
+             */
+            int alphaBand = -1;
+            boolean isAlphaPremultiplied = false;
+            if (extraSamples != null) {
+                final int n = extraSamples.size();
+                for (int i=0; i<n; i++) {
+                    switch (extraSamples.intValue(i)) {
+                        case EXTRA_SAMPLES_ASSOCIATED_ALPHA: isAlphaPremultiplied = true; break;
+                        case EXTRA_SAMPLES_UNASSOCIATED_ALPHA: break;
+                        default: continue;
+                    }
+                    alphaBand = i;
+                    break;
+                }
+            }
             short missing = 0;              // Non-zero if there is a warning about missing information.
             switch (photometricInterpretation) {
                 default: {                  // For any unrecognized code, fallback on grayscale with 0 as black.
@@ -1726,31 +1750,21 @@ final class ImageFileDirectory extends DataCube {
                     missing = TAG_PHOTOMETRIC_INTERPRETATION;
                     break;
                 }
-                case  PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO:
-                case  PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO: {
-                    final Color[] colors = {Color.BLACK, Color.WHITE};
-                    if (photometricInterpretation == PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO) {
-                        ArraysExt.swap(colors, 0, 1);
-                    }
-                    double min = 0;
-                    double max = Numerics.bitmask(bitsPerSample);                   // Exclusive.
-                    if (sampleFormat != UNSIGNED) {
-                        max /= 2;
-                        min = -max;
-                    }
-                    if (minValues != null) min = Math.max(min, minValues.doubleValue(visibleBand));
-                    if (maxValues != null) max = Math.min(max, maxValues.doubleValue(visibleBand) + 1);
-                    colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand, min, max, colors);
+                case PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO: {
+                    createSingleBandColorModel(Color.WHITE, Color.BLACK);
+                    break;
+                }
+                case PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO: {
+                    createSingleBandColorModel(Color.BLACK, Color.WHITE);
                     break;
                 }
                 case PHOTOMETRIC_INTERPRETATION_RGB: {
-                    final int numBands = sm.getNumBands();
-                    if (numBands < 3 || numBands > 4) {
-                        throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "numBands", numBands));
+                    if (alphaBand >= 0) alphaBand += 3;     // Must add the number of color bands.
+                    if (getSampleModel(null) instanceof SinglePixelPackedSampleModel) {
+                        colorModel = ColorModelFactory.createPackedRGB(bitsPerSample, alphaBand, isAlphaPremultiplied);
+                    } else {
+                        colorModel = ColorModelFactory.createBandedRGB(bitsPerSample, alphaBand, isAlphaPremultiplied);
                     }
-                    final boolean hasAlpha = (numBands >= 4);
-                    final boolean packed = (sm instanceof SinglePixelPackedSampleModel);
-                    colorModel = ColorModelFactory.createRGB(bitsPerSample, packed, hasAlpha);
                     break;
                 }
                 case PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR: {
@@ -1767,16 +1781,37 @@ final class ImageFileDirectory extends DataCube {
                                 | ((colorMap.intValue(gi++) & 0xFF00))
                                 | ((colorMap.intValue(bi++) & 0xFF00) >>> Byte.SIZE);
                     }
-                    colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, visibleBand, ARGB,
-                                             true, Double.isFinite(noData) ? (int) Math.round(noData) : -1);
+                    int transparent = Double.isFinite(noData) ? (int) Math.round(noData) : -1;
+                    colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, VISIBLE_BAND, ARGB, true, transparent);
                     break;
                 }
             }
             if (missing != 0) {
                 missingTag(missing, "GrayScale", false, true);
             }
+            if (colorModel == null) {
+                createSingleBandColorModel(Color.BLACK, Color.WHITE);
+            }
         }
         return colorModel;
+    }
+
+    /**
+     * Creates a color model for a (theoretically) one-banded image.
+     * May also be invoked as a fallback for image with more bands if more suitable color model couldn't be created.
+     */
+    private void createSingleBandColorModel(final Color zero, final Color high) throws DataStoreContentException {
+        double min = 0;
+        double max = Numerics.bitmask(bitsPerSample);   // Exclusive.
+        switch (sampleFormat) {
+            default: break;
+            case FLOAT:  max = 1; break;
+            case SIGNED: max /= 2; min = -max; break;
+        }
+        if (minValues != null) min = Math.max(min, minValues.doubleValue(VISIBLE_BAND));
+        if (maxValues != null) max = Math.min(max, maxValues.doubleValue(VISIBLE_BAND) + 1);
+        colorModel = ColorModelFactory.createColorScale(getSampleModel(null).getDataType(),
+                        samplesPerPixel, VISIBLE_BAND, min, max, zero, high);
     }
 
     /**

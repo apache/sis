@@ -396,16 +396,16 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
              */
             if (band == VISIBLE_BAND) {
                 if (isRGB) {
-                    colorModel = ColorModelFactory.createRGB(sm);       // Should never be null.
+                    colorModel = ColorModelFactory.createRGB(sm, false);    // Should never be null.
                 } else {
                     try {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
                     } catch (URISyntaxException | IOException | NumberFormatException e) {
                         cannotReadAuxiliaryFile(CLR, e);
                     }
-                    if (colorModel == null) {
-                        colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);
-                    }
+                }
+                if (colorModel == null) {
+                    colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);
                 }
             }
         }

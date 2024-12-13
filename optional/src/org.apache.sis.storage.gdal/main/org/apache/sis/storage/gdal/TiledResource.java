@@ -473,7 +473,7 @@ final class TiledResource extends TiledGridResource {
              */
         }
         if ((red | green | blue) >= 0) {
-            colorModel = ColorModelFactory.createRGB(dataType.numBits, false, alpha >= 0);
+            colorModel = ColorModelFactory.createBandedRGB(dataType.numBits, alpha, false);
             // TODO: needs custom color model if too many bands, or if order is not (A)RGB.
         } else if (palette != null) {
             colorModel = ColorModelFactory.createIndexColorModel(selectedBands.length, paletteIndex, palette, true, -1);

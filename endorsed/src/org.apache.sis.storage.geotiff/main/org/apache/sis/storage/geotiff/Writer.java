@@ -337,7 +337,7 @@ final class Writer extends IOBase implements Flushable {
     private TileMatrix writeImageFileDirectory(final ReformattedImage image, final GridGeometry grid, final Metadata metadata,
             final boolean overview) throws IOException, DataStoreException
     {
-        final SampleModel sm = image.visibleBands.getSampleModel();
+        final SampleModel sm = image.exportable.getSampleModel();
         Compression compression = store.getCompression().orElse(Compression.DEFLATE);
         if (!ImageUtilities.isIntegerType(sm)) {
             compression = compression.withPredictor(PREDICTOR_NONE);
@@ -353,6 +353,9 @@ final class Writer extends IOBase implements Flushable {
         if (compression.usePredictor()) numberOfTags++;
         final int colorInterpretation = image.getColorInterpretation();
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
+            numberOfTags++;
+        }
+        if (image.extraSamples != null) {
             numberOfTags++;
         }
         final int   sampleFormat  = image.getSampleFormat();
@@ -406,12 +409,15 @@ final class Writer extends IOBase implements Flushable {
                 isBigTIFF ? UpdatableWrite.of(output, (long)  numberOfTags)
                           : UpdatableWrite.of(output, (short) numberOfTags);
 
-        final var tiling = new TileMatrix(image.visibleBands, numPlanes, bitsPerSample, offsetIFD,
+        final var tiling = new TileMatrix(image.exportable, numPlanes, bitsPerSample, offsetIFD,
                                           compression.method, compression.level, compression.predictor);
+        /*
+         * Reminder: TIFF tags should be written in increasing numerical order.
+         */
         numberOfTags = 0;
         writeTag((short) TAG_NEW_SUBFILE_TYPE,           (short) TIFFTag.TIFF_LONG,  overview ? 1 : 0);
-        writeTag((short) TAG_IMAGE_WIDTH,                (short) TIFFTag.TIFF_LONG,  image.visibleBands.getWidth());
-        writeTag((short) TAG_IMAGE_LENGTH,               (short) TIFFTag.TIFF_LONG,  image.visibleBands.getHeight());
+        writeTag((short) TAG_IMAGE_WIDTH,                (short) TIFFTag.TIFF_LONG,  image.exportable.getWidth());
+        writeTag((short) TAG_IMAGE_LENGTH,               (short) TIFFTag.TIFF_LONG,  image.exportable.getHeight());
         writeTag((short) TAG_BITS_PER_SAMPLE,            (short) TIFFTag.TIFF_SHORT, bitsPerSample);
         writeTag((short) TAG_COMPRESSION,                (short) TIFFTag.TIFF_SHORT, compression.method.code);
         writeTag((short) TAG_PHOTOMETRIC_INTERPRETATION, (short) TIFFTag.TIFF_SHORT, colorInterpretation);
@@ -436,12 +442,13 @@ final class Writer extends IOBase implements Flushable {
             writeTag((short) TAG_PREDICTOR, (short) TIFFTag.TIFF_SHORT, compression.predictor.code);
         }
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
-            writeColorPalette((IndexColorModel) image.visibleBands.getColorModel(), 1L << bitsPerSample[0]);
+            writeColorPalette((IndexColorModel) image.exportable.getColorModel(), 1L << bitsPerSample[0]);
         }
         writeTag((short) TAG_TILE_WIDTH,                 /* TIFF_LONG */             tiling, false);
         writeTag((short) TAG_TILE_LENGTH,                /* TIFF_LONG */             tiling, false);
         writeTag((short) TAG_TILE_OFFSETS,               /* TIFF_LONG */             tiling, false);
         writeTag((short) TAG_TILE_BYTE_COUNTS,           /* TIFF_LONG */             tiling, false);
+        writeTag((short) TAG_EXTRA_SAMPLES,              /* TIFF_SHORT */            image.extraSamples);
         writeTag((short) TAG_SAMPLE_FORMAT,              (short) TIFFTag.TIFF_SHORT, sampleFormat);
         writeTag((short) TAG_S_MIN_SAMPLE_VALUE,         (short) TIFFTag.TIFF_FLOAT, statistics[0]);
         writeTag((short) TAG_S_MAX_SAMPLE_VALUE,         (short) TIFFTag.TIFF_FLOAT, statistics[1]);

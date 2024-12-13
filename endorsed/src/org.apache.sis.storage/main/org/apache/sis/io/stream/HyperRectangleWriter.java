@@ -189,6 +189,22 @@ public class HyperRectangleWriter {
         }
 
         /**
+         * Returns whether the given sample model is supported. If this method returns {@code true},
+         * then invoking a {@code create(…)} method should not throw {@link RasterFormatException}.
+         *
+         * @param  sm  the sample model of the rasters to write, or {@code null}.
+         * @return whether the given sample model is non-null and supported.
+         *
+         * @see #create(SampleModel)
+         */
+        public static boolean isSupported(final SampleModel sm) {
+            if (sm instanceof ComponentSampleModel)         return true;
+            if (sm instanceof SinglePixelPackedSampleModel) return isSupported(null, (SinglePixelPackedSampleModel) sm);
+            if (sm instanceof MultiPixelPackedSampleModel)  return isSupported(null, (MultiPixelPackedSampleModel)  sm);
+            return false;
+        }
+
+        /**
          * Creates a new writer for raster data described by the given sample model and strides.
          * The {@link #pixelStride} and {@link #scanlineStride} fields must be set before this method is invoked.
          *
@@ -277,17 +293,32 @@ public class HyperRectangleWriter {
             bankOffsets    = bankIndices;
             pixelStride    = 1;
             scanlineStride = sm.getScanlineStride();
-            final int[] d  = sm.getBitMasks();
+            if (isSupported(this, sm)) {
+                return create(sm, null);
+            } else {
+                throw new RasterFormatException(sm.toString());
+            }
+        }
+
+        /**
+         * Tests whether the given sample model is supported by this builder.
+         *
+         * @param  builder  the builder in which to store information, or {@code null} if none.
+         * @param  sm       the sample model of the rasters to test for support.
+         * @return whether the given sample model is supported.
+         */
+        private static boolean isSupported(final Builder builder, final SinglePixelPackedSampleModel sm) {
             /*
              * If there is only one band, it is okay to store the values using the current data type.
              * We require that all bits are used because otherwise, there is a risk to write garbage
              * and we are not sure that the destination format can encode the mask.
              */
             final int dataSize = DataBuffer.getDataTypeSize(sm.getDataType());
+            final int[] d  = sm.getBitMasks();
             if (d.length == 1) {
                 int mask = (int) ((1L << dataSize) - 1);
                 if ((d[0] & mask) == mask) {
-                    return create(sm, null);
+                    return true;
                 }
             }
             /*
@@ -295,17 +326,19 @@ public class HyperRectangleWriter {
              * many formats such as GeoTIFF will interpret those values as bytes.
              */
             if ((dataSize % (d.length * Byte.SIZE)) != 0) {
-                throw new RasterFormatException(sm.toString());
+                return false;
             }
             int mask = 0xFF;
             for (int i = d.length; --i >= 0;) {
                 if (d[i] != mask) {
-                    throw new RasterFormatException(sm.toString());
+                    return false;
                 }
                 mask <<= Byte.SIZE;
             }
-            requiresBigEndian = true;
-            return create(sm, null);
+            if (builder != null) {
+                builder.requiresBigEndian = true;
+            }
+            return true;
         }
 
         /**
@@ -336,18 +369,35 @@ public class HyperRectangleWriter {
             bankOffsets    = bankIndices;
             pixelStride    = 1;
             scanlineStride = sm.getScanlineStride();
+            if (isSupported(this, sm)) {
+                return create(sm, null);
+            } else {
+                throw new RasterFormatException(sm.toString());
+            }
+        }
+
+        /**
+         * Tests whether the given sample model is supported by this builder.
+         *
+         * @param  builder  the builder in which to store information, or {@code null} if none.
+         * @param  sm       the sample model of the rasters to test for support.
+         * @return whether the given sample model is supported.
+         */
+        private static boolean isSupported(final Builder builder, final MultiPixelPackedSampleModel sm) {
             final int[] d  = sm.getSampleSize();
             if (d.length == 1) {
                 final int sampleSize = d[0];
                 if (sm.getPixelBitStride() == sampleSize) {
                     final int dataSize = DataBuffer.getDataTypeSize(sm.getDataType());
                     if (dataSize % sampleSize == 0) {   // Check that all bits are used.
-                        requiresBigEndian = Math.max(sampleSize, Byte.SIZE) != dataSize;
-                        return create(sm, null);
+                        if (builder != null) {
+                            builder.requiresBigEndian = Math.max(sampleSize, Byte.SIZE) != dataSize;
+                        }
+                        return true;
                     }
                 }
             }
-            throw new RasterFormatException(sm.toString());
+            return false;
         }
 
         /**
@@ -358,6 +408,8 @@ public class HyperRectangleWriter {
          * @param  sm  the sample model of the rasters to write.
          * @return writer for rasters using the specified sample model (never {@code null}).
          * @throws RasterFormatException if the given sample model is not supported.
+         *
+         * @see #isSupported(SampleModel)
          */
         public HyperRectangleWriter create(final SampleModel sm) {
             if (sm instanceof ComponentSampleModel)         return create((ComponentSampleModel)         sm);

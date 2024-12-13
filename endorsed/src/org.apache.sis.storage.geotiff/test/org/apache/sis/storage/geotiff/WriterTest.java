@@ -237,7 +237,7 @@ public final class WriterTest extends TestCase {
     @Test
     public void testUntiledRGB() throws IOException, DataStoreException {
         initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 3, 1, 1);
-        image.setColorModel(ColorModelFactory.createRGB(image.getSampleModel()));
+        image.setColorModel(ColorModelFactory.createRGB(image.getSampleModel(), false));
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.

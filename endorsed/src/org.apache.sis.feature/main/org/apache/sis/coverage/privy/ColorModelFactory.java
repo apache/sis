@@ -163,6 +163,7 @@ public final class ColorModelFactory {
      *
      * @see #createPiecewise(int, int, int, ColorsForRange[])
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     private ColorModelFactory(final int dataType, final int numBands, final int visibleBand, final ColorsForRange[] colors) {
         this.dataType    = dataType;
         this.numBands    = numBands;
@@ -595,52 +596,99 @@ public final class ColorModelFactory {
      * The sample model shall use integer type and have 3 or 4 bands.
      * This method may return {@code null} if the color model cannot be created.
      *
-     * @param  model  the sample model for which to create a color model.
+     * @param  targetModel           the sample model for which to create a color model.
+     * @param  isAlphaPremultiplied  whether the alpha value (if present) is premultiplied.
      * @return the color model, or null if a precondition does not hold.
      */
-    public static ColorModel createRGB(final SampleModel model) {
-        final int numBands = model.getNumBands();
-        if (numBands >= 3 && numBands <= 4 && ImageUtilities.isIntegerType(model)) {
+    public static ColorModel createRGB(final SampleModel targetModel, final boolean isAlphaPremultiplied) {
+check:  if (ImageUtilities.isIntegerType(targetModel)) {
+            final int numBands = targetModel.getNumBands();
+            final int alphaBand;
+            switch (numBands) {
+                case 3:  alphaBand = -1; break;
+                case 4:  alphaBand =  3; break;
+                default: break check;
+            }
             int bitsPerSample = 0;
             for (int i=0; i<numBands; i++) {
-                bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
+                bitsPerSample = Math.max(bitsPerSample, targetModel.getSampleSize(i));
             }
-            if (bitsPerSample <= Byte.SIZE) {
-                return createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3);
+            if (targetModel.getNumDataElements() != 1) {
+                return createBandedRGB(bitsPerSample, alphaBand, isAlphaPremultiplied);
+            } else if (bitsPerSample <= Byte.SIZE) {
+                return createPackedRGB(bitsPerSample, alphaBand, isAlphaPremultiplied);
             }
         }
         return null;
     }
 
     /**
-     * Creates a RGB color model. The {@code packed} argument should be
-     * {@code true}  for color model used with {@link java.awt.image.SinglePixelPackedSampleModel}, and
-     * {@code false} for color model used with {@link java.awt.image.BandedSampleModel}.
+     * Creates a RGB color model for use with {@code SinglePixelPackedSampleModel}.
+     * Pixel values are packed in a single integer (usually 32-bits) per pixel.
+     * Color components are separated using a bitmask for each <abbr>RGBA</abbr> value.
      *
-     * @param  bitsPerSample  number of bits per sample, between 1 and 8 (packed) or 32 (banded) inclusive.
-     * @param  packed         whether sample values are packed in a single element.
-     * @param  hasAlpha       whether the color model should have an alpha channel.
-     * @return the color model.
+     * @param  bitsPerSample         number of bits per sample, between 1 and 8 inclusive.
+     * @param  alphaBand             index of the alpha channel (usually the last band), or -1 if none.
+     * @param  isAlphaPremultiplied  whether the alpha value (if present) is premultiplied.
+     * @return color model for use with {@link java.awt.image.SinglePixelPackedSampleModel}.
      */
-    public static ColorModel createRGB(final int bitsPerSample, final boolean packed, final boolean hasAlpha) {
-        if ((hasAlpha & packed) && bitsPerSample == Byte.SIZE) {
+    public static ColorModel createPackedRGB(final int bitsPerSample, final int alphaBand, final boolean isAlphaPremultiplied) {
+        if (bitsPerSample == Byte.SIZE && alphaBand == 3 && !isAlphaPremultiplied) {
             return ColorModel.getRGBdefault();
         }
-        ArgumentChecks.ensureBetween("bitsPerSample", 1, packed ? Byte.SIZE : Integer.SIZE, bitsPerSample);
-        final ColorModel cm;
-        if (packed) {
-            final int mask = (1 << bitsPerSample) - 1;
-            cm = new DirectColorModel((hasAlpha ? 4 : 3) * bitsPerSample,
-                    mask << (bitsPerSample * 2),        // Red
-                    mask <<  bitsPerSample,             // Green
-                    mask,                               // Blue
-                    hasAlpha ? mask << (bitsPerSample * 3) : 0);
-        } else {
-            final int[] numBits = new int[hasAlpha ? 4 : 3];
-            Arrays.fill(numBits, bitsPerSample);
-            cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), numBits, hasAlpha, false,
-                            hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+        ArgumentChecks.ensureBetween("bitsPerSample", 1, Byte.SIZE, bitsPerSample);
+        final int[] masks = new int[4];         // Red, Green, Blue, Alpha masks in that order.
+        int mask = (1 << bitsPerSample) - 1;    // Start with blue = 0xFF (usually).
+        for (int i=2; i >= 0; i--) {
+            masks[i] = mask;
+            mask <<= bitsPerSample;
         }
+        int numBands = 3;
+        if (alphaBand >= 0) {
+            System.arraycopy(masks, alphaBand, masks, alphaBand+1, 3 - alphaBand);
+            masks[alphaBand] = mask;
+            numBands = 4;
+        }
+        int numBits = numBands * bitsPerSample;
+        int dataType = (numBits <=  Byte.SIZE) ? DataBuffer.TYPE_BYTE :
+                       (numBits <= Short.SIZE) ? DataBuffer.TYPE_USHORT : DataBuffer.TYPE_INT;
+        var cm = new DirectColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                        numBits, masks[0], masks[1], masks[2], masks[3],
+                        isAlphaPremultiplied, dataType);
+        return unique(cm);
+    }
+
+    /**
+     * Creates a RGB color model for use with {@code BandedSampleModel}.
+     * Each color component (sample value) is stored in a separated data element.
+     *
+     * <h4>Limitations</h4>
+     * The current version requires the alpha channel (if present) to be the last band.
+     * If this condition is not met, this method returns {@code null}.
+     *
+     * @param  bitsPerSample         number of bits per sample, between 1 and 32 inclusive.
+     * @param  alphaBand             index of the alpha channel (usually the last band), or -1 if none.
+     * @param  isAlphaPremultiplied  whether the alpha value (if present) is premultiplied.
+     * @return color model for use with {@link java.awt.image.BandedSampleModel}, or {@code null}.
+     */
+    public static ColorModel createBandedRGB(final int bitsPerSample, final int alphaBand, final boolean isAlphaPremultiplied) {
+        ArgumentChecks.ensureBetween("bitsPerSample", 1, Integer.SIZE, bitsPerSample);
+        final int[] numBits;
+        final int transparency;
+        final boolean hasAlpha = (alphaBand >= 0);
+        if (hasAlpha) {
+            if (alphaBand != 3) {
+                return null;        // Limitation documented in method Javadoc.
+            }
+            numBits = new int[4];
+            transparency = Transparency.TRANSLUCENT;
+        } else {
+            numBits = new int[3];
+            transparency = Transparency.OPAQUE;
+        }
+        Arrays.fill(numBits, bitsPerSample);
+        var cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                        numBits, hasAlpha, isAlphaPremultiplied, transparency, DataBuffer.TYPE_BYTE);
         return unique(cm);
     }
 
