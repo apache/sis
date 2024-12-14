@@ -31,6 +31,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.measure.NumberRange;
@@ -160,7 +161,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * The color model is <abbr>RGB</abbr> for image having 3 bands, or <abbr>ARGB</abbr> for images having 4 bands.
      * In the latter case, the color components are considered <em>not</em> premultiplied by the alpha value.
      */
-    Colorizer ARGB = (target) -> Optional.ofNullable(ColorModelFactory.createRGB(target.getSampleModel(), false));
+    Colorizer ARGB = (target) -> Optional.ofNullable(new ColorModelBuilder().create(target.getSampleModel()));
 
     /**
      * Creates a colorizer which will interpolate the given colors in the given range of values.

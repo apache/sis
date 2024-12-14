@@ -43,6 +43,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.privy.ImageLayout;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -473,7 +474,7 @@ final class TiledResource extends TiledGridResource {
              */
         }
         if ((red | green | blue) >= 0) {
-            colorModel = ColorModelFactory.createBandedRGB(dataType.numBits, alpha, false);
+            colorModel = new ColorModelBuilder().bitsPerSample(dataType.numBits).alphaBand(alpha).createBandedRGB();
             // TODO: needs custom color model if too many bands, or if order is not (A)RGB.
         } else if (palette != null) {
             colorModel = ColorModelFactory.createIndexColorModel(selectedBands.length, paletteIndex, palette, true, -1);

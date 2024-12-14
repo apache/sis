@@ -43,6 +43,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.ObservableImage;
 import org.apache.sis.coverage.privy.RangeArgument;
@@ -395,14 +396,14 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
              * The color file is optional and will be used if present.
              */
             if (band == VISIBLE_BAND) {
-                if (isRGB) {
-                    colorModel = ColorModelFactory.createRGB(sm, false);    // Should never be null.
-                } else {
-                    try {
+                try {
+                    if (isRGB) {
+                        colorModel = new ColorModelBuilder().create(sm);
+                    } else {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
-                    } catch (URISyntaxException | IOException | NumberFormatException e) {
-                        cannotReadAuxiliaryFile(CLR, e);
                     }
+                } catch (URISyntaxException | IOException | IllegalArgumentException e) {
+                    cannotReadAuxiliaryFile(CLR, e);
                 }
                 if (colorModel == null) {
                     colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);

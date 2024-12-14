@@ -52,6 +52,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.SampleModelFactory;
 import org.apache.sis.util.Numbers;
@@ -1760,10 +1761,12 @@ final class ImageFileDirectory extends DataCube {
                 }
                 case PHOTOMETRIC_INTERPRETATION_RGB: {
                     if (alphaBand >= 0) alphaBand += 3;     // Must add the number of color bands.
+                    final var builder = new ColorModelBuilder().bitsPerSample(bitsPerSample)
+                            .alphaBand(alphaBand).isAlphaPremultiplied(isAlphaPremultiplied);
                     if (getSampleModel(null) instanceof SinglePixelPackedSampleModel) {
-                        colorModel = ColorModelFactory.createPackedRGB(bitsPerSample, alphaBand, isAlphaPremultiplied);
+                        colorModel = builder.createPackedRGB();
                     } else {
-                        colorModel = ColorModelFactory.createBandedRGB(bitsPerSample, alphaBand, isAlphaPremultiplied);
+                        colorModel = builder.createBandedRGB();
                     }
                     break;
                 }
