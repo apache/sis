@@ -31,7 +31,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.privy.ColorModelBuilder;
+import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
@@ -292,7 +292,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
                     final List<SampleDimension> ranges = target.getRanges().orElse(null);
                     if (visibleBand < ranges.size()) {
                         final SampleModel model = target.getSampleModel();
-                        final var c = new ColorModelBuilder(colors, null, false);
+                        final var c = new ColorScaleBuilder(colors, null, false);
                         if (c.initialize(model, ranges.get(visibleBand))) {
                             return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
                         }

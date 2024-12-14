@@ -65,7 +65,7 @@ public enum ColorModelType {
 
     /**
      * Whether rendering with this color model is slow.
-     * In such case, the color model may need to be changed using {@link ColorModelBuilder}.
+     * In such case, the color model may need to be changed using {@link ColorScaleBuilder}.
      */
     public final boolean isSlow;
 

@@ -44,7 +44,7 @@ import org.apache.sis.coverage.internal.CompoundTransform;
 import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.SampleDimensions;
-import org.apache.sis.coverage.privy.ColorModelBuilder;
+import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
@@ -268,7 +268,7 @@ final class Visualization extends ResampledImage {
              * The sample model is a mandatory argument before we invoke user supplied colorizer,
              * which must be done before to build the color model.
              */
-            sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds, 0);
+            sampleModel = layout.createBandedSampleModel(ColorScaleBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds, 0);
             final Target target = new Target(sampleModel, VISIBLE_BAND, visibleSD != null);
             if (colorizer != null) {
                 colorModel = colorizer.apply(target).orElse(null);
@@ -276,7 +276,7 @@ final class Visualization extends ResampledImage {
             final SampleModel sourceSM = coloredSource.getSampleModel();
             final ColorModel  sourceCM = coloredSource.getColorModel();
             /*
-             * Get a `ColorModelBuilder` which will compute the `ColorModel` of destination image.
+             * Get a `ColorScaleBuilder` which will compute the `ColorModel` of destination image.
              * There is different ways to setup the builder, depending on which `Colorizer` is used.
              * In precedence order:
              *
@@ -285,20 +285,20 @@ final class Visualization extends ResampledImage {
              *    - statistics
              */
             boolean initialized;
-            final ColorModelBuilder builder;
+            final ColorScaleBuilder builder;
             if (target.rangeColors != null) {
-                builder = new ColorModelBuilder(target.rangeColors, sourceCM);
+                builder = new ColorScaleBuilder(target.rangeColors, sourceCM);
                 initialized = true;
             } else {
                 /*
                  * Ranges of sample values were not specified explicitly. Instead, we will try to infer them
                  * in various ways: sample dimensions, scaled color model, or image statistics in last resort.
                  */
-                builder = new ColorModelBuilder(target.categoryColors, sourceCM, true);
+                builder = new ColorScaleBuilder(target.categoryColors, sourceCM, true);
                 initialized = builder.initialize(sourceSM, visibleSD);
                 if (initialized) {
                     /*
-                     * If we have been able to configure ColorModelBuilder using SampleDimension, apply an adjustment
+                     * If we have been able to configure ColorScaleBuilder using SampleDimension, apply an adjustment
                      * based on the ScaledColorModel if it exists. Use case: image is created with an IndexColorModel
                      * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`.
                      * We want to preserve that contrast enhancement.
@@ -325,7 +325,7 @@ final class Visualization extends ResampledImage {
             }
             if (!initialized) {
                 /*
-                 * If none of above `ColorModelBuilder` configurations worked, use statistics in last resort.
+                 * If none of above `ColorScaleBuilder` configurations worked, use statistics in last resort.
                  * We do that after we reduced the image to a single band in order to reduce the amount of calculation.
                  */
                 final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(visibleSD);
@@ -333,7 +333,7 @@ final class Visualization extends ResampledImage {
                 builder.initialize(statistics.minimum(), statistics.maximum(), sourceSM.getDataType());
             }
             if (colorModel == null) {
-                colorModel = builder.createColorModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, VISIBLE_BAND);
+                colorModel = builder.createColorModel(ColorScaleBuilder.TYPE_COMPACT, NUM_BANDS, VISIBLE_BAND);
             }
             converters = new MathTransform1D[] {
                 builder.getSampleToIndexValues()            // Must be after `createColorModel(…)`.

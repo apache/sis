@@ -35,7 +35,7 @@ import org.apache.sis.test.TestCase;
 
 
 /**
- * Tests {@link ColorModelBuilder}.
+ * Tests {@link ColorScaleBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -53,7 +53,7 @@ public final class ColorModelBuilderTest extends TestCase {
      */
     @Test
     public void testRangeAndColors() throws TransformException {
-        final ColorModelBuilder colorizer = new ColorModelBuilder(List.of(
+        final ColorScaleBuilder colorizer = new ColorScaleBuilder(List.of(
                 new SimpleEntry<>(NumberRange.create(0, true,  0, true), new Color[] {Color.GRAY}),
                 new SimpleEntry<>(NumberRange.create(1, true,  1, true), new Color[] {ColorModelFactory.TRANSPARENT}),
                 new SimpleEntry<>(NumberRange.create(2, true, 15, true), new Color[] {Color.BLUE, Color.WHITE, Color.RED})), null);
@@ -102,9 +102,9 @@ public final class ColorModelBuilderTest extends TestCase {
                 .addQualitative ("Error", MathFunctions.toNanFloat(3))
                 .setName("Temperature").build();
 
-        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, true);
+        final ColorScaleBuilder colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, true);
         assertTrue(colorizer.initialize(null, sd));
-        final var cm = (IndexColorModel) colorizer.createColorModel(ColorModelBuilder.TYPE_COMPACT, 1, 0);      // Must be first.
+        final var cm = (IndexColorModel) colorizer.createColorModel(ColorScaleBuilder.TYPE_COMPACT, 1, 0);      // Must be first.
         /*
          * Test conversion of a few sample values to packed values.
          */

@@ -49,11 +49,11 @@ import org.apache.sis.util.resources.Vocabulary;
  * Usage:
  *
  * <ol>
- *   <li>Create a new {@link ColorModelBuilder} instance.</li>
+ *   <li>Create a new {@link ColorScaleBuilder} instance.</li>
  *   <li>Invoke one of {@code initialize(…)} methods.</li>
  *   <li>Invoke {@link #createColorModel(int, int, int)}.</li>
  *   <li>Invoke {@link #getSampleToIndexValues()} if this auxiliary information is useful.</li>
- *   <li>Discards {@code ColorModelBuilder}. Each instance shall be used only once.</li>
+ *   <li>Discards {@code ColorScaleBuilder}. Each instance shall be used only once.</li>
  * </ol>
  *
  * There is no {@code initialize(Raster)} or {@code initialize(RenderedImage)} method because if those methods
@@ -67,7 +67,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see ColorModelType
  * @see ColorModelFactory#createColorModel(int, int, int)
  */
-public final class ColorModelBuilder {
+public final class ColorScaleBuilder {
     /**
      * A color model constant set to {@code null}, used for identifying code that explicitly set the
      * color model to {@code null}. It may happen when no {@code initialize(…)} method can be applied.
@@ -108,7 +108,7 @@ public final class ColorModelBuilder {
 
     /**
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
-     * This is a possible argument for the {@link #ColorModelBuilder(Function, ColorModel, boolean)} constructor.
+     * This is a possible argument for the {@link #ColorScaleBuilder(Function, ColorModel, boolean)} constructor.
      */
     public static final Function<Category,Color[]> GRAYSCALE =
             (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
@@ -171,7 +171,7 @@ public final class ColorModelBuilder {
 
     /**
      * Creates a new colorizer which will apply colors on the given ranges of values in source image.
-     * The {@code ColorModelBuilder} is considered initialized after this constructor;
+     * The {@code ColorScaleBuilder} is considered initialized after this constructor;
      * callers shall <strong>not</strong> invoke an {@code initialize(…)} method.
      *
      * <p>The {@code colors} map shall not be null or empty but may contain {@code null} values.
@@ -186,7 +186,7 @@ public final class ColorModelBuilder {
      * @param  inherited  the colors to use as fallback if some ranges have undefined colors, or {@code null}.
      *                    Should be non-null only for styling an exiting image before visualization.
      */
-    public ColorModelBuilder(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors, final ColorModel inherited) {
+    public ColorScaleBuilder(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors, final ColorModel inherited) {
         entries = ColorsForRange.list(colors, inherited);
         inheritedColors = inherited;
         this.colors = GRAYSCALE;
@@ -215,7 +215,7 @@ public final class ColorModelBuilder {
      *                    Should be non-null only for styling an exiting image before visualization.
      * @param  compact    Whether to rescale the range of sample values to the {@link #TYPE_COMPACT} range.
      */
-    public ColorModelBuilder(final Function<Category,Color[]> colors, final ColorModel inherited, final boolean compact) {
+    public ColorScaleBuilder(final Function<Category,Color[]> colors, final ColorModel inherited, final boolean compact) {
         this.colors = (colors != null) ? colors : GRAYSCALE;
         inheritedColors = inherited;
         this.compact = compact;
@@ -317,7 +317,7 @@ public final class ColorModelBuilder {
 
     /**
      * Uses the given color model for mapping range of values to new colors. The colors in the given color model
-     * are ignored (because they will be replaced by colors specified by this {@code ColorModelBuilder});
+     * are ignored (because they will be replaced by colors specified by this {@code ColorScaleBuilder});
      * only the range of values will be fetched, if such range exists.
      *
      * @param  source  the color model from which to get a range of values, or {@code null}.
@@ -499,7 +499,7 @@ public final class ColorModelBuilder {
         ColorsForRange[] entries = this.entries;
 reuse:  if (source != null) {
             target = source.forConvertedValues(false);
-            if (target.getSampleRange().filter(ColorModelBuilder::isAlreadyScaled).isPresent()) {
+            if (target.getSampleRange().filter(ColorScaleBuilder::isAlreadyScaled).isPresent()) {
                 /*
                  * If we enter in this block, all sample values are already in the [0 … 255] range.
                  * If in addition there is no conversion to apply, then there is nothing to do.
@@ -694,7 +694,7 @@ reuse:  if (source != null) {
      */
     public MathTransform1D getSampleToIndexValues() throws NoninvertibleTransformException {
         checkInitializationStatus(true);
-        return (target != null) ? target.getTransferFunction().orElseGet(ColorModelBuilder::identity).inverse() : identity();
+        return (target != null) ? target.getTransferFunction().orElseGet(ColorScaleBuilder::identity).inverse() : identity();
     }
 
     /**

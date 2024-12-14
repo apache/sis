@@ -654,8 +654,8 @@ public class RenderingData implements CloneAccess {
          * that we can use with `IndexColorModel`. The two operations (resampling and conversions) are
          * combined in a single "visualization" operation of efficiency.
          *
-         * TODO: if `colors` is null, instead of defaulting to `ColorModelBuilder.GRAYSCALE` we should get the colors
-         *       from the current ColorModel. This work should be done in `ColorModelBuilder` by converting the ranges
+         * TODO: if `colors` is null, instead of defaulting to `ColorScaleBuilder.GRAYSCALE` we should get the colors
+         *       from the current ColorModel. This work should be done in `ColorScaleBuilder` by converting the ranges
          *       of sample values in source image to ranges of sample values in destination image, then query
          *       ColorModel.getRGB(Object) for increasing integer values in that range.
          */

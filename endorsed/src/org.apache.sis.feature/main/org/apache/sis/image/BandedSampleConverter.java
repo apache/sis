@@ -36,7 +36,7 @@ import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.TileOpExecutor;
 import org.apache.sis.coverage.privy.SampleDimensions;
-import org.apache.sis.coverage.privy.ColorModelBuilder;
+import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
@@ -219,7 +219,7 @@ class BandedSampleConverter extends WritableComputedImage {
         final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null, 0);
         final SampleDimension[] sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
         final int visibleBand = ImageUtilities.getVisibleBand(source);
-        ColorModel colorModel = ColorModelBuilder.NULL_COLOR_MODEL;
+        ColorModel colorModel = ColorScaleBuilder.NULL_COLOR_MODEL;
         if (colorizer != null) {
             var target = new Colorizer.Target(sampleModel, UnmodifiableArrayList.wrap(sampleDimensions), visibleBand);
             colorModel = colorizer.apply(target).orElse(null);
@@ -234,7 +234,7 @@ class BandedSampleConverter extends WritableComputedImage {
             if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.length) {
                 sd = sampleDimensions[visibleBand];
             }
-            final var builder = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, false);
+            final var builder = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
             if (builder.initialize(source.getSampleModel(), sd) ||
                 builder.initialize(source.getColorModel()))
             {
