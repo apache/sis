@@ -34,13 +34,12 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.ColorModelFactory;
-import org.apache.sis.coverage.privy.MultiSourceArgument;
+import org.apache.sis.coverage.privy.BandAggregateArgument;
 import org.apache.sis.coverage.privy.CommonDomainFinder;
 
 
 /**
- * Computes the bounds of a destination image which will combine many source images.
- * A combination may be an aggregation or an overlay of bands, depending on the image class.
+ * Computes the bounds of a destination image which will combine the bands of many source images.
  * All images are assumed to use the same pixel coordinate space: (<var>x</var>, <var>y</var>)
  * expressed in pixel coordinates should map to the same geospatial location in all images.
  *
@@ -52,7 +51,7 @@ import org.apache.sis.coverage.privy.CommonDomainFinder;
  * @see ImageCombiner
  * @see BandAggregateImage
  */
-final class MultiSourceLayout extends ImageLayout {
+final class BandAggregateLayout extends ImageLayout {
     /**
      * The source images. This is a copy of the user-specified array,
      * except that images associated to an empty set of bands are discarded.
@@ -66,7 +65,7 @@ final class MultiSourceLayout extends ImageLayout {
     final RenderedImage[] filteredSources;
 
     /**
-     * Ordered (not necessarily sorted) indices of bands to select in each source image.
+     * Indices of bands to select in each source image, in the order of target image bands.
      * The length of this array is always equal to the length of the {@link #sources} array.
      * A {@code null} element means that all bands of the corresponding image should be used.
      * All non-null elements are non-empty and without duplicated values.
@@ -75,6 +74,7 @@ final class MultiSourceLayout extends ImageLayout {
 
     /**
      * Final band select operation to apply on the aggregated result.
+     * This is needed if the final band order implies interleaving bands of different images.
      */
     final int[] bandSelect;
 
@@ -112,7 +112,7 @@ final class MultiSourceLayout extends ImageLayout {
     private final boolean exactTileSize;
 
     /**
-     * Computes the layout of an image combining all the specified source images.
+     * Computes the layout of an image combining the bands of all the specified source images.
      * The optional {@code bandsPerSource} argument specifies the bands to select in each source images.
      * That array can be {@code null} for selecting all bands in all source images,
      * or may contain {@code null} elements for selecting all bands of the corresponding image.
@@ -128,8 +128,8 @@ final class MultiSourceLayout extends ImageLayout {
      *         or if some band indices are duplicated or outside their range of validity.
      */
     @Workaround(library="JDK", version="1.8")
-    static MultiSourceLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
-        final var aggregate = new MultiSourceArgument<RenderedImage>(sources, bandsPerSource);
+    static BandAggregateLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
+        final var aggregate = new BandAggregateArgument<RenderedImage>(sources, bandsPerSource);
         aggregate.unwrap(BandAggregateImage::unwrap);
         aggregate.validate(ImageUtilities::getNumBands);
 
@@ -151,7 +151,7 @@ final class MultiSourceLayout extends ImageLayout {
              */
             final SampleModel sm = source.getSampleModel();
             if (allowSharing && (allowSharing = (sm instanceof ComponentSampleModel))) {
-                final ComponentSampleModel csm = (ComponentSampleModel) sm;
+                final var csm = (ComponentSampleModel) sm;
                 if (allowSharing = (csm.getPixelStride() == 1)) {
                     allowSharing &= scanlineStride == (scanlineStride = csm.getScanlineStride());
                     allowSharing &= tileWidth      == (tileWidth      = source.getTileWidth());
@@ -211,7 +211,7 @@ final class MultiSourceLayout extends ImageLayout {
         final var preferredTileSize = new Dimension((int) cx, (int) cy);
         final boolean exactTileSize = ((cx | cy) >>> Integer.SIZE) == 0;
         allowSharing &= exactTileSize;
-        return new MultiSourceLayout(sources, bandsPerSource, bandSelect, domain, preferredTileSize, exactTileSize,
+        return new BandAggregateLayout(sources, bandsPerSource, bandSelect, domain, preferredTileSize, exactTileSize,
                 chooseMinTile(tileGridXOffset, domain.x, preferredTileSize.width),
                 chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height),
                 commonDataType, aggregate.numBands(), allowSharing ? scanlineStride : 0);
@@ -229,7 +229,7 @@ final class MultiSourceLayout extends ImageLayout {
      * @param  scanlineStride     common scanline stride if data buffers will be shared, or 0 if no sharing.
      * @param  numBands           number of bands of the image to create.
      */
-    private MultiSourceLayout(final RenderedImage[] sources, final int[][] bandsPerSource, final int[] bandSelect,
+    private BandAggregateLayout(final RenderedImage[] sources, final int[][] bandsPerSource, final int[] bandSelect,
             final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
             final int minTileX, final int minTileY, final int commonDataType, final int numBands,
             final int scanlineStride)

@@ -25,7 +25,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.MultiSourceArgument;
+import org.apache.sis.coverage.privy.BandAggregateArgument;
 
 
 /**
@@ -61,7 +61,7 @@ class BandAggregateImage extends MultiSourceImage {
      *
      * @param  unwrapper  a handler where to supply the result of an aggregate decomposition.
      */
-    static void unwrap(final MultiSourceArgument<RenderedImage>.Unwrapper unwrapper) {
+    static void unwrap(final BandAggregateArgument<RenderedImage>.Unwrapper unwrapper) {
         RenderedImage source = unwrapper.source;
         int[] bands = unwrapper.bands;
         while (source instanceof ImageAdapter) {
@@ -93,7 +93,7 @@ class BandAggregateImage extends MultiSourceImage {
      * @return an image with a subset of the bands of this image, or {@code null} if {@code unwrapper} was non-null.
      */
     final RenderedImage subset(final int[] bands, final ColorModel colors,
-            final MultiSourceArgument<RenderedImage>.Unwrapper unwrapper)
+            final BandAggregateArgument<RenderedImage>.Unwrapper unwrapper)
     {
         final RenderedImage[] sources = new RenderedImage[bands.length];
         final int[][] bandsPerSource = new int[bands.length][];
@@ -140,7 +140,7 @@ class BandAggregateImage extends MultiSourceImage {
     static RenderedImage create(final RenderedImage[] sources, final int[][] bandsPerSource, final Colorizer colorizer,
                                 final boolean forceColors, final boolean allowSharing, final boolean parallel)
     {
-        final var layout = MultiSourceLayout.create(sources, bandsPerSource, allowSharing);
+        final var layout = BandAggregateLayout.create(sources, bandsPerSource, allowSharing);
         final BandAggregateImage image;
         if (layout.isWritable()) {
             image = new Writable(layout, colorizer, allowSharing, parallel);
@@ -169,7 +169,7 @@ class BandAggregateImage extends MultiSourceImage {
      * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
      * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
      */
-    private BandAggregateImage(final MultiSourceLayout layout, final Colorizer colorizer,
+    private BandAggregateImage(final BandAggregateLayout layout, final Colorizer colorizer,
                                final boolean allowSharing, final boolean parallel)
     {
         super(layout, colorizer, parallel);
@@ -191,7 +191,7 @@ class BandAggregateImage extends MultiSourceImage {
         /*
          * If we are allowed to share the data arrays, try that first.
          * The cast to `BandedSampleModel` is safe because this is the
-         * type given by `MultiSourceLayout` in the constructor.
+         * type given by `BandAggregateLayout` in the constructor.
          */
         BandSharedRaster shared = null;
         if (allowSharing) {
@@ -237,7 +237,7 @@ class BandAggregateImage extends MultiSourceImage {
          * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
          * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
          */
-        Writable(final MultiSourceLayout layout, final Colorizer colorizer,
+        Writable(final BandAggregateLayout layout, final Colorizer colorizer,
                  final boolean allowSharing, final boolean parallel)
         {
             super(layout, colorizer, allowSharing, parallel);
@@ -331,5 +331,13 @@ class BandAggregateImage extends MultiSourceImage {
     @Override
     public boolean equals(final Object object) {
         return super.equals(object) && ((BandAggregateImage) object).allowSharing == allowSharing;
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ Boolean.hashCode(allowSharing);
     }
 }

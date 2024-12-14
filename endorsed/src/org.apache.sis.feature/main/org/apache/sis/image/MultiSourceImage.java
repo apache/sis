@@ -70,7 +70,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
      * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
      * @param  parallel   whether parallel computation is allowed.
      */
-    MultiSourceImage(final MultiSourceLayout layout, final Colorizer colorizer, final boolean parallel) {
+    MultiSourceImage(final BandAggregateLayout layout, final Colorizer colorizer, final boolean parallel) {
         super(layout.sampleModel, layout.filteredSources);
         final Rectangle r = layout.domain;
         minX            = r.x;

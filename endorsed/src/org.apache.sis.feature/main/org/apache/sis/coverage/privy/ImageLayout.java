@@ -382,12 +382,13 @@ public class ImageLayout {
      *
      * <p>This method constructs the simplest possible banded sample model:
      * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zero and
-     * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.</p>
+     * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.
+     * This simplicity is needed by current implementation of {@link org.apache.sis.image.BandAggregateImage}.</p>
      *
-     * @param  dataType  desired data type as a {@link java.awt.image.DataBuffer} constant.
-     * @param  numBands  desired number of bands.
-     * @param  image     the image which will be the source of the image for which a sample model is created.
-     * @param  bounds    the bounds of the image to create, or {@code null} if same as {@code image}.
+     * @param  dataType        desired data type as a {@link java.awt.image.DataBuffer} constant.
+     * @param  numBands        desired number of bands.
+     * @param  image           the image which will be the source of the image for which a sample model is created.
+     * @param  bounds          the bounds of the image to create, or {@code null} if same as {@code image}.
      * @param  scanlineStride  the line stride of the of the image data, or ≤ 0 for automatic.
      * @return a banded sample model of the given type with the given number of bands.
      */
@@ -398,6 +399,7 @@ public class ImageLayout {
         if (scanlineStride <= 0) {
             scanlineStride = tileSize.width;
         }
+        // Pixel stride, bank indices and band offsets intentionally non-configurable. See Javadoc.
         return RasterFactory.unique(new BandedSampleModel(dataType, tileSize.width, tileSize.height,
                                     scanlineStride, ArraysExt.range(0, numBands), new int[numBands]));
     }

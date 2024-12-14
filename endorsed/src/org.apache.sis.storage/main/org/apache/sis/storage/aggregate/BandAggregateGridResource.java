@@ -26,7 +26,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
-import org.apache.sis.coverage.privy.MultiSourceArgument;
+import org.apache.sis.coverage.privy.BandAggregateArgument;
 import org.apache.sis.coverage.privy.RangeArgument;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
@@ -127,7 +127,7 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     private BandAggregateGridResource(final StoreListeners parentListeners,
-                                      final MultiSourceArgument<GridCoverageResource> aggregate,
+                                      final BandAggregateArgument<GridCoverageResource> aggregate,
                                       final GridCoverageProcessor processor)
     {
         super(parentListeners, false);
@@ -208,11 +208,11 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
             }
         }
         /*
-         * If the same source appears two or more times consecutively, `MultiSourceArgument` will merge them
+         * If the same source appears two or more times consecutively, `BandAggregateArgument` will merge them
          * in a single reference to that source. Consequently the arrays of sources may become shorter.
          */
         try {
-            final var aggregate = new MultiSourceArgument<GridCoverageResource>(sources, bandsPerSource);
+            final var aggregate = new BandAggregateArgument<GridCoverageResource>(sources, bandsPerSource);
             aggregate.unwrap(BandAggregateGridResource::unwrap);
             aggregate.completeAndValidate(BandAggregateGridResource::range);
             aggregate.mergeConsecutiveSources();
@@ -256,7 +256,7 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
      *
      * @param  unwrapper  a handler where to supply the result of an aggregate decomposition.
      */
-    private static void unwrap(final MultiSourceArgument<GridCoverageResource>.Unwrapper unwrapper) {
+    private static void unwrap(final BandAggregateArgument<GridCoverageResource>.Unwrapper unwrapper) {
         if (unwrapper.source instanceof BandAggregateGridResource) {
             final var aggregate = (BandAggregateGridResource) unwrapper.source;
             unwrapper.applySubset(aggregate.sources, aggregate.bandsPerSource, BandAggregateGridResource::range);

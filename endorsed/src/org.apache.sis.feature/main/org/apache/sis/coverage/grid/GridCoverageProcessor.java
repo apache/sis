@@ -46,7 +46,7 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.privy.SampleDimensions;
-import org.apache.sis.coverage.privy.MultiSourceArgument;
+import org.apache.sis.coverage.privy.BandAggregateArgument;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -886,7 +886,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource) {
-        final var aggregate = new MultiSourceArgument<>(sources, bandsPerSource);
+        final var aggregate = new BandAggregateArgument<>(sources, bandsPerSource);
         aggregate.unwrap(BandAggregateGridCoverage::unwrap);
         aggregate.completeAndValidate(GridCoverage::getSampleDimensions);
         aggregate.mergeConsecutiveSources();
