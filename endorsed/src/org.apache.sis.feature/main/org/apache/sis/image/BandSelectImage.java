@@ -47,7 +47,7 @@ import org.apache.sis.coverage.privy.ObservableImage;
  */
 class BandSelectImage extends SourceAlignedImage {
     /**
-     * Properties to inherit from the source image, after bands reduction if applicable.
+     * Properties to inherit from the source images, after bands reduction if applicable.
      *
      * @see #getProperty(String)
      */
@@ -80,7 +80,7 @@ class BandSelectImage extends SourceAlignedImage {
     private BandSelectImage(final RenderedImage source, final ColorModel cm, final int[] bands) {
         super(source, cm, source.getSampleModel().createSubsetSampleModel(bands));
         this.bands = bands;
-        ensureCompatible(cm);
+        ensureCompatible(sampleModel, cm);
     }
 
     /**
@@ -145,7 +145,7 @@ class BandSelectImage extends SourceAlignedImage {
         if (cm != null && source instanceof BufferedImage) {
             final BufferedImage bi = (BufferedImage) source;
             @SuppressWarnings("UseOfObsoleteCollectionType")
-            final Hashtable<String,Object> properties = new Hashtable<>(8);
+            final var properties = new Hashtable<String,Object>(8);
             for (final String key : INHERITED_PROPERTIES) {
                 final Object value = getProperty(bi, key, bands);
                 if (value != Image.UndefinedProperty) {

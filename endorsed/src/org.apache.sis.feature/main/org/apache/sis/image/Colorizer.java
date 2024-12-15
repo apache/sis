@@ -161,7 +161,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * The color model is <abbr>RGB</abbr> for image having 3 bands, or <abbr>ARGB</abbr> for images having 4 bands.
      * In the latter case, the color components are considered <em>not</em> premultiplied by the alpha value.
      */
-    Colorizer ARGB = (target) -> Optional.ofNullable(new ColorModelBuilder().create(target.getSampleModel()));
+    Colorizer ARGB = (target) -> Optional.ofNullable(new ColorModelBuilder().createRGB(target.getSampleModel()));
 
     /**
      * Creates a colorizer which will interpolate the given colors in the given range of values.

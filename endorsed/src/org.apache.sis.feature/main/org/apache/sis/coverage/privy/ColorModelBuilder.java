@@ -271,13 +271,14 @@ public final class ColorModelBuilder {
     /**
      * Creates a <abbr>RGB</abbr> color model for the given sample model.
      * The sample model shall use integer type and have 3 or 4 bands.
-     * This method may return {@code null} if the color model cannot be created.
+     * If no <abbr>RGB</abbr> or <abbr>ARGB</abbr> color model can be created,
+     * this method default on a gray scale color model.
      *
      * @param  targetModel  the sample model for which to create a color model.
-     * @return the color model, or {@code null} if the given sample model is not supported.
+     * @return the <abbr>RGB</abbr> color model, or a gray scale color model as a fallback.
      * @throws IllegalArgumentException if any argument specified to the builder is invalid.
      */
-    public ColorModel create(final SampleModel targetModel) {
+    public ColorModel createRGB(final SampleModel targetModel) {
 check:  if (ImageUtilities.isIntegerType(targetModel)) {
             final int numBands = targetModel.getNumBands();
             switch (numBands) {
@@ -297,6 +298,6 @@ check:  if (ImageUtilities.isIntegerType(targetModel)) {
                 return createPackedRGB();
             }
         }
-        return null;
+        return ColorModelFactory.createGrayScale(targetModel, ColorModelFactory.DEFAULT_VISIBLE_BAND, null);
     }
 }

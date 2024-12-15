@@ -343,7 +343,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         final boolean isInteger  = ImageUtilities.isIntegerType(dataType);
         final boolean isUnsigned = isInteger && ImageUtilities.isUnsignedType(sm);
         final boolean isRGB      = isInteger && (bands.length == 3 || bands.length == 4);
-        final SampleDimension.Builder builder = new SampleDimension.Builder();
+        final var     builder    = new SampleDimension.Builder();
         for (int band=0; band < bands.length; band++) {
             double minimum = Double.NaN;
             double maximum = Double.NaN;
@@ -398,7 +398,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
             if (band == VISIBLE_BAND) {
                 try {
                     if (isRGB) {
-                        colorModel = new ColorModelBuilder().create(sm);
+                        colorModel = new ColorModelBuilder().createRGB(sm);
                     } else {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
                     }
@@ -451,7 +451,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         final SampleDimension[] bands = range.select(sampleDimensions);
         Hashtable<String,Object> properties = null;
         if (stats != null) {
-            final Statistics[] as = new Statistics[range.getNumBands()];
+            final var as = new Statistics[range.getNumBands()];
             Arrays.fill(as, stats);
             properties = new Hashtable<>();
             properties.put(PlanarImage.STATISTICS_KEY, as);

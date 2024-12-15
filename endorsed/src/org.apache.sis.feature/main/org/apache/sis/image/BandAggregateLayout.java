@@ -101,7 +101,7 @@ final class BandAggregateLayout extends ImageLayout {
      *
      * @see #getMinTile()
      */
-    final int minTileX, minTileY;
+    private final int minTileX, minTileY;
 
     /**
      * Whether to use the preferred tile size exactly as specified, without trying to compute a better size.

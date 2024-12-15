@@ -29,13 +29,11 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.privy.Numerics;
@@ -260,24 +258,6 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
         }
         this.sources = sources;                     // Note: null value does not have same meaning as empty array.
         reference = new ComputedTiles(this, ws);    // Create cleaner last after all arguments have been validated.
-    }
-
-    /**
-     * Ensures that a user supplied color model is compatible with the sample model.
-     * This is a helper method for argument validation in sub-classes constructors.
-     *
-     * @param  colors  the color model to validate. Can be {@code null}.
-     * @throws IllegalArgumentException if the color model is incompatible.
-     */
-    final void ensureCompatible(final ColorModel colors) {
-        final String reason = verifyCompatibility(sampleModel, colors);
-        if (reason != null) {
-            String message = Resources.format(Resources.Keys.IncompatibleColorModel);
-            if (!reason.isEmpty()) {
-                message = message + ' ' + Errors.format(Errors.Keys.IllegalValueForProperty_2, Classes.getShortClassName(colors), reason);
-            }
-            throw new IllegalArgumentException(message);
-        }
     }
 
     /**
@@ -530,6 +510,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                      * and `releaseWritableTile(…)` method calls.
                      */
                     int min;
+                    @SuppressWarnings("LocalVariableHidesMemberVariable")
                     final WritableRenderedImage destination = this.destination;     // Protect from change (paranoiac).
                     final boolean writeInDestination = (destination != null)
                             && (tileX >= (min = destination.getMinTileX()) && tileX < min + destination.getNumXTiles())
@@ -848,7 +829,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      */
     final boolean equalsBase(final Object object) {
         if (object != null && getClass().equals(object.getClass())) {
-            final ComputedImage other = (ComputedImage) object;
+            final var other = (ComputedImage) object;
             return Arrays .equals(sources,     other.sources) &&
                    Objects.equals(destination, other.destination) &&
                    sampleModel.equals(other.sampleModel);

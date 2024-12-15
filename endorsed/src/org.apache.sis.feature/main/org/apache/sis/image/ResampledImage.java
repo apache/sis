@@ -524,6 +524,7 @@ public class ResampledImage extends ComputedImage {
      * @return names of all recognized properties, or {@code null} if none.
      */
     @Override
+    @SuppressWarnings("StringEquality")
     public String[] getPropertyNames() {
         final String[] inherited = getSource().getPropertyNames();
         final String[] names = {

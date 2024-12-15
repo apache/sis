@@ -69,7 +69,7 @@ abstract class ImageAdapter extends PlanarImage {
     @Override
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public final Vector<RenderedImage> getSources() {
-        final Vector<RenderedImage> sources = new Vector<>(1);
+        final var sources = new Vector<RenderedImage>(1);
         sources.add(source);
         return sources;
     }
@@ -180,7 +180,7 @@ abstract class ImageAdapter extends PlanarImage {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(100);
+        final var buffer = new StringBuilder(100);
         final Class<?> subtype = appendStringContent(buffer.append('['));
         return buffer.insert(0, subtype.getSimpleName()).append(" on ").append(source).append(']').toString();
     }

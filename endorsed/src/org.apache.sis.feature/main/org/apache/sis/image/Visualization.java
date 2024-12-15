@@ -314,10 +314,13 @@ final class Visualization extends ResampledImage {
                     initialized = builder.initialize(sourceCM);
                     if (!initialized) {
                         if (coloredSource instanceof RecoloredImage) {
-                            final RecoloredImage colored = (RecoloredImage) coloredSource;
-                            builder.initialize(colored.minimum, colored.maximum, sourceSM.getDataType());
-                            initialized = true;
-                        } else {
+                            final var colored = (RecoloredImage) coloredSource;
+                            if (colored.minimum < colored.maximum) {    // Do not execute if values are NaN.
+                                builder.initialize(colored.minimum, colored.maximum, sourceSM.getDataType());
+                                initialized = true;
+                            }
+                        }
+                        if (!initialized) {
                             initialized = builder.initialize(sourceSM, visibleBand);
                         }
                     }

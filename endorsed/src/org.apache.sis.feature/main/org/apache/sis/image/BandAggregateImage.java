@@ -168,11 +168,13 @@ class BandAggregateImage extends MultiSourceImage {
      *
      * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
      * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
+     * @param  parallel   whether parallel computation is allowed.
      */
     private BandAggregateImage(final BandAggregateLayout layout, final Colorizer colorizer,
                                final boolean allowSharing, final boolean parallel)
     {
-        super(layout, colorizer, parallel);
+        super(layout.filteredSources, layout.domain, layout.getMinTile(),
+              layout.sampleModel, layout.createColorModel(colorizer), parallel);
         this.allowSharing = allowSharing;
     }
 

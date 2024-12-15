@@ -345,7 +345,7 @@ public final class BandAggregateArgument<S> {
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     private void validate(final Function<S, List<SampleDimension>> getter, final ToIntFunction<S> counter) {
-        final HashMap<Integer,int[]> identityPool = new HashMap<>();
+        final var identityPool = new HashMap<Integer,int[]>();
         numBandsPerSource = new int[sources.length];
 next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may change during the loop.
             S source;

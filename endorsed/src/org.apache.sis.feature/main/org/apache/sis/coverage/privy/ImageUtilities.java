@@ -612,6 +612,20 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * Converts tile indices from the specified source image to the specified target image.
+     *
+     * @param  source  image for which tile indices are given.
+     * @param  tartet  image for which tile indices are desired.
+     * @param  tiles   ranges of indices of tiles in the source image.
+     * @return ranges of indices of tiles in the target image.
+     */
+    public static Rectangle convertTileIndices(RenderedImage source, RenderedImage target, Rectangle tiles) {
+        Rectangle pixels = tilesToPixels(source, tiles);
+        clipBounds(target, pixels);
+        return pixelsToTiles(target, pixels);
+    }
+
+    /**
      * If scale and shear coefficients are close to integers, replaces their current values by their rounded values.
      * The scale and shear coefficients are handled in a "all or nothing" way; either all of them or none are rounded.
      * The translation terms are handled separately, provided that the scale and shear coefficients have been rounded.

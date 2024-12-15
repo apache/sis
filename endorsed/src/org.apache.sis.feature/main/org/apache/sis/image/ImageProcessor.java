@@ -170,6 +170,15 @@ public class ImageProcessor implements Cloneable {
     private ImageLayout layout;
 
     /**
+     * Whether the processor is allowed to change the tile size. This configuration is relevant
+     * only for operations taking a {@link SampleModel} in argument, which implies a tile size.
+     *
+     * @see Resizing#CHANGE_TILING
+     * @see #setImageResizingPolicy(Resizing)
+     */
+    private boolean autoTileSize;
+
+    /**
      * Whether {@code ImageProcessor} can produce an image of different size compared to requested size.
      * An image may be resized if the requested size cannot be subdivided into tiles of reasonable size.
      * For example if the image width is a prime number, there is no way to divide the image horizontally with
@@ -183,11 +192,20 @@ public class ImageProcessor implements Cloneable {
      */
     public enum Resizing {
         /**
-         * Image size is unmodified; the requested value is used unconditionally.
+         * Image size is unmodified, the requested value is used unconditionally.
          * It may result in big tiles (potentially a single tile for the whole image)
          * if the image size is not divisible by a tile size.
          */
         NONE,
+
+        /**
+         * The tile size can be modified, but not the image size. This resizing policy can
+         * be used with operations where a {@link SampleModel} argument implies a tile size.
+         * For other operations, this resizing policy is equivalent to {@link #NONE}.
+         *
+         * @since 1.5
+         */
+        CHANGE_TILING,
 
         /**
          * Image size can be increased. {@code ImageProcessor} will try to increase
@@ -398,7 +416,8 @@ public class ImageProcessor implements Cloneable {
      * @return the image resizing policy.
      */
     public synchronized Resizing getImageResizingPolicy() {
-        return layout.isBoundsAdjustmentAllowed ? Resizing.EXPAND : Resizing.NONE;
+        return layout.isBoundsAdjustmentAllowed ? Resizing.EXPAND :
+                autoTileSize ? Resizing.CHANGE_TILING : Resizing.NONE;
     }
 
     /**
@@ -410,6 +429,7 @@ public class ImageProcessor implements Cloneable {
         layout = (Objects.requireNonNull(policy) == Resizing.EXPAND)
                 ? ImageLayout.SIZE_ADJUST
                 : ImageLayout.DEFAULT;
+        autoTileSize = (policy == Resizing.CHANGE_TILING);
     }
 
     /**
@@ -933,6 +953,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.4
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage aggregateBands(final RenderedImage[] sources, final int[][] bandsPerSource) {
         ArgumentChecks.ensureNonEmpty("sources", sources);
         final Colorizer colorizer;
@@ -942,6 +963,83 @@ public class ImageProcessor implements Cloneable {
             parallel = executionMode != Mode.SEQUENTIAL;
         }
         return BandAggregateImage.create(sources, bandsPerSource, colorizer, true, true, parallel);
+    }
+
+    /**
+     * Creates a new image overlay or returns one of the given sources if equivalent.
+     * All source images shall have the same pixel coordinate system, but they may have different bounding boxes,
+     * tile sizes and tile indices. Images are drawn in reverse order: the last source image is drawn first, and
+     * the first source image is drawn last on top of all other images. The returned image may have less sources
+     * than the specified ones if this method determines that some sources will never be drawn.
+     * This method may return {@code sources[0]} directly.
+     *
+     * <p>All source images shall have the same number of bands (but not necessarily the same sample model).
+     * All source images should have equivalent color model, otherwise color consistency is not guaranteed.
+     * At least one image shall intersect the given bounds.</p>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} for specifying whether
+     *       this method is allowed to change the tile size implied by the given sample model.</li>
+     * </ul>
+     *
+     * @param  sources      the images to overlay. Null array elements are ignored.
+     * @param  bounds       range of pixel coordinates, or {@code null} for the union of all source images.
+     * @param  sampleModel  the sample model, of {@code null} for automatic.
+     * @param  colorModel   the color model, of {@code null} for automatic.
+     * @return the image overlay, or one of the given sources if only one is suitable.
+     * @throws IllegalArgumentException if there is an incompatibility between some source images
+     *         or if no image intersect the given bounds.
+     *
+     * @since 1.5
+     */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    public RenderedImage overlay(final RenderedImage[] sources, final Rectangle bounds,
+                                 final SampleModel sampleModel, final ColorModel colorModel)
+    {
+        ArgumentChecks.ensureNonEmpty("sources", sources);
+        final boolean parallel;
+        final boolean autoTileSize;
+        synchronized (this) {
+            autoTileSize = this.autoTileSize;
+            parallel = executionMode != Mode.SEQUENTIAL;
+        }
+        return ImageOverlay.create(sources, bounds, sampleModel, colorModel, autoTileSize | (bounds != null), parallel);
+    }
+
+    /**
+     * Reformats the given image with a different sample model.
+     * This operation <em>copies</em> the pixel values in a new image.
+     * Despite the copies being done on a tile-by-tile basis when each tile is  first requested,
+     * this is still a relatively costly operation compared to the usual Apache <abbr>SIS</abbr>
+     * approach of creating views as much as possible. Therefore, this method should be used only
+     * when necessary.
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} for specifying whether
+     *       this method is allowed to change the tile size implied by the given sample model.</li>
+     * </ul>
+     *
+     * @param  source       the images to reformat.
+     * @param  sampleModel  the desired sample model.
+     * @return the reformatted image.
+     *
+     * @since 1.5
+     */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    public RenderedImage reformat(final RenderedImage source, final SampleModel sampleModel) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
+        final boolean parallel;
+        final boolean autoTileSize;
+        synchronized (this) {
+            autoTileSize = this.autoTileSize;
+            parallel = executionMode != Mode.SEQUENTIAL;
+        }
+        return ImageOverlay.create(new RenderedImage[] {source}, null, sampleModel, null, autoTileSize, parallel);
     }
 
     /**
@@ -965,6 +1063,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.2
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage mask(final RenderedImage source, final Shape mask, final boolean maskInside) {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("mask",   mask);
@@ -1017,6 +1116,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.4
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
                                  MathTransform1D[] converters, final DataType targetType)
     {
@@ -1084,6 +1184,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @see GridCoverageProcessor#resample(GridCoverage, GridGeometry)
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage resample(RenderedImage source, final Rectangle bounds, MathTransform toSource) {
         ArgumentChecks.ensureNonNull("source",   source);
         ArgumentChecks.ensureNonNull("bounds",   bounds);
@@ -1389,6 +1490,7 @@ public class ImageProcessor implements Cloneable {
      * @return whether the other object is an image processor of the same class with the same configuration.
      */
     @Override
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final ImageProcessor other = (ImageProcessor) object;

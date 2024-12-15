@@ -38,6 +38,7 @@ import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.TileOpExecutor;
 import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.pending.jdk.JDK18;
 
 
@@ -160,6 +161,9 @@ public abstract class PlanarImage implements RenderedImage {
      * <var>value</var> = <var>integer</var> × <var>scale factor</var>, then the resolution is the scale factor.
      * This information can be used for choosing the number of fraction digits to show when writing sample values
      * in text format.
+     *
+     * <p><em>Resolution is not accuracy.</em>
+     * There is no guarantee that the data accuracy is as good as the resolution given by this property.</p>
      *
      * <p>Values should be instances of {@code double[]}.
      * The array length should be the number of bands. This property may be computed automatically during
@@ -463,7 +467,7 @@ public abstract class PlanarImage implements RenderedImage {
      * Copies an arbitrary rectangular region of this image to the supplied writable raster.
      * The region to be copied is determined from the bounds of the supplied raster.
      * The supplied raster must have a {@link SampleModel} that is compatible with this image.
-     * If the raster is {@code null}, an raster is created by this method.
+     * If the given raster is {@code null}, a new raster is created by this method.
      *
      * @param  raster  the raster to hold a copy of this image, or {@code null}.
      * @return the given raster if it was not-null, or a new raster otherwise.
@@ -528,6 +532,27 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
+     * Ensures that a user supplied color model is compatible with the sample model.
+     * This is a helper method for argument validation in sub-classes constructors.
+     *
+     * @param  sampleModel the sample model of this image.
+     * @param  colors  the color model to validate. Can be {@code null}.
+     * @throws IllegalArgumentException if the color model is incompatible.
+     */
+    static void ensureCompatible(final SampleModel sampleModel, final ColorModel colors) {
+        final String erroneous = verifyCompatibility(sampleModel, colors);
+        if (erroneous != null) {
+            String message = Resources.format(Resources.Keys.IncompatibleColorModel);
+            if (!erroneous.isEmpty()) {
+                String complement = Classes.getShortClassName(colors);
+                complement = Errors.format(Errors.Keys.IllegalValueForProperty_2, complement, erroneous);
+                message = Resources.concatenate(message, complement);
+            }
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    /**
      * Verifies if the color model is compatible with the sample model.
      * If the color model is incompatible, then this method returns the name of the mismatched property.
      * If the returned property is an empty string, then the mismatched property is unidentified.
@@ -537,7 +562,7 @@ public abstract class PlanarImage implements RenderedImage {
      * @return name of mismatched property (an empty string if unidentified),
      *         or {@code null} if the color model is null or is compatible.
      */
-    static String verifyCompatibility(final SampleModel sm, final ColorModel cm) {
+    private static String verifyCompatibility(final SampleModel sm, final ColorModel cm) {
         if (cm == null || cm.isCompatibleSampleModel(sm))  return null;
         if (cm.getTransferType()  != sm.getTransferType()) return "transferType";
         if (cm.getNumComponents() != sm.getNumBands())     return "numComponents";

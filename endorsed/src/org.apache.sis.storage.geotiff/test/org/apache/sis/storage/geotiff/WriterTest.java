@@ -237,7 +237,7 @@ public final class WriterTest extends TestCase {
     @Test
     public void testUntiledRGB() throws IOException, DataStoreException {
         initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 3, 1, 1);
-        image.setColorModel(new ColorModelBuilder().create(image.getSampleModel()));
+        image.setColorModel(new ColorModelBuilder().createRGB(image.getSampleModel()));
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.
@@ -338,11 +338,11 @@ public final class WriterTest extends TestCase {
          */
         short previousTag = 0;
         while (--tagCount >= 0) {
-            short   tag   = data.getShort();
-            short   type  = data.getShort();
-            long    count = isBigTIFF ? data.getLong() : data.getInt();
-            long    value = isBigTIFF ? data.getLong() : data.getInt();
-            Object  expected;       // The Number class will define the expected type.
+            short  tag   = data.getShort();
+            short  type  = data.getShort();
+            long   count = isBigTIFF ? data.getLong() : data.getInt();
+            long   value = isBigTIFF ? data.getLong() : data.getInt();
+            Object expected;       // The Number class will define the expected type.
             assertTrue(Short.toUnsignedInt(tag) > Short.toUnsignedInt(previousTag),
                        "Tags shall be sorted in increasing order.");
             expectedTags.remove(Integer.valueOf(tag));

@@ -126,7 +126,7 @@ class BandedSampleConverter extends WritableComputedImage {
         this.colorModel = colorModel;
         this.converters = converters;
         this.sampleDimensions = sampleDimensions;
-        ensureCompatible(colorModel);
+        ensureCompatible(sampleModel, colorModel);
         /*
          * Get an estimation of the resolution, arbitrarily looking in the middle of the range of values.
          * If the converters are linear (which is the most common case), the middle value does not matter
@@ -403,12 +403,11 @@ class BandedSampleConverter extends WritableComputedImage {
      * forwards the notification to it. Otherwise default implementation does nothing.
      */
     @Override
-    protected Disposable prefetch(final Rectangle tiles) {
+    protected Disposable prefetch(Rectangle tiles) {
         final RenderedImage source = getSource();
         if (source instanceof PlanarImage) {
-            final Rectangle pixels = ImageUtilities.tilesToPixels(this, tiles);
-            ImageUtilities.clipBounds(source, pixels);
-            return ((PlanarImage) source).prefetch(ImageUtilities.pixelsToTiles(source, pixels));
+            tiles = ImageUtilities.convertTileIndices(this, source, tiles);
+            return ((PlanarImage) source).prefetch(tiles);
         } else {
             return super.prefetch(tiles);
         }
