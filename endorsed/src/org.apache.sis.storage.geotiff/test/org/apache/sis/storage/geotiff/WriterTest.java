@@ -181,7 +181,8 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testUntiledGrayScale() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.BIG_ENDIAN, false, 1, 1, 1);
+        initialize(DataType.BYTE, ByteOrder.BIG_ENDIAN, false, 1, 1, 1,
+                   FormatModifier.ANY_TILE_SIZE);
         writeImage();
         verifyHeader(false, IOBase.BIG_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,              // One less tag because stripped layout.
@@ -199,7 +200,8 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testUntiledBigTIFF() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, FormatModifier.BIG_TIFF);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1,
+                   FormatModifier.ANY_TILE_SIZE, FormatModifier.BIG_TIFF);
         writeImage();
         verifyHeader(true, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.
@@ -218,7 +220,7 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testTiledGrayScale() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 3, 4);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 3, 4, FormatModifier.ANY_TILE_SIZE);
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS,
@@ -236,7 +238,7 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testUntiledRGB() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 3, 1, 1);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 3, 1, 1, FormatModifier.ANY_TILE_SIZE);
         image.setColorModel(new ColorModelBuilder().createRGB(image.getSampleModel()));
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
@@ -255,7 +257,7 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testGeoTIFF() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, FormatModifier.ANY_TILE_SIZE);
         createGridGeometry();
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);

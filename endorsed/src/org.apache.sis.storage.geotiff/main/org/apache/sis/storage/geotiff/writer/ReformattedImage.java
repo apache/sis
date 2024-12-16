@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff.writer;
 
 import java.util.function.Supplier;
+import java.awt.Dimension;
 import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
@@ -25,9 +26,12 @@ import java.awt.image.SampleModel;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.pending.jdk.JDK18;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.coverage.privy.SampleModelFactory;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 
 
@@ -35,11 +39,16 @@ import org.apache.sis.io.stream.HyperRectangleWriter;
  * An image prepared for writing in a TIFF file. The TIFF specification puts some restrictions on tile size
  * (must be a multiple of 16), and {@code HyperRectangleWriter} has some other restrictions on data layout.
  *
- * @todo Force tile size to multiple of 16.
- *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class ReformattedImage {
+    /**
+     * Divisor of tile sizes mandated by the TIFF specification.
+     * All tile sizes must be a multiple of this value.
+     * This constant must be a power of 2.
+     */
+    private static final int TILE_DIVISOR = 16;
+
     /**
      * Number of color bands before the extra bands. This number does not include the alpha channel,
      * which is considered an extra band in TIFF. This number does not apply to gray scale images,
@@ -71,14 +80,16 @@ public final class ReformattedImage {
      * The visible image will have at most 3 bands and should have no alpha channel.
      * If no change is needed, then the given image is used unchanged.
      *
-     * @param  image      the image to separate into visible, alpha and extra bands.
-     * @param  processor  supplier of the image processor to use if the image must be transformed.
+     * @param  image        the image to separate into visible, alpha and extra bands.
+     * @param  processor    supplier of the image processor to use if the image must be transformed.
+     * @param  anyTileSize  whether to disable the <abbr>TIFF</abbr> requirement that tile sizes are multiple of 16 pixels.
      */
-    public ReformattedImage(RenderedImage image, final Supplier<ImageProcessor> processor) {
+    public ReformattedImage(RenderedImage image, final Supplier<ImageProcessor> processor, final boolean anyTileSize) {
         int alphaBand = -1;
         boolean isAlphaPremultiplied = false;
         final int numBands = ImageUtilities.getNumBands(image);
         final int visibleBand = ImageUtilities.getVisibleBand(image);
+        final boolean banded;   // Whether to prefer `BandedSampleModel`.
         if (visibleBand >= 0) {
             /*
              * Indexed color model or gray scale image. This is conceptually a single band.
@@ -86,6 +97,7 @@ public final class ReformattedImage {
              * where only one band is shown. We need to order the visible band first.
              * All other bands will be extra samples.
              */
+            banded = true;
             singleBand = true;
             if (visibleBand != 0) {
                 final int[] bands = ArraysExt.range(0, numBands);
@@ -107,7 +119,9 @@ public final class ReformattedImage {
                     alphaBand = -1;
                 }
             }
-            singleBand = numBands < (alphaBand >= 0 ? 1 + NUM_COLOR_BANDS : NUM_COLOR_BANDS);
+            final int expected = (alphaBand < 0 ? NUM_COLOR_BANDS : NUM_COLOR_BANDS + 1);
+            banded = (numBands != expected);
+            singleBand = numBands < expected;
         }
         /*
          * Check if there is any extra samples. If yes, prepare an `extraSamples` array with all
@@ -126,8 +140,36 @@ public final class ReformattedImage {
          * If the image cannot be written directly, reformat. Because this operation
          * forces the copy of pixel values, it should be executed in last resort.
          */
-        if (!HyperRectangleWriter.Builder.isSupported(image.getSampleModel())) {
-            // TODO: reformat the image here.
+        boolean reformat = false;
+        SampleModel sm = image.getSampleModel();
+        if (!HyperRectangleWriter.Builder.isSupported(sm)) {
+            final var factory = new SampleModelFactory(sm);
+            if (factory.unpack(banded)) {
+                sm = factory.build();
+                reformat = true;
+            }
+        }
+        /*
+         * Force the image tile size to multiple of 16 pixels. This is a requirement of the TIFF specification.
+         * We can ignore this requirement when the image is untiled on the X axis, because in such case the SIS
+         * writer will write the image as strips instead of as tiles.
+         */
+        if (!anyTileSize && image.getNumXTiles() != 1) {
+            var tileSize = new Dimension(image.getTileWidth(), image.getTileHeight());
+            if (((tileSize.width | tileSize.height) & (TILE_DIVISOR - 1)) != 0) {
+                final int width  = JDK18.ceilDiv(image.getWidth(),  TILE_DIVISOR);
+                final int height = JDK18.ceilDiv(image.getHeight(), TILE_DIVISOR);
+                tileSize.width   = JDK18.ceilDiv(tileSize.width,    TILE_DIVISOR);
+                tileSize.height  = JDK18.ceilDiv(tileSize.height,   TILE_DIVISOR);
+                tileSize = new ImageLayout(tileSize, false).suggestTileSize(width, height, true);
+                tileSize.width  *= TILE_DIVISOR;
+                tileSize.height *= TILE_DIVISOR;
+                sm = sm.createCompatibleSampleModel(tileSize.width, tileSize.height);
+                reformat = true;
+            }
+        }
+        if (reformat) {
+            image = processor.get().reformat(image, sm);
         }
         exportable = image;
     }

@@ -135,6 +135,11 @@ final class Writer extends IOBase implements Flushable {
     private final boolean isBigTIFF;
 
     /**
+     * Whether to disable the <abbr>TIFF</abbr> requirement that tile sizes are multiple of 16 pixels.
+     */
+    private final boolean anyTileSize;
+
+    /**
      * Index of the image to write. This information is not needed by the writer, but is
      * needed by {@link WritableStore} for determining the "effectively added resource".
      */
@@ -182,6 +187,7 @@ final class Writer extends IOBase implements Flushable {
         super(store);
         this.output = output;
         isBigTIFF   = ArraysExt.contains(options, FormatModifier.BIG_TIFF);
+        anyTileSize = ArraysExt.contains(options, FormatModifier.ANY_TILE_SIZE);
         /*
          * Write the TIFF file header before first IFD. Stream position matter and must start at zero.
          * Note that it does not necessarily mean that the stream has no bytes before current position.
@@ -212,6 +218,7 @@ final class Writer extends IOBase implements Flushable {
     Writer(final Reader reader) throws IOException, DataStoreException {
         super(reader.store);
         isBigTIFF = (reader.intSizeExpansion != 0);
+        anyTileSize = false;
         try {
             output = new ChannelDataOutput(reader.input);
         } catch (ClassCastException e) {
@@ -287,9 +294,10 @@ final class Writer extends IOBase implements Flushable {
     public final long append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws IOException, DataStoreException
     {
+        final var exportable = new ReformattedImage(image, this::processor, anyTileSize);
         final TileMatrix tiles;
         try {
-            tiles = writeImageFileDirectory(new ReformattedImage(image, this::processor), grid, metadata, false);
+            tiles = writeImageFileDirectory(exportable, grid, metadata, false);
         } finally {
             largeTagData.clear();       // For making sure that there is no memory retention.
         }
