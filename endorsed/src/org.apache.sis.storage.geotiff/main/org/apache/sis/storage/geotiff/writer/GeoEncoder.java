@@ -34,6 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CartesianCS;
@@ -63,6 +64,7 @@ import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
+import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.base.MetadataFetcher;
 import org.apache.sis.storage.geotiff.base.UnitKey;
 import org.apache.sis.storage.geotiff.base.GeoKeys;
@@ -223,26 +225,31 @@ public final class GeoEncoder {
      * @throws ArithmeticException if a short value cannot be stored as an unsigned 16 bits integer.
      * @throws IncommensurableException if a measure uses an unexpected unit of measurement.
      * @throws IncompleteGridGeometryException if the grid geometry is incomplete.
+     * @throws IncompatibleResourceException if the grid geometry cannot be encoded.
      */
     public void write(final GridGeometry grid, final MetadataFetcher<?> metadata)
-                  throws FactoryException, IncommensurableException
+            throws FactoryException, IncommensurableException, IncompatibleResourceException
     {
         citation  = CollectionsExt.first(metadata.transformationDimension);
         isPoint   = CollectionsExt.first(metadata.cellGeometry) == CellGeometry.POINT;
         gridToCRS = MathTransforms.getMatrix(grid.getGridToCRS(isPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER));
         if (gridToCRS == null) {
-            warning(resources().getString(Resources.Keys.CanNotEncodeNonLinearModel), null);
+            String message = resources().getString(Resources.Keys.CanNotEncodeNonLinearModel);
+            throw new IncompatibleResourceException(message).addAspect("gridToCRS");
         }
         if (grid.isDefined(GridGeometry.CRS)) {
             fullCRS = grid.getCoordinateReferenceSystem();
             final CoordinateReferenceSystem crs = CRS.getHorizontalComponent(fullCRS);
-            if ((crs instanceof ProjectedCRS && writeCRS((ProjectedCRS) crs)) ||
-                (crs instanceof GeodeticCRS  && writeCRS((GeodeticCRS) crs, false)))
-            {
+            if (crs instanceof ProjectedCRS) {
+                writeCRS((ProjectedCRS) crs);
                 writeCRS(CRS.getVerticalComponent(fullCRS, true));
-            } else {
-                unsupportedType(fullCRS);
+            } else if (crs instanceof GeodeticCRS) {
+                writeCRS((GeodeticCRS) crs, false);
+                writeCRS(CRS.getVerticalComponent(fullCRS, true));
+            } else if (fullCRS instanceof EngineeringCRS && ReferencingUtilities.getDimension(fullCRS) == 2) {
                 writeModelType(GeoCodes.userDefined);
+            } else {
+                throw unsupportedType(fullCRS);
             }
         } else {
             writeModelType(GeoCodes.undefined);
@@ -270,8 +277,9 @@ public final class GeoEncoder {
      *
      * @param  crs  the CRS to write, or {@code null} if none.
      * @throws FactoryException if an error occurred while fetching an EPSG code.
+     * @throws IncompatibleResourceException if a unit of measurement cannot be encoded.
      */
-    private void writeCRS(final VerticalCRS crs) throws FactoryException {
+    private void writeCRS(final VerticalCRS crs) throws FactoryException, IncompatibleResourceException {
         if (crs != null) {
             hasVerticalAxis = true;
             if (writeEPSG(GeoKeys.Vertical, crs)) {
@@ -298,24 +306,25 @@ public final class GeoEncoder {
      *
      * @param  crs        the CRS to write.
      * @param  isBaseCRS  whether to write the base CRS of a projected CRS.
-     * @return whether this method has been able to write the CRS.
      * @throws FactoryException if an error occurred while fetching an EPSG code.
      * @throws IncommensurableException if a measure uses an unexpected unit of measurement.
+     * @throws IncompatibleResourceException if the <abbr>CRS</abbr> has an incompatible property.
      */
-    private boolean writeCRS(final GeodeticCRS crs, final boolean isBaseCRS) throws FactoryException, IncommensurableException {
+    private void writeCRS(final GeodeticCRS crs, final boolean isBaseCRS)
+            throws FactoryException, IncommensurableException, IncompatibleResourceException
+    {
         final short type;
         final CoordinateSystem cs = crs.getCoordinateSystem();
         addUnits(UnitKey.ANGULAR, cs);
         if (cs instanceof EllipsoidalCS) {
             type = GeoCodes.ModelTypeGeographic;
         } else if (isBaseCRS) {
-            warning(resources().getString(Resources.Keys.CanNotEncodeNonGeographicBase), null);
-            return false;
+            String message = resources().getString(Resources.Keys.CanNotEncodeNonGeographicBase);
+            throw new IncompatibleResourceException(message).addAspect("crs");
         } else if (cs instanceof CartesianCS) {
             type = GeoCodes.ModelTypeGeocentric;
         } else {
-            unsupportedType(cs);
-            return false;
+            throw unsupportedType(cs);
         }
         /*
          * Start writing GeoTIFF keys for the geodetic CRS, potentially followed by datum, prime meridian and ellipsoid
@@ -361,7 +370,6 @@ public final class GeoEncoder {
         } else if (isBaseCRS) {
             writeUnit(UnitKey.ANGULAR);         // Map projection parameters may need this unit.
         }
-        return true;
     }
 
     /**
@@ -371,23 +379,27 @@ public final class GeoEncoder {
      * @return whether this method has been able to write the CRS.
      * @throws FactoryException if an error occurred while fetching an EPSG or GeoTIFF code.
      * @throws IncommensurableException if a measure uses an unexpected unit of measurement.
+     * @throws IncompatibleResourceException if the <abbr>CRS</abbr> has an incompatible property.
      */
-    private boolean writeCRS(final ProjectedCRS crs) throws FactoryException, IncommensurableException {
-        if (!writeCRS(crs.getBaseCRS(), true)) {
-            return false;
-        }
+    private boolean writeCRS(final ProjectedCRS crs)
+            throws FactoryException, IncommensurableException, IncompatibleResourceException
+    {
+        writeCRS(crs.getBaseCRS(), true);
         if (writeEPSG(GeoKeys.ProjectedCRS, crs)) {
             writeName(GeoKeys.ProjectedCitation, null, crs);
             addUnits(UnitKey.PROJECTED, crs.getCoordinateSystem());
             final Conversion projection = crs.getConversionFromBase();
             if (writeEPSG(GeoKeys.Projection, projection)) {
                 final var method = projection.getMethod();
-                final short projCode = getGeoCode(method);
+                final short projCode = getGeoCode(0, method);
                 writeShort(GeoKeys.ProjMethod, projCode);
                 writeUnit(UnitKey.PROJECTED);
                 switch (projCode) {
-                    case GeoCodes.undefined:   missingValue(GeoKeys.ProjMethod); return true;
-                    case GeoCodes.userDefined: cannotEncode(0, name(method), null); break;
+                    case GeoCodes.userDefined:  // Should not happen.
+                    case GeoCodes.undefined: {
+                        missingValue(GeoKeys.ProjMethod);
+                        return true;
+                    }
                     /*
                      * TODO: GeoTIFF requirement 27.4 said that ProjectedCitationGeoKey shall be provided,
                      * But how? Using the same multiple-names convention ("GCS Name") as for geodetic CRS?
@@ -400,12 +412,12 @@ public final class GeoEncoder {
                 RuntimeException cause = null;
                 final var descriptor = p.getDescriptor();
                 if (p instanceof ParameterValue<?>) {
-                    final short key = getGeoCode(descriptor);
+                    final short key = getGeoCode(1, descriptor);
                     if (key != GeoCodes.undefined && key != GeoCodes.userDefined) {
                         final var pv = (ParameterValue<?>) p;
                         final UnitKey type = UnitKey.ofProjectionParameter(key);
                         if (type == UnitKey.LINEAR) {
-                            continue;                   // Skip the "cannot encode" warning.
+                            continue;                   // Skip the "cannot encode" error.
                         }
                         if (type != UnitKey.NULL) try {
                             final Unit<?> unit = units.getOrDefault(type, type.defaultUnit());
@@ -416,7 +428,7 @@ public final class GeoEncoder {
                         }
                     }
                 }
-                cannotEncode(1, name(descriptor), cause);
+                throw cannotEncode(1, name(descriptor), cause);
             }
         }
         return true;
@@ -428,18 +440,20 @@ public final class GeoEncoder {
      *
      * @param  main  the main kind of units expected in the coordinate system.
      * @param  cs    the coordinate system to analyze.
+     * @throws IncompatibleResourceException if the unit of measurement cannot be encoded.
      */
-    private void addUnits(final UnitKey main, final CoordinateSystem cs) {
+    private void addUnits(final UnitKey main, final CoordinateSystem cs) throws IncompatibleResourceException {
         for (int i = cs.getDimension(); --i >= 0;) {
             final Unit<?> unit = cs.getAxis(i).getUnit();
             final UnitKey type = main.validate(unit);
             if (type != null) {
                 final Unit<?> previous = units.putIfAbsent(type, unit);
                 if (previous != null && !previous.equals(unit)) {
-                    warning(errors().getString(Errors.Keys.HeterogynousUnitsIn_1, name(cs)), null);
+                    String message = errors().getString(Errors.Keys.HeterogynousUnitsIn_1, name(cs));
+                    throw new IncompatibleResourceException(message).addAspect("crs");
                 }
             } else {
-                cannotEncode(2, unit.toString(), null);
+                throw cannotEncode(2, unit.toString(), null).addAspect("unit");
             }
         }
     }
@@ -449,8 +463,9 @@ public final class GeoEncoder {
      * This method should be invoked only once per unit key.
      *
      * @param  key  identification of the unit to write.
+     * @throws IncompatibleResourceException if the unit of measurement cannot be encoded.
      */
-    private void writeUnit(final UnitKey key) {
+    private void writeUnit(final UnitKey key) throws IncompatibleResourceException {
         final Unit<?> unit = units.get(key);
         if (unit != null) {
             final short epsg = toShortEPSG(Units.getEpsgCode(unit, key.isAxis));
@@ -460,7 +475,7 @@ public final class GeoEncoder {
                 writeShort(key.codeKey, epsg);
                 writeDouble(key.scaleKey, Units.toStandardUnit(unit));
             } else {
-                cannotEncode(2, unit.toString(), null);
+                throw cannotEncode(2, unit.toString(), null).addAspect("unit");
             }
         }
     }
@@ -529,21 +544,26 @@ public final class GeoEncoder {
      * Fetches the GeoTIFF code of the given object. If {@code null}, returns {@link GeoCodes#undefined}.
      * If the object has no GeTIFF identifier, returns {@value GeoCodes#userDefined}.
      *
+     * @param  type    object type: 0 = operation method, 1 = parameter.
      * @param  object  the object for which to get the GeoTIFF code.
      * @return the GeoTIFF code, or {@link GeoCodes#undefined} or {@link GeoCodes#userDefined} if none.
      * @throws FactoryException if an error occurred while fetching the GeoTIFF code.
+     * @throws IncompatibleResourceException if the GeoTIFF identifier cannot be obtained.
      */
-    private short getGeoCode(final IdentifiedObject object) throws FactoryException {
+    private short getGeoCode(final int type, final IdentifiedObject object)
+            throws FactoryException, IncompatibleResourceException
+    {
         if (object == null) {
             return GeoCodes.undefined;
         }
         final Identifier id = IdentifiedObjects.getIdentifier(object, Citations.GEOTIFF);
+        NumberFormatException cause = null;
         if (id != null) try {
             return Short.parseShort(id.getCode());
         } catch (NumberFormatException e) {
-            warning(errors().getString(Errors.Keys.CanNotParse_1, IdentifiedObjects.toString(id)), e);
+            cause = e;
         }
-        return GeoCodes.userDefined;
+        throw cannotEncode(type, name(object), cause);
     }
 
     /**
@@ -770,38 +790,29 @@ public final class GeoEncoder {
      * @param  key  the GeoKey for which we found no value.
      */
     private void missingValue(final short key) {
-        warning(resources().getString(Resources.Keys.MissingGeoValue_1, GeoKeys.name(key)), null);
+        listeners.warning(resources().getString(Resources.Keys.MissingGeoValue_1, GeoKeys.name(key)));
     }
 
     /**
-     * Logs a warning saying that the given object cannot be encoded becasuse of its type.
+     * Prepares an exception saying that the given object cannot be encoded because of its type.
      *
      * @param  object  object that cannot be encoded.
      */
-    private void unsupportedType(final IdentifiedObject object) {
-        warning(resources().getString(Resources.Keys.CanNotEncodeObjectType_1, ReferencingUtilities.getInterface(object)), null);
+    private IncompatibleResourceException unsupportedType(final IdentifiedObject object) {
+        String message = resources().getString(Resources.Keys.CanNotEncodeObjectType_1, ReferencingUtilities.getInterface(object));
+        return new IncompatibleResourceException(message).addAspect("crs");
     }
 
     /**
-     * Logs a warning saying that an object of the given name cannot be encoded.
+     * Prepares an exception saying that an object of the given name cannot be encoded.
      *
      * @param  type   object type: 0 = operation method, 1 = parameter, 2 = unit of measurement.
      * @param  name   name of the object that cannot be encoded.
-     * @param  cause  the reason why a warning occurred, or {@code null} if none.
+     * @param  cause  the reason why an error occurred, or {@code null} if none.
      */
-    private void cannotEncode(final int type, final String name, final Exception cause) {
-        warning(resources().getString(Resources.Keys.CanNotEncodeNamedObject_2, type, name), cause);
-    }
-
-    /**
-     * Reports a warning that occurred while analyzing the CRS.
-     * This warning may prevent readers to reconstruct the CRS correctly.
-     *
-     * @param  message  the warning message.
-     * @param  cause    the reason why a warning occurred, or {@code null} if none.
-     */
-    private void warning(final String message, final Exception cause) {
-        listeners.warning(message, cause);
+    private IncompatibleResourceException cannotEncode(final int type, final String name, final Exception cause) {
+        String message = resources().getString(Resources.Keys.CanNotEncodeNamedObject_2, type, name);
+        return new IncompatibleResourceException(message, cause).addAspect("crs");
     }
 
     /**

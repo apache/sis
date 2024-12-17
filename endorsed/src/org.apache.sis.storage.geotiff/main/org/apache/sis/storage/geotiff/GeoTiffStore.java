@@ -683,8 +683,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @param  metadata  title, author and other information, or {@code null} if none.
      * @return the effectively added resource. Using this resource may cause data to be reloaded.
      * @throws ReadOnlyStorageException if this data store is read-only.
-     * @throws DataStoreException if the given {@code image} has a property which is not supported by this writer,
-     *         or if an error occurred while writing to the output stream.
+     * @throws IncompatibleResourceException if the given {@code image} has a property which is not supported by this writer.
+     * @throws DataStoreException if an error occurred while writing to the output stream.
      *
      * @since 1.5
      */
@@ -708,7 +708,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             }
             index = writer.imageIndex++;
         } catch (RasterFormatException | ArithmeticException e) {
-            throw new IncompatibleResourceException(cannotWrite(), e);
+            throw new IncompatibleResourceException(cannotWrite(), e).addAspect("raster");
         } catch (IOException e) {
             throw new DataStoreException(cannotWrite(), e);
         }

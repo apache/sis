@@ -65,48 +65,39 @@ import org.apache.sis.util.resources.Errors;
  *     <th>Keyword</th>
  *     <th>Value type</th>
  *     <th>Obligation</th>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code NCOLS}</td>
  *     <td>{@link java.lang.Integer}</td>
  *     <td>Mandatory</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code NROWS}</td>
  *     <td>{@link java.lang.Integer}</td>
  *     <td>Mandatory</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code XLLCORNER} or {@code XLLCENTER}</td>
  *     <td>{@link java.lang.Double}</td>
  *     <td>Mandatory</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code YLLCORNER} or {@code YLLCENTER}</td>
  *     <td>{@link java.lang.Double}</td>
  *     <td>Mandatory</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code CELLSIZE}</td>
  *     <td>{@link java.lang.Double}</td>
  *     <td>Mandatory, unless an alternative below is present</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code XCELLSIZE} and {@code YCELLSIZE}</td>
  *     <td>{@link java.lang.Double}</td>
  *     <td>Non-standard alternative to {@code CELLSIZE}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code XDIM} and {@code YDIM}</td>
  *     <td>{@link java.lang.Double}</td>
  *     <td>Non-standard alternative to {@code CELLSIZE}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code DX} and {@code DY}</td>
  *     <td>{@link java.lang.Double}</td>
  *     <td>Non-standard alternative to {@code CELLSIZE}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@code NODATA_VALUE}</td>
  *     <td>{@link java.lang.Double}</td>
  *     <td>Optional</td>

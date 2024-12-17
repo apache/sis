@@ -151,9 +151,9 @@ class WritableStore extends WorldFileStore {
     @Override
     public String[] getImageFormat(final boolean asMimeType) {
         if (writer != null) {
-            final ImageWriterSpi provider = writer.getOriginatingProvider();
-            if (provider != null) {
-                final String[] names = asMimeType ? provider.getMIMETypes() : provider.getFormatNames();
+            final ImageWriterSpi codec = writer.getOriginatingProvider();
+            if (codec != null) {
+                final String[] names = asMimeType ? codec.getMIMETypes() : codec.getFormatNames();
                 if (names != null) {
                     return names;
                 }
@@ -223,8 +223,8 @@ class WritableStore extends WorldFileStore {
          */
         if (index != MAIN_IMAGE || isMultiImages() > 1) {
             if (!getGridGeometry(MAIN_IMAGE).equals(gg, ComparisonMode.IGNORE_METADATA)) {
-                throw new IncompatibleResourceException(
-                        resources().getString(Resources.Keys.IncompatibleGridGeometry));
+                String message = resources().getString(Resources.Keys.IncompatibleGridGeometry);
+                throw new IncompatibleResourceException(message).addAspect("gridGeometry");
             }
         }
         /*
@@ -236,17 +236,17 @@ class WritableStore extends WorldFileStore {
         if (gg.isDefined(GridGeometry.GRID_TO_CRS)) try {
             gridToCRS = AffineTransforms2D.castOrCopy(gg.getGridToCRS(CELL_ANCHOR));
         } catch (IllegalArgumentException e) {
-            throw new IncompatibleResourceException(e.getLocalizedMessage(), e);
+            throw new IncompatibleResourceException(e.getLocalizedMessage(), e).addAspect("gridToCRS");
         }
-        final String suffix = super.setGridGeometry(index, gg);         // May throw `ArithmeticException`.
+        final String suffixWLD = super.setGridGeometry(index, gg);      // May throw `ArithmeticException`.
         /*
          * If the image is the main one, overwrite (possibly with same content) the previous auxiliary files.
          * Otherwise above checks should have ensured that the existing auxiliary files are applicable.
          */
-        if (suffix != null) {
+        if (suffixWLD != null) {
             if (gridToCRS == null) {
-                deleteAuxiliaryFile(suffix);
-            } else try (BufferedWriter out = writeAuxiliaryFile(suffix)) {
+                deleteAuxiliaryFile(suffixWLD);
+            } else try (BufferedWriter out = writeAuxiliaryFile(suffixWLD)) {
 writeCoeffs:    for (int i=0;; i++) {
                     final double c;
                     switch (i) {
@@ -264,7 +264,7 @@ writeCoeffs:    for (int i=0;; i++) {
             }
             writePRJ();
         }
-        return suffix;
+        return suffixWLD;
     }
 
     /**
@@ -311,7 +311,7 @@ writeCoeffs:    for (int i=0;; i++) {
             if (domain == null) {
                 domain = coverage.getGridGeometry();        // We are adding the first image.
             }
-            final WritableResource image = new WritableResource(this, listeners, numImages, domain);
+            final var image = new WritableResource(this, listeners, numImages, domain);
             image.write(coverage);
             components.added(image);        // Must be invoked only after above succeeded.
             numImages++;
@@ -335,7 +335,7 @@ writeCoeffs:    for (int i=0;; i++) {
     public synchronized void remove(final Resource resource) throws DataStoreException {
         Exception cause = null;
         if (resource instanceof WritableResource) {
-            final WritableResource image = (WritableResource) resource;
+            final var image = (WritableResource) resource;
             if (image.store() == this) try {
                 final int imageIndex = image.getImageIndex();
                 writer().removeImage(imageIndex);
@@ -376,6 +376,7 @@ writeCoeffs:    for (int i=0;; i++) {
      */
     @Override
     ImageReader prepareReader(ImageReader current) throws IOException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ImageWriter writer = this.writer;
         if (writer != null) {
             final Object output = writer.getOutput();

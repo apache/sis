@@ -173,7 +173,7 @@ public final class WritableGridCoverageSupport implements Localized {
      */
     public final GridCoverage update(final GridCoverage coverage) throws DataStoreException {
         final GridCoverage existing = target.read(null, null);
-        final CoverageCombiner combiner = new CoverageCombiner(existing);
+        final var combiner = new CoverageCombiner(existing);
         try {
             if (!combiner.acceptAll(coverage)) {
                 throw new ReadOnlyStorageException(canNotWrite());
@@ -196,14 +196,14 @@ public final class WritableGridCoverageSupport implements Localized {
     public final AffineTransform getAffineTransform2D(final GridExtent extent, final MathTransform gridToCRS)
             throws DataStoreException
     {
-        final TransformSeparator s = new TransformSeparator(gridToCRS);
+        final var s = new TransformSeparator(gridToCRS);
         try {
             s.addSourceDimensions(extent.getSubspaceDimensions(2));
             return AffineTransforms2D.castOrCopy(s.separate());
         } catch (FactoryException | CannotEvaluateException e) {
             throw new DataStoreReferencingException(canNotWrite(), e);
         } catch (IllegalArgumentException e) {
-            throw new IncompatibleResourceException(canNotWrite(), e);
+            throw new IncompatibleResourceException(canNotWrite(), e).addAspect("gridToCRS");
         }
     }
 

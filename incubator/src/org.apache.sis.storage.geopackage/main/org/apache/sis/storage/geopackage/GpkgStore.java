@@ -371,7 +371,7 @@ public class GpkgStore extends SQLStore implements WritableAggregate {
          * Note: Geopackage requires that each feature table has exactly one geometry column,
          * while SQLStore accepts any number of geometry columns (including zero).
          */
-        throw new IncompatibleResourceException("Unsupported resource type");
+        throw new IncompatibleResourceException("Unsupported resource type").addAspect("class");
     }
 
     /**

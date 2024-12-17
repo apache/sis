@@ -131,7 +131,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
         }
         final AffineTransform at = h.getAffineTransform2D(gg.getExtent(), gridToCRS);
         if (at.getShearX() != 0 || at.getShearY() != 0) {
-            throw new IncompatibleResourceException(h.rotationNotSupported(AsciiGridStoreProvider.NAME));
+            throw new IncompatibleResourceException(h.rotationNotSupported(AsciiGridStoreProvider.NAME)).addAspect("gridToCRS");
         }
         double scaleX =  at.getScaleX();
         double scaleY = -at.getScaleY();
@@ -144,7 +144,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
              * TODO: future version could support other signs, provided that
              * we implement `PixelIterator` for other `SequenceType` values.
              */
-            throw new IncompatibleResourceException(h.canNotWrite());
+            throw new IncompatibleResourceException(h.canNotWrite()).addAspect("gridToCRS");
         }
         header.put(xll, x);
         header.put(yll, y);

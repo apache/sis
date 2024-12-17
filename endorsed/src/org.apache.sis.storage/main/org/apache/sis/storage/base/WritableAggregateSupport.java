@@ -93,7 +93,7 @@ public final class WritableAggregateSupport implements Localized {
         if (Objects.requireNonNull(resource) instanceof GridCoverageResource) {
             return (GridCoverageResource) resource;
         }
-        throw new IncompatibleResourceException(message(GridCoverageResource.class, resource));
+        throw new IncompatibleResourceException(message(GridCoverageResource.class, resource)).addAspect("class");
     }
 
     /**
