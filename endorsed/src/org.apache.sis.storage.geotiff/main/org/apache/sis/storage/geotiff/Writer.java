@@ -146,13 +146,14 @@ final class Writer extends IOBase implements Flushable {
     int imageIndex;
 
     /**
-     * Offset where to write the next image, or {@code null} if writing a mandatory image (the first one).
+     * Offset where to write the offset of current image, or {@code null} when writing the first image of the file.
      * If null, the IFD offset is assumed already written and the {@linkplain #output} already at that position.
-     * Otherwise the value at the specified offset should be zero and will be updated if a new image is appended.
+     * Otherwise, the value at the specified offset is initially zero and will be updated after it become known.
      *
-     * @see #seekToNextImage()
+     * <p>After the image has been successfully written, this pointer is replaced by the pointer where the next
+     * image (if any) can be appended.</p>
      */
-    private UpdatableWrite<?> nextIFD;
+    private UpdatableWrite<?> currentIFD;
 
     /**
      * All values that couldn't be written immediately.
@@ -228,13 +229,13 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * Prepares the writer to write after the last images.
+     * Prepares the writer to write after the last image.
      *
      * @param  reader  the reader of images.
      */
     final void moveAfterExisting(final Reader reader) throws IOException, DataStoreException {
         Class<? extends Number> type = isBigTIFF ? Long.class : Integer.class;
-        nextIFD = UpdatableWrite.ofZeroAt(reader.offsetOfWritableIFD(), type);
+        currentIFD = UpdatableWrite.ofZeroAt(reader.offsetOfWritableIFD(), type);
         imageIndex = reader.getImageCacheSize();
     }
 
@@ -295,37 +296,46 @@ final class Writer extends IOBase implements Flushable {
             throws IOException, DataStoreException
     {
         final var exportable = new ReformattedImage(image, this::processor, anyTileSize);
-        final TileMatrix tiles;
+        /*
+         * Offset where the image IFD will start. The current version appends the new image at the end of file.
+         * A future version could perform a more extensive search for free space in the middle of the file.
+         * It could be useful when images have been deleted.
+         */
+        final long offsetIFD = output.length();
+        if (currentIFD != null) {
+            currentIFD.setAsLong(offsetIFD);
+            writeOrQueue(currentIFD);
+            output.seek(offsetIFD);
+        }
+        /*
+         * Write the Image File Directory (IFD) followed by the raster data.
+         */
         try {
-            tiles = writeImageFileDirectory(exportable, grid, metadata, false);
-        } finally {
-            largeTagData.clear();       // For making sure that there is no memory retention.
+            final TileMatrix tiles;
+            try {
+                tiles = writeImageFileDirectory(exportable, grid, metadata, false);
+            } finally {
+                largeTagData.clear();       // For making sure that there is no memory retention.
+            }
+            tiles.writeRasters(output);
+            wordAlign(output);
+            tiles.writeOffsetsAndLengths(output);
+            flush();
+            currentIFD = tiles.nextIFD;     // Set only after the operation succeeded.
+        } catch (Throwable e) {
+            try {
+                deferredWrites.clear();
+                output.truncate(offsetIFD);
+                if (currentIFD != null) {
+                    currentIFD.setAsLong(0);
+                    currentIFD.update(output);
+                }
+            } catch (Throwable more) {
+                e.addSuppressed(more);
+            }
+            throw e;
         }
-        tiles.writeRasters(output);
-        wordAlign(output);
-        tiles.writeOffsetsAndLengths(output);
-        return tiles.offsetIFD;
-    }
-
-    /**
-     * Sets the {@linkplain #output} position to where to write the next image.
-     *
-     * @return offset where the image IFD will start. This is the {@link #output} position.
-     *
-     * @todo Current version append the new image at the end of file. A future version could perform a more extensive
-     *       search for free space in the middle of the file. It could be useful when images have been deleted.
-     */
-    private long seekToNextImage() throws IOException {
-        if (nextIFD == null) {
-            // `output` is already at the right position.
-            return output.getStreamPosition();
-        }
-        final long position = output.length();
-        nextIFD.setAsLong(position);
-        writeOrQueue(nextIFD);
-        output.seek(position);
-        nextIFD = null;
-        return position;
+        return offsetIFD;
     }
 
     /**
@@ -410,14 +420,13 @@ final class Writer extends IOBase implements Flushable {
          * If the image has any unsupported feature, the exception should have been thrown before this point.
          * Now start writing the entries. The entries in an IFD must be sorted in ascending order by tag code.
          */
-        output.flush();             // Makes room in the buffer for increasing our ability to modify past values.
+        output.flush();       // Make room in the buffer for increasing our ability to modify previous values.
         largeTagData.clear();
-        final long offsetIFD = seekToNextImage();
         final UpdatableWrite<?> tagCountWriter =
                 isBigTIFF ? UpdatableWrite.of(output, (long)  numberOfTags)
                           : UpdatableWrite.of(output, (short) numberOfTags);
 
-        final var tiling = new TileMatrix(image.exportable, numPlanes, bitsPerSample, offsetIFD,
+        final var tiling = new TileMatrix(image.exportable, numPlanes, bitsPerSample,
                                           compression.method, compression.level, compression.predictor);
         /*
          * Reminder: TIFF tags should be written in increasing numerical order.
@@ -472,7 +481,7 @@ final class Writer extends IOBase implements Flushable {
          */
         tagCountWriter.setAsLong(numberOfTags);
         writeOrQueue(tagCountWriter);
-        nextIFD = writeOffset(0);
+        tiling.nextIFD = writeOffset(0);
         for (final TagValue tag : largeTagData) {
             UpdatableWrite<?> offset = tag.writeHere(output);
             if (offset != null) deferredWrites.add(offset);
@@ -864,18 +873,6 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * Writes deferred values immediately to the output stream.
-     *
-     * @throws IOException if an error occurred while writing deferred data.
-     */
-    private void flushDeferredWrites() throws IOException {
-        UpdatableWrite<?> change;
-        while ((change = deferredWrites.pollFirst()) != null) {
-            change.update(output);
-        }
-    }
-
-    /**
      * Sends to the writable channel any information that are still in buffers.
      * This method does not flush the writable channel itself.
      *
@@ -883,8 +880,11 @@ final class Writer extends IOBase implements Flushable {
      */
     @Override
     public void flush() throws IOException {
-        flushDeferredWrites();
-        output.flush();
+        UpdatableWrite<?> change;
+        while ((change = deferredWrites.pollFirst()) != null) {
+            change.update(output);
+        }
+        output.flush();     // Flush buffer → channel, but not channel → disk.
     }
 
     /**

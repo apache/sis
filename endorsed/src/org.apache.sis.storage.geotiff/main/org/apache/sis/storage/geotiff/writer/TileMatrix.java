@@ -33,6 +33,7 @@ import java.awt.image.DataBufferDouble;
 import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import org.apache.sis.image.DataType;
+import org.apache.sis.io.stream.UpdatableWrite;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 import org.apache.sis.storage.DataStoreException;
@@ -51,9 +52,10 @@ import org.apache.sis.pending.jdk.JDK18;
  */
 public final class TileMatrix {
     /**
-     * Offset in {@link ChannelDataOutput} where the IFD starts.
+     * Where the next image will be written.
+     * This information is saved for the caller but not used by this class.
      */
-    public final long offsetIFD;
+    public UpdatableWrite<?> nextIFD;
 
     /**
      * The images to write.
@@ -121,17 +123,14 @@ public final class TileMatrix {
      * @param image             the image to write.
      * @param numPlanes         the number of banks (plane in TIFF terminology).
      * @param bitsPerSample     number of bits per sample to write.
-     * @param offsetIFD         offset in {@link ChannelDataOutput} where the IFD starts.
      * @param compression       the compression method to apply.
      * @param compressionLevel  compression level (0-9), or -1 for the default.
      * @param predictor         the predictor to apply before to compress data.
      */
     public TileMatrix(final RenderedImage image, final int numPlanes, final int[] bitsPerSample,
-                      final long offsetIFD, final Compression compression, final int compressionLevel,
-                      final Predictor predictor)
+                      final Compression compression, final int compressionLevel, final Predictor predictor)
     {
         final int pixelSize, numArrays;
-        this.offsetIFD        = offsetIFD;
         this.numPlanes        = numPlanes;
         this.image            = image;
         this.compression      = compression;

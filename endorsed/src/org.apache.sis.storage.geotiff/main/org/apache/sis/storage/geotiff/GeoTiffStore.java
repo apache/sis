@@ -699,7 +699,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             final long offsetIFD;
             try {
                 offsetIFD = writer.append(image, grid, metadata);
-                writer.flush();
             } finally {
                 writer.synchronize(reader, true);
             }

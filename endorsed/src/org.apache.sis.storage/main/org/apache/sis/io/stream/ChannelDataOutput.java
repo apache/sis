@@ -788,6 +788,34 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     }
 
     /**
+     * Truncates the stream to the given position. If the given size is greater than the current stream size,
+     * then this method does nothing. Otherwise this method set the stream size to the given size and, if the
+     * current position is greater than the new size, also set the stream to that position.
+     *
+     * @param  size  the position where to truncate.
+     * @throws IOException if the stream cannot be truncated to the given position.
+     */
+    public final void truncate(final long size) throws IOException {
+        if (channel instanceof SeekableByteChannel) {
+            // Unconditional truncate because more data may exist after current position.
+            ((SeekableByteChannel) channel).truncate(toSeekableByteChannelPosition(size));
+            if (size <= bufferOffset) {
+                bufferOffset = size;
+                bitPosition = 0;
+                buffer.limit(0);
+                return;
+            }
+        }
+        final long p = Math.subtractExact(size, bufferOffset);
+        if (p >= 0 && p <= buffer.limit()) {
+            buffer.limit((int) p);
+            bitPosition = 0;
+        } else {
+            throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
+        }
+    }
+
+    /**
      * Moves to the given position in this stream.
      * If the given position is greater than the stream length, then the values of all bytes between
      * the previous stream length and the given position are unspecified. The limit is unchanged.
