@@ -536,12 +536,12 @@ final class ImageFileDirectory extends DataCube {
     Object addEntry(final short tag, final Type type, final long count) throws Exception {
         switch (tag) {
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Essential information for being able to read the image at least as grayscale.       ////
-            ////    In Java2D, following information are needed for building the SampleModel.           ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔═════════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                     ║
+            //  ║    Essential information for being able to read the image at least as grayscale.    ║
+            //  ║    In Java2D, following information are needed for building the SampleModel.        ║
+            //  ║                                                                                     ║
+            //  ╚═════════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * How the components of each pixel are stored.
@@ -644,12 +644,12 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Information that defines how the sample values are organized (their layout).        ////
-            ////    In Java2D, following information are needed for building the SampleModel.           ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔═══════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                   ║
+            //  ║    Information that define how the sample values are organized (their layout).    ║
+            //  ║    In Java2D, following information are needed for building the SampleModel.      ║
+            //  ║                                                                                   ║
+            //  ╚═══════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * Compression scheme used on the image data.
@@ -746,12 +746,12 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Information related to the color palette or the meaning of sample values.           ////
-            ////    In Java2D, following information are needed for building the ColorModel.            ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔═════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                 ║
+            //  ║    Information related to the color palette or the meaning of sample values.    ║
+            //  ║    In Java2D, following information are needed for building the ColorModel.     ║
+            //  ║                                                                                 ║
+            //  ╚═════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * The color space of the image data.
@@ -800,11 +800,11 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Information useful for defining the image role in a multi-images context.           ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔═════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                 ║
+            //  ║    Information useful for defining the image role in a multi-images context.    ║
+            //  ║                                                                                 ║
+            //  ╚═════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * A general indication of the kind of data contained in this subfile, mainly useful when there
@@ -836,11 +836,11 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Information related to the Coordinate Reference System and the bounding box.        ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔════════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                    ║
+            //  ║    Information related to the Coordinate Reference System and the bounding box.    ║
+            //  ║                                                                                    ║
+            //  ╚════════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * References the "GeoKeys" needed for building the Coordinate Reference System.
@@ -928,13 +928,13 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Metadata for discovery purposes, conditions of use, etc.                            ////
-            ////    Those metadata are not "critical" information for reading the image.                ////
-            ////    Should not write anything under `metadata/contentInfo` node.                        ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                            ║
+            //  ║    Metadata for discovery purposes, conditions of use, etc.                ║
+            //  ║    Those metadata are not "critical" information for reading the image.    ║
+            //  ║    Should not write anything under `metadata/contentInfo` node.            ║
+            //  ║                                                                            ║
+            //  ╚════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * The name of the document from which this image was scanned.
@@ -1105,11 +1105,11 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Defined by TIFF specification but currently ignored.                                ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔════════════════════════════════════════════════════════════╗
+            //  ║                                                            ║
+            //  ║    Defined by TIFF specification but currently ignored.    ║
+            //  ║                                                            ║
+            //  ╚════════════════════════════════════════════════════════════╝
 
             /*
              * For each string of contiguous unused bytes in a TIFF file, the number of bytes and the byte offset
@@ -1127,11 +1127,11 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Extensions defined by DGIWG or GDAL.                                                ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔════════════════════════════════════════════╗
+            //  ║                                            ║
+            //  ║    Extensions defined by DGIWG or GDAL.    ║
+            //  ║                                            ║
+            //  ╚════════════════════════════════════════════╝
 
             case Tags.GEO_METADATA:
             case Tags.GDAL_METADATA: {

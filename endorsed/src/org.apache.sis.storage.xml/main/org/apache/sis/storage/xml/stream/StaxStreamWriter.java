@@ -195,11 +195,11 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
 
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                ////////
-    ////////                Convenience methods for subclass implementations                ////////
-    ////////                                                                                ////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //  ╔════════════════════════════════════════════════════════════════════════════════╗
+    //  ║                                                                                ║
+    //  ║                Convenience methods for subclass implementations                ║
+    //  ║                                                                                ║
+    //  ╚════════════════════════════════════════════════════════════════════════════════╝
 
     /**
      * Writes a new element with the given value and no attribute.

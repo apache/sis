@@ -188,11 +188,11 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
 
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                ////////
-    ////////                Convenience methods for subclass implementations                ////////
-    ////////                                                                                ////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //  ╔════════════════════════════════════════════════════════════════════════════════╗
+    //  ║                                                                                ║
+    //  ║                Convenience methods for subclass implementations                ║
+    //  ║                                                                                ║
+    //  ╚════════════════════════════════════════════════════════════════════════════════╝
 
     /**
      * Returns a XML stream reader over only a portion of the document, from given position inclusive

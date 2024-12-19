@@ -136,9 +136,9 @@ final class Visualization extends ResampledImage {
         /** Band to make visible among the remaining {@value #NUM_BANDS} bands. */
         private static final int VISIBLE_BAND = 0;
 
-        ////  ┌─────────────────────────────────────┐
-        ////  │ Arguments given by user             │
-        ////  └─────────────────────────────────────┘
+        //  ┌─────────────────────────────────────┐
+        //  │ Arguments given by user             │
+        //  └─────────────────────────────────────┘
 
         /** Pixel coordinates of the visualization image, or {@code null} if same as {@link #source} image. */
         private Rectangle bounds;
@@ -152,9 +152,9 @@ final class Visualization extends ResampledImage {
         /** Description of {@link #source} bands, or {@code null} if none. */
         private SampleDimension[] sampleDimensions;
 
-        ////  ┌─────────────────────────────────────┐
-        ////  │ Given by ImageProcesor.configure(…) │
-        ////  └─────────────────────────────────────┘
+        //  ┌─────────────────────────────────────┐
+        //  │ Given by ImageProcesor.configure(…) │
+        //  └─────────────────────────────────────┘
 
         /** Computer of tile size. */
         ImageLayout layout;
@@ -171,9 +171,9 @@ final class Visualization extends ResampledImage {
         /** Values of {@value #POSITIONAL_ACCURACY_KEY} property, or {@code null} if none. */
         Quantity<?>[] positionalAccuracyHints;
 
-        ////  ┌─────────────────────────────────────┐
-        ////  │ Computed by `create(…)`             │
-        ////  └─────────────────────────────────────┘
+        //  ┌─────────────────────────────────────┐
+        //  │ Computed by `create(…)`             │
+        //  └─────────────────────────────────────┘
 
         /** Transfer functions to apply on each band of the source image. */
         private MathTransform1D[] converters;

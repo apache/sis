@@ -252,11 +252,11 @@ public final class NTv2Test extends DatumShiftTestCase {
 
 
 
-    //////////////////////////////////////////////////
-    ////////                                  ////////
-    ////////        TEST FILE CREATION        ////////
-    ////////                                  ////////
-    //////////////////////////////////////////////////
+    //  ╔══════════════════════════════════╗
+    //  ║                                  ║
+    //  ║        TEST FILE CREATION        ║
+    //  ║                                  ║
+    //  ╚══════════════════════════════════╝
 
     /**
      * Writes a sub-grid of the given grid in pseudo-NTv2 format. This method is used only for creating the test file.

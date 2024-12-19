@@ -185,11 +185,11 @@ public final class NADCONTest extends DatumShiftTestCase {
 
 
 
-    //////////////////////////////////////////////////
-    ////////                                  ////////
-    ////////        TEST FILE CREATION        ////////
-    ////////                                  ////////
-    //////////////////////////////////////////////////
+    //  ╔══════════════════════════════════╗
+    //  ║                                  ║
+    //  ║        TEST FILE CREATION        ║
+    //  ║                                  ║
+    //  ╚══════════════════════════════════╝
 
     /**
      * Writes a sub-grid of the given grid in pseudo-NADCON ASCII format.

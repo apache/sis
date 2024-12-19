@@ -90,14 +90,14 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
 
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                        ////////
-    ////////    END OF SPECIAL CASES.                                               ////////
-    ////////                                                                        ////////
-    ////////    Implementation of IdentifierMap methods follow. Each method may     ////////
-    ////////    have a switch statement over the special cases declared above.      ////////
-    ////////                                                                        ////////
-    ////////////////////////////////////////////////////////////////////////////////////////
+    //  ╔════════════════════════════════════════════════════════════════════════╗
+    //  ║                                                                        ║
+    //  ║    END OF SPECIAL CASES.                                               ║
+    //  ║                                                                        ║
+    //  ║    Implementation of IdentifierMap methods follow. Each method may     ║
+    //  ║    have a switch statement over the special cases declared above.      ║
+    //  ║                                                                        ║
+    //  ╚════════════════════════════════════════════════════════════════════════╝
 
     /**
      * Returns {@code true} since this map support {@code put} and {@code remove} operations.

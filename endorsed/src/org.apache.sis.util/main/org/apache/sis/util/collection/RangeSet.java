@@ -1372,9 +1372,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    ////    List-like API - not usual Set API, but provided for efficiency.    ////
-    ///////////////////////////////////////////////////////////////////////////////
+    //  ╔═══════════════════════════════════════════════════════════════════════╗
+    //  ║    List-like API - not usual Set API, but provided for efficiency.    ║
+    //  ╚═══════════════════════════════════════════════════════════════════════╝
 
     /**
      * If the specified value is inside a range, returns the index of this range.

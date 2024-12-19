@@ -77,11 +77,11 @@ import org.apache.sis.math.Vector;
  */
 public final class GridGeometryBuilder extends GeoKeysLoader {
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    ////                                                                                ////
-    ////    Information to be set by ImageFileDirectory during GeoTIFF file parsing.    ////
-    ////                                                                                ////
-    ////////////////////////////////////////////////////////////////////////////////////////
+    //  ╔════════════════════════════════════════════════════════════════════════════════╗
+    //  ║                                                                                ║
+    //  ║    Information to be set by ImageFileDirectory during GeoTIFF file parsing.    ║
+    //  ║                                                                                ║
+    //  ╚════════════════════════════════════════════════════════════════════════════════╝
 
     /*
      * Fields inherited from `GeoKeysLoader`:
@@ -157,11 +157,11 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
 
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    ////                                                                                ////
-    ////    Information to be computed by GridGeometryBuilder based on above data.      ////
-    ////                                                                                ////
-    ////////////////////////////////////////////////////////////////////////////////////////
+    //  ╔════════════════════════════════════════════════════════════════════════════════╗
+    //  ║                                                                                ║
+    //  ║    Information to be computed by GridGeometryBuilder based on above data.      ║
+    //  ║                                                                                ║
+    //  ╚════════════════════════════════════════════════════════════════════════════════╝
 
     /**
      * Suggested value for a general description of the transformation form grid coordinates to "real world" coordinates.
