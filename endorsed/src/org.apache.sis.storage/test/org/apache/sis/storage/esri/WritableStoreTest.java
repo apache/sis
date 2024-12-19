@@ -130,7 +130,7 @@ public final class WritableStoreTest extends TestCase {
             final Path filePRJ = toPRJ(file);
             final StorageConnector sc = new StorageConnector(file);
             sc.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {StandardOpenOption.WRITE});
-            boolean deleted = false;
+            boolean deleted;
             try (WritableStore store = new WritableStore(null, sc)) {
                 store.write(coverage);
                 verifyContent(file);
@@ -170,11 +170,11 @@ public final class WritableStoreTest extends TestCase {
     @Test
     public void testWriteInMemory() throws DataStoreException {
         final GridCoverage coverage = createTestCoverage(null);
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (WritableStore store = new WritableStore(null, new StorageConnector(out))) {
+        final var output = new ByteArrayOutputStream();
+        try (WritableStore store = new WritableStore(null, new StorageConnector(output))) {
             store.write(coverage);
         }
-        final String text = new String(out.toByteArray(), StandardCharsets.US_ASCII).trim();
+        final String text = new String(output.toByteArray(), StandardCharsets.US_ASCII).trim();
         assertArrayEquals(getExpectedLines(), CharSequences.splitOnEOL(text));
     }
 }
