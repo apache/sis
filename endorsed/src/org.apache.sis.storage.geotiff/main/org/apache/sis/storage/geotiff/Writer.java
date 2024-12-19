@@ -39,11 +39,14 @@ import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.base.MetadataFetcher;
 import org.apache.sis.storage.geotiff.writer.TagValue;
@@ -57,6 +60,9 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Fraction;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.CannotEvaluateException;
 
 
 /**
@@ -403,9 +409,11 @@ final class Writer extends IOBase implements Flushable {
         };
         mf.accept(metadata);
         GeoEncoder geoKeys = null;
-        if (grid != null && grid.isDefined(GridGeometry.GRID_TO_CRS)) try {
+        if (grid != null) try {
             geoKeys = new GeoEncoder(store.listeners());
             geoKeys.write(grid, mf);
+        } catch (IncompleteGridGeometryException | CannotEvaluateException | TransformException e) {
+            throw new IncompatibleResourceException(e.getMessage(), e).addAspect("gridGeometry");
         } catch (FactoryException | IncommensurableException | RuntimeException e) {
             throw new DataStoreReferencingException(e.getMessage(), e);
         }
