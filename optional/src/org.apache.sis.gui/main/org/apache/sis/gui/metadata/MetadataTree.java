@@ -51,8 +51,6 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.logging.Logging;
-import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**
@@ -261,7 +259,7 @@ check:      if (data != null) {
     private static void applyChange(final ObservableValue<? extends TreeTable> property,
                                     final TreeTable oldValue, final TreeTable  newValue)
     {
-        final MetadataTree s = (MetadataTree) ((ContentProperty) property).getBean();
+        final var s = (MetadataTree) ((ContentProperty) property).getBean();
         if (s.propertyViewer != null) {
             s.propertyViewer.clear();
         }
@@ -335,7 +333,7 @@ check:      if (data != null) {
         final CharSequence value = getValue(cell, TableColumn.NAME);
         final String text;
         if (value instanceof InternationalString) {
-            final MetadataTree view = (MetadataTree) cell.getTreeTableView();
+            final var view = (MetadataTree) cell.getTreeTableView();
             text = ((InternationalString) value).toString(view.getLocale());
         } else {
             text = (value != null) ? value.toString() : null;
@@ -363,21 +361,20 @@ check:      if (data != null) {
          */
         @Override
         public ObservableValue<Object> call(final CellDataFeatures<TreeTable.Node, Object> cell) {
-            final MetadataTree view = (MetadataTree) cell.getTreeTableView();
+            final var view = (MetadataTree) cell.getTreeTableView();
             Object value = getValue(cell, view.valueSourceColumn);
             if (value instanceof IdentifiedObject) {
                 value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, getLocale());
             }
             try {
                 clear();
-                final StringBuilder buffer = (StringBuilder) out;
+                final var buffer = (StringBuilder) out;
                 buffer.setLength(0);
                 appendValue(value);
                 flush();
                 value = buffer.toString();
             } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
-                Logging.unexpectedException(LOGGER, Formatter.class, "call", e);
-                // Leave `value` as-is. It will be formatted using `Object.toString()`.
+                throw new AssertionError(e);
             }
             return new ReadOnlyObjectWrapper<>(value);
         }
@@ -401,7 +398,7 @@ check:      if (data != null) {
          * Creates a new row for the given tree table.
          */
         Row(final TreeTableView<TreeTable.Node> owner) {
-            final MetadataTree md = (MetadataTree) owner;
+            final var md = (MetadataTree) owner;
             final Resources localized = Resources.forLocale(md.getLocale());
             view = new MenuItem(localized.getString(Resources.Keys.View));
             copy = new MenuItem(localized.getString(Resources.Keys.Copy));

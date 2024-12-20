@@ -23,7 +23,7 @@
  * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 package org.apache.sis.gui.metadata;

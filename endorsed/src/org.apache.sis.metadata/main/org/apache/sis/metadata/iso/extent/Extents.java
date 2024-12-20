@@ -411,6 +411,7 @@ public final class Extents extends Static {
      *
      * @param  extent  the extent to convert to a vertical measurement range, or {@code null}.
      * @return a vertical measurement range created from the given extent, or {@code null} if none.
+     * @throws InvalidMetadataException if a vertical range contains a {@link Double#NaN} value.
      *
      * @since 0.4
      */
@@ -418,7 +419,7 @@ public final class Extents extends Static {
     public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
         MeasurementRange<Double> range = null;
         RealizationMethod selectedMethod = null;
-        if (extent != null) {
+        if (extent != null) try {
             for (final VerticalExtent element : nonNull(extent.getVerticalElements())) {
                 double min = element.getMinimumValue();
                 double max = element.getMaximumValue();
@@ -477,6 +478,8 @@ public final class Extents extends Static {
                 range = MeasurementRange.create(min, true, max, true, unit);
                 selectedMethod = method;
             }
+        } catch (IllegalArgumentException e) {
+            throw new InvalidMetadataException(e.toString(), e);
         }
         return range;
     }
