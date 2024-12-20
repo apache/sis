@@ -187,8 +187,8 @@ final class KeyPath implements Path {
      * with any number of occurrences of the {@link ClientFileSystem#separator} separator:
      *
      * <ul>
-     *   <li>{@code "S3://bucket/key"} (note that {@code "accessKey@bucket"} is not accepted)</li>
-     *   <li>{@code "/bucket/key"} (absolute path)</li>
+     *   <li>{@code "S3://bucket/file"} (note that {@code "accessKey@bucket"} is not accepted)</li>
+     *   <li>{@code "/bucket/file"} (absolute path)</li>
      *   <li>{@code "key"} (relative path)</li>
      * </ul>
      *
