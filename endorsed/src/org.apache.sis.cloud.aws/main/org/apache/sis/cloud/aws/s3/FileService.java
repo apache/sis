@@ -75,7 +75,7 @@ import org.apache.sis.util.collection.Containers;
  * instead of the data to access, and can be a global configuration for the server.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.2
  */
 public class FileService extends FileSystemProvider {
@@ -109,7 +109,8 @@ public class FileService extends FileSystemProvider {
 
     /**
      * The property for the secret access key (password).
-     * Values shall be instances of {@link Region}.
+     * Values shall should be instances of {@link Region} or
+     * strings {@linkplain Region#of(String) convertible} to region.
      * If not specified, the AWS SDK default mechanism searches for the first of the following:
      *
      * <ul>
@@ -188,7 +189,8 @@ public class FileService extends FileSystemProvider {
      *
      * <ul>
      *   <li>{@value #AWS_SECRET_ACCESS_KEY} with {@link String} value.</li>
-     *   <li>{@value #AWS_REGION} with {@link Region} value.</li>
+     *   <li>{@value #AWS_REGION} with {@link Region} value or a string
+     *     {@linkplain Region#of(String) convertible} to region.</li>
      * </ul>
      *
      * @param  uri         a URI of the form {@code "s3://accessKey@bucket/key"}.
@@ -207,7 +209,13 @@ public class FileService extends FileSystemProvider {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.MissingAccessKey_2, (accessKey == null) ? 0 : 1, uri));
         }
         final String separator = Containers.property(properties, SEPARATOR, String.class);
-        final Region region = Containers.property(properties, AWS_REGION, Region.class);
+        final Region region;
+        Object value = properties.get(AWS_REGION);
+        if (value instanceof String) {
+            region = Region.of((String) value);
+        } else {
+            region = Containers.property(properties, AWS_REGION, Region.class);
+        }
         final class Creator implements Function<String, ClientFileSystem> {
             /** Identifies if a new file system is created. */ boolean created;
 

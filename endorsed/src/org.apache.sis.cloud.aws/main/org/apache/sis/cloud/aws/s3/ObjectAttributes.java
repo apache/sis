@@ -252,8 +252,7 @@ final class ObjectAttributes implements BasicFileAttributeView {
             String[] keys = (String[]) CharSequences.split(attributes, ',');
             boolean isBasic = true;
             int count = 0;
-            for (int i=0; i<keys.length; i++) {
-                String key = keys[i];
+            for (final String key : keys) {
                 final int s = key.indexOf(':');
                 if (s >= 0) {
                     isBasic = NAME.regionMatches(true, 0, key, 0, s);
@@ -271,7 +270,7 @@ final class ObjectAttributes implements BasicFileAttributeView {
             /*
              * Now copy in the map all requested attributes.
              */
-            final Map<String,Object> map = new HashMap<>(8);
+            final var map = new HashMap<String,Object>(8);
             for (final String key : keys) {
                 final Object value;
                 switch (key) {
