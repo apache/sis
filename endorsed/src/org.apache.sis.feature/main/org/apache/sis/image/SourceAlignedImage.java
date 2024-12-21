@@ -18,6 +18,7 @@ package org.apache.sis.image;
 
 import java.util.Set;
 import java.util.Objects;
+import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
@@ -25,6 +26,7 @@ import java.awt.image.RenderedImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.coverage.privy.ImageUtilities;
 
 
 /**
@@ -167,6 +169,14 @@ abstract class SourceAlignedImage extends ComputedImage {
         names = ArraysExt.resize(names, n + append.length);
         System.arraycopy(names, n, append, 0, append.length);
         return names;
+    }
+
+    /**
+     * Delegates to source image if possible.
+     */
+    @Override
+    public Shape getValidArea() {
+        return ImageUtilities.getValidArea(getSource());
     }
 
     /**

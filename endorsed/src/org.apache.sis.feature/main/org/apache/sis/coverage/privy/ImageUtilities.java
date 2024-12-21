@@ -18,6 +18,7 @@ package org.apache.sis.coverage.privy;
 
 import java.util.Arrays;
 import java.util.logging.Logger;
+import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
@@ -36,6 +37,7 @@ import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.multiplyFull;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
@@ -61,6 +63,21 @@ public final class ImageUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private ImageUtilities() {
+    }
+
+    /**
+     * Returns a shape containing all pixels that are valid in this image.
+     * The returned shape may conservatively contain more than the minimal set of valid pixels.
+     *
+     * @param  image  the image for which to get the valid area.
+     * @return a shape (not necessarily the smallest) containing all pixels that are valid.
+     */
+    public static Shape getValidArea(final RenderedImage image) {
+        if (image instanceof PlanarImage) {
+            return ((PlanarImage) image).getValidArea();
+        } else {
+            return getBounds(image);
+        }
     }
 
     /**

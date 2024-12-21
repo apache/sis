@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.awt.Image;
+import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
@@ -106,7 +107,7 @@ import org.apache.sis.pending.jdk.JDK18;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 public abstract class PlanarImage implements RenderedImage {
@@ -289,6 +290,25 @@ public abstract class PlanarImage implements RenderedImage {
     @Override
     public String[] getPropertyNames() {
         return null;
+    }
+
+    /**
+     * Returns a shape containing all pixels that are valid in this image.
+     * The returned shape may conservatively contain more than the minimal set of valid pixels.
+     * It should be relatively quick to compute. In particular, invoking this method should not
+     * cause the calculation of tiles (e.g. for searching NaN sample values).
+     * The shape should be fully contained inside the image {@linkplain #getBounds() bounds}.
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation returns {@link #getBounds()}.
+     *
+     * @return a shape containing all pixels that are valid. Not necessarily the smallest shape
+     *         containing those pixels, but shall be fully contained inside the image bounds.
+     *
+     * @since 1.5
+     */
+    public Shape getValidArea() {
+        return getBounds();
     }
 
     /**
