@@ -1035,6 +1035,16 @@ public class AttributeNames {
             ACDD.LAT_MIN, ACDD.LAT_MAX, null, ACDD.LAT_RESOLUTION, ACDD.LAT_UNITS, null);
 
     /**
+     * The standard attribute names for latitudes, followed by alternatives that are sometime observed.
+     * The alternatives are tried only if no latitude or longitude <abbr>CR</abbr> attributes was found.
+     * Examples of sources of alternatives: Mercator data from Copernicus.
+     */
+    static final Dimension[] LATITUDE_ALTERNATIVES = {
+        LATITUDE,
+        new Dimension(DimensionNameType.ROW, "latitude_min", "latitude_max", null, null, null, null)
+    };
+
+    /**
      * The set of attribute names for the minimal and maximal longitudes of the bounding box,
      * resolution and units. Longitudes are assumed to be in decimal degrees east, unless a
      * units attribute is specified.
@@ -1059,6 +1069,16 @@ public class AttributeNames {
             ACDD.LON_MIN, ACDD.LON_MAX, null, ACDD.LON_RESOLUTION, ACDD.LON_UNITS, null);
 
     /**
+     * The standard attribute names for longitudes, followed by alternatives that are sometime observed.
+     * The alternatives are tried only if no latitude or longitude <abbr>CR</abbr> attributes was found.
+     * Examples of sources of alternatives: Mercator data from Copernicus.
+     */
+    static final Dimension[] LONGITUDE_ALTERNATIVES = {
+        LONGITUDE,
+        new Dimension(DimensionNameType.COLUMN, "longitude_min", "longitude_max", null, null, null, null)
+    };
+
+    /**
      * The set of attribute names for the minimal and maximal elevations of the bounding box,
      * resolution and units. Elevations are assumed to be in metres above the ground, unless a
      * units attribute is specified.
@@ -1081,6 +1101,16 @@ public class AttributeNames {
      */
     public static final Dimension VERTICAL = new Dimension(DimensionNameType.VERTICAL,
             ACDD.VERT_MIN, ACDD.VERT_MAX, null, ACDD.VERT_RESOLUTION, ACDD.VERT_UNITS, ACDD.VERT_IS_POSITIVE);
+
+    /**
+     * The standard attribute names for heights, followed by alternatives that are sometime observed.
+     * The alternatives are tried only if no latitude, longitude or heights <abbr>CR</abbr> attributes was found.
+     * Examples of sources of alternatives: Mercator data from Copernicus.
+     */
+    static final Dimension[] VERTICAL_ALTERNATIVES = {
+        VERTICAL,
+        new Dimension(DimensionNameType.VERTICAL, "z_min", "z_max", null, null, null, null)
+    };
 
     /**
      * The set of attribute names for the start and end times of the bounding box, resolution and
