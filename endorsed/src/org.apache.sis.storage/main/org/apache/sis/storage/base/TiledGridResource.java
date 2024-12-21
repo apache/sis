@@ -563,10 +563,17 @@ check:  if (dataType.isInteger()) {
                             .rounding(GridRoundingMode.ENCLOSING)
                             .subgrid(domain);
 
-                domain             = target.build();
-                readExtent         = target.getIntersection();
-                subsampling        = target.getSubsampling();
-                subsamplingOffsets = target.getSubsamplingOffsets();
+                domain     = target.build();
+                readExtent = target.getIntersection();
+                /*
+                 * The grid extent may have more dimensions than the tile size because of cases such as GeoTIFF,
+                 * which may declare a three-dimensional CRS despite the image being two-dimensional. We need to
+                 * force an array length consistent with the length used in the above `(domain == null)` case,
+                 * because those arrays as used in `TileGridCoverage.createCacheKey(…)`. Inconsistent lengths
+                 * would cause the reader to not detect that a tile is available in the cache.
+                 */
+                subsampling        = ArraysExt.resize(target.getSubsampling(), dimension);
+                subsamplingOffsets = ArraysExt.resize(target.getSubsamplingOffsets(), dimension);
             }
             /*
              * Virtual tile size is usually the same as the real tile size.
@@ -663,7 +670,7 @@ check:  if (dataType.isInteger()) {
             if (loadingStrategy != RasterLoadingStrategy.AT_GET_TILE_TIME) {
                 return false;
             }
-            for (int i = subsampling.length; --i >= 0;) {
+            for (int i = virtualTileSize.length; --i >= 0;) {
                 if (subsampling[i] >= virtualTileSize[i]) {
                     return false;
                 }
