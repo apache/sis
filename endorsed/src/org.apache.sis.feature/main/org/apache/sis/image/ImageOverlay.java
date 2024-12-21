@@ -48,7 +48,9 @@ import org.apache.sis.coverage.privy.ImageUtilities;
  * An overlay of an arbitrary number of images. All images have the same pixel coordinate system,
  * but potentially different bounding boxes, tile sizes and tile indices. Source images are drawn
  * in reverse order: the last source image is drawn first, and the first source image is drawn last
- * on top of all other images. The requirements are:
+ * on top of all other images. All images are considered fully opaque, including the alpha channel
+ * which is handled as an ordinary band.
+ * The requirements are:
  *
  * <ul>
  *   <li>All source images shall have the same pixel coordinate systems (but not necessarily the same tile matrix).</li>
@@ -120,12 +122,11 @@ final class ImageOverlay extends MultiSourceImage {
             final Area area = new Area(ImageUtilities.getValidArea(source));
             if (aoi != null) area.intersect(aoi);
             if (area.isEmpty()) continue;         // Source does not intersect the specified bounds.
+            final Area contrib = new Area(area);
+            contrib.subtract(validArea);
+            if (contrib.isEmpty()) continue;      // The new source is fully masked by previous sources.
             validArea.add(area);
-            if (count != 0) {
-                area.subtract(contributions[count - 1]);
-                if (area.isEmpty()) continue;     // The new source is fully masked by previous sources.
-            }
-            contributions[count] = area;
+            contributions[count] = contrib;
             sources[count++] = source;
             /*
              * The default sample model is selected after filtering because the choice of a sample model
@@ -160,8 +161,7 @@ final class ImageOverlay extends MultiSourceImage {
         sources = ArraysExt.resize(sources, count);
         contributions = ArraysExt.resize(contributions, count);
         /*
-         * Last area is now the union of the Area Of iInterest (AOI) of all source images.
-         * The size of the destination image is this valid area, unless specified otherwise.
+         * The valid area defines the size of the combined image, unless specified otherwise.
          * If the tile size is not a divisor of the image size, try to find a better tile size.
          */
         if (bounds == null) {

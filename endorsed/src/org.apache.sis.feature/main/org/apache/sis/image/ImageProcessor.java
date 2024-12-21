@@ -969,13 +969,17 @@ public class ImageProcessor implements Cloneable {
      * Creates a new image overlay or returns one of the given sources if equivalent.
      * All source images shall have the same pixel coordinate system, but they may have different bounding boxes,
      * tile sizes and tile indices. Images are drawn in reverse order: the last source image is drawn first, and
-     * the first source image is drawn last on top of all other images. The returned image may have less sources
-     * than the specified ones if this method determines that some sources will never be drawn.
-     * This method may return {@code sources[0]} directly.
+     * the first source image is drawn last on top of all other images. All images are considered fully opaque,
+     * including the alpha channel which is handled as an ordinary band.
      *
-     * <p>All source images shall have the same number of bands (but not necessarily the same sample model).
+     * <p>The returned image may have less sources than the ones given in argument if this method determines
+     * that some sources will never be drawn (i.e., are fully hidden behind the first images).
+     * If only one source appears to be effectively used, this method returns that image directly.</p>
+     *
+     * <h4>Preconditions</h4>
+     * All source images shall have the same number of bands (but not necessarily the same sample model).
      * All source images should have equivalent color model, otherwise color consistency is not guaranteed.
-     * At least one image shall intersect the given bounds.</p>
+     * At least one image shall intersect the given bounds.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
