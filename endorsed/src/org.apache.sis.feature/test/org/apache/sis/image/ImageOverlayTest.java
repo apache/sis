@@ -26,6 +26,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import org.apache.sis.coverage.privy.ImageUtilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -91,6 +92,7 @@ public final class ImageOverlayTest extends TestCase {
         assertEquals(5, image.getTileHeight());
         assertEquals(1, image.getNumXTiles());
         assertEquals(1, image.getNumYTiles());
+        assertEquals(new Rectangle(7, 5), ImageUtilities.getValidArea(image).getBounds());
         assertArrayEquals(new String[] {PlanarImage.SAMPLE_RESOLUTIONS_KEY}, image.getPropertyNames());
         assertArrayEquals(new double[] {2, 5, 1}, (double[]) image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY));
         assertValuesEqual(image.getData(), 0, new int[][] {

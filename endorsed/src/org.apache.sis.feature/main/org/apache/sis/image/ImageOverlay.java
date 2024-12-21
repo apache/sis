@@ -20,6 +20,9 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.Raster;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
@@ -32,6 +35,7 @@ import java.util.function.BiConsumer;
 import javax.measure.Quantity;
 import javax.measure.UnconvertibleException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
@@ -59,6 +63,19 @@ import org.apache.sis.coverage.privy.ImageUtilities;
  */
 final class ImageOverlay extends MultiSourceImage {
     /**
+     * The valid area.
+     *
+     * @see #getValidArea()
+     */
+    private final Shape validArea;
+
+    /**
+     * The contribution of each source as the valid area of a source minus all previous contributions.
+     * The length of this array is the number of sources, in same order.
+     */
+    private final Area[] contributions;
+
+    /**
      * Creates a new image overlay or returns one of the given sources if equivalent.
      * All source images shall have the same pixels coordinate system and the same number of bands.
      * The returned image may have less sources than the specified ones if this method determines
@@ -77,16 +94,17 @@ final class ImageOverlay extends MultiSourceImage {
     static RenderedImage create(RenderedImage[] sources, Rectangle bounds, SampleModel sampleModel, ColorModel colorModel,
                                 final boolean autoTileSize, final boolean parallel)
     {
+        final Area aoi = (bounds != null) ? new Area(bounds) : null;
+        Area[] contributions = new Area[sources.length];
+        final Area validArea = new Area();
         /*
          * Filter the source images for keeping only the ones that intersect the bounds.
          * Check image compatibility (number of bands) and color model in the same loop.
          * If there is only one image left after filtering, it may be returned directly.
          */
         int numBands=0, count=0;
-        final boolean computeUnion = (bounds == null);
-        final var sourceBounds = new Rectangle[sources.length];
         sources = sources.clone();
-next:   for (final RenderedImage source : sources) {
+        for (final RenderedImage source : sources) {
             final int n = ImageUtilities.getNumBands(source);
             if (n == 0) continue;       // Skip null elements.
             if (n != numBands) {
@@ -99,23 +117,15 @@ next:   for (final RenderedImage source : sources) {
              * If the current source does not intersect the specified area of interest, or if a previous source
              * fully overlaps the current source, then the latter image will never be drawn and can be omitted.
              */
-            Rectangle aoi = ImageUtilities.getBounds(source);
-            if (computeUnion) {
-                if (bounds == null) {
-                    bounds = new Rectangle(aoi);
-                } else {
-                    bounds.add(aoi);
-                }
-            } else {
-                aoi = aoi.intersection(bounds);
-                if (aoi.isEmpty()) continue;
+            final Area area = new Area(ImageUtilities.getValidArea(source));
+            if (aoi != null) area.intersect(aoi);
+            if (area.isEmpty()) continue;         // Source does not intersect the specified bounds.
+            validArea.add(area);
+            if (count != 0) {
+                area.subtract(contributions[count - 1]);
+                if (area.isEmpty()) continue;     // The new source is fully masked by previous sources.
             }
-            for (int i=0; i<count; i++) {
-                if (sourceBounds[i].contains(aoi)) {
-                    continue next;
-                }
-            }
-            sourceBounds[count] = aoi;
+            contributions[count] = area;
             sources[count++] = source;
             /*
              * The default sample model is selected after filtering because the choice of a sample model
@@ -148,9 +158,15 @@ next:   for (final RenderedImage source : sources) {
             return (colorModel != null) ? RecoloredImage.apply(main, colorModel) : main;
         }
         sources = ArraysExt.resize(sources, count);
+        contributions = ArraysExt.resize(contributions, count);
         /*
+         * Last area is now the union of the Area Of iInterest (AOI) of all source images.
+         * The size of the destination image is this valid area, unless specified otherwise.
          * If the tile size is not a divisor of the image size, try to find a better tile size.
          */
+        if (bounds == null) {
+            bounds = validArea.getBounds();
+        }
         if (autoTileSize) {
             var tileSize = new Dimension(sampleModel.getWidth(), sampleModel.getHeight());
             if ((bounds.width % tileSize.width) != 0 || (bounds.height % tileSize.height) != 0) {
@@ -160,17 +176,36 @@ next:   for (final RenderedImage source : sources) {
         }
         var minTile = new Point(ImageUtilities.pixelToTileX(main, bounds.x),
                                 ImageUtilities.pixelToTileY(main, bounds.y));
-        return ImageProcessor.unique(new ImageOverlay(sources, bounds, minTile, sampleModel, colorModel, parallel));
+        return ImageProcessor.unique(new ImageOverlay(
+                sources, contributions, validArea, bounds, minTile, sampleModel, colorModel, parallel));
     }
 
     /**
      * Creates a new image overlay.
      */
-    private ImageOverlay(final RenderedImage[] sources, final Rectangle bounds, final Point minTile,
-                         final SampleModel sampleModel, final ColorModel colorModel,
+    private ImageOverlay(final RenderedImage[] sources, final Area[] contributions, final Area validArea, final Rectangle bounds,
+                         final Point minTile, final SampleModel sampleModel, final ColorModel colorModel,
                          final boolean parallel)
     {
         super(sources, bounds, minTile, sampleModel, colorModel, parallel);
+        this.validArea = validArea.isRectangular() ? validArea.getBounds2D() : validArea;
+        this.contributions = contributions;
+    }
+
+    /**
+     * Returns a shape containing all pixels that are valid in this image.
+     *
+     * @return the valid area of the source converted to the coordinate system of this resampled image.
+     */
+    @Override
+    public Shape getValidArea() {
+        Shape domain = validArea;
+        if (domain instanceof Area) {
+            domain = (Area) ((Area) domain).clone();    // Cloning an Area is cheap.
+        } else if (domain instanceof Rectangle2D) {
+            domain = (Rectangle2D) ((Rectangle2D) domain).clone();
+        }
+        return domain;
     }
 
     /**
@@ -356,15 +391,39 @@ next:   for (final RenderedImage source : sources) {
         if (target == null) {
             target = createTile(tileX, tileY);
         }
+        final Rectangle aoi = target.getBounds();
         final int n = getNumSources();
         for (int i=n; --i >= 0;) {
-            final RenderedImage source = getSource(i);
-            final Rectangle bounds = getBounds();
-            ImageUtilities.clipBounds(source, bounds);
-            if (!bounds.isEmpty()) {
-                copyData(bounds, source, target);
+            if (contributions[i].intersects(aoi)) {
+                final RenderedImage source = getSource(i);
+                final Rectangle bounds = getBounds();
+                ImageUtilities.clipBounds(source, bounds);
+                if (!bounds.isEmpty()) {
+                    copyData(bounds, source, target);
+                }
             }
         }
         return target;
+    }
+
+    /**
+     * Notifies the source images that tiles will be computed soon in the given region.
+     * This method forwards the notification to all images that are instances of {@link PlanarImage}.
+     */
+    @Override
+    protected Disposable prefetch(final Rectangle tiles) {
+        final Rectangle aoi = ImageUtilities.tilesToPixels(this, tiles);
+        final int n = getNumSources();
+        final var sources = new RenderedImage[n];
+        int count = 0;
+        for (int i=0; i<n; i++) {
+            final RenderedImage source = getSource(i);
+            if (source instanceof PlanarImage) {
+                if (contributions[i].intersects(aoi)) {
+                    sources[count++] = source;
+                }
+            }
+        }
+        return new MultiSourcePrefetch(ArraysExt.resize(sources, count), aoi).run(parallel);
     }
 }
