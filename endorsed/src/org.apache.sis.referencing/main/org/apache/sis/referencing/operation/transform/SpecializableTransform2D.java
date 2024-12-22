@@ -58,7 +58,7 @@ final class SpecializableTransform2D extends SpecializableTransform implements M
      */
     @Override
     public Shape createTransformedShape(final Shape shape) throws TransformException {
-        return AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+        return AbstractMathTransform2D.createTransformedShape(this, shape, null, null);
     }
 
     /**
@@ -114,7 +114,7 @@ final class SpecializableTransform2D extends SpecializableTransform implements M
          */
         @Override
         public Shape createTransformedShape(final Shape shape) throws TransformException {
-            return AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+            return AbstractMathTransform2D.createTransformedShape(this, shape, null, null);
         }
 
         /**

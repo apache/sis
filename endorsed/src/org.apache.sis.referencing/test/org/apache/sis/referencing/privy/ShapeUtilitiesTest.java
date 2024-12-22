@@ -98,16 +98,15 @@ public final class ShapeUtilitiesTest extends TestCase {
     }
 
     /**
-     * Invokes {@code ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2, horizontal)},
+     * Invokes {@code ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2)},
      * then verifies that the control point of the returned curve is equal to {@code (cx, cy)}.
      */
     private static void assertParabolEquals(final double cx, final double cy,
                                             final double x1, final double y1,
                                             final double px, final double py,
-                                            final double x2, final double y2,
-                                            final boolean horizontal)
+                                            final double x2, final double y2)
     {
-        final QuadCurve2D p = ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2, horizontal);
+        final QuadCurve2D p = ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2);
         assertPointEquals(x1, y1, p.getP1());
         assertPointEquals(x2, y2, p.getP2());
         assertPointEquals(cx, cy, p.getCtrlPt());
@@ -120,19 +119,9 @@ public final class ShapeUtilitiesTest extends TestCase {
      */
     @Test
     public void testFitParabol() {
-        assertParabolEquals(203.09937404322247, 298.52149034018106, 188,  25, 367, 282, 477, 294, false);
-        assertParabolEquals(440.2165208525737,  147.92614458270768, 342, 193, 503, 182, 537, 196, false);
-        assertParabolEquals(688.8232271997849,  117.2311838864974,  488, 241, 578, 134, 455,  86, false);
-    }
-
-    /**
-     * Tests {@link ShapeUtilities#fitParabol(double, double, double, double, double, double, boolean)}
-     * with a {@code true} boolean argument.
-     * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
-     */
-    @Test
-    public void testFitParabolHorizontal() {
-        assertParabolEquals(327.0, 272.41465201465195, 538, 197, 473, 213, 116, 43, true);
+        assertParabolEquals(203.09937404322247, 298.52149034018106, 188,  25, 367, 282, 477, 294);
+        assertParabolEquals(440.2165208525737,  147.92614458270768, 342, 193, 503, 182, 537, 196);
+        assertParabolEquals(688.8232271997849,  117.2311838864974,  488, 241, 578, 134, 455,  86);
     }
 
     /**

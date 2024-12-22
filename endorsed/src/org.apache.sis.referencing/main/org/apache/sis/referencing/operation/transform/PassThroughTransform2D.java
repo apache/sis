@@ -74,7 +74,7 @@ final class PassThroughTransform2D extends PassThroughTransform implements MathT
      */
     @Override
     public Shape createTransformedShape(final Shape shape) throws TransformException {
-        return AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+        return AbstractMathTransform2D.createTransformedShape(this, shape, null, null);
     }
 
     /**

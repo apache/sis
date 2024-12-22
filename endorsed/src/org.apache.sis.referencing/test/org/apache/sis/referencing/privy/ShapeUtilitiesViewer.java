@@ -51,7 +51,6 @@ public final class ShapeUtilitiesViewer extends JPanel {
         NEAREAST_COLINEAR_POINT,
         DISTANCED_COLINEAR_POINT,
         FIT_PARABOL,
-        FIT_PARABOL_HORIZONTAL,
         BEZIER,
         CIRCLE_CENTRE
     };
@@ -124,7 +123,6 @@ public final class ShapeUtilitiesViewer extends JPanel {
         output.reset();
         fillInput  = true;
         fillOutput = true;
-        boolean horizontal = false;
         final int x      = getX();
         final int y      = getY();
         final int width  = getWidth();
@@ -164,16 +162,12 @@ public final class ShapeUtilitiesViewer extends JPanel {
                 out.printf(Locale.ENGLISH, "colinearPoint(%d, %d, %d, %d, %d, %d, %g)%n", x1, y1, x2, y2, x3, y3, distance);
                 break;
             }
-            case FIT_PARABOL_HORIZONTAL: {
-                horizontal = true;
-                // Fall through
-            }
             case FIT_PARABOL: {
                 addPoint(input, x1, y1);
                 addPoint(input, x2, y2);
                 addPoint(input, x3, y3);
-                output.append(ShapeUtilities.fitParabol(x1, y1, x2, y2, x3, y3, horizontal), false);
-                out.printf(Locale.ENGLISH, "fitParabol(%d, %d, %d, %d, %d, %d, %b)%n", x1, y1, x2, y2, x3, y3, horizontal);
+                output.append(ShapeUtilities.fitParabol(x1, y1, x2, y2, x3, y3), false);
+                out.printf(Locale.ENGLISH, "fitParabol(%d, %d, %d, %d, %d, %d)%n", x1, y1, x2, y2, x3, y3);
                 fillOutput = false;
                 break;
             }

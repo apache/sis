@@ -66,7 +66,7 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
      */
     @Override
     public Shape createTransformedShape(Shape shape) throws TransformException {
-        return AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+        return AbstractMathTransform2D.createTransformedShape(this, shape, null, null);
     }
 
     /**
@@ -120,7 +120,7 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
          */
         @Override
         public Shape createTransformedShape(Shape shape) throws TransformException {
-            return AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+            return AbstractMathTransform2D.createTransformedShape(this, shape, null, null);
         }
 
         /**

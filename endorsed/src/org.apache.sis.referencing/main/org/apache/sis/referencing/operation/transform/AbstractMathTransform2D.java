@@ -143,11 +143,11 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      */
     @Override
     public Shape createTransformedShape(final Shape shape) throws TransformException {
-        return isIdentity() ? shape : createTransformedShape(this, shape, null, null, false);
+        return isIdentity() ? shape : createTransformedShape(this, shape, null, null);
     }
 
     /**
-     * Transforms a geometric shape. This method always copy transformed coordinates in a new object.
+     * Transforms a geometric shape. This method always copies the transformed coordinates in a new object.
      * The new object is often a {@link Path2D}, but may also be a {@link Line2D} or a {@link QuadCurve2D}
      * if such simplification is possible.
      *
@@ -157,15 +157,13 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      *                        transformation using {@code this}, or {@code null} if none.
      * @param  postTransform  an optional affine transform to apply <em>after</em> the transformation
      *                        using {@code this}, or {@code null} if none.
-     * @param  horizontal     {@code true} for forcing parabolic equation.
      * @return the transformed geometric shape.
      * @throws TransformException if a transformation failed.
      */
     static Shape createTransformedShape(final MathTransform2D mt,
                                         final Shape           shape,
                                         final AffineTransform preTransform,
-                                        final AffineTransform postTransform,
-                                        final boolean         horizontal)
+                                        final AffineTransform postTransform)
             throws TransformException
     {
         final PathIterator    it = shape.getPathIterator(preTransform);
@@ -180,8 +178,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
                 }
                 case PathIterator.SEG_CLOSE: {
                     /*
-                     * Close the geometric shape and continues the loop. We use the 'continue' instruction
-                     * here instead of 'break' because we do not want to execute the code after the switch
+                     * Close the geometric shape and continues the loop. We use the `continue` instruction
+                     * here instead of `break` because we do not want to execute the code after the switch
                      * (addition of transformed points into the path - there is no such point in a SEG_CLOSE).
                      */
                     path.closePath();
@@ -189,8 +187,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
                 }
                 case PathIterator.SEG_MOVETO: {
                     /*
-                     * Transform the single point and adds it to the path. We use the 'continue' instruction
-                     * here instead of 'break' because we do not want to execute the code after the switch
+                     * Transform the single point and adds it to the path. We use the `continue` instruction
+                     * here instead of `break` because we do not want to execute the code after the switch
                      * (addition of a line or a curve - there is no such curve to add here; we are just moving
                      * the cursor).
                      */
@@ -208,14 +206,14 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
                 }
                 case PathIterator.SEG_LINETO: {
                     /*
-                     * Insert a new control point at 'buffer[0,1]'. This control point will
+                     * Insert a new control point at `buffer[0,1]`. This control point will
                      * be initialised with coordinates in the middle of the straight line:
                      *
                      *  x = 0.5 * (x1+x2)
                      *  y = 0.5 * (y1+y2)
                      *
-                     * This point will be transformed after the 'switch', which is why we use
-                     * the 'break' statement here instead of 'continue' as in previous case.
+                     * This point will be transformed after the `switch`, which is why we use
+                     * the `break` statement here instead of `continue` as in previous case.
                      */
                     buffer[0] = 0.5 * (ax + (ax = buffer[0]));
                     buffer[1] = 0.5 * (ay + (ay = buffer[1]));
@@ -225,7 +223,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
                 }
                 case PathIterator.SEG_QUADTO: {
                     /*
-                     * Replace the control point in 'buffer[0,1]' by a new control point lying on the quadratic curve.
+                     * Replace the control point in `buffer[0,1]` by a new control point lying on the quadratic curve.
                      * Coordinates for a point in the middle of the curve can be computed with:
                      *
                      *  x = 0.5 * (ctrlx + 0.5 * (x1+x2))
@@ -239,7 +237,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
                 }
                 case PathIterator.SEG_CUBICTO: {
                     /*
-                     * Replace the control point in 'buffer[0,1]' by a new control point lying on the cubic curve.
+                     * Replace the control point in `buffer[0,1]` by a new control point lying on the cubic curve.
                      * Coordinates for a point in the middle of the curve can be computed with:
                      *
                      *  x = 0.25 * (1.5 * (ctrlx1 + ctrlx2) + 0.5 * (x1 + x2));
@@ -267,8 +265,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
             mt.transform(buffer, 0, buffer, 0, DIMENSION);
             final Point2D ctrlPoint = ShapeUtilities.parabolicControlPoint(px, py,
                     buffer[0], buffer[1],
-                    buffer[2], buffer[3],
-                    horizontal);
+                    buffer[2], buffer[3]);
             px = buffer[2];
             py = buffer[3];
             if (Double.isFinite(px) && Double.isFinite(py)) {
@@ -399,7 +396,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          */
         @Override
         public Shape createTransformedShape(final Shape shape) throws TransformException {
-            return isIdentity() ? shape : AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+            return isIdentity() ? shape : AbstractMathTransform2D.createTransformedShape(this, shape, null, null);
         }
 
         /**

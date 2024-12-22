@@ -82,8 +82,8 @@ public final class ShapeUtilities extends Static {
                 (by2 / bx2) * (x - bx1) + by1 :
                 (ay2 / ax2) * (x - ax1) + ay1;
         /*
-         * The '!=0' expressions below are important for avoiding rounding errors with
-         * horizontal or vertical lines. The '!' are important for handling NaN values.
+         * The `!=0` expressions below are important for avoiding rounding errors with
+         * horizontal or vertical lines. The `!` are important for handling NaN values.
          */
         if (ax2 != 0 && !(ax2 < 0 ? (x <= ax1 && x >= ax1 + ax2) : (x >= ax1 && x <= ax1 + ax2))) return null;
         if (bx2 != 0 && !(bx2 < 0 ? (x <= bx1 && x >= bx1 + bx2) : (x >= bx1 && x <= bx1 + bx2))) return null;
@@ -238,17 +238,8 @@ public final class ShapeUtilities extends Static {
     /**
      * Returns a quadratic curve passing by the 3 given points. There is an infinity of quadratic curves passing by
      * 3 points. We can express the curve we are looking for as a parabolic equation of the form {@code y=ax²+bx+c}
-     * but where the <var>x</var> axis is not necessarily horizontal. The orientation of the <var>x</var> axis in
-     * the above equation is determined by the {@code horizontal} parameter:
-     *
-     * <ul>
-     *   <li>A value of {@code true} means that the <var>x</var> axis must be horizontal. The quadratic curve
-     *       will then looks like an ordinary parabolic curve as we see in mathematic school book.</li>
-     *   <li>A value of {@code false} means that the <var>x</var> axis must be parallel to the
-     *       line segment joining the {@code P0} and {@code P2} ending points.</li>
-     * </ul>
-     *
-     * Note that if {@code P0.y == P2.y}, then both {@code horizontal} values produce the same result.
+     * except that the <var>x</var> axis is not necessarily horizontal. The <var>x</var> axis in above equation is
+     * parallel to the line segment joining the {@code P0} and {@code P2} ending points.
      *
      * @param  x1  <var>x</var> value of the starting point.
      * @param  y1  <var>y</var> value of the starting point.
@@ -256,9 +247,6 @@ public final class ShapeUtilities extends Static {
      * @param  py  <var>y</var> value of a passing point.
      * @param  x2  <var>x</var> value of the ending point.
      * @param  y2  <var>y</var> value of the ending point.
-     * @param  horizontal  if {@code true}, the <var>x</var> axis is considered horizontal while computing the
-     *         {@code y=ax²+bx+c} equation terms. If {@code false}, it is considered parallel to the line
-     *         joining the {@code P0} and {@code P2} points.
      * @return a quadratic curve passing by the given points. The curve starts at {@code P0} and ends at {@code P2}.
      *         If two points are too close or if the three points are colinear, then this method returns {@code null}.
      *
@@ -268,28 +256,17 @@ public final class ShapeUtilities extends Static {
      */
     public static QuadCurve2D.Double fitParabol(final double x1, final double y1,
                                                 final double px, final double py,
-                                                final double x2, final double y2,
-                                                final boolean horizontal)
+                                                final double x2, final double y2)
     {
-        final Point2D.Double p = parabolicControlPoint(x1, y1, px, py, x2, y2, horizontal);
+        final Point2D.Double p = parabolicControlPoint(x1, y1, px, py, x2, y2);
         return (p != null) ? new QuadCurve2D.Double(x1, y1, p.x, p.y, x2, y2) : null;
     }
 
     /**
      * Returns the control point of a quadratic curve passing by the 3 given points. There is an infinity of quadratic
      * curves passing by 3 points. We can express the curve we are looking for as a parabolic equation of the form
-     * {@code y = ax²+bx+c}, but the <var>x</var> axis is not necessarily horizontal. The <var>x</var> axis orientation
-     * in the above equation is determined by the {@code horizontal} parameter:
-     *
-     * <ul>
-     *   <li>A value of {@code true} means that the <var>x</var> axis must be horizontal.
-     *       The quadratic curve will then look like an ordinary parabolic curve as we see
-     *       in mathematic school book.</li>
-     *   <li>A value of {@code false} means that the <var>x</var> axis must be parallel to the
-     *       line segment joining the {@code P0} and {@code P2} ending points.</li>
-     * </ul>
-     *
-     * Note that if {@code P0.y == P2.y}, then both {@code horizontal} values produce the same result.
+     * {@code y = ax²+bx+c}, except that the <var>x</var> axis is not necessarily horizontal. The <var>x</var> axis
+     * in above equation is parallel to the line segment joining the {@code P0} and {@code P2} ending points.
      *
      * @param  x1  <var>x</var> value of the starting point.
      * @param  y1  <var>y</var> value of the starting point.
@@ -297,15 +274,12 @@ public final class ShapeUtilities extends Static {
      * @param  py  <var>y</var> value of a passing point.
      * @param  x2  <var>x</var> value of the ending point.
      * @param  y2  <var>y</var> value of the ending point.
-     * @param  horizontal  if {@code true}, the <var>x</var> axis is considered horizontal while computing the
-     *         {@code y = ax²+bx+c} equation terms. If {@code false}, it is considered parallel to the line
-     *         joining the {@code P0} and {@code P2} points.
      * @return the control point of a quadratic curve passing by the given points. The curve starts at {@code (x0,y0)}
      *         and ends at {@code (x2,y2)}. If two points are too close or if the three points are colinear, then this
      *         method returns {@code null}.
      */
     public static Point2D.Double parabolicControlPoint(final double x1, final double y1,
-            double px, double py, double x2, double y2, final boolean horizontal)
+            double px, double py, double x2, double y2)
     {
         /*
          * Apply a translation in such a way that (x0,y0) become the coordinate system origin.
@@ -315,42 +289,31 @@ public final class ShapeUtilities extends Static {
         py -= y1;
         x2 -= x1;
         y2 -= y1;
-        if (horizontal) {
-            final double a = (y2 - py*x2/px) / (x2-px);     // Actually "a*x2"
-            final double check = abs(a);
-            if (!(check <= 1/EPS)) return null;             // Two points have the same coordinates.
-            if (!(check >=   EPS)) return null;             // The three points are co-linear.
-            final double b = y2/x2 - a;
-            px = (1 + b/(2*a))*x2 - y2/(2*a);
-            py = y1 + b*px;
-            px += x1;
-        } else {
-            /*
-             * Apply a rotation in such a way that (x2,y2)
-             * lies on the x axis, i.e. y2 = 0.
-             */
-            final double rx2 = x2;
-            final double ry2 = y2;
-            x2 = hypot(x2,y2);
-            y2 = (px*rx2 + py*ry2) / x2;                    // use 'y2' as a temporary variable for 'x1'
-            py = (py*rx2 - px*ry2) / x2;
-            px = y2;
-//          y2 = 0;                                         // Could be set to that value, but not used.
-            /*
-             * Now compute the control point coordinates in our new coordinate system axis.
-             */
-            final double x = 0.5;                           // Actually "x/x2"
-            final double y = (py*x*x2) / (px*(x2-px));      // Actually "y/y2"
-            final double check = abs(y);
-            if (!(check <= 1/EPS)) return null;             // Two points have the same coordinates.
-            if (!(check >=   EPS)) return null;             // The three points are co-linear.
-            /*
-             * Applies the inverse rotation then a translation to bring
-             * us back to the original coordinate system.
-             */
-            px = (x*rx2 - y*ry2) + x1;
-            py = (y*rx2 + x*ry2) + y1;
-        }
+        /*
+         * Apply a rotation in such a way that (x2,y2)
+         * lies on the x axis, i.e. y2 = 0.
+         */
+        final double rx2 = x2;
+        final double ry2 = y2;
+        x2 = hypot(x2, y2);
+        y2 = (px*rx2 + py*ry2) / x2;                    // use `y2` as a temporary variable for `x1`
+        py = (py*rx2 - px*ry2) / x2;
+        px = y2;
+//      y2 = 0;                                         // Could be set to that value, but not used.
+        /*
+         * Now compute the control point coordinates in our new coordinate system axis.
+         */
+        final double x = 0.5;                           // Actually "x/x2"
+        final double y = (py*x*x2) / (px*(x2-px));      // Actually "y/y2"
+        final double check = abs(y);
+        if (!(check <= 1/EPS)) return null;             // Two points have the same coordinates.
+        if (!(check >=   EPS)) return null;             // The three points are co-linear.
+        /*
+         * Applies the inverse rotation then a translation to bring
+         * us back to the original coordinate system.
+         */
+        px = (x*rx2 - y*ry2) + x1;
+        py = (y*rx2 + x*ry2) + y1;
         return new Point2D.Double(px,py);
     }
 

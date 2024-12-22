@@ -65,7 +65,7 @@ final class InterpolatedTransform2D extends InterpolatedTransform implements Mat
      */
     @Override
     public Shape createTransformedShape(Shape shape) throws TransformException {
-        return AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+        return AbstractMathTransform2D.createTransformedShape(this, shape, null, null);
     }
 
     /**
@@ -123,7 +123,7 @@ final class InterpolatedTransform2D extends InterpolatedTransform implements Mat
          */
         @Override
         public Shape createTransformedShape(Shape shape) throws TransformException {
-            return AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+            return AbstractMathTransform2D.createTransformedShape(this, shape, null, null);
         }
 
         /**
