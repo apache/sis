@@ -36,8 +36,10 @@ import org.apache.sis.system.Configuration;
 
 
 /**
- * Derives information about image location, size and tile grid. {@code ImageLayout} does not store
- * those information directly, but provides method for deriving those properties from a given image.
+ * Preferences about the tiling of an image in relationship with a given image size.
+ * {@code ImageLayout} contains a <em>preferred</em> tile size, together with methods
+ * for deriving an actual tile size for a given image size.
+ * The rules for deriving a tile size are configurable by flags.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -56,61 +58,44 @@ public class ImageLayout {
     private static final int MIN_TILE_SIZE = 180;
 
     /**
-     * Arbitrary number of pixels for considering a tile as too large.
-     * Tile larger than this size should be divided in smaller tiles.
-     */
-    @Configuration
-    public static final int LARGE_TILE_SIZE = 1024 * 1024 * 16;
-
-    /**
      * Default width and height of tiles, in pixels.
+     * This is currently set to {@value} pixels, but may change in any future Apache <abbr>SIS</abbr> version.
      */
     @Configuration
     public static final int DEFAULT_TILE_SIZE = 256;
 
     /**
-     * Suggested size for a tile cache in number of tiles. This value can be used for very simple caching mechanism,
-     * keeping the most recently used tiles up to 10 Mb of memory. This is not for sophisticated caching mechanism;
-     * instead the "real" caching should be done by {@link org.apache.sis.image.ComputedImage}.
-     */
-    @Configuration
-    public static final int SUGGESTED_TILE_CACHE_SIZE = 10 * (1024 * 1024) / (DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE);
-
-    /**
-     * The default instance which will target {@value #DEFAULT_TILE_SIZE} pixels as tile width and height.
+     * The default instance with a preferred tile width and height of {@value #DEFAULT_TILE_SIZE} pixels.
      */
     public static final ImageLayout DEFAULT = new ImageLayout(null, false);
 
     /**
-     * Same as {@link #DEFAULT}, but can modify the image size for forcing it to an integer number of tiles.
-     */
-    public static final ImageLayout SIZE_ADJUST = new ImageLayout(null, true);
-
-    /**
-     * Preferred size for tiles.
+     * Preferred size (in pixels) for tiles.
+     * The {@linkplain #DEFAULT default} value is {@value #DEFAULT_TILE_SIZE}.
      *
      * @see #DEFAULT_TILE_SIZE
+     * @see #getPreferredTileSize()
      */
     protected final int preferredTileWidth, preferredTileHeight;
 
     /**
-     * Whether image size can be modified if needed. Changes are applied only if an image cannot be tiled
-     * because {@link #suggestTileSize(int, int, boolean)} cannot find a tile size close to the desired size.
-     * For example if the image width is a prime number, there is no way to divide the image horizontally with
+     * Whether to allow changes of image size when needed. An image may be resized when the
+     * {@link #suggestTileSize(int, int)} method cannot find a size close enough to the preferred tile size.
+     * For example, if the image width is a prime number, there is no way to divide the image horizontally with
      * an integer number of tiles. The only way to get an integer number of tiles is to change the image size.
      *
      * <p>If this flag is {@code true}, then the {@code bounds} argument given to the
      * {@link #suggestTileSize(RenderedImage, Rectangle, boolean)} will be modified in-place.</p>
      */
-    public final boolean isBoundsAdjustmentAllowed;
+    public final boolean isImageBoundsAdjustmentAllowed;
 
     /**
      * Creates a new image layout.
      *
-     * @param  preferredTileSize          the preferred tile size, or {@code null} for the default size.
-     * @param  isBoundsAdjustmentAllowed  whether image size can be modified if needed.
+     * @param  preferredTileSize               the preferred tile size, or {@code null} for the default size.
+     * @param  isImageBoundsAdjustmentAllowed  whether image size can be modified if needed.
      */
-    public ImageLayout(final Dimension preferredTileSize, final boolean isBoundsAdjustmentAllowed) {
+    public ImageLayout(final Dimension preferredTileSize, final boolean isImageBoundsAdjustmentAllowed) {
         if (preferredTileSize != null) {
             preferredTileWidth  = Math.max(1, preferredTileSize.width);
             preferredTileHeight = Math.max(1, preferredTileSize.height);
@@ -118,13 +103,13 @@ public class ImageLayout {
             preferredTileWidth  = DEFAULT_TILE_SIZE;
             preferredTileHeight = DEFAULT_TILE_SIZE;
         }
-        this.isBoundsAdjustmentAllowed = isBoundsAdjustmentAllowed;
+        this.isImageBoundsAdjustmentAllowed = isImageBoundsAdjustmentAllowed;
     }
 
     /**
-     * Creates a new layout with exactly the tile size of given image.
+     * Creates a new layout with exactly the tile size of the given image.
      *
-     * @param  source  image from which to take tile size and indices.
+     * @param  source  image from which to take tile size and tile indices.
      * @return layout giving exactly the tile size and indices of given image.
      */
     public static ImageLayout forTileSize(final RenderedImage source) {
@@ -298,7 +283,7 @@ public class ImageLayout {
     /**
      * Suggests a tile size for operations derived from the given image.
      * If the given image is null, then this method returns the preferred tile size.
-     * Otherwise if the given image is already tiled, then this method preserves the
+     * Otherwise, if the given image is already tiled, then this method preserves the
      * current tile size unless the tiles are too large, in which case they may be subdivided.
      * Otherwise (untiled image) this method proposes a tile size.
      *
@@ -315,7 +300,7 @@ public class ImageLayout {
         if (bounds != null && bounds.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "bounds"));
         }
-        if (allowPartialTiles && image != null && !isBoundsAdjustmentAllowed) {
+        if (allowPartialTiles && image != null && !isImageBoundsAdjustmentAllowed) {
             final ColorModel cm = image.getColorModel();
             allowPartialTiles = (cm != null);
             if (allowPartialTiles) {
@@ -353,7 +338,7 @@ public class ImageLayout {
         /*
          * Optionally adjust the image bounds for making it divisible by the tile size.
          */
-        if (isBoundsAdjustmentAllowed && bounds != null && !bounds.isEmpty()) {
+        if (isImageBoundsAdjustmentAllowed && bounds != null && !bounds.isEmpty()) {
             final int sx = sizeToAdd(bounds.width,  tileSize.width);
             final int sy = sizeToAdd(bounds.height, tileSize.height);
             if ((bounds.width  += sx) < 0) bounds.width  -= tileSize.width;     // if (overflow) reduce to valid range.
@@ -395,7 +380,7 @@ public class ImageLayout {
     public BandedSampleModel createBandedSampleModel(final int dataType, final int numBands,
             final RenderedImage image, final Rectangle bounds, int scanlineStride)
     {
-        final Dimension tileSize = suggestTileSize(image, bounds, isBoundsAdjustmentAllowed);
+        final Dimension tileSize = suggestTileSize(image, bounds, isImageBoundsAdjustmentAllowed);
         if (scanlineStride <= 0) {
             scanlineStride = tileSize.width;
         }
@@ -418,7 +403,7 @@ public class ImageLayout {
      */
     public SampleModel createCompatibleSampleModel(final RenderedImage image, final Rectangle bounds) {
         ArgumentChecks.ensureNonNull("image", image);
-        final Dimension tile = suggestTileSize(image, bounds, isBoundsAdjustmentAllowed);
+        final Dimension tile = suggestTileSize(image, bounds, isImageBoundsAdjustmentAllowed);
         SampleModel sm = image.getSampleModel();
         if (sm.getWidth() != tile.width || sm.getHeight() != tile.height) {
             sm = sm.createCompatibleSampleModel(tile.width, tile.height);
@@ -455,6 +440,6 @@ public class ImageLayout {
     public String toString() {
         return Strings.toString(getClass(),
                 "preferredTileSize", new StringBuilder().append(preferredTileWidth).append('×').append(preferredTileHeight),
-                "isBoundsAdjustmentAllowed", isBoundsAdjustmentAllowed);
+                "isImageBoundsAdjustmentAllowed", isImageBoundsAdjustmentAllowed);
     }
 }

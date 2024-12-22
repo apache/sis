@@ -196,7 +196,7 @@ public class ImageProcessor implements Cloneable {
          * It may result in big tiles (potentially a single tile for the whole image)
          * if the image size is not divisible by a tile size.
          */
-        NONE,
+        NONE(ImageLayout.DEFAULT),
 
         /**
          * The tile size can be modified, but not the image size. This resizing policy can
@@ -205,13 +205,25 @@ public class ImageProcessor implements Cloneable {
          *
          * @since 1.5
          */
-        CHANGE_TILING,
+        CHANGE_TILING(ImageLayout.DEFAULT),
 
         /**
          * Image size can be increased. {@code ImageProcessor} will try to increase
          * by the smallest number of pixels allowing the image to be subdivided in tiles.
          */
-        EXPAND
+        EXPAND(new ImageLayout(null, true));
+
+        /**
+         * The layout corresponding to the enumeration value.
+         */
+        final ImageLayout layout;
+
+        /**
+         * Creates a new enumeration value for the given size policy.
+         */
+        private Resizing(final ImageLayout layout) {
+            this.layout = layout;
+        }
     }
 
     /**
@@ -416,7 +428,7 @@ public class ImageProcessor implements Cloneable {
      * @return the image resizing policy.
      */
     public synchronized Resizing getImageResizingPolicy() {
-        return layout.isBoundsAdjustmentAllowed ? Resizing.EXPAND :
+        return layout.isImageBoundsAdjustmentAllowed ? Resizing.EXPAND :
                 autoTileSize ? Resizing.CHANGE_TILING : Resizing.NONE;
     }
 
@@ -426,9 +438,7 @@ public class ImageProcessor implements Cloneable {
      * @param  policy   the new image resizing policy.
      */
     public synchronized void setImageResizingPolicy(final Resizing policy) {
-        layout = (Objects.requireNonNull(policy) == Resizing.EXPAND)
-                ? ImageLayout.SIZE_ADJUST
-                : ImageLayout.DEFAULT;
+        layout = policy.layout;
         autoTileSize = (policy == Resizing.CHANGE_TILING);
     }
 

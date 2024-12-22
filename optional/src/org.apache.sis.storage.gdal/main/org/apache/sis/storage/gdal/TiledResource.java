@@ -49,6 +49,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -63,6 +64,13 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class TiledResource extends TiledGridResource {
+    /**
+     * Arbitrary number of pixels for considering a tile as too large.
+     * Tile larger than this size will be divided in smaller tiles.
+     */
+    @Configuration
+    private static final int LARGE_TILE_SIZE = 1024 * 1024 * 16;
+
     /**
      * The data set that contains this raster.
      */
@@ -194,7 +202,7 @@ final class TiledResource extends TiledGridResource {
                  */
                 if ((w = width)  < 0) w = ImageLayout.DEFAULT_TILE_SIZE;
                 if ((h = height) < 0) h = ImageLayout.DEFAULT_TILE_SIZE;
-            } else if (Math.multiplyFull(w, h) <= ImageLayout.LARGE_TILE_SIZE) {
+            } else if (Math.multiplyFull(w, h) <= LARGE_TILE_SIZE) {
                 return new Dimension(w, h);
             }
             return ImageLayout.DEFAULT.suggestTileSize(w, h, true);
