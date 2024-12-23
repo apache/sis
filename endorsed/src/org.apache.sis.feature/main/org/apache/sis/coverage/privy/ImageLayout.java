@@ -66,8 +66,10 @@ public class ImageLayout {
 
     /**
      * The default instance with a preferred tile width and height of {@value #DEFAULT_TILE_SIZE} pixels.
+     * Image sizes are preserved but the tile sizes are flexible. The last row and last column of tiles
+     * in an image are allowed to be only partially filled.
      */
-    public static final ImageLayout DEFAULT = new ImageLayout(null, false);
+    public static final ImageLayout DEFAULT = new ImageLayout(null, true, false, true);
 
     /**
      * Preferred size (in pixels) for tiles.
@@ -79,23 +81,51 @@ public class ImageLayout {
     protected final int preferredTileWidth, preferredTileHeight;
 
     /**
+     * Whether to allow changes of tile size when needed. If this flag is {@code false},
+     * then {@link #suggestTileSize(int, int)} unconditionally returns the preferred tile size.
+     *
+     * <p>The {@linkplain #DEFAULT default} value is {@code true}.</p>
+     *
+     * @see #allowTileSizeAdjustments(boolean)
+     * @see #suggestTileSize(int, int)
+     */
+    public final boolean isTileSizeAdjustmentAllowed;
+
+    /**
      * Whether to allow changes of image size when needed. An image may be resized when the
      * {@link #suggestTileSize(int, int)} method cannot find a size close enough to the preferred tile size.
      * For example, if the image width is a prime number, there is no way to divide the image horizontally with
      * an integer number of tiles. The only way to get an integer number of tiles is to change the image size.
+     * This is done by changing the fields of the {@code bounds} argument given to the
+     * {@link #suggestTileSize(RenderedImage, Rectangle)} method.
      *
-     * <p>If this flag is {@code true}, then the {@code bounds} argument given to the
-     * {@link #suggestTileSize(RenderedImage, Rectangle, boolean)} will be modified in-place.</p>
+     * <p>The {@linkplain #DEFAULT default} value is {@code false}.</p>
+     *
+     * @see #suggestTileSize(RenderedImage, Rectangle)
      */
     public final boolean isImageBoundsAdjustmentAllowed;
+
+    /**
+     * Whether to allow tiles that are only partially filled in the last row and last column of the tile matrix.
+     * This flag may be ignored (handled as {@code false}) when the image for which to compute a tile size is opaque.
+     *
+     * <p>The {@linkplain #DEFAULT default} value is {@code true}.</p>
+     */
+    public final boolean isPartialTilesAllowed;
 
     /**
      * Creates a new image layout.
      *
      * @param  preferredTileSize               the preferred tile size, or {@code null} for the default size.
+     * @param  isTileSizeAdjustmentAllowed     whether tile size can be modified if needed.
      * @param  isImageBoundsAdjustmentAllowed  whether image size can be modified if needed.
+     * @param  isPartialTilesAllowed           whether to allow tiles that are only partially filled.
      */
-    public ImageLayout(final Dimension preferredTileSize, final boolean isImageBoundsAdjustmentAllowed) {
+    public ImageLayout(final Dimension preferredTileSize,
+                       final boolean isTileSizeAdjustmentAllowed,
+                       final boolean isImageBoundsAdjustmentAllowed,
+                       final boolean isPartialTilesAllowed)
+    {
         if (preferredTileSize != null) {
             preferredTileWidth  = Math.max(1, preferredTileSize.width);
             preferredTileHeight = Math.max(1, preferredTileSize.height);
@@ -103,7 +133,9 @@ public class ImageLayout {
             preferredTileWidth  = DEFAULT_TILE_SIZE;
             preferredTileHeight = DEFAULT_TILE_SIZE;
         }
+        this.isTileSizeAdjustmentAllowed    = isTileSizeAdjustmentAllowed;
         this.isImageBoundsAdjustmentAllowed = isImageBoundsAdjustmentAllowed;
+        this.isPartialTilesAllowed          = isPartialTilesAllowed;
     }
 
     /**
@@ -137,19 +169,9 @@ public class ImageLayout {
 
         /** Creates a new layout with exactly the tile size of given image. */
         FixedSize(final RenderedImage source, final int minTileX, final int minTileY) {
-            super(new Dimension(source.getTileWidth(), source.getTileHeight()), false);
+            super(new Dimension(source.getTileWidth(), source.getTileHeight()), false, false, true);
             this.minTileX = minTileX;
             this.minTileY = minTileY;
-        }
-
-        /** Returns the fixed tile size. All parameters are ignored. */
-        @Override public Dimension suggestTileSize(int imageWidth, int imageHeight, boolean allowPartialTiles) {
-            return getPreferredTileSize();
-        }
-
-        /** Returns the fixed tile size. All parameters are ignored. */
-        @Override public Dimension suggestTileSize(RenderedImage image, Rectangle bounds, boolean allowPartialTiles) {
-            return getPreferredTileSize();
         }
 
         /** Returns indices of the first tile. */
@@ -180,6 +202,19 @@ public class ImageLayout {
         @Override public SampleModel createCompatibleSampleModel(RenderedImage image, Rectangle bounds) {
             return destination.getSampleModel();
         }
+    }
+
+    /**
+     * Returns a new layout with the same flags but a different preferred tile size.
+     *
+     * @param  size  the new tile size.
+     * @return the layout for the given size.
+     */
+    public ImageLayout withPreferredTileSize(final Dimension size) {
+        if (size.width == preferredTileWidth && size.height == preferredTileHeight) {
+            return this;
+        }
+        return new ImageLayout(size, isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed);
     }
 
     /**
@@ -261,23 +296,27 @@ public class ImageLayout {
     /**
      * Suggests a tile size for the specified image size. This method suggests a tile size which is a divisor
      * of the given image size if possible, or a size that left as few empty pixels as possible otherwise.
-     * The {@code allowPartialTile} argument specifies whether to allow tiles that are only partially filled.
+     * The {@link #isPartialTilesAllowed} flag specifies whether to allow tiles that are only partially filled.
      * A value of {@code true} implies that tiles in the last row or in the last column may contain empty pixels.
      * A value of {@code false} implies that this class will be unable to subdivide large images in smaller tiles
      * if the image size is a prime number.
      *
-     * <p>The {@code allowPartialTile} argument should be {@code false} if the tiled image is opaque,
+     * <p>The {@link #isPartialTilesAllowed} flag should be {@code false} when the tiled image is opaque,
      * or if the sample value for transparent pixels is different than zero. This restriction is for
      * avoiding black or colored borders on the image left size and bottom size.</p>
      *
-     * @param  imageWidth         the image width in pixels.
-     * @param  imageHeight        the image height in pixels.
-     * @param  allowPartialTiles  whether to allow tiles that are only partially filled.
+     * @param  imageWidth   the image width in pixels.
+     * @param  imageHeight  the image height in pixels.
      * @return suggested tile size for the given image size.
      */
-    public Dimension suggestTileSize(final int imageWidth, final int imageHeight, final boolean allowPartialTiles) {
-        return new Dimension(toTileSize(imageWidth,  preferredTileWidth,  allowPartialTiles),
-                             toTileSize(imageHeight, preferredTileHeight, allowPartialTiles));
+    public Dimension suggestTileSize(final int imageWidth, final int imageHeight) {
+        int tileWidth  = preferredTileWidth;
+        int tileHeight = preferredTileHeight;
+        if (isTileSizeAdjustmentAllowed) {
+            tileWidth  = toTileSize(imageWidth,  tileWidth,  isPartialTilesAllowed);
+            tileHeight = toTileSize(imageHeight, tileHeight, isPartialTilesAllowed);
+        }
+        return new Dimension(tileWidth, tileHeight);
     }
 
     /**
@@ -285,21 +324,22 @@ public class ImageLayout {
      * If the given image is null, then this method returns the preferred tile size.
      * Otherwise, if the given image is already tiled, then this method preserves the
      * current tile size unless the tiles are too large, in which case they may be subdivided.
-     * Otherwise (untiled image) this method proposes a tile size.
+     * Otherwise (untiled image), this method proposes a tile size.
      *
      * <p>This method also checks whether the color model supports transparency. If not, then this
-     * method will not return a size that may result in the creation of partially empty tiles.</p>
+     * method will not return a size that may result in the creation of partially empty tiles.
+     * In other words, the {@link #isPartialTilesAllowed} is ignored (handled as {@code false})
+     * for opaque images.</p>
      *
      * @param  image   the image for which to derive a tile size, or {@code null}.
      * @param  bounds  the bounds of the image to create, or {@code null} if same as {@code image}.
-     * @param  allowPartialTiles  whether to allow tiles that are only partially filled.
-     *         This argument is ignored (reset to {@code false}) if the given image is opaque.
      * @return suggested tile size for the given image.
      */
-    public Dimension suggestTileSize(final RenderedImage image, final Rectangle bounds, boolean allowPartialTiles) {
+    public Dimension suggestTileSize(final RenderedImage image, final Rectangle bounds) {
         if (bounds != null && bounds.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "bounds"));
         }
+        boolean allowPartialTiles = isPartialTilesAllowed;
         if (allowPartialTiles && image != null && !isImageBoundsAdjustmentAllowed) {
             final ColorModel cm = image.getColorModel();
             allowPartialTiles = (cm != null);
@@ -332,20 +372,23 @@ public class ImageLayout {
         } else {
             return getPreferredTileSize();
         }
-        final Dimension tileSize = new Dimension(
-                toTileSize(width,  preferredTileWidth,  allowPartialTiles & singleXTile),
-                toTileSize(height, preferredTileHeight, allowPartialTiles & singleYTile));
+        int tileWidth  = preferredTileWidth;
+        int tileHeight = preferredTileHeight;
+        if (isTileSizeAdjustmentAllowed) {
+            tileWidth  = toTileSize(width,  tileWidth,  allowPartialTiles & singleXTile);
+            tileHeight = toTileSize(height, tileHeight, allowPartialTiles & singleYTile);
+        }
         /*
          * Optionally adjust the image bounds for making it divisible by the tile size.
          */
         if (isImageBoundsAdjustmentAllowed && bounds != null && !bounds.isEmpty()) {
-            final int sx = sizeToAdd(bounds.width,  tileSize.width);
-            final int sy = sizeToAdd(bounds.height, tileSize.height);
-            if ((bounds.width  += sx) < 0) bounds.width  -= tileSize.width;     // if (overflow) reduce to valid range.
-            if ((bounds.height += sy) < 0) bounds.height -= tileSize.height;
+            final int sx = sizeToAdd(bounds.width,  tileWidth);
+            final int sy = sizeToAdd(bounds.height, tileHeight);
+            if ((bounds.width  += sx) < 0) bounds.width  -= tileWidth;     // if (overflow) reduce to valid range.
+            if ((bounds.height += sy) < 0) bounds.height -= tileHeight;
             bounds.translate(-sx/2, -sy/2);
         }
-        return tileSize;
+        return new Dimension(tileWidth, tileHeight);
     }
 
     /**
@@ -362,7 +405,7 @@ public class ImageLayout {
     /**
      * Creates a banded sample model of the given type with an automatic tile size.
      * At least one of {@code image} and {@code bounds} arguments must be non null.
-     * This method uses the {@linkplain #suggestTileSize(RenderedImage, Rectangle, boolean)
+     * This method uses the {@linkplain #suggestTileSize(RenderedImage, Rectangle)
      * suggested tile size} for the given image and bounds.
      *
      * <p>This method constructs the simplest possible banded sample model:
@@ -380,7 +423,7 @@ public class ImageLayout {
     public BandedSampleModel createBandedSampleModel(final int dataType, final int numBands,
             final RenderedImage image, final Rectangle bounds, int scanlineStride)
     {
-        final Dimension tileSize = suggestTileSize(image, bounds, isImageBoundsAdjustmentAllowed);
+        final Dimension tileSize = suggestTileSize(image, bounds);
         if (scanlineStride <= 0) {
             scanlineStride = tileSize.width;
         }
@@ -403,7 +446,7 @@ public class ImageLayout {
      */
     public SampleModel createCompatibleSampleModel(final RenderedImage image, final Rectangle bounds) {
         ArgumentChecks.ensureNonNull("image", image);
-        final Dimension tile = suggestTileSize(image, bounds, isImageBoundsAdjustmentAllowed);
+        final Dimension tile = suggestTileSize(image, bounds);
         SampleModel sm = image.getSampleModel();
         if (sm.getWidth() != tile.width || sm.getHeight() != tile.height) {
             sm = sm.createCompatibleSampleModel(tile.width, tile.height);

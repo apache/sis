@@ -170,15 +170,6 @@ public class ImageProcessor implements Cloneable {
     private ImageLayout layout;
 
     /**
-     * Whether the processor is allowed to change the tile size. This configuration is relevant
-     * only for operations taking a {@link SampleModel} in argument, which implies a tile size.
-     *
-     * @see Resizing#CHANGE_TILING
-     * @see #setImageResizingPolicy(Resizing)
-     */
-    private boolean autoTileSize;
-
-    /**
      * Whether {@code ImageProcessor} can produce an image of different size compared to requested size.
      * An image may be resized if the requested size cannot be subdivided into tiles of reasonable size.
      * For example if the image width is a prime number, there is no way to divide the image horizontally with
@@ -199,19 +190,10 @@ public class ImageProcessor implements Cloneable {
         NONE(ImageLayout.DEFAULT),
 
         /**
-         * The tile size can be modified, but not the image size. This resizing policy can
-         * be used with operations where a {@link SampleModel} argument implies a tile size.
-         * For other operations, this resizing policy is equivalent to {@link #NONE}.
-         *
-         * @since 1.5
-         */
-        CHANGE_TILING(ImageLayout.DEFAULT),
-
-        /**
          * Image size can be increased. {@code ImageProcessor} will try to increase
          * by the smallest number of pixels allowing the image to be subdivided in tiles.
          */
-        EXPAND(new ImageLayout(null, true));
+        EXPAND(new ImageLayout(null, true, true, true));
 
         /**
          * The layout corresponding to the enumeration value.
@@ -428,8 +410,7 @@ public class ImageProcessor implements Cloneable {
      * @return the image resizing policy.
      */
     public synchronized Resizing getImageResizingPolicy() {
-        return layout.isImageBoundsAdjustmentAllowed ? Resizing.EXPAND :
-                autoTileSize ? Resizing.CHANGE_TILING : Resizing.NONE;
+        return layout.isImageBoundsAdjustmentAllowed ? Resizing.EXPAND : Resizing.NONE;
     }
 
     /**
@@ -439,7 +420,6 @@ public class ImageProcessor implements Cloneable {
      */
     public synchronized void setImageResizingPolicy(final Resizing policy) {
         layout = policy.layout;
-        autoTileSize = (policy == Resizing.CHANGE_TILING);
     }
 
     /**
@@ -1016,7 +996,7 @@ public class ImageProcessor implements Cloneable {
         final boolean parallel;
         final boolean autoTileSize;
         synchronized (this) {
-            autoTileSize = this.autoTileSize;
+            autoTileSize = layout.isTileSizeAdjustmentAllowed;
             parallel = executionMode != Mode.SEQUENTIAL;
         }
         return ImageOverlay.create(sources, bounds, sampleModel, colorModel, autoTileSize | (bounds != null), parallel);
@@ -1050,7 +1030,7 @@ public class ImageProcessor implements Cloneable {
         final boolean parallel;
         final boolean autoTileSize;
         synchronized (this) {
-            autoTileSize = this.autoTileSize;
+            autoTileSize = layout.isTileSizeAdjustmentAllowed;
             parallel = executionMode != Mode.SEQUENTIAL;
         }
         return ImageOverlay.create(new RenderedImage[] {source}, null, sampleModel, null, autoTileSize, parallel);

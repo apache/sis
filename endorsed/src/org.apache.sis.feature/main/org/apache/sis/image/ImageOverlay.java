@@ -170,7 +170,7 @@ final class ImageOverlay extends MultiSourceImage {
         if (autoTileSize) {
             var tileSize = new Dimension(sampleModel.getWidth(), sampleModel.getHeight());
             if ((bounds.width % tileSize.width) != 0 || (bounds.height % tileSize.height) != 0) {
-                tileSize = new ImageLayout(tileSize, false).suggestTileSize(bounds.width, bounds.height, true);
+                tileSize = ImageLayout.DEFAULT.withPreferredTileSize(tileSize).suggestTileSize(bounds.width, bounds.height);
                 sampleModel = sampleModel.createCompatibleSampleModel(tileSize.width, tileSize.height);
             }
         }

@@ -161,7 +161,7 @@ public final class ReformattedImage {
                 final int height = JDK18.ceilDiv(image.getHeight(), TILE_DIVISOR);
                 tileSize.width   = JDK18.ceilDiv(tileSize.width,    TILE_DIVISOR);
                 tileSize.height  = JDK18.ceilDiv(tileSize.height,   TILE_DIVISOR);
-                tileSize = new ImageLayout(tileSize, false).suggestTileSize(width, height, true);
+                tileSize = ImageLayout.DEFAULT.withPreferredTileSize(tileSize).suggestTileSize(width, height);
                 tileSize.width  *= TILE_DIVISOR;
                 tileSize.height *= TILE_DIVISOR;
                 sm = sm.createCompatibleSampleModel(tileSize.width, tileSize.height);

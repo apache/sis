@@ -104,14 +104,6 @@ final class BandAggregateLayout extends ImageLayout {
     private final int minTileX, minTileY;
 
     /**
-     * Whether to use the preferred tile size exactly as specified, without trying to compute a better size.
-     * This field may be {@code true} if the tiles of the destination image are at exact same location as
-     * the tiles of a source image having the preferred tile size. In such case, keeping the same size will
-     * reduce the number of tiles requested in that source image.
-     */
-    private final boolean exactTileSize;
-
-    /**
      * Computes the layout of an image combining the bands of all the specified source images.
      * The optional {@code bandsPerSource} argument specifies the bands to select in each source images.
      * That array can be {@code null} for selecting all bands in all source images,
@@ -220,6 +212,12 @@ final class BandAggregateLayout extends ImageLayout {
     /**
      * Creates a new image layout from the values computed by {@code create(…)}.
      *
+     * <h4>Tile size</h4>
+     * The {@code exactTileSize} argument tells whether to use the preferred tile size exactly as specified,
+     * without trying to compute a better size. This flag may be {@code true} if the tiles of the destination
+     * image are at exact same location as the tiles of a source image having the preferred tile size.
+     * In such case, keeping the same size will reduce the number of tiles requested in that source image.
+     *
      * @param  sources            images to combine, in order.
      * @param  bandsPerSource     bands to use for each source image, in order. May contain {@code null} elements.
      * @param  bandSelect         final band select operation to apply on the aggregated result.
@@ -234,8 +232,7 @@ final class BandAggregateLayout extends ImageLayout {
             final int minTileX, final int minTileY, final int commonDataType, final int numBands,
             final int scanlineStride)
     {
-        super(preferredTileSize, false);
-        this.exactTileSize  = exactTileSize;
+        super(preferredTileSize, !exactTileSize, false, false);
         this.bandsPerSource = bandsPerSource;
         this.bandSelect     = bandSelect;
         this.sources        = sources;
@@ -325,28 +322,6 @@ final class BandAggregateLayout extends ImageLayout {
     @Override
     public Point getMinTile() {
         return new Point(minTileX, minTileY);
-    }
-
-    /**
-     * Suggests a tile size for the specified image size.
-     * It may be exactly the size of the tiles of a source image, but not necessarily.
-     * This method may compute a tile size different than the tile size of all sources.
-     */
-    @Override
-    public Dimension suggestTileSize(int imageWidth, int imageHeight, boolean allowPartialTiles) {
-        if (exactTileSize) return getPreferredTileSize();
-        return super.suggestTileSize(imageWidth, imageHeight, allowPartialTiles);
-    }
-
-    /**
-     * Suggests a tile size for operations derived from the given image.
-     * It may be exactly the size of the tiles of a source image, but not necessarily.
-     * This method may compute a tile size different than the tile size of all sources.
-     */
-    @Override
-    public Dimension suggestTileSize(RenderedImage image, Rectangle bounds, boolean allowPartialTiles) {
-        if (exactTileSize) return getPreferredTileSize();
-        return super.suggestTileSize(image, bounds, allowPartialTiles);
     }
 
     /**

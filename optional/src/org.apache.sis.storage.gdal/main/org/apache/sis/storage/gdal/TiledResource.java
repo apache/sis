@@ -205,7 +205,7 @@ final class TiledResource extends TiledGridResource {
             } else if (Math.multiplyFull(w, h) <= LARGE_TILE_SIZE) {
                 return new Dimension(w, h);
             }
-            return ImageLayout.DEFAULT.suggestTileSize(w, h, true);
+            return ImageLayout.DEFAULT.suggestTileSize(w, h);
         }
     }
 

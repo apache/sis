@@ -37,11 +37,11 @@ public final class ImageLayoutTest extends TestCase {
     }
 
     /**
-     * Tests {@link ImageLayout#suggestTileSize(int, int, boolean)}.
+     * Tests {@link ImageLayout#suggestTileSize(int, int)}.
      */
     @Test
     public void testSuggestTileSize() {
-        final Dimension size = ImageLayout.DEFAULT.suggestTileSize(367877, 5776326, true);
+        final Dimension size = ImageLayout.DEFAULT.suggestTileSize(367877, 5776326);
         assertEquals(511, size.width);
         assertEquals(246, size.height);
     }
