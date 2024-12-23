@@ -173,7 +173,7 @@ class BandAggregateImage extends MultiSourceImage {
     private BandAggregateImage(final BandAggregateLayout layout, final Colorizer colorizer,
                                final boolean allowSharing, final boolean parallel)
     {
-        super(layout.filteredSources, layout.domain, layout.getMinTile(),
+        super(layout.filteredSources, layout.domain, layout.getPreferredMinTile(),
               layout.sampleModel, layout.createColorModel(colorizer), parallel);
         this.allowSharing = allowSharing;
     }

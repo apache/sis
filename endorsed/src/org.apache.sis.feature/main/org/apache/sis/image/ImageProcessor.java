@@ -1246,7 +1246,7 @@ public class ImageProcessor implements Cloneable {
             }
             final WritableRenderedImage destination = layout.getDestination();
             final SampleModel rsm = layout.createCompatibleSampleModel(source, bounds);
-            final var image = new ResampledImage(source, rsm, layout.getMinTile(), bounds, toSource,
+            final var image = new ResampledImage(source, rsm, layout.getPreferredMinTile(), bounds, toSource,
                                                  interpolation, fillValues, positionalAccuracyHints);
             image.setDestination(destination);
             resampled = unique(image);

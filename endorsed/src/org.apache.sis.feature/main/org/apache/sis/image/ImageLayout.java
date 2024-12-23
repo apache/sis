@@ -73,14 +73,16 @@ public class ImageLayout {
      * Image sizes are preserved but the tile sizes are flexible. The last row and last column of tiles
      * in an image are allowed to be only partially filled.
      */
-    public static final ImageLayout DEFAULT = new ImageLayout(null, true, false, true);
+    public static final ImageLayout DEFAULT = new ImageLayout(null, true, false, true, null);
 
     /**
      * Preferred size (in pixels) for tiles.
+     * The actual tile size will also depend on the size of the image to tile.
      * The {@linkplain #DEFAULT default} value is {@value #DEFAULT_TILE_SIZE}.
      *
      * @see #DEFAULT_TILE_SIZE
      * @see #getPreferredTileSize()
+     * @see #suggestTileSize(int, int)
      */
     protected final int preferredTileWidth, preferredTileHeight;
 
@@ -121,17 +123,29 @@ public class ImageLayout {
     public final boolean isPartialTilesAllowed;
 
     /**
+     * Preferred tile index where images start their tile matrix.
+     * This property usually has no incidence on the appearance or performance
+     * of an image and may be ignored by image operations.
+     * The {@linkplain #DEFAULT default} value is 0.
+     *
+     * @see #getPreferredMinTile()
+     */
+    protected final int preferredMinTileX, preferredMinTileY;
+
+    /**
      * Creates a new image layout.
      *
      * @param  preferredTileSize               the preferred tile size, or {@code null} for the default size.
      * @param  isTileSizeAdjustmentAllowed     whether tile size can be modified if needed.
      * @param  isImageBoundsAdjustmentAllowed  whether image size can be modified if needed.
      * @param  isPartialTilesAllowed           whether to allow tiles that are only partially filled.
+     * @param  preferredMinTile                preferred tile index where image start their tile matrix, or {@code null} for (0,0).
      */
-    public ImageLayout(final Dimension preferredTileSize,
-                       final boolean isTileSizeAdjustmentAllowed,
-                       final boolean isImageBoundsAdjustmentAllowed,
-                       final boolean isPartialTilesAllowed)
+    protected ImageLayout(final Dimension preferredTileSize,
+                          final boolean isTileSizeAdjustmentAllowed,
+                          final boolean isImageBoundsAdjustmentAllowed,
+                          final boolean isPartialTilesAllowed,
+                          final Point   preferredMinTile)
     {
         if (preferredTileSize != null) {
             preferredTileWidth  = Math.max(1, preferredTileSize.width);
@@ -143,16 +157,13 @@ public class ImageLayout {
         this.isTileSizeAdjustmentAllowed    = isTileSizeAdjustmentAllowed;
         this.isImageBoundsAdjustmentAllowed = isImageBoundsAdjustmentAllowed;
         this.isPartialTilesAllowed          = isPartialTilesAllowed;
-    }
-
-    /**
-     * Creates a new layout with exactly the tile size of the given image.
-     *
-     * @param  source  image from which to take tile size and tile indices.
-     * @return layout giving exactly the tile size and indices of given image.
-     */
-    static ImageLayout forTileSize(final RenderedImage source) {
-        return new FixedSize(source, source.getMinTileX(), source.getMinTileY());
+        if (preferredMinTile != null) {
+            preferredMinTileX = preferredMinTile.x;
+            preferredMinTileY = preferredMinTile.y;
+        } else {
+            preferredMinTileX = 0;
+            preferredMinTileY = 0;
+        }
     }
 
     /**
@@ -168,35 +179,16 @@ public class ImageLayout {
     }
 
     /**
-     * Override preferred tile size with a fixed size.
-     */
-    private static class FixedSize extends ImageLayout {
-        /** Indices of the first tile. */
-        private final int minTileX, minTileY;
-
-        /** Creates a new layout with exactly the tile size of given image. */
-        FixedSize(final RenderedImage source, final int minTileX, final int minTileY) {
-            super(new Dimension(source.getTileWidth(), source.getTileHeight()), false, false, true);
-            this.minTileX = minTileX;
-            this.minTileY = minTileY;
-        }
-
-        /** Returns indices of the first tile. */
-        @Override public Point getMinTile() {
-            return new Point(minTileX, minTileY);
-        }
-    }
-
-    /**
      * Override sample model with the one of the destination.
      */
-    private static final class FixedDestination extends FixedSize {
+    private static final class FixedDestination extends ImageLayout {
         /** The destination image. */
         private final WritableRenderedImage destination;
 
         /** Creates a new layout with exactly the tile size of given image. */
         FixedDestination(final WritableRenderedImage destination, final int minTileX, final int minTileY) {
-            super(destination, minTileX, minTileY);
+            super(new Dimension(destination.getTileWidth(), destination.getTileHeight()),
+                                false, false, true, new Point(minTileX, minTileY));
             this.destination = destination;
         }
 
@@ -222,7 +214,8 @@ public class ImageLayout {
      */
     public ImageLayout allowTileSizeAdjustments(boolean allowed) {
         if (isTileSizeAdjustmentAllowed == allowed) return this;
-        return new ImageLayout(getPreferredTileSize(), allowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed);
+        return new ImageLayout(getPreferredTileSize(), allowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed,
+                               getPreferredMinTile());
     }
 
     /**
@@ -236,7 +229,8 @@ public class ImageLayout {
      */
     public ImageLayout allowImageBoundsAdjustments(boolean allowed) {
         if (isImageBoundsAdjustmentAllowed == allowed) return this;
-        return new ImageLayout(getPreferredTileSize(), isTileSizeAdjustmentAllowed, allowed, isPartialTilesAllowed);
+        return new ImageLayout(getPreferredTileSize(), isTileSizeAdjustmentAllowed, allowed, isPartialTilesAllowed,
+                               getPreferredMinTile());
     }
 
     /**
@@ -250,7 +244,33 @@ public class ImageLayout {
      */
     public ImageLayout allowPartialTiles(boolean allowed) {
         if (isPartialTilesAllowed == allowed) return this;
-        return new ImageLayout(getPreferredTileSize(), isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, allowed);
+        return new ImageLayout(getPreferredTileSize(), isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, allowed,
+                               getPreferredMinTile());
+    }
+
+    /**
+     * Creates a new layout with the tile size and tile indices of the given image.
+     * Other properties (all Boolean flags) are copied unchanged.
+     * If the given argument value results in no change, returns {@code this}.
+     *
+     * @param  source  image from which to take tile size and tile indices.
+     * @return layout giving exactly the tile size and indices of given image.
+     *
+     * @see #getPreferredTileSize()
+     * @see #getPreferredMinTile()
+     */
+    public ImageLayout withTileMatrix(final RenderedImage source) {
+        final var preferredTileSize = new Dimension(source.getTileWidth(), source.getTileHeight());
+        final var preferredMinTile  = new Point(source.getMinTileX(), source.getMinTileY());
+        if (preferredTileSize.width  == preferredTileWidth  &&
+            preferredTileSize.height == preferredTileHeight &&
+            preferredMinTile .x      == preferredMinTileX   &&
+            preferredMinTile .y      == preferredMinTileY)
+        {
+            return this;
+        }
+        return new ImageLayout(preferredTileSize, isTileSizeAdjustmentAllowed,
+                isImageBoundsAdjustmentAllowed, isPartialTilesAllowed, preferredMinTile);
     }
 
     /**
@@ -266,7 +286,8 @@ public class ImageLayout {
         if (size.width == preferredTileWidth && size.height == preferredTileHeight) {
             return this;
         }
-        return new ImageLayout(size, isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed);
+        return new ImageLayout(size, isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed,
+                isPartialTilesAllowed, getPreferredMinTile());
     }
 
     /**
@@ -506,16 +527,19 @@ public class ImageLayout {
     }
 
     /**
-     * Returns indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
-     * The default implementation returns {@code null}.
+     * Returns the preferred indices of the upper-left tile in an image tile matrix.
+     * This property usually has no incidence on the appearance or performance of an image.
+     * It usually doesn't change neither the calculations that depend on georeferencing,
+     * because these calculations depend on pixel coordinates rather than tile coordinates.
+     * Therefore, this property is only a hint and may be ignored by image operations.
      *
-     * <p>This method is not yet in public API because it is currently set only by {@link Visualization}.
-     * Only the image operations needed by {@code Visualization} take this information in account.</p>
+     * @return preferred tile indices of the upper-left tile.
      *
-     * @return indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
+     * @see RenderedImage#getMinTileX()
+     * @see RenderedImage#getMinTileY()
      */
-    Point getMinTile() {
-        return null;
+    public final Point getPreferredMinTile() {
+        return new Point(preferredMinTileX, preferredMinTileY);
     }
 
     /**
@@ -537,8 +561,15 @@ public class ImageLayout {
      */
     @Override
     public String toString() {
+        var sb = new StringBuilder();
+        var preferredTileSize = sb.append(preferredTileWidth).append('×').append(preferredTileHeight).toString();
+        sb.setLength(0);
+        var preferredMinTile = sb.append('(').append(preferredMinTileX).append(", ").append(preferredMinTileY).append(')').toString();
         return Strings.toString(getClass(),
-                "preferredTileSize", new StringBuilder().append(preferredTileWidth).append('×').append(preferredTileHeight),
-                "isImageBoundsAdjustmentAllowed", isImageBoundsAdjustmentAllowed);
+                "preferredTileSize",              preferredTileSize,
+                "isTileSizeAdjustmentAllowed",    isTileSizeAdjustmentAllowed,
+                "isImageBoundsAdjustmentAllowed", isImageBoundsAdjustmentAllowed,
+                "isPartialTilesAllowed",          isPartialTilesAllowed,
+                "preferredMinTile",               preferredMinTile);
     }
 }

@@ -94,15 +94,6 @@ final class BandAggregateLayout extends ImageLayout {
     final Rectangle domain;
 
     /**
-     * Index of the first tile. Other tile matrix properties such as the number of tiles and the grid offsets
-     * are derived from those values together with the {@linkplain #domain}. Contrarily to pixel coordinates,
-     * the tile coordinate space does not need to be the same for all images.
-     *
-     * @see #getMinTile()
-     */
-    private final int minTileX, minTileY;
-
-    /**
      * Computes the layout of an image combining the bands of all the specified source images.
      * The optional {@code bandsPerSource} argument specifies the bands to select in each source images.
      * That array can be {@code null} for selecting all bands in all source images,
@@ -202,10 +193,12 @@ final class BandAggregateLayout extends ImageLayout {
         final var preferredTileSize = new Dimension((int) cx, (int) cy);
         final boolean exactTileSize = ((cx | cy) >>> Integer.SIZE) == 0;
         allowSharing &= exactTileSize;
+
+        final var minTile = new Point(chooseMinTile(tileGridXOffset, domain.x, preferredTileSize.width),
+                                      chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height));
+
         return new BandAggregateLayout(sources, bandsPerSource, bandSelect, domain, preferredTileSize, exactTileSize,
-                chooseMinTile(tileGridXOffset, domain.x, preferredTileSize.width),
-                chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height),
-                commonDataType, aggregate.numBands(), allowSharing ? scanlineStride : 0);
+                    minTile, commonDataType, aggregate.numBands(), allowSharing ? scanlineStride : 0);
     }
 
     /**
@@ -228,16 +221,13 @@ final class BandAggregateLayout extends ImageLayout {
      */
     private BandAggregateLayout(final RenderedImage[] sources, final int[][] bandsPerSource, final int[] bandSelect,
             final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
-            final int minTileX, final int minTileY, final int commonDataType, final int numBands,
-            final int scanlineStride)
+            final Point minTile, final int commonDataType, final int numBands, final int scanlineStride)
     {
-        super(preferredTileSize, !exactTileSize, false, false);
+        super(preferredTileSize, !exactTileSize, false, false, minTile);
         this.bandsPerSource = bandsPerSource;
         this.bandSelect     = bandSelect;
         this.sources        = sources;
         this.domain         = domain;
-        this.minTileX       = minTileX;
-        this.minTileY       = minTileY;
         this.sampleModel    = createBandedSampleModel(commonDataType, numBands, null, domain, scanlineStride);
         /*
          * Note: above call to `createBandedSampleModel(…)` must be last,
@@ -308,19 +298,6 @@ final class BandAggregateLayout extends ImageLayout {
             }
         }
         return 0;
-    }
-
-    /**
-     * Returns indices of the first tile ({@code minTileX}, {@code minTileY}).
-     * Other tile matrix properties such as the number of tiles and the grid offsets will be derived
-     * from those values together with the {@linkplain #domain}. Contrarily to pixel coordinates,
-     * the tile coordinate space does not need to be the same for all images.
-     *
-     * @return indices of the first tile ({@code minTileX}, {@code minTileY}).
-     */
-    @Override
-    public Point getMinTile() {
-        return new Point(minTileX, minTileY);
     }
 
     /**

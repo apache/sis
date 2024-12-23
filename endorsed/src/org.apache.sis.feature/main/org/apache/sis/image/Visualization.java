@@ -260,7 +260,7 @@ final class Visualization extends ResampledImage {
              */
             final boolean shortcut = toSource.isIdentity() && (bounds == null || ImageUtilities.getBounds(source).contains(bounds));
             if (shortcut) {
-                layout = ImageLayout.forTileSize(source);
+                layout = ImageLayout.DEFAULT.withTileMatrix(source).allowTileSizeAdjustments(false);
             }
             /*
              * Sample values will be unconditionally converted to integers in the [0 … 255] range.
@@ -479,7 +479,7 @@ final class Visualization extends ResampledImage {
     private Visualization(final Builder builder) {
         super(builder.source,
               builder.sampleModel,
-              builder.layout.getMinTile(),
+              builder.layout.getPreferredMinTile(),
               builder.bounds,
               builder.toSource,
               builder.interpolation,
