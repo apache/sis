@@ -994,14 +994,13 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
+     *   <li>{@linkplain #getImageLayout() Image layout} for the desired sample model and color model.</li>
      *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
      *       whether to use a modified image size if {@code bounds} is not divisible by a tile size.</li>
      * </ul>
      *
-     * @param  sources      the images to overlay. Null array elements are ignored.
-     * @param  bounds       range of pixel coordinates, or {@code null} for the union of all source images.
-     * @param  sampleModel  the sample model, of {@code null} for automatic.
-     * @param  colorModel   the color model, of {@code null} for automatic.
+     * @param  sources  the images to overlay. Null array elements are ignored.
+     * @param  bounds   range of pixel coordinates, or {@code null} for the union of all source images.
      * @return the image overlay, or one of the given sources if only one is suitable.
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if no image intersect the given bounds.
@@ -1009,17 +1008,16 @@ public class ImageProcessor implements Cloneable {
      * @since 1.5
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
-    public RenderedImage overlay(final RenderedImage[] sources, final Rectangle bounds,
-                                 final SampleModel sampleModel, final ColorModel colorModel)
-    {
+    public RenderedImage overlay(final RenderedImage[] sources, final Rectangle bounds) {
         ArgumentChecks.ensureNonEmpty("sources", sources);
+        final ImageLayout layout;
         final boolean parallel;
-        final boolean autoTileSize;
         synchronized (this) {
-            autoTileSize = layout.isTileSizeAdjustmentAllowed;
+            layout = this.layout;
             parallel = executionMode != Mode.SEQUENTIAL;
         }
-        return ImageOverlay.create(sources, bounds, sampleModel, colorModel, autoTileSize | (bounds != null), parallel);
+        return ImageOverlay.create(sources, bounds, layout.sampleModel, layout.colorModel,
+                layout.isTileSizeAdjustmentAllowed | (bounds != null), parallel);
     }
 
     /**
@@ -1033,27 +1031,32 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
+     *   <li>{@linkplain #getImageLayout() Image layout} for the default sample model.</li>
      *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
      *       whether to use a modified image size if the source image size is not divisible by a tile size.</li>
      * </ul>
      *
      * @param  source       the images to reformat.
      * @param  sampleModel  the desired sample model.
+     *         Can be null only if a default sample model is specified by {@link ImageLayout#sampleModel}.
      * @return the reformatted image.
      *
      * @since 1.5
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
-    public RenderedImage reformat(final RenderedImage source, final SampleModel sampleModel) {
+    public RenderedImage reformat(final RenderedImage source, SampleModel sampleModel) {
         ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
+        final ImageLayout layout;
         final boolean parallel;
-        final boolean autoTileSize;
         synchronized (this) {
-            autoTileSize = layout.isTileSizeAdjustmentAllowed;
+            layout = this.layout;
             parallel = executionMode != Mode.SEQUENTIAL;
         }
-        return ImageOverlay.create(new RenderedImage[] {source}, null, sampleModel, null, autoTileSize, parallel);
+        if (sampleModel == null) {
+            sampleModel = layout.sampleModel;
+            ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
+        }
+        return ImageOverlay.create(new RenderedImage[] {source}, null, sampleModel, null, layout.isTileSizeAdjustmentAllowed, parallel);
     }
 
     /**

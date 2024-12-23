@@ -44,6 +44,12 @@ import org.apache.sis.coverage.privy.CommonDomainFinder;
  *
  * <p>Instances of this class are temporary and used only during image construction.</p>
  *
+ * <h2>Restrictions</h2>
+ * The inherited {@link #sampleModel} must be a {@link BandedSampleModel}.
+ * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zeros and
+ * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.
+ * This simplicity is needed by current implementation of {@link BandAggregateImage}.
+ *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -223,7 +229,7 @@ final class BandAggregateLayout extends ImageLayout {
             final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
             final Point minTile, final int commonDataType, final int numBands, final int scanlineStride)
     {
-        super(preferredTileSize, !exactTileSize, false, false, minTile);
+        super(null, null, preferredTileSize, !exactTileSize, false, false, minTile);
         this.bandsPerSource = bandsPerSource;
         this.bandSelect     = bandSelect;
         this.sources        = sources;
