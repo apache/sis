@@ -66,14 +66,14 @@ import org.apache.sis.measure.Units;
  *
  * <ul class="verbose">
  *   <li>
+ *     {@linkplain #setImageLayout(ImageLayout) Preferences about the tiling}
+ *     of an image in relationship with a given image size.
+ *   </li><li>
  *     {@linkplain #setInterpolation(Interpolation) Interpolation method} to use during resampling operations.
  *   </li><li>
  *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that cannot be computed.
  *   </li><li>
  *     {@linkplain #setColorizer(Colorizer) Colorization algorithm} to apply for colorizing a computed image.
- *   </li><li>
- *     {@linkplain #setImageResizingPolicy(Resizing) Image resizing policy} to apply
- *     if a requested image size prevent the image to be tiled.
  *   </li><li>
  *     {@linkplain #setPositionalAccuracyHints(Quantity...) Positional accuracy hints}
  *     for enabling the use of faster algorithm when a lower accuracy is acceptable.
@@ -179,25 +179,34 @@ public class ImageProcessor implements Cloneable {
      *
      * @see #getImageResizingPolicy()
      * @see #setImageResizingPolicy(Resizing)
+     *
+     * @deprecated Replaced by {@link ImageLayout}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public enum Resizing {
         /**
          * Image size is unmodified, the requested value is used unconditionally.
          * It may result in big tiles (potentially a single tile for the whole image)
          * if the image size is not divisible by a tile size.
+         *
+         * @deprecated Replaced by {@link ImageLayout#DEFAULT}.
          */
+        @Deprecated
         NONE(ImageLayout.DEFAULT),
 
         /**
          * Image size can be increased. {@code ImageProcessor} will try to increase
          * by the smallest number of pixels allowing the image to be subdivided in tiles.
+         *
+         * @deprecated Replaced by {@code ImageLayout.DEFAULT.allowImageBoundsAdjustments(true)}.
          */
-        EXPAND(new ImageLayout(null, true, true, true));
+        @Deprecated
+        EXPAND(ImageLayout.DEFAULT.allowImageBoundsAdjustments(true));
 
         /**
          * The layout corresponding to the enumeration value.
          */
-        final ImageLayout layout;
+        public final ImageLayout layout;
 
         /**
          * Creates a new enumeration value for the given size policy.
@@ -307,18 +316,24 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns the properties (size, tile size, sample model, <i>etc.</i>) of destination images.
-     * This method is not yet public because {@link ImageLayout} is not a public class.
+     * Returns the preferences about the tiling of an image in relationship with a given image size.
+     * The {@code ImageLayout} determines characteristics (size, tile size, sample model, <i>etc.</i>)
+     * of destination images.
+     *
+     * @return preferences about the tiling of an image in relationship with a given image size.
+     * @since 1.5
      */
-    final synchronized ImageLayout getImageLayout() {
+    public synchronized ImageLayout getImageLayout() {
         return layout;
     }
 
     /**
-     * Sets the properties (size, tile size, sample model, <i>etc.</i>) of destination images.
-     * This method is not yet public because {@link ImageLayout} is not a public class.
+     * Sets the preferences (size, tile size, sample model, <i>etc.</i>) of destination images.
+     *
+     * @param layout  new preferences about the tiling of an image in relationship with a given image size.
+     * @since 1.5
      */
-    final synchronized void setImageLayout(final ImageLayout layout) {
+    public synchronized void setImageLayout(final ImageLayout layout) {
         this.layout = Objects.requireNonNull(layout);
     }
 
@@ -407,7 +422,10 @@ public class ImageProcessor implements Cloneable {
      * If this processor can use a different size, the enumeration value specifies what kind of changes may be applied.
      *
      * @return the image resizing policy.
+     *
+     * @deprecated Replaced by {@link #getImageLayout()}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public synchronized Resizing getImageResizingPolicy() {
         return layout.isImageBoundsAdjustmentAllowed ? Resizing.EXPAND : Resizing.NONE;
     }
@@ -416,7 +434,10 @@ public class ImageProcessor implements Cloneable {
      * Sets whether {@code ImageProcessor} can produce an image of different size compared to requested size.
      *
      * @param  policy   the new image resizing policy.
+     *
+     * @deprecated Replaced by {@link #setImageLayout(ImageLayout)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public synchronized void setImageResizingPolicy(final Resizing policy) {
         layout = policy.layout;
     }
@@ -973,8 +994,8 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} for specifying whether
-     *       this method is allowed to change the tile size implied by the given sample model.</li>
+     *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
+     *       whether to use a modified image size if {@code bounds} is not divisible by a tile size.</li>
      * </ul>
      *
      * @param  sources      the images to overlay. Null array elements are ignored.
@@ -1012,8 +1033,8 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} for specifying whether
-     *       this method is allowed to change the tile size implied by the given sample model.</li>
+     *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
+     *       whether to use a modified image size if the source image size is not divisible by a tile size.</li>
      * </ul>
      *
      * @param  source       the images to reformat.
@@ -1159,8 +1180,8 @@ public class ImageProcessor implements Cloneable {
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
-     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} to apply
-     *       if {@code bounds} size is not divisible by a tile size.</li>
+     *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
+     *       whether to use a modified image size if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
      * </ul>
@@ -1170,8 +1191,8 @@ public class ImageProcessor implements Cloneable {
      * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
      *
      * @param  source    the image to be resampled.
-     * @param  bounds    domain of pixel coordinates of resampled image to create.
-     *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
+     * @param  bounds    domain of pixel coordinates of resampled image to create. Fields are updated in-place
+     *                   by this method if the {@link ImageLayout#isImageBoundsAdjustmentAllowed} flag is true.
      * @param  toSource  conversion of pixel center coordinates from resampled image to {@code source} image.
      * @return resampled image (may be {@code source}).
      *
@@ -1391,16 +1412,16 @@ public class ImageProcessor implements Cloneable {
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
-     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} to apply
-     *       if {@code bounds} size is not divisible by a tile size.</li>
+     *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
+     *       whether to use a modified image size if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
      *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * @param  source    the image to be resampled and recolored.
-     * @param  bounds    domain of pixel coordinates of resampled image to create.
-     *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
+     * @param  bounds    domain of pixel coordinates of resampled image to create. Fields are updated in-place
+     *                   by this method if the {@link ImageLayout#isImageBoundsAdjustmentAllowed} flag is true.
      * @param  toSource  conversion of pixel center coordinates from resampled image to {@code source} image.
      * @return resampled and recolored image for visualization purposes only.
      *

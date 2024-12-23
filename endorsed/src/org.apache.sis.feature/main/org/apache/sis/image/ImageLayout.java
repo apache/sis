@@ -41,6 +41,8 @@ import org.apache.sis.coverage.privy.RasterFactory;
  * for deriving an actual tile size for a given image size.
  * The rules for deriving a tile size are configurable by flags.
  *
+ * <p>Instances of this class are immutable and thread-safe.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  * @since   1.5
@@ -103,6 +105,7 @@ public class ImageLayout {
      *
      * <p>The {@linkplain #DEFAULT default} value is {@code false}.</p>
      *
+     * @see #allowImageBoundsAdjustments(boolean)
      * @see #suggestTileSize(RenderedImage, Rectangle)
      */
     public final boolean isImageBoundsAdjustmentAllowed;
@@ -112,6 +115,8 @@ public class ImageLayout {
      * This flag may be ignored (handled as {@code false}) when the image for which to compute a tile size is opaque.
      *
      * <p>The {@linkplain #DEFAULT default} value is {@code true}.</p>
+     *
+     * @see #allowPartialTiles(boolean)
      */
     public final boolean isPartialTilesAllowed;
 
@@ -207,10 +212,55 @@ public class ImageLayout {
     }
 
     /**
+     * Returns a new layout with the same properties than this layout except whether it allows changes of tile size.
+     * If the given argument value results in no change, returns {@code this}.
+     *
+     * @param  allowed whether to allow changes of tile size when needed.
+     * @return the layout for the given flag.
+     *
+     * @see #isTileSizeAdjustmentAllowed
+     */
+    public ImageLayout allowTileSizeAdjustments(boolean allowed) {
+        if (isTileSizeAdjustmentAllowed == allowed) return this;
+        return new ImageLayout(getPreferredTileSize(), allowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed);
+    }
+
+    /**
+     * Returns a new layout with the same properties than this layout except whether it allows changes of image size.
+     * If the given argument value results in no change, returns {@code this}.
+     *
+     * @param  allowed whether to allow changes of image size when needed.
+     * @return the layout for the given flag.
+     *
+     * @see #isImageBoundsAdjustmentAllowed
+     */
+    public ImageLayout allowImageBoundsAdjustments(boolean allowed) {
+        if (isImageBoundsAdjustmentAllowed == allowed) return this;
+        return new ImageLayout(getPreferredTileSize(), isTileSizeAdjustmentAllowed, allowed, isPartialTilesAllowed);
+    }
+
+    /**
+     * Returns a new layout with the same properties than this layout except whether it allows partially filled tiles.
+     * If the given argument value results in no change, returns {@code this}.
+     *
+     * @param  allowed whether to allow tiles that are only partially filled in the last row and last column of the tile matrix.
+     * @return the layout for the given flag.
+     *
+     * @see #isPartialTilesAllowed
+     */
+    public ImageLayout allowPartialTiles(boolean allowed) {
+        if (isPartialTilesAllowed == allowed) return this;
+        return new ImageLayout(getPreferredTileSize(), isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, allowed);
+    }
+
+    /**
      * Returns a new layout with the same flags but a different preferred tile size.
+     * If the given argument values result in no change, returns {@code this}.
      *
      * @param  size  the new tile size.
      * @return the layout for the given size.
+     *
+     * @see #getPreferredTileSize()
      */
     public ImageLayout withPreferredTileSize(final Dimension size) {
         if (size.width == preferredTileWidth && size.height == preferredTileHeight) {

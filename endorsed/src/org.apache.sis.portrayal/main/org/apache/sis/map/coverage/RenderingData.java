@@ -49,6 +49,7 @@ import org.apache.sis.coverage.grid.PixelTranslation;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.ImageProcessor;
@@ -125,6 +126,12 @@ public class RenderingData implements CloneAccess {
      */
     @Debug
     private static final boolean CREATE_INDEX_COLOR_MODEL = true;
+
+    /**
+     * The image layout used for rendering. We allow creating images larger then necessary
+     * if it can improve subdivisions in tiles.
+     */
+    private static final ImageLayout IMAGE_LAYOUT = ImageLayout.DEFAULT.allowImageBoundsAdjustments(true);
 
     /**
      * Loader for reading and caching coverages at various resolutions.
@@ -249,7 +256,7 @@ public class RenderingData implements CloneAccess {
     public RenderingData(final ErrorHandler errorHandler) {
         processor = new ImageProcessor();
         processor.setErrorHandler(errorHandler);
-        processor.setImageResizingPolicy(ImageProcessor.Resizing.EXPAND);
+        processor.setImageLayout(IMAGE_LAYOUT);
     }
 
     /**
