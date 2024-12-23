@@ -308,7 +308,7 @@ public final class RasterFactory extends Static {
      * @param  sampleModel  the sample model to make unique.
      * @return a unique instance of the given sample model. May be {@code sampleModel} itself.
      */
-    static <T extends SampleModel> T unique(final T sampleModel) {
+    public static <T extends SampleModel> T unique(final T sampleModel) {
         return POOL.unique(sampleModel);
     }
 }

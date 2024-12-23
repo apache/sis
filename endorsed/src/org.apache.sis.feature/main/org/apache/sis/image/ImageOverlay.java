@@ -40,7 +40,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 
 

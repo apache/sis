@@ -20,7 +20,6 @@ import java.util.Random;
 import java.awt.image.DataBuffer;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.coverage.privy.ImageLayout;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

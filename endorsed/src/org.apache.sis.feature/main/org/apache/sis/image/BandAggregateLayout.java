@@ -31,7 +31,6 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.FrequencySortedSet;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.BandAggregateArgument;

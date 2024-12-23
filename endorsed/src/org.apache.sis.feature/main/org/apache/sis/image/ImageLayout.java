@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.privy;
+package org.apache.sis.image;
 
 import java.util.Arrays;
 import java.awt.Point;
@@ -27,12 +27,12 @@ import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.image.ComputedImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.system.Configuration;
+import org.apache.sis.coverage.privy.RasterFactory;
 
 
 /**
@@ -42,6 +42,8 @@ import org.apache.sis.system.Configuration;
  * The rules for deriving a tile size are configurable by flags.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
 public class ImageLayout {
     /**
@@ -144,7 +146,7 @@ public class ImageLayout {
      * @param  source  image from which to take tile size and tile indices.
      * @return layout giving exactly the tile size and indices of given image.
      */
-    public static ImageLayout forTileSize(final RenderedImage source) {
+    static ImageLayout forTileSize(final RenderedImage source) {
         return new FixedSize(source, source.getMinTileX(), source.getMinTileY());
     }
 
@@ -156,7 +158,7 @@ public class ImageLayout {
      * @param  minTileY  row index of the first tile.
      * @return layout giving exactly the tile size and indices of given image.
      */
-    public static ImageLayout forDestination(final WritableRenderedImage source, final int minTileX, final int minTileY) {
+    static ImageLayout forDestination(final WritableRenderedImage source, final int minTileX, final int minTileY) {
         return new FixedDestination(source, minTileX, minTileY);
     }
 
@@ -411,7 +413,7 @@ public class ImageLayout {
      * <p>This method constructs the simplest possible banded sample model:
      * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zero and
      * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.
-     * This simplicity is needed by current implementation of {@link org.apache.sis.image.BandAggregateImage}.</p>
+     * This simplicity is needed by current implementation of {@link BandAggregateImage}.</p>
      *
      * @param  dataType        desired data type as a {@link java.awt.image.DataBuffer} constant.
      * @param  numBands        desired number of bands.
@@ -420,7 +422,7 @@ public class ImageLayout {
      * @param  scanlineStride  the line stride of the of the image data, or ≤ 0 for automatic.
      * @return a banded sample model of the given type with the given number of bands.
      */
-    public BandedSampleModel createBandedSampleModel(final int dataType, final int numBands,
+    final BandedSampleModel createBandedSampleModel(final int dataType, final int numBands,
             final RenderedImage image, final Rectangle bounds, int scanlineStride)
     {
         final Dimension tileSize = suggestTileSize(image, bounds);
@@ -434,9 +436,7 @@ public class ImageLayout {
 
     /**
      * Creates a sample model compatible with the sample model of the given image
-     * but with a size matching the preferred tile size. This method can be used
-     * for determining the {@code sampleModel} argument of {@link ComputedImage}
-     * constructor.
+     * but with a size matching the preferred tile size.
      *
      * @param  image   the image form which to get a sample model.
      * @param  bounds  the bounds of the image to create, or {@code null} if same as {@code image}.
@@ -459,18 +459,24 @@ public class ImageLayout {
      * Returns indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
      * The default implementation returns {@code null}.
      *
+     * <p>This method is not yet in public API because it is currently set only by {@link Visualization}.
+     * Only the image operations needed by {@code Visualization} take this information in account.</p>
+     *
      * @return indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
      */
-    public Point getMinTile() {
+    Point getMinTile() {
         return null;
     }
 
     /**
      * Returns an existing image where to write the computation result, or {@code null} if none.
      *
+     * <p>This method is not yet in public API because it is currently set only by {@link ImageCombiner}.
+     * Only the image operations needed by {@code ImageCombiner} take this information in account.</p>
+     *
      * @return preexisting destination of computation result, or {@code null} if none.
      */
-    public WritableRenderedImage getDestination() {
+    WritableRenderedImage getDestination() {
         return null;
     }
 

@@ -41,7 +41,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.internal.CompoundTransform;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.SampleDimensions;
 import org.apache.sis.coverage.privy.ColorScaleBuilder;

@@ -19,7 +19,7 @@ package org.apache.sis.gui.coverage;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import org.apache.sis.system.Configuration;
-import static org.apache.sis.coverage.privy.ImageLayout.DEFAULT_TILE_SIZE;
+import static org.apache.sis.image.ImageLayout.DEFAULT_TILE_SIZE;
 
 
 /**
