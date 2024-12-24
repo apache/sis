@@ -37,7 +37,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.privy.ColorScaleBuilder;
-import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.ObservableImage;
 import org.apache.sis.coverage.privy.TiledImage;
 import org.apache.sis.coverage.privy.WritableTiledImage;
@@ -476,7 +475,7 @@ public class GridCoverageBuilder {
                 final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
                 final ColorModel colors;
                 if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
-                    colors = colorizer.createColorModel(ImageUtilities.getBandType(sm), bands.size(), visibleBand);
+                    colors = colorizer.createColorModel(sm, bands.size(), visibleBand);
                 } else {
                     colors = ColorScaleBuilder.NULL_COLOR_MODEL;
                 }

@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.privy;
 
 import java.util.Arrays;
+import java.awt.Dimension;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -103,22 +104,21 @@ public final class SampleModelFactory {
     private int scanlineStride;
 
     /**
-     * Creates a factory initialized to the given values.
+     * Creates a builder for a sample model of a type inferred from the given properties.
      *
      * @param  type           type of sample values.
-     * @param  width          tile width in pixels.
-     * @param  height         tile height in pixels.
+     * @param  size           tile width and height in pixels.
      * @param  numBands       number of bands.
      * @param  bitsPerSample  number of bits per sample values.
      * @param  isBanded       {@code true} if each band is stored in a separated bank.
      * @throws RasterFormatException if the arguments imply a sample model of unsupported type.
      */
-    public SampleModelFactory(final DataType type, final int width, final int height,
+    public SampleModelFactory(final DataType type, final Dimension size,
             final int numBands, final int bitsPerSample, final boolean isBanded)
     {
         this.dataType  = type.toDataBufferType();
-        this.width     = width;
-        this.height    = height;
+        this.width     = size.width;
+        this.height    = size.height;
         this.numBands  = numBands;
         scanlineStride = width;
         pixelStride    = 1;

@@ -321,7 +321,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
                         final SampleModel model = target.getSampleModel();
                         final var c = new ColorScaleBuilder(colors, null, false);
                         if (c.initialize(model, ranges.get(visibleBand))) {
-                            return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
+                            return Optional.ofNullable(c.createColorModel(model, model.getNumBands(), visibleBand));
                         }
                     }
                 }

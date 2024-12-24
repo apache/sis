@@ -258,7 +258,13 @@ final class Visualization extends ResampledImage {
              * requires the tile layout of destination image to be the same as source image.
              * Otherwise combine interpolation and value conversions in a single operation.
              */
-            final boolean shortcut = toSource.isIdentity() && (bounds == null || ImageUtilities.getBounds(source).contains(bounds));
+            final boolean shortcut;
+            if (bounds == null) {
+                bounds = ImageUtilities.getBounds(source);
+                shortcut = toSource.isIdentity();
+            } else {
+                shortcut = toSource.isIdentity() && ImageUtilities.getBounds(source).contains(bounds);
+            }
             if (shortcut) {
                 layout = ImageLayout.DEFAULT.withTileMatrix(source).allowTileSizeAdjustments(false);
             }
@@ -267,7 +273,8 @@ final class Visualization extends ResampledImage {
              * The sample model is a mandatory argument before we invoke user supplied colorizer,
              * which must be done before to build the color model.
              */
-            sampleModel = layout.createBandedSampleModel(ColorScaleBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds, 0);
+            final DataType dataType = DataType.forDataBufferType(ColorScaleBuilder.TYPE_COMPACT);
+            sampleModel = layout.createSampleModel(dataType, bounds, NUM_BANDS);
             final Target target = new Target(sampleModel, VISIBLE_BAND, visibleSD != null);
             if (colorizer != null) {
                 colorModel = colorizer.apply(target).orElse(null);
@@ -335,7 +342,7 @@ final class Visualization extends ResampledImage {
                 builder.initialize(statistics.minimum(), statistics.maximum(), sourceSM.getDataType());
             }
             if (colorModel == null) {
-                colorModel = builder.createColorModel(ColorScaleBuilder.TYPE_COMPACT, NUM_BANDS, VISIBLE_BAND);
+                colorModel = builder.createColorModel(dataType, NUM_BANDS, VISIBLE_BAND);
             }
             converters = new MathTransform1D[] {
                 builder.getSampleToIndexValues()            // Must be after `createColorModel(…)`.
@@ -348,9 +355,6 @@ final class Visualization extends ResampledImage {
             } else {
                 interpolation = combine(interpolation.toCompatible(source), converters);
                 converters    = null;
-            }
-            if (bounds == null) {
-                bounds = ImageUtilities.getBounds(source);
             }
             return ImageProcessor.unique(new Visualization(this));
         }

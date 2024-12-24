@@ -25,7 +25,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -196,7 +195,6 @@ class BandedSampleConverter extends WritableComputedImage {
      * @param  sourceRanges  the expected range of values for each band in source image, or {@code null} if unknown.
      * @param  converters    the transfer functions to apply on each band of the source image.
      * @param  targetType    the type of this image resulting from conversion of given image.
-     *                       Shall be one of {@link DataBuffer} constants.
      * @param  colorizer     provider of color model for the expected range of values, or {@code null}.
      * @return the image which compute converted values from the given source.
      *
@@ -204,7 +202,7 @@ class BandedSampleConverter extends WritableComputedImage {
      */
     static BandedSampleConverter create(RenderedImage source, final ImageLayout layout,
             final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,
-            final int targetType, final Colorizer colorizer)
+            final DataType targetType, final Colorizer colorizer)
     {
         /*
          * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
@@ -215,7 +213,7 @@ class BandedSampleConverter extends WritableComputedImage {
             source = ((RecoloredImage) source).source;
         }
         final int numBands = converters.length;
-        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null, 0);
+        final BandedSampleModel sampleModel = layout.createBandedSampleModel(source, null, targetType, numBands, 0);
         final SampleDimension[] sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
         final int visibleBand = ImageUtilities.getVisibleBand(source);
         ColorModel colorModel = ColorScaleBuilder.NULL_COLOR_MODEL;

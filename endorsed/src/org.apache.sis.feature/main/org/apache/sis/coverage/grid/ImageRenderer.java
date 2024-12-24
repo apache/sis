@@ -754,7 +754,8 @@ public class ImageRenderer {
         final ColorModel cm;
         final SampleModel sm = raster.getSampleModel();
         if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {
-            cm = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
+            DataType type = DataType.forDataBufferType(buffer.getDataType());
+            cm = colorizer.createColorModel(type, bands.length, visibleBand);
         } else {
             cm = ColorScaleBuilder.NULL_COLOR_MODEL;
         }

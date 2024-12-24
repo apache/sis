@@ -50,10 +50,10 @@ public final class BandedSampleConverterTest extends ImageTestCase {
      * The created image is assigned to the {@link #image} field.
      *
      * @param  sourceType  source data type as one of the {@link DataBuffer} constants.
-     * @param  targetType  target data type as one of the {@link DataBuffer} constants.
+     * @param  targetType  target data type.
      * @param  scale       the scale factor of the conversion to apply.
      */
-    private void createImage(final int sourceType, final int targetType, final double scale) {
+    private void createImage(final int sourceType, final DataType targetType, final double scale) {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final TiledImageMock source = new TiledImageMock(
                 sourceType, 1,
@@ -106,7 +106,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
      */
     @Test
     public void testUShortToFloat() {
-        createImage(DataBuffer.TYPE_USHORT, DataBuffer.TYPE_FLOAT, 0.1);
+        createImage(DataBuffer.TYPE_USHORT, DataType.FLOAT, 0.1);
         assertValuesDivided();
     }
 
@@ -115,7 +115,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
      */
     @Test
     public void testFloatToUShort() {
-        createImage(DataBuffer.TYPE_FLOAT, DataBuffer.TYPE_USHORT, 10);
+        createImage(DataBuffer.TYPE_FLOAT, DataType.USHORT, 10);
         assertValuesMultiplied();
     }
 
@@ -124,7 +124,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
      */
     @Test
     public void testFloatToFloat() {
-        createImage(DataBuffer.TYPE_FLOAT, DataBuffer.TYPE_FLOAT, 0.1);
+        createImage(DataBuffer.TYPE_FLOAT, DataType.FLOAT, 0.1);
         assertValuesDivided();
     }
 
@@ -133,7 +133,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
      */
     @Test
     public void testUShortToUShort() {
-        createImage(DataBuffer.TYPE_USHORT, DataBuffer.TYPE_USHORT, 10);
+        createImage(DataBuffer.TYPE_USHORT, DataType.USHORT, 10);
         assertValuesMultiplied();
     }
 
@@ -142,7 +142,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
      */
     @Test
     public void testShortToInteger() {
-        createImage(DataBuffer.TYPE_SHORT, DataBuffer.TYPE_INT, 10);
+        createImage(DataBuffer.TYPE_SHORT, DataType.INT, 10);
         assertValuesMultiplied();
     }
 
@@ -151,7 +151,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
      */
     @Test
     public void testDoubleToInteger() {
-        createImage(DataBuffer.TYPE_DOUBLE, DataBuffer.TYPE_INT, 10);
+        createImage(DataBuffer.TYPE_DOUBLE, DataType.INT, 10);
         assertValuesMultiplied();
     }
 }

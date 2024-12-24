@@ -1155,8 +1155,7 @@ public class ImageProcessor implements Cloneable {
             colorizer = this.colorizer;
         }
         // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.
-        return unique(BandedSampleConverter.create(source, layout, sourceRanges, converters,
-                                                   targetType.toDataBufferType(), colorizer));
+        return unique(BandedSampleConverter.create(source, layout, sourceRanges, converters, targetType, colorizer));
     }
 
     /**

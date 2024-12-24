@@ -28,6 +28,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
@@ -526,39 +527,22 @@ public class ImageLayout {
     }
 
     /**
-     * Creates a banded sample model of the given type with an automatic tile size.
-     * At least one of {@code image} and {@code bounds} arguments must be non null.
-     * This method uses the {@linkplain #suggestTileSize(RenderedImage, Rectangle)
-     * suggested tile size} for the given image and bounds.
+     * Ensures that the number of bands specified (directly or indirectly) in a method call
+     * is compatible with the sample model.
      *
-     * <p>This method constructs the simplest possible banded sample model:
-     * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zero and
-     * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.
-     * This simplicity is needed by current implementation of {@link BandAggregateImage}.</p>
-     *
-     * @param  dataType        desired data type as a {@link java.awt.image.DataBuffer} constant.
-     * @param  numBands        desired number of bands.
-     * @param  image           the image which will be the source of the image for which a sample model is created.
-     * @param  bounds          the bounds of the image to create, or {@code null} if same as {@code image}.
-     * @param  scanlineStride  the line stride of the of the image data, or ≤ 0 for automatic.
-     * @return a banded sample model of the given type with the given number of bands.
+     * @param  actual  the number of bands inferred from the argument in a method call.
      */
-    final BandedSampleModel createBandedSampleModel(final int dataType, final int numBands,
-            final RenderedImage image, final Rectangle bounds, int scanlineStride)
-    {
-        final Dimension tileSize = suggestTileSize(image, bounds);
-        if (scanlineStride <= 0) {
-            scanlineStride = tileSize.width;
+    private void checkBandCount(final int actual) {
+        int expected = sampleModel.getNumBands();
+        if (expected != actual) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.UnexpectedNumberOfBands_2, expected, actual));
         }
-        // Pixel stride, bank indices and band offsets intentionally non-configurable. See Javadoc.
-        return RasterFactory.unique(new BandedSampleModel(dataType, tileSize.width, tileSize.height,
-                                    scanlineStride, ArraysExt.range(0, numBands), new int[numBands]));
     }
 
     /**
-     * Creates a sample model with a size computed from the given image size.
-     * If a {@link #sampleModel} has been specified, the new sample model is derived from that field value.
-     * Otherwise, the new sample model is derived from the image sample model.
+     * Returns a sample model with a size computed from the given image size.
+     * If this {@code ImageLayout} contains a {@link #sampleModel}, then the latter is used as a template.
+     * Otherwise, the new sample model is {@linkplain RenderedImage#getSampleModel() derived from the image}.
      *
      * @param  image   the image from which to derive a sample model.
      * @param  bounds  the bounds of the image to create, or {@code null} if same as {@code image}.
@@ -571,19 +555,73 @@ public class ImageLayout {
     public SampleModel createCompatibleSampleModel(final RenderedImage image, final Rectangle bounds) {
         SampleModel sm = image.getSampleModel();
         if (sampleModel != null) {
-            int expected = sampleModel.getNumBands();
-            int actual   = sm.getNumBands();
-            if (expected != actual) {
-                throw new IllegalStateException(Resources.format(Resources.Keys.UnexpectedNumberOfBands_2, expected, actual));
-            }
+            checkBandCount(sm.getNumBands());
             sm = sampleModel;
         }
-        final Dimension tile = suggestTileSize(image, bounds);
+        return createCompatibleSampleModel(sm, suggestTileSize(image, bounds));
+    }
+
+    /**
+     * Returns a sample model equivalent to the given one, but using a different width and height.
+     * If the given sample model already has the desired size, then it is returned unchanged.
+     */
+    private static SampleModel createCompatibleSampleModel(SampleModel sm, final Dimension tile) {
         if (sm.getWidth() != tile.width || sm.getHeight() != tile.height) {
             sm = sm.createCompatibleSampleModel(tile.width, tile.height);
             sm = RasterFactory.unique(sm);
         }
         return sm;
+    }
+
+    /**
+     * Returns a sample model for the given data type with a size computed from the given image bounds.
+     * If this {@code ImageLayout} contains a {@link #sampleModel}, then the latter is used as a template.
+     *
+     * @param  dataType  the default data type for the sample model to create.
+     * @param  bounds    the bounds of the image to create.
+     * @param  numBands  the number of bands in the sample model to create.
+     * @return image sample model with a tile size derived from the given image bounds.
+     * @throws IllegalStateException if {@link #sampleModel} is non-null but does not
+     *         have the same number of bands as the given {@code numBands} argument.
+     */
+    public SampleModel createSampleModel(final DataType dataType, final Rectangle bounds, final int numBands) {
+        ArgumentChecks.ensureNonNull("bounds", bounds);
+        if (sampleModel != null) {
+            checkBandCount(numBands);
+            return createCompatibleSampleModel(sampleModel, suggestTileSize(null, bounds));
+        }
+        return createBandedSampleModel(null, bounds, dataType, numBands, 0);
+    }
+
+    /**
+     * Creates a banded sample model for the given data type.
+     * At least one of {@code image} and {@code bounds} arguments must be non null.
+     * This method uses the {@linkplain #suggestTileSize(RenderedImage, Rectangle)
+     * suggested tile size} for the given image and bounds.
+     *
+     * <p>This method constructs the simplest possible banded sample model:
+     * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zero and
+     * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.
+     * This simplicity is needed by current implementation of {@link BandAggregateImage}.
+     * User-specified {@link #sampleModel} is ignored.</p>
+     *
+     * @param  image           the image which will be the source of the image for which a sample model is created.
+     * @param  bounds          the bounds of the image to create, or {@code null} if same as {@code image}.
+     * @param  dataType        desired data type.
+     * @param  numBands        desired number of bands.
+     * @param  scanlineStride  the line stride of the image data, or ≤ 0 for automatic.
+     * @return a banded sample model of the given type with the given number of bands.
+     */
+    final BandedSampleModel createBandedSampleModel(final RenderedImage image, final Rectangle bounds,
+            final DataType dataType, final int numBands, int scanlineStride)
+    {
+        final Dimension tileSize = suggestTileSize(image, bounds);
+        if (scanlineStride <= 0) {
+            scanlineStride = tileSize.width;
+        }
+        // Pixel stride, bank indices and band offsets intentionally non-configurable. See Javadoc.
+        return RasterFactory.unique(new BandedSampleModel(dataType.toDataBufferType(),
+                tileSize.width, tileSize.height, scanlineStride, ArraysExt.range(0, numBands), new int[numBands]));
     }
 
     /**

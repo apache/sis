@@ -204,7 +204,8 @@ final class BandAggregateLayout extends ImageLayout {
                                       chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height));
 
         return new BandAggregateLayout(sources, bandsPerSource, bandSelect, domain, preferredTileSize, exactTileSize,
-                    minTile, commonDataType, aggregate.numBands(), allowSharing ? scanlineStride : 0);
+                    minTile, DataType.forDataBufferType(commonDataType), aggregate.numBands(),
+                    allowSharing ? scanlineStride : 0);
     }
 
     /**
@@ -227,14 +228,14 @@ final class BandAggregateLayout extends ImageLayout {
      */
     private BandAggregateLayout(final RenderedImage[] sources, final int[][] bandsPerSource, final int[] bandSelect,
             final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
-            final Point minTile, final int commonDataType, final int numBands, final int scanlineStride)
+            final Point minTile, final DataType commonDataType, final int numBands, final int scanlineStride)
     {
         super(null, preferredTileSize, !exactTileSize, false, false, minTile);
         this.bandsPerSource = bandsPerSource;
         this.bandSelect     = bandSelect;
         this.sources        = sources;
         this.domain         = domain;
-        this.sampleModel    = createBandedSampleModel(commonDataType, numBands, null, domain, scanlineStride);
+        this.sampleModel    = createBandedSampleModel(null, domain, commonDataType, numBands, scanlineStride);
         /*
          * Note: above call to `createBandedSampleModel(…)` must be last,
          * except for `filteredSources` which is not needed by that method.

@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.nio.charset.Charset;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
@@ -1622,7 +1623,8 @@ final class ImageFileDirectory extends DataCube {
             RuntimeException error = null;
             final DataType type = getDataType();
             if (type != null) try {
-                sampleModel = new SampleModelFactory(type, tileWidth, tileHeight, samplesPerPixel, bitsPerSample, isPlanar).build();
+                var size = new Dimension(tileWidth, tileHeight);
+                sampleModel = new SampleModelFactory(type, size, samplesPerPixel, bitsPerSample, isPlanar).build();
             } catch (IllegalArgumentException | RasterFormatException e) {
                 error = e;
             }

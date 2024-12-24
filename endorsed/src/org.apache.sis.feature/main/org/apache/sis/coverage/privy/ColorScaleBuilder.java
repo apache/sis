@@ -35,10 +35,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.image.DataType;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -666,24 +667,40 @@ reuse:  if (source != null) {
      * given by {@link #getSampleToIndexValues()}. Images using this color model shall
      * use a {@link DataBuffer} of type {@link #TYPE_COMPACT}.
      *
-     * @param  dataType     the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
-     *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
-     *                      or {@link DataBuffer#TYPE_DOUBLE}.
+     * @param  dataType     the type of data elements used for storing sample values.
      * @param  numBands     the number of bands for the color model (usually 1). The returned color model will render only
      *                      the {@code visibleBand} and ignore the others, but the existence of all {@code numBands} will
      *                      be at least tolerated. Supplemental bands, even invisible, are useful for processing.
      * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any, will be ignored.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    public ColorModel createColorModel(int dataType, final int numBands, final int visibleBand) {
+    public ColorModel createColorModel(final DataType dataType, final int numBands, final int visibleBand) {
         checkInitializationStatus(true);
-        if (compact) {
-            compact();
-            dataType = TYPE_COMPACT;
-        }
+        int typeCode = dataType.toDataBufferType();
         ArgumentChecks.ensureStrictlyPositive("numBands", numBands);
         ArgumentChecks.ensureBetween("visibleBand", 0, numBands - 1, visibleBand);
-        return ColorModelFactory.createPiecewise(dataType, numBands, visibleBand, entries);
+        if (compact) {
+            compact();
+            typeCode = TYPE_COMPACT;
+        }
+        return ColorModelFactory.createPiecewise(typeCode, numBands, visibleBand, entries);
+    }
+
+    /**
+     * Returns a color model to use in a rendered image together with the given sample model.
+     * This method delegates to {@link #createColorModel(DataType, int, int)} after having
+     * inferred the data type from the given sample model.
+     *
+     * @todo Current implementation does not verify that the color model is compatible
+     *       with the sample model. We should add that verification.
+     *
+     * @param  target       the sample model for which to create a color model.
+     * @param  numBands     the number of bands for the color model (usually 1).
+     * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any, will be ignored.
+     * @return a color model using a data type inferred from the given sample model.
+     */
+    public ColorModel createColorModel(final SampleModel target, final int numBands, final int visibleBand) {
+        return createColorModel(DataType.forDataBufferType(ImageUtilities.getBandType(target)), numBands, visibleBand);
     }
 
     /**
