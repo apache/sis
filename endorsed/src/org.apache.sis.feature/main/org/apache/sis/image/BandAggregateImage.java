@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.BandedSampleModel;
@@ -24,6 +25,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.BandAggregateArgument;
 
@@ -48,6 +50,12 @@ class BandAggregateImage extends MultiSourceImage {
      * This flag allows to disable completely the sharing for all sources.
      */
     private final boolean allowSharing;
+
+    /**
+     * Concatenated array of the sample dimensions declared in all sources, or {@code null} if none.
+     * This field is non-null only if this information is present in all sources.
+     */
+    private final SampleDimension[] sampleDimensions;
 
     /*
      * The method declaration order below is a little bit unusual,
@@ -140,12 +148,12 @@ class BandAggregateImage extends MultiSourceImage {
     static RenderedImage create(final RenderedImage[] sources, final int[][] bandsPerSource, final Colorizer colorizer,
                                 final boolean forceColors, final boolean allowSharing, final boolean parallel)
     {
-        final var layout = BandAggregateLayout.create(sources, bandsPerSource, allowSharing);
+        final var layout = new BandAggregateLayout(sources, bandsPerSource, allowSharing);
         final BandAggregateImage image;
         if (layout.isWritable()) {
-            image = new Writable(layout, colorizer, allowSharing, parallel);
+            image = new Writable(layout, colorizer, parallel);
         } else {
-            image = new BandAggregateImage(layout, colorizer, allowSharing, parallel);
+            image = new BandAggregateImage(layout, colorizer, parallel);
         }
         RenderedImage result = image;
         if (image.getNumSources() == 1) {
@@ -170,12 +178,12 @@ class BandAggregateImage extends MultiSourceImage {
      * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
      * @param  parallel   whether parallel computation is allowed.
      */
-    private BandAggregateImage(final BandAggregateLayout layout, final Colorizer colorizer,
-                               final boolean allowSharing, final boolean parallel)
-    {
-        super(layout.filteredSources, layout.domain, layout.getPreferredMinTile(),
-              layout.sampleModel, layout.createColorModel(colorizer), parallel);
-        this.allowSharing = allowSharing;
+    private BandAggregateImage(final BandAggregateLayout layout, final Colorizer colorizer, final boolean parallel) {
+        super(layout.filteredSources, layout.domain, layout.minTile, layout.sampleModel,
+              layout.createColorModel(colorizer), parallel);
+
+        this.allowSharing     = layout.allowSharing;
+        this.sampleDimensions = layout.sampleDimensions;
     }
 
     /**
@@ -230,6 +238,31 @@ class BandAggregateImage extends MultiSourceImage {
     }
 
     /**
+     * Returns the names of all recognized properties,
+     * or {@code null} if this image has no properties.
+     */
+    @Override
+    public String[] getPropertyNames() {
+        if (sampleDimensions != null) {
+            return new String[] {SAMPLE_DIMENSIONS_KEY};
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Gets a property of this image as a value derived from all source images.
+     */
+    @Override
+    public Object getProperty(final String key) {
+        if (sampleDimensions != null && SAMPLE_DIMENSIONS_KEY.equals(key)) {
+            return sampleDimensions.clone();
+        } else {
+            return super.getProperty(key);
+        }
+    }
+
+    /**
      * A {@code BandAggregateImage} where all sources are writable rendered images.
      */
     private static final class Writable extends BandAggregateImage implements WritableRenderedImage {
@@ -239,10 +272,8 @@ class BandAggregateImage extends MultiSourceImage {
          * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
          * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
          */
-        Writable(final BandAggregateLayout layout, final Colorizer colorizer,
-                 final boolean allowSharing, final boolean parallel)
-        {
-            super(layout, colorizer, allowSharing, parallel);
+        Writable(final BandAggregateLayout layout, final Colorizer colorizer, final boolean parallel) {
+            super(layout, colorizer, parallel);
         }
 
         /**
@@ -332,7 +363,12 @@ class BandAggregateImage extends MultiSourceImage {
      */
     @Override
     public boolean equals(final Object object) {
-        return super.equals(object) && ((BandAggregateImage) object).allowSharing == allowSharing;
+        if (super.equals(object)) {
+            final var that = (BandAggregateImage) object;
+            return that.allowSharing == allowSharing &&
+                   Arrays.equals(that.sampleDimensions, sampleDimensions);
+        }
+        return false;
     }
 
     /**
@@ -340,6 +376,8 @@ class BandAggregateImage extends MultiSourceImage {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Boolean.hashCode(allowSharing);
+        return super.hashCode()
+                + Boolean.hashCode(allowSharing)
+                + Arrays.hashCode(sampleDimensions);
     }
 }

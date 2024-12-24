@@ -972,6 +972,7 @@ public class ImageProcessor implements Cloneable {
             colorizer = this.colorizer;
             parallel = executionMode != Mode.SEQUENTIAL;
         }
+        // `allowSharing` is currently hard-coded to `true`, but it may change in a future version.
         return BandAggregateImage.create(sources, bandsPerSource, colorizer, true, true, parallel);
     }
 
