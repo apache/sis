@@ -229,7 +229,7 @@ final class BandAggregateLayout extends ImageLayout {
             final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
             final Point minTile, final int commonDataType, final int numBands, final int scanlineStride)
     {
-        super(null, null, preferredTileSize, !exactTileSize, false, false, minTile);
+        super(null, preferredTileSize, !exactTileSize, false, false, minTile);
         this.bandsPerSource = bandsPerSource;
         this.bandSelect     = bandSelect;
         this.sources        = sources;

@@ -997,6 +997,7 @@ public class ImageProcessor implements Cloneable {
      *   <li>{@linkplain #getImageLayout() Image layout} for the desired sample model and color model.</li>
      *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
      *       whether to use a modified image size if {@code bounds} is not divisible by a tile size.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * @param  sources  the images to overlay. Null array elements are ignored.
@@ -1011,12 +1012,14 @@ public class ImageProcessor implements Cloneable {
     public RenderedImage overlay(final RenderedImage[] sources, final Rectangle bounds) {
         ArgumentChecks.ensureNonEmpty("sources", sources);
         final ImageLayout layout;
+        final Colorizer colorizer;
         final boolean parallel;
         synchronized (this) {
             layout = this.layout;
+            colorizer = this.colorizer;
             parallel = executionMode != Mode.SEQUENTIAL;
         }
-        return ImageOverlay.create(sources, bounds, layout.sampleModel, layout.colorModel,
+        return ImageOverlay.create(sources, bounds, layout.sampleModel, colorizer,
                 layout.isTileSizeAdjustmentAllowed | (bounds != null), parallel);
     }
 

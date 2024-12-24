@@ -85,19 +85,20 @@ final class ImageOverlay extends MultiSourceImage {
      * @param  sources       the images to overlay. Null array elements are ignored.
      * @param  bounds        range of pixel coordinates, or {@code null} for the union of all source images.
      * @param  sampleModel   the sample model, of {@code null} for automatic.
-     * @param  colorModel    the color model, of {@code null} for automatic.
+     * @param  colorizer     function for deriving a color model, of {@code null} for automatic.
      * @param  autoTileSize  whether this method is allowed to change the tile size.
      * @param  parallel      whether parallel computation is allowed.
      * @return the image overlay, or one of the given sources if only one is suitable.
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if no image intersect the bounds.
      */
-    static RenderedImage create(RenderedImage[] sources, Rectangle bounds, SampleModel sampleModel, ColorModel colorModel,
-                                final boolean autoTileSize, final boolean parallel)
+    static RenderedImage create(RenderedImage[] sources, Rectangle bounds, SampleModel sampleModel,
+            final Colorizer colorizer, final boolean autoTileSize, final boolean parallel)
     {
         final Area aoi = (bounds != null) ? new Area(bounds) : null;
         Area[] contributions = new Area[sources.length];
         final Area validArea = new Area();
+        ColorModel colorModel = null;
         /*
          * Filter the source images for keeping only the ones that intersect the bounds.
          * Check image compatibility (number of bands) and color model in the same loop.
@@ -146,14 +147,16 @@ final class ImageOverlay extends MultiSourceImage {
         }
         /*
          * Except if there is no image, the sample model should be non-null at this point.
-         * However, the color model may still be null if none was specified in argument and
-         * no compatible color model was found in the source images. Leave thet color model
-         * to null (i.e., we don't invent colors when we don't know what they should be).
+         * The color model is optionally specified in the colorizer, which we check now
+         * with the current color model used only as a fallback.
          */
         if (count == 0) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.SourceImagesDoNotIntersect));
         }
         final RenderedImage main = sources[0];
+        if (colorizer != null) {
+            colorModel = colorizer.apply(new Colorizer.Target(sampleModel, main)).orElse(colorModel);
+        }
         if (count == 1 && sampleModel.equals(main.getSampleModel())) {
             return (colorModel != null) ? RecoloredImage.apply(main, colorModel) : main;
         }

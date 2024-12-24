@@ -47,6 +47,10 @@ import org.apache.sis.feature.internal.Resources;
  * may be replaced by the tile size {@linkplain #suggestTileSize(int, int) computed}
  * by this {@code ImageLayout} class.</p>
  *
+ * <p>This class contains no information about colors.
+ * The {@link ColorModel} to associate with a {@link SampleModel}
+ * is controlled by a separated interface: {@link Colorizer}.</p>
+ *
  * <p>Instances of this class are immutable and thread-safe.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -79,17 +83,13 @@ public class ImageLayout {
      * Image sizes are preserved but the tile sizes are flexible. The last row and last column of tiles
      * in an image are allowed to be only partially filled.
      */
-    public static final ImageLayout DEFAULT = new ImageLayout(null, null, null, true, false, true, null);
-
-    /**
-     * Preferred color model, or {@code null} if none. If no {@link #sampleModel} is specified, it may
-     * be {@linkplain ColorModel#createCompatibleSampleModel(int, int) derived} from this color model.
-     */
-    protected final ColorModel colorModel;
+    public static final ImageLayout DEFAULT = new ImageLayout(null, null, true, false, true, null);
 
     /**
      * Preferred sample model, or {@code null} if none. The sample model width and height may be replaced
      * by the tile size {@linkplain #suggestTileSize(int, int) computed} by this {@code ImageLayout} class.
+     *
+     * @see #createCompatibleSampleModel(RenderedImage, Rectangle)
      */
     protected final SampleModel sampleModel;
 
@@ -152,30 +152,21 @@ public class ImageLayout {
 
     /**
      * Creates a new image layout with the given properties.
-     * If both the given color model and sample model are non-null,
-     * then then shall be {@linkplain ColorModel#isCompatibleSampleModel(SampleModel) compatible}.
      *
-     * @param  colorModel                      preferred color model, or {@code null} if none.
      * @param  sampleModel                     preferred sample model, or {@code null} if none.
      * @param  preferredTileSize               preferred tile size, or {@code null} for the default size.
      * @param  isTileSizeAdjustmentAllowed     whether tile size can be modified if needed.
      * @param  isImageBoundsAdjustmentAllowed  whether image size can be modified if needed.
      * @param  isPartialTilesAllowed           whether to allow tiles that are only partially filled.
      * @param  preferredMinTile                preferred tile index where image start their tile matrix, or {@code null} for (0,0).
-     * @throws IllegalArgumentException if the given color model and sample model are incompatible.
      */
-    protected ImageLayout(final ColorModel  colorModel,
-                          final SampleModel sampleModel,
+    protected ImageLayout(final SampleModel sampleModel,
                           final Dimension   preferredTileSize,
                           final boolean     isTileSizeAdjustmentAllowed,
                           final boolean     isImageBoundsAdjustmentAllowed,
                           final boolean     isPartialTilesAllowed,
                           final Point       preferredMinTile)
     {
-        if (colorModel != null && sampleModel != null && !colorModel.isCompatibleSampleModel(sampleModel)) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleColorModel));
-        }
-        this.colorModel  = colorModel;
         this.sampleModel = sampleModel;
         if (preferredTileSize != null) {
             preferredTileWidth  = Math.max(1, preferredTileSize.width);
@@ -217,7 +208,7 @@ public class ImageLayout {
 
         /** Creates a new layout with exactly the tile size of given image. */
         FixedDestination(final WritableRenderedImage destination, final int minTileX, final int minTileY) {
-            super(destination.getColorModel(), destination.getSampleModel(),
+            super(destination.getSampleModel(),
                   new Dimension(destination.getTileWidth(), destination.getTileHeight()),
                   false, false, true, new Point(minTileX, minTileY));
             this.destination = destination;
@@ -235,56 +226,24 @@ public class ImageLayout {
     }
 
     /**
-     * Returns a new layout with the same properties than this layout except for the color model.
-     * If the given argument value results in no change, returns {@code this}.
-     *
-     * @param  model    the new color model, or {@code null} if none.
-     * @param  cascade  whether to derive a new sample model from the given color model.
-     * @return the layout for the given color model.
-     * @throws IllegalArgumentException if {@code cascade} is {@code false}
-     *         and the the given color model is incompatible with the current sample model.
-     */
-    public ImageLayout withColorModel(final ColorModel model, final boolean cascade) {
-        SampleModel sm = sampleModel;
-        if (model != null) {
-            if (cascade) {
-                sm = model.createCompatibleSampleModel(preferredTileWidth, preferredTileHeight);
-            } else if (sm != null && !model.isCompatibleSampleModel(sm)) {
-                throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleColorModel));
-            }
-        }
-        if (Objects.equals(colorModel, model) && Objects.equals(sampleModel, sm)) {
-            return this;
-        }
-        return new ImageLayout(model, sm,
-                getPreferredTileSize(), isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed,
-                getPreferredMinTile());
-    }
-
-    /**
      * Returns a new layout with the same properties than this layout except for the sample model.
      * If the given argument value results in no change, returns {@code this}.
      *
      * @param  model    the new sample model, or {@code null} if none.
      * @param  cascade  whether to set the preferred tile size to the size of the given sample model.
      * @return the layout for the given sample model.
-     * @throws IllegalArgumentException if sample model is incompatible with the current color model.
      */
     public ImageLayout withSampleModel(final SampleModel model, final boolean cascade) {
         int width  = preferredTileWidth;
         int height = preferredTileHeight;
-        if (model != null) {
-            if (cascade) {
-                width  = model.getWidth();
-                height = model.getHeight();
-            } else if (colorModel != null && !colorModel.isCompatibleSampleModel(model)) {
-                throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleColorModel));
-            }
+        if (cascade && model != null) {
+            width  = model.getWidth();
+            height = model.getHeight();
         }
         if (Objects.equals(sampleModel, model) && width == preferredTileWidth && height == preferredTileHeight) {
             return this;
         }
-        return new ImageLayout(colorModel, model, new Dimension(width, height),
+        return new ImageLayout(model, new Dimension(width, height),
                 isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed,
                 getPreferredMinTile());
     }
@@ -300,7 +259,7 @@ public class ImageLayout {
      */
     public ImageLayout allowTileSizeAdjustments(boolean allowed) {
         if (isTileSizeAdjustmentAllowed == allowed) return this;
-        return new ImageLayout(colorModel, sampleModel,
+        return new ImageLayout(sampleModel,
                 getPreferredTileSize(), allowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed,
                 getPreferredMinTile());
     }
@@ -316,7 +275,7 @@ public class ImageLayout {
      */
     public ImageLayout allowImageBoundsAdjustments(boolean allowed) {
         if (isImageBoundsAdjustmentAllowed == allowed) return this;
-        return new ImageLayout(colorModel, sampleModel,
+        return new ImageLayout(sampleModel,
                 getPreferredTileSize(), isTileSizeAdjustmentAllowed, allowed, isPartialTilesAllowed,
                 getPreferredMinTile());
     }
@@ -332,15 +291,14 @@ public class ImageLayout {
      */
     public ImageLayout allowPartialTiles(boolean allowed) {
         if (isPartialTilesAllowed == allowed) return this;
-        return new ImageLayout(colorModel, sampleModel,
+        return new ImageLayout(sampleModel,
                 getPreferredTileSize(), isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, allowed,
                 getPreferredMinTile());
     }
 
     /**
      * Creates a new layout with the tile size and tile indices of the given image.
-     * Other properties of this {@code ImageLayout} (color model, sample model and
-     * all Boolean flags) are inherited unchanged.
+     * Other properties of this {@code ImageLayout} (sample model and all Boolean flags) are inherited unchanged.
      * If the given argument value results in no change, returns {@code this}.
      *
      * @param  source  image from which to take tile size and tile indices.
@@ -359,7 +317,7 @@ public class ImageLayout {
         {
             return this;
         }
-        return new ImageLayout(colorModel, sampleModel,
+        return new ImageLayout(sampleModel,
                 preferredTileSize, isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed,
                 preferredMinTile);
     }
@@ -377,7 +335,7 @@ public class ImageLayout {
         if (size.width == preferredTileWidth && size.height == preferredTileHeight) {
             return this;
         }
-        return new ImageLayout(colorModel, sampleModel,
+        return new ImageLayout(sampleModel,
                 size, isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed,
                 isPartialTilesAllowed, getPreferredMinTile());
     }
@@ -491,8 +449,7 @@ public class ImageLayout {
      * current tile size unless the tiles are too large, in which case they may be subdivided.
      * Otherwise (untiled image), this method proposes a tile size.
      *
-     * <p>This method also checks whether the {@linkplain #colorModel preferred color model} or, if the latter
-     * is unspecified, the {@linkplain RenderedImage#getColorModel() image color model} supports transparency.
+     * <p>This method checks whether the {@linkplain RenderedImage#getColorModel() image color model} supports transparency.
      * If not, then this method will not return a size that may result in the creation of partially empty tiles.
      * In other words, the {@link #isPartialTilesAllowed} flag is ignored (handled as {@code false}) for opaque
      * images.</p>
@@ -505,17 +462,16 @@ public class ImageLayout {
         if (bounds != null && bounds.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "bounds"));
         }
-        ColorModel cm = colorModel;
         boolean allowPartialTiles = isPartialTilesAllowed;
         if (allowPartialTiles && image != null && !isImageBoundsAdjustmentAllowed) {
-            cm = image.getColorModel();
+            final ColorModel cm = image.getColorModel();
             allowPartialTiles = (cm != null);
-        }
-        if (allowPartialTiles) {
-            if (cm instanceof IndexColorModel) {
-                allowPartialTiles = ((IndexColorModel) cm).getTransparentPixel() == 0;
-            } else if (cm != null) {
-                allowPartialTiles = (cm.getTransparency() != ColorModel.OPAQUE);
+            if (allowPartialTiles) {
+                if (cm instanceof IndexColorModel) {
+                    allowPartialTiles = ((IndexColorModel) cm).getTransparentPixel() == 0;
+                } else {
+                    allowPartialTiles = (cm.getTransparency() != ColorModel.OPAQUE);
+                }
             }
         }
         /*

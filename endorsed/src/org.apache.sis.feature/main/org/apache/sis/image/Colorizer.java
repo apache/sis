@@ -34,8 +34,10 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
 /**
@@ -63,7 +65,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * such as the {@link SampleDimension}s of the target coverage.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.4
+     * @version 1.5
      * @since   1.4
      */
     class Target {
@@ -105,6 +107,30 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
                 return;
             }
             this.visibleBand = -1;
+        }
+
+
+        /**
+         * Creates a new target with the same sample dimensions and visible band as the given image.
+         * This is a convenience constructor for operations producing the same kind of data than an
+         * existing image, taken as a template. The list of sample dimensions is fetched from the
+         * image property associated to the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
+         *
+         * @param model     sample model of the computed image to colorize (mandatory).
+         * @param template  the image from which to get the sample dimensions and visible band, or {@code null} if none.
+         * @since 1.5
+         */
+        public Target(SampleModel model, final RenderedImage template) {
+            this.model  = Objects.requireNonNull(model);
+            visibleBand = ImageUtilities.getVisibleBand(template);
+            if (template != null) {
+                final Object value = template.getProperty(PlanarImage.SAMPLE_DIMENSIONS_KEY);
+                if (value instanceof SampleDimension[]) {
+                    ranges = UnmodifiableArrayList.wrap((SampleDimension[]) value);
+                    return;
+                }
+            }
+            ranges = null;
         }
 
         /**
