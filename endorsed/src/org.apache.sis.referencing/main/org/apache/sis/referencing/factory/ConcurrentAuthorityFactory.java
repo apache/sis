@@ -1746,7 +1746,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
         /** String representation used by {@link CacheRecord}. */
         @Override public String toString() {
-            final StringBuilder buffer = new StringBuilder();
+            final var buffer = new StringBuilder();
             if (type instanceof Class<?>) {
                 buffer.append("Code[“").append(code);
                 if (buffer.length() > 15) {                     // Arbitrary limit in string length.
@@ -2167,7 +2167,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      */
     private static <DAO extends GeodeticAuthorityFactory> List<DAO> clear(final Deque<DataAccessRef<DAO>> availableDAOs) {
         assert Thread.holdsLock(availableDAOs);
-        final List<DAO> factories = new ArrayList<>(availableDAOs.size());
+        final var factories = new ArrayList<DAO>(availableDAOs.size());
         DataAccessRef<DAO> dao;
         while ((dao = availableDAOs.pollFirst()) != null) {
             factories.add(dao.factory);

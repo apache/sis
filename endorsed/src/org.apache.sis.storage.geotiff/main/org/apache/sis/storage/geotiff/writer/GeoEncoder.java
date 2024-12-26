@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff.writer;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.EnumMap;
 import java.util.logging.Level;
@@ -34,6 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CartesianCS;
@@ -44,6 +46,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.measure.Units;
@@ -58,11 +61,13 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
+import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.base.MetadataFetcher;
 import org.apache.sis.storage.geotiff.base.UnitKey;
 import org.apache.sis.storage.geotiff.base.GeoKeys;
@@ -83,6 +88,12 @@ import org.apache.sis.pending.jdk.JDK15;
  */
 public final class GeoEncoder {
     /**
+     * Number of dimensions in a rendered image.
+     * Used for identifying codes where a two-dimensional slice is assumed.
+     */
+    private static final int BIDIMENSIONAL = 2;
+
+    /**
      * Size of the model transformation matrix, in number of rows and columns.
      * This size is fixed by the GeoTIFF specification.
      */
@@ -100,16 +111,11 @@ public final class GeoEncoder {
     private String citation;
 
     /**
-     * The coordinate reference system of the grid geometry, or {@code null} if none.
-     * This CRS may contain more dimensions than the 3 dimensions allowed by GeoTIFF.
+     * The axis directions of the grid geometry, or {@code null} if none.
+     * The array length is 2 or 3, with the vertical axis always last.
      * Axis order and axis directions may be different than the (east, north, up) directions mandated by GeoTIFF.
      */
-    private CoordinateReferenceSystem fullCRS;
-
-    /**
-     * Whether the coordinate system has a vertical component.
-     */
-    private boolean hasVerticalAxis;
+    private AxisDirection[] axisDirections;
 
     /**
      * The conversion from grid coordinates to full CRS, which determines the model transformation.
@@ -223,29 +229,75 @@ public final class GeoEncoder {
      * @throws ArithmeticException if a short value cannot be stored as an unsigned 16 bits integer.
      * @throws IncommensurableException if a measure uses an unexpected unit of measurement.
      * @throws IncompleteGridGeometryException if the grid geometry is incomplete.
+     * @throws IncompatibleResourceException if the grid geometry cannot be encoded.
      */
     public void write(final GridGeometry grid, final MetadataFetcher<?> metadata)
-                  throws FactoryException, IncommensurableException
+            throws FactoryException, TransformException, IncommensurableException, IncompatibleResourceException
     {
-        citation  = CollectionsExt.first(metadata.transformationDimension);
-        isPoint   = CollectionsExt.first(metadata.cellGeometry) == CellGeometry.POINT;
-        gridToCRS = MathTransforms.getMatrix(grid.getGridToCRS(isPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER));
-        if (gridToCRS == null) {
-            warning(resources().getString(Resources.Keys.CanNotEncodeNonLinearModel), null);
-        }
-        if (grid.isDefined(GridGeometry.CRS)) {
-            fullCRS = grid.getCoordinateReferenceSystem();
-            final CoordinateReferenceSystem crs = CRS.getHorizontalComponent(fullCRS);
-            if ((crs instanceof ProjectedCRS && writeCRS((ProjectedCRS) crs)) ||
-                (crs instanceof GeodeticCRS  && writeCRS((GeodeticCRS) crs, false)))
-            {
-                writeCRS(CRS.getVerticalComponent(fullCRS, true));
-            } else {
-                unsupportedType(fullCRS);
-                writeModelType(GeoCodes.userDefined);
+        citation = CollectionsExt.first(metadata.transformationDimension);
+        isPoint  = CollectionsExt.first(metadata.cellGeometry) == CellGeometry.POINT;
+        final var anchor = isPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER;
+        /*
+         * Get the dimension indices of the two-dimensional slice to write. They should be the first dimensions,
+         * but we allow those dimensions to appear elsewhere.
+         */
+        final int[] dimensions = grid.getExtent().getSubspaceDimensions(BIDIMENSIONAL);
+        final GridGeometry horizontal = grid.selectDimensions(dimensions);
+        if (grid.isDefined(GridGeometry.GRID_TO_CRS)) {
+            gridToCRS = MathTransforms.getMatrix(horizontal.getGridToCRS(anchor));
+            if (gridToCRS == null) {
+                String message = resources().getString(Resources.Keys.CanNotEncodeNonLinearModel);
+                throw new IncompatibleResourceException(message).addAspect("gridToCRS");
             }
-        } else {
+        }
+        /*
+         * Write the horizontal component of the CRS. We need to take the CRS
+         * at the same dimensions than the ones selected for the `gridToCRS`.
+         */
+        if (!grid.isDefined(GridGeometry.CRS)) {
             writeModelType(GeoCodes.undefined);
+            return;
+        }
+        final CoordinateReferenceSystem crs = horizontal.getCoordinateReferenceSystem();
+        axisDirections = CoordinateSystems.getAxisDirections(crs.getCoordinateSystem());
+        if (crs instanceof ProjectedCRS) {
+            writeCRS((ProjectedCRS) crs);
+        } else if (crs instanceof GeodeticCRS) {
+            writeCRS((GeodeticCRS) crs, false);
+        } else if (crs instanceof EngineeringCRS) {
+            writeModelType(GeoCodes.userDefined);
+            return;
+        } else {
+            throw unsupportedType(crs);
+        }
+        /*
+         * Write the vertical component of the CRS, if any. We restrict the type to `VerticalCRS`,
+         * because this is the semantic of the GeoKeys.
+         */
+        final CoordinateReferenceSystem fullCRS = grid.getCoordinateReferenceSystem();
+        final VerticalCRS vertical = CRS.getVerticalComponent(fullCRS, true);
+        if (vertical != null) {
+            final CoordinateSystem cs = vertical.getCoordinateSystem();
+            final int vi = AxisDirections.indexOfColinear(fullCRS.getCoordinateSystem(), cs);
+            if (vi >= 0 && Arrays.binarySearch(dimensions, vi) < 0) {
+                writeCRS(vertical);
+                axisDirections = Arrays.copyOf(axisDirections, BIDIMENSIONAL+1);
+                axisDirections[BIDIMENSIONAL] = cs.getAxis(0).getDirection();
+                if (gridToCRS != null) {
+                    gridToCRS = Matrices.resizeAffine(gridToCRS, MATRIX_SIZE, MATRIX_SIZE);
+                    Matrix more = grid.getLinearGridToCRS(anchor).getMatrix();
+                    for (int i=0; i<MATRIX_SIZE; i++) {
+                        final int s;
+                        switch (i) {
+                            default:            s = dimensions[i];        break;    // Shear from horizontal dimensions.
+                            case BIDIMENSIONAL: s = vi;                   break;    // Scale from vertical dimension.
+                            case MATRIX_SIZE-1: s = more.getNumCol() - 1; break;    // Translation.
+                        }
+                        // Copy the rows of the third dimension.
+                        gridToCRS.setElement(BIDIMENSIONAL, i, more.getElement(BIDIMENSIONAL, s));
+                    }
+                }
+            }
         }
     }
 
@@ -270,24 +322,22 @@ public final class GeoEncoder {
      *
      * @param  crs  the CRS to write, or {@code null} if none.
      * @throws FactoryException if an error occurred while fetching an EPSG code.
+     * @throws IncompatibleResourceException if a unit of measurement cannot be encoded.
      */
-    private void writeCRS(final VerticalCRS crs) throws FactoryException {
-        if (crs != null) {
-            hasVerticalAxis = true;
-            if (writeEPSG(GeoKeys.Vertical, crs)) {
-                writeName(GeoKeys.VerticalCitation, null, crs);
-                addUnits(UnitKey.VERTICAL, crs.getCoordinateSystem());
-                final VerticalDatum datum = PseudoDatum.of(crs);
-                if (writeEPSG(GeoKeys.VerticalDatum, datum)) {
-                    /*
-                     * OGC requirement 25.5 said "VerticalCitationGeoKey SHALL be populated."
-                     * But how? Using the same multiple-names convention as for geodetic CRS?
-                     *
-                     * https://github.com/opengeospatial/geotiff/issues/59
-                     */
-                }
-                writeUnit(UnitKey.VERTICAL);
+    private void writeCRS(final VerticalCRS crs) throws FactoryException, IncompatibleResourceException {
+        if (writeEPSG(GeoKeys.Vertical, crs)) {
+            writeName(GeoKeys.VerticalCitation, null, crs);
+            addUnits(UnitKey.VERTICAL, crs.getCoordinateSystem());
+            final VerticalDatum datum = PseudoDatum.of(crs);
+            if (writeEPSG(GeoKeys.VerticalDatum, datum)) {
+                /*
+                 * OGC requirement 25.5 said "VerticalCitationGeoKey SHALL be populated."
+                 * But how? Using the same multiple-names convention as for geodetic CRS?
+                 *
+                 * https://github.com/opengeospatial/geotiff/issues/59
+                 */
             }
+            writeUnit(UnitKey.VERTICAL);
         }
     }
 
@@ -298,24 +348,25 @@ public final class GeoEncoder {
      *
      * @param  crs        the CRS to write.
      * @param  isBaseCRS  whether to write the base CRS of a projected CRS.
-     * @return whether this method has been able to write the CRS.
      * @throws FactoryException if an error occurred while fetching an EPSG code.
      * @throws IncommensurableException if a measure uses an unexpected unit of measurement.
+     * @throws IncompatibleResourceException if the <abbr>CRS</abbr> has an incompatible property.
      */
-    private boolean writeCRS(final GeodeticCRS crs, final boolean isBaseCRS) throws FactoryException, IncommensurableException {
+    private void writeCRS(final GeodeticCRS crs, final boolean isBaseCRS)
+            throws FactoryException, IncommensurableException, IncompatibleResourceException
+    {
         final short type;
         final CoordinateSystem cs = crs.getCoordinateSystem();
         addUnits(UnitKey.ANGULAR, cs);
         if (cs instanceof EllipsoidalCS) {
             type = GeoCodes.ModelTypeGeographic;
         } else if (isBaseCRS) {
-            warning(resources().getString(Resources.Keys.CanNotEncodeNonGeographicBase), null);
-            return false;
+            String message = resources().getString(Resources.Keys.CanNotEncodeNonGeographicBase);
+            throw new IncompatibleResourceException(message).addAspect("crs");
         } else if (cs instanceof CartesianCS) {
             type = GeoCodes.ModelTypeGeocentric;
         } else {
-            unsupportedType(cs);
-            return false;
+            throw unsupportedType(cs);
         }
         /*
          * Start writing GeoTIFF keys for the geodetic CRS, potentially followed by datum, prime meridian and ellipsoid
@@ -361,7 +412,6 @@ public final class GeoEncoder {
         } else if (isBaseCRS) {
             writeUnit(UnitKey.ANGULAR);         // Map projection parameters may need this unit.
         }
-        return true;
     }
 
     /**
@@ -371,23 +421,27 @@ public final class GeoEncoder {
      * @return whether this method has been able to write the CRS.
      * @throws FactoryException if an error occurred while fetching an EPSG or GeoTIFF code.
      * @throws IncommensurableException if a measure uses an unexpected unit of measurement.
+     * @throws IncompatibleResourceException if the <abbr>CRS</abbr> has an incompatible property.
      */
-    private boolean writeCRS(final ProjectedCRS crs) throws FactoryException, IncommensurableException {
-        if (!writeCRS(crs.getBaseCRS(), true)) {
-            return false;
-        }
+    private boolean writeCRS(final ProjectedCRS crs)
+            throws FactoryException, IncommensurableException, IncompatibleResourceException
+    {
+        writeCRS(crs.getBaseCRS(), true);
         if (writeEPSG(GeoKeys.ProjectedCRS, crs)) {
             writeName(GeoKeys.ProjectedCitation, null, crs);
             addUnits(UnitKey.PROJECTED, crs.getCoordinateSystem());
             final Conversion projection = crs.getConversionFromBase();
             if (writeEPSG(GeoKeys.Projection, projection)) {
                 final var method = projection.getMethod();
-                final short projCode = getGeoCode(method);
+                final short projCode = getGeoCode(0, method);
                 writeShort(GeoKeys.ProjMethod, projCode);
                 writeUnit(UnitKey.PROJECTED);
                 switch (projCode) {
-                    case GeoCodes.undefined:   missingValue(GeoKeys.ProjMethod); return true;
-                    case GeoCodes.userDefined: cannotEncode(0, name(method), null); break;
+                    case GeoCodes.userDefined:  // Should not happen.
+                    case GeoCodes.undefined: {
+                        missingValue(GeoKeys.ProjMethod);
+                        return true;
+                    }
                     /*
                      * TODO: GeoTIFF requirement 27.4 said that ProjectedCitationGeoKey shall be provided,
                      * But how? Using the same multiple-names convention ("GCS Name") as for geodetic CRS?
@@ -400,12 +454,12 @@ public final class GeoEncoder {
                 RuntimeException cause = null;
                 final var descriptor = p.getDescriptor();
                 if (p instanceof ParameterValue<?>) {
-                    final short key = getGeoCode(descriptor);
+                    final short key = getGeoCode(1, descriptor);
                     if (key != GeoCodes.undefined && key != GeoCodes.userDefined) {
                         final var pv = (ParameterValue<?>) p;
                         final UnitKey type = UnitKey.ofProjectionParameter(key);
                         if (type == UnitKey.LINEAR) {
-                            continue;                   // Skip the "cannot encode" warning.
+                            continue;                   // Skip the "cannot encode" error.
                         }
                         if (type != UnitKey.NULL) try {
                             final Unit<?> unit = units.getOrDefault(type, type.defaultUnit());
@@ -416,7 +470,7 @@ public final class GeoEncoder {
                         }
                     }
                 }
-                cannotEncode(1, name(descriptor), cause);
+                throw cannotEncode(1, name(descriptor), cause);
             }
         }
         return true;
@@ -428,18 +482,20 @@ public final class GeoEncoder {
      *
      * @param  main  the main kind of units expected in the coordinate system.
      * @param  cs    the coordinate system to analyze.
+     * @throws IncompatibleResourceException if the unit of measurement cannot be encoded.
      */
-    private void addUnits(final UnitKey main, final CoordinateSystem cs) {
+    private void addUnits(final UnitKey main, final CoordinateSystem cs) throws IncompatibleResourceException {
         for (int i = cs.getDimension(); --i >= 0;) {
             final Unit<?> unit = cs.getAxis(i).getUnit();
             final UnitKey type = main.validate(unit);
             if (type != null) {
                 final Unit<?> previous = units.putIfAbsent(type, unit);
                 if (previous != null && !previous.equals(unit)) {
-                    warning(errors().getString(Errors.Keys.HeterogynousUnitsIn_1, name(cs)), null);
+                    String message = errors().getString(Errors.Keys.HeterogynousUnitsIn_1, name(cs));
+                    throw new IncompatibleResourceException(message).addAspect("crs");
                 }
             } else {
-                cannotEncode(2, unit.toString(), null);
+                throw cannotEncode(2, unit.toString(), null).addAspect("unit");
             }
         }
     }
@@ -449,8 +505,9 @@ public final class GeoEncoder {
      * This method should be invoked only once per unit key.
      *
      * @param  key  identification of the unit to write.
+     * @throws IncompatibleResourceException if the unit of measurement cannot be encoded.
      */
-    private void writeUnit(final UnitKey key) {
+    private void writeUnit(final UnitKey key) throws IncompatibleResourceException {
         final Unit<?> unit = units.get(key);
         if (unit != null) {
             final short epsg = toShortEPSG(Units.getEpsgCode(unit, key.isAxis));
@@ -460,7 +517,7 @@ public final class GeoEncoder {
                 writeShort(key.codeKey, epsg);
                 writeDouble(key.scaleKey, Units.toStandardUnit(unit));
             } else {
-                cannotEncode(2, unit.toString(), null);
+                throw cannotEncode(2, unit.toString(), null).addAspect("unit");
             }
         }
     }
@@ -529,21 +586,26 @@ public final class GeoEncoder {
      * Fetches the GeoTIFF code of the given object. If {@code null}, returns {@link GeoCodes#undefined}.
      * If the object has no GeTIFF identifier, returns {@value GeoCodes#userDefined}.
      *
+     * @param  type    object type: 0 = operation method, 1 = parameter.
      * @param  object  the object for which to get the GeoTIFF code.
      * @return the GeoTIFF code, or {@link GeoCodes#undefined} or {@link GeoCodes#userDefined} if none.
      * @throws FactoryException if an error occurred while fetching the GeoTIFF code.
+     * @throws IncompatibleResourceException if the GeoTIFF identifier cannot be obtained.
      */
-    private short getGeoCode(final IdentifiedObject object) throws FactoryException {
+    private short getGeoCode(final int type, final IdentifiedObject object)
+            throws FactoryException, IncompatibleResourceException
+    {
         if (object == null) {
             return GeoCodes.undefined;
         }
         final Identifier id = IdentifiedObjects.getIdentifier(object, Citations.GEOTIFF);
+        NumberFormatException cause = null;
         if (id != null) try {
             return Short.parseShort(id.getCode());
         } catch (NumberFormatException e) {
-            warning(errors().getString(Errors.Keys.CanNotParse_1, IdentifiedObjects.toString(id)), e);
+            cause = e;
         }
-        return GeoCodes.userDefined;
+        throw cannotEncode(type, name(object), cause);
     }
 
     /**
@@ -696,16 +758,12 @@ public final class GeoEncoder {
          * If the CRS of the grid geometry has different axis order, we need to adjust the
          * "grid to CRS" transform.
          */
-        if (fullCRS != null) {
-            final AxisDirection[] source = CoordinateSystems.getAxisDirections(fullCRS.getCoordinateSystem());
-            final AxisDirection[] target = new AxisDirection[hasVerticalAxis ? 3 : 2];
+        if (axisDirections != null) {
+            final var target = axisDirections.clone();  // Preserve vertical axis direction.
             target[0] = AxisDirection.EAST;
             target[1] = AxisDirection.NORTH;
-            if (hasVerticalAxis) {
-                target[2] = AxisDirection.UP;
-            }
-            gridToCRS = Matrices.createTransform(source, target).multiply(gridToCRS);
-            fullCRS   = null;       // For avoiding to do the multiplication again.
+            gridToCRS = Matrices.createTransform(axisDirections, target).multiply(gridToCRS);
+            axisDirections = null;      // For avoiding to do the multiplication again.
         }
         /*
          * Copy matrix coefficients. This matrix size is always 4×4, no matter the size of the `gridToCRS` matrix.
@@ -770,38 +828,29 @@ public final class GeoEncoder {
      * @param  key  the GeoKey for which we found no value.
      */
     private void missingValue(final short key) {
-        warning(resources().getString(Resources.Keys.MissingGeoValue_1, GeoKeys.name(key)), null);
+        listeners.warning(resources().getString(Resources.Keys.MissingGeoValue_1, GeoKeys.name(key)));
     }
 
     /**
-     * Logs a warning saying that the given object cannot be encoded becasuse of its type.
+     * Prepares an exception saying that the given object cannot be encoded because of its type.
      *
      * @param  object  object that cannot be encoded.
      */
-    private void unsupportedType(final IdentifiedObject object) {
-        warning(resources().getString(Resources.Keys.CanNotEncodeObjectType_1, ReferencingUtilities.getInterface(object)), null);
+    private IncompatibleResourceException unsupportedType(final IdentifiedObject object) {
+        String message = resources().getString(Resources.Keys.CanNotEncodeObjectType_1, ReferencingUtilities.getInterface(object));
+        return new IncompatibleResourceException(message).addAspect("crs");
     }
 
     /**
-     * Logs a warning saying that an object of the given name cannot be encoded.
+     * Prepares an exception saying that an object of the given name cannot be encoded.
      *
      * @param  type   object type: 0 = operation method, 1 = parameter, 2 = unit of measurement.
      * @param  name   name of the object that cannot be encoded.
-     * @param  cause  the reason why a warning occurred, or {@code null} if none.
+     * @param  cause  the reason why an error occurred, or {@code null} if none.
      */
-    private void cannotEncode(final int type, final String name, final Exception cause) {
-        warning(resources().getString(Resources.Keys.CanNotEncodeNamedObject_2, type, name), cause);
-    }
-
-    /**
-     * Reports a warning that occurred while analyzing the CRS.
-     * This warning may prevent readers to reconstruct the CRS correctly.
-     *
-     * @param  message  the warning message.
-     * @param  cause    the reason why a warning occurred, or {@code null} if none.
-     */
-    private void warning(final String message, final Exception cause) {
-        listeners.warning(message, cause);
+    private IncompatibleResourceException cannotEncode(final int type, final String name, final Exception cause) {
+        String message = resources().getString(Resources.Keys.CanNotEncodeNamedObject_2, type, name);
+        return new IncompatibleResourceException(message, cause).addAspect("crs");
     }
 
     /**

@@ -756,18 +756,26 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * If at least one geographic coordinate is available, add a GeographicBoundingBox.
          */
         boolean hasExtent;
-        hasExtent  = fillExtent(LONGITUDE, Units.DEGREE, AxisDirection.EAST,  extent, 0);
-        hasExtent |= fillExtent(LATITUDE,  Units.DEGREE, AxisDirection.NORTH, extent, 2);
-        if (hasExtent) {
-            addExtent(extent, 0);
-            hasExtent = true;
-        }
+        int convention = 0;
+        do {
+            hasExtent  = fillExtent(LONGITUDE_ALTERNATIVES[convention], Units.DEGREE, AxisDirection.EAST,  extent, 0);
+            hasExtent |= fillExtent( LATITUDE_ALTERNATIVES[convention], Units.DEGREE, AxisDirection.NORTH, extent, 2);
+            if (hasExtent) {
+                addExtent(extent, 0);
+                hasExtent = true;
+                break;
+            }
+        } while (++convention < LONGITUDE_ALTERNATIVES.length);
         /*
          * If at least one vertical coordinate is available, add a VerticalExtent.
          */
-        if (fillExtent(VERTICAL, Units.METRE, null, extent, 0)) {
-            addVerticalExtent(extent[0], extent[1], verticalCRS);
-            hasExtent = true;
+        convention = Math.min(convention, VERTICAL_ALTERNATIVES.length - 1);
+        for (int i=0; i <= convention; i++) {
+            if (fillExtent(VERTICAL_ALTERNATIVES[i], Units.METRE, null, extent, 0)) {
+                addVerticalExtent(extent[0], extent[1], verticalCRS);
+                hasExtent = true;
+                break;
+            }
         }
         /*
          * Get the start and end times as temporal objects if available, or as numeric values otherwise.
@@ -814,7 +822,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         double min = numericValue(dim.MINIMUM);
         double max = numericValue(dim.MAXIMUM);
         boolean hasExtent = !Double.isNaN(min) || !Double.isNaN(max);
-        if (hasExtent) {
+        if (hasExtent && dim.UNITS != null) {
             final String symbol = stringValue(dim.UNITS);
             if (symbol != null) {
                 try {

@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.privy;
 
 import java.util.Arrays;
+import java.awt.Dimension;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -76,6 +77,7 @@ public final class SampleModelFactory {
 
     /**
      * The bit masks for all bands, or {@code null} if not applicable.
+     * This field should be non-null only with {@link SinglePixelPackedSampleModel}.
      */
     private int[] bitMasks;
 
@@ -85,8 +87,8 @@ public final class SampleModelFactory {
     private int dataBitOffset;
 
     /**
-     * Number of bits per pixel, or 0 if not applicable.
-     * Also known as "pixel bit stride".
+     * Number of bits per pixel, or 0 if not applicable. Also known as "pixel bit stride".
+     * This field should be non-zero only with {@link MultiPixelPackedSampleModel}.
      */
     private int numberOfBits;
 
@@ -102,22 +104,21 @@ public final class SampleModelFactory {
     private int scanlineStride;
 
     /**
-     * Creates a factory initialized to the given values.
+     * Creates a builder for a sample model of a type inferred from the given properties.
      *
      * @param  type           type of sample values.
-     * @param  width          tile width in pixels.
-     * @param  height         tile height in pixels.
+     * @param  size           tile width and height in pixels.
      * @param  numBands       number of bands.
      * @param  bitsPerSample  number of bits per sample values.
      * @param  isBanded       {@code true} if each band is stored in a separated bank.
      * @throws RasterFormatException if the arguments imply a sample model of unsupported type.
      */
-    public SampleModelFactory(final DataType type, final int width, final int height,
+    public SampleModelFactory(final DataType type, final Dimension size,
             final int numBands, final int bitsPerSample, final boolean isBanded)
     {
         this.dataType  = type.toDataBufferType();
-        this.width     = width;
-        this.height    = height;
+        this.width     = size.width;
+        this.height    = size.height;
         this.numBands  = numBands;
         scanlineStride = width;
         pixelStride    = 1;
@@ -162,7 +163,7 @@ public final class SampleModelFactory {
         numBands = model.getNumBands();
         dataType = model.getDataType();
         if (model instanceof ComponentSampleModel) {
-            final ComponentSampleModel cm = (ComponentSampleModel) model;
+            final var cm = (ComponentSampleModel) model;
             bankIndices    = cm.getBankIndices();
             bandOffsets    = cm.getBandOffsets();
             scanlineStride = cm.getScanlineStride();
@@ -172,12 +173,12 @@ public final class SampleModelFactory {
             }
             bankIndices = null;     // PixelInterleavedSampleModel
         } else if (model instanceof SinglePixelPackedSampleModel) {
-            final SinglePixelPackedSampleModel cm = (SinglePixelPackedSampleModel) model;
+            final var cm = (SinglePixelPackedSampleModel) model;
             bitMasks       = cm.getBitMasks();
             scanlineStride = cm.getScanlineStride();
             pixelStride    = 1;
         } else if (model instanceof MultiPixelPackedSampleModel) {
-            final MultiPixelPackedSampleModel cm = (MultiPixelPackedSampleModel) model;
+            final var cm = (MultiPixelPackedSampleModel) model;
             numberOfBits   = cm.getPixelBitStride();
             dataBitOffset  = cm.getDataBitOffset();
             scanlineStride = cm.getScanlineStride();
@@ -265,6 +266,58 @@ public final class SampleModelFactory {
             assert indices[i] >= 0;
         }
         return indices;
+    }
+
+    /**
+     * Replaces the sample model with a variant where all components are stored in separated data elements.
+     * This method replaces {@link SinglePixelPackedSampleModel} and {@link MultiPixelPackedSampleModel} by
+     * a {@link ComponentSampleModel}.
+     *
+     * @param  banded  whether a {@link BandedSampleModel} is preferred. This hint may be ignored.
+     * @return whether the sample model changed as a result of this method call.
+     */
+    public boolean unpack(final boolean banded) {
+        if (bitMasks != null) {
+            /*
+             * SinglePixelPackedSampleModel: find the number of bits needed by the widest component.
+             * The `numberOfBits` field is temporarily set for computation purpose and cleared later.
+             */
+            int max = 0;
+            for (int i=0; i<numBands; i++) {
+                int mask = bitMasks[i];
+                mask >>>= Integer.numberOfTrailingZeros(mask);
+                if (mask > max) max = mask;
+            }
+            numberOfBits = Integer.SIZE - Integer.numberOfLeadingZeros(max);
+            bitMasks = null;
+        } else if (numberOfBits == 0) {
+            // Already a `ComponentSampleModel`.
+            return false;
+        }
+        /*
+         * Find the smallest data type capable to store the component values after unpacking.
+         * Then, reinitialize the strides and offsets to the simplest values they would have
+         * for a new component sample model.
+         */
+        if (numberOfBits <= Byte.SIZE) {
+            dataType = DataBuffer.TYPE_BYTE;
+        } else if (numberOfBits > Short.SIZE) {
+            dataType = DataBuffer.TYPE_INT;
+        } else if (dataType > DataBuffer.TYPE_SHORT) {    // Do not change the sign of current data type.
+            dataType = DataBuffer.TYPE_USHORT;
+        }
+        numberOfBits   = 0;
+        pixelStride    = numBands;
+        scanlineStride = Math.multiplyExact(width, numBands);
+        bandOffsets    = ArraysExt.range(0, numBands);
+        bankIndices    = null;
+        if (banded) {
+            pixelStride    = 1;
+            scanlineStride = width;
+            bankIndices    = bandOffsets;
+            bandOffsets    = new int[numBands];
+        }
+        return true;
     }
 
     /**

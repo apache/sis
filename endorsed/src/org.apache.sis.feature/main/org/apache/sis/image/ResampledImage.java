@@ -19,9 +19,11 @@ package org.apache.sis.image;
 import java.util.Objects;
 import java.lang.ref.Reference;
 import java.nio.DoubleBuffer;
+import java.awt.Shape;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
@@ -32,10 +34,12 @@ import java.awt.image.SampleModel;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.FillValues;
 import org.apache.sis.feature.internal.Resources;
@@ -70,7 +74,7 @@ import static org.apache.sis.coverage.privy.ImageUtilities.LOGGER;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see Interpolation
  * @see java.awt.image.AffineTransformOp
@@ -173,6 +177,13 @@ public class ResampledImage extends ComputedImage {
     private Reference<ComputedImage> mask;
 
     /**
+     * The valid area, computed when first requested.
+     *
+     * @see #getValidArea()
+     */
+    private Shape validArea;
+
+    /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a potentially non-linear transform from <em>this</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER pixel centers}.
@@ -212,7 +223,7 @@ public class ResampledImage extends ComputedImage {
             final Number[] fillValues, final Quantity<?>[] accuracy)
     {
         super(sampleModel, source);
-        if (source.getWidth() <= 0 || source.getHeight() <= 0) {
+        if ((source.getWidth() | source.getHeight()) <= 0) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.EmptyImage));
         }
         ArgumentChecks.ensureNonNull("interpolation", interpolation);
@@ -260,13 +271,16 @@ public class ResampledImage extends ComputedImage {
         final double[] offset = new double[numDim];
         offset[0] = interpolationSupportOffset(s.width);
         offset[1] = interpolationSupportOffset(s.height);
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         MathTransform toSourceSupport = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
         /*
          * If the desired accuracy is large enough, try using a grid of precomputed values for faster operations.
          * This is optional; it is okay to abandon the grid if we cannot compute it.
          */
-        Boolean          canUseGrid     = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Quantity<Length> linearAccuracy = null;
+        Boolean          canUseGrid     = null;
         if (accuracy != null) {
             for (final Quantity<?> hint : accuracy) {
                 if (hint != null) {
@@ -524,6 +538,7 @@ public class ResampledImage extends ComputedImage {
      * @return names of all recognized properties, or {@code null} if none.
      */
     @Override
+    @SuppressWarnings("StringEquality")
     public String[] getPropertyNames() {
         final String[] inherited = getSource().getPropertyNames();
         final String[] names = {
@@ -551,6 +566,43 @@ public class ResampledImage extends ComputedImage {
             names[n++] = name;
         }
         return ArraysExt.resize(names, n);
+    }
+
+    /**
+     * Returns a shape containing all pixels that are valid in this image.
+     * This method returns the valid area of the source image transformed
+     * by the inverse of {@link #toSource}, mapping pixel corners.
+     *
+     * @return the valid area of the source converted to the coordinate system of this resampled image.
+     *
+     * @since 1.5
+     */
+    @Override
+    public synchronized Shape getValidArea() {
+        Shape domain = validArea;
+        if (domain == null) try {
+            final var ts = new TransformSeparator(toSource);
+            ts.addSourceDimensionRange(0, BIDIMENSIONAL);
+            ts.addTargetDimensionRange(0, BIDIMENSIONAL);
+            MathTransform mt = ts.separate();
+            MathTransform centerToCorner = MathTransforms.uniformTranslation(BIDIMENSIONAL, -0.5);
+            mt = MathTransforms.concatenate(centerToCorner, mt);
+            mt = MathTransforms.concatenate(centerToCorner, mt.inverse());
+            domain = ImageUtilities.getValidArea(getSource());
+            domain = MathTransforms.bidimensional(mt).createTransformedShape(domain);
+            final Area area = new Area(domain);
+            area.intersect(new Area(getBounds()));
+            validArea = domain = area.isRectangular() ? area.getBounds2D() : area;
+        } catch (FactoryException | TransformException e) {
+            recoverableException("getValidArea", e);
+            validArea = domain = getBounds();
+        }
+        if (domain instanceof Area) {
+            domain = (Area) ((Area) domain).clone();    // Cloning an Area is cheap.
+        } else if (domain instanceof Rectangle2D) {
+            domain = (Rectangle2D) ((Rectangle2D) domain).clone();
+        }
+        return domain;
     }
 
     /**
@@ -881,7 +933,7 @@ public class ResampledImage extends ComputedImage {
         if (source instanceof PlanarImage) try {
             final Dimension s = interpolation.getSupportSize();
             Rectangle pixels = ImageUtilities.tilesToPixels(this, tiles);
-            final Rectangle2D bounds = new Rectangle2D.Double(
+            final var bounds = new Rectangle2D.Double(
                     pixels.x      -  0.5  *  s.width,
                     pixels.y      -  0.5  *  s.height,
                     pixels.width  + (double) s.width,
@@ -907,7 +959,7 @@ public class ResampledImage extends ComputedImage {
     @Override
     public boolean equals(final Object object) {
         if (equalsBase(object)) {
-            final ResampledImage other = (ResampledImage) object;
+            final var other = (ResampledImage) object;
             return minX     == other.minX &&
                    minY     == other.minY &&
                    width    == other.width &&

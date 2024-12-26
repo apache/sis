@@ -142,7 +142,7 @@ abstract class WritableComputedImage extends ComputedImage {
      * @return the specified tile as a writable tile.
      */
     public WritableRaster getWritableTile(final int tileX, final int tileY) {
-        final WritableRaster tile = (WritableRaster) getTile(tileX, tileY);
+        final var tile = (WritableRaster) getTile(tileX, tileY);
         markTileWritable(tileX, tileY, true);
         return tile;
     }

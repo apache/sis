@@ -77,7 +77,7 @@ import java.util.Set;
  *   gradle test
  *   git diff
  *   git add --update
- *   git commit --message "Merge of automatic reorganization of imports order."
+ *   git merge --continue --message "Merge of automatic reorganization of imports order."
  *   }
  *
  * Finally apply the same pattern on the {@code main} branch.

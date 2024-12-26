@@ -48,7 +48,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
 
     /**
      * The range of sample values on which the colors will be applied. Shall never be null.
-     * May be updated after {@link ColorModelBuilder#compact()} mapped range of floating
+     * May be updated after {@link ColorScaleBuilder#compact()} mapped range of floating
      * point values to range of {@link IndexColorModel} values.
      */
     NumberRange<?> sampleRange;
@@ -79,7 +79,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      * because the meaning of pixel values (i.e. the sample dimensions) may be different.
      *
      * @see #originalSampleRange
-     * @see ColorModelBuilder#inheritedColors
+     * @see ColorScaleBuilder#inheritedColors
      */
     private final ColorModel inheritedColors;
 
@@ -131,7 +131,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      * Note that "undefined" is not the same as fully transparent color.
      *
      * <p>If no colors were explicitly defined but a fallback exists, then this method considers
-     * this range as defined for allowing {@link ColorModelBuilder} to inherit those colors with
+     * this range as defined for allowing {@link ColorScaleBuilder} to inherit those colors with
      * the range of values specified by {@link #originalSampleRange}. We conceptually accept any
      * {@link #inheritedColors} even if {@link #toARGB(int)} cannot handle all of them.</p>
      */

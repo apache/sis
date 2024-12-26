@@ -45,7 +45,7 @@ import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.coverage.privy.ColorModelBuilder;
+import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.coverage.privy.DeferredProperty;
 import org.apache.sis.coverage.privy.RasterFactory;
 import org.apache.sis.coverage.privy.ObservableImage;
@@ -270,7 +270,7 @@ public class ImageRenderer {
     /**
      * The colors to use for each category. Never {@code null}.
      * The function may return {@code null}, which means transparent.
-     * The default value is {@link ColorModelBuilder#GRAYSCALE}.
+     * The default value is {@link ColorScaleBuilder#GRAYSCALE}.
      *
      * @see #setCategoryColors(Function)
      */
@@ -366,7 +366,7 @@ public class ImageRenderer {
         this.pixelStride    = toIntExact(pixelStride);
         this.scanlineStride = toIntExact(scanlineStride);
         this.offsetZ        = offsetZ;
-        this.colors         = ColorModelBuilder.GRAYSCALE;
+        this.colors         = ColorScaleBuilder.GRAYSCALE;
     }
 
     /**
@@ -750,13 +750,14 @@ public class ImageRenderer {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage createImage() {
         final Raster raster = createRaster();
-        final var colorizer = new ColorModelBuilder(colors, null, false);
+        final var colorizer = new ColorScaleBuilder(colors, null, false);
         final ColorModel cm;
         final SampleModel sm = raster.getSampleModel();
         if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {
-            cm = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
+            DataType type = DataType.forDataBufferType(buffer.getDataType());
+            cm = colorizer.createColorModel(type, bands.length, visibleBand);
         } else {
-            cm = ColorModelBuilder.NULL_COLOR_MODEL;
+            cm = ColorScaleBuilder.NULL_COLOR_MODEL;
         }
         SliceGeometry supplier = null;
         if (imageGeometry == null) {

@@ -240,8 +240,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
     protected TiledGridCoverage(final TiledGridResource.Subset subset) {
         super(subset.domain, subset.ranges);
         final GridExtent extent = subset.domain.getExtent();
-        final int dimension = subset.sourceExtent.getDimension();
-        deferredTileReading = subset.deferredTileReading();
+        final int dimension = subset.virtualTileSize.length;
+        deferredTileReading = subset.deferredTileReading();     // May be shorter than other arrays or the grid geometry.
         readExtent          = subset.readExtent;
         subsampling         = subset.subsampling;
         subsamplingOffsets  = subset.subsamplingOffsets;
@@ -449,12 +449,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
     @Override
     public RenderedImage render(GridExtent sliceExtent) {
         final GridExtent available = gridGeometry.getExtent();
-        final int dimension = available.getDimension();
+        final int dimension = virtualTileSize.length;       // May be shorter than the grid geometry dimension.
         if (sliceExtent == null) {
             sliceExtent = available;
         } else {
             final int sd = sliceExtent.getDimension();
-            if (sd != dimension) {
+            if (sd < dimension || sd > available.getDimension()) {
                 throw new MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, "sliceExtent", dimension, sd));
             }

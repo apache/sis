@@ -18,7 +18,8 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
-import org.apache.sis.coverage.privy.ImageLayout;
+import org.apache.sis.system.Configuration;
+import static org.apache.sis.image.ImageLayout.DEFAULT_TILE_SIZE;
 
 
 /**
@@ -29,6 +30,12 @@ import org.apache.sis.coverage.privy.ImageLayout;
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})               // Not intended to be serialized.
 final class GridTileCache extends LinkedHashMap<GridTile,GridTile> {
+    /**
+     * Cache size in number of tiles.
+     */
+    @Configuration
+    private static final int CACHE_SIZE = 10 * (1024 * 1024) / (DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE);
+
     /**
      * Creates a new cache of tiles.
      */
@@ -45,7 +52,7 @@ final class GridTileCache extends LinkedHashMap<GridTile,GridTile> {
      */
     @Override
     protected boolean removeEldestEntry(final Map.Entry<GridTile,GridTile> entry) {
-        if (size() > ImageLayout.SUGGESTED_TILE_CACHE_SIZE) {
+        if (size() > CACHE_SIZE) {
             return entry.getValue().clearTile();
         }
         return false;

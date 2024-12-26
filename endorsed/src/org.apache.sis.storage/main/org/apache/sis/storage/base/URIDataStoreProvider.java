@@ -19,11 +19,13 @@ package org.apache.sis.storage.base;
 import java.util.Optional;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.Buffer;
+import java.nio.ByteOrder;
 import java.nio.file.Path;
-import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
@@ -39,6 +41,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
@@ -221,11 +224,35 @@ public abstract class URIDataStoreProvider extends DataStoreProvider {
             if (ArraysExt.contains(options, StandardOpenOption.CREATE_NEW)) {
                 return IOUtilities.isKindOfPath(storage);
             }
-            if (ArraysExt.contains(options, StandardOpenOption.CREATE)) {
+            if (ArraysExt.contains(options, StandardOpenOption.CREATE)) try {
                 final Path path = connector.getStorageAs(Path.class);
-                return (path != null) && Files.notExists(path);
+                return (path != null) && IOUtilities.isAbsentOrEmpty(path);
+            } catch (IOException e) {
+                throw new DataStoreException(e);
             }
         }
         return false;
+    }
+
+    /**
+     * Creates a new output stream and set by the order to native order if is was not explicitly specified by the user.
+     * The byte order is considered explicitly specified if the storage type is one of the types were the user could
+     * have specified that order.
+     *
+     * @param  connector  the connector to use for opening a file.
+     * @param  format     short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     *                    Used for information purpose in error messages if needed.
+     * @return the output stream.
+     * @throws DataStoreException if an error occurred while creating the output stream.
+     */
+    public static ChannelDataOutput openAndSetNativeByteOrder(final StorageConnector connector, final String format)
+            throws DataStoreException
+    {
+        final Object storage = connector.getStorage();
+        final ChannelDataOutput output = connector.commit(ChannelDataOutput.class, format);
+        if (output != storage && !(storage instanceof Buffer)) {
+            output.buffer.order(ByteOrder.nativeOrder());
+        }
+        return output;
     }
 }

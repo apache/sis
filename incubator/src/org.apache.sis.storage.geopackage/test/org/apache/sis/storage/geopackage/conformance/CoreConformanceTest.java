@@ -68,7 +68,7 @@ public final class CoreConformanceTest {
      * @throws DataStoreException if an error occurred while creating the data store.
      */
     public CoreConformanceTest() throws IOException, DataStoreException {
-        file = Files.createTempFile("sis-test", ".gpkg");
+        file = Files.createTempFile("sis-test-", ".gpkg");
         final var connector = new StorageConnector(file);
         connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
             StandardOpenOption.CREATE_NEW,

@@ -43,6 +43,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Modules;
@@ -241,7 +242,7 @@ public abstract class ChannelFactory {
                      * way less surprising for the user (closer to the object he has specified).
                      */
                     if (file.isFile()) {
-                        return new Fallback(file, e);
+                        return new Fallback(file, options, e);
                     }
                 }
             }
@@ -287,9 +288,13 @@ public abstract class ChannelFactory {
                     @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);
                     }
-                    @Override public boolean isCreateNew() {
-                        if (optionSet.contains(StandardOpenOption.CREATE_NEW)) return true;
-                        if (optionSet.contains(StandardOpenOption.CREATE)) return Files.notExists(path);
+                    @Override public boolean isCreateNew() throws IOException {
+                        if (optionSet.contains(StandardOpenOption.CREATE_NEW)) {
+                            return true;
+                        }
+                        if (optionSet.contains(StandardOpenOption.CREATE)) {
+                            return IOUtilities.isAbsentOrEmpty(path);
+                        }
                         return false;
                     }
                 };
@@ -327,8 +332,9 @@ public abstract class ChannelFactory {
      * this factory has been created with an option that allows file creation.
      *
      * @return whether opening a channel will create a new file.
+     * @throws if an error occurred while checking file existence of attributes.
      */
-    public boolean isCreateNew() {
+    public boolean isCreateNew() throws IOException {
         return false;
     }
 
@@ -533,6 +539,11 @@ public abstract class ChannelFactory {
         private final File file;
 
         /**
+         * The {@code READ}, {@code CREATE} or {@code CREATE_NEW} option.
+         */
+        private final StandardOpenOption option;
+
+        /**
          * The reason why we are using this fallback instead of a {@link Path}.
          * Will be reported at most once, then set to {@code null}.
          */
@@ -541,10 +552,19 @@ public abstract class ChannelFactory {
         /**
          * Creates a new fallback to use if the given file cannot be converted to a {@link Path}.
          */
-        Fallback(final File file, final InvalidPathException cause) {
+        Fallback(final File file, final OpenOption[] options, final InvalidPathException cause) {
             super(true);
             this.file  = file;
             this.cause = cause;
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            StandardOpenOption option = StandardOpenOption.CREATE_NEW;
+            if (!ArraysExt.contains(options, option)) {
+                option = StandardOpenOption.CREATE;
+                if (!ArraysExt.contains(options, option)) {
+                    option = StandardOpenOption.READ;   // Could actually be WRITE, but we don't need to distinguish.
+                }
+            }
+            this.option = option;
         }
 
         /**
@@ -637,6 +657,20 @@ public abstract class ChannelFactory {
         @Override
         public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
             return outputStream(filename, listeners).getChannel();
+        }
+
+        /**
+         * Returns {@code true} if opening the channel will create a new, initially empty, file.
+         */
+        @Override
+        public boolean isCreateNew() throws IOException {
+            switch (option) {
+                default: return false;
+                case CREATE_NEW: return true;
+                case CREATE: {
+                    return !file.exists() || (file.isFile() && file.length() == 0);
+                }
+            }
         }
     }
 

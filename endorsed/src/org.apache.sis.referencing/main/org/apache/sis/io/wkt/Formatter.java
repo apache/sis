@@ -75,6 +75,7 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.system.Configuration;
+import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.metadata.simple.SimpleExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -923,9 +924,16 @@ public class Formatter implements Localized {
             appendOnNewLine(WKTKeywords.Scope, scope, ElementKind.SCOPE);
         }
         if (area != null && !(area instanceof NilObject)) {
+            GeographicBoundingBox bbox;
+            try {
+                bbox = Extents.getGeographicBoundingBox(area);
+            } catch (InvalidMetadataException e) {
+                warning(e, WKTKeywords.BBox, WKTKeywords.Usage);
+                bbox = null;
+            }
             appendOnNewLine(WKTKeywords.Area, area.getDescription(), ElementKind.EXTENT);
-            append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
-            appendVerticalExtent(Extents.getVerticalRange(area));
+            append(bbox, BBOX_ACCURACY);
+            appendVerticalExtent(area);
             appendTemporalExtent(area);
         }
     }
@@ -962,7 +970,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the given vertical extent, if non-null.
+     * Appends the vertical of the given area.
      * This method chooses an accuracy from the vertical span.
      * Examples:
      *
@@ -974,7 +982,14 @@ public class Formatter implements Localized {
      * Note that according ISO 19162, heights are positive toward up and relative to an unspecified mean sea level.
      * It is caller's responsibility to ensure that the given range complies with that specification as much as possible.
      */
-    private void appendVerticalExtent(final MeasurementRange<Double> range) {
+    private void appendVerticalExtent(final Extent area) {
+        final MeasurementRange<Double> range;
+        try {
+            range = Extents.getVerticalRange(area);
+        } catch (InvalidMetadataException e) {
+            warning(e, WKTKeywords.VerticalExtent, WKTKeywords.Usage);
+            return;
+        }
         if (range != null) {
             final double min = range.getMinDouble();
             final double max = range.getMaxDouble();
@@ -1659,7 +1674,7 @@ public class Formatter implements Localized {
         } else if (value instanceof GeographicBoundingBox) {
             append((GeographicBoundingBox) value, BBOX_ACCURACY);
         } else if (value instanceof VerticalExtent) {
-            appendVerticalExtent(Extents.getVerticalRange(new SimpleExtent(null, (VerticalExtent) value, null)));
+            appendVerticalExtent(new SimpleExtent(null, (VerticalExtent) value, null));
         } else if (value instanceof TemporalExtent) {
             appendTemporalExtent(new SimpleExtent(null, null, (TemporalExtent) value));
         } else if (value instanceof DirectPosition) {
@@ -1834,16 +1849,6 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the object where to store warnings.
-     */
-    private Warnings warnings() {
-        if (warnings == null) {
-            warnings = new Warnings(errorLocale, false, Map.of());
-        }
-        return warnings;
-    }
-
-    /**
      * Marks the current WKT representation of the given object as not strictly compliant with the WKT specification.
      * This method can be invoked by implementations of {@link FormattableObject#formatTo(Formatter)} when the object
      * to format is more complex than what the WKT specification allows.
@@ -1899,6 +1904,27 @@ public class Formatter implements Localized {
             }
         }
         return Classes.getShortName(unformattable);
+    }
+
+    /**
+     * Adds a warning for for an exception that occurred while fetching an optional property.
+     *
+     * @param e        the exception that occurred.
+     * @param element  WKT keyword of the element where the exception occurred.
+     * @param parent   WKT keyword of the parent element.
+     */
+    private void warning(final Exception e, final String element, final String parent) {
+        warnings().add(null, e, new String[] {element, parent});
+    }
+
+    /**
+     * Returns the object where to store warnings.
+     */
+    private Warnings warnings() {
+        if (warnings == null) {
+            warnings = new Warnings(errorLocale, false, Map.of());
+        }
+        return warnings;
     }
 
     /**

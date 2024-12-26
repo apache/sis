@@ -390,6 +390,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
              * if that transform is missing, we cannot continue (we have no way to guess it).
              */
             gridToCRS = source.getGridToCRS(anchor);
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final CoordinateOperation changeOfCRS = changeOfCRS();
             if (changeOfCRS != null) {
                 /*
@@ -431,6 +432,7 @@ apply:          if (forwardChangeOfCRS == null) {
      */
     final MathTransform inverse() throws FactoryException, TransformException {
         final MathTransform sourceCrsToGrid = source.getGridToCRS(anchor).inverse();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final CoordinateOperation changeOfCRS = changeOfCRS();
         if (changeOfCRS == null) {
             return sourceCrsToGrid;

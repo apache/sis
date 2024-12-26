@@ -29,7 +29,6 @@ import java.awt.image.RasterFormatException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.privy.Numerics;

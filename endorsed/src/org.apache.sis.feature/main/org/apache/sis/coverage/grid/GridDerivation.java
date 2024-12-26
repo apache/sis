@@ -526,13 +526,13 @@ public class GridDerivation {
             }
             final MathTransform mapCenters;
             final GridExtent domain = areaOfInterest.extent;
-            final CoordinateOperationFinder finder = new CoordinateOperationFinder(areaOfInterest, base);
+            final var finder = new CoordinateOperationFinder(areaOfInterest, base);
             finder.verifyPresenceOfCRS(false);
             try {
                 final MathTransform mapCorners = (domain != null) ? finder.gridToGrid() : null;
                 finder.setAnchor(PixelInCell.CELL_CENTER);
                 finder.nowraparound();
-                mapCenters = finder.gridToGrid();                               // We will use only the scale factors.
+                mapCenters = finder.gridToGrid();       // We will use only the scale factors.
                 if (domain != null) {
                     final GeneralEnvelope[] envelopes;
                     if (mapCorners != null) {
@@ -542,7 +542,7 @@ public class GridDerivation {
                     }
                     setBaseExtentClipped(envelopes);
                     if (baseExtent != base.extent && baseExtent.equals(domain)) {
-                        baseExtent = domain;                                    // Share common instance.
+                        baseExtent = domain;            // Share common instance.
                     }
                 }
                 subGridSetter = "subgrid";

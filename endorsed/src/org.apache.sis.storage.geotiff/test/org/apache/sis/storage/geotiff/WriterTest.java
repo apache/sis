@@ -41,7 +41,7 @@ import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
-import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.DataType;
 
@@ -181,7 +181,8 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testUntiledGrayScale() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.BIG_ENDIAN, false, 1, 1, 1);
+        initialize(DataType.BYTE, ByteOrder.BIG_ENDIAN, false, 1, 1, 1,
+                   FormatModifier.ANY_TILE_SIZE);
         writeImage();
         verifyHeader(false, IOBase.BIG_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,              // One less tag because stripped layout.
@@ -199,7 +200,8 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testUntiledBigTIFF() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, FormatModifier.BIG_TIFF);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1,
+                   FormatModifier.ANY_TILE_SIZE, FormatModifier.BIG_TIFF);
         writeImage();
         verifyHeader(true, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.
@@ -218,7 +220,7 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testTiledGrayScale() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 3, 4);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 3, 4, FormatModifier.ANY_TILE_SIZE);
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS,
@@ -236,8 +238,8 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testUntiledRGB() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 3, 1, 1);
-        image.setColorModel(ColorModelFactory.createRGB(image.getSampleModel()));
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 3, 1, 1, FormatModifier.ANY_TILE_SIZE);
+        image.setColorModel(new ColorModelBuilder().createRGB(image.getSampleModel()));
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
         verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.
@@ -255,7 +257,7 @@ public final class WriterTest extends TestCase {
      */
     @Test
     public void testGeoTIFF() throws IOException, DataStoreException {
-        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1);
+        initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 1, 1, FormatModifier.ANY_TILE_SIZE);
         createGridGeometry();
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
@@ -338,11 +340,11 @@ public final class WriterTest extends TestCase {
          */
         short previousTag = 0;
         while (--tagCount >= 0) {
-            short   tag   = data.getShort();
-            short   type  = data.getShort();
-            long    count = isBigTIFF ? data.getLong() : data.getInt();
-            long    value = isBigTIFF ? data.getLong() : data.getInt();
-            Object  expected;       // The Number class will define the expected type.
+            short  tag   = data.getShort();
+            short  type  = data.getShort();
+            long   count = isBigTIFF ? data.getLong() : data.getInt();
+            long   value = isBigTIFF ? data.getLong() : data.getInt();
+            Object expected;       // The Number class will define the expected type.
             assertTrue(Short.toUnsignedInt(tag) > Short.toUnsignedInt(previousTag),
                        "Tags shall be sorted in increasing order.");
             expectedTags.remove(Integer.valueOf(tag));

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.DoubleUnaryOperator;
 import java.awt.Color;
@@ -41,14 +42,14 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.internal.CompoundTransform;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.SampleDimensions;
-import org.apache.sis.coverage.privy.ColorModelBuilder;
+import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
 /**
@@ -136,9 +137,9 @@ final class Visualization extends ResampledImage {
         /** Band to make visible among the remaining {@value #NUM_BANDS} bands. */
         private static final int VISIBLE_BAND = 0;
 
-        ////  ┌─────────────────────────────────────┐
-        ////  │ Arguments given by user             │
-        ////  └─────────────────────────────────────┘
+        //  ┌─────────────────────────────────────┐
+        //  │ Arguments given by user             │
+        //  └─────────────────────────────────────┘
 
         /** Pixel coordinates of the visualization image, or {@code null} if same as {@link #source} image. */
         private Rectangle bounds;
@@ -150,11 +151,11 @@ final class Visualization extends ResampledImage {
         private MathTransform toSource;
 
         /** Description of {@link #source} bands, or {@code null} if none. */
-        private SampleDimension[] sampleDimensions;
+        private List<SampleDimension> sampleDimensions;
 
-        ////  ┌─────────────────────────────────────┐
-        ////  │ Given by ImageProcesor.configure(…) │
-        ////  └─────────────────────────────────────┘
+        //  ┌─────────────────────────────────────┐
+        //  │ Given by ImageProcesor.configure(…) │
+        //  └─────────────────────────────────────┘
 
         /** Computer of tile size. */
         ImageLayout layout;
@@ -171,9 +172,9 @@ final class Visualization extends ResampledImage {
         /** Values of {@value #POSITIONAL_ACCURACY_KEY} property, or {@code null} if none. */
         Quantity<?>[] positionalAccuracyHints;
 
-        ////  ┌─────────────────────────────────────┐
-        ////  │ Computed by `create(…)`             │
-        ////  └─────────────────────────────────────┘
+        //  ┌─────────────────────────────────────┐
+        //  │ Computed by `create(…)`             │
+        //  └─────────────────────────────────────┘
 
         /** Transfer functions to apply on each band of the source image. */
         private MathTransform1D[] converters;
@@ -199,7 +200,7 @@ final class Visualization extends ResampledImage {
             if (sampleDimensions == null) {
                 Object ranges = source.getProperty(SAMPLE_DIMENSIONS_KEY);
                 if (ranges instanceof SampleDimension[]) {
-                    sampleDimensions = (SampleDimension[]) ranges;
+                    sampleDimensions = UnmodifiableArrayList.wrap((SampleDimension[]) ranges);
                 }
             }
         }
@@ -251,24 +252,31 @@ final class Visualization extends ResampledImage {
                 }
             }
             source = BandSelectImage.create(source, true, visibleBand);
-            final SampleDimension visibleSD = (sampleDimensions != null && visibleBand < sampleDimensions.length)
-                                            ? sampleDimensions[visibleBand] : null;
+            final SampleDimension visibleSD = (sampleDimensions != null && visibleBand < sampleDimensions.size())
+                                            ? sampleDimensions.get(visibleBand) : null;
             /*
              * If there is no conversion of pixel coordinates, there is no need for interpolations.
              * In such case the `Visualization.computeTile(…)` implementation takes a shortcut which
              * requires the tile layout of destination image to be the same as source image.
              * Otherwise combine interpolation and value conversions in a single operation.
              */
-            final boolean shortcut = toSource.isIdentity() && (bounds == null || ImageUtilities.getBounds(source).contains(bounds));
+            final boolean shortcut;
+            if (bounds == null) {
+                bounds = ImageUtilities.getBounds(source);
+                shortcut = toSource.isIdentity();
+            } else {
+                shortcut = toSource.isIdentity() && ImageUtilities.getBounds(source).contains(bounds);
+            }
             if (shortcut) {
-                layout = ImageLayout.forTileSize(source);
+                layout = ImageLayout.DEFAULT.withTileMatrix(source).allowTileSizeAdjustments(false);
             }
             /*
              * Sample values will be unconditionally converted to integers in the [0 … 255] range.
              * The sample model is a mandatory argument before we invoke user supplied colorizer,
              * which must be done before to build the color model.
              */
-            sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds, 0);
+            final DataType dataType = DataType.forDataBufferType(ColorScaleBuilder.TYPE_COMPACT);
+            sampleModel = layout.createSampleModel(dataType, bounds, NUM_BANDS);
             final Target target = new Target(sampleModel, VISIBLE_BAND, visibleSD != null);
             if (colorizer != null) {
                 colorModel = colorizer.apply(target).orElse(null);
@@ -276,29 +284,29 @@ final class Visualization extends ResampledImage {
             final SampleModel sourceSM = coloredSource.getSampleModel();
             final ColorModel  sourceCM = coloredSource.getColorModel();
             /*
-             * Get a `ColorModelBuilder` which will compute the `ColorModel` of destination image.
+             * Get a `ColorScaleBuilder` which will compute the `ColorModel` of destination image.
              * There is different ways to setup the builder, depending on which `Colorizer` is used.
              * In precedence order:
              *
              *    - rangeColors      : Map<NumberRange<?>,Color[]>
-             *    - sampleDimensions : SampleDimension[]
+             *    - sampleDimensions : List<SampleDimension>
              *    - statistics
              */
             boolean initialized;
-            final ColorModelBuilder builder;
+            final ColorScaleBuilder builder;
             if (target.rangeColors != null) {
-                builder = new ColorModelBuilder(target.rangeColors, sourceCM);
+                builder = new ColorScaleBuilder(target.rangeColors, sourceCM);
                 initialized = true;
             } else {
                 /*
                  * Ranges of sample values were not specified explicitly. Instead, we will try to infer them
                  * in various ways: sample dimensions, scaled color model, or image statistics in last resort.
                  */
-                builder = new ColorModelBuilder(target.categoryColors, sourceCM, true);
+                builder = new ColorScaleBuilder(target.categoryColors, sourceCM, true);
                 initialized = builder.initialize(sourceSM, visibleSD);
                 if (initialized) {
                     /*
-                     * If we have been able to configure ColorModelBuilder using SampleDimension, apply an adjustment
+                     * If we have been able to configure ColorScaleBuilder using SampleDimension, apply an adjustment
                      * based on the ScaledColorModel if it exists. Use case: image is created with an IndexColorModel
                      * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`.
                      * We want to preserve that contrast enhancement.
@@ -314,10 +322,13 @@ final class Visualization extends ResampledImage {
                     initialized = builder.initialize(sourceCM);
                     if (!initialized) {
                         if (coloredSource instanceof RecoloredImage) {
-                            final RecoloredImage colored = (RecoloredImage) coloredSource;
-                            builder.initialize(colored.minimum, colored.maximum, sourceSM.getDataType());
-                            initialized = true;
-                        } else {
+                            final var colored = (RecoloredImage) coloredSource;
+                            if (colored.minimum < colored.maximum) {    // Do not execute if values are NaN.
+                                builder.initialize(colored.minimum, colored.maximum, sourceSM.getDataType());
+                                initialized = true;
+                            }
+                        }
+                        if (!initialized) {
                             initialized = builder.initialize(sourceSM, visibleBand);
                         }
                     }
@@ -325,15 +336,15 @@ final class Visualization extends ResampledImage {
             }
             if (!initialized) {
                 /*
-                 * If none of above `ColorModelBuilder` configurations worked, use statistics in last resort.
+                 * If none of above `ColorScaleBuilder` configurations worked, use statistics in last resort.
                  * We do that after we reduced the image to a single band in order to reduce the amount of calculation.
                  */
-                final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(visibleSD);
+                final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(Collections.singletonList(visibleSD));
                 final Statistics statistics = processor.valueOfStatistics(source, null, sampleFilters)[VISIBLE_BAND];
                 builder.initialize(statistics.minimum(), statistics.maximum(), sourceSM.getDataType());
             }
             if (colorModel == null) {
-                colorModel = builder.createColorModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, VISIBLE_BAND);
+                colorModel = builder.createColorModel(dataType, NUM_BANDS, VISIBLE_BAND);
             }
             converters = new MathTransform1D[] {
                 builder.getSampleToIndexValues()            // Must be after `createColorModel(…)`.
@@ -346,9 +357,6 @@ final class Visualization extends ResampledImage {
             } else {
                 interpolation = combine(interpolation.toCompatible(source), converters);
                 converters    = null;
-            }
-            if (bounds == null) {
-                bounds = ImageUtilities.getBounds(source);
             }
             return ImageProcessor.unique(new Visualization(this));
         }
@@ -477,7 +485,7 @@ final class Visualization extends ResampledImage {
     private Visualization(final Builder builder) {
         super(builder.source,
               builder.sampleModel,
-              builder.layout.getMinTile(),
+              builder.layout.getPreferredMinTile(),
               builder.bounds,
               builder.toSource,
               builder.interpolation,

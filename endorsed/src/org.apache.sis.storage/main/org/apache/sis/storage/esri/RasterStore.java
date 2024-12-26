@@ -43,6 +43,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.ObservableImage;
 import org.apache.sis.coverage.privy.RangeArgument;
@@ -342,7 +343,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         final boolean isInteger  = ImageUtilities.isIntegerType(dataType);
         final boolean isUnsigned = isInteger && ImageUtilities.isUnsignedType(sm);
         final boolean isRGB      = isInteger && (bands.length == 3 || bands.length == 4);
-        final SampleDimension.Builder builder = new SampleDimension.Builder();
+        final var     builder    = new SampleDimension.Builder();
         for (int band=0; band < bands.length; band++) {
             double minimum = Double.NaN;
             double maximum = Double.NaN;
@@ -395,17 +396,17 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
              * The color file is optional and will be used if present.
              */
             if (band == VISIBLE_BAND) {
-                if (isRGB) {
-                    colorModel = ColorModelFactory.createRGB(sm);       // Should never be null.
-                } else {
-                    try {
+                try {
+                    if (isRGB) {
+                        colorModel = new ColorModelBuilder().createRGB(sm);
+                    } else {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
-                    } catch (URISyntaxException | IOException | NumberFormatException e) {
-                        cannotReadAuxiliaryFile(CLR, e);
                     }
-                    if (colorModel == null) {
-                        colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);
-                    }
+                } catch (URISyntaxException | IOException | IllegalArgumentException e) {
+                    cannotReadAuxiliaryFile(CLR, e);
+                }
+                if (colorModel == null) {
+                    colorModel = ColorModelFactory.createGrayScale(dataType, bands.length, band, minimum, maximum);
                 }
             }
         }
@@ -450,7 +451,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         final SampleDimension[] bands = range.select(sampleDimensions);
         Hashtable<String,Object> properties = null;
         if (stats != null) {
-            final Statistics[] as = new Statistics[range.getNumBands()];
+            final var as = new Statistics[range.getNumBands()];
             Arrays.fill(as, stats);
             properties = new Hashtable<>();
             properties.put(PlanarImage.STATISTICS_KEY, as);

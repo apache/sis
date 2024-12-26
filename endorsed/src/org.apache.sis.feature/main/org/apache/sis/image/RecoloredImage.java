@@ -54,7 +54,7 @@ final class RecoloredImage extends ImageAdapter {
     private final ColorModel colors;
 
     /**
-     * The minimum and maximum values used for computing the color model.
+     * The minimum and maximum values used for computing the color model, or NaN if unknown.
      * This is used for preserving color ramp stretching when a new color ramp is applied.
      *
      * <p>Current implementation can only describes a uniform stretching between a minimum and maximum value.
@@ -76,6 +76,48 @@ final class RecoloredImage extends ImageAdapter {
         this.colors  = colors;
         this.minimum = minimum;
         this.maximum = maximum;
+        ensureCompatible(getSampleModel(), colors);
+    }
+
+    /**
+     * Creates a new recolored image with the given colors and the same minimum/maximum values as the given parent.
+     *
+     * @param  source   the image to wrap.
+     * @param  colors   the new color model.
+     * @param  parent   the parent from which to inherit min/max, or {@code null} if none.
+     */
+    private RecoloredImage(final RenderedImage source, final ColorModel colors, final RecoloredImage parent) {
+        super(source);
+        this.colors = colors;
+        if (parent != null) {
+            minimum = parent.minimum;
+            maximum = parent.maximum;
+        } else {
+            minimum = maximum = Double.NaN;
+        }
+        ensureCompatible(getSampleModel(), colors);
+    }
+
+    /**
+     * Returns the given image with the given colors.
+     *
+     * @param  source  the image to wrap.
+     * @param  colors  the new color model.
+     * @return image with the given color model. May be a source returned directly.
+     */
+    static RenderedImage apply(RenderedImage source, final ColorModel colors) {
+        RecoloredImage parent = null;
+        for (;;) {
+            if (colors.equals(source.getColorModel())) {
+                return source;
+            }
+            if (source instanceof RecoloredImage) {
+                parent = (RecoloredImage) source;
+                source = parent.source;
+            } else {
+                return ImageProcessor.unique(new RecoloredImage(source, colors, parent));
+            }
+        }
     }
 
     /**
@@ -110,7 +152,7 @@ final class RecoloredImage extends ImageAdapter {
         for (;;) {
             if (colors.equals(source.getColorModel())) {
                 if (expected != null && source instanceof RecoloredImage) {
-                    final RecoloredImage actual = (RecoloredImage) source;
+                    final var actual = (RecoloredImage) source;
                     if (!(Numerics.equals(expected.minimum, actual.minimum) &&
                           Numerics.equals(expected.maximum, actual.maximum)))
                     {
@@ -129,13 +171,7 @@ final class RecoloredImage extends ImageAdapter {
          * At this point we found no existing image with the desired color model,
          * or the minimum/maximum information would be lost. Create a new image.
          */
-        final RecoloredImage image;
-        if (expected != null) {
-            image = new RecoloredImage(source, colors, expected.minimum, expected.maximum);
-        } else {
-            image = new RecoloredImage(source, colors, Double.NaN, Double.NaN);
-        }
-        return ImageProcessor.unique(image);
+        return ImageProcessor.unique(new RecoloredImage(source, colors, expected));
     }
 
     /**
@@ -217,6 +253,7 @@ final class RecoloredImage extends ImageAdapter {
                 } else if (value instanceof Statistics) {
                     statistics = (Statistics) value;
                 } else if (value instanceof Statistics[]) {
+                    // Undocumented: one element per band, will keep only the visible band.
                     statsAllBands = (Statistics[]) value;
                 } else {
                     throw illegalPropertyType(modifiers, "statistics", value);
@@ -237,7 +274,7 @@ final class RecoloredImage extends ImageAdapter {
         if (Double.isNaN(minimum) || Double.isNaN(maximum)) {
             if (statistics == null) {
                 if (statsAllBands == null) {
-                    final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[visibleBand + 1];
+                    final var sampleFilters = new DoubleUnaryOperator[visibleBand + 1];
                     sampleFilters[visibleBand] = ImageProcessor.filterNodataValues(nodataValues);
                     statsAllBands = processor.valueOfStatistics(statsSource, areaOfInterest, sampleFilters);
                 }
@@ -267,7 +304,7 @@ final class RecoloredImage extends ImageAdapter {
              * But if there is 2 or more, then we select the one having largest intersection
              * with the [minimum … maximum] range.
              */
-            final IndexColorModel icm = (IndexColorModel) source.getColorModel();
+            final var icm = (IndexColorModel) source.getColorModel();
             final int size = icm.getMapSize();
             int validMin = 0;
             int validMax = size - 1;        // Inclusive.
@@ -321,7 +358,7 @@ final class RecoloredImage extends ImageAdapter {
         for (;;) {
             if (cm.equals(source.getColorModel())) {
                 if (source instanceof RecoloredImage) {
-                    final RecoloredImage colored = (RecoloredImage) source;
+                    final var colored = (RecoloredImage) source;
                     if (colored.minimum != minimum || colored.maximum != maximum) {
                         continue;
                     }
@@ -382,7 +419,7 @@ final class RecoloredImage extends ImageAdapter {
     @Override
     public boolean equals(final Object object) {
         if (super.equals(object)) {
-            final RecoloredImage other = (RecoloredImage) object;
+            final var other = (RecoloredImage) object;
             return Numerics.equals(minimum, other.minimum) &&
                    Numerics.equals(maximum, other.maximum) &&
                    colors.equals(other.colors);

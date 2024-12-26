@@ -851,7 +851,7 @@ public class MetadataBuilder {
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
-        if (!hasTitle()) {
+        if (getTitle() == null) {
             // Note: title is mandatory in ISO metadata, contrarily to the identifier.
             resource.getIdentifier().ifPresent((name) -> addTitle(new Sentence(name)));
         }
@@ -1201,6 +1201,33 @@ public class MetadataBuilder {
     }
 
     /**
+     * Returns the current citation title. This method is typically used for deciding
+     * whether to use some fallback as title, because titles are mandatory in ISO 19115.
+     *
+     * @return the title defined in the current citation, or {@code null} if none.
+     */
+    public final InternationalString getTitle() {
+        return (citation != null) ? citation.getTitle() : null;
+    }
+
+    /**
+     * Sets the title, replacing any previous value.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/title}</li>
+     * </ul>
+     *
+     * @param title  the resource title, or {@code null} for no-operation.
+     */
+    public final void setTitle(final CharSequence title) {
+        final InternationalString i18n = trim(title);
+        if (i18n != null) {
+            citation().setTitle(i18n);
+        }
+    }
+
+    /**
      * Adds a title or alternate title of the resource, if not already present.
      * This operation does nothing if the title is already defined and the given
      * title is already used as an identifier (this policy is a complement of the
@@ -1248,7 +1275,7 @@ public class MetadataBuilder {
      */
     public final void addTitleOrIdentifier(final String code, Scope scope) {
         if (scope != Scope.METADATA) {
-            if (!hasTitle()) {
+            if (getTitle() == null) {
                 addTitle(code);
                 if (scope == Scope.RESOURCE) {
                     return;
@@ -1257,16 +1284,6 @@ public class MetadataBuilder {
             }
         }
         addIdentifier(null, code, scope);
-    }
-
-    /**
-     * Returns whether the current citation has a title. This method is typically used for deciding
-     * whether to use some fallback as title, because titles are mandatory in ISO 19115.
-     *
-     * @return whether a title is defined in the current citation.
-     */
-    public final boolean hasTitle() {
-        return (citation != null) && citation.getTitle() != null;
     }
 
     /**
@@ -3235,7 +3252,7 @@ public class MetadataBuilder {
          *
          * We could easily factor out the above pattern in a method, but we don't do that because
          * it would invoke `bla().getFoos()` before the loop. We want that call to happen only if
-         * the collection contains at least one element. Usually there is only 0 or 1 element.
+         * the collection contains at least one element. Usually, there is only 0 or 1 element.
          */
         for (final Identification info : component.getIdentificationInfo()) {
             final Citation c = info.getCitation();

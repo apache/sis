@@ -20,6 +20,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Objects;
 import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.util.Disposable;
@@ -39,6 +41,7 @@ import org.apache.sis.util.Disposable;
 abstract class MultiSourceImage extends WritableComputedImage {
     /**
      * Color model of this image.
+     * A null value is allowed but not recommended.
      *
      * @see #getColorModel()
      */
@@ -66,22 +69,28 @@ abstract class MultiSourceImage extends WritableComputedImage {
     /**
      * Creates a new multi-sources image.
      *
-     * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
-     * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
-     * @param  parallel   whether parallel computation is allowed.
+     * @param  sources      sources of this image.
+     * @param  bounds       range of pixel coordinates of this image.
+     * @param  minTile      indices of the first tile in this image.
+     * @param  sampleModel  the sample model shared by all tiles in this image.
+     * @param  colorModel   the color model of the image, or {@code null} if none.
+     * @param  parallel     whether parallel computation is allowed.
+     * @throws IllegalArgumentException if the color model is incompatible with the sample model.
      */
-    MultiSourceImage(final MultiSourceLayout layout, final Colorizer colorizer, final boolean parallel) {
-        super(layout.sampleModel, layout.filteredSources);
-        final Rectangle r = layout.domain;
-        minX            = r.x;
-        minY            = r.y;
-        width           = r.width;
-        height          = r.height;
-        minTileX        = layout.minTileX;
-        minTileY        = layout.minTileY;
-        colorModel      = layout.createColorModel(colorizer);
-        ensureCompatible(colorModel);
-        this.parallel = parallel;
+    MultiSourceImage(final RenderedImage[] sources, final Rectangle bounds, final Point minTile,
+                     final SampleModel sampleModel, final ColorModel colorModel,
+                     final boolean parallel)
+    {
+        super(sampleModel, sources);
+        this.colorModel = colorModel;
+        this.minX       = bounds.x;
+        this.minY       = bounds.y;
+        this.width      = bounds.width;
+        this.height     = bounds.height;
+        this.minTileX   = minTile.x;
+        this.minTileY   = minTile.y;
+        this.parallel   = parallel;
+        ensureCompatible(sampleModel, colorModel);
     }
 
     /** Returns the information inferred at construction time. */
@@ -134,7 +143,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
     @Override
     public boolean equals(final Object object) {
         if (equalsBase(object)) {
-            final MultiSourceImage other = (MultiSourceImage) object;
+            final var other = (MultiSourceImage) object;
             return parallel == other.parallel &&
                    minTileX == other.minTileX &&
                    minTileY == other.minTileY &&

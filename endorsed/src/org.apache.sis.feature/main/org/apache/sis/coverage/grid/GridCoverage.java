@@ -213,7 +213,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * @see SampleDimension#getBackground()
      */
     final Number[] getBackground() {
-        return SampleDimensions.backgrounds(sampleDimensions);
+        return SampleDimensions.backgrounds(getSampleDimensions());
     }
 
     /**
@@ -312,8 +312,9 @@ public abstract class GridCoverage extends BandedCoverage {
     final RenderedImage convert(final RenderedImage source, final DataType bandType,
             final MathTransform1D[] converters, final ImageProcessor processor)
     {
+        final List<SampleDimension> ranges = getSampleDimensions();
         try {
-            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(sampleDimensions);
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(ranges);
             return processor.convert(source, getRanges(), converters, bandType);
         } finally {
             SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();

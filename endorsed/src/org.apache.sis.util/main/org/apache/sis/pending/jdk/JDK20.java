@@ -14,43 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.privy;
+package org.apache.sis.pending.jdk;
 
-import java.awt.Dimension;
-
-// Test dependencies
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.spi.FileSystemProvider;
+import java.nio.file.attribute.BasicFileAttributes;
 
 
 /**
- * Tests {@link ImageLayoutTest}.
+ * Place holder for some functionalities defined in a JDK more recent than Java 11.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class ImageLayoutTest extends TestCase {
+public final class JDK20 {
     /**
-     * Creates a new test case.
+     * Do not allow instantiation of this class.
      */
-    public ImageLayoutTest() {
+    private JDK20() {
     }
 
     /**
-     * Verifies that {@link ImageLayout#SUGGESTED_TILE_CACHE_SIZE} is strictly positive.
+     * Reads a file's attributes as a bulk operation if it exists.
      */
-    @Test
-    public void verifySuggestedTileCacheSize() {
-        assertTrue(ImageLayout.SUGGESTED_TILE_CACHE_SIZE >= 1);
-    }
-
-    /**
-     * Tests {@link ImageLayout#suggestTileSize(int, int, boolean)}.
-     */
-    @Test
-    public void testSuggestTileSize() {
-        final Dimension size = ImageLayout.DEFAULT.suggestTileSize(367877, 5776326, true);
-        assertEquals(511, size.width);
-        assertEquals(246, size.height);
+    public static <A extends BasicFileAttributes> A readAttributesIfExists(FileSystemProvider provider,
+            Path path, Class<A> type, LinkOption... options) throws IOException
+    {
+        try {
+            return provider.readAttributes(path, type, options);
+        } catch (NoSuchFileException ignore) {
+            return null;
+        }
     }
 }

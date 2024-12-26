@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.awt.Image;
+import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
@@ -38,6 +39,7 @@ import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.TileOpExecutor;
 import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.pending.jdk.JDK18;
 
 
@@ -105,7 +107,7 @@ import org.apache.sis.pending.jdk.JDK18;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 public abstract class PlanarImage implements RenderedImage {
@@ -147,6 +149,11 @@ public abstract class PlanarImage implements RenderedImage {
      * Key for a property defining a conversion from pixel values to the units of measurement.
      * The value should be an array of {@link SampleDimension} instances.
      * The array length should be the number of bands.
+     * The array may contain null elements if this information is missing in some bands.
+     *
+     * <div class="note"><b>Example:</b> null elements may happen if this image is an
+     * {@linkplain ImageProcessor#aggregateBands(RenderedImage...) aggregation of bands}
+     * of two or more images, and some but not all images define this property.</div>
      *
      * @see org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()
      *
@@ -161,10 +168,14 @@ public abstract class PlanarImage implements RenderedImage {
      * This information can be used for choosing the number of fraction digits to show when writing sample values
      * in text format.
      *
+     * <p><em>Resolution is not accuracy.</em>
+     * There is no guarantee that the data accuracy is as good as the resolution given by this property.</p>
+     *
      * <p>Values should be instances of {@code double[]}.
      * The array length should be the number of bands. This property may be computed automatically during
      * {@linkplain org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean) conversions from
-     * integer values to floating point values}.</p>
+     * integer values to floating point values}. Values should be strictly positive and finite but may be
+     * {@link Double#NaN} if this information is unknown for a band.</p>
      */
     public static final String SAMPLE_RESOLUTIONS_KEY = "org.apache.sis.SampleResolutions";
 
@@ -175,11 +186,13 @@ public abstract class PlanarImage implements RenderedImage {
      * actually used in an image.
      *
      * <p>Values should be instances of <code>{@linkplain org.apache.sis.math.Statistics}[]</code>.
-     * The array length should be the number of bands. If this property is not provided, Apache SIS
-     * may have to {@linkplain ImageProcessor#statistics compute statistics itself}
-     * (by iterating over pixel values) when needed.</p>
+     * The array length should be the number of bands. Some array elements may be {@code null}
+     * if the statistics are not available for all bands.</p>
      *
-     * <p>Statistics are only indicative. They may be computed on an image sub-region.</p>
+     * <p>Statistics are only indicative. They may be computed on a subset of the sample values.
+     * If this property is not provided, some image rendering or exportation processes may have
+     * to {@linkplain ImageProcessor#statistics compute statistics themselves} by iterating over
+     * pixel values, which can be costly.</p>
      *
      * @see ImageProcessor#statistics(RenderedImage, Shape, DoubleUnaryOperator...)
      */
@@ -277,6 +290,8 @@ public abstract class PlanarImage implements RenderedImage {
     /**
      * Returns the names of all recognized properties,
      * or {@code null} if this image has no properties.
+     * This method may conservatively return the names of properties that <em>may</em> exist,
+     * when checking if they actually exist would cause a potentially costly computation.
      *
      * <p>The default implementation returns {@code null}.</p>
      *
@@ -285,6 +300,25 @@ public abstract class PlanarImage implements RenderedImage {
     @Override
     public String[] getPropertyNames() {
         return null;
+    }
+
+    /**
+     * Returns a shape containing all pixels that are valid in this image.
+     * The returned shape may conservatively contain more than the minimal set of valid pixels.
+     * It should be relatively quick to compute. In particular, invoking this method should not
+     * cause the calculation of tiles (e.g. for searching NaN sample values).
+     * The shape should be fully contained inside the image {@linkplain #getBounds() bounds}.
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation returns {@link #getBounds()}.
+     *
+     * @return a shape containing all pixels that are valid. Not necessarily the smallest shape
+     *         containing those pixels, but shall be fully contained inside the image bounds.
+     *
+     * @since 1.5
+     */
+    public Shape getValidArea() {
+        return getBounds();
     }
 
     /**
@@ -463,7 +497,7 @@ public abstract class PlanarImage implements RenderedImage {
      * Copies an arbitrary rectangular region of this image to the supplied writable raster.
      * The region to be copied is determined from the bounds of the supplied raster.
      * The supplied raster must have a {@link SampleModel} that is compatible with this image.
-     * If the raster is {@code null}, an raster is created by this method.
+     * If the given raster is {@code null}, a new raster is created by this method.
      *
      * @param  raster  the raster to hold a copy of this image, or {@code null}.
      * @return the given raster if it was not-null, or a new raster otherwise.
@@ -528,6 +562,27 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
+     * Ensures that a user supplied color model is compatible with the sample model.
+     * This is a helper method for argument validation in sub-classes constructors.
+     *
+     * @param  sampleModel the sample model of this image.
+     * @param  colors  the color model to validate. Can be {@code null}.
+     * @throws IllegalArgumentException if the color model is incompatible.
+     */
+    static void ensureCompatible(final SampleModel sampleModel, final ColorModel colors) {
+        final String erroneous = verifyCompatibility(sampleModel, colors);
+        if (erroneous != null) {
+            String message = Resources.format(Resources.Keys.IncompatibleColorModel);
+            if (!erroneous.isEmpty()) {
+                String complement = Classes.getShortClassName(colors);
+                complement = Errors.format(Errors.Keys.IllegalValueForProperty_2, complement, erroneous);
+                message = Resources.concatenate(message, complement);
+            }
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    /**
      * Verifies if the color model is compatible with the sample model.
      * If the color model is incompatible, then this method returns the name of the mismatched property.
      * If the returned property is an empty string, then the mismatched property is unidentified.
@@ -537,7 +592,7 @@ public abstract class PlanarImage implements RenderedImage {
      * @return name of mismatched property (an empty string if unidentified),
      *         or {@code null} if the color model is null or is compatible.
      */
-    static String verifyCompatibility(final SampleModel sm, final ColorModel cm) {
+    private static String verifyCompatibility(final SampleModel sm, final ColorModel cm) {
         if (cm == null || cm.isCompatibleSampleModel(sm))  return null;
         if (cm.getTransferType()  != sm.getTransferType()) return "transferType";
         if (cm.getNumComponents() != sm.getNumBands())     return "numComponents";

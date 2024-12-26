@@ -37,17 +37,19 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.image.ImageLayout;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.coverage.privy.ImageLayout;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -62,6 +64,13 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class TiledResource extends TiledGridResource {
+    /**
+     * Arbitrary number of pixels for considering a tile as too large.
+     * Tile larger than this size will be divided in smaller tiles.
+     */
+    @Configuration
+    private static final int LARGE_TILE_SIZE = 1024 * 1024 * 16;
+
     /**
      * The data set that contains this raster.
      */
@@ -193,10 +202,10 @@ final class TiledResource extends TiledGridResource {
                  */
                 if ((w = width)  < 0) w = ImageLayout.DEFAULT_TILE_SIZE;
                 if ((h = height) < 0) h = ImageLayout.DEFAULT_TILE_SIZE;
-            } else if (Math.multiplyFull(w, h) <= ImageLayout.LARGE_TILE_SIZE) {
+            } else if (Math.multiplyFull(w, h) <= LARGE_TILE_SIZE) {
                 return new Dimension(w, h);
             }
-            return ImageLayout.DEFAULT.suggestTileSize(w, h, true);
+            return ImageLayout.DEFAULT.suggestTileSize(w, h);
         }
     }
 
@@ -473,7 +482,7 @@ final class TiledResource extends TiledGridResource {
              */
         }
         if ((red | green | blue) >= 0) {
-            colorModel = ColorModelFactory.createRGB(dataType.numBits, false, alpha >= 0);
+            colorModel = new ColorModelBuilder().bitsPerSample(dataType.numBits).alphaBand(alpha).createBandedRGB();
             // TODO: needs custom color model if too many bands, or if order is not (A)RGB.
         } else if (palette != null) {
             colorModel = ColorModelFactory.createIndexColorModel(selectedBands.length, paletteIndex, palette, true, -1);

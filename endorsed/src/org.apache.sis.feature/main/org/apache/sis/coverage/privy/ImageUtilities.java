@@ -18,6 +18,7 @@ package org.apache.sis.coverage.privy;
 
 import java.util.Arrays;
 import java.util.logging.Logger;
+import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
@@ -36,6 +37,7 @@ import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.multiplyFull;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
@@ -61,6 +63,21 @@ public final class ImageUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private ImageUtilities() {
+    }
+
+    /**
+     * Returns a shape containing all pixels that are valid in this image.
+     * The returned shape may conservatively contain more than the minimal set of valid pixels.
+     *
+     * @param  image  the image for which to get the valid area.
+     * @return a shape (not necessarily the smallest) containing all pixels that are valid.
+     */
+    public static Shape getValidArea(final RenderedImage image) {
+        if (image instanceof PlanarImage) {
+            return ((PlanarImage) image).getValidArea();
+        } else {
+            return getBounds(image);
+        }
     }
 
     /**
@@ -97,22 +114,6 @@ public final class ImageUtilities extends Static {
         aoi.height = Numerics.clamp(Math.min(
                 ((long) min) + image.getHeight(),
                 ((long) low) + aoi.height) - aoi.y);
-    }
-
-    /**
-     * Returns whether the given image has an alpha channel.
-     *
-     * @param  image  the image or {@code null}.
-     * @return whether the image has an alpha channel.
-     *
-     * @see #getTransparencyDescription(ColorModel)
-     */
-    public static boolean hasAlpha(final RenderedImage image) {
-        if (image != null) {
-            final ColorModel cm = image.getColorModel();
-            if (cm != null) return cm.hasAlpha();
-        }
-        return false;
     }
 
     /**
@@ -625,6 +626,20 @@ public final class ImageUtilities extends Static {
             r.height = toIntExact(((((long) tiles.y) + tiles.height) * size) + offset - r.y);
         }
         return r;
+    }
+
+    /**
+     * Converts tile indices from the specified source image to the specified target image.
+     *
+     * @param  source  image for which tile indices are given.
+     * @param  tartet  image for which tile indices are desired.
+     * @param  tiles   ranges of indices of tiles in the source image.
+     * @return ranges of indices of tiles in the target image.
+     */
+    public static Rectangle convertTileIndices(RenderedImage source, RenderedImage target, Rectangle tiles) {
+        Rectangle pixels = tilesToPixels(source, tiles);
+        clipBounds(target, pixels);
+        return pixelsToTiles(target, pixels);
     }
 
     /**

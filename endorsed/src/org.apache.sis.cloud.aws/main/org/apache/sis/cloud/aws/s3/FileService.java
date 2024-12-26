@@ -64,18 +64,18 @@ import org.apache.sis.util.collection.Containers;
  * This provider accepts URIs of the following forms:
  *
  * <ul>
- *   <li>{@code S3://bucket/key}</li>
- *   <li>{@code S3://accessKey@bucket/key} (password not allowed)</li>
+ *   <li>{@code S3://bucket/file}</li>
+ *   <li>{@code S3://accessKey@bucket/file} (password not allowed)</li>
  * </ul>
  *
- * Keys can be paths with components separated by the {@code '/'} separator.
+ * "Files" are S3 keys interpreted as paths with components separated by the {@code '/'} separator.
  * The password and the region can be specified at {@linkplain #newFileSystem file system initialization time}.
- * The endpoint (e.g. {@code "s3.eu-central-1.amazonaws.com"}) shall <em>not</em> be specified in the URI.
+ * The endpoint (e.g. {@code "s3.eu-central-1.amazonaws.com"}) shall <em>not</em> be specified in the <abbr>URI</abbr>.
  * In particular the region ({@code "eu-central-1"} in the above example) can depend on the server location
  * instead of the data to access, and can be a global configuration for the server.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.2
  */
 public class FileService extends FileSystemProvider {
@@ -109,7 +109,8 @@ public class FileService extends FileSystemProvider {
 
     /**
      * The property for the secret access key (password).
-     * Values shall be instances of {@link Region}.
+     * Values shall should be instances of {@link Region} or
+     * strings {@linkplain Region#of(String) convertible} to region.
      * If not specified, the AWS SDK default mechanism searches for the first of the following:
      *
      * <ul>
@@ -168,10 +169,10 @@ public class FileService extends FileSystemProvider {
     }
 
     /**
-     * Initializes and returns a new file system identified by a URI.
-     * The given URI shall have the following pattern:
+     * Initializes and returns a new file system identified by a <abbr>URI</abbr>.
+     * The given <abbr>URI</abbr> shall have the following pattern:
      *
-     * <pre class="text">S3://accessKey@bucket/key</pre>
+     * <pre class="text">S3://accessKey@bucket/file</pre>
      *
      * In current version all path components after {@code accessKey} are ignored.
      * A future version may allow finer grain control.
@@ -188,10 +189,11 @@ public class FileService extends FileSystemProvider {
      *
      * <ul>
      *   <li>{@value #AWS_SECRET_ACCESS_KEY} with {@link String} value.</li>
-     *   <li>{@value #AWS_REGION} with {@link Region} value.</li>
+     *   <li>{@value #AWS_REGION} with {@link Region} value or a string
+     *     {@linkplain Region#of(String) convertible} to region.</li>
      * </ul>
      *
-     * @param  uri         a URI of the form {@code "s3://accessKey@bucket/key"}.
+     * @param  uri         a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"}.
      * @param  properties  properties to configure the file system, or {@code null} if none.
      * @return the new file system.
      * @throws IllegalArgumentException if the URI or the map contains invalid values.
@@ -207,7 +209,13 @@ public class FileService extends FileSystemProvider {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.MissingAccessKey_2, (accessKey == null) ? 0 : 1, uri));
         }
         final String separator = Containers.property(properties, SEPARATOR, String.class);
-        final Region region = Containers.property(properties, AWS_REGION, Region.class);
+        final Region region;
+        Object value = properties.get(AWS_REGION);
+        if (value instanceof String) {
+            region = Region.of((String) value);
+        } else {
+            region = Containers.property(properties, AWS_REGION, Region.class);
+        }
         final class Creator implements Function<String, ClientFileSystem> {
             /** Identifies if a new file system is created. */ boolean created;
 
@@ -250,7 +258,7 @@ public class FileService extends FileSystemProvider {
      * If the file system has not been created or has been closed,
      * then this method throws {@link FileSystemNotFoundException}.
      *
-     * @param  uri  a URI of the form {@code "s3://accessKey@bucket/key"}.
+     * @param  uri  a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"}.
      * @return the file system previously created by {@link #newFileSystem(URI, Map)}.
      * @throws IllegalArgumentException if the URI is not supported by this provider.
      * @throws FileSystemNotFoundException if the file system does not exist or has been closed.
@@ -273,7 +281,7 @@ public class FileService extends FileSystemProvider {
      * The resulting {@code Path} is associated with a {@link FileSystem}
      * that already exists or is constructed automatically.
      *
-     * @param  uri  a URI of the form {@code "s3://accessKey@bucket/key"}.
+     * @param  uri  a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"}.
      * @return the resulting {@code Path}.
      * @throws IllegalArgumentException if the URI is not supported by this provider.
      * @throws FileSystemNotFoundException if the file system does not exist and cannot be created automatically.

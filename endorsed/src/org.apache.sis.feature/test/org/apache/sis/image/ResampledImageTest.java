@@ -31,7 +31,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.RasterFactory;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 
@@ -115,8 +114,8 @@ public final class ResampledImageTest extends TestCase {
      * @param  minY  minimal Y coordinate to give to the resampled image.
      */
     private void createScaledByTwo(final int minX, final int minY) {
-        final Rectangle bounds = new Rectangle(minX, minY, source.getWidth() * 2, source.getHeight() * 2);
-        final AffineTransform tr = AffineTransform.getTranslateInstance(source.getMinX(), source.getMinY());
+        final var bounds = new Rectangle(minX, minY, source.getWidth() * 2, source.getHeight() * 2);
+        final var tr = AffineTransform.getTranslateInstance(source.getMinX(), source.getMinY());
         tr.scale(0.5, 0.5);
         tr.translate(-bounds.x, -bounds.y);
         resample(bounds, tr);
@@ -127,7 +126,7 @@ public final class ResampledImageTest extends TestCase {
      * The interpolation result will be stored in {@link #target}.
      */
     private void resample(final Rectangle bounds, final AffineTransform tr) {
-        final ImageProcessor processor = new ImageProcessor();
+        final var processor = new ImageProcessor();
         processor.setInterpolation(interpolation);
         target = (ResampledImage) processor.resample(source, bounds, new AffineTransform2D(tr));
         try {
@@ -206,6 +205,13 @@ public final class ResampledImageTest extends TestCase {
     }
 
     /**
+     * Verifies the valid area of an image which is expected to have a rectangular result.
+     */
+    private void verifyRectangularResult() {
+        assertEquals(target.getBounds(), target.getValidArea().getBounds(), "validArea");
+    }
+
+    /**
      * Tests {@link Interpolation#NEAREST} on floating point values.
      */
     @Test
@@ -214,6 +220,7 @@ public final class ResampledImageTest extends TestCase {
         interpolation = Interpolation.NEAREST;
         createScaledByTwo(-30, 12);
         verifyAtIntegerPositions();
+        verifyRectangularResult();
     }
 
     /**
@@ -225,6 +232,7 @@ public final class ResampledImageTest extends TestCase {
         interpolation = Interpolation.NEAREST;
         createScaledByTwo(18, 20);
         verifyAtIntegerPositions();
+        verifyRectangularResult();
     }
 
     /**
@@ -237,6 +245,7 @@ public final class ResampledImageTest extends TestCase {
         createScaledByTwo(-40, 50);
         verifyAtIntegerPositions();
         verifyAtMiddlePositions(1E-12);
+        verifyRectangularResult();
     }
 
     /**
@@ -249,6 +258,7 @@ public final class ResampledImageTest extends TestCase {
         createScaledByTwo(40, -50);
         verifyAtIntegerPositions();
         verifyAtMiddlePositions(0.5);
+        verifyRectangularResult();
     }
 
     /**
@@ -287,7 +297,7 @@ public final class ResampledImageTest extends TestCase {
         } catch (NoninvertibleTransformException e) {
             throw new AssertionError(e);
         }
-        final Rectangle bounds = new Rectangle(9, 9);
+        final var bounds = new Rectangle(9, 9);
         target = new ResampledImage(source,
                 ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds),
                 null, bounds, toSource, interpolation, null, null);
@@ -343,7 +353,7 @@ public final class ResampledImageTest extends TestCase {
      */
     @Test
     public void testMultiBands() {
-        final BufferedImage image = new BufferedImage(6, 3, BufferedImage.TYPE_INT_ARGB);
+        final var image = new BufferedImage(6, 3, BufferedImage.TYPE_INT_ARGB);
         final Graphics2D g = image.createGraphics();
         g.setColor(Color.ORANGE);
         g.fillRect(0, 0, image.getWidth(), image.getHeight());

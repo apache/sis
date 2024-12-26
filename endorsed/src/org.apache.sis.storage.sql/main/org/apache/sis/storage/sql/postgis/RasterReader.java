@@ -44,6 +44,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.ObservableImage;
 import org.apache.sis.referencing.CRS;
@@ -316,7 +317,7 @@ public final class RasterReader extends RasterFormat {
         final int dataType = sm.getDataType();
         final int numBands = sm.getNumBands();
         if ((numBands == 3) && (dataType == DataBuffer.TYPE_BYTE)) {
-            cm = ColorModelFactory.createRGB(Byte.SIZE, false, false);
+            cm = new ColorModelBuilder().createBandedRGB();
         } else {
             final int visibleBand = 0;              // Arbitrary value (could be configurable).
             final double minimum, maximum;

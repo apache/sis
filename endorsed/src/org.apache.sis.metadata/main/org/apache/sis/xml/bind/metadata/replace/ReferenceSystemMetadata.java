@@ -31,6 +31,7 @@ import org.apache.sis.util.Utilities;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ReferenceSystemType;
 import org.apache.sis.util.collection.Containers;
 
 
@@ -45,9 +46,6 @@ import org.apache.sis.util.collection.Containers;
  *   ├─mrs:referenceSystemIdentifier  :  mcc:MD_Identifier
  *   └─mrs:referenceSystemType        :  mrs:MD_ReferenceSystemTypeCode</pre>
  *
- * The {@code referenceSystemType} attribute is currently missing.
- * See <a href="https://issues.apache.org/jira/browse/SIS-470">SIS-470</a>.
- *
  * <p>Note that this implementation is very simple and serves no other purpose than being
  * a container for XML parsing or formatting. For real referencing service, consider using
  * {@link org.apache.sis.referencing.AbstractReferenceSystem} subclasses instead.</p>
@@ -59,7 +57,10 @@ import org.apache.sis.util.collection.Containers;
  * @see org.apache.sis.referencing.AbstractReferenceSystem
  * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
  */
-@XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS)
+@XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS, propOrder = {
+    "name",
+    "referenceSystemType"
+})
 @XmlRootElement(name = "MD_ReferenceSystem", namespace = Namespaces.MRS)
 public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements ReferenceSystem {
     /**
@@ -71,6 +72,13 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      * {@code true} if marshalling ISO 19115:2003 model, or {@code false} if marshalling ISO 19115:2014 model.
      */
     private boolean isLegacyMetadata;
+
+    /**
+     * The type of the reference system, or {@code null} if unknown.
+     * This type is inferred from the interfaces implemented by the CRS.
+     */
+    @XmlElement(name = "referenceSystemType")
+    public ReferenceSystemType referenceSystemType;
 
     /**
      * Creates a reference system without identifier.
@@ -86,6 +94,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      */
     public ReferenceSystemMetadata(final ReferenceSystem crs) {
         super(crs);
+        referenceSystemType = crs.getReferenceSystemType().orElse(null);
     }
 
     /**
@@ -141,12 +150,14 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode) && (object instanceof ReferenceSystem)) {
-            final ReferenceSystem that = (ReferenceSystem) object;
-            if (mode.isIgnoringMetadata()) {
-                // Compare the name because it was ignored by super.equals(…) in "ignore metadata" mode.
-                return Utilities.deepEquals(getName(), that.getName(), mode);
+            final var that = (ReferenceSystem) object;
+            if (that.getReferenceSystemType().orElse(null) == referenceSystemType) {
+                if (mode.isIgnoringMetadata()) {
+                    // Compare the name because it was ignored by super.equals(…) in "ignore metadata" mode.
+                    return Utilities.deepEquals(getName(), that.getName(), mode);
+                }
+                return Containers.isNullOrEmpty(that.getDomains());
             }
-            return Containers.isNullOrEmpty(that.getDomains());
         }
         return false;
     }

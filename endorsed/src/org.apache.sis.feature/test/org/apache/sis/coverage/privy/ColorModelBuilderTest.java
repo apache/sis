@@ -19,11 +19,11 @@ package org.apache.sis.coverage.privy;
 import java.util.List;
 import java.util.AbstractMap.SimpleEntry;
 import java.awt.Color;
-import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.image.DataType;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
@@ -35,7 +35,7 @@ import org.apache.sis.test.TestCase;
 
 
 /**
- * Tests {@link ColorModelBuilder}.
+ * Tests {@link ColorScaleBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -53,7 +53,7 @@ public final class ColorModelBuilderTest extends TestCase {
      */
     @Test
     public void testRangeAndColors() throws TransformException {
-        final ColorModelBuilder colorizer = new ColorModelBuilder(List.of(
+        final var colorizer = new ColorScaleBuilder(List.of(
                 new SimpleEntry<>(NumberRange.create(0, true,  0, true), new Color[] {Color.GRAY}),
                 new SimpleEntry<>(NumberRange.create(1, true,  1, true), new Color[] {ColorModelFactory.TRANSPARENT}),
                 new SimpleEntry<>(NumberRange.create(2, true, 15, true), new Color[] {Color.BLUE, Color.WHITE, Color.RED})), null);
@@ -62,7 +62,7 @@ public final class ColorModelBuilderTest extends TestCase {
          * above-given ranges already fit in a 4-bits IndexColormodel.
          */
         assertTrue(colorizer.getSampleToIndexValues().isIdentity());
-        final IndexColorModel cm = (IndexColorModel) colorizer.createColorModel(DataBuffer.TYPE_BYTE, 1, 0);
+        final var cm = (IndexColorModel) colorizer.createColorModel(DataType.BYTE, 1, 0);
         final int[] expected = {
             0xFF808080,     // Color.GRAY
             0x00000000,     // ColorModelFactory.TRANSPARENT
@@ -102,9 +102,10 @@ public final class ColorModelBuilderTest extends TestCase {
                 .addQualitative ("Error", MathFunctions.toNanFloat(3))
                 .setName("Temperature").build();
 
-        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, true);
+        final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, true);
         assertTrue(colorizer.initialize(null, sd));
-        final var cm = (IndexColorModel) colorizer.createColorModel(ColorModelBuilder.TYPE_COMPACT, 1, 0);      // Must be first.
+        final var dt = DataType.forDataBufferType(ColorScaleBuilder.TYPE_COMPACT);
+        final var cm = (IndexColorModel) colorizer.createColorModel(dt, 1, 0);      // Must be first.
         /*
          * Test conversion of a few sample values to packed values.
          */

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.List;
 import java.util.Optional;
 import java.awt.Point;
 import java.awt.Dimension;
@@ -27,20 +28,20 @@ import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.FrequencySortedSet;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.ColorModelFactory;
-import org.apache.sis.coverage.privy.MultiSourceArgument;
+import org.apache.sis.coverage.privy.BandAggregateArgument;
 import org.apache.sis.coverage.privy.CommonDomainFinder;
+import org.apache.sis.coverage.privy.SampleDimensions;
 
 
 /**
- * Computes the bounds of a destination image which will combine many source images.
- * A combination may be an aggregation or an overlay of bands, depending on the image class.
+ * Computes the bounds of a destination image which will combine the bands of many source images.
  * All images are assumed to use the same pixel coordinate space: (<var>x</var>, <var>y</var>)
  * expressed in pixel coordinates should map to the same geospatial location in all images.
  *
@@ -52,7 +53,7 @@ import org.apache.sis.coverage.privy.CommonDomainFinder;
  * @see ImageCombiner
  * @see BandAggregateImage
  */
-final class MultiSourceLayout extends ImageLayout {
+final class BandAggregateLayout {
     /**
      * The source images. This is a copy of the user-specified array,
      * except that images associated to an empty set of bands are discarded.
@@ -62,11 +63,12 @@ final class MultiSourceLayout extends ImageLayout {
     /**
      * The source images with only the user-specified bands.
      * Those images are views, the pixels are not copied.
+     * The array length is the same as {@link #sources}.
      */
     final RenderedImage[] filteredSources;
 
     /**
-     * Ordered (not necessarily sorted) indices of bands to select in each source image.
+     * Indices of bands to select in each source image, in the order of target image bands.
      * The length of this array is always equal to the length of the {@link #sources} array.
      * A {@code null} element means that all bands of the corresponding image should be used.
      * All non-null elements are non-empty and without duplicated values.
@@ -75,6 +77,7 @@ final class MultiSourceLayout extends ImageLayout {
 
     /**
      * Final band select operation to apply on the aggregated result.
+     * This is needed if the final band order implies interleaving bands of different images.
      */
     final int[] bandSelect;
 
@@ -95,31 +98,36 @@ final class MultiSourceLayout extends ImageLayout {
     final Rectangle domain;
 
     /**
-     * Index of the first tile. Other tile matrix properties such as the number of tiles and the grid offsets
-     * are derived from those values together with the {@linkplain #domain}. Contrarily to pixel coordinates,
-     * the tile coordinate space does not need to be the same for all images.
+     * Indices of the upper-left tile in an image tile matrix.
+     */
+    final Point minTile;
+
+    /**
+     * Concatenated array of the sample dimensions declared in all sources, or {@code null} if none.
+     * This field is non-null only if this information is present in all sources.
+     */
+    final List<SampleDimension> sampleDimensions;
+
+    /**
+     * Whether to allow the sharing of data buffers (instead of copying) if possible.
+     * This flag depends on the {@link ImageProcessor} configuration. Its purpose is
+     * to express <em>user intend</em>, not whether sharing is effectively enabled.
      *
-     * @see #getMinTile()
+     * <h4>Design note</h4>
+     * This flag is not the result of the modification done in {@code BandAggregateLayout} constructor
+     * because whether buffer sharing is effectively enabled will be determined on a case-by-case basis
+     * by {@link BandAggregateImage} by inspection of sample models.
+     *
+     * @see BandAggregateImage#allowSharing
      */
-    final int minTileX, minTileY;
+    final boolean allowSharing;
 
     /**
-     * Whether to use the preferred tile size exactly as specified, without trying to compute a better size.
-     * This field may be {@code true} if the tiles of the destination image are at exact same location as
-     * the tiles of a source image having the preferred tile size. In such case, keeping the same size will
-     * reduce the number of tiles requested in that source image.
-     */
-    private final boolean exactTileSize;
-
-    /**
-     * Computes the layout of an image combining all the specified source images.
+     * Computes the layout of an image combining the bands of all the specified source images.
      * The optional {@code bandsPerSource} argument specifies the bands to select in each source images.
      * That array can be {@code null} for selecting all bands in all source images,
      * or may contain {@code null} elements for selecting all bands of the corresponding image.
      * An empty array element (i.e. zero band to select) discards the corresponding source image.
-     *
-     * <p>This static method is a workaround while waiting for JEP 447: Statements before super(…).
-     * This method may become the constructor after JEP 447 is available.</p>
      *
      * @param  sources         images to combine, in order.
      * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.
@@ -127,15 +135,19 @@ final class MultiSourceLayout extends ImageLayout {
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if some band indices are duplicated or outside their range of validity.
      */
-    @Workaround(library="JDK", version="1.8")
-    static MultiSourceLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
-        final var aggregate = new MultiSourceArgument<RenderedImage>(sources, bandsPerSource);
-        aggregate.unwrap(BandAggregateImage::unwrap);
-        aggregate.validate(ImageUtilities::getNumBands);
-
-        int[] bandSelect   = aggregate.mergeDuplicatedSources();
-        sources            = aggregate.sources();
-        bandsPerSource     = aggregate.bandsPerSource(true);
+    BandAggregateLayout(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
+        this.allowSharing = allowSharing;   // Save user preferrence before modification.
+        final int numBands;
+        {   // For keeping `aggregate` local.
+            final var aggregate = new BandAggregateArgument<RenderedImage>(sources, bandsPerSource);
+            aggregate.unwrap(BandAggregateImage::unwrap);
+            aggregate.validate(ImageUtilities::getNumBands);
+            bandSelect     = aggregate.mergeDuplicatedSources();
+            sources        = aggregate.sources();
+            bandsPerSource = aggregate.bandsPerSource(true);
+            numBands       = aggregate.numBands();
+        }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Rectangle domain   = null;          // Nullity check used for telling when the first image is processed.
         int scanlineStride = 0;
         int tileWidth      = 0;
@@ -151,7 +163,7 @@ final class MultiSourceLayout extends ImageLayout {
              */
             final SampleModel sm = source.getSampleModel();
             if (allowSharing && (allowSharing = (sm instanceof ComponentSampleModel))) {
-                final ComponentSampleModel csm = (ComponentSampleModel) sm;
+                final var csm = (ComponentSampleModel) sm;
                 if (allowSharing = (csm.getPixelStride() == 1)) {
                     allowSharing &= scanlineStride == (scanlineStride = csm.getScanlineStride());
                     allowSharing &= tileWidth      == (tileWidth      = source.getTileWidth());
@@ -188,6 +200,7 @@ final class MultiSourceLayout extends ImageLayout {
                 }
             }
         }
+        this.domain = domain;
         if (domain == null) {
             // `domain` is guaranteed non-null if above block has been executed at least once.
             throw new IllegalArgumentException(Resources.format(Resources.Keys.UnspecifiedBands));
@@ -199,7 +212,7 @@ final class MultiSourceLayout extends ImageLayout {
          * the combined image causes the computation of a single tile of each source image.
          */
         long cx, cy;        // A combination of tile size with alignment on the tile matrix grid.
-        cx = cy = (((long) Integer.MAX_VALUE) << Integer.SIZE) | DEFAULT_TILE_SIZE;
+        cx = cy = (((long) Integer.MAX_VALUE) << Integer.SIZE) | ImageLayout.DEFAULT_TILE_SIZE;
         final var tileGridXOffset = new FrequencySortedSet<Integer>(true);
         final var tileGridYOffset = new FrequencySortedSet<Integer>(true);
         for (final RenderedImage source : sources) {
@@ -209,44 +222,24 @@ final class MultiSourceLayout extends ImageLayout {
             tileGridYOffset.add(source.getTileGridYOffset());
         }
         final var preferredTileSize = new Dimension((int) cx, (int) cy);
-        final boolean exactTileSize = ((cx | cy) >>> Integer.SIZE) == 0;
-        allowSharing &= exactTileSize;
-        return new MultiSourceLayout(sources, bandsPerSource, bandSelect, domain, preferredTileSize, exactTileSize,
-                chooseMinTile(tileGridXOffset, domain.x, preferredTileSize.width),
-                chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height),
-                commonDataType, aggregate.numBands(), allowSharing ? scanlineStride : 0);
-    }
-
-    /**
-     * Creates a new image layout from the values computed by {@code create(…)}.
-     *
-     * @param  sources            images to combine, in order.
-     * @param  bandsPerSource     bands to use for each source image, in order. May contain {@code null} elements.
-     * @param  bandSelect         final band select operation to apply on the aggregated result.
-     * @param  domain             bounds of the image to create.
-     * @param  preferredTileSize  the preferred tile size.
-     * @param  commonDataType     data type of the combined image.
-     * @param  scanlineStride     common scanline stride if data buffers will be shared, or 0 if no sharing.
-     * @param  numBands           number of bands of the image to create.
-     */
-    private MultiSourceLayout(final RenderedImage[] sources, final int[][] bandsPerSource, final int[] bandSelect,
-            final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
-            final int minTileX, final int minTileY, final int commonDataType, final int numBands,
-            final int scanlineStride)
-    {
-        super(preferredTileSize, false);
-        this.exactTileSize  = exactTileSize;
-        this.bandsPerSource = bandsPerSource;
-        this.bandSelect     = bandSelect;
-        this.sources        = sources;
-        this.domain         = domain;
-        this.minTileX       = minTileX;
-        this.minTileY       = minTileY;
-        this.sampleModel    = createBandedSampleModel(commonDataType, numBands, null, domain, scanlineStride);
+        minTile = new Point(chooseMinTile(tileGridXOffset, domain.x, preferredTileSize.width),
+                            chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height));
         /*
-         * Note: above call to `createBandedSampleModel(…)` must be last,
-         * except for `filteredSources` which is not needed by that method.
+         * The `exactTileSize` flag tells whether to use the preferred tile size exactly as specified,
+         * without trying to compute a better size. This flag may be `true` if the tiles of the destination
+         * image are at exact same locations as the tiles of a source image having the preferred tile size.
+         * In such case, keeping the same size will reduce the number of tiles requested in that source image.
          */
+        {   // For keeping variables local.
+            final boolean exactTileSize = ((cx | cy) >>> Integer.SIZE) == 0;
+            allowSharing &= exactTileSize;
+            if (!allowSharing) scanlineStride = 0;      // Means to force the use of tile width.
+            final var dataType = DataType.forDataBufferType(commonDataType);
+            final var layout = new ImageLayout(null, preferredTileSize, !exactTileSize, false, false, minTile);
+            sampleModel = layout.createBandedSampleModel(null, domain, dataType, numBands, scanlineStride);
+        }
+        this.bandsPerSource = bandsPerSource;
+        this.sources        = sources;
         filteredSources = new RenderedImage[sources.length];
         for (int i=0; i<filteredSources.length; i++) {
             RenderedImage source = sources[i];
@@ -256,6 +249,7 @@ final class MultiSourceLayout extends ImageLayout {
             }
             filteredSources[i] = source;
         }
+        sampleDimensions = getSampleDimensions();
     }
 
     /**
@@ -315,41 +309,6 @@ final class MultiSourceLayout extends ImageLayout {
     }
 
     /**
-     * Returns indices of the first tile ({@code minTileX}, {@code minTileY}).
-     * Other tile matrix properties such as the number of tiles and the grid offsets will be derived
-     * from those values together with the {@linkplain #domain}. Contrarily to pixel coordinates,
-     * the tile coordinate space does not need to be the same for all images.
-     *
-     * @return indices of the first tile ({@code minTileX}, {@code minTileY}).
-     */
-    @Override
-    public Point getMinTile() {
-        return new Point(minTileX, minTileY);
-    }
-
-    /**
-     * Suggests a tile size for the specified image size.
-     * It may be exactly the size of the tiles of a source image, but not necessarily.
-     * This method may compute a tile size different than the tile size of all sources.
-     */
-    @Override
-    public Dimension suggestTileSize(int imageWidth, int imageHeight, boolean allowPartialTiles) {
-        if (exactTileSize) return getPreferredTileSize();
-        return super.suggestTileSize(imageWidth, imageHeight, allowPartialTiles);
-    }
-
-    /**
-     * Suggests a tile size for operations derived from the given image.
-     * It may be exactly the size of the tiles of a source image, but not necessarily.
-     * This method may compute a tile size different than the tile size of all sources.
-     */
-    @Override
-    public Dimension suggestTileSize(RenderedImage image, Rectangle bounds, boolean allowPartialTiles) {
-        if (exactTileSize) return getPreferredTileSize();
-        return super.suggestTileSize(image, bounds, allowPartialTiles);
-    }
-
-    /**
      * Returns {@code true} if all filtered sources are writable.
      *
      * @return whether a destination using all filtered sources could be writable.
@@ -396,7 +355,8 @@ search: for (int i=0; i < sources.length; i++) {
             base += (bands != null) ? bands.length : ImageUtilities.getNumBands(source);
         }
         if (colorizer != null) {
-            Optional<ColorModel> candidate = colorizer.apply(new Colorizer.Target(sampleModel, null, visibleBand));
+            var target = new Colorizer.Target(sampleModel, sampleDimensions, visibleBand);
+            Optional<ColorModel> candidate = colorizer.apply(target);
             if (candidate.isPresent()) {
                 return candidate.get();
             }
@@ -406,5 +366,30 @@ search: for (int i=0; i < sources.length; i++) {
             return colors;
         }
         return ColorModelFactory.createGrayScale(sampleModel, visibleBand, null);
+    }
+
+    /**
+     * Gets a concatenated list of the sample dimensions declared in all sources, or {@code null} if none.
+     * The returned list should not contain null element (i.e., this method does not return partial list).
+     */
+    private List<SampleDimension> getSampleDimensions() {
+        List<SampleDimension> ranges = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
+        if (ranges != null) {
+            return ranges;
+        }
+        int offset = 0;
+        final var result = new SampleDimension[bandSelect.length];
+        for (RenderedImage source : filteredSources) {
+            final Object value = source.getProperty(PlanarImage.SAMPLE_DIMENSIONS_KEY);
+            if (value instanceof SampleDimension[]) {
+                final var sd = (SampleDimension[]) value;
+                final int n = ImageUtilities.getNumBands(source);   // Do not trust the array length.
+                System.arraycopy(sd, 0, result, offset, Math.min(sd.length, n));
+                offset += n;
+            } else {
+                return null;
+            }
+        }
+        return UnmodifiableArrayList.wrap(result);
     }
 }

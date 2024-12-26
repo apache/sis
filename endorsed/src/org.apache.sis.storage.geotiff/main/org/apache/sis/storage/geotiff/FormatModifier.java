@@ -53,9 +53,21 @@ public enum FormatModifier {
      * When the {@code BIG_TIFF} modifier is present, the addressable space of 64-bits integers is used.
      * The BigTIFF format is non-standard and files written with this option may not be read by all TIFF readers.
      */
-    BIG_TIFF;
+    BIG_TIFF,
 
     // TODO: COG, SPARSE.
+
+    /**
+     * Whether to allow the writing of tiles of any size.
+     * The TIFF specification requires tile sizes to be multiples of 16 pixels.
+     * At reading time, Apache <abbr>SIS</abbr> always accept tiles of any size and this option is ignored.
+     * At writing time, by default Apache <abbr>SIS</abbr> checks the tile size and, if not compliant with
+     * <abbr>TIFF</abbr> requirement, reorganizes the pixel values in a new tiling before to write image.
+     * This reorganization may have a performance cost and consumes more disk space than needed.
+     * This option allows to disable this reorganization,
+     * which may result in smaller but non-standard TIFF files.
+     */
+    ANY_TILE_SIZE;
 
     /**
      * The key for declaring GeoTIFF format modifiers at store creation time.

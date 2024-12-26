@@ -77,6 +77,7 @@ final class Localization {
      *
      * @param  modelTiePoints  the model tie points read from GeoTIFF file.
      * @param  addTo           if non-null, add the transform result to this map.
+     * @return the "grid to CRS" transform backed by the localization grid.
      */
     private static MathTransform localizationGrid(final Vector modelTiePoints, final Map<Envelope,MathTransform> addTo)
             throws FactoryException, TransformException

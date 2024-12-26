@@ -1471,13 +1471,14 @@ public class AngleFormat extends Format implements Localized {
         double minutes   = NaN;
         double seconds   = NaN;
         final int length = source.length();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final NumberFormat numberFormat = numberFormat();
-        ///////////////////////////////////////////////////////////////////////////////
-        // BLOCK A: Assign values to 'degrees', 'minutes' and 'seconds' variables.   //
-        //          This block does not take the hemisphere field in account, and    //
-        //          values will need adjustment if decimal separator is missing.     //
-        //          The { } block is for restricting the scope of local variables.   //
-        ///////////////////////////////////////////////////////////////////////////////
+        //  ┌─────────────────────────────────────────────────────────────────────────┐
+        //  │ BLOCK A: Assign values to `degrees`, `minutes` and `seconds` variables. │
+        //  │          This block does not take the hemisphere field in account, and  │
+        //  │          values will need adjustment if decimal separator is missing.   │
+        //  │          The { } block is for restricting the scope of local variables. │
+        //  └─────────────────────────────────────────────────────────────────────────┘
         {
             /*
              * Extract the prefix, if any. If we find a degrees, minutes or seconds suffix
@@ -1700,10 +1701,10 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 }
             }
         }
-        ////////////////////////////////////////////////////////////////////
-        // BLOCK B: Handle the case when there is no decimal separator.   //
-        //          Then combine the fields into a decimal degrees value. //
-        ////////////////////////////////////////////////////////////////////
+        //  ┌────────────────────────────────────────────────────────────────┐
+        //  │ BLOCK B: Handle the case when there is no decimal separator.   │
+        //  │          Then combine the fields into a decimal degrees value. │
+        //  └────────────────────────────────────────────────────────────────┘
         if (isNegative(minutes)) {
             seconds = -seconds;
         }
@@ -1743,9 +1744,9 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
         if (minutesSuffix == null && secondsFieldWidth != 0 && isNaN(seconds)) {
             double facteur = pow10(secondsFieldWidth);
             if (degreesSuffix == null && minutesFieldWidth != 0 && isNaN(minutes)) {
-                ///////////////////
-                //   DDDMMSS.s   //
-                ///////////////////
+                // ┌───────────────┐
+                // │   DDDMMSS.s   │
+                // └───────────────┘
                 seconds  = degrees;
                 minutes  = truncate(degrees / facteur);
                 seconds -= minutes * facteur;
@@ -1753,17 +1754,17 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 degrees  = truncate(minutes / facteur);
                 minutes  -= degrees * facteur;
             } else {
-                ////////////////////
-                //   DDD°MMSS.s   //
-                ////////////////////
+                // ┌───────────────┐
+                // │   DDD°MMSS.s  │
+                // └───────────────┘
                 seconds  = minutes;
                 minutes  = truncate(minutes / facteur);
                 seconds -= minutes*facteur;
             }
         } else if (degreesSuffix == null && minutesFieldWidth != 0 && isNaN(minutes)) {
-            /////////////////
-            //   DDDMM.m   //
-            /////////////////
+            // ┌─────────────┐
+            // │   DDDMM.m   │
+            // └─────────────┘
             final double facteur = pow10(minutesFieldWidth);
             minutes  = degrees;
             degrees  = truncate(degrees / facteur);
@@ -1773,10 +1774,10 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
         if ( isNaN(degrees)) degrees  = 0;
         if (!isNaN(minutes)) degrees += minutes /   60;
         if (!isNaN(seconds)) degrees += seconds / 3600;
-        /////////////////////////////////////////////////////////
-        // BLOCK C: Check for hemisphere suffix (N, S, E or W) //
-        //          after the angle string representation.     //
-        /////////////////////////////////////////////////////////
+        //  ┌─────────────────────────────────────────────────────┐
+        //  │ BLOCK C: Check for hemisphere suffix (N, S, E or W) │
+        //  │          after the angle string representation.     │
+        //  └─────────────────────────────────────────────────────┘
         for (int index = pos.getIndex(); index < length;) {
             final int c = source.codePointAt(index);
             index += Character.charCount(c);
