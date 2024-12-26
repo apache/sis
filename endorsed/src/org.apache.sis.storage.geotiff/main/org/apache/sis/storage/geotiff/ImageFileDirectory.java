@@ -470,13 +470,6 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * Returns the image index used in the default identifier.
-     */
-    private String getImageIndex() {
-        return String.valueOf(index + 1);
-    }
-
-    /**
      * Returns the identifier in the namespace of the {@link GeoTiffStore}.
      * The first image has the sequence number "1", optionally customized.
      * If this image is an overview, then its namespace should be the name of the base image
@@ -495,7 +488,8 @@ final class ImageFileDirectory extends DataCube {
                     // Should not happen because `setOverviewIdentifier(…)` should have been invoked.
                     return Optional.empty();
                 }
-                GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), getImageIndex());
+                final String tip = String.valueOf(index + 1);
+                GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), tip);
                 name = name.toFullyQualifiedName();     // Because "1" alone is not very informative.
                 final var source = new SchemaModifier.Source(reader.store, index, getDataType());
                 identifier = reader.store.customizer.customize(source, name);
@@ -1389,19 +1383,12 @@ final class ImageFileDirectory extends DataCube {
             source = null;          // Note: the `index` value is invalid in this case.
         } else {
             source = new SchemaModifier.Source(reader.store, index, getDataType());
-        }
-        getIdentifier().ifPresent((id) -> {
-            metadata.addIdentifier(id, ImageMetadataBuilder.Scope.RESOURCE);
-            final CharSequence title;
-            if (!getImageIndex().equals(id.tip().toString())) {
-                title = id.toString();
-            } else if (source != null && !metadata.hasTitle()) {
-                title = Vocabulary.formatInternational(Vocabulary.Keys.Image_1, index + 1);
-            } else {
-                return;     // Return from lambda, not from `createMetadata()`.
+            if (metadata.getTitle() == null) {
+                // Note: `GeoTiffStore.getMetadata()` relies on this value not being a `String`.
+                metadata.addTitle(Vocabulary.formatInternational(Vocabulary.Keys.Image_1, index + 1));
             }
-            metadata.addTitle(title);
-        });
+        }
+        metadata.addIdentifier(getIdentifier().orElse(null), ImageMetadataBuilder.Scope.RESOURCE);
         /*
          * Add information about sample dimensions.
          *

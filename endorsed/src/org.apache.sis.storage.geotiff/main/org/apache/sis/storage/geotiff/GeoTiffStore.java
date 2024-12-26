@@ -67,6 +67,7 @@ import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -420,7 +421,13 @@ public class GeoTiffStore extends DataStore implements Aggregate {
              * file did not specified any ImageDescription tag, then we will add the filename as a title instead of an
              * identifier because the title is mandatory in ISO 19115 metadata.
              */
-            getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
+            getIdentifier().ifPresent((id) -> {
+                builder.addIdentifier(id, MetadataBuilder.Scope.ALL);
+                // Replace the `ResourceInternationalString` for "Image 1".
+                if (!(builder.getTitle() instanceof SimpleInternationalString)) {
+                    builder.setTitle(id.toString());
+                }
+            });
             builder.setISOStandards(true);
             final DefaultMetadata md = builder.build();
             metadata = customizer.customize(new SchemaModifier.Source(this), md);

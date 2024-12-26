@@ -766,6 +766,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         /*
          * If at least one vertical coordinate is available, add a VerticalExtent.
          */
+        convention = Math.min(convention, VERTICAL_ALTERNATIVES.length - 1);
         for (int i=0; i <= convention; i++) {
             if (fillExtent(VERTICAL_ALTERNATIVES[i], Units.METRE, null, extent, 0)) {
                 addVerticalExtent(extent[0], extent[1], verticalCRS);
