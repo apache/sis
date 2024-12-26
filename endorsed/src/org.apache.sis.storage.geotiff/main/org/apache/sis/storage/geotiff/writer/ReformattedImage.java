@@ -190,7 +190,9 @@ found:  if (property instanceof Statistics[]) {
             final var max = new double[numBands];
             for (int i=0; i<numBands; i++) {
                 final Statistics s = stats[i];
-                if (s.count() == 0) break found;
+                if (s == null || s.count() == 0) {
+                    break found;    // Some statistics are missing.
+                }
                 min[i] = s.minimum();
                 max[i] = s.maximum();
             }

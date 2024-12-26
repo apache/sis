@@ -18,11 +18,13 @@ package org.apache.sis.image;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.stream.IntStream;
 import java.util.function.ObjIntConsumer;
 import java.awt.Rectangle;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -524,5 +526,37 @@ public final class BandAggregateImageTest extends TestCase {
                 }
             }
         }
+    }
+
+    /**
+     * Verifies the aggregation of property values.
+     */
+    @Test
+    public void testProperties() {
+        final var p1 = new Hashtable<String,Object>();
+        final var p2 = new Hashtable<String,Object>();
+        assertNull(p1.put(PlanarImage.SAMPLE_RESOLUTIONS_KEY, new double[] {4, 1, 3, 7}));
+        assertNull(p2.put(PlanarImage.SAMPLE_RESOLUTIONS_KEY, new double[] {2, 8, 5, 6}));
+        final ColorModel cm = ColorModel.getRGBdefault();
+        final WritableRaster raster = cm.createCompatibleWritableRaster(1, 1);
+        final RenderedImage[] sources = {
+            new BufferedImage(cm, raster, false, p1),
+            new BufferedImage(cm, raster, false, p2)
+        };
+        RenderedImage result;
+        result = BandAggregateImage.create(sources, null, null, false, allowSharing, false);
+        assertArrayEquals(new String[] {PlanarImage.SAMPLE_RESOLUTIONS_KEY}, result.getPropertyNames());
+        assertArrayEquals(new double[] {4, 1, 3, 7, 2, 8, 5, 6},
+                (double[]) result.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY));
+        /*
+         * Same tests, but with a subset of the bands.
+         * This part of the test depends on `BandSelectImage`.
+         */
+        sources[0] = BandSelectImage.create(sources[0], false, 0, 2);
+        sources[1] = BandSelectImage.create(sources[1], false, 1, 3);
+        result = BandAggregateImage.create(sources, null, null, false, allowSharing, false);
+        assertArrayEquals(new String[] {PlanarImage.SAMPLE_RESOLUTIONS_KEY}, result.getPropertyNames());
+        assertArrayEquals(new double[] {4, 3, 8, 6},
+                (double[]) result.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY));
     }
 }

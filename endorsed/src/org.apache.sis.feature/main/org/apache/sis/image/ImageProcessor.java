@@ -603,14 +603,15 @@ public class ImageProcessor implements Cloneable {
     /**
      * Returns statistics (minimum, maximum, mean, standard deviation) on each bands of the given image.
      * Invoking this method is equivalent to invoking the {@link #statistics statistics(…)} method and
-     * extracting immediately the statistics property value, except that custom
-     * {@linkplain #setErrorHandler error handlers} are supported.
+     * extracting immediately the statistics property value, except that this method guarantees that all
+     * statistics are non-null and supports custom {@linkplain #setErrorHandler error handlers}.
      *
      * <p>If {@code areaOfInterest} is null and {@code sampleFilters} is {@code null} or empty,
      * then the default behavior is as below:</p>
      * <ul>
      *   <li>If the {@value PlanarImage#STATISTICS_KEY} property value exists in the given image,
-     *       then that value is returned. Note that they are not necessarily statistics for the whole image.
+     *       then that value is returned with the null array elements (if any) replaced by computed values.
+     *       Note that the returned statistics are not necessarily for the whole image.
      *       They are whatever statistics the property provider considered as representative.</li>
      *   <li>Otherwise statistics are computed for the whole image.</li>
      * </ul>
@@ -629,7 +630,7 @@ public class ImageProcessor implements Cloneable {
      * </ul>
      *
      * <h4>Result relationship with source</h4>
-     * This method computes statistics immediately.
+     * This method fetches (from property values) or computes statistics immediately.
      * Changes in the {@code source} image after this method call do not change the results.
      *
      * @param  source          the image for which to compute statistics.
@@ -637,7 +638,7 @@ public class ImageProcessor implements Cloneable {
      * @param  sampleFilters   converters to apply on sample values before to add them to statistics, or
      *         {@code null} or an empty array if none. The array may have any length and may contain null elements.
      *         For all {@code i < numBands}, non-null {@code sampleFilters[i]} are applied to band <var>i</var>.
-     * @return the statistics of sample values in each band.
+     * @return the statistics of sample values in each band. Guaranteed non-null and without null element.
      * @throws ImagingOpException if an error occurred during calculation
      *         and the error handler is {@link ErrorHandler#THROW}.
      *
@@ -645,16 +646,36 @@ public class ImageProcessor implements Cloneable {
      * @see #filterNodataValues(Number...)
      * @see PlanarImage#STATISTICS_KEY
      */
-    public Statistics[] valueOfStatistics(final RenderedImage source, final Shape areaOfInterest,
+    public Statistics[] valueOfStatistics(RenderedImage source, final Shape areaOfInterest,
                                           final DoubleUnaryOperator... sampleFilters)
     {
         ArgumentChecks.ensureNonNull("source", source);
+        int[] bandsToCompute = null;
+        Statistics[] statistics = null;
         if (areaOfInterest == null && (sampleFilters == null || ArraysExt.allEquals(sampleFilters, null))) {
             final Object property = source.getProperty(PlanarImage.STATISTICS_KEY);
             if (property instanceof Statistics[]) {
-                return (Statistics[]) property;
+                statistics = ArraysExt.resize((Statistics[]) property, ImageUtilities.getNumBands(source));
+                /*
+                 * Verify that all array elements are non-null. If any null element is found,
+                 * we will compute statistics but only for the missing bands.
+                 */
+                bandsToCompute = new int[statistics.length];
+                int n = 0;
+                for (int i=0; i<statistics.length; i++) {
+                    if (statistics[i] == null) {
+                        bandsToCompute[n++] = i;
+                    }
+                }
+                if (n == 0) return statistics;
+                bandsToCompute = ArraysExt.resize(bandsToCompute, n);
+                source = selectBands(source, bandsToCompute);
             }
         }
+        /*
+         * Compute statistics either of all bands, or on a subset
+         * of the bands if only some of them have null statistics.
+         */
         final boolean parallel, failOnException;
         final ErrorHandler errorListener;
         synchronized (this) {
@@ -667,10 +688,17 @@ public class ImageProcessor implements Cloneable {
          * The way AnnotatedImage cache mechanism is implemented, if statistics results already
          * exist, they will be used.
          */
-        final AnnotatedImage calculator = new StatisticsCalculator(source, areaOfInterest, sampleFilters, parallel, failOnException);
+        final var calculator = new StatisticsCalculator(source, areaOfInterest, sampleFilters, parallel, failOnException);
         final Object property = calculator.getProperty(PlanarImage.STATISTICS_KEY);
         calculator.logAndClearError(ImageProcessor.class, "valueOfStatistics", errorListener);
-        return (Statistics[]) property;
+        final var computed = (Statistics[]) property;
+        if (bandsToCompute == null) {
+            return computed;
+        }
+        for (int i=0; i<bandsToCompute.length; i++) {
+            statistics[bandsToCompute[i]] = computed[i];
+        }
+        return statistics;
     }
 
     /**
@@ -803,6 +831,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <b>Note:</b> if no value is associated to the {@code "sampleDimensions"} key, then the default
      * value will be the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} image property value if defined.
+     * That value can be an array, in which case the sample dimension of the visible band is taken.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:

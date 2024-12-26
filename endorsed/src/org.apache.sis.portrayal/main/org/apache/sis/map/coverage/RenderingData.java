@@ -200,7 +200,7 @@ public class RenderingData implements CloneAccess {
      * @see #setImageSpace(GridGeometry, List, int[])
      * @see #statistics()
      */
-    private SampleDimension[] dataRanges;
+    private List<SampleDimension> dataRanges;
 
     /**
      * Conversion or transformation from {@linkplain #data} CRS to {@linkplain PlanarCanvas#getObjectiveCRS()
@@ -312,7 +312,7 @@ public class RenderingData implements CloneAccess {
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public final void setImageSpace(final GridGeometry domain, final List<SampleDimension> ranges, final int[] xyDims) {
-        dataRanges   = (ranges != null) ? ranges.toArray(SampleDimension[]::new) : null;
+        dataRanges   = ranges;
         dataGeometry = domain;
         xyDimensions = xyDims;
         processor.setFillValues(SampleDimensions.backgrounds(dataRanges));
@@ -544,7 +544,7 @@ public class RenderingData implements CloneAccess {
             }
             statistics = processor.valueOfStatistics(image, null, SampleDimensions.toSampleFilters(dataRanges));
         }
-        final Map<String,Object> modifiers = new HashMap<>(8);
+        final var modifiers = new HashMap<String,Object>(8);
         modifiers.put("statistics", statistics);
         modifiers.put("sampleDimensions", dataRanges);
         return modifiers;

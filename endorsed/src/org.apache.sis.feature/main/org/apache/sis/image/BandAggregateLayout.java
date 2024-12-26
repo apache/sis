@@ -16,8 +16,7 @@
  */
 package org.apache.sis.image;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.awt.Point;
 import java.awt.Dimension;
@@ -38,6 +37,7 @@ import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.BandAggregateArgument;
 import org.apache.sis.coverage.privy.CommonDomainFinder;
+import org.apache.sis.coverage.privy.SampleDimensions;
 
 
 /**
@@ -106,7 +106,7 @@ final class BandAggregateLayout {
      * Concatenated array of the sample dimensions declared in all sources, or {@code null} if none.
      * This field is non-null only if this information is present in all sources.
      */
-    final SampleDimension[] sampleDimensions;
+    final List<SampleDimension> sampleDimensions;
 
     /**
      * Whether to allow the sharing of data buffers (instead of copying) if possible.
@@ -355,7 +355,7 @@ search: for (int i=0; i < sources.length; i++) {
             base += (bands != null) ? bands.length : ImageUtilities.getNumBands(source);
         }
         if (colorizer != null) {
-            var target = new Colorizer.Target(sampleModel, UnmodifiableArrayList.wrap(sampleDimensions), visibleBand);
+            var target = new Colorizer.Target(sampleModel, sampleDimensions, visibleBand);
             Optional<ColorModel> candidate = colorizer.apply(target);
             if (candidate.isPresent()) {
                 return candidate.get();
@@ -369,32 +369,27 @@ search: for (int i=0; i < sources.length; i++) {
     }
 
     /**
-     * Gets a concatenated array of the sample dimensions declared in all sources, or {@code null} if none.
-     * This method returns a non-null array only if this information is present in all sources.
+     * Gets a concatenated list of the sample dimensions declared in all sources, or {@code null} if none.
+     * The returned list should not contain null element (i.e., this method does not return partial list).
      */
-    private SampleDimension[] getSampleDimensions() {
-        final var selected = new ArrayList<SampleDimension>();
-        for (int i=0; i < sources.length; i++) {
-            final Object value = sources[i].getProperty(PlanarImage.SAMPLE_DIMENSIONS_KEY);
-            if (!(value instanceof SampleDimension[])) {
+    private List<SampleDimension> getSampleDimensions() {
+        List<SampleDimension> ranges = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
+        if (ranges != null) {
+            return ranges;
+        }
+        int offset = 0;
+        final var result = new SampleDimension[bandSelect.length];
+        for (RenderedImage source : filteredSources) {
+            final Object value = source.getProperty(PlanarImage.SAMPLE_DIMENSIONS_KEY);
+            if (value instanceof SampleDimension[]) {
+                final var sd = (SampleDimension[]) value;
+                final int n = ImageUtilities.getNumBands(source);   // Do not trust the array length.
+                System.arraycopy(sd, 0, result, offset, Math.min(sd.length, n));
+                offset += n;
+            } else {
                 return null;
             }
-            final var sd = (SampleDimension[]) value;
-            final int[] bands = bandsPerSource[i];
-            if (bands == null) {
-                selected.addAll(Arrays.asList(sd));
-            } else for (int j=0; j < bands.length; j++) {
-                final int t = bands[j];
-                if (t < 0 || t >= sd.length) {
-                    return null;
-                }
-                selected.add(sd[t]);
-            }
         }
-        final var result = new SampleDimension[bandSelect.length];
-        for (int i=0; i < result.length; i++) {
-            result[i] = selected.get(bandSelect[i]);
-        }
-        return result;
+        return UnmodifiableArrayList.wrap(result);
     }
 }

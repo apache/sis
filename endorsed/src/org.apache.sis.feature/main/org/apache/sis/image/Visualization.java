@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.DoubleUnaryOperator;
 import java.awt.Color;
@@ -48,6 +49,7 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
 /**
@@ -149,7 +151,7 @@ final class Visualization extends ResampledImage {
         private MathTransform toSource;
 
         /** Description of {@link #source} bands, or {@code null} if none. */
-        private SampleDimension[] sampleDimensions;
+        private List<SampleDimension> sampleDimensions;
 
         //  ┌─────────────────────────────────────┐
         //  │ Given by ImageProcesor.configure(…) │
@@ -198,7 +200,7 @@ final class Visualization extends ResampledImage {
             if (sampleDimensions == null) {
                 Object ranges = source.getProperty(SAMPLE_DIMENSIONS_KEY);
                 if (ranges instanceof SampleDimension[]) {
-                    sampleDimensions = (SampleDimension[]) ranges;
+                    sampleDimensions = UnmodifiableArrayList.wrap((SampleDimension[]) ranges);
                 }
             }
         }
@@ -250,8 +252,8 @@ final class Visualization extends ResampledImage {
                 }
             }
             source = BandSelectImage.create(source, true, visibleBand);
-            final SampleDimension visibleSD = (sampleDimensions != null && visibleBand < sampleDimensions.length)
-                                            ? sampleDimensions[visibleBand] : null;
+            final SampleDimension visibleSD = (sampleDimensions != null && visibleBand < sampleDimensions.size())
+                                            ? sampleDimensions.get(visibleBand) : null;
             /*
              * If there is no conversion of pixel coordinates, there is no need for interpolations.
              * In such case the `Visualization.computeTile(…)` implementation takes a shortcut which
@@ -287,7 +289,7 @@ final class Visualization extends ResampledImage {
              * In precedence order:
              *
              *    - rangeColors      : Map<NumberRange<?>,Color[]>
-             *    - sampleDimensions : SampleDimension[]
+             *    - sampleDimensions : List<SampleDimension>
              *    - statistics
              */
             boolean initialized;
@@ -337,7 +339,7 @@ final class Visualization extends ResampledImage {
                  * If none of above `ColorScaleBuilder` configurations worked, use statistics in last resort.
                  * We do that after we reduced the image to a single band in order to reduce the amount of calculation.
                  */
-                final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(visibleSD);
+                final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(Collections.singletonList(visibleSD));
                 final Statistics statistics = processor.valueOfStatistics(source, null, sampleFilters)[VISIBLE_BAND];
                 builder.initialize(statistics.minimum(), statistics.maximum(), sourceSM.getDataType());
             }

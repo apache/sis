@@ -253,6 +253,7 @@ final class RecoloredImage extends ImageAdapter {
                 } else if (value instanceof Statistics) {
                     statistics = (Statistics) value;
                 } else if (value instanceof Statistics[]) {
+                    // Undocumented: one element per band, will keep only the visible band.
                     statsAllBands = (Statistics[]) value;
                 } else {
                     throw illegalPropertyType(modifiers, "statistics", value);
@@ -273,7 +274,7 @@ final class RecoloredImage extends ImageAdapter {
         if (Double.isNaN(minimum) || Double.isNaN(maximum)) {
             if (statistics == null) {
                 if (statsAllBands == null) {
-                    final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[visibleBand + 1];
+                    final var sampleFilters = new DoubleUnaryOperator[visibleBand + 1];
                     sampleFilters[visibleBand] = ImageProcessor.filterNodataValues(nodataValues);
                     statsAllBands = processor.valueOfStatistics(statsSource, areaOfInterest, sampleFilters);
                 }

@@ -150,6 +150,8 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
          * This information may be present if the image operation is invoked by a
          * {@link org.apache.sis.coverage.grid.GridCoverageProcessor} operation,
          * or if the source image contains the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property
+         * Note that in the latter case, the list may contain null elements if this information is
+         * missing in some bands.
          *
          * @return description of the bands of the image to colorize.
          * @see org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()

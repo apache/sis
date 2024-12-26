@@ -16,7 +16,10 @@
  */
 package org.apache.sis.image;
 
+import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.LinkedHashSet;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.BandedSampleModel;
@@ -25,6 +28,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.math.Statistics;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.BandAggregateArgument;
@@ -52,10 +56,9 @@ class BandAggregateImage extends MultiSourceImage {
     private final boolean allowSharing;
 
     /**
-     * Concatenated array of the sample dimensions declared in all sources, or {@code null} if none.
-     * This field is non-null only if this information is present in all sources.
+     * Concatenated list of the sample dimensions declared in all sources, or {@code null} if none.
      */
-    private final SampleDimension[] sampleDimensions;
+    private final List<SampleDimension> sampleDimensions;
 
     /*
      * The method declaration order below is a little bit unusual,
@@ -243,23 +246,63 @@ class BandAggregateImage extends MultiSourceImage {
      */
     @Override
     public String[] getPropertyNames() {
+        final var names = new LinkedHashSet<String>();
         if (sampleDimensions != null) {
-            return new String[] {SAMPLE_DIMENSIONS_KEY};
-        } else {
-            return null;
+            names.add(SAMPLE_DIMENSIONS_KEY);
         }
+        final int numSources = getNumSources();
+        for (int i=0; i<numSources; i++) {
+            String[] more = getSource(i).getPropertyNames();
+            if (more != null) {
+                names.addAll(Arrays.asList(more));
+            }
+        }
+        names.retainAll(BandSelectImage.REDUCED_PROPERTIES);
+        return names.isEmpty() ? null : names.toArray(String[]::new);
     }
 
     /**
      * Gets a property of this image as a value derived from all source images.
      */
     @Override
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     public Object getProperty(final String key) {
-        if (sampleDimensions != null && SAMPLE_DIMENSIONS_KEY.equals(key)) {
-            return sampleDimensions.clone();
-        } else {
-            return super.getProperty(key);
+        final int numBands = sampleModel.getNumBands();
+        final Object result;
+        switch (key) {
+            case SAMPLE_DIMENSIONS_KEY: {
+                if (sampleDimensions != null) {
+                    return sampleDimensions.toArray(SampleDimension[]::new);
+                }
+                result = new SampleDimension[numBands];
+                break;
+            }
+            case STATISTICS_KEY: {
+                result = new Statistics[numBands];
+                break;
+            }
+            case SAMPLE_RESOLUTIONS_KEY: {
+                var r = new double[numBands];
+                Arrays.fill(r, Double.NaN);
+                result = r;
+                break;
+            }
+            default: return super.getProperty(key);
         }
+        int offset = 0;
+        boolean found = false;
+        final int numSources = getNumSources();
+        for (int i=0; i<numSources; i++) {
+            final RenderedImage source = getSource(i);
+            final int n = ImageUtilities.getNumBands(source);
+            final Object value = source.getProperty(key);
+            if (result.getClass().isInstance(value)) {
+                System.arraycopy(value, 0, result, offset, n);
+                found = true;
+            }
+            offset += n;
+        }
+        return found ? result : null;
     }
 
     /**
@@ -366,7 +409,7 @@ class BandAggregateImage extends MultiSourceImage {
         if (super.equals(object)) {
             final var that = (BandAggregateImage) object;
             return that.allowSharing == allowSharing &&
-                   Arrays.equals(that.sampleDimensions, sampleDimensions);
+                   Objects.equals(that.sampleDimensions, sampleDimensions);
         }
         return false;
     }
@@ -378,6 +421,6 @@ class BandAggregateImage extends MultiSourceImage {
     public int hashCode() {
         return super.hashCode()
                 + Boolean.hashCode(allowSharing)
-                + Arrays.hashCode(sampleDimensions);
+                + Objects.hashCode(sampleDimensions);
     }
 }

@@ -136,7 +136,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
     /**
      * Returns a two-dimensional slice of grid data as a rendered image.
      * This operation is potentially costly if the {@code sliceExtent} argument changes often because
-     * the previously computed images are unlikely to be reused if the coordinate systems are different.
+     * the previously computed images are unlikely to be reused when the coordinate systems are different.
      * It may result in the same bands being copied may times in different {@link RenderedImage} instances.
      *
      * <h4>Implementation note</h4>
@@ -155,7 +155,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
         if (sliceExtent == null) {
             sliceExtent = gridGeometry.getExtent();
         }
-        final RenderedImage[] images = new RenderedImage[sources.length];
+        final var images = new RenderedImage[sources.length];
         for (int i=0; i<images.length; i++) {
             images[i] = sources[i].render(sliceExtent.translate(gridTranslations[i]));
         }

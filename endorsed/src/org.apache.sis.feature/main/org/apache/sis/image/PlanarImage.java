@@ -149,6 +149,11 @@ public abstract class PlanarImage implements RenderedImage {
      * Key for a property defining a conversion from pixel values to the units of measurement.
      * The value should be an array of {@link SampleDimension} instances.
      * The array length should be the number of bands.
+     * The array may contain null elements if this information is missing in some bands.
+     *
+     * <div class="note"><b>Example:</b> null elements may happen if this image is an
+     * {@linkplain ImageProcessor#aggregateBands(RenderedImage...) aggregation of bands}
+     * of two or more images, and some but not all images define this property.</div>
      *
      * @see org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()
      *
@@ -169,7 +174,8 @@ public abstract class PlanarImage implements RenderedImage {
      * <p>Values should be instances of {@code double[]}.
      * The array length should be the number of bands. This property may be computed automatically during
      * {@linkplain org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean) conversions from
-     * integer values to floating point values}.</p>
+     * integer values to floating point values}. Values should be strictly positive and finite but may be
+     * {@link Double#NaN} if this information is unknown for a band.</p>
      */
     public static final String SAMPLE_RESOLUTIONS_KEY = "org.apache.sis.SampleResolutions";
 
@@ -180,11 +186,13 @@ public abstract class PlanarImage implements RenderedImage {
      * actually used in an image.
      *
      * <p>Values should be instances of <code>{@linkplain org.apache.sis.math.Statistics}[]</code>.
-     * The array length should be the number of bands. If this property is not provided, Apache SIS
-     * may have to {@linkplain ImageProcessor#statistics compute statistics itself}
-     * (by iterating over pixel values) when needed.</p>
+     * The array length should be the number of bands. Some array elements may be {@code null}
+     * if the statistics are not available for all bands.</p>
      *
-     * <p>Statistics are only indicative. They may be computed on an image sub-region.</p>
+     * <p>Statistics are only indicative. They may be computed on a subset of the sample values.
+     * If this property is not provided, some image rendering or exportation processes may have
+     * to {@linkplain ImageProcessor#statistics compute statistics themselves} by iterating over
+     * pixel values, which can be costly.</p>
      *
      * @see ImageProcessor#statistics(RenderedImage, Shape, DoubleUnaryOperator...)
      */
@@ -282,6 +290,8 @@ public abstract class PlanarImage implements RenderedImage {
     /**
      * Returns the names of all recognized properties,
      * or {@code null} if this image has no properties.
+     * This method may conservatively return the names of properties that <em>may</em> exist,
+     * when checking if they actually exist would cause a potentially costly computation.
      *
      * <p>The default implementation returns {@code null}.</p>
      *
