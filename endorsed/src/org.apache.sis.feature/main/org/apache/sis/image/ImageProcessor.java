@@ -1036,6 +1036,8 @@ public class ImageProcessor implements Cloneable {
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if no image intersect the given bounds.
      *
+     * @see ImageCombiner
+     *
      * @since 1.5
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")

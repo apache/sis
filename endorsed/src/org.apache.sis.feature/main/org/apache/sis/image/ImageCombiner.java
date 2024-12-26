@@ -45,21 +45,25 @@ import org.apache.sis.measure.Units;
  *
  * Images are combined in the order they are specified.
  * If the same pixel is written by many images, then the final value is the pixel of the last image specified.
- * In current implementation, the last pixel values win even if those pixels are transparent
- * (i.e. {@code ImageCombiner} does not yet handle alpha values).
+ * The last pixel values win even if those pixels are transparent, i.e. the alpha band is handled like ordinary bands.
  *
- * <h2>Limitations</h2>
- * Current implementation does not try to map source bands to target bands for the same colors.
- * For example, it does not verify if band order needs to be reversed because an image is RGB and
- * the other image is BVR. It is caller responsibility to ensure that bands are in the same order.
+ * <p>For each image, bands are written in the destination image in the order they appear, regardless the color model.
+ * This class does not try to match colors. For example, it does not verify if band order needs to be reversed because
+ * an image is <abbr>RGB</abbr> and the other image is <abbr>BVR</abbr>.
+ * It is caller responsibility to ensure that bands are in the same order.</p>
  *
- * <p>Current implementation does not expand the destination image for accommodating
- * any area of a given image that appear outside the destination image bounds.
- * Only the intersection of both images is used.</p>
+ * <h2>Alternative</h2>
+ * A single call to the {@link ImageProcessor#overlay ImageProcessor.overlay(…)} method can produce the same result
+ * as multiple calls to the {@link #accept(RenderedImage)} method of this class. The main difference between the two
+ * methods is that this class writes immediately in the given destination image, while {@code ImageProcessor} creates
+ * an image which will compute the requested tiles on the fly.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.1
+ *
+ * @see ImageProcessor#overlay(RenderedImage[], Rectangle)
+ *
+ * @since 1.1
  */
 public class ImageCombiner implements Consumer<RenderedImage> {
     /**
@@ -171,10 +175,13 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      *   <li>Otherwise the destination pixel is left unchanged.</li>
      * </ul>
      *
-     * Note that source pixels overwrite destination pixels even if they are transparent
-     * (i.e. {@code ImageCombiner} does not yet handle alpha values).
+     * Note that source pixels overwrite destination pixels even if they are transparent.
+     * In order words, the alpha channel is treated as an ordinary band.
+     * Bands are written in the order they appear regardless their color model.
      *
      * @param  source  the image to write on top of destination image.
+     *
+     * @see ImageProcessor#overlay(RenderedImage[], Rectangle)
      */
     @Override
     public void accept(final RenderedImage source) {
