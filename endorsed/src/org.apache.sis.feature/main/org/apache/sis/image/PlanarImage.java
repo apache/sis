@@ -575,7 +575,7 @@ public abstract class PlanarImage implements RenderedImage {
             String message = Resources.format(Resources.Keys.IncompatibleColorModel);
             if (!erroneous.isEmpty()) {
                 String complement = Classes.getShortClassName(colors);
-                complement = Errors.format(Errors.Keys.IllegalValueForProperty_2, complement, erroneous);
+                complement = Errors.format(Errors.Keys.IllegalPropertyValue_2, complement, erroneous);
                 message = Resources.concatenate(message, complement);
             }
             throw new IllegalArgumentException(message);
