@@ -25,7 +25,7 @@ import static java.lang.Math.toIntExact;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.geotiff.inflater.Inflater;
-import org.apache.sis.coverage.privy.RasterFactory;
+import org.apache.sis.image.privy.RasterFactory;
 import org.apache.sis.image.DataType;
 
 

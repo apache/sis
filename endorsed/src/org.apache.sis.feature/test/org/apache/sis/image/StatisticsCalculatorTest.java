@@ -35,7 +35,7 @@ import org.apache.sis.test.TestCaseWithLogs;
 
 /**
  * Tests {@link StatisticsCalculator}. This will also (indirectly) tests
- * {@link org.apache.sis.coverage.privy.TileOpExecutor} with multi-threading.
+ * {@link org.apache.sis.image.privy.TileOpExecutor} with multi-threading.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

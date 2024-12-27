@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.image.privy.ImageUtilities;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

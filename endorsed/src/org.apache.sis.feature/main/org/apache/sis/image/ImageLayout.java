@@ -33,7 +33,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.system.Configuration;
-import org.apache.sis.coverage.privy.RasterFactory;
+import org.apache.sis.image.privy.RasterFactory;
 import org.apache.sis.feature.internal.Resources;
 
 

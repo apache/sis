@@ -36,7 +36,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.image.privy.ColorModelFactory;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Vector;

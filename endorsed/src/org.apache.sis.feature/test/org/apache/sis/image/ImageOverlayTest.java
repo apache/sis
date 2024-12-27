@@ -26,7 +26,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.image.privy.ImageUtilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

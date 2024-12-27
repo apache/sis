@@ -23,7 +23,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.image.privy.ImageUtilities;
 import org.apache.sis.util.Disposable;
 
 

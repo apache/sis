@@ -40,7 +40,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.gui.controls.ColorRamp;
 import org.apache.sis.gui.controls.ValueColorMapper.Step;
 import org.apache.sis.image.processing.isoline.Isolines;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.image.privy.ImageUtilities;
 import org.apache.sis.geometry.wrapper.j2d.EmptyShape;
 import org.apache.sis.geometry.wrapper.j2d.FlatShape;
 import org.apache.sis.util.ArraysExt;

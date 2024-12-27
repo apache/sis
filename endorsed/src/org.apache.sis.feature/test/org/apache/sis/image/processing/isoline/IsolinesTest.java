@@ -23,7 +23,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.coverage.privy.RasterFactory;
+import org.apache.sis.image.privy.RasterFactory;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

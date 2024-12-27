@@ -32,7 +32,7 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
-import static org.apache.sis.coverage.privy.ImageUtilities.LOGGER;
+import static org.apache.sis.image.privy.ImageUtilities.LOGGER;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
