@@ -506,17 +506,29 @@ check:  if (dataType.isInteger()) {
          *         such as creating the {@code SampleModel} subset for selected bands.
          */
         public Subset(GridGeometry domain, final int[] range) throws DataStoreException {
-            List<SampleDimension> bands        = getSampleDimensions();
-            final RangeArgument   rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
-            final GridGeometry    gridGeometry = getGridGeometry();
-            sourceExtent = gridGeometry.getExtent();
+            // Validate argument first, before more expensive computations.
+            List<SampleDimension> bands = getSampleDimensions();
+            final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
+            /*
+             * Normally, the number of dimensions of `tileSize` should be equal to the number of dimensions
+             * of the grid geometry (determined by its `GridExtent`). However, we are tolerant to situation
+             * where the `TiledGridResource` is a two dimensional image associated to a 3-dimensional CRS.
+             * This is not recommended, but can happen with GeoTIFF for example. What to do with the extra
+             * dimension is unclear (the GeoTIFF specification itself said nothing), so we just ignore it.
+             */
             final int[] tileSize = getTileSize();
+            final int dimension = tileSize.length;          // May be shorter than the grid geometry dimension.
+            GridGeometry gridGeometry = getGridGeometry();
+            if ((domain == null || domain.getDimension() == dimension) && gridGeometry.getDimension() > dimension) {
+                gridGeometry = gridGeometry.selectDimensions(ArraysExt.range(0, dimension));
+            }
+            sourceExtent = gridGeometry.getExtent();
             boolean sharedCache = true;
             if (domain == null) {
                 domain             = gridGeometry;
                 readExtent         = sourceExtent;
-                subsamplingOffsets = new long[gridGeometry.getDimension()];
-                subsampling        = new long[subsamplingOffsets.length];
+                subsamplingOffsets = new long[dimension];
+                subsampling        = new long[dimension];
                 Arrays.fill(subsampling, 1);
             } else {
                 /*
@@ -526,9 +538,9 @@ check:  if (dataType.isInteger()) {
                  * Note that it is possible to disable this restriction in a single dimension, typically the X one
                  * when reading a TIFF image using strips instead of tiles.
                  */
-                final var chunkSize = new int [tileSize.length];
-                final var maxSubsmp = new long[tileSize.length];
-                for (int i=0; i < tileSize.length; i++) {
+                final var chunkSize = new int [dimension];
+                final var maxSubsmp = new long[dimension];
+                for (int i=0; i < dimension; i++) {
                     final int atomSize = getAtomSize(i);
                     int span = tileSize[i];
                     if (span >= sourceExtent.getSize(i)) {
@@ -551,10 +563,17 @@ check:  if (dataType.isInteger()) {
                             .rounding(GridRoundingMode.ENCLOSING)
                             .subgrid(domain);
 
-                domain             = target.build();
-                readExtent         = target.getIntersection();
-                subsampling        = target.getSubsampling();
-                subsamplingOffsets = target.getSubsamplingOffsets();
+                domain     = target.build();
+                readExtent = target.getIntersection();
+                /*
+                 * The grid extent may have more dimensions than the tile size because of cases such as GeoTIFF,
+                 * which may declare a three-dimensional CRS despite the image being two-dimensional. We need to
+                 * force an array length consistent with the length used in the above `(domain == null)` case,
+                 * because those arrays as used in `TileGridCoverage.createCacheKey(…)`. Inconsistent lengths
+                 * would cause the reader to not detect that a tile is available in the cache.
+                 */
+                subsampling        = ArraysExt.resize(target.getSubsampling(), dimension);
+                subsamplingOffsets = ArraysExt.resize(target.getSubsamplingOffsets(), dimension);
             }
             /*
              * Virtual tile size is usually the same as the real tile size.
@@ -651,7 +670,7 @@ check:  if (dataType.isInteger()) {
             if (loadingStrategy != RasterLoadingStrategy.AT_GET_TILE_TIME) {
                 return false;
             }
-            for (int i = subsampling.length; --i >= 0;) {
+            for (int i = virtualTileSize.length; --i >= 0;) {
                 if (subsampling[i] >= virtualTileSize[i]) {
                     return false;
                 }

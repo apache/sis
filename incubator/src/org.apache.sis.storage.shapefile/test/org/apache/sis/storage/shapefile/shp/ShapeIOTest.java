@@ -90,7 +90,7 @@ public class ShapeIOTest {
             assertArrayEquals(expected, result);
 
         } finally {
-            Files.deleteIfExists(tempFile);
+            Files.delete(tempFile);
         }
     }
 

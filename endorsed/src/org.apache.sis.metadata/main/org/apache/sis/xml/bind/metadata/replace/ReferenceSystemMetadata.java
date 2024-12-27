@@ -42,7 +42,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   ├─mrs:referenceSystemIdentifier  :  mcc:MD_Identifier
  *   └─mrs:referenceSystemType        :  mrs:MD_ReferenceSystemTypeCode</pre>
  *
- * The {@code referenceSystemType} attribute is currently missing.
+ * The {@code referenceSystemType} attribute is missing. It is present in GeoAPI 3.1 only.
  * See <a href="https://issues.apache.org/jira/browse/SIS-470">SIS-470</a>.
  *
  * <p>Note that this implementation is very simple and serves no other purpose than being
@@ -56,7 +56,9 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @see org.apache.sis.referencing.AbstractReferenceSystem
  * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
  */
-@XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS)
+@XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS, propOrder = {
+    "name"
+})
 @XmlRootElement(name = "MD_ReferenceSystem", namespace = Namespaces.MRS)
 public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements ReferenceSystem {
     /**
@@ -138,7 +140,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode) && (object instanceof ReferenceSystem)) {
-            final ReferenceSystem that = (ReferenceSystem) object;
+            final var that = (ReferenceSystem) object;
             if (mode.isIgnoringMetadata()) {
                 // Compare the name because it was ignored by super.equals(…) in "ignore metadata" mode.
                 return Utilities.deepEquals(getName(), that.getName(), mode);

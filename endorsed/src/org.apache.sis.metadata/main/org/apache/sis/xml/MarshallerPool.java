@@ -180,12 +180,22 @@ public class MarshallerPool {
     @SuppressWarnings("this-escape")
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         this.context       = Objects.requireNonNull(context);
-        replacements       = ServiceLoader.load(AdapterReplacement.class, Reflect.getContextClassLoader());
+        replacements       = loader();
         implementation     = Implementation.detect(context);
         template           = new PooledTemplate(this, properties, implementation);
         marshallers        = new ConcurrentLinkedDeque<>();
         unmarshallers      = new ConcurrentLinkedDeque<>();
         isRemovalScheduled = new AtomicBoolean();
+    }
+
+    /** Temporary method to be removed after Apache SIS requires Java 24. */
+    private static ServiceLoader<AdapterReplacement> loader() {
+        try {
+            return ServiceLoader.load(AdapterReplacement.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(AdapterReplacement.class, "<init>", e);
+            return ServiceLoader.load(AdapterReplacement.class);
+        }
     }
 
     /**

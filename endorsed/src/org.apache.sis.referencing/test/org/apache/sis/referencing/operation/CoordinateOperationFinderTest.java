@@ -654,11 +654,11 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
 
 
 
-    //////////////////////////////////////////////////////////////////////////////////
-    ////////////                                                          ////////////
-    ////////////        Tests that change the number of dimensions        ////////////
-    ////////////                                                          ////////////
-    //////////////////////////////////////////////////////////////////////////////////
+    //  ╔══════════════════════════════════════════════════════════╗
+    //  ║                                                          ║
+    //  ║        Tests that change the number of dimensions        ║
+    //  ║                                                          ║
+    //  ╚══════════════════════════════════════════════════════════╝
 
     /**
      * Tests the conversion from a four-dimensional geographic CRS to a two-dimensional geographic CRS.

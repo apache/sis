@@ -66,7 +66,7 @@ dependencyResolutionManagement {
             library("esri.geometry", "com.esri.geometry",      "esri-geometry-api")   .version {strictly("[2.0, 3.0[");  prefer("2.2.4")}
             library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("7.6.7")}
             library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.5.3")}
-            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.26.24")}
+            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.29.37")}
         }
         create("tests") {
             library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}
@@ -82,6 +82,7 @@ dependencyResolutionManagement {
             version("derby") {
                 strictly("[10.0, 11.0[")
                 prefer("10.15.2.0")         // 10.15 is the last series compatible with JDK 11.
+                // If the derby version is updated, search for that version number in Javadoc.
             }
             // Derby vulnerabiliy: https://nvd.nist.gov/vuln/detail/CVE-2022-46337
             // Fix would require an upgrade to Java 21.

@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.awt.image.RenderedImage;
+import java.awt.image.RasterFormatException;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
@@ -46,6 +47,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.WriteOnlyStorageException;
+import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
@@ -65,6 +67,7 @@ import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -258,7 +261,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         path        = connector.getStorageAs(Path.class);
         try {
             if (URIDataStoreProvider.isWritable(connector, true)) {
-                ChannelDataOutput output = connector.commit(ChannelDataOutput.class, Constants.GEOTIFF);
+                ChannelDataOutput output = URIDataStoreProvider.openAndSetNativeByteOrder(connector, Constants.GEOTIFF);
                 writer = new Writer(this, output, connector.getOption(FormatModifier.OPTION_KEY));
             } else {
                 ChannelDataInput input = connector.commit(ChannelDataInput.class, Constants.GEOTIFF);
@@ -418,7 +421,13 @@ public class GeoTiffStore extends DataStore implements Aggregate {
              * file did not specified any ImageDescription tag, then we will add the filename as a title instead of an
              * identifier because the title is mandatory in ISO 19115 metadata.
              */
-            getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
+            getIdentifier().ifPresent((id) -> {
+                builder.addIdentifier(id, MetadataBuilder.Scope.ALL);
+                // Replace the `ResourceInternationalString` for "Image 1".
+                if (!(builder.getTitle() instanceof SimpleInternationalString)) {
+                    builder.setTitle(id.toString());
+                }
+            });
             builder.setISOStandards(true);
             final DefaultMetadata md = builder.build();
             metadata = customizer.customize(new SchemaModifier.Source(this), md);
@@ -681,8 +690,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @param  metadata  title, author and other information, or {@code null} if none.
      * @return the effectively added resource. Using this resource may cause data to be reloaded.
      * @throws ReadOnlyStorageException if this data store is read-only.
-     * @throws DataStoreException if the given {@code image} has a property which is not supported by this writer,
-     *         or if an error occurred while writing to the output stream.
+     * @throws IncompatibleResourceException if the given {@code image} has a property which is not supported by this writer.
+     * @throws DataStoreException if an error occurred while writing to the output stream.
      *
      * @since 1.5
      */
@@ -697,7 +706,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             final long offsetIFD;
             try {
                 offsetIFD = writer.append(image, grid, metadata);
-                writer.flush();
             } finally {
                 writer.synchronize(reader, true);
             }
@@ -705,8 +713,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 reader.offsetOfWrittenIFD(offsetIFD);
             }
             index = writer.imageIndex++;
+        } catch (RasterFormatException | ArithmeticException e) {
+            throw new IncompatibleResourceException(cannotWrite(), e).addAspect("raster");
         } catch (IOException e) {
-            throw new DataStoreException(errors().getString(Errors.Keys.CanNotWriteFile_2, Constants.GEOTIFF, getDisplayName()), e);
+            throw new DataStoreException(cannotWrite(), e);
         }
         if (components != null) {
             components.incrementSize(1);
@@ -779,6 +789,13 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     final DataStoreException errorIO(final IOException e) {
         return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, getDisplayName()), e);
+    }
+
+    /**
+     * Returns the error message for a file that cannot be written.
+     */
+    private String cannotWrite() {
+        return errors().getString(Errors.Keys.CanNotWriteFile_2, Constants.GEOTIFF, getDisplayName());
     }
 
     /**

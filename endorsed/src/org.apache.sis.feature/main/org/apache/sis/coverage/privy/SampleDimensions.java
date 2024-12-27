@@ -46,6 +46,8 @@ public final class SampleDimensions extends Static {
      * This is used in:
      * <ul>
      *   <li>The <em>target</em> sample dimensions of a {@link org.apache.sis.image.BandedSampleConverter} image.</li>
+     *   <li>The <em>target</em> sample dimensions of a {@link org.apache.sis.image.BandAggregateImage} image.</li>
+     *   <li>The <em>target</em> sample dimensions of a {@link org.apache.sis.image.BandSelectImage} image.</li>
      *   <li>The <em>source</em> sample dimensions of a {@link org.apache.sis.image.Visualization} image.</li>
      * </ul>
      *
@@ -60,10 +62,9 @@ public final class SampleDimensions extends Static {
      *     }
      *     }
      *
-     * The content of the array in this thread-local variable shall not be modified,
-     * because it may be a direct reference to an internal array (not a clone).
+     * The list in this thread-local variable should be unmodifiable.
      */
-    public static final ThreadLocal<SampleDimension[]> IMAGE_PROCESSOR_ARGUMENT = new ThreadLocal<>();
+    public static final ThreadLocal<List<SampleDimension>> IMAGE_PROCESSOR_ARGUMENT = new ThreadLocal<>();
 
     /**
      * Do not allow instantiation of this class.
@@ -114,16 +115,18 @@ public final class SampleDimensions extends Static {
      * @return the background values, or {@code null} if the given argument was null.
      *         Otherwise the returned array is never null but may contain null elements.
      */
-    public static Number[] backgrounds(final SampleDimension... bands) {
+    public static Number[] backgrounds(final List<SampleDimension> bands) {
         if (bands == null) {
             return null;
         }
-        final Number[] fillValues = new Number[bands.length];
+        final Number[] fillValues = new Number[bands.size()];
         for (int i=fillValues.length; --i >= 0;) {
-            final SampleDimension band = bands[i];
-            final Optional<Number> bg = band.getBackground();
-            if (bg.isPresent()) {
-                fillValues[i] = bg.get();
+            final SampleDimension band = bands.get(i);
+            if (band != null) {
+                final Optional<Number> bg = band.getBackground();
+                if (bg.isPresent()) {
+                    fillValues[i] = bg.get();
+                }
             }
         }
         return fillValues;
@@ -144,13 +147,13 @@ public final class SampleDimensions extends Static {
      *
      * @see ImageProcessor#statistics(RenderedImage, Shape, DoubleUnaryOperator...)
      */
-    public static DoubleUnaryOperator[] toSampleFilters(final SampleDimension... bands) {
+    public static DoubleUnaryOperator[] toSampleFilters(final List<SampleDimension> bands) {
         if (bands == null) {
             return null;
         }
-        final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[bands.length];
+        final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[bands.size()];
         for (int i = 0; i < sampleFilters.length; i++) {
-            final SampleDimension band = bands[i];
+            final SampleDimension band = bands.get(i);
             if (band != null) {
                 final List<Category> categories = band.getCategories();
                 final int count = categories.size();

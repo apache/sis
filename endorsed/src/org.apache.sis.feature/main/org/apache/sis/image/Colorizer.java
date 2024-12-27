@@ -32,9 +32,12 @@ import java.awt.image.RenderedImage;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.privy.ColorModelBuilder;
+import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
 /**
@@ -62,7 +65,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * such as the {@link SampleDimension}s of the target coverage.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.4
+     * @version 1.5
      * @since   1.4
      */
     class Target {
@@ -106,6 +109,30 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
             this.visibleBand = -1;
         }
 
+
+        /**
+         * Creates a new target with the same sample dimensions and visible band as the given image.
+         * This is a convenience constructor for operations producing the same kind of data than an
+         * existing image, taken as a template. The list of sample dimensions is fetched from the
+         * image property associated to the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
+         *
+         * @param model     sample model of the computed image to colorize (mandatory).
+         * @param template  the image from which to get the sample dimensions and visible band, or {@code null} if none.
+         * @since 1.5
+         */
+        public Target(SampleModel model, final RenderedImage template) {
+            this.model  = Objects.requireNonNull(model);
+            visibleBand = ImageUtilities.getVisibleBand(template);
+            if (template != null) {
+                final Object value = template.getProperty(PlanarImage.SAMPLE_DIMENSIONS_KEY);
+                if (value instanceof SampleDimension[]) {
+                    ranges = UnmodifiableArrayList.wrap((SampleDimension[]) value);
+                    return;
+                }
+            }
+            ranges = null;
+        }
+
         /**
          * Returns the sample model of the computed image to colorize.
          * The color model created by {@link #apply(Target)}
@@ -123,6 +150,8 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
          * This information may be present if the image operation is invoked by a
          * {@link org.apache.sis.coverage.grid.GridCoverageProcessor} operation,
          * or if the source image contains the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property
+         * Note that in the latter case, the list may contain null elements if this information is
+         * missing in some bands.
          *
          * @return description of the bands of the image to colorize.
          * @see org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()
@@ -157,9 +186,10 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
 
     /**
      * RGB(A) color model for images storing 8 bits integer on 3 or 4 bands.
-     * The color model is RGB for image having 3 bands, or ARGB for images having 4 bands.
+     * The color model is <abbr>RGB</abbr> for image having 3 bands, or <abbr>ARGB</abbr> for images having 4 bands.
+     * In the latter case, the color components are considered <em>not</em> premultiplied by the alpha value.
      */
-    Colorizer ARGB = (target) -> Optional.ofNullable(ColorModelFactory.createRGB(target.getSampleModel()));
+    Colorizer ARGB = (target) -> Optional.ofNullable(new ColorModelBuilder().createRGB(target.getSampleModel()));
 
     /**
      * Creates a colorizer which will interpolate the given colors in the given range of values.
@@ -291,9 +321,9 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
                     final List<SampleDimension> ranges = target.getRanges().orElse(null);
                     if (visibleBand < ranges.size()) {
                         final SampleModel model = target.getSampleModel();
-                        final var c = new ColorModelBuilder(colors, null, false);
+                        final var c = new ColorScaleBuilder(colors, null, false);
                         if (c.initialize(model, ranges.get(visibleBand))) {
-                            return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
+                            return Optional.ofNullable(c.createColorModel(model, model.getNumBands(), visibleBand));
                         }
                     }
                 }

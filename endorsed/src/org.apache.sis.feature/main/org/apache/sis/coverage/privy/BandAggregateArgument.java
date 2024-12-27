@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Errors;
  * @param  <S>  type of objects that are the source of sample dimensions.
  */
 @SuppressWarnings("ReturnOfCollectionOrArrayField")     // See class Javadoc.
-public final class MultiSourceArgument<S> {
+public final class BandAggregateArgument<S> {
     /**
      * The user-specified sources, usually grid coverages or rendered images.
      * This is initially a copy of the array specified at construction time.
@@ -142,7 +142,7 @@ public final class MultiSourceArgument<S> {
      * @param  sources         the sources from which to get the sample dimensions.
      * @param  bandsPerSource  sample dimensions for each source. May contain {@code null} elements.
      */
-    public MultiSourceArgument(S[] sources, int[][] bandsPerSource) {
+    public BandAggregateArgument(S[] sources, int[][] bandsPerSource) {
         /*
          * Ensure that both arrays are non-null and have the same length.
          * Copy those arrays because their content will be overwritten.
@@ -287,7 +287,7 @@ public final class MultiSourceArgument<S> {
         }
 
         /**
-         * Notifies the enclosing {@code MultiSourceArgument} that the {@linkplain #source}
+         * Notifies the enclosing {@code BandAggregateArgument} that the {@linkplain #source}
          * shall be replaced by deeper sources. The {@code componentBands} array specifies
          * the bands to use for each source and shall take in account the {@link #bands} subset.
          *
@@ -345,7 +345,7 @@ public final class MultiSourceArgument<S> {
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     private void validate(final Function<S, List<SampleDimension>> getter, final ToIntFunction<S> counter) {
-        final HashMap<Integer,int[]> identityPool = new HashMap<>();
+        final var identityPool = new HashMap<Integer,int[]>();
         numBandsPerSource = new int[sources.length];
 next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may change during the loop.
             S source;

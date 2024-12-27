@@ -163,6 +163,7 @@ public final class ColorModelFactory {
      *
      * @see #createPiecewise(int, int, int, ColorsForRange[])
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     private ColorModelFactory(final int dataType, final int numBands, final int visibleBand, final ColorsForRange[] colors) {
         this.dataType    = dataType;
         this.numBands    = numBands;
@@ -454,7 +455,7 @@ public final class ColorModelFactory {
      * @param  cm  the color model.
      * @return a unique instance of the given color model.
      */
-    private static ColorModel unique(final ColorModel cm) {
+    static ColorModel unique(final ColorModel cm) {
         return CACHE.unique(cm);
     }
 
@@ -588,60 +589,6 @@ public final class ColorModelFactory {
             }
         }
         return createGrayScale(model.getDataType(), model.getNumBands(), visibleBand, minimum, maximum);
-    }
-
-    /**
-     * Creates a RGB color model for the given sample model.
-     * The sample model shall use integer type and have 3 or 4 bands.
-     * This method may return {@code null} if the color model cannot be created.
-     *
-     * @param  model  the sample model for which to create a color model.
-     * @return the color model, or null if a precondition does not hold.
-     */
-    public static ColorModel createRGB(final SampleModel model) {
-        final int numBands = model.getNumBands();
-        if (numBands >= 3 && numBands <= 4 && ImageUtilities.isIntegerType(model)) {
-            int bitsPerSample = 0;
-            for (int i=0; i<numBands; i++) {
-                bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
-            }
-            if (bitsPerSample <= Byte.SIZE) {
-                return createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Creates a RGB color model. The {@code packed} argument should be
-     * {@code true}  for color model used with {@link java.awt.image.SinglePixelPackedSampleModel}, and
-     * {@code false} for color model used with {@link java.awt.image.BandedSampleModel}.
-     *
-     * @param  bitsPerSample  number of bits per sample, between 1 and 8 (packed) or 32 (banded) inclusive.
-     * @param  packed         whether sample values are packed in a single element.
-     * @param  hasAlpha       whether the color model should have an alpha channel.
-     * @return the color model.
-     */
-    public static ColorModel createRGB(final int bitsPerSample, final boolean packed, final boolean hasAlpha) {
-        if ((hasAlpha & packed) && bitsPerSample == Byte.SIZE) {
-            return ColorModel.getRGBdefault();
-        }
-        ArgumentChecks.ensureBetween("bitsPerSample", 1, packed ? Byte.SIZE : Integer.SIZE, bitsPerSample);
-        final ColorModel cm;
-        if (packed) {
-            final int mask = (1 << bitsPerSample) - 1;
-            cm = new DirectColorModel((hasAlpha ? 4 : 3) * bitsPerSample,
-                    mask << (bitsPerSample * 2),        // Red
-                    mask <<  bitsPerSample,             // Green
-                    mask,                               // Blue
-                    hasAlpha ? mask << (bitsPerSample * 3) : 0);
-        } else {
-            final int[] numBits = new int[hasAlpha ? 4 : 3];
-            Arrays.fill(numBits, bitsPerSample);
-            cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), numBits, hasAlpha, false,
-                            hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-        }
-        return unique(cm);
     }
 
     /**

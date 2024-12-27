@@ -949,7 +949,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          * Create a set of temporary files for edition.
          */
         private ShpFiles createTempFiles() throws IOException{
-            final Path tmp = Files.createTempFile(this.shpFile.getParent(), ".write-session-" + baseName + "-", ".shp");
+            final Path tmp = Files.createTempFile(shpFile.getParent(), ".write-session-" + baseName + "-", ".shp");
             Files.delete(tmp);
             return new ShpFiles(tmp);
         }

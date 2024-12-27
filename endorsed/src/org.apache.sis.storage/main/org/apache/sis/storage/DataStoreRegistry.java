@@ -73,7 +73,15 @@ final class DataStoreRegistry extends LazySet<DataStoreProvider> {
      * provided that it can access at least the Apache SIS stores.
      */
     public DataStoreRegistry() {
-        this.loader = ServiceLoader.load(DataStoreProvider.class, Reflect.getContextClassLoader());
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        ServiceLoader<DataStoreProvider> loader;
+        try {
+            loader = ServiceLoader.load(DataStoreProvider.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(DataStoreRegistry.class, "<init>", e);
+            loader = ServiceLoader.load(DataStoreProvider.class);
+        }
+        this.loader = loader;
     }
 
     /**
@@ -182,7 +190,7 @@ final class DataStoreRegistry extends LazySet<DataStoreProvider> {
     }
 
     /**
-     * Implementation of {@link #probeContentType(Object)} and {@link #open(Object, Capability, String)}.
+     * Implementation of {@link #probeContentType(Object)} and {@link #open(Object, Capability, Function)}.
      *
      * @param  storage     the input/output object as a URL, file, image input stream, <i>etc.</i>.
      * @param  capability  the capability that the data store must have (read, write, create).
@@ -200,26 +208,31 @@ final class DataStoreRegistry extends LazySet<DataStoreProvider> {
             Predicate<DataStoreProvider> preferred, final boolean open)
             throws DataStoreException
     {
+        final boolean writable;
         StorageConnector connector;                 // Will be reset to `null` if it shall not be closed.
         if (storage instanceof StorageConnector) {
             connector = (StorageConnector) storage;
-            final var p = connector.getOption(InternalOptionKey.PREFERRED_PROVIDERS);
-            if (preferred == null) {
-                preferred = p;
-            } else {
-                preferred = preferred.and(p);
-                connector.setOption(InternalOptionKey.PREFERRED_PROVIDERS, preferred);
+            writable = (capability == Capability.WRITE) && connector.getOption(OptionKey.OPEN_OPTIONS) == null;
+            final var filter = connector.getOption(InternalOptionKey.PREFERRED_PROVIDERS);
+            if (filter != null) {
+                preferred = (preferred != null) ? preferred.and(filter) : filter;
             }
         } else {
             connector = new StorageConnector(storage);
-            if (capability == Capability.WRITE) {
-                connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
-                    StandardOpenOption.CREATE, StandardOpenOption.WRITE
-                });
-            }
-            if (preferred != null) {
-                connector.setOption(InternalOptionKey.PREFERRED_PROVIDERS, preferred);
-            }
+            writable = (capability == Capability.WRITE);
+        }
+        /*
+         * If this method is invoked by `DataStores.openWritable(…)`, add NIO open options if not already present.
+         * Note that this code may modify a user provided storage connector. It should be okay considering that
+         * each `StorageConnector` instance should be short-lived and used only once.
+         */
+        if (writable) {
+            connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE
+            });
+        }
+        if (preferred != null) {
+            connector.setOption(InternalOptionKey.PREFERRED_PROVIDERS, preferred);
         }
         /*
          * If we can get a filename extension from the given storage (file, URL, etc.), we may perform two times
@@ -261,7 +274,7 @@ search:     for (final Category category : Category.values()) {
                     if (md == null) {
                         accept = isFirstIteration;      // If no metadata, test only during one iteration.
                     } else {
-                        accept = (md.yieldPriority() == category.yieldPriority) &&
+                        accept = (category.preferred || md.yieldPriority() == category.yieldPriority) &&
                                  ArraysExt.contains(md.capabilities(), capability);
                         if (accept & useSuffix) {
                             accept = ArraysExt.containsIgnoreCase(md.fileSuffixes(), extension) == category.useSuffix;

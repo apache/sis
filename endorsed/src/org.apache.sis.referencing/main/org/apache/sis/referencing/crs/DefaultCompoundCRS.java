@@ -486,7 +486,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             if (crs == null) {
                 crs = this;
                 boolean changed = false;
-                final boolean reorderCRS = convention.ordinal() <= AxesConvention.DISPLAY_ORIENTED.ordinal();
+                final boolean reorderCRS = convention.ordinal() >= AxesConvention.DISPLAY_ORIENTED.ordinal();
                 final List<? extends CoordinateReferenceSystem> elements = reorderCRS ? singles : components;
                 final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[elements.size()];
                 for (int i=0; i<newComponents.length; i++) {

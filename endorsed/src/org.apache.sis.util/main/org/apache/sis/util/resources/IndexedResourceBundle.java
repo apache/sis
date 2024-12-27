@@ -236,6 +236,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
             }
         }
         final String lineSeparator = System.lineSeparator();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String[] values = ensureLoaded(null);
         for (int i=0; i < values.length; i++) {
             final String key   = keys  [i];
@@ -265,6 +266,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @throws MissingResourceException if this method failed to load resources.
      */
     private String[] ensureLoaded(final String key) throws MissingResourceException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         String[] values = this.values;
         if (values == null) synchronized (this) {
             values = this.values;
@@ -350,6 +352,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
         /*
          * Note: Synchronization is performed by 'ensureLoaded'
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String[] values = ensureLoaded(key);
         int keyID;
         try {
@@ -761,6 +764,22 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
             }
         }
         return null;
+    }
+
+    /**
+     * Concatenates two sentences. The concatenation order is locale-sensitive.
+     * Current implementation ignores the locale and always concatenate the sentence from left to right.
+     * This method is defined for centralizing the places where such concatenations are done, for making
+     * easier to change this order if a future Apache SIS version supports right to left writing systems.
+     *
+     * @param  first   the first sentence, or {@code null} or empty.
+     * @param  second  the second sentence, or {@code null} or empty.
+     * @return the concatenated sentence.
+     */
+    public static String concatenate(final String first, final String second) {
+        if (first  == null ||  first.isBlank()) return second;
+        if (second == null || second.isBlank()) return first;
+        return first + ' ' + second;
     }
 
     /**

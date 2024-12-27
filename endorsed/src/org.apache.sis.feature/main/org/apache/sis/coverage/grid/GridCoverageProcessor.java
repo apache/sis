@@ -46,7 +46,7 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.privy.SampleDimensions;
-import org.apache.sis.coverage.privy.MultiSourceArgument;
+import org.apache.sis.coverage.privy.BandAggregateArgument;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -886,7 +886,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource) {
-        final var aggregate = new MultiSourceArgument<>(sources, bandsPerSource);
+        final var aggregate = new BandAggregateArgument<>(sources, bandsPerSource);
         aggregate.unwrap(BandAggregateGridCoverage::unwrap);
         aggregate.completeAndValidate(GridCoverage::getSampleDimensions);
         aggregate.mergeConsecutiveSources();
@@ -937,10 +937,10 @@ public class GridCoverageProcessor implements Cloneable {
      */
     public RenderedImage visualize(final GridCoverage source, final GridExtent slice) {
         ArgumentChecks.ensureNonNull("source", source);
-        final SampleDimension[] bands = source.getSampleDimensions().toArray(SampleDimension[]::new);
+        final List<SampleDimension> ranges = source.getSampleDimensions();
         final RenderedImage image = source.render(slice);
         try {
-            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(bands);
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(ranges);
             return imageProcessor.visualize(image);
         } finally {
             SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();

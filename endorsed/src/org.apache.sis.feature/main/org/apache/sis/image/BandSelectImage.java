@@ -47,7 +47,7 @@ import org.apache.sis.coverage.privy.ObservableImage;
  */
 class BandSelectImage extends SourceAlignedImage {
     /**
-     * Properties to inherit from the source image, after bands reduction if applicable.
+     * Properties to inherit from the source images, after bands reduction if applicable.
      *
      * @see #getProperty(String)
      */
@@ -60,7 +60,7 @@ class BandSelectImage extends SourceAlignedImage {
      * Shall be a subset of {@link #INHERITED_PROPERTIES}.
      * All values must be arrays.
      */
-    private static final Set<String> REDUCED_PROPERTIES = Set.of(
+    static final Set<String> REDUCED_PROPERTIES = Set.of(
             SAMPLE_DIMENSIONS_KEY, SAMPLE_RESOLUTIONS_KEY, STATISTICS_KEY);
 
     /**
@@ -80,7 +80,7 @@ class BandSelectImage extends SourceAlignedImage {
     private BandSelectImage(final RenderedImage source, final ColorModel cm, final int[] bands) {
         super(source, cm, source.getSampleModel().createSubsetSampleModel(bands));
         this.bands = bands;
-        ensureCompatible(cm);
+        ensureCompatible(sampleModel, cm);
     }
 
     /**
@@ -145,7 +145,7 @@ class BandSelectImage extends SourceAlignedImage {
         if (cm != null && source instanceof BufferedImage) {
             final BufferedImage bi = (BufferedImage) source;
             @SuppressWarnings("UseOfObsoleteCollectionType")
-            final Hashtable<String,Object> properties = new Hashtable<>(8);
+            final var properties = new Hashtable<String,Object>(8);
             for (final String key : INHERITED_PROPERTIES) {
                 final Object value = getProperty(bi, key, bands);
                 if (value != Image.UndefinedProperty) {
@@ -166,6 +166,9 @@ class BandSelectImage extends SourceAlignedImage {
     /**
      * Returns the names of all recognized properties,
      * or {@code null} if this image has no properties.
+     * This method may conservatively return the names of properties that <em>may</em> exist.
+     * It does not check if the property would be an array with only null values,
+     * because doing that check may cause potentially costly computation.
      */
     @Override
     public String[] getPropertyNames() {
@@ -195,10 +198,13 @@ class BandSelectImage extends SourceAlignedImage {
             final Class<?> componentType = value.getClass().getComponentType();
             if (componentType != null) {
                 final Object reduced = Array.newInstance(componentType, bands.length);
+                boolean hasValue = false;
                 for (int i=0; i<bands.length; i++) {
-                    Array.set(reduced, i, Array.get(value, bands[i]));
+                    Object element = Array.get(value, bands[i]);
+                    Array.set(reduced, i, element);
+                    hasValue |= (element != null);
                 }
-                return reduced;
+                return hasValue ? reduced : Image.UndefinedProperty;
             }
         }
         return value;

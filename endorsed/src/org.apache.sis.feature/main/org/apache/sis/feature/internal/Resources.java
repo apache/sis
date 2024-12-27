@@ -285,8 +285,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short IterationNotStarted = 39;
 
         /**
-         * Image number of bands {0,number} does not match the number of sample dimensions
-         * ({1,number}).
+         * The image has {0,number} bands while the coverage has {1,number} sample dimensions.
          */
         public static final short MismatchedBandCount_2 = 40;
 

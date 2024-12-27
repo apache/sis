@@ -160,6 +160,7 @@ MD_PixelOrientationCode
 MD_PortrayalCatalogueReference
 MD_ProgressCode
 MD_RangeDimension
+MD_ReferenceSystem
 MD_ReferenceSystemTypeCode
 MD_Releasability
 MD_RepresentativeFraction

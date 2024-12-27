@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
 import java.awt.Rectangle;
@@ -25,21 +26,18 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.TileOpExecutor;
 import org.apache.sis.coverage.privy.SampleDimensions;
-import org.apache.sis.coverage.privy.ColorModelBuilder;
+import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
@@ -99,7 +97,7 @@ class BandedSampleConverter extends WritableComputedImage {
      *
      * @see #getProperty(String)
      */
-    private final SampleDimension[] sampleDimensions;
+    private final List<SampleDimension> sampleDimensions;
 
     /**
      * The sample resolutions, or {@code null} if unknown.
@@ -120,13 +118,13 @@ class BandedSampleConverter extends WritableComputedImage {
     private BandedSampleConverter(final RenderedImage source,  final BandedSampleModel sampleModel,
                                   final ColorModel colorModel, final NumberRange<?>[] ranges,
                                   final MathTransform1D[] converters,
-                                  final SampleDimension[] sampleDimensions)
+                                  final List<SampleDimension> sampleDimensions)
     {
         super(sampleModel, source);
         this.colorModel = colorModel;
         this.converters = converters;
         this.sampleDimensions = sampleDimensions;
-        ensureCompatible(colorModel);
+        ensureCompatible(sampleModel, colorModel);
         /*
          * Get an estimation of the resolution, arbitrarily looking in the middle of the range of values.
          * If the converters are linear (which is the most common case), the middle value does not matter
@@ -171,14 +169,15 @@ class BandedSampleConverter extends WritableComputedImage {
                 r = Double.NaN;
             }
             /*
-             * The implicit source resolution if 1 on the assumption that we are converting from
+             * The implicit source resolution is 1 on the assumption that we are converting from
              * integer values. But if the source image specifies a resolution, use the specified
              * value instead of the implicit 1 value.
              */
             if (i < n) {
                 final Number v = (Number) Array.get(sr, i);
                 if (v != null) {
-                    r *= (v instanceof Float) ? DecimalFunctions.floatToDouble(v.floatValue()) : v.doubleValue();
+                    double f = (v instanceof Float) ? DecimalFunctions.floatToDouble(v.floatValue()) : v.doubleValue();
+                    if (f > 0) r *= f;      // Ignore also NaN.
                 }
             }
             resolutions[i] = r;
@@ -197,7 +196,6 @@ class BandedSampleConverter extends WritableComputedImage {
      * @param  sourceRanges  the expected range of values for each band in source image, or {@code null} if unknown.
      * @param  converters    the transfer functions to apply on each band of the source image.
      * @param  targetType    the type of this image resulting from conversion of given image.
-     *                       Shall be one of {@link DataBuffer} constants.
      * @param  colorizer     provider of color model for the expected range of values, or {@code null}.
      * @return the image which compute converted values from the given source.
      *
@@ -205,7 +203,7 @@ class BandedSampleConverter extends WritableComputedImage {
      */
     static BandedSampleConverter create(RenderedImage source, final ImageLayout layout,
             final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,
-            final int targetType, final Colorizer colorizer)
+            final DataType targetType, final Colorizer colorizer)
     {
         /*
          * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
@@ -216,12 +214,12 @@ class BandedSampleConverter extends WritableComputedImage {
             source = ((RecoloredImage) source).source;
         }
         final int numBands = converters.length;
-        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null, 0);
-        final SampleDimension[] sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
+        final BandedSampleModel sampleModel = layout.createBandedSampleModel(source, null, targetType, numBands, 0);
+        final List<SampleDimension> sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
         final int visibleBand = ImageUtilities.getVisibleBand(source);
-        ColorModel colorModel = ColorModelBuilder.NULL_COLOR_MODEL;
+        ColorModel colorModel = ColorScaleBuilder.NULL_COLOR_MODEL;
         if (colorizer != null) {
-            var target = new Colorizer.Target(sampleModel, UnmodifiableArrayList.wrap(sampleDimensions), visibleBand);
+            var target = new Colorizer.Target(sampleModel, sampleDimensions, visibleBand);
             colorModel = colorizer.apply(target).orElse(null);
         }
         if (colorModel == null) {
@@ -231,10 +229,10 @@ class BandedSampleConverter extends WritableComputedImage {
              * If no sample dimension is specified, infer value range from data type.
              */
             SampleDimension sd = null;
-            if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.length) {
-                sd = sampleDimensions[visibleBand];
+            if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.size()) {
+                sd = sampleDimensions.get(visibleBand);
             }
-            final var builder = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, false);
+            final var builder = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
             if (builder.initialize(source.getSampleModel(), sd) ||
                 builder.initialize(source.getColorModel()))
             {
@@ -272,7 +270,7 @@ class BandedSampleConverter extends WritableComputedImage {
         switch (key) {
             case SAMPLE_DIMENSIONS_KEY: {
                 if (sampleDimensions != null) {
-                    return sampleDimensions.clone();
+                    return sampleDimensions.toArray(SampleDimension[]::new);
                 }
                 break;
             }
@@ -403,12 +401,11 @@ class BandedSampleConverter extends WritableComputedImage {
      * forwards the notification to it. Otherwise default implementation does nothing.
      */
     @Override
-    protected Disposable prefetch(final Rectangle tiles) {
+    protected Disposable prefetch(Rectangle tiles) {
         final RenderedImage source = getSource();
         if (source instanceof PlanarImage) {
-            final Rectangle pixels = ImageUtilities.tilesToPixels(this, tiles);
-            ImageUtilities.clipBounds(source, pixels);
-            return ((PlanarImage) source).prefetch(ImageUtilities.pixelsToTiles(source, pixels));
+            tiles = ImageUtilities.convertTileIndices(this, source, tiles);
+            return ((PlanarImage) source).prefetch(tiles);
         } else {
             return super.prefetch(tiles);
         }
@@ -430,7 +427,7 @@ class BandedSampleConverter extends WritableComputedImage {
         Writable(final WritableRenderedImage source,  final BandedSampleModel sampleModel,
                  final ColorModel colorModel, final NumberRange<?>[] ranges,
                  final MathTransform1D[] converters, final MathTransform1D[] inverses,
-                 final SampleDimension[] sampleDimensions)
+                 final List<SampleDimension> sampleDimensions)
         {
             super(source, sampleModel, colorModel, ranges, converters, sampleDimensions);
             this.inverses = inverses;

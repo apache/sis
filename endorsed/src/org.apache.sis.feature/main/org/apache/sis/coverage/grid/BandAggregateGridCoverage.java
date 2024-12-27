@@ -24,7 +24,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.coverage.privy.MultiSourceArgument;
+import org.apache.sis.coverage.privy.BandAggregateArgument;
 import org.apache.sis.util.privy.CollectionsExt;
 
 
@@ -93,7 +93,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
      * @throws IllegalArgumentException if there is an incompatibility between some source coverages
      *         or if some band indices are duplicated or outside their range of validity.
      */
-    BandAggregateGridCoverage(final MultiSourceArgument<GridCoverage> aggregate, final ImageProcessor processor) {
+    BandAggregateGridCoverage(final BandAggregateArgument<GridCoverage> aggregate, final ImageProcessor processor) {
         super(aggregate.domain(GridCoverage::getGridGeometry), aggregate.ranges());
         this.sources           = aggregate.sources();
         this.bandsPerSource    = aggregate.bandsPerSource(true);
@@ -118,7 +118,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
      *
      * @param  unwrapper  a handler where to supply the result of an aggregate decomposition.
      */
-    static void unwrap(final MultiSourceArgument<GridCoverage>.Unwrapper unwrapper) {
+    static void unwrap(final BandAggregateArgument<GridCoverage>.Unwrapper unwrapper) {
         if (unwrapper.source instanceof BandAggregateGridCoverage) {
             final var aggregate = (BandAggregateGridCoverage) unwrapper.source;
             unwrapper.applySubset(aggregate.sources, aggregate.bandsPerSource, GridCoverage::getSampleDimensions);
@@ -136,7 +136,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
     /**
      * Returns a two-dimensional slice of grid data as a rendered image.
      * This operation is potentially costly if the {@code sliceExtent} argument changes often because
-     * the previously computed images are unlikely to be reused if the coordinate systems are different.
+     * the previously computed images are unlikely to be reused when the coordinate systems are different.
      * It may result in the same bands being copied may times in different {@link RenderedImage} instances.
      *
      * <h4>Implementation note</h4>
@@ -155,7 +155,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
         if (sliceExtent == null) {
             sliceExtent = gridGeometry.getExtent();
         }
-        final RenderedImage[] images = new RenderedImage[sources.length];
+        final var images = new RenderedImage[sources.length];
         for (int i=0; i<images.length; i++) {
             images[i] = sources[i].render(sliceExtent.translate(gridTranslations[i]));
         }

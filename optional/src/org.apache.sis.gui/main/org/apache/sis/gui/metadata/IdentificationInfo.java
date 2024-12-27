@@ -42,6 +42,7 @@ import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.distribution.Format;
+import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -56,9 +57,11 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.privy.CollectionsExt.nonNull;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 // Specific to the main branch:
 import org.opengis.metadata.identification.DataIdentification;
@@ -383,8 +386,13 @@ final class IdentificationInfo extends Section<Identification> {
                         isWorld = drawOnMap((GeographicBoundingBox) ge);
                     }
                 }
-                final MeasurementRange<Double> v = Extents.getVerticalRange(extent);
-                if (v != null) heights = (heights != null) ? heights.union(v) : v;
+                try {
+                    final MeasurementRange<Double> v = Extents.getVerticalRange(extent);
+                    if (v != null) heights = (heights != null) ? heights.union(v) : v;
+                } catch (InvalidMetadataException e) {
+                    // `MetadataSummary` is (indirectly) the public caller of this method.
+                    Logging.recoverableException(LOGGER, MetadataSummary.class, "setMetadata", e);
+                }
                 final Range<Date> t = Extents.getTimeRange(extent);
                 if (t != null) timeRange = (timeRange != null) ? timeRange.union(t) : t;
             }
@@ -415,7 +423,7 @@ final class IdentificationInfo extends Section<Identification> {
             final Double min = heights.getMinValue();
             final Double max = heights.getMaxValue();
             if (min != null || max != null) {
-                StringBuffer b = new StringBuffer(20);
+                final var b = new StringBuffer(20);
                 if (min != null && max != null && !min.equals(max)) {
                     owner.formats.formatPair(min, " … ", max, b);
                 } else {

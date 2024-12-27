@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.image;
 
+import java.util.Objects;
 import java.util.function.Predicate;
 import javax.imageio.ImageIO;
 import org.apache.sis.util.ArraysExt;
@@ -57,7 +58,7 @@ public final class DataStoreFilter implements Predicate<DataStoreProvider> {
      * Creates a new filter for the given data store name.
      *
      * @param  preferred  name of the data store to search, or Image I/O format name.
-     * @param  writer     whether to search among writers intead of readers.
+     * @param  writer     whether to search among writers instead of readers.
      */
     public DataStoreFilter(final String preferred, final boolean writer) {
         this.preferred = preferred;
@@ -84,13 +85,15 @@ public final class DataStoreFilter implements Predicate<DataStoreProvider> {
      */
     @Override
     public boolean test(final DataStoreProvider candidate) {
-        final String formatName = StoreUtilities.getFormatName(candidate);
-        if (CharSequences.equalsFiltered(formatName, preferred, Characters.Filter.UNICODE_IDENTIFIER, true)) {
-            return true;
-        }
-        if (WorldFileStoreProvider.NAME.equals(formatName)) {
-            String[] formats = writer ? ImageIO.getWriterFormatNames() : ImageIO.getReaderFormatNames();
-            return ArraysExt.containsIgnoreCase(formats, preferred);
+        if (other == null || other.test(candidate)) {
+            final String formatName = StoreUtilities.getFormatName(candidate);
+            if (CharSequences.equalsFiltered(formatName, preferred, Characters.Filter.UNICODE_IDENTIFIER, true)) {
+                return true;
+            }
+            if (WorldFileStoreProvider.NAME.equals(formatName)) {
+                String[] formats = writer ? ImageIO.getWriterFormatNames() : ImageIO.getReaderFormatNames();
+                return ArraysExt.containsIgnoreCase(formats, preferred);
+            }
         }
         return false;
     }
@@ -102,6 +105,6 @@ public final class DataStoreFilter implements Predicate<DataStoreProvider> {
      */
     @Override
     public Predicate<DataStoreProvider> and(Predicate<? super DataStoreProvider> other) {
-        return new DataStoreFilter(this, other);
+        return new DataStoreFilter(this, Objects.requireNonNull(other));
     }
 }

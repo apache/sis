@@ -77,11 +77,11 @@ import org.apache.sis.math.Vector;
  */
 public final class GridGeometryBuilder extends GeoKeysLoader {
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    ////                                                                                ////
-    ////    Information to be set by ImageFileDirectory during GeoTIFF file parsing.    ////
-    ////                                                                                ////
-    ////////////////////////////////////////////////////////////////////////////////////////
+    //  ╔════════════════════════════════════════════════════════════════════════════════╗
+    //  ║                                                                                ║
+    //  ║    Information to be set by ImageFileDirectory during GeoTIFF file parsing.    ║
+    //  ║                                                                                ║
+    //  ╚════════════════════════════════════════════════════════════════════════════════╝
 
     /*
      * Fields inherited from `GeoKeysLoader`:
@@ -157,11 +157,11 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
 
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////
-    ////                                                                                ////
-    ////    Information to be computed by GridGeometryBuilder based on above data.      ////
-    ////                                                                                ////
-    ////////////////////////////////////////////////////////////////////////////////////////
+    //  ╔════════════════════════════════════════════════════════════════════════════════╗
+    //  ║                                                                                ║
+    //  ║    Information to be computed by GridGeometryBuilder based on above data.      ║
+    //  ║                                                                                ║
+    //  ╚════════════════════════════════════════════════════════════════════════════════╝
 
     /**
      * Suggested value for a general description of the transformation form grid coordinates to "real world" coordinates.
@@ -194,10 +194,12 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
      * @see ImageFileDirectory#validateMandatoryTags()
      */
     public boolean validateMandatoryTags() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final MatrixSIS affine = this.affine;
         if (affine == null || completeMatrixSpecified) {
             return true;
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Vector modelTiePoints = this.modelTiePoints;
         if (modelTiePoints != null) {
             /*
@@ -283,23 +285,23 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
          * may need to be reduced.
          */
         int n = (crs != null) ? crs.getCoordinateSystem().getDimension() : 2;
-        final DimensionNameType[] axisTypes = new DimensionNameType[n];
-        final long[] high = new long[n];
+        final var axisTypes = new DimensionNameType[n];
+        final var high = new long[n];
         switch (n) {
             default: axisTypes[2] = DimensionNameType.VERTICAL; // Fallthrough everywhere.
             case 2:  axisTypes[1] = DimensionNameType.ROW;      high[1] = height - 1;
             case 1:  axisTypes[0] = DimensionNameType.COLUMN;   high[0] = width  - 1;
             case 0:  break;
         }
-        final GridExtent extent = new GridExtent(axisTypes, null, high, true);
+        final var extent = new GridExtent(axisTypes, null, high, true);
         boolean pixelIsPoint = (cellGeometry == CellGeometry.POINT);
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         GridGeometry gridGeometry;
         try {
-            MathTransform gridToCRS;
+            MathTransform gridToCRS = null;
             if (affine != null) {
                 gridToCRS = factory.createAffineTransform(Matrices.resizeAffine(affine, ++n, n));
-            } else {
+            } else if (modelTiePoints != null) {
                 pixelIsPoint = true;
                 gridToCRS = Localization.nonLinear(modelTiePoints);
                 gridToCRS = factory.createPassThroughTransform(0, gridToCRS, n - 2);

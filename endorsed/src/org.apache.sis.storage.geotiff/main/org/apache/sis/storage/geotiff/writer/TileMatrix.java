@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.DataBuffer;
@@ -29,11 +30,14 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
+import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import org.apache.sis.image.DataType;
+import org.apache.sis.io.stream.UpdatableWrite;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Resources;
@@ -48,9 +52,10 @@ import org.apache.sis.pending.jdk.JDK18;
  */
 public final class TileMatrix {
     /**
-     * Offset in {@link ChannelDataOutput} where the IFD starts.
+     * Where the next image will be written.
+     * This information is saved for the caller but not used by this class.
      */
-    public final long offsetIFD;
+    public UpdatableWrite<?> nextIFD;
 
     /**
      * The images to write.
@@ -118,17 +123,14 @@ public final class TileMatrix {
      * @param image             the image to write.
      * @param numPlanes         the number of banks (plane in TIFF terminology).
      * @param bitsPerSample     number of bits per sample to write.
-     * @param offsetIFD         offset in {@link ChannelDataOutput} where the IFD starts.
      * @param compression       the compression method to apply.
      * @param compressionLevel  compression level (0-9), or -1 for the default.
      * @param predictor         the predictor to apply before to compress data.
      */
     public TileMatrix(final RenderedImage image, final int numPlanes, final int[] bitsPerSample,
-                      final long offsetIFD, final Compression compression, final int compressionLevel,
-                      final Predictor predictor)
+                      final Compression compression, final int compressionLevel, final Predictor predictor)
     {
         final int pixelSize, numArrays;
-        this.offsetIFD        = offsetIFD;
         this.numPlanes        = numPlanes;
         this.image            = image;
         this.compression      = compression;
@@ -182,19 +184,23 @@ public final class TileMatrix {
     }
 
     /**
-     * Writes all tiles of the image.
+     * Writes the (eventually compressed) sample values of all tiles of the image.
      * Caller shall invoke {@link #writeOffsetsAndLengths(ChannelDataOutput)} after this method.
      * This invocation is not done by this method for allowing the caller to control when to write data.
      *
      * @param  output  where to write the tiles data.
+     * @throws RasterFormatException if the raster uses an unsupported sample model.
+     * @throws ArithmeticException if an integer overflow occurs.
      * @throws DataStoreException if the compression method is unsupported.
      * @throws IOException if an error occurred while writing to the given output.
      */
     public void writeRasters(final ChannelDataOutput output) throws DataStoreException, IOException {
-        ChannelDataOutput compOutput  = null;
-        PixelChannel      compressor  = null;
-        SampleModel       sampleModel = null;
-        boolean           direct      = false;
+        ChannelDataOutput compOutput    = null;
+        PixelChannel      compressor    = null;
+        SampleModel       sampleModel   = null;
+        boolean           direct        = false;
+        ByteOrder         dataByteOrder = null;
+        final ByteOrder   fileByteOrder = output.buffer.order();
         final int minTileX = image.getMinTileX();
         final int minTileY = image.getMinTileY();
         for (int tileIndex = 0; tileIndex < numTiles; tileIndex++) {
@@ -210,22 +216,26 @@ public final class TileMatrix {
             /*
              * Creates the `rect` object which will be used for writing a subset of the raster data.
              * This object depends not only on the sample model, but also on the raster coordinates.
-             * However the compressor depends on properties that change only with the sample model,
-             * so `compressor` is usually created only once and shared by all tiles.
+             * Therefore, a new instance needs to be created for each tile.
              */
             final var builder = new HyperRectangleWriter.Builder();
-            final HyperRectangleWriter rect = builder.create(tile);
-            if (rect == null) {
-                throw new UnsupportedOperationException();      // TODO: reformat using a recycled Raster.
+            final HyperRectangleWriter rect = builder.create(tile, tileWidth, tileHeight);
+            if (builder.numBanks() != numPlanes) {
+                // This exception would be a bug in our analysis of the sample model.
+                throw new InternalDataStoreException(tile.getSampleModel().toString());
             }
-            final int[] bankIndices = builder.bankIndices();
-            final int[] bankOffsets = builder.bankOffsets();
+            /*
+             * The compressor depends on properties that change only with the sample model,
+             * so `compressor` is usually created only once and shared by all tiles.
+             */
             if (!Objects.equals(sampleModel, sampleModel = tile.getSampleModel())) {
                 direct = type.equals(DataType.BYTE) && rect.suggestDirect(output);
                 if (compressor != null) {
                     compressor.close();
                     compressor = null;
                 }
+                dataByteOrder = builder.byteOrder(fileByteOrder);
+                direct &= (dataByteOrder == null);      // Disable direct mode if a change of byte order is needed.
                 /*
                  * Creates the data output to use for writing compressed data. The compressor will need an
                  * intermediate buffer, unless the `direct` flag is true, in which case we will bypass the
@@ -250,7 +260,7 @@ public final class TileMatrix {
                         }
                     }
                     ByteBuffer buffer = direct ? ByteBuffer.allocate(0) : compressor.createBuffer();
-                    compOutput = new ChannelDataOutput(output.filename, compressor, buffer.order(output.buffer.order()));
+                    compOutput = new ChannelDataOutput(output.filename, compressor, buffer.order(fileByteOrder));
                 } else {
                     compOutput = output;
                     assert predictor == Predictor.NONE : predictor;     // Assumption documented in `Compression` class.
@@ -262,20 +272,29 @@ public final class TileMatrix {
             final DataBuffer buffer = tile.getDataBuffer();
             final int[] bufferOffsets = buffer.getOffsets();
             for (int j=0; j<numPlanes; j++) {
-                final int  b        = bankIndices[j];
-                final int  offset   = bankOffsets[j] + bufferOffsets[b];
+                final int  b        = builder.bankIndex(j);
+                final int  offset   = builder.bankOffset(j, bufferOffsets[b]);
                 final long position = output.getStreamPosition();
-                switch (type) {
-                    default:     throw new AssertionError(type);
-                    case BYTE:   rect.write(compOutput, ((DataBufferByte)   buffer).getData(b), offset, direct); break;
-                    case USHORT: rect.write(compOutput, ((DataBufferUShort) buffer).getData(b), offset); break;
-                    case SHORT:  rect.write(compOutput, ((DataBufferShort)  buffer).getData(b), offset); break;
-                    case INT:    rect.write(compOutput, ((DataBufferInt)    buffer).getData(b), offset); break;
-                    case FLOAT:  rect.write(compOutput, ((DataBufferFloat)  buffer).getData(b), offset); break;
-                    case DOUBLE: rect.write(compOutput, ((DataBufferDouble) buffer).getData(b), offset); break;
-                }
-                if (compressor != null) {
-                    compressor.finish(compOutput);
+                try {
+                    if (dataByteOrder != null) {
+                        compOutput.buffer.order(dataByteOrder);
+                    }
+                    switch (type) {
+                        default:     throw new AssertionError(type);
+                        case BYTE:   rect.write(compOutput, ((DataBufferByte)   buffer).getData(b), offset, direct); break;
+                        case USHORT: rect.write(compOutput, ((DataBufferUShort) buffer).getData(b), offset); break;
+                        case SHORT:  rect.write(compOutput, ((DataBufferShort)  buffer).getData(b), offset); break;
+                        case INT:    rect.write(compOutput, ((DataBufferInt)    buffer).getData(b), offset); break;
+                        case FLOAT:  rect.write(compOutput, ((DataBufferFloat)  buffer).getData(b), offset); break;
+                        case DOUBLE: rect.write(compOutput, ((DataBufferDouble) buffer).getData(b), offset); break;
+                    }
+                    if (compressor != null) {
+                        compressor.finish(compOutput);
+                    }
+                } finally {
+                    if (dataByteOrder != null) {    // Avoid touching byte order if it wasn't needed.
+                        compOutput.buffer.order(fileByteOrder);
+                    }
                 }
                 final int planeIndex = tileIndex + j*numTiles;
                 offsets[planeIndex] = position;

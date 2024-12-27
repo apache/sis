@@ -247,7 +247,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #reload()
      */
     public DefaultMathTransformFactory() {
-        this(ServiceLoader.load(OperationMethod.class, Reflect.getContextClassLoader()));
+        this(operations());
+    }
+
+    /** Temporary method to be removed after upgrade to JDK24. */
+    private static ServiceLoader<OperationMethod> operations() {
+        try {
+            return ServiceLoader.load(OperationMethod.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(DefaultMathTransformFactory.class, "<init>", e);
+            return ServiceLoader.load(OperationMethod.class);
+        }
     }
 
     /**

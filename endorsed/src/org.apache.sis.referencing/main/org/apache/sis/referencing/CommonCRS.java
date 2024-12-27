@@ -1290,11 +1290,10 @@ public enum CommonCRS {
 
         /**
          * Height measured above other kind of surface, for example a geological feature.
+         * The datum name is "Other surface". The coordinate system name is "Height".
          * The unit of measurement is metres.
-         *
-         * @deprecated More specific vertical datum should be used.
+         * This enumeration value is also used when the surface is unspecified.
          */
-        @Deprecated(since = "1.5", forRemoval = true)
         OTHER_SURFACE(false, Vocabulary.Keys.Height, Vocabulary.Keys.OtherSurface);
 
         /**

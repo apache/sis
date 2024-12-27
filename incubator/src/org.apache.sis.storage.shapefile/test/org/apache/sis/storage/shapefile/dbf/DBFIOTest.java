@@ -151,7 +151,7 @@ public class DBFIOTest {
             assertArrayEquals(expected, result);
 
         } finally {
-            Files.deleteIfExists(tempFile);
+            Files.delete(tempFile);
         }
     }
 

@@ -36,8 +36,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.privy.ColorModelBuilder;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.coverage.privy.ColorScaleBuilder;
 import org.apache.sis.coverage.privy.ObservableImage;
 import org.apache.sis.coverage.privy.TiledImage;
 import org.apache.sis.coverage.privy.WritableTiledImage;
@@ -473,12 +472,12 @@ public class GridCoverageBuilder {
                  */
                 bands = GridCoverage2D.defaultIfAbsent(bands, null, raster.getNumBands());
                 final SampleModel sm = raster.getSampleModel();
-                final var colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, false);
+                final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
                 final ColorModel colors;
                 if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
-                    colors = colorizer.createColorModel(ImageUtilities.getBandType(sm), bands.size(), visibleBand);
+                    colors = colorizer.createColorModel(sm, bands.size(), visibleBand);
                 } else {
-                    colors = ColorModelBuilder.NULL_COLOR_MODEL;
+                    colors = ColorScaleBuilder.NULL_COLOR_MODEL;
                 }
                 /*
                  * Create an image from the raster. We favor BufferedImage instance when possible,

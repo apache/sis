@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.privy;
 
+import java.awt.Dimension;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -49,12 +50,19 @@ public final class SampleModelFactoryTest extends TestCase {
     }
 
     /**
+     * Returns the width and height of the sample models to create.
+     */
+    private static Dimension size() {
+        return new Dimension(WIDTH, HEIGHT);
+    }
+
+    /**
      * Tests the creation and modification of a {@link BandedSampleModel}.
      */
     @Test
     public void testBanded() {
         final BandedSampleModel model = test(BandedSampleModel.class,
-                new SampleModelFactory(DataType.FLOAT, WIDTH, HEIGHT, NUM_BANDS, Float.SIZE, true));
+                new SampleModelFactory(DataType.FLOAT, size(), NUM_BANDS, Float.SIZE, true));
 
         assertArrayEquals(new int[] {1, 0, 2}, model.getBankIndices());
         assertArrayEquals(new int[] {0, 0, 0}, model.getBandOffsets());
@@ -69,7 +77,7 @@ public final class SampleModelFactoryTest extends TestCase {
     @Test
     public void testPixelInterleaved() {
         final PixelInterleavedSampleModel model = test(PixelInterleavedSampleModel.class,
-                new SampleModelFactory(DataType.BYTE, WIDTH, HEIGHT, NUM_BANDS, Byte.SIZE, false));
+                new SampleModelFactory(DataType.BYTE, size(), NUM_BANDS, Byte.SIZE, false));
 
         assertArrayEquals(new int[] {0, 0, 0}, model.getBankIndices());
         assertArrayEquals(new int[] {1, 0, 2}, model.getBandOffsets());
@@ -86,7 +94,7 @@ public final class SampleModelFactoryTest extends TestCase {
     @Test
     public void testSinglePixelPacked() {
         final SinglePixelPackedSampleModel model = test(SinglePixelPackedSampleModel.class,
-                new SampleModelFactory(DataType.INT, WIDTH, HEIGHT, NUM_BANDS, 5, false));
+                new SampleModelFactory(DataType.INT, size(), NUM_BANDS, 5, false));
 
         final int[] expected = {
             0b1111100000,           // Band 2 specified, 1 after compression.
@@ -106,8 +114,8 @@ public final class SampleModelFactoryTest extends TestCase {
     @Test
     public void testPixelMultiPixelPacked() {
         final int bitsPerSample = 4;
-        SampleModelFactory factory = new SampleModelFactory(DataType.INT, WIDTH, HEIGHT, 1, bitsPerSample, false);
-        final MultiPixelPackedSampleModel model = (MultiPixelPackedSampleModel) factory.build();
+        var factory = new SampleModelFactory(DataType.INT, size(), 1, bitsPerSample, false);
+        final var model = (MultiPixelPackedSampleModel) factory.build();
 
         assertEquals(bitsPerSample, model.getPixelBitStride());
         assertEquals(WIDTH / (Integer.SIZE / bitsPerSample), model.getScanlineStride());

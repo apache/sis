@@ -86,7 +86,12 @@ public abstract class InstallationResources {
      * @since 1.4
      */
     public static ServiceLoader<InstallationResources> load() {
-        return ServiceLoader.load(InstallationResources.class, Reflect.getContextClassLoader());
+        try {
+            return ServiceLoader.load(InstallationResources.class, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(InstallationResources.class, "load", e);
+            return ServiceLoader.load(InstallationResources.class);
+        }
     }
 
     /**

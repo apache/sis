@@ -276,11 +276,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             final List<CoordinateOperation> authoritatives = super.createOperations(sourceCRS, targetCRS);
             if (!authoritatives.isEmpty()) return authoritatives;
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////                       Derived  →  any Single CRS                       ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
+        // ┌────────────────────────────────────────────────────────────────────────┐
+        // │                       Derived  →  any Single CRS                       │
+        // └────────────────────────────────────────────────────────────────────────┘
         if (sourceCRS instanceof GeneralDerivedCRS) {
             final var source = (GeneralDerivedCRS) sourceCRS;
             if (targetCRS instanceof GeneralDerivedCRS) {
@@ -290,22 +288,18 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 return createOperationStep(source, (SingleCRS) targetCRS);
             }
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////                       any Single CRS  →  Derived                       ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
+        // ┌────────────────────────────────────────────────────────────────────────┐
+        // │                       any Single CRS  →  Derived                       │
+        // └────────────────────────────────────────────────────────────────────────┘
         if (targetCRS instanceof GeneralDerivedCRS) {
             final var target = (GeneralDerivedCRS) targetCRS;
             if (sourceCRS instanceof SingleCRS) {
                 return createOperationStep((SingleCRS) sourceCRS, target);
             }
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////            Geodetic  →  Geocetric, Geographic or Projected             ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
+        // ┌────────────────────────────────────────────────────────────────────────┐
+        // │            Geodetic  →  Geocetric, Geographic or Projected             │
+        // └────────────────────────────────────────────────────────────────────────┘
         if (sourceCRS instanceof GeodeticCRS) {
             final GeodeticCRS source = (GeodeticCRS) sourceCRS;
             if (targetCRS instanceof GeodeticCRS) {
@@ -315,33 +309,27 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 return createOperationStep(source, (VerticalCRS) targetCRS);
             }
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////                         Vertical  →  Vertical                          ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
+        // ┌────────────────────────────────────────────────────────────────────────┐
+        // │                         Vertical  →  Vertical                          │
+        // └────────────────────────────────────────────────────────────────────────┘
         if (sourceCRS instanceof VerticalCRS) {
             final VerticalCRS source = (VerticalCRS) sourceCRS;
             if (targetCRS instanceof VerticalCRS) {
                 return createOperationStep(source, (VerticalCRS) targetCRS);
             }
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////                         Temporal  →  Temporal                          ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
+        // ┌────────────────────────────────────────────────────────────────────────┐
+        // │                         Temporal  →  Temporal                          │
+        // └────────────────────────────────────────────────────────────────────────┘
         if (sourceCRS instanceof TemporalCRS) {
             final TemporalCRS source = (TemporalCRS) sourceCRS;
             if (targetCRS instanceof TemporalCRS) {
                 return createOperationStep(source, (TemporalCRS) targetCRS);
             }
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////                Any single CRS  ↔  CRS of the same type                 ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
+        // ┌────────────────────────────────────────────────────────────────────────┐
+        // │                Any single CRS  ↔  CRS of the same type                 │
+        // └────────────────────────────────────────────────────────────────────────┘
         if (sourceCRS instanceof SingleCRS && targetCRS instanceof SingleCRS) {
             final Optional<IdentifiedObject> datumOrEnsemble =
                     PseudoDatum.getDatumOrEnsemble((SingleCRS) sourceCRS,
@@ -359,11 +347,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 throw new FactoryException(notFoundMessage(sourceCRS, targetCRS), e);
             }
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////                        Compound  ↔  various CRS                        ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
+        // ┌────────────────────────────────────────────────────────────────────────┐
+        // │                        Compound  ↔  various CRS                        │
+        // └────────────────────────────────────────────────────────────────────────┘
         if (sourceCRS instanceof CompoundCRS || targetCRS instanceof CompoundCRS) {
             return createOperationStep(sourceCRS, CRS.getSingleComponents(sourceCRS),
                                        targetCRS, CRS.getSingleComponents(targetCRS));
@@ -1060,13 +1046,11 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
 
 
 
-    /////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////
-    ////////////                                                         ////////////
-    ////////////                M I S C E L L A N E O U S                ////////////
-    ////////////                                                         ////////////
-    /////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////
+    //  ╔═════════════════════════════════════════════════════════╗
+    //  ║                                                         ║
+    //  ║                M I S C E L L A N E O U S                ║
+    //  ║                                                         ║
+    //  ╚═════════════════════════════════════════════════════════╝
 
     /**
      * Creates a coordinate operation from a matrix, which usually describes an affine transform.

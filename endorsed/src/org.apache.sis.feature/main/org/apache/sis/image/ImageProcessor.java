@@ -46,7 +46,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
-import org.apache.sis.coverage.privy.ImageLayout;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.TiledImage;
 import org.apache.sis.math.Statistics;
@@ -67,14 +66,14 @@ import org.apache.sis.measure.Units;
  *
  * <ul class="verbose">
  *   <li>
+ *     {@linkplain #setImageLayout(ImageLayout) Preferences about the tiling}
+ *     of an image in relationship with a given image size.
+ *   </li><li>
  *     {@linkplain #setInterpolation(Interpolation) Interpolation method} to use during resampling operations.
  *   </li><li>
  *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that cannot be computed.
  *   </li><li>
  *     {@linkplain #setColorizer(Colorizer) Colorization algorithm} to apply for colorizing a computed image.
- *   </li><li>
- *     {@linkplain #setImageResizingPolicy(Resizing) Image resizing policy} to apply
- *     if a requested image size prevent the image to be tiled.
  *   </li><li>
  *     {@linkplain #setPositionalAccuracyHints(Quantity...) Positional accuracy hints}
  *     for enabling the use of faster algorithm when a lower accuracy is acceptable.
@@ -180,20 +179,41 @@ public class ImageProcessor implements Cloneable {
      *
      * @see #getImageResizingPolicy()
      * @see #setImageResizingPolicy(Resizing)
+     *
+     * @deprecated Replaced by {@link ImageLayout}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public enum Resizing {
         /**
-         * Image size is unmodified; the requested value is used unconditionally.
+         * Image size is unmodified, the requested value is used unconditionally.
          * It may result in big tiles (potentially a single tile for the whole image)
          * if the image size is not divisible by a tile size.
+         *
+         * @deprecated Replaced by {@link ImageLayout#DEFAULT}.
          */
-        NONE,
+        @Deprecated
+        NONE(ImageLayout.DEFAULT),
 
         /**
          * Image size can be increased. {@code ImageProcessor} will try to increase
          * by the smallest number of pixels allowing the image to be subdivided in tiles.
+         *
+         * @deprecated Replaced by {@code ImageLayout.DEFAULT.allowImageBoundsAdjustments(true)}.
          */
-        EXPAND
+        @Deprecated
+        EXPAND(ImageLayout.DEFAULT.allowImageBoundsAdjustments(true));
+
+        /**
+         * The layout corresponding to the enumeration value.
+         */
+        public final ImageLayout layout;
+
+        /**
+         * Creates a new enumeration value for the given size policy.
+         */
+        private Resizing(final ImageLayout layout) {
+            this.layout = layout;
+        }
     }
 
     /**
@@ -296,18 +316,24 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns the properties (size, tile size, sample model, <i>etc.</i>) of destination images.
-     * This method is not yet public because {@link ImageLayout} is not a public class.
+     * Returns the preferences about the tiling of an image in relationship with a given image size.
+     * The {@code ImageLayout} determines characteristics (size, tile size, sample model, <i>etc.</i>)
+     * of destination images.
+     *
+     * @return preferences about the tiling of an image in relationship with a given image size.
+     * @since 1.5
      */
-    final synchronized ImageLayout getImageLayout() {
+    public synchronized ImageLayout getImageLayout() {
         return layout;
     }
 
     /**
-     * Sets the properties (size, tile size, sample model, <i>etc.</i>) of destination images.
-     * This method is not yet public because {@link ImageLayout} is not a public class.
+     * Sets the preferences (size, tile size, sample model, <i>etc.</i>) of destination images.
+     *
+     * @param layout  new preferences about the tiling of an image in relationship with a given image size.
+     * @since 1.5
      */
-    final synchronized void setImageLayout(final ImageLayout layout) {
+    public synchronized void setImageLayout(final ImageLayout layout) {
         this.layout = Objects.requireNonNull(layout);
     }
 
@@ -396,20 +422,24 @@ public class ImageProcessor implements Cloneable {
      * If this processor can use a different size, the enumeration value specifies what kind of changes may be applied.
      *
      * @return the image resizing policy.
+     *
+     * @deprecated Replaced by {@link #getImageLayout()}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public synchronized Resizing getImageResizingPolicy() {
-        return layout.isBoundsAdjustmentAllowed ? Resizing.EXPAND : Resizing.NONE;
+        return layout.isImageBoundsAdjustmentAllowed ? Resizing.EXPAND : Resizing.NONE;
     }
 
     /**
      * Sets whether {@code ImageProcessor} can produce an image of different size compared to requested size.
      *
      * @param  policy   the new image resizing policy.
+     *
+     * @deprecated Replaced by {@link #setImageLayout(ImageLayout)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public synchronized void setImageResizingPolicy(final Resizing policy) {
-        layout = (Objects.requireNonNull(policy) == Resizing.EXPAND)
-                ? ImageLayout.SIZE_ADJUST
-                : ImageLayout.DEFAULT;
+        layout = policy.layout;
     }
 
     /**
@@ -573,14 +603,15 @@ public class ImageProcessor implements Cloneable {
     /**
      * Returns statistics (minimum, maximum, mean, standard deviation) on each bands of the given image.
      * Invoking this method is equivalent to invoking the {@link #statistics statistics(…)} method and
-     * extracting immediately the statistics property value, except that custom
-     * {@linkplain #setErrorHandler error handlers} are supported.
+     * extracting immediately the statistics property value, except that this method guarantees that all
+     * statistics are non-null and supports custom {@linkplain #setErrorHandler error handlers}.
      *
      * <p>If {@code areaOfInterest} is null and {@code sampleFilters} is {@code null} or empty,
      * then the default behavior is as below:</p>
      * <ul>
      *   <li>If the {@value PlanarImage#STATISTICS_KEY} property value exists in the given image,
-     *       then that value is returned. Note that they are not necessarily statistics for the whole image.
+     *       then that value is returned with the null array elements (if any) replaced by computed values.
+     *       Note that the returned statistics are not necessarily for the whole image.
      *       They are whatever statistics the property provider considered as representative.</li>
      *   <li>Otherwise statistics are computed for the whole image.</li>
      * </ul>
@@ -599,7 +630,7 @@ public class ImageProcessor implements Cloneable {
      * </ul>
      *
      * <h4>Result relationship with source</h4>
-     * This method computes statistics immediately.
+     * This method fetches (from property values) or computes statistics immediately.
      * Changes in the {@code source} image after this method call do not change the results.
      *
      * @param  source          the image for which to compute statistics.
@@ -607,7 +638,7 @@ public class ImageProcessor implements Cloneable {
      * @param  sampleFilters   converters to apply on sample values before to add them to statistics, or
      *         {@code null} or an empty array if none. The array may have any length and may contain null elements.
      *         For all {@code i < numBands}, non-null {@code sampleFilters[i]} are applied to band <var>i</var>.
-     * @return the statistics of sample values in each band.
+     * @return the statistics of sample values in each band. Guaranteed non-null and without null element.
      * @throws ImagingOpException if an error occurred during calculation
      *         and the error handler is {@link ErrorHandler#THROW}.
      *
@@ -615,16 +646,36 @@ public class ImageProcessor implements Cloneable {
      * @see #filterNodataValues(Number...)
      * @see PlanarImage#STATISTICS_KEY
      */
-    public Statistics[] valueOfStatistics(final RenderedImage source, final Shape areaOfInterest,
+    public Statistics[] valueOfStatistics(RenderedImage source, final Shape areaOfInterest,
                                           final DoubleUnaryOperator... sampleFilters)
     {
         ArgumentChecks.ensureNonNull("source", source);
+        int[] bandsToCompute = null;
+        Statistics[] statistics = null;
         if (areaOfInterest == null && (sampleFilters == null || ArraysExt.allEquals(sampleFilters, null))) {
             final Object property = source.getProperty(PlanarImage.STATISTICS_KEY);
             if (property instanceof Statistics[]) {
-                return (Statistics[]) property;
+                statistics = ArraysExt.resize((Statistics[]) property, ImageUtilities.getNumBands(source));
+                /*
+                 * Verify that all array elements are non-null. If any null element is found,
+                 * we will compute statistics but only for the missing bands.
+                 */
+                bandsToCompute = new int[statistics.length];
+                int n = 0;
+                for (int i=0; i<statistics.length; i++) {
+                    if (statistics[i] == null) {
+                        bandsToCompute[n++] = i;
+                    }
+                }
+                if (n == 0) return statistics;
+                bandsToCompute = ArraysExt.resize(bandsToCompute, n);
+                source = selectBands(source, bandsToCompute);
             }
         }
+        /*
+         * Compute statistics either of all bands, or on a subset
+         * of the bands if only some of them have null statistics.
+         */
         final boolean parallel, failOnException;
         final ErrorHandler errorListener;
         synchronized (this) {
@@ -637,10 +688,17 @@ public class ImageProcessor implements Cloneable {
          * The way AnnotatedImage cache mechanism is implemented, if statistics results already
          * exist, they will be used.
          */
-        final AnnotatedImage calculator = new StatisticsCalculator(source, areaOfInterest, sampleFilters, parallel, failOnException);
+        final var calculator = new StatisticsCalculator(source, areaOfInterest, sampleFilters, parallel, failOnException);
         final Object property = calculator.getProperty(PlanarImage.STATISTICS_KEY);
         calculator.logAndClearError(ImageProcessor.class, "valueOfStatistics", errorListener);
-        return (Statistics[]) property;
+        final var computed = (Statistics[]) property;
+        if (bandsToCompute == null) {
+            return computed;
+        }
+        for (int i=0; i<bandsToCompute.length; i++) {
+            statistics[bandsToCompute[i]] = computed[i];
+        }
+        return statistics;
     }
 
     /**
@@ -773,6 +831,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <b>Note:</b> if no value is associated to the {@code "sampleDimensions"} key, then the default
      * value will be the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} image property value if defined.
+     * That value can be an array, in which case the sample dimension of the visible band is taken.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
@@ -933,6 +992,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.4
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage aggregateBands(final RenderedImage[] sources, final int[][] bandsPerSource) {
         ArgumentChecks.ensureNonEmpty("sources", sources);
         final Colorizer colorizer;
@@ -941,7 +1001,97 @@ public class ImageProcessor implements Cloneable {
             colorizer = this.colorizer;
             parallel = executionMode != Mode.SEQUENTIAL;
         }
+        // `allowSharing` is currently hard-coded to `true`, but it may change in a future version.
         return BandAggregateImage.create(sources, bandsPerSource, colorizer, true, true, parallel);
+    }
+
+    /**
+     * Creates a new image overlay or returns one of the given sources if equivalent.
+     * All source images shall have the same pixel coordinate system, but they may have different bounding boxes,
+     * tile sizes and tile indices. Images are drawn in reverse order: the last source image is drawn first, and
+     * the first source image is drawn last on top of all other images. All images are considered fully opaque,
+     * including the alpha channel which is handled as an ordinary band.
+     *
+     * <p>The returned image may have less sources than the ones given in argument if this method determines
+     * that some sources will never be drawn (i.e., are fully hidden behind the first images).
+     * If only one source appears to be effectively used, this method returns that image directly.</p>
+     *
+     * <h4>Preconditions</h4>
+     * All source images shall have the same number of bands (but not necessarily the same sample model).
+     * All source images should have equivalent color model, otherwise color consistency is not guaranteed.
+     * At least one image shall intersect the given bounds.
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getImageLayout() Image layout} for the desired sample model and color model.</li>
+     *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
+     *       whether to use a modified image size if {@code bounds} is not divisible by a tile size.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
+     * </ul>
+     *
+     * @param  sources  the images to overlay. Null array elements are ignored.
+     * @param  bounds   range of pixel coordinates, or {@code null} for the union of all source images.
+     * @return the image overlay, or one of the given sources if only one is suitable.
+     * @throws IllegalArgumentException if there is an incompatibility between some source images
+     *         or if no image intersect the given bounds.
+     *
+     * @see ImageCombiner
+     *
+     * @since 1.5
+     */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    public RenderedImage overlay(final RenderedImage[] sources, final Rectangle bounds) {
+        ArgumentChecks.ensureNonEmpty("sources", sources);
+        final ImageLayout layout;
+        final Colorizer colorizer;
+        final boolean parallel;
+        synchronized (this) {
+            layout = this.layout;
+            colorizer = this.colorizer;
+            parallel = executionMode != Mode.SEQUENTIAL;
+        }
+        return ImageOverlay.create(sources, bounds, layout.sampleModel, colorizer,
+                layout.isTileSizeAdjustmentAllowed | (bounds != null), parallel);
+    }
+
+    /**
+     * Reformats the given image with a different sample model.
+     * This operation <em>copies</em> the pixel values in a new image.
+     * Despite the copies being done on a tile-by-tile basis when each tile is  first requested,
+     * this is still a relatively costly operation compared to the usual Apache <abbr>SIS</abbr>
+     * approach of creating views as much as possible. Therefore, this method should be used only
+     * when necessary.
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getImageLayout() Image layout} for the default sample model.</li>
+     *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
+     *       whether to use a modified image size if the source image size is not divisible by a tile size.</li>
+     * </ul>
+     *
+     * @param  source       the images to reformat.
+     * @param  sampleModel  the desired sample model.
+     *         Can be null only if a default sample model is specified by {@link ImageLayout#sampleModel}.
+     * @return the reformatted image.
+     *
+     * @since 1.5
+     */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    public RenderedImage reformat(final RenderedImage source, SampleModel sampleModel) {
+        ArgumentChecks.ensureNonNull("source", source);
+        final ImageLayout layout;
+        final boolean parallel;
+        synchronized (this) {
+            layout = this.layout;
+            parallel = executionMode != Mode.SEQUENTIAL;
+        }
+        if (sampleModel == null) {
+            sampleModel = layout.sampleModel;
+            ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
+        }
+        return ImageOverlay.create(new RenderedImage[] {source}, null, sampleModel, null, layout.isTileSizeAdjustmentAllowed, parallel);
     }
 
     /**
@@ -965,6 +1115,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.2
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage mask(final RenderedImage source, final Shape mask, final boolean maskInside) {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("mask",   mask);
@@ -1017,6 +1168,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.4
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
                                  MathTransform1D[] converters, final DataType targetType)
     {
@@ -1035,8 +1187,7 @@ public class ImageProcessor implements Cloneable {
             colorizer = this.colorizer;
         }
         // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.
-        return unique(BandedSampleConverter.create(source, layout, sourceRanges, converters,
-                                                   targetType.toDataBufferType(), colorizer));
+        return unique(BandedSampleConverter.create(source, layout, sourceRanges, converters, targetType, colorizer));
     }
 
     /**
@@ -1066,8 +1217,8 @@ public class ImageProcessor implements Cloneable {
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
-     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} to apply
-     *       if {@code bounds} size is not divisible by a tile size.</li>
+     *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
+     *       whether to use a modified image size if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
      * </ul>
@@ -1077,13 +1228,14 @@ public class ImageProcessor implements Cloneable {
      * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
      *
      * @param  source    the image to be resampled.
-     * @param  bounds    domain of pixel coordinates of resampled image to create.
-     *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
+     * @param  bounds    domain of pixel coordinates of resampled image to create. Fields are updated in-place
+     *                   by this method if the {@link ImageLayout#isImageBoundsAdjustmentAllowed} flag is true.
      * @param  toSource  conversion of pixel center coordinates from resampled image to {@code source} image.
      * @return resampled image (may be {@code source}).
      *
      * @see GridCoverageProcessor#resample(GridCoverage, GridGeometry)
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public RenderedImage resample(RenderedImage source, final Rectangle bounds, MathTransform toSource) {
         ArgumentChecks.ensureNonNull("source",   source);
         ArgumentChecks.ensureNonNull("bounds",   bounds);
@@ -1131,7 +1283,7 @@ public class ImageProcessor implements Cloneable {
             }
             final WritableRenderedImage destination = layout.getDestination();
             final SampleModel rsm = layout.createCompatibleSampleModel(source, bounds);
-            final var image = new ResampledImage(source, rsm, layout.getMinTile(), bounds, toSource,
+            final var image = new ResampledImage(source, rsm, layout.getPreferredMinTile(), bounds, toSource,
                                                  interpolation, fillValues, positionalAccuracyHints);
             image.setDestination(destination);
             resampled = unique(image);
@@ -1297,16 +1449,16 @@ public class ImageProcessor implements Cloneable {
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
-     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} to apply
-     *       if {@code bounds} size is not divisible by a tile size.</li>
+     *   <li>{@linkplain ImageLayout#isImageBoundsAdjustmentAllowed Image bounds adjustment flag} for deciding
+     *       whether to use a modified image size if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
      *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * @param  source    the image to be resampled and recolored.
-     * @param  bounds    domain of pixel coordinates of resampled image to create.
-     *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
+     * @param  bounds    domain of pixel coordinates of resampled image to create. Fields are updated in-place
+     *                   by this method if the {@link ImageLayout#isImageBoundsAdjustmentAllowed} flag is true.
      * @param  toSource  conversion of pixel center coordinates from resampled image to {@code source} image.
      * @return resampled and recolored image for visualization purposes only.
      *
@@ -1389,6 +1541,7 @@ public class ImageProcessor implements Cloneable {
      * @return whether the other object is an image processor of the same class with the same configuration.
      */
     @Override
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final ImageProcessor other = (ImageProcessor) object;

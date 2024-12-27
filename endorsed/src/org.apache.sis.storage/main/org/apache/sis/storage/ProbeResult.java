@@ -45,7 +45,7 @@ import org.apache.sis.util.privy.Strings;
  * In such cases, SIS will revisit those providers only if no better suited provider is found.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DataStoreProvider#probeContent(StorageConnector)
  *
@@ -56,6 +56,14 @@ public class ProbeResult implements Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -4977853847503500550L;
+
+    /**
+     * The {@code DataStoreProvider} will create a new file.
+     * The file does not exist yet or is empty.
+     *
+     * @since 1.5
+     */
+    public static final ProbeResult CREATE_NEW = new Constant(true, "CREATE_NEW");
 
     /**
      * The {@code DataStoreProvider} recognizes the given storage, but has no additional information.

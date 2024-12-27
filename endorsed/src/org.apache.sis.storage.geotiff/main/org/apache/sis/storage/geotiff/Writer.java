@@ -31,6 +31,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.IndexColorModel;
+import java.awt.image.RasterFormatException;
 import javax.imageio.plugins.tiff.TIFFTag;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
@@ -38,13 +39,20 @@ import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.base.MetadataFetcher;
+import org.apache.sis.storage.geotiff.writer.TagValue;
+import org.apache.sis.storage.geotiff.writer.TileMatrix;
+import org.apache.sis.storage.geotiff.writer.GeoEncoder;
+import org.apache.sis.storage.geotiff.writer.ReformattedImage;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.UpdatableWrite;
 import org.apache.sis.util.CharSequences;
@@ -52,10 +60,9 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.storage.geotiff.writer.TagValue;
-import org.apache.sis.storage.geotiff.writer.TileMatrix;
-import org.apache.sis.storage.geotiff.writer.GeoEncoder;
-import org.apache.sis.storage.geotiff.writer.ReformattedImage;
+
+// Specific to the main branch:
+import org.apache.sis.coverage.CannotEvaluateException;
 
 
 /**
@@ -134,19 +141,25 @@ final class Writer extends IOBase implements Flushable {
     private final boolean isBigTIFF;
 
     /**
+     * Whether to disable the <abbr>TIFF</abbr> requirement that tile sizes are multiple of 16 pixels.
+     */
+    private final boolean anyTileSize;
+
+    /**
      * Index of the image to write. This information is not needed by the writer, but is
      * needed by {@link WritableStore} for determining the "effectively added resource".
      */
     int imageIndex;
 
     /**
-     * Offset where to write the next image, or {@code null} if writing a mandatory image (the first one).
+     * Offset where to write the offset of current image, or {@code null} when writing the first image of the file.
      * If null, the IFD offset is assumed already written and the {@linkplain #output} already at that position.
-     * Otherwise the value at the specified offset should be zero and will be updated if a new image is appended.
+     * Otherwise, the value at the specified offset is initially zero and will be updated after it become known.
      *
-     * @see #seekToNextImage()
+     * <p>After the image has been successfully written, this pointer is replaced by the pointer where the next
+     * image (if any) can be appended.</p>
      */
-    private UpdatableWrite<?> nextIFD;
+    private UpdatableWrite<?> currentIFD;
 
     /**
      * All values that couldn't be written immediately.
@@ -168,6 +181,7 @@ final class Writer extends IOBase implements Flushable {
 
     /**
      * Creates a new GeoTIFF writer which will write data in the given output.
+     * The byte order of the given output determines the byte order of the GeoTIFF file to write.
      *
      * @param  store    the store writing data.
      * @param  output   where to write the bytes.
@@ -180,6 +194,7 @@ final class Writer extends IOBase implements Flushable {
         super(store);
         this.output = output;
         isBigTIFF   = ArraysExt.contains(options, FormatModifier.BIG_TIFF);
+        anyTileSize = ArraysExt.contains(options, FormatModifier.ANY_TILE_SIZE);
         /*
          * Write the TIFF file header before first IFD. Stream position matter and must start at zero.
          * Note that it does not necessarily mean that the stream has no bytes before current position.
@@ -210,6 +225,7 @@ final class Writer extends IOBase implements Flushable {
     Writer(final Reader reader) throws IOException, DataStoreException {
         super(reader.store);
         isBigTIFF = (reader.intSizeExpansion != 0);
+        anyTileSize = false;
         try {
             output = new ChannelDataOutput(reader.input);
         } catch (ClassCastException e) {
@@ -219,13 +235,13 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * Prepares the writer to write after the last images.
+     * Prepares the writer to write after the last image.
      *
      * @param  reader  the reader of images.
      */
     final void moveAfterExisting(final Reader reader) throws IOException, DataStoreException {
         Class<? extends Number> type = isBigTIFF ? Long.class : Integer.class;
-        nextIFD = UpdatableWrite.ofZeroAt(reader.offsetOfWritableIFD(), type);
+        currentIFD = UpdatableWrite.ofZeroAt(reader.offsetOfWritableIFD(), type);
         imageIndex = reader.getImageCacheSize();
     }
 
@@ -276,6 +292,8 @@ final class Writer extends IOBase implements Flushable {
      * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata  title, author and other information, or {@code null} if none.
      * @return offset if {@link #output} where the Image File Directory (IFD) starts.
+     * @throws RasterFormatException if the raster uses an unsupported sample model.
+     * @throws ArithmeticException if an integer overflow occurs.
      * @throws IOException if an error occurred while writing to the output.
      * @throws DataStoreException if the given {@code image} has a property
      *         which is not supported by TIFF specification or by this writer.
@@ -283,37 +301,47 @@ final class Writer extends IOBase implements Flushable {
     public final long append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws IOException, DataStoreException
     {
-        final TileMatrix tiles;
+        final var exportable = new ReformattedImage(image, this::processor, anyTileSize);
+        /*
+         * Offset where the image IFD will start. The current version appends the new image at the end of file.
+         * A future version could perform a more extensive search for free space in the middle of the file.
+         * It could be useful when images have been deleted.
+         */
+        final long offsetIFD = output.length();
+        if (currentIFD != null) {
+            currentIFD.setAsLong(offsetIFD);
+            writeOrQueue(currentIFD);
+            output.seek(offsetIFD);
+        }
+        /*
+         * Write the Image File Directory (IFD) followed by the raster data.
+         */
         try {
-            tiles = writeImageFileDirectory(new ReformattedImage(image, this::processor), grid, metadata, false);
-        } finally {
-            largeTagData.clear();       // For making sure that there is no memory retention.
+            final TileMatrix tiles;
+            try {
+                tiles = writeImageFileDirectory(exportable, grid, metadata, false);
+            } finally {
+                largeTagData.clear();       // For making sure that there is no memory retention.
+            }
+            tiles.writeRasters(output);
+            wordAlign(output);
+            tiles.writeOffsetsAndLengths(output);
+            flush();
+            currentIFD = tiles.nextIFD;     // Set only after the operation succeeded.
+        } catch (Throwable e) {
+            try {
+                deferredWrites.clear();
+                output.truncate(offsetIFD);
+                if (currentIFD != null) {
+                    currentIFD.setAsLong(0);
+                    currentIFD.update(output);
+                }
+            } catch (Throwable more) {
+                e.addSuppressed(more);
+            }
+            throw e;
         }
-        tiles.writeRasters(output);
-        wordAlign(output);
-        tiles.writeOffsetsAndLengths(output);
-        return tiles.offsetIFD;
-    }
-
-    /**
-     * Sets the {@linkplain #output} position to where to write the next image.
-     *
-     * @return offset where the image IFD will start. This is the {@link #output} position.
-     *
-     * @todo Current version append the new image at the end of file. A future version could perform a more extensive
-     *       search for free space in the middle of the file. It could be useful when images have been deleted.
-     */
-    private long seekToNextImage() throws IOException {
-        if (nextIFD == null) {
-            // `output` is already at the right position.
-            return output.getStreamPosition();
-        }
-        final long position = output.length();
-        nextIFD.setAsLong(position);
-        writeOrQueue(nextIFD);
-        output.seek(position);
-        nextIFD = null;
-        return position;
+        return offsetIFD;
     }
 
     /**
@@ -333,7 +361,7 @@ final class Writer extends IOBase implements Flushable {
     private TileMatrix writeImageFileDirectory(final ReformattedImage image, final GridGeometry grid, final Metadata metadata,
             final boolean overview) throws IOException, DataStoreException
     {
-        final SampleModel sm = image.visibleBands.getSampleModel();
+        final SampleModel sm = image.exportable.getSampleModel();
         Compression compression = store.getCompression().orElse(Compression.DEFLATE);
         if (!ImageUtilities.isIntegerType(sm)) {
             compression = compression.withPredictor(PREDICTOR_NONE);
@@ -349,6 +377,9 @@ final class Writer extends IOBase implements Flushable {
         if (compression.usePredictor()) numberOfTags++;
         final int colorInterpretation = image.getColorInterpretation();
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
+            numberOfTags++;
+        }
+        if (image.extraSamples != null) {
             numberOfTags++;
         }
         final int   sampleFormat  = image.getSampleFormat();
@@ -378,9 +409,11 @@ final class Writer extends IOBase implements Flushable {
         };
         mf.accept(metadata);
         GeoEncoder geoKeys = null;
-        if (grid != null && grid.isDefined(GridGeometry.GRID_TO_CRS)) try {
+        if (grid != null) try {
             geoKeys = new GeoEncoder(store.listeners());
             geoKeys.write(grid, mf);
+        } catch (IncompleteGridGeometryException | CannotEvaluateException | TransformException e) {
+            throw new IncompatibleResourceException(e.getMessage(), e).addAspect("gridGeometry");
         } catch (FactoryException | IncommensurableException | RuntimeException e) {
             throw new DataStoreReferencingException(e.getMessage(), e);
         }
@@ -395,19 +428,21 @@ final class Writer extends IOBase implements Flushable {
          * If the image has any unsupported feature, the exception should have been thrown before this point.
          * Now start writing the entries. The entries in an IFD must be sorted in ascending order by tag code.
          */
-        output.flush();             // Makes room in the buffer for increasing our ability to modify past values.
+        output.flush();       // Make room in the buffer for increasing our ability to modify previous values.
         largeTagData.clear();
-        final long offsetIFD = seekToNextImage();
         final UpdatableWrite<?> tagCountWriter =
                 isBigTIFF ? UpdatableWrite.of(output, (long)  numberOfTags)
                           : UpdatableWrite.of(output, (short) numberOfTags);
 
-        final var tiling = new TileMatrix(image.visibleBands, numPlanes, bitsPerSample, offsetIFD,
+        final var tiling = new TileMatrix(image.exportable, numPlanes, bitsPerSample,
                                           compression.method, compression.level, compression.predictor);
+        /*
+         * Reminder: TIFF tags should be written in increasing numerical order.
+         */
         numberOfTags = 0;
         writeTag((short) TAG_NEW_SUBFILE_TYPE,           (short) TIFFTag.TIFF_LONG,  overview ? 1 : 0);
-        writeTag((short) TAG_IMAGE_WIDTH,                (short) TIFFTag.TIFF_LONG,  image.visibleBands.getWidth());
-        writeTag((short) TAG_IMAGE_LENGTH,               (short) TIFFTag.TIFF_LONG,  image.visibleBands.getHeight());
+        writeTag((short) TAG_IMAGE_WIDTH,                (short) TIFFTag.TIFF_LONG,  image.exportable.getWidth());
+        writeTag((short) TAG_IMAGE_LENGTH,               (short) TIFFTag.TIFF_LONG,  image.exportable.getHeight());
         writeTag((short) TAG_BITS_PER_SAMPLE,            (short) TIFFTag.TIFF_SHORT, bitsPerSample);
         writeTag((short) TAG_COMPRESSION,                (short) TIFFTag.TIFF_SHORT, compression.method.code);
         writeTag((short) TAG_PHOTOMETRIC_INTERPRETATION, (short) TIFFTag.TIFF_SHORT, colorInterpretation);
@@ -432,12 +467,13 @@ final class Writer extends IOBase implements Flushable {
             writeTag((short) TAG_PREDICTOR, (short) TIFFTag.TIFF_SHORT, compression.predictor.code);
         }
         if (colorInterpretation == PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR) {
-            writeColorPalette((IndexColorModel) image.visibleBands.getColorModel(), 1L << bitsPerSample[0]);
+            writeColorPalette((IndexColorModel) image.exportable.getColorModel(), 1L << bitsPerSample[0]);
         }
         writeTag((short) TAG_TILE_WIDTH,                 /* TIFF_LONG */             tiling, false);
         writeTag((short) TAG_TILE_LENGTH,                /* TIFF_LONG */             tiling, false);
         writeTag((short) TAG_TILE_OFFSETS,               /* TIFF_LONG */             tiling, false);
         writeTag((short) TAG_TILE_BYTE_COUNTS,           /* TIFF_LONG */             tiling, false);
+        writeTag((short) TAG_EXTRA_SAMPLES,              /* TIFF_SHORT */            image.extraSamples);
         writeTag((short) TAG_SAMPLE_FORMAT,              (short) TIFFTag.TIFF_SHORT, sampleFormat);
         writeTag((short) TAG_S_MIN_SAMPLE_VALUE,         (short) TIFFTag.TIFF_FLOAT, statistics[0]);
         writeTag((short) TAG_S_MAX_SAMPLE_VALUE,         (short) TIFFTag.TIFF_FLOAT, statistics[1]);
@@ -453,7 +489,7 @@ final class Writer extends IOBase implements Flushable {
          */
         tagCountWriter.setAsLong(numberOfTags);
         writeOrQueue(tagCountWriter);
-        nextIFD = writeOffset(0);
+        tiling.nextIFD = writeOffset(0);
         for (final TagValue tag : largeTagData) {
             UpdatableWrite<?> offset = tag.writeHere(output);
             if (offset != null) deferredWrites.add(offset);
@@ -845,18 +881,6 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * Writes deferred values immediately to the output stream.
-     *
-     * @throws IOException if an error occurred while writing deferred data.
-     */
-    private void flushDeferredWrites() throws IOException {
-        UpdatableWrite<?> change;
-        while ((change = deferredWrites.pollFirst()) != null) {
-            change.update(output);
-        }
-    }
-
-    /**
      * Sends to the writable channel any information that are still in buffers.
      * This method does not flush the writable channel itself.
      *
@@ -864,8 +888,11 @@ final class Writer extends IOBase implements Flushable {
      */
     @Override
     public void flush() throws IOException {
-        flushDeferredWrites();
-        output.flush();
+        UpdatableWrite<?> change;
+        while ((change = deferredWrites.pollFirst()) != null) {
+            change.update(output);
+        }
+        output.flush();     // Flush buffer → channel, but not channel → disk.
     }
 
     /**

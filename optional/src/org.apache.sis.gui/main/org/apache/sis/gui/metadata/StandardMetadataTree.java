@@ -130,7 +130,7 @@ public class StandardMetadataTree extends MetadataTree {
          */
         Row(final TreeTableView<TreeTable.Node> view) {
             super(view);
-            final StandardMetadataTree md = (StandardMetadataTree) view;
+            final var md = (StandardMetadataTree) view;
             final Resources localized = Resources.forLocale(md.getLocale());
             copyAsXML    = new MenuItem();
             copyAsWKT    = new MenuItem("WKT — Well Known Text");
@@ -186,17 +186,17 @@ public class StandardMetadataTree extends MetadataTree {
                     super.handle(event);
                 } else {
                     final Object source = event.getSource();
-                    final ClipboardContent content = new ClipboardContent();
+                    final var content = new ClipboardContent();
                     final String text;
                     try {
                         if (source == copyAsWKT) {                              // Well Known Text.
-                            final WKTFormat f = new WKTFormat();
+                            final var f = new WKTFormat();
                             text = f.format(obj);
                         } else if (source == copyAsXML) {                       // GML or ISO 19115-3:2016.
                             text = XML.marshal(obj);
                             content.put(DataFormats.XML, text);
                         } else if (source == copyAsLegacy) {                    // ISO 19139:2007.
-                            final StringWriter output = new StringWriter();
+                            final var output = new StringWriter();
                             XML.marshal(obj, new StreamResult(output), Map.of(
                                         XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
                             text = output.toString();

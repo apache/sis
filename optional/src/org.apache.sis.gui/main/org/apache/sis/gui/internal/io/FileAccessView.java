@@ -118,7 +118,7 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
              * Returns {@code true} if opening the channel will create a new, initially empty, file.
              */
             @Override
-            public boolean isCreateNew() {
+            public boolean isCreateNew() throws IOException {
                 return factory.isCreateNew();
             }
 

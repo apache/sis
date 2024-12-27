@@ -267,13 +267,13 @@ public abstract class MapProjection extends AbstractProvider {
 
 
 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                          ////////
-    ////////                       HELPER METHODS FOR SUBCLASSES                      ////////
-    ////////                                                                          ////////
-    ////////    Following methods are defined for sharing the same GenericName or     ////////
-    ////////    Identifier instances when possible.                                   ////////
-    //////////////////////////////////////////////////////////////////////////////////////////
+    //  ╔══════════════════════════════════════════════════════════════════════════╗
+    //  ║                                                                          ║
+    //  ║                       HELPER METHODS FOR SUBCLASSES                      ║
+    //  ║                                                                          ║
+    //  ║    Following methods are defined for sharing the same GenericName or     ║
+    //  ║    Identifier instances when possible.                                   ║
+    //  ╚══════════════════════════════════════════════════════════════════════════╝
 
     /**
      * Returns the name of the given authority declared in the given parameter descriptor.

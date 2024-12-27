@@ -49,6 +49,7 @@ import org.apache.sis.coverage.grid.PixelTranslation;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.ImageProcessor;
@@ -127,6 +128,12 @@ public class RenderingData implements CloneAccess {
     private static final boolean CREATE_INDEX_COLOR_MODEL = true;
 
     /**
+     * The image layout used for rendering. We allow creating images larger then necessary
+     * if it can improve subdivisions in tiles.
+     */
+    private static final ImageLayout IMAGE_LAYOUT = ImageLayout.DEFAULT.allowImageBoundsAdjustments(true);
+
+    /**
      * Loader for reading and caching coverages at various resolutions.
      * Required if no image has been explicitly assigned to {@link #data}.
      * The same instance may be shared by many {@link RenderingData} objects.
@@ -193,7 +200,7 @@ public class RenderingData implements CloneAccess {
      * @see #setImageSpace(GridGeometry, List, int[])
      * @see #statistics()
      */
-    private SampleDimension[] dataRanges;
+    private List<SampleDimension> dataRanges;
 
     /**
      * Conversion or transformation from {@linkplain #data} CRS to {@linkplain PlanarCanvas#getObjectiveCRS()
@@ -249,7 +256,7 @@ public class RenderingData implements CloneAccess {
     public RenderingData(final ErrorHandler errorHandler) {
         processor = new ImageProcessor();
         processor.setErrorHandler(errorHandler);
-        processor.setImageResizingPolicy(ImageProcessor.Resizing.EXPAND);
+        processor.setImageLayout(IMAGE_LAYOUT);
     }
 
     /**
@@ -305,7 +312,7 @@ public class RenderingData implements CloneAccess {
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public final void setImageSpace(final GridGeometry domain, final List<SampleDimension> ranges, final int[] xyDims) {
-        dataRanges   = (ranges != null) ? ranges.toArray(SampleDimension[]::new) : null;
+        dataRanges   = ranges;
         dataGeometry = domain;
         xyDimensions = xyDims;
         processor.setFillValues(SampleDimensions.backgrounds(dataRanges));
@@ -537,7 +544,7 @@ public class RenderingData implements CloneAccess {
             }
             statistics = processor.valueOfStatistics(image, null, SampleDimensions.toSampleFilters(dataRanges));
         }
-        final Map<String,Object> modifiers = new HashMap<>(8);
+        final var modifiers = new HashMap<String,Object>(8);
         modifiers.put("statistics", statistics);
         modifiers.put("sampleDimensions", dataRanges);
         return modifiers;
@@ -654,8 +661,8 @@ public class RenderingData implements CloneAccess {
          * that we can use with `IndexColorModel`. The two operations (resampling and conversions) are
          * combined in a single "visualization" operation of efficiency.
          *
-         * TODO: if `colors` is null, instead of defaulting to `ColorModelBuilder.GRAYSCALE` we should get the colors
-         *       from the current ColorModel. This work should be done in `ColorModelBuilder` by converting the ranges
+         * TODO: if `colors` is null, instead of defaulting to `ColorScaleBuilder.GRAYSCALE` we should get the colors
+         *       from the current ColorModel. This work should be done in `ColorScaleBuilder` by converting the ranges
          *       of sample values in source image to ranges of sample values in destination image, then query
          *       ColorModel.getRGB(Object) for increasing integer values in that range.
          */

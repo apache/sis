@@ -20,7 +20,6 @@ import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.IOException;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -312,7 +311,7 @@ public final class GpkgStoreTest {
      */
     @Test
     public void testOpeningReadOnlyDatabase() throws Exception {
-        final File file = File.createTempFile("sis-test", ".gpkg");
+        final Path file = Files.createTempFile("sis-test-", ".gpkg");
         try {
             // Create an empty database.
             final var connector = new StorageConnector(file);
@@ -325,17 +324,22 @@ public final class GpkgStoreTest {
                 final var gpkg = assertInstanceOf(GpkgStore.class, store);
                 assertTrue(gpkg.components().isEmpty());
             }
-            assertNotEquals(0, file.length());
+            assertNotEquals(0, Files.size(file));
 
             // Make file read only, skip test if we cannot do that.
-            assumeTrue(file.setWritable(false));
+            final var asFile = file.toFile();
+            assumeTrue(asFile.setWritable(false));
             try (DataStore store = DataStores.open(file)) {
                 final var gpkg = assertInstanceOf(GpkgStore.class, store);
                 assertTrue(gpkg.components().isEmpty());        // Should not raise any exception.
+            } finally {
+                assertTrue(asFile.setWritable(true));
             }
         } finally {
-            assertTrue(file.setWritable(true));
-            assertTrue(file.delete());
+            Files.delete(file);
+            String filename = file.getFileName().toString();
+            Files.delete(file.resolveSibling(filename + "-shm"));
+            Files.delete(file.resolveSibling(filename + "-wal"));
         }
     }
 }

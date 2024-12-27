@@ -76,6 +76,12 @@ import org.apache.sis.measure.Units;
  *   </tr>
  * </table>
  *
+ * <h2>Note on enumeration order</h2>
+ * The enumeration values are sorted from most conservative to most aggressive.
+ * The fist enumeration values make no change or change only the range of values.
+ * Next enumeration values may change axis order but not the units of measurement.
+ * The last enumeration values may change both axis order an units of measurement.
+ *
  * <h2>Note on axis order</h2>
  * The axis order is specified by the authority (typically a national agency) defining the Coordinate Reference System
  * (CRS). The order depends on the CRS type and the country defining the CRS. In the case of geographic CRS, the
@@ -111,6 +117,120 @@ import org.apache.sis.measure.Units;
  * @since 0.4
  */
 public enum AxesConvention implements AxisFilter {
+    /**
+     * The axis order as they were specified in the original coordinate system.
+     * The first time that a {@code forConvention(…)} method is invoked on a new coordinate system (CS),
+     * a reference to that original CS is associated to this enumeration value and can be retrieved from
+     * any derived object.
+     *
+     * @since 1.5
+     */
+    ORIGINAL,
+
+    /**
+     * Axes having a <i>wraparound</i> range meaning are shifted to their ranges of positive values.
+     * The units of measurement and range period (difference between
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMaximumValue() maximum} and
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMinimumValue() minimum value})
+     * are unchanged.
+     *
+     * <h4>Usage</h4>
+     * The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
+     * to the [0 … 360]° range. However, this enum could also be used with climatological calendars if their
+     * time axis has a wrapround range meaning.
+     *
+     * <p>Note that conversions from an coordinate system using the [-180 … +180]° range to a coordinate system
+     * using the [0 … 360]° range may not be affine. For example, the data in the West hemisphere ([-180 … 0]°)
+     * may need to move on the right side of the East hemisphere ([180 … 360]°).
+     * Some geometries may need to be separated in two parts, and others may need to be merged.</p>
+     *
+     * @see org.opengis.referencing.cs.CoordinateSystemAxis#getRangeMeaning()
+     * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
+     */
+    POSITIVE_RANGE,
+
+    /**
+     * Axes are ordered for a <i>right-handed</i> coordinate system. Axis directions, ranges or coordinate values
+     * and units of measurement are unchanged. In the two-dimensional case, the handedness is defined from the point of
+     * view of an observer above the plane of the system.
+     *
+     * <p>Note that a right-handed coordinate system does not guarantee that longitude or <var>x</var> axis
+     * will be first in every cases. The most notable exception is the case of (West, North) orientations.
+     * The following table lists that case, together with other common axis orientations.
+     * The axes orientations implied by this {@code RIGHT_HANDED} enum is shown,
+     * together with {@link #DISPLAY_ORIENTED} axes for reference:</p>
+     *
+     * <table class="sis">
+     *   <caption>Examples of left-handed and right-handed coordinate systems</caption>
+     *   <tr><th>Left-handed</th> <th>Right-handed</th> <th>Display oriented</th> <th>Remarks</th></tr>
+     *   <tr><td>North, East</td> <td>East, North</td> <td>East, North</td> <td>This is the most common case.</td></tr>
+     *   <tr><td>West, North</td> <td>North, West</td> <td>East, North</td> <td>This right-handed system has latitude first.</td></tr>
+     *   <tr><td>South, West</td> <td>West, South</td> <td>East, North</td> <td>Used for the mapping of southern Africa.</td></tr>
+     *   <tr><td>South along 0°,<br>South along 90° West</td>
+     *       <td>South along 90° West,<br>South along 0°</td>
+     *       <td>(Same as right-handed)</td>
+     *       <td>Can be used for the mapping of North pole.</td></tr>
+     * </table>
+     *
+     * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
+     * @see <a href="https://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>
+     */
+    RIGHT_HANDED,
+
+    /**
+     * Axes are reordered and oriented toward directions commonly used for displaying purpose.
+     * Units of measurement are unchanged. This convention can be used for deriving a coordinate system with the
+     * (<var>longitude</var>, <var>latitude</var>) or (<var>x</var>,<var>y</var>) axis order.
+     * A similar concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
+     *
+     * <blockquote><b>6.7.2 Map CS</b> —
+     * The usual orientation of the Map CS shall be such that the <var>i</var> axis is parallel to the East-to-West axis
+     * of the Layer CRS and increases Eastward, and the <var>j</var> axis is parallel to the North-to-South axis of the
+     * Layer CRS and increases Southward. This orientation will not be possible in some cases, as (for example) in an
+     * orthographic projection over the South Pole. The convention to be followed is that, wherever possible, East shall
+     * be to the right edge and North shall be toward the upper edge of the Map CS.</blockquote>
+     *
+     * The above-cited (<var>i</var>, <var>j</var>) axes are mapped to <i>display right</i> and <i>display down</i>
+     * directions respectively. Other kinds of axis are mapped to <i>east</i> and <i>north</i> directions when possible.
+     * More specifically, Apache SIS tries to setup the following directions
+     * (replacing a direction by its "forward" counterpart when necessary, e.g. {@code SOUTH} → {@code NORTH})
+     * in the order shown below:
+     *
+     * <table class="sis">
+     *   <caption>Axis directions and order</caption>
+     *   <tr>
+     *     <th>Preferred axis sequences</th>
+     *     <th>Purpose</th>
+     *   </tr><tr>
+     *     <td>{@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
+     *         {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE}</td>
+     *     <td>Commonly used (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) directions for coordinates.</td>
+     *   </tr><tr>
+     *     <td>{@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN}</td>
+     *     <td>Commonly used (<var>x</var>, <var>y</var>) directions for screen devices.</td>
+     *   </tr><tr>
+     *     <td>{@link AxisDirection#ROW_POSITIVE ROW_POSITIVE},
+     *         {@link AxisDirection#COLUMN_POSITIVE COLUMN_POSITIVE}</td>
+     *     <td>Indices in grids or matrices.</td>
+     *   </tr>
+     * </table>
+     *
+     * <h4>API notes</h4>
+     * we do not provide a <q>longitude or <var>x</var> axis first</q> enumeration value because such criterion
+     * is hard to apply to inter-cardinal directions and has no meaning for map projections over a pole.
+     * The <i>display oriented</i> enumeration name applies to a wider range of cases,
+     * but still have a loosely definition which may be adjusted in future Apache SIS versions.
+     * If a more stable definition is needed, consider using {@link #RIGHT_HANDED} instead since
+     * <i>right-handed</i> coordinate systems have a more precise meaning in Apache SIS.
+     *
+     * @since 1.0
+     */
+    DISPLAY_ORIENTED {
+        @Override public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+            return NORMALIZED.getDirectionReplacement(axis, direction);
+        }
+    },
+
     /**
      * Axes order, direction and units of measurement are forced to commonly used predefined values.
      * This convention implies the following changes on a coordinate system:
@@ -171,121 +291,7 @@ public enum AxesConvention implements AxisFilter {
             }
             return direction;
         }
-    },
-
-    /**
-     * Axes are reordered and oriented toward directions commonly used for displaying purpose.
-     * Units of measurement are unchanged. This convention can be used for deriving a coordinate system with the
-     * (<var>longitude</var>, <var>latitude</var>) or (<var>x</var>,<var>y</var>) axis order.
-     * A similar concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
-     *
-     * <blockquote><b>6.7.2 Map CS</b> —
-     * The usual orientation of the Map CS shall be such that the <var>i</var> axis is parallel to the East-to-West axis
-     * of the Layer CRS and increases Eastward, and the <var>j</var> axis is parallel to the North-to-South axis of the
-     * Layer CRS and increases Southward. This orientation will not be possible in some cases, as (for example) in an
-     * orthographic projection over the South Pole. The convention to be followed is that, wherever possible, East shall
-     * be to the right edge and North shall be toward the upper edge of the Map CS.</blockquote>
-     *
-     * The above-cited (<var>i</var>, <var>j</var>) axes are mapped to <i>display right</i> and <i>display down</i>
-     * directions respectively. Other kinds of axis are mapped to <i>east</i> and <i>north</i> directions when possible.
-     * More specifically, Apache SIS tries to setup the following directions
-     * (replacing a direction by its "forward" counterpart when necessary, e.g. {@code SOUTH} → {@code NORTH})
-     * in the order shown below:
-     *
-     * <table class="sis">
-     *   <caption>Axis directions and order</caption>
-     *   <tr>
-     *     <th>Preferred axis sequences</th>
-     *     <th>Purpose</th>
-     *   </tr><tr>
-     *     <td>{@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
-     *         {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE}</td>
-     *     <td>Commonly used (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) directions for coordinates.</td>
-     *   </tr><tr>
-     *     <td>{@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN}</td>
-     *     <td>Commonly used (<var>x</var>, <var>y</var>) directions for screen devices.</td>
-     *   </tr><tr>
-     *     <td>{@link AxisDirection#ROW_POSITIVE ROW_POSITIVE},
-     *         {@link AxisDirection#COLUMN_POSITIVE COLUMN_POSITIVE}</td>
-     *     <td>Indices in grids or matrices.</td>
-     *   </tr>
-     * </table>
-     *
-     * <h4>API notes</h4>
-     * we do not provide a <q>longitude or <var>x</var> axis first</q> enumeration value because such criterion
-     * is hard to apply to inter-cardinal directions and has no meaning for map projections over a pole.
-     * The <i>display oriented</i> enumeration name applies to a wider range of cases,
-     * but still have a loosely definition which may be adjusted in future Apache SIS versions.
-     * If a more stable definition is needed, consider using {@link #RIGHT_HANDED} instead since
-     * <i>right-handed</i> coordinate systems have a more precise meaning in Apache SIS.
-     *
-     * @since 1.0
-     */
-    DISPLAY_ORIENTED {
-        @Override public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
-            return NORMALIZED.getDirectionReplacement(axis, direction);
-        }
-    },
-
-    /**
-     * Axes are ordered for a <i>right-handed</i> coordinate system. Axis directions, ranges or coordinate values
-     * and units of measurement are unchanged. In the two-dimensional case, the handedness is defined from the point of
-     * view of an observer above the plane of the system.
-     *
-     * <p>Note that a right-handed coordinate system does not guarantee that longitude or <var>x</var> axis
-     * will be first in every cases. The most notable exception is the case of (West, North) orientations.
-     * The following table lists that case, together with other common axis orientations.
-     * The axes orientations implied by this {@code RIGHT_HANDED} enum is shown,
-     * together with {@link #DISPLAY_ORIENTED} axes for reference:</p>
-     *
-     * <table class="sis">
-     *   <caption>Examples of left-handed and right-handed coordinate systems</caption>
-     *   <tr><th>Left-handed</th> <th>Right-handed</th> <th>Display oriented</th> <th>Remarks</th></tr>
-     *   <tr><td>North, East</td> <td>East, North</td> <td>East, North</td> <td>This is the most common case.</td></tr>
-     *   <tr><td>West, North</td> <td>North, West</td> <td>East, North</td> <td>This right-handed system has latitude first.</td></tr>
-     *   <tr><td>South, West</td> <td>West, South</td> <td>East, North</td> <td>Used for the mapping of southern Africa.</td></tr>
-     *   <tr><td>South along 0°,<br>South along 90° West</td>
-     *       <td>South along 90° West,<br>South along 0°</td>
-     *       <td>(Same as right-handed)</td>
-     *       <td>Can be used for the mapping of North pole.</td></tr>
-     * </table>
-     *
-     * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
-     * @see <a href="https://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>
-     */
-    RIGHT_HANDED,
-
-    /**
-     * Axes having a <i>wraparound</i> range meaning are shifted to their ranges of positive values.
-     * The units of measurement and range period (difference between
-     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMaximumValue() maximum} and
-     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMinimumValue() minimum value})
-     * are unchanged.
-     *
-     * <h4>Usage</h4>
-     * The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
-     * to the [0 … 360]° range. However, this enum could also be used with climatological calendars if their
-     * time axis has a wrapround range meaning.
-     *
-     * <p>Note that conversions from an coordinate system using the [-180 … +180]° range to a coordinate system
-     * using the [0 … 360]° range may not be affine. For example, the data in the West hemisphere ([-180 … 0]°)
-     * may need to move on the right side of the East hemisphere ([180 … 360]°).
-     * Some geometries may need to be separated in two parts, and others may need to be merged.</p>
-     *
-     * @see org.opengis.referencing.cs.CoordinateSystemAxis#getRangeMeaning()
-     * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
-     */
-    POSITIVE_RANGE,
-
-    /**
-     * The axis order as they were specified in the original coordinate system.
-     * The first time that a {@code forConvention(…)} method is invoked on a new coordinate system (CS),
-     * a reference to that original CS is associated to this enumeration value and can be retrieved from
-     * any derived object.
-     *
-     * @since 1.5
-     */
-    ORIGINAL;
+    };
 
     /**
      * Returns the conventions that only change axis order.

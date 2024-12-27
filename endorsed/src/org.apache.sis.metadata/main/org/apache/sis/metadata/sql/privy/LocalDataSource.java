@@ -201,8 +201,13 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
             case HSQL:  classname = "org.hsqldb.jdbc.JDBCDataSource"; break;
             default:    throw new IllegalArgumentException(dialect.toString());
         }
-        final ClassLoader loader = Reflect.getContextClassLoader();
-        final Class<?> c = Class.forName(classname, true, loader);
+        Class<?> c;
+        try {
+            c = Class.forName(classname, true, Reflect.getContextClassLoader());
+        } catch (SecurityException e) {
+            Reflect.log(Initializer.class, "getDataSource", e);     // Public caller of this method.
+            c = Class.forName(classname);
+        }
         source = (DataSource) c.getConstructor().newInstance();
         final Class<?>[] args = {String.class};
         switch (dialect) {

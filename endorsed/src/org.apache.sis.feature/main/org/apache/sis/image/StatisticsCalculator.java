@@ -92,7 +92,7 @@ final class StatisticsCalculator extends AnnotatedImage {
      * This is used for both sequential and parallel executions.
      */
     private static Statistics[] createAccumulator(final int numBands) {
-        final Statistics[] stats = new Statistics[numBands];
+        final var stats = new Statistics[numBands];
         for (int i=0; i<numBands; i++) {
             stats[i] = new Statistics(Vocabulary.formatInternational(Vocabulary.Keys.Band_1, i));
         }
@@ -110,7 +110,7 @@ final class StatisticsCalculator extends AnnotatedImage {
         if (sampleFilters == null) {
             return accumulator;
         }
-        final DoubleConsumer[] filtered = new DoubleConsumer[accumulator.length];
+        final var filtered = new DoubleConsumer[accumulator.length];
         for (int i=0; i<filtered.length; i++) {
             final DoubleConsumer c = accumulator[i];
             final DoubleUnaryOperator f = sampleFilters[i];
@@ -161,7 +161,14 @@ final class StatisticsCalculator extends AnnotatedImage {
      */
     @Override
     protected Object cloneProperty(final String name, final Object value) {
-        final Statistics[] result = ((Statistics[]) value).clone();
+        return clone(((Statistics[]) value));
+    }
+
+    /**
+     * Clones the given array and all values in the array.
+     */
+    static Statistics[] clone(Statistics[] result) {
+        result = result.clone();
         for (int i=0; i<result.length; i++) {
             result[i] = result[i].clone();
         }

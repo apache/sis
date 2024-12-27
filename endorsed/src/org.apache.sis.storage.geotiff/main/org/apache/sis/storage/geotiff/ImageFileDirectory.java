@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.nio.charset.Charset;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
@@ -52,9 +53,9 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.SampleModelFactory;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
@@ -98,6 +99,11 @@ final class ImageFileDirectory extends DataCube {
      * Default value is {@link #UNSIGNED}.
      */
     private static final byte SIGNED = 1, UNSIGNED = 0, FLOAT = 3;
+
+    /**
+     * The band to make visible. May become configurable in a future version.
+     */
+    private static final int VISIBLE_BAND = ColorModelFactory.DEFAULT_VISIBLE_BAND;
 
     /**
      * Index of the (potentially pyramided) image containing this Image File Directory (IFD).
@@ -464,13 +470,6 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * Returns the image index used in the default identifier.
-     */
-    private String getImageIndex() {
-        return String.valueOf(index + 1);
-    }
-
-    /**
      * Returns the identifier in the namespace of the {@link GeoTiffStore}.
      * The first image has the sequence number "1", optionally customized.
      * If this image is an overview, then its namespace should be the name of the base image
@@ -489,7 +488,8 @@ final class ImageFileDirectory extends DataCube {
                     // Should not happen because `setOverviewIdentifier(…)` should have been invoked.
                     return Optional.empty();
                 }
-                GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), getImageIndex());
+                final String tip = String.valueOf(index + 1);
+                GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), tip);
                 name = name.toFullyQualifiedName();     // Because "1" alone is not very informative.
                 final var source = new SchemaModifier.Source(reader.store, index, getDataType());
                 identifier = reader.store.customizer.customize(source, name);
@@ -531,12 +531,12 @@ final class ImageFileDirectory extends DataCube {
     Object addEntry(final short tag, final Type type, final long count) throws Exception {
         switch (tag) {
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Essential information for being able to read the image at least as grayscale.       ////
-            ////    In Java2D, following information are needed for building the SampleModel.           ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔═════════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                     ║
+            //  ║    Essential information for being able to read the image at least as grayscale.    ║
+            //  ║    In Java2D, following information are needed for building the SampleModel.        ║
+            //  ║                                                                                     ║
+            //  ╚═════════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * How the components of each pixel are stored.
@@ -639,12 +639,12 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Information that defines how the sample values are organized (their layout).        ////
-            ////    In Java2D, following information are needed for building the SampleModel.           ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔═══════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                   ║
+            //  ║    Information that define how the sample values are organized (their layout).    ║
+            //  ║    In Java2D, following information are needed for building the SampleModel.      ║
+            //  ║                                                                                   ║
+            //  ╚═══════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * Compression scheme used on the image data.
@@ -724,7 +724,7 @@ final class ImageFileDirectory extends DataCube {
             }
             /*
              * The number of components per pixel. Usually 1 for bilevel, grayscale, and palette-color images,
-             * and 3 for RGB images. Default value is 1.
+             * and 3 for RGB images. Default value is 1. May be greater than 3 if there is extra samples.
              */
             case TAG_SAMPLES_PER_PIXEL: {
                 samplesPerPixel = type.readAsShort(input(), count);
@@ -741,12 +741,12 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Information related to the color palette or the meaning of sample values.           ////
-            ////    In Java2D, following information are needed for building the ColorModel.            ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔═════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                 ║
+            //  ║    Information related to the color palette or the meaning of sample values.    ║
+            //  ║    In Java2D, following information are needed for building the ColorModel.     ║
+            //  ║                                                                                 ║
+            //  ╚═════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * The color space of the image data.
@@ -795,11 +795,11 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Information useful for defining the image role in a multi-images context.           ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔═════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                 ║
+            //  ║    Information useful for defining the image role in a multi-images context.    ║
+            //  ║                                                                                 ║
+            //  ╚═════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * A general indication of the kind of data contained in this subfile, mainly useful when there
@@ -831,11 +831,11 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Information related to the Coordinate Reference System and the bounding box.        ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔════════════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                                    ║
+            //  ║    Information related to the Coordinate Reference System and the bounding box.    ║
+            //  ║                                                                                    ║
+            //  ╚════════════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * References the "GeoKeys" needed for building the Coordinate Reference System.
@@ -923,13 +923,13 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Metadata for discovery purposes, conditions of use, etc.                            ////
-            ////    Those metadata are not "critical" information for reading the image.                ////
-            ////    Should not write anything under `metadata/contentInfo` node.                        ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔════════════════════════════════════════════════════════════════════════════╗
+            //  ║                                                                            ║
+            //  ║    Metadata for discovery purposes, conditions of use, etc.                ║
+            //  ║    Those metadata are not "critical" information for reading the image.    ║
+            //  ║    Should not write anything under `metadata/contentInfo` node.            ║
+            //  ║                                                                            ║
+            //  ╚════════════════════════════════════════════════════════════════════════════╝
 
             /*
              * The name of the document from which this image was scanned.
@@ -1100,11 +1100,11 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Defined by TIFF specification but currently ignored.                                ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔════════════════════════════════════════════════════════════╗
+            //  ║                                                            ║
+            //  ║    Defined by TIFF specification but currently ignored.    ║
+            //  ║                                                            ║
+            //  ╚════════════════════════════════════════════════════════════╝
 
             /*
              * For each string of contiguous unused bytes in a TIFF file, the number of bytes and the byte offset
@@ -1122,11 +1122,11 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
-            ////    Extensions defined by DGIWG or GDAL.                                                ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
+            //  ╔════════════════════════════════════════════╗
+            //  ║                                            ║
+            //  ║    Extensions defined by DGIWG or GDAL.    ║
+            //  ║                                            ║
+            //  ╚════════════════════════════════════════════╝
 
             case Tags.GEO_METADATA:
             case Tags.GDAL_METADATA: {
@@ -1350,11 +1350,11 @@ final class ImageFileDirectory extends DataCube {
                     filename(), expectedCount, actualCount));
         }
         /*
-         * If a "grid to CRS" conversion has been specified with only the scale factor, we need to compute
-         * the translation terms now.
+         * If a "grid to CRS" conversion has been specified with only the scale factor,
+         * we need to compute the translation terms now.
          */
         if (referencing != null && !referencing.validateMandatoryTags()) {
-            throw missingTag((short) TAG_MODEL_TIE_POINT);
+            listeners.warning(missingTag((short) TAG_MODEL_TIE_POINT));
         }
         isValidated = true;
         return true;
@@ -1383,19 +1383,12 @@ final class ImageFileDirectory extends DataCube {
             source = null;          // Note: the `index` value is invalid in this case.
         } else {
             source = new SchemaModifier.Source(reader.store, index, getDataType());
-        }
-        getIdentifier().ifPresent((id) -> {
-            metadata.addIdentifier(id, ImageMetadataBuilder.Scope.RESOURCE);
-            final CharSequence title;
-            if (!getImageIndex().equals(id.tip().toString())) {
-                title = id.toString();
-            } else if (source != null && !metadata.hasTitle()) {
-                title = Vocabulary.formatInternational(Vocabulary.Keys.Image_1, index + 1);
-            } else {
-                return;     // Return from lambda, not from `createMetadata()`.
+            if (metadata.getTitle() == null) {
+                // Note: `GeoTiffStore.getMetadata()` relies on this value not being a `String`.
+                metadata.addTitle(Vocabulary.formatInternational(Vocabulary.Keys.Image_1, index + 1));
             }
-            metadata.addTitle(title);
-        });
+        }
+        metadata.addIdentifier(getIdentifier().orElse(null), ImageMetadataBuilder.Scope.RESOURCE);
         /*
          * Add information about sample dimensions.
          *
@@ -1599,6 +1592,7 @@ final class ImageFileDirectory extends DataCube {
      * A sample model of different size or number of bands can be derived after construction
      * by call to one of {@code SampleModel.create…} methods.
      *
+     * @param  bands  should always be {@code null} if this implementation.
      * @throws DataStoreContentException if the data type is not supported.
      *
      * @see SampleModel#createCompatibleSampleModel(int, int)
@@ -1616,7 +1610,8 @@ final class ImageFileDirectory extends DataCube {
             RuntimeException error = null;
             final DataType type = getDataType();
             if (type != null) try {
-                sampleModel = new SampleModelFactory(type, tileWidth, tileHeight, samplesPerPixel, bitsPerSample, isPlanar).build();
+                var size = new Dimension(tileWidth, tileHeight);
+                sampleModel = new SampleModelFactory(type, size, samplesPerPixel, bitsPerSample, isPlanar).build();
             } catch (IllegalArgumentException | RasterFormatException e) {
                 error = e;
             }
@@ -1713,9 +1708,28 @@ final class ImageFileDirectory extends DataCube {
             return null;    // Let `TileGridResource` derive a model itself.
         }
         if (colorModel == null) {
-            final SampleModel sm  = getSampleModel(null);
-            final int dataType    = sm.getDataType();
-            final int visibleBand = 0;      // May be configurable in a future version.
+            /*
+             * The index of the alpha band is relative to extra samples.
+             * Before to be used, the number of color bands must be added.
+             * That number depends on the color interpretation.
+             *
+             * The alpha channel information should be used for all color models.
+             * However, this is only partially honored in current implementation.
+             */
+            int alphaBand = -1;
+            boolean isAlphaPremultiplied = false;
+            if (extraSamples != null) {
+                final int n = extraSamples.size();
+                for (int i=0; i<n; i++) {
+                    switch (extraSamples.intValue(i)) {
+                        case EXTRA_SAMPLES_ASSOCIATED_ALPHA: isAlphaPremultiplied = true; break;
+                        case EXTRA_SAMPLES_UNASSOCIATED_ALPHA: break;
+                        default: continue;
+                    }
+                    alphaBand = i;
+                    break;
+                }
+            }
             short missing = 0;              // Non-zero if there is a warning about missing information.
             switch (photometricInterpretation) {
                 default: {                  // For any unrecognized code, fallback on grayscale with 0 as black.
@@ -1726,31 +1740,23 @@ final class ImageFileDirectory extends DataCube {
                     missing = TAG_PHOTOMETRIC_INTERPRETATION;
                     break;
                 }
-                case  PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO:
-                case  PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO: {
-                    final Color[] colors = {Color.BLACK, Color.WHITE};
-                    if (photometricInterpretation == PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO) {
-                        ArraysExt.swap(colors, 0, 1);
-                    }
-                    double min = 0;
-                    double max = Numerics.bitmask(bitsPerSample);                   // Exclusive.
-                    if (sampleFormat != UNSIGNED) {
-                        max /= 2;
-                        min = -max;
-                    }
-                    if (minValues != null) min = Math.max(min, minValues.doubleValue(visibleBand));
-                    if (maxValues != null) max = Math.min(max, maxValues.doubleValue(visibleBand) + 1);
-                    colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand, min, max, colors);
+                case PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO: {
+                    createSingleBandColorModel(Color.WHITE, Color.BLACK);
+                    break;
+                }
+                case PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO: {
+                    createSingleBandColorModel(Color.BLACK, Color.WHITE);
                     break;
                 }
                 case PHOTOMETRIC_INTERPRETATION_RGB: {
-                    final int numBands = sm.getNumBands();
-                    if (numBands < 3 || numBands > 4) {
-                        throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "numBands", numBands));
+                    if (alphaBand >= 0) alphaBand += 3;     // Must add the number of color bands.
+                    final var builder = new ColorModelBuilder().bitsPerSample(bitsPerSample)
+                            .alphaBand(alphaBand).isAlphaPremultiplied(isAlphaPremultiplied);
+                    if (getSampleModel(null) instanceof SinglePixelPackedSampleModel) {
+                        colorModel = builder.createPackedRGB();
+                    } else {
+                        colorModel = builder.createBandedRGB();
                     }
-                    final boolean hasAlpha = (numBands >= 4);
-                    final boolean packed = (sm instanceof SinglePixelPackedSampleModel);
-                    colorModel = ColorModelFactory.createRGB(bitsPerSample, packed, hasAlpha);
                     break;
                 }
                 case PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR: {
@@ -1767,16 +1773,37 @@ final class ImageFileDirectory extends DataCube {
                                 | ((colorMap.intValue(gi++) & 0xFF00))
                                 | ((colorMap.intValue(bi++) & 0xFF00) >>> Byte.SIZE);
                     }
-                    colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, visibleBand, ARGB,
-                                             true, Double.isFinite(noData) ? (int) Math.round(noData) : -1);
+                    int transparent = Double.isFinite(noData) ? (int) Math.round(noData) : -1;
+                    colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, VISIBLE_BAND, ARGB, true, transparent);
                     break;
                 }
             }
             if (missing != 0) {
                 missingTag(missing, "GrayScale", false, true);
             }
+            if (colorModel == null) {
+                createSingleBandColorModel(Color.BLACK, Color.WHITE);
+            }
         }
         return colorModel;
+    }
+
+    /**
+     * Creates a color model for a (theoretically) one-banded image.
+     * May also be invoked as a fallback for image with more bands if more suitable color model couldn't be created.
+     */
+    private void createSingleBandColorModel(final Color zero, final Color high) throws DataStoreContentException {
+        double min = 0;
+        double max = Numerics.bitmask(bitsPerSample);   // Exclusive.
+        switch (sampleFormat) {
+            default: break;
+            case FLOAT:  max = 1; break;
+            case SIGNED: max /= 2; min = -max; break;
+        }
+        if (minValues != null) min = Math.max(min, minValues.doubleValue(VISIBLE_BAND));
+        if (maxValues != null) max = Math.min(max, maxValues.doubleValue(VISIBLE_BAND) + 1);
+        colorModel = ColorModelFactory.createColorScale(getSampleModel(null).getDataType(),
+                        samplesPerPixel, VISIBLE_BAND, min, max, zero, high);
     }
 
     /**
