@@ -30,10 +30,10 @@ import java.awt.image.ColorModel;
 import java.awt.image.TileObserver;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.TileOpExecutor;
-import org.apache.sis.coverage.privy.ColorModelFactory;
-import org.apache.sis.coverage.privy.ObservableImage;
+import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.TileOpExecutor;
+import org.apache.sis.image.privy.ColorModelFactory;
+import org.apache.sis.image.privy.ObservableImage;
 
 
 /**

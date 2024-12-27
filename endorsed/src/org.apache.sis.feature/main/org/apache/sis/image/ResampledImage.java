@@ -40,8 +40,8 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
-import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.FillValues;
+import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.FillValues;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
@@ -52,7 +52,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.coverage.privy.ImageUtilities.LOGGER;
+import static org.apache.sis.image.privy.ImageUtilities.LOGGER;
 
 
 /**

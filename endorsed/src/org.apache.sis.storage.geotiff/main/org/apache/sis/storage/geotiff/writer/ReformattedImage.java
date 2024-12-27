@@ -30,8 +30,8 @@ import org.apache.sis.pending.jdk.JDK18;
 import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.SampleModelBuilder;
+import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.SampleModelBuilder;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 
 

@@ -25,6 +25,8 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.image.privy.ColorModelFactory;
+import org.apache.sis.image.privy.SampleModelBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Localized;

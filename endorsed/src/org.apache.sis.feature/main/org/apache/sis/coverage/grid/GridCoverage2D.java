@@ -44,7 +44,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.image.privy.ImageUtilities;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
@@ -628,7 +628,7 @@ public class GridCoverage2D extends GridCoverage {
                      * at the cost of returning an image larger than necessary.
                      * This workaround can be removed on JDK17.
                      */
-                    if (org.apache.sis.coverage.privy.TilePlaceholder.PENDING_JDK_FIX) {
+                    if (org.apache.sis.image.privy.TilePlaceholder.PENDING_JDK_FIX) {
                         if (result.getTileGridXOffset() == ix && result.getTileGridYOffset() == iy) {
                             return result;
                         }

@@ -24,8 +24,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import javax.measure.Quantity;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.TileOpExecutor;
+import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.TileOpExecutor;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
 

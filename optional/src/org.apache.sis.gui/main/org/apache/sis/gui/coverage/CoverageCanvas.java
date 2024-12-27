@@ -68,7 +68,7 @@ import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.map.coverage.RenderingWorkaround;
-import org.apache.sis.coverage.privy.TileErrorHandler;
+import org.apache.sis.image.privy.TileErrorHandler;
 import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;

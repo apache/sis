@@ -36,9 +36,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
-import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.TileOpExecutor;
-import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.TileOpExecutor;
+import org.apache.sis.image.privy.ColorModelFactory;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.pending.jdk.JDK18;
 

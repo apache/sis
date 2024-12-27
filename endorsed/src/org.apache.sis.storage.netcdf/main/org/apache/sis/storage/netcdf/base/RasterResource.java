@@ -44,7 +44,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.IllegalSampleDimensionException;
 import org.apache.sis.coverage.privy.RangeArgument;
-import org.apache.sis.coverage.privy.RasterFactory;
+import org.apache.sis.image.privy.RasterFactory;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
