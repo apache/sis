@@ -29,7 +29,7 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.image.privy.ImageUtilities;
 
 
 /**

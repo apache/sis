@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.privy;
+package org.apache.sis.image.privy;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;

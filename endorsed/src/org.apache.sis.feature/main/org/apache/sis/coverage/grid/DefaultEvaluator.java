@@ -35,7 +35,7 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.image.privy.ImageUtilities;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.privy.DirectPositionView;
 import org.apache.sis.referencing.privy.WraparoundAxesFinder;

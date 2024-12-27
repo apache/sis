@@ -461,11 +461,6 @@ public class Errors extends IndexedResourceBundle {
         public static final short IllegalUnicodeCodePoint_2 = 78;
 
         /**
-         * Illegal value for property “{1}” in “{0}”.
-         */
-        public static final short IllegalValueForProperty_2 = 79;
-
-        /**
          * Cannot use the {1} format with “{0}”.
          */
         public static final short IncompatibleFormat_2 = 80;
@@ -747,7 +742,7 @@ public class Errors extends IndexedResourceBundle {
         /**
          * Expected the “{0}” value for all members, but found a member with the “{1}” value.
          */
-        public static final short NonUniformValue_2 = 207;
+        public static final short NonUniformValue_2 = 79;
 
         /**
          * No element for the “{0}” identifier, or the identifier is a forward reference.

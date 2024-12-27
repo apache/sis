@@ -33,11 +33,11 @@ import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.BandAggregateArgument;
 import org.apache.sis.coverage.privy.CommonDomainFinder;
 import org.apache.sis.coverage.privy.SampleDimensions;
+import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.ColorModelFactory;
 
 
 /**

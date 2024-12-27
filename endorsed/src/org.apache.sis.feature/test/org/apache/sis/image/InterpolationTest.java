@@ -22,7 +22,7 @@ import java.awt.Dimension;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.awt.image.BandedSampleModel;
-import org.apache.sis.coverage.privy.TiledImage;
+import org.apache.sis.image.privy.TiledImage;
 import org.apache.sis.util.privy.Numerics;
 
 // Test dependencies

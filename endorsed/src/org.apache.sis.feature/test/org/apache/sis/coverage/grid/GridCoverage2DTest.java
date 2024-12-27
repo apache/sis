@@ -29,7 +29,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.coverage.privy.RasterFactory;
+import org.apache.sis.image.privy.RasterFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.operation.matrix.Matrix3;

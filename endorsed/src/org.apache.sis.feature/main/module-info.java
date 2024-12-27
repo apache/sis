@@ -74,6 +74,11 @@ module org.apache.sis.feature {
 
     exports org.apache.sis.coverage.privy to
             org.apache.sis.storage,
+            org.apache.sis.storage.netcdf,
+            org.apache.sis.portrayal;
+
+    exports org.apache.sis.image.privy to
+            org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,

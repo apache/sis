@@ -30,7 +30,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import org.apache.sis.coverage.privy.TiledImage;
+import org.apache.sis.image.privy.TiledImage;
 import org.apache.sis.util.Debug;
 
 // Test dependencies

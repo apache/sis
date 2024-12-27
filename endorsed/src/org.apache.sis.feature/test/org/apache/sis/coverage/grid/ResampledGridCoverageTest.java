@@ -36,7 +36,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.coverage.privy.TiledImage;
+import org.apache.sis.image.privy.TiledImage;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.privy.AffineTransform2D;

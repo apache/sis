@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.privy;
+package org.apache.sis.image.privy;
 
 import java.util.Arrays;
 import java.awt.Dimension;
@@ -28,13 +28,13 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.image.DataType;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.image.DataType;
 import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
- * A factory for {@link SampleModel} instances. This class provides a convenient way to get the properties
+ * A builder for {@link SampleModel} instances. This class provides a convenient way to get the properties
  * of an existing sample model, modify them, then create a new sample model with the modified properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -42,7 +42,7 @@ import org.apache.sis.pending.jdk.JDK18;
  * @see SampleModel#createCompatibleSampleModel(int, int)
  * @see SampleModel#createSubsetSampleModel(int[])
  */
-public final class SampleModelFactory {
+public final class SampleModelBuilder {
     /**
      * Type of sample values as one of the {@link DataBuffer} constants.
      */
@@ -113,7 +113,7 @@ public final class SampleModelFactory {
      * @param  isBanded       {@code true} if each band is stored in a separated bank.
      * @throws RasterFormatException if the arguments imply a sample model of unsupported type.
      */
-    public SampleModelFactory(final DataType type, final Dimension size,
+    public SampleModelBuilder(final DataType type, final Dimension size,
             final int numBands, final int bitsPerSample, final boolean isBanded)
     {
         this.dataType  = type.toDataBufferType();
@@ -152,12 +152,12 @@ public final class SampleModelFactory {
     }
 
     /**
-     * Creates a new factory initialized to the value of given sample model.
+     * Creates a new builder initialized to the value of given sample model.
      *
      * @param  model  the sample model from which to copy values.
      * @throws RasterFormatException if the type of the given sample model is not supported.
      */
-    public SampleModelFactory(final SampleModel model) {
+    public SampleModelBuilder(final SampleModel model) {
         width    = model.getWidth();
         height   = model.getHeight();
         numBands = model.getNumBands();
@@ -321,10 +321,10 @@ public final class SampleModelFactory {
     }
 
     /**
-     * Builds a sample model based on current factory configuration.
-     * The factory is still valid after this method call.
+     * Builds a sample model based on current builder configuration.
+     * The builder is still valid after this method call.
      *
-     * @return the sample model built from current factory configuration.
+     * @return the sample model built from current builder configuration.
      * @throws IllegalArgumentException if an error occurred while building a sample model.
      */
     public SampleModel build() {

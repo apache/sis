@@ -300,13 +300,13 @@ cellsize:       if (value != null) {
                     nodataValue = Double.parseDouble(nodataText);
                 } catch (NumberFormatException e) {
                     nodataValue = Double.NaN;
-                    listeners.warning(messageForProperty(Errors.Keys.IllegalValueForProperty_2, key), e);
+                    listeners.warning(messageForProperty(Errors.Keys.IllegalPropertyValue_2, key), e);
                 } else {
                     nodataValue = DEFAULT_NODATA;
                     nodataText  = "null";         // "NaN" is already understood by `parseDouble(String)`.
                 }
             } catch (NumberFormatException e) {
-                throw new DataStoreContentException(messageForProperty(Errors.Keys.IllegalValueForProperty_2, key), e);
+                throw new DataStoreContentException(messageForProperty(Errors.Keys.IllegalPropertyValue_2, key), e);
             }
             /*
              * Read the auxiliary PRJ file after we finished parsing the header file.
@@ -336,7 +336,7 @@ cellsize:       if (value != null) {
      * Returns the error message for an exception or log record.
      * Invoke only in contexts where {@link #input} is known to be non-null.
      *
-     * @param  rk   {@link Errors.Keys#IllegalValueForProperty_2} or {@link Errors.Keys#MissingValueForProperty_2}.
+     * @param  rk   {@link Errors.Keys#IllegalPropertyValue_2} or {@link Errors.Keys#MissingValueForProperty_2}.
      * @param  key  key of the header property which was requested.
      * @return the message to use in the exception to be thrown or the warning to be logged.
      */

@@ -30,8 +30,8 @@ import org.apache.sis.pending.jdk.JDK18;
 import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.coverage.privy.ImageUtilities;
-import org.apache.sis.coverage.privy.SampleModelFactory;
+import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.SampleModelBuilder;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 
 
@@ -143,7 +143,7 @@ public final class ReformattedImage {
         boolean reformat = false;
         SampleModel sm = image.getSampleModel();
         if (!HyperRectangleWriter.Builder.isSupported(sm)) {
-            final var factory = new SampleModelFactory(sm);
+            final var factory = new SampleModelBuilder(sm);
             if (factory.unpack(banded)) {
                 sm = factory.build();
                 reformat = true;
