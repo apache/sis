@@ -1682,7 +1682,7 @@ final class ImageFileDirectory extends DataCube {
             case UNSIGNED: {
                 if (bitsPerSample <= Byte   .SIZE) return DataType.BYTE;
                 if (bitsPerSample <= Short  .SIZE) return DataType.USHORT;
-                if (bitsPerSample <= Integer.SIZE) return DataType.INT;
+                if (bitsPerSample <= Integer.SIZE) return DataType.UINT;
                 break;
             }
             case FLOAT: {

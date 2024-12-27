@@ -148,7 +148,7 @@ class BandedSampleConverter extends WritableComputedImage {
             }
             if (!Double.isFinite(middle)) {
                 final SampleModel sm = source.getSampleModel();
-                if (ImageUtilities.isUnsignedType(sm)) {
+                if (DataType.isUnsigned(sm)) {
                     middle = Math.scalb(0.5, sm.getSampleSize(i));
                 } else {
                     middle = 0;

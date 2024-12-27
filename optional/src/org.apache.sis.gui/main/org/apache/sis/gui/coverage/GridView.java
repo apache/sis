@@ -45,7 +45,7 @@ import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.gui.internal.ExceptionReporter;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.DataType;
 
 
 /**
@@ -492,7 +492,7 @@ public class GridView extends Control {
                 if (getBand() >= numBands) {
                     ((BandProperty) bandProperty).setNoCheck(numBands - 1);
                 }
-                cellFormat.dataTypeIsInteger = ImageUtilities.isIntegerType(sm);
+                cellFormat.dataTypeIsInteger = DataType.isInteger(sm);
             }
             cellFormat.configure(image, getBand());
         }

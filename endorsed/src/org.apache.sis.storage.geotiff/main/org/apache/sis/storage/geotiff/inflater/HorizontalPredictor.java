@@ -105,9 +105,10 @@ abstract class HorizontalPredictor extends PredictorChannel {
             final int pixelStride, final int width)
     {
         switch (dataType) {
-            case USHORT:
-            case SHORT:  return new Shorts  (input, pixelStride, width);
             case BYTE:   return new Bytes   (input, pixelStride, width);
+            case USHORT: // Fall through
+            case SHORT:  return new Shorts  (input, pixelStride, width);
+            case UINT:   // Fall through
             case INT:    return new Integers(input, pixelStride, width);
             case FLOAT:  return new Floats  (input, pixelStride, width);
             case DOUBLE: return new Doubles (input, pixelStride, width);

@@ -284,6 +284,7 @@ public final class TileMatrix {
                         case BYTE:   rect.write(compOutput, ((DataBufferByte)   buffer).getData(b), offset, direct); break;
                         case USHORT: rect.write(compOutput, ((DataBufferUShort) buffer).getData(b), offset); break;
                         case SHORT:  rect.write(compOutput, ((DataBufferShort)  buffer).getData(b), offset); break;
+                        case UINT:   // Fall through
                         case INT:    rect.write(compOutput, ((DataBufferInt)    buffer).getData(b), offset); break;
                         case FLOAT:  rect.write(compOutput, ((DataBufferFloat)  buffer).getData(b), offset); break;
                         case DOUBLE: rect.write(compOutput, ((DataBufferDouble) buffer).getData(b), offset); break;

@@ -211,9 +211,10 @@ public final class RasterFactory extends Static {
      */
     public static Buffer createBuffer(final DataType dataType, final int capacity) {
         switch (dataType) {
+            case BYTE:   return ByteBuffer  .allocate(capacity);
             case USHORT: // Fallthrough
             case SHORT:  return ShortBuffer .allocate(capacity);
-            case BYTE:   return ByteBuffer  .allocate(capacity);
+            case UINT:   // Fallthrough
             case INT:    return IntBuffer   .allocate(capacity);
             case FLOAT:  return FloatBuffer .allocate(capacity);
             case DOUBLE: return DoubleBuffer.allocate(capacity);
@@ -268,10 +269,11 @@ public final class RasterFactory extends Static {
         final int numBands = data.length;
         final Object[] arrays;
         switch (dataType) {
+            case BYTE:   arrays = new byte  [numBands][]; break;
             case USHORT: // fall through
             case SHORT:  arrays = new short [numBands][]; break;
+            case UINT:   // fall through
             case INT:    arrays = new int   [numBands][]; break;
-            case BYTE:   arrays = new byte  [numBands][]; break;
             case FLOAT:  arrays = new float [numBands][]; break;
             case DOUBLE: arrays = new double[numBands][]; break;
             default: throw new AssertionError(dataType);
@@ -293,6 +295,7 @@ public final class RasterFactory extends Static {
             case BYTE:   return new DataBufferByte  (  (byte[][]) arrays, length, offsets);
             case SHORT:  return new DataBufferShort ( (short[][]) arrays, length, offsets);
             case USHORT: return new DataBufferUShort( (short[][]) arrays, length, offsets);
+            case UINT:   // Fall through
             case INT:    return new DataBufferInt   (   (int[][]) arrays, length, offsets);
             case FLOAT:  return new DataBufferFloat ( (float[][]) arrays, length, offsets);
             case DOUBLE: return new DataBufferDouble((double[][]) arrays, length, offsets);

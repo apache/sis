@@ -579,9 +579,9 @@ public final class ColorModelFactory {
         } else {
             minimum = 0;
             maximum = 1;
-            if (ImageUtilities.isIntegerType(model)) {
+            if (DataType.isInteger(model)) {
                 long max = Numerics.bitmask(model.getSampleSize(visibleBand)) - 1;
-                if (!ImageUtilities.isUnsignedType(model)) {
+                if (!DataType.isUnsigned(model)) {
                     max >>>= 1;
                     minimum = ~max;         // Tild operator, not minus.
                 }
@@ -792,7 +792,7 @@ public final class ColorModelFactory {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(Strings.toString(getClass(),
+        final var buffer = new StringBuilder(Strings.toString(getClass(),
                 "dataType", DataType.forDataBufferType(dataType), "numBands", numBands, "visibleBand", visibleBand,
                 "range", NumberRange.create(minimum, true, maximum, false)));
         final int n = (pieceStarts != null) ? pieceStarts.length : 0;
