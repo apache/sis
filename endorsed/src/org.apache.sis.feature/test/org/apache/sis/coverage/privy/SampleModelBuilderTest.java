@@ -32,11 +32,11 @@ import org.apache.sis.test.TestCase;
 
 
 /**
- * Tests {@link SampleModelFactory}.
+ * Tests {@link SampleModelBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class SampleModelFactoryTest extends TestCase {
+public final class SampleModelBuilderTest extends TestCase {
     /**
      * Arbitrary width, height and number of bands for the sample models to create.
      * Size does not matter because we will not create data buffer.
@@ -46,7 +46,7 @@ public final class SampleModelFactoryTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public SampleModelFactoryTest() {
+    public SampleModelBuilderTest() {
     }
 
     /**
@@ -62,7 +62,7 @@ public final class SampleModelFactoryTest extends TestCase {
     @Test
     public void testBanded() {
         final BandedSampleModel model = test(BandedSampleModel.class,
-                new SampleModelFactory(DataType.FLOAT, size(), NUM_BANDS, Float.SIZE, true));
+                new SampleModelBuilder(DataType.FLOAT, size(), NUM_BANDS, Float.SIZE, true));
 
         assertArrayEquals(new int[] {1, 0, 2}, model.getBankIndices());
         assertArrayEquals(new int[] {0, 0, 0}, model.getBandOffsets());
@@ -77,7 +77,7 @@ public final class SampleModelFactoryTest extends TestCase {
     @Test
     public void testPixelInterleaved() {
         final PixelInterleavedSampleModel model = test(PixelInterleavedSampleModel.class,
-                new SampleModelFactory(DataType.BYTE, size(), NUM_BANDS, Byte.SIZE, false));
+                new SampleModelBuilder(DataType.BYTE, size(), NUM_BANDS, Byte.SIZE, false));
 
         assertArrayEquals(new int[] {0, 0, 0}, model.getBankIndices());
         assertArrayEquals(new int[] {1, 0, 2}, model.getBandOffsets());
@@ -94,7 +94,7 @@ public final class SampleModelFactoryTest extends TestCase {
     @Test
     public void testSinglePixelPacked() {
         final SinglePixelPackedSampleModel model = test(SinglePixelPackedSampleModel.class,
-                new SampleModelFactory(DataType.INT, size(), NUM_BANDS, 5, false));
+                new SampleModelBuilder(DataType.INT, size(), NUM_BANDS, 5, false));
 
         final int[] expected = {
             0b1111100000,           // Band 2 specified, 1 after compression.
@@ -114,23 +114,23 @@ public final class SampleModelFactoryTest extends TestCase {
     @Test
     public void testPixelMultiPixelPacked() {
         final int bitsPerSample = 4;
-        var factory = new SampleModelFactory(DataType.INT, size(), 1, bitsPerSample, false);
-        final var model = (MultiPixelPackedSampleModel) factory.build();
+        var builder = new SampleModelBuilder(DataType.INT, size(), 1, bitsPerSample, false);
+        final var model = (MultiPixelPackedSampleModel) builder.build();
 
         assertEquals(bitsPerSample, model.getPixelBitStride());
         assertEquals(WIDTH / (Integer.SIZE / bitsPerSample), model.getScanlineStride());
         assertEquals(DataBuffer.TYPE_INT, model.getDataType());
 
-        factory = new SampleModelFactory(model);
-        assertEquals(model, factory.build());
+        builder = new SampleModelBuilder(model);
+        assertEquals(model, builder.build());
     }
 
     /**
-     * Builds a sample model using the given factory, tests basic properties, then applies a band subset.
+     * Builds a sample model using the given builder, tests basic properties, then applies a band subset.
      * The band subset is exactly: {2, 1, 4}.
      */
-    private static <T extends SampleModel> T test(final Class<T> modelType, SampleModelFactory factory) {
-        final SampleModel model = factory.build();
+    private static <T extends SampleModel> T test(final Class<T> modelType, SampleModelBuilder builder) {
+        final SampleModel model = builder.build();
         assertEquals(WIDTH,     model.getWidth());
         assertEquals(HEIGHT,    model.getHeight());
         assertEquals(NUM_BANDS, model.getNumBands());
@@ -140,20 +140,20 @@ public final class SampleModelFactoryTest extends TestCase {
          * The subset is fixed by this method's contract.
          */
         final int[] bands = {2, 1, 4};
-        factory.subsetAndCompress(bands);
-        final SampleModel subset = factory.build();
+        builder.subsetAndCompress(bands);
+        final SampleModel subset = builder.build();
         assertEquals(WIDTH,  subset.getWidth());
         assertEquals(HEIGHT, subset.getHeight());
         assertEquals(3,      subset.getNumBands());
         assertInstanceOf(modelType, subset);
         /*
-         * Repeat the same operations on a factory created using a sample
+         * Repeat the same operations on a builder created using a sample
          * model as a template, and verify that we get the same results.
          */
-        factory = new SampleModelFactory(model);
-        assertEquals(model, factory.build());
-        factory.subsetAndCompress(bands);
-        assertEquals(subset, factory.build());
+        builder = new SampleModelBuilder(model);
+        assertEquals(model, builder.build());
+        builder.subsetAndCompress(bands);
+        assertEquals(subset, builder.build());
         return modelType.cast(subset);
     }
 }

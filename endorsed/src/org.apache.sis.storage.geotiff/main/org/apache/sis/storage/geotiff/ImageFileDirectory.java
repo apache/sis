@@ -55,7 +55,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.privy.ColorModelBuilder;
 import org.apache.sis.coverage.privy.ColorModelFactory;
-import org.apache.sis.coverage.privy.SampleModelFactory;
+import org.apache.sis.coverage.privy.SampleModelBuilder;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
@@ -1611,7 +1611,7 @@ final class ImageFileDirectory extends DataCube {
             final DataType type = getDataType();
             if (type != null) try {
                 var size = new Dimension(tileWidth, tileHeight);
-                sampleModel = new SampleModelFactory(type, size, samplesPerPixel, bitsPerSample, isPlanar).build();
+                sampleModel = new SampleModelBuilder(type, size, samplesPerPixel, bitsPerSample, isPlanar).build();
             } catch (IllegalArgumentException | RasterFormatException e) {
                 error = e;
             }
