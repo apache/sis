@@ -34,7 +34,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import javax.swing.JComponent;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
-import org.apache.sis.coverage.privy.RasterFactory;
+import org.apache.sis.image.privy.RasterFactory;
 import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.swing.ZoomPane;
 import org.apache.sis.util.Classes;
