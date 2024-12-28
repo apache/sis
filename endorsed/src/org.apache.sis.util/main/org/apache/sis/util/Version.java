@@ -21,7 +21,6 @@ import java.net.URL;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
@@ -57,12 +56,6 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 8402041502662929792L;
-
-    /**
-     * The separator characters between {@linkplain #getMajor() major}, {@linkplain #getMinor() minor}
-     * and {@linkplain #getRevision() revision} components. Any character in this string fits.
-     */
-    private static final String SEPARATORS = ".-";
 
     /**
      * The version of this Apache SIS distribution.
@@ -248,11 +241,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     final synchronized Comparable<?> getComponent(final int index) {
         if (parsed == null) {
             if (components == null) {
-                final StringTokenizer tokens = new StringTokenizer(version, SEPARATORS);
-                components = new String[tokens.countTokens()];
-                for (int i=0; tokens.hasMoreTokens(); i++) {
-                    components[i] = tokens.nextToken();
-                }
+                components = version.split("[\\.\\-]");
             }
             parsed = new Comparable<?>[components.length];
         }
