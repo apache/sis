@@ -20,7 +20,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.concurrent.Callable;
@@ -483,10 +482,9 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             final float[] tY = grid.offsets[1];
             final float[] tZ = grid.offsets[2];
             do {
-                final StringTokenizer t = new StringTokenizer(line.trim());
-                t.nextToken();                                                      // Ignored
-                final double x = Double.parseDouble(t.nextToken());                 // Longitude in degrees
-                final double y = Double.parseDouble(t.nextToken());                 // Latitude in degrees
+                final String[] tokens = line.split("\\s+");
+                final double x = Double.parseDouble(tokens[1]);                     // Longitude in degrees
+                final double y = Double.parseDouble(tokens[2]);                     // Latitude in degrees
                 final int    i = Math.toIntExact(Math.round((x - x0) / Δx));        // Column index
                 final int    j = Math.toIntExact(Math.round((y - y0) / Δy));        // Row index
                 if (i < 0 || i >= nx) {
@@ -499,11 +497,11 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                 if (!Double.isNaN(tX[p]) || !Double.isNaN(tY[p]) || !Double.isNaN(tZ[p])) {
                     throw new FactoryException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, x + ", " + y));
                 }
-                tX[p] = -parseFloat(t.nextToken());     // See javadoc for the reason why we reverse the sign.
-                tY[p] = -parseFloat(t.nextToken());
-                tZ[p] = -parseFloat(t.nextToken());
-                final double accuracy = ACCURACY[Math.min(ACCURACY.length - 1,
-                        Math.max(0, Integer.parseInt(t.nextToken()) - 1))];
+                tX[p] = -parseFloat(tokens[3]);     // See javadoc for the reason why we reverse the sign.
+                tY[p] = -parseFloat(tokens[4]);
+                tZ[p] = -parseFloat(tokens[5]);
+                int accuracyCode = Math.max(0, Integer.parseInt(tokens[6]) - 1);
+                double accuracy = ACCURACY[Math.min(ACCURACY.length - 1, accuracyCode)];
                 if (!(accuracy >= grid.accuracy)) {     // Use `!` for replacing the initial NaN.
                     grid.accuracy = accuracy;
                 }

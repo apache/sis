@@ -17,6 +17,7 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.Locale;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -36,6 +37,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
 
@@ -110,14 +112,24 @@ final class FeatureLayer extends AbstractFeatureSet {
         final int fieldCount = (int) ogr.getFieldCount.invokeExact(definition);
         final int geomCount  = (int) ogr.getGeomFieldCount.invokeExact(definition);
         /*
-         * Fetch the non-geometry fields.
+         * Fetch the non-geometry fields. The field names at this point are temporary and may be modified later
+         * if we detect name collisions. The `HashMap` will be used for detecting those collisions. The initial
+         * set of keys contains only the names declared by GDAL. Value is the index of the field using the name.
          */
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final var fields = new FieldAccessor<?>[FieldAccessor.NUM_ADDITIONAL_FIELDS + fieldCount + geomCount];
-        int fieldIndex = 0;
-        fields[fieldIndex++] = addAttribute(builder, FieldAccessor.Identifier.INSTANCE);
+        final var names  = HashMap.<String,Integer>newHashMap(fields.length);
+        final var props  = new AttributeTypeBuilder<?>[fields.length];
+        props[0] = builder.addAttribute((fields[0] = FieldAccessor.Identifier.INSTANCE).getJavaClass());
+        int fieldIndex = 1;
         for (int i=0; i<fieldCount; i++) {
-            fields[fieldIndex++] = addAttribute(builder, FieldAccessor.create(ogr, definition, i));
+            final FieldAccessor<?> field = FieldAccessor.create(ogr, definition, i);
+            fields[fieldIndex] = field;
+            names.putIfAbsent(field.name(), fieldIndex);
+            final Class<?> element = field.getElementClass();
+            props[fieldIndex++] = (element != null)
+                    ? builder.addAttribute(element).setMaximumOccurs(Integer.MAX_VALUE)
+                    : builder.addAttribute(field.getJavaClass());
         }
         /*
          * Fetch the geometry fields with the first one taken as the default geometry.
@@ -125,12 +137,9 @@ final class FeatureLayer extends AbstractFeatureSet {
          * The declared geometry type may be conservatively generalized to `GEOMETRY`
          * if the information provided by the driver is not reliable.
          */
-        final String  driverName = store.getDriverName(gdal);
-        final boolean generalize = (driverName != null) && driverName.toLowerCase(Locale.US).contains("shapefile");
-
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         CoordinateReferenceSystem defaultCRS = null;
-
+        final boolean generalize = forceGeometryCollection(store.getDriverName(gdal));
         boolean isFirstGeometry = true;
         for (int i=0; i<geomCount; i++) {
             final var geomField = (MemorySegment) ogr.getGeomFieldDefinition.invokeExact(definition, i);
@@ -141,6 +150,8 @@ final class FeatureLayer extends AbstractFeatureSet {
             if (name == null || name.isBlank()) {
                 name = setAsDefault ? AttributeConvention.GEOMETRY : "geometry" + i;
                 setAsDefault = false;       // Because already has the default name.
+            } else {
+                names.putIfAbsent(name, fieldIndex);
             }
             /*
              * OGR Hack: ShapeFile geometry type is not correctly detected because the OGR driver does
@@ -160,35 +171,58 @@ final class FeatureLayer extends AbstractFeatureSet {
             final CoordinateReferenceSystem crs = SpatialRef.parseCRS(store, gdal,
                     (MemorySegment) ogr.getGeomFieldSpatialRef.invokeExact(geomField));
 
-            final AttributeTypeBuilder<?> attribute = builder.addAttribute(geomClass).setName(name).setCRS(crs);
+            final AttributeTypeBuilder<?> attribute = builder.addAttribute(geomClass).setCRS(crs);
             if (setAsDefault) {     // First geometry as default.
                 attribute.addRole(AttributeRole.DEFAULT_GEOMETRY);
             }
+            props[fieldIndex] = attribute;
             fields[fieldIndex++] = new FieldAccessor.Geometry<>(name, i, geomClass, crs);
             if (isFirstGeometry) {
                 isFirstGeometry = false;
                 defaultCRS = crs;           // May still be null.
             }
         }
-        this.type       = builder.setName(GDAL.toString((MemorySegment) ogr.getLayerName.invokeExact(handle))).build();
+        /*
+         * Verify if two fields have the same name. It may happen with formats such as Shapefile,
+         * which truncate the names to 10 characters. If a collision is detected, we rename both
+         * fields for avoiding confusion. We perform this check only after we collected the names
+         * of all fields for avoiding to accidentally use the name of another field.
+         */
+        for (int i=0; i<fieldIndex; i++) {
+            String name = fields[i].name();
+            Integer previous = names.putIfAbsent(name, i);
+            if (previous != null && previous != i) {
+                if (previous >= 0) {
+                    Integer value = ~previous;
+                    names.put(name, value);     // Negative value as a flag meaning "already renamed".
+                    fields[previous].rename(names, value);
+                }
+                fields[i].rename(names, ~i);
+            }
+        }
+        for (int i=0; i<fieldIndex; i++) {
+            props[i].setName(fields[i].name());
+        }
+        String name = GDAL.toString((MemorySegment) ogr.getLayerName.invokeExact(handle));
+        this.type       = builder.setName(name).build();
         this.fields     = ArraysExt.resize(fields, fieldIndex);
         this.defaultCRS = defaultCRS;
     }
 
     /**
-     * Adds a non-geometry attribute to a feature type. This is a helper method for the constructor.
-     * The returned {@link FieldAccessor} instance encapsulates the code for fetching the attribute value.
+     * Returns whether the type of the geometry field should be generalized from a single type to a collection.
+     * This is a workaround for the geometry type not correctly detected by the OGR Shapefile driver,
+     * because it does not distinguish betwen polygon and multi-polygon.
+     *
+     * @see <a href="https://code.djangoproject.com/ticket/7218">GIS: ogrinspect sometimes gets field types wrong</a>
      */
-    private static FieldAccessor<?> addAttribute(final FeatureTypeBuilder builder, final FieldAccessor<?> field) {
-        final AttributeTypeBuilder<?> attribute;
-        Class<?> ft = field.getElementClass();
-        if (ft != null) {
-            attribute = builder.addAttribute(ft).setMaximumOccurs(Integer.MAX_VALUE);
-        } else {
-            attribute = builder.addAttribute(field.getJavaClass());
+    @Workaround(library="GDAL", version="3.9.3")
+    private static boolean forceGeometryCollection(String driverName) {
+        if (driverName != null) {
+            driverName = driverName.toLowerCase(Locale.US);
+            return driverName.contains("shapefile");
         }
-        attribute.setName(field.name);
-        return field;
+        return false;
     }
 
     /**

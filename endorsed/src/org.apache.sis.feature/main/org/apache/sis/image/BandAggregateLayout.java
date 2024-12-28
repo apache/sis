@@ -22,7 +22,6 @@ import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -154,7 +153,7 @@ final class BandAggregateLayout {
         int tileHeight     = 0;
         int tileAlignX     = 0;
         int tileAlignY     = 0;
-        int commonDataType = DataBuffer.TYPE_UNDEFINED;
+        DataType commonDataType = null;
         for (final RenderedImage source : sources) {
             /*
              * Ensure that all images use the same data type. This is mandatory.
@@ -173,7 +172,7 @@ final class BandAggregateLayout {
                     allowSharing |= (domain == null);
                 }
             }
-            final int dataType = sm.getDataType();
+            final var dataType = DataType.forBands(sm);
             if (domain == null) {
                 domain = ImageUtilities.getBounds(source);
                 commonDataType = dataType;
@@ -234,9 +233,8 @@ final class BandAggregateLayout {
             final boolean exactTileSize = ((cx | cy) >>> Integer.SIZE) == 0;
             allowSharing &= exactTileSize;
             if (!allowSharing) scanlineStride = 0;      // Means to force the use of tile width.
-            final var dataType = DataType.forDataBufferType(commonDataType);
             final var layout = new ImageLayout(null, preferredTileSize, !exactTileSize, false, false, minTile);
-            sampleModel = layout.createBandedSampleModel(null, domain, dataType, numBands, scanlineStride);
+            sampleModel = layout.createBandedSampleModel(null, domain, commonDataType, numBands, scanlineStride);
         }
         this.bandsPerSource = bandsPerSource;
         this.sources        = sources;

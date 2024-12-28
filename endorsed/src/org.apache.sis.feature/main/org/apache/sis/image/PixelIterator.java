@@ -548,17 +548,17 @@ public class PixelIterator {
     }
 
     /**
-     * Returns the type used for storing data in the raster buffer.
-     * The data type identifies the {@link DataBuffer} subclass used for storage.
+     * Returns the type of sample values. This is usually the {@link DataBuffer} type,
+     * but may be a smaller type if many values are packed in each data buffer element.
      *
-     * @return the type used for storing data in the raster buffer.
+     * @return the type of sample values.
      *
-     * @see SampleModel#getDataType()
+     * @see DataType#forBands(SampleModel)
      *
      * @since 1.2
      */
     public DataType getDataType() {
-        return DataType.forDataBufferType(getSampleModel().getDataType());
+        return DataType.forBands(getSampleModel());
     }
 
     /**
@@ -615,7 +615,7 @@ public class PixelIterator {
                     final int size = model.getSampleSize(bandToDefine);
                     long minimum = 0;
                     long maximum = Numerics.bitmask(size) - 1;
-                    if (!ImageUtilities.isUnsignedType(model)) {
+                    if (!DataType.isUnsigned(model)) {
                         maximum >>>= 1;                                 // Convert unsigned range to signed range.
                         minimum = ~maximum;
                     }

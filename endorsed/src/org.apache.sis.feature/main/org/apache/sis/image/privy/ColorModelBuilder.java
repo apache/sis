@@ -28,6 +28,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.image.DataType;
 
 
 /**
@@ -279,7 +280,7 @@ public final class ColorModelBuilder {
      * @throws IllegalArgumentException if any argument specified to the builder is invalid.
      */
     public ColorModel createRGB(final SampleModel targetModel) {
-check:  if (ImageUtilities.isIntegerType(targetModel)) {
+check:  if (DataType.isInteger(targetModel)) {
             final int numBands = targetModel.getNumBands();
             switch (numBands) {
                 case 3:  alphaBand = -1; break;

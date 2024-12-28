@@ -30,13 +30,13 @@ import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
-import java.awt.image.MultiPixelPackedSampleModel;
 import static java.lang.Math.abs;
 import static java.lang.Math.rint;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.multiplyFull;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Numbers;
@@ -174,47 +174,6 @@ public final class ImageUtilities extends Static {
             return ((MultiBandsIndexColorModel) cm).visibleBand;
         }
         return 0;
-    }
-
-    /**
-     * Returns the data type of bands in rasters that use the given sample model.
-     * If each band is stored in its own {@link DataBuffer} element, then this method returns the same value
-     * as {@link SampleModel#getDataType()}. But if multiple sample values are packed in a single data element
-     * ({@link SinglePixelPackedSampleModel} or {@link MultiPixelPackedSampleModel}), then this method returns
-     * a smaller data type. As a general rule, this method returns the smallest data type capable to store all
-     * sample values with a {@link java.awt.image.BandedSampleModel}.
-     *
-     * @param  sm  the sample model for which to get the band type, or {@code null}.
-     * @return the data type, or {@link DataBuffer#TYPE_UNDEFINED} if unknown.
-     *
-     * @see #isIntegerType(int)
-     * @see #isUnsignedType(SampleModel)
-     */
-    public static int getBandType(final SampleModel sm) {
-        if (sm == null) {
-            return DataBuffer.TYPE_UNDEFINED;
-        }
-        final int type = sm.getDataType();
-        if (!isIntegerType(type)) {
-            return type;
-        }
-        final int maxBits = Math.min(DataBuffer.getDataTypeSize(type), Short.SIZE + 1);
-        int numBits = 0;
-        for (int i=sm.getNumBands(); --i >= 0;) {
-            final int n = sm.getSampleSize(i);
-            if (n > numBits) {
-                if (n >= maxBits) {
-                    return type;
-                }
-                numBits = n;
-            }
-        }
-        final boolean isUnsignedType = (type <= DataBuffer.TYPE_USHORT)
-                        || (sm instanceof SinglePixelPackedSampleModel)
-                        || (sm instanceof MultiPixelPackedSampleModel);
-
-        return isUnsignedType ? (numBits <= Byte.SIZE ? DataBuffer.TYPE_BYTE : DataBuffer.TYPE_USHORT)
-                              : DataBuffer.TYPE_SHORT;
     }
 
     /**
@@ -420,45 +379,6 @@ public final class ImageUtilities extends Static {
     }
 
     /**
-     * Returns {@code true} if the given sample model uses an integer type.
-     * Returns {@code false} if the type is a floating point type or in case
-     * of doubt (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
-     *
-     * @param  sm  the sample model, or {@code null}.
-     * @return whether the given sample model is for integer values.
-     */
-    public static boolean isIntegerType(final SampleModel sm) {
-        return (sm != null) && isIntegerType(sm.getDataType());
-    }
-
-    /**
-     * Returns {@code true} if the type of sample values is an unsigned integer type.
-     * Returns {@code false} if the type is a floating point type or in case of doubt
-     * (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
-     *
-     * @param  sm  the sample model, or {@code null}.
-     * @return whether the given sample model provides unsigned sample values.
-     */
-    public static boolean isUnsignedType(final SampleModel sm) {
-        if (sm != null) {
-            final int dataType = sm.getDataType();
-            if (dataType >= DataBuffer.TYPE_BYTE) {
-                if (dataType <= DataBuffer.TYPE_USHORT) return true;
-                if (dataType <= DataBuffer.TYPE_INT) {
-                    /*
-                     * Typical case: 4 bands (ARGB) stored in a single data element of type `int`.
-                     * The javadoc of those classes explain how to unpack the sample values,
-                     * and the result is always unsigned.
-                     */
-                    return (sm instanceof SinglePixelPackedSampleModel) ||
-                           (sm instanceof MultiPixelPackedSampleModel);
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns whether samples values stored using {@code source} model can be converted to {@code target} model
      * without data lost. This method verifies the number of bands and the size of data in each band.
      *
@@ -491,7 +411,7 @@ public final class ImageUtilities extends Static {
                  *   - Conversion from `int` to `float` can loose significant digits.
                  *   - Conversion from signed short to unsigned short (or conversely) can change values.
                  */
-                if (sourceIsInteger != targetIsInteger || isUnsignedType(source) != isUnsignedType(target)) {
+                if (sourceIsInteger != targetIsInteger || DataType.isUnsigned(source) != DataType.isUnsigned(target)) {
                     return false;
                 }
             }

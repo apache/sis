@@ -377,7 +377,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      */
     protected Number[] getFillValues(final int[] bands) throws DataStoreException {
         final SampleModel model = getSampleModel(bands);
-        final var dataType = DataType.forDataBufferType(model.getDataType());
+        final var dataType = DataType.forBands(model);
         IndexColorModel icm = null;
 check:  if (dataType.isInteger()) {
             final ColorModel colors = getColorModel(bands);

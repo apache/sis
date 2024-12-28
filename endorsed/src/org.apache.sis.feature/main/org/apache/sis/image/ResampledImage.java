@@ -754,7 +754,7 @@ public class ResampledImage extends ComputedImage {
                 for (int b=0; b<numBands; b++) {
                     maxValues[b] = Numerics.bitmask(sm.getSampleSize(b)) - 1;
                 }
-                if (!ImageUtilities.isUnsignedType(sm)) {
+                if (!DataType.isUnsigned(sm)) {
                     for (int b=0; b<numBands; b++) {
                         minValues[b] = ~(maxValues[b] >>>= 1);      // Convert unsigned type to signed type range.
                     }

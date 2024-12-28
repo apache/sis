@@ -562,7 +562,7 @@ abstract class Transferer {
      * @return object to use for applying the operation.
      */
     static Transferer create(final Raster source, final WritableRaster target, final Rectangle aoi) {
-        switch (ImageUtilities.getBandType(target.getSampleModel())) {
+        switch (DataType.forBands(target.getSampleModel()).toDataBufferType()) {
             case DataBuffer.TYPE_DOUBLE: {
                 if (isDirect(target, aoi)) {
                     return new DoubleToDirect(source, target, aoi);
@@ -570,7 +570,7 @@ abstract class Transferer {
                 break;
             }
             case DataBuffer.TYPE_FLOAT: {
-                switch (ImageUtilities.getBandType(source.getSampleModel())) {
+                switch (DataType.forBands(source.getSampleModel()).toDataBufferType()) {
                     case DataBuffer.TYPE_BYTE:
                     case DataBuffer.TYPE_SHORT:
                     case DataBuffer.TYPE_USHORT:        // TODO: consider using IntegerToDirect here.
@@ -606,7 +606,7 @@ abstract class Transferer {
      * to the {@code float} type may lost precision digits.
      */
     private static boolean singlePrecision(final Raster source) {
-        switch (ImageUtilities.getBandType(source.getSampleModel())) {
+        switch (DataType.forBands(source.getSampleModel()).toDataBufferType()) {
             case DataBuffer.TYPE_BYTE:
             case DataBuffer.TYPE_USHORT:
             case DataBuffer.TYPE_SHORT:

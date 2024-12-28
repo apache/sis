@@ -42,9 +42,9 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.privy.ColorModelFactory;
 import org.apache.sis.image.privy.ColorModelBuilder;
-import org.apache.sis.image.privy.ImageUtilities;
 import org.apache.sis.image.privy.ObservableImage;
 import org.apache.sis.coverage.privy.RangeArgument;
 import org.apache.sis.util.CharSequences;
@@ -339,9 +339,8 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
          * Build the sample dimensions and the color model.
          * Some minimum/maximum values will be used as fallback if no statistics were found.
          */
-        final int     dataType   = sm.getDataType();
-        final boolean isInteger  = ImageUtilities.isIntegerType(dataType);
-        final boolean isUnsigned = isInteger && ImageUtilities.isUnsignedType(sm);
+        final boolean isInteger  = DataType.isInteger(sm);
+        final boolean isUnsigned = isInteger && DataType.isUnsigned(sm);
         final boolean isRGB      = isInteger && (bands.length == 3 || bands.length == 4);
         final var     builder    = new SampleDimension.Builder();
         for (int band=0; band < bands.length; band++) {
@@ -396,6 +395,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
              * The color file is optional and will be used if present.
              */
             if (band == VISIBLE_BAND) {
+                final int dataType = sm.getDataType();
                 try {
                     if (isRGB) {
                         colorModel = new ColorModelBuilder().createRGB(sm);

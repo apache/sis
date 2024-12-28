@@ -276,7 +276,7 @@ public final class ColorScaleBuilder {
                      * If the model uses floating point values and there is no "no data" category, add one.
                      * We force a "no data" category because floating point values may be NaN.
                      */
-                    if (missingNodata && (model == null || !ImageUtilities.isIntegerType(model))) {
+                    if (missingNodata && (model == null || !DataType.isInteger(model))) {
                         final int count = entries.length;
                         entries = Arrays.copyOf(entries, count + 1);
                         entries[count] = new ColorsForRange(TRANSPARENT,
@@ -303,10 +303,10 @@ public final class ColorScaleBuilder {
      */
     public boolean initialize(final SampleModel source, final int band) {
         checkInitializationStatus(false);
-        if (ImageUtilities.isIntegerType(source)) {
+        if (DataType.isInteger(source)) {
             long minimum = 0;
             long maximum = Numerics.bitmask(source.getSampleSize(band)) - 1;
-            if (!ImageUtilities.isUnsignedType(source)) {
+            if (!DataType.isUnsigned(source)) {
                 maximum >>>= 1;
                 minimum = ~maximum;
             }
@@ -700,7 +700,7 @@ reuse:  if (source != null) {
      * @return a color model using a data type inferred from the given sample model.
      */
     public ColorModel createColorModel(final SampleModel target, final int numBands, final int visibleBand) {
-        return createColorModel(DataType.forDataBufferType(ImageUtilities.getBandType(target)), numBands, visibleBand);
+        return createColorModel(DataType.forBands(target), numBands, visibleBand);
     }
 
     /**

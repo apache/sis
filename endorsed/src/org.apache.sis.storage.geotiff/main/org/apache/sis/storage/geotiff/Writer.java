@@ -43,7 +43,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.IncompatibleResourceException;
@@ -363,7 +363,7 @@ final class Writer extends IOBase implements Flushable {
     {
         final SampleModel sm = image.exportable.getSampleModel();
         Compression compression = store.getCompression().orElse(Compression.DEFLATE);
-        if (!ImageUtilities.isIntegerType(sm)) {
+        if (!DataType.isInteger(sm)) {
             compression = compression.withPredictor(PREDICTOR_NONE);
         }
         /*

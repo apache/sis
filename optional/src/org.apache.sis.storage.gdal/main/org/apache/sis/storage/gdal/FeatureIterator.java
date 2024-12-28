@@ -274,7 +274,7 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, Runnable {
         try {
             feature = layer.type.newInstance();
             for (FieldAccessor<?> field : layer.fields) {
-                feature.setPropertyValue(field.name, field.getValue(this, ogr, handle));
+                feature.setPropertyValue(field.name(), field.getValue(this, ogr, handle));
             }
         } finally {
             ogr.destroyFeature.invokeExact(handle);
