@@ -221,28 +221,23 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *     <th>Map key</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
      *     <td>{@link GenericName} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEPRECATED_KEY}</td>
      *     <td>{@link Boolean}</td>
      *     <td>{@link #isDeprecated()}</td>
@@ -396,7 +391,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          *
          * In the `aliases` map below, null values will be assigned to ambiguous short names.
          */
-        final Map<String, PropertyType> aliases = new LinkedHashMap<>();
+        final var aliases = new LinkedHashMap<String, PropertyType>();
         for (final PropertyType property : allProperties) {
             GenericName name = property.getName();
             while (name instanceof ScopedName) {
@@ -531,7 +526,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          * change the result.
          */
         if (feature instanceof DefaultFeatureType) {
-            final DefaultFeatureType dt = (DefaultFeatureType) feature;
+            final var dt = (DefaultFeatureType) feature;
             return dt.isResolved = resolve(dt, dt.properties, previous, dt.isResolved);
         } else {
             return resolve(feature, feature.getProperties(false), previous, feature.isSimple());

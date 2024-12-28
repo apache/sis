@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Map;
 import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.util.privy.Strings;
 
 
@@ -62,9 +64,13 @@ abstract class FieldAccessor<V> {
     private static final int NUM_DATE_COMPONENTS = 7;
 
     /**
-     * Name of this field.
+     * Name of this field. Each name in a {@code FeatureType} shall be unique.
+     * This name may differ from the name declared by <abbr>GDAL</abbr> if name collisions were detected.
+     *
+     * @see #name()
+     * @see #rename(Map, Integer)
      */
-    public final String name;
+    private String name;
 
     /**
      * Index of this field in each {@code OGRFeatureH} instance.
@@ -82,6 +88,29 @@ abstract class FieldAccessor<V> {
     protected FieldAccessor(final String name, final int index) {
         this.name  = name;
         this.index = index;
+    }
+
+    /**
+     * Renames this field for avoiding name collision.
+     * The algorithm in this method is not verify efficient, but should be okay in the common
+     * case where there is only a few fields (typically only two) in conflict for a given name.
+     *
+     * @param  names  names that are already used.
+     * @param  value  value to assign to the new name in the map.
+     */
+    final void rename(final Map<String,Integer> names, final Integer value) {
+        final String base = name;
+        int counter = 0;
+        do name = base + FeatureUtilities.DISAMBIGUATION_SEQUENTIAL_NUMBER_PREFIX + (++counter);
+        while (names.putIfAbsent(name, value) != null);
+    }
+
+    /**
+     * Returns the name of this field. Each name in a {@code FeatureType} is unique.
+     * This name may differ from the name declared by <abbr>GDAL</abbr> if name collisions were detected.
+     */
+    public final String name() {
+        return name;
     }
 
     /**
