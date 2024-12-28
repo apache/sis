@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Locale;
-import java.util.StringTokenizer;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.BufferedReader;
@@ -26,15 +25,16 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.metadata.sql.privy.ScriptRunner;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.system.Fallback;
+import static org.apache.sis.util.privy.Constants.EPSG;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
+import org.apache.sis.metadata.sql.privy.ScriptRunner;
+import org.apache.sis.metadata.sql.privy.SQLUtilities;
+import org.apache.sis.system.Fallback;
 import org.apache.sis.setup.InstallationResources;
-import static org.apache.sis.util.privy.Constants.EPSG;
 
 
 /**
@@ -76,17 +76,9 @@ final class EPSGInstaller extends ScriptRunner {
      */
     public EPSGInstaller(final Connection connection) throws SQLException {
         super(connection, 100);
-        boolean isReplaceSupported = false;
         final DatabaseMetaData metadata = connection.getMetaData();
-        final String functions = metadata.getStringFunctions();
-        for (final StringTokenizer tk = new StringTokenizer(functions, ","); tk.hasMoreTokens();) {
-            final String token = tk.nextToken().trim();
-            if (token.equalsIgnoreCase("REPLACE")) {
-                isReplaceSupported = true;
-                break;
-            }
-        }
-        if (!isReplaceSupported) {
+        final String[] functions = metadata.getStringFunctions().split("\\s*,\\s*");
+        if (!ArraysExt.containsIgnoreCase(functions, "REPLACE")) {
             addStatementToSkip(REPLACE_STATEMENT);
         }
         /*

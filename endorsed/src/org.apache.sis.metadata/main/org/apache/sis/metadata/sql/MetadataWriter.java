@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.sql.Statement;
 import java.sql.Connection;
@@ -737,10 +736,9 @@ public class MetadataWriter extends MetadataSource {
      * The returned identifier is guaranteed to not contain {@linkplain #isReservedChar(int) reserved characters}.
      */
     private static String abbreviation(final String identifier) {
-        final StringBuilder buffer = new StringBuilder();
-        final StringTokenizer tokens = new StringTokenizer(identifier);
-        while (tokens.hasMoreTokens()) {
-            final int c = tokens.nextToken().codePointAt(0);
+        final var buffer = new StringBuilder();
+        for (final String token : identifier.split("\\s+")) {
+            final int c = token.codePointAt(0);
             if (!isReservedChar(c)) {
                 buffer.appendCodePoint(c);
             }

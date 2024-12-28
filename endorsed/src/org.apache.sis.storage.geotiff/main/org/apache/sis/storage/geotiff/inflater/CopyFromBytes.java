@@ -109,10 +109,9 @@ abstract class CopyFromBytes extends Inflater {
                                 final int    pixelsPerElement)
             throws UnsupportedEncodingException
     {
-        switch (dataType) {
-            case USHORT: // Fall through
-            case SHORT:  return new Shorts (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+        switch (dataType.toPrimitive()) {
             case BYTE:   return new Bytes  (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+            case SHORT:  return new Shorts (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
             case INT:    return new Ints   (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
             case FLOAT:  return new Floats (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
             case DOUBLE: return new Doubles(input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);

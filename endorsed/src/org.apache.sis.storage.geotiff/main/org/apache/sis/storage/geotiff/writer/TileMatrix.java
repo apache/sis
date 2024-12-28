@@ -279,14 +279,14 @@ public final class TileMatrix {
                     if (dataByteOrder != null) {
                         compOutput.buffer.order(dataByteOrder);
                     }
-                    switch (type) {
+                    switch (type.toDataBufferType()) {
                         default:     throw new AssertionError(type);
-                        case BYTE:   rect.write(compOutput, ((DataBufferByte)   buffer).getData(b), offset, direct); break;
-                        case USHORT: rect.write(compOutput, ((DataBufferUShort) buffer).getData(b), offset); break;
-                        case SHORT:  rect.write(compOutput, ((DataBufferShort)  buffer).getData(b), offset); break;
-                        case INT:    rect.write(compOutput, ((DataBufferInt)    buffer).getData(b), offset); break;
-                        case FLOAT:  rect.write(compOutput, ((DataBufferFloat)  buffer).getData(b), offset); break;
-                        case DOUBLE: rect.write(compOutput, ((DataBufferDouble) buffer).getData(b), offset); break;
+                        case DataBuffer.TYPE_BYTE:   rect.write(compOutput, ((DataBufferByte)   buffer).getData(b), offset, direct); break;
+                        case DataBuffer.TYPE_USHORT: rect.write(compOutput, ((DataBufferUShort) buffer).getData(b), offset); break;
+                        case DataBuffer.TYPE_SHORT:  rect.write(compOutput, ((DataBufferShort)  buffer).getData(b), offset); break;
+                        case DataBuffer.TYPE_INT:    rect.write(compOutput, ((DataBufferInt)    buffer).getData(b), offset); break;
+                        case DataBuffer.TYPE_FLOAT:  rect.write(compOutput, ((DataBufferFloat)  buffer).getData(b), offset); break;
+                        case DataBuffer.TYPE_DOUBLE: rect.write(compOutput, ((DataBufferDouble) buffer).getData(b), offset); break;
                     }
                     if (compressor != null) {
                         compressor.finish(compOutput);

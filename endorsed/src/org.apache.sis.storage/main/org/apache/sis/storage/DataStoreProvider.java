@@ -20,7 +20,6 @@ import java.io.Reader;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import javax.imageio.stream.ImageInputStream;
-import java.util.Objects;
 import java.util.logging.Logger;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -408,7 +407,7 @@ public abstract class DataStoreProvider {
                  * with its own mark and position. Byte order of the view is intentionally fixed to BIG_ENDIAN
                  * (the default) regardless the byte order of the original buffer.
                  */
-                final ByteBuffer buffer = (ByteBuffer) input;
+                final var buffer = (ByteBuffer) input;
                 result = prober.test(type.cast(buffer.asReadOnlyBuffer()));
             } else if (input instanceof Markable) {
                 /*
@@ -416,7 +415,7 @@ public abstract class DataStoreProvider {
                  * their own marks. In principle a single call to `reset()` is enough, but we check the
                  * position in case the user has done some marks without resets.
                  */
-                final Markable stream = (Markable) input;
+                final var stream = (Markable) input;
                 final long position = stream.getStreamPosition();
                 stream.mark();
                 result = prober.test(input);
@@ -426,7 +425,7 @@ public abstract class DataStoreProvider {
                  * `ImageInputStream` supports an arbitrary number of marks as well,
                  * but we use absolute positioning for simplicity.
                  */
-                final ImageInputStream stream = (ImageInputStream) input;
+                final var stream = (ImageInputStream) input;
                 final long position = stream.getStreamPosition();
                 result = prober.test(input);
                 stream.seek(position);
@@ -435,7 +434,7 @@ public abstract class DataStoreProvider {
                  * `InputStream` supports at most one mark. So we keep it for ourselves
                  * and wrap the stream in an object that prevent users from using marks.
                  */
-                final ProbeInputStream stream = new ProbeInputStream(connector, (InputStream) input);
+                final var stream = new ProbeInputStream(connector, (InputStream) input);
                 result = prober.test(type.cast(stream));
                 stream.close();     // No "try with resource". See `ProbeInputStream.close()` contract.
             } else if (input instanceof RewindableLineReader) {
@@ -449,7 +448,7 @@ public abstract class DataStoreProvider {
                 result = prober.test(input);
                 r.protectedReset();
             } else if (input instanceof Reader) {
-                final ProbeReader stream = new ProbeReader(connector, (Reader) input);
+                final var stream = new ProbeReader(connector, (Reader) input);
                 result = prober.test(type.cast(stream));
                 stream.close();     // No "try with resource". See `ProbeReader.close()` contract.
             } else {
@@ -562,7 +561,7 @@ public abstract class DataStoreProvider {
     }
 
     /**
-     * Returns a data store implementation associated with this provider.
+     * Creates a data store instance associated with this provider.
      * This method is typically invoked when the format is not known in advance
      * (the {@link #probeContent(StorageConnector)} method can be tested on many providers)
      * or when the input is not a type accepted by {@link #open(ParameterValueGroup)}
@@ -573,7 +572,7 @@ public abstract class DataStoreProvider {
      * creation, keeping open only the needed resource.
      *
      * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
-     * @return a data store implementation associated with this provider for the given storage.
+     * @return a data store instance associated with this provider for the given storage.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      *
      * @see DataStores#open(Object)
@@ -581,7 +580,7 @@ public abstract class DataStoreProvider {
     public abstract DataStore open(StorageConnector connector) throws DataStoreException;
 
     /**
-     * Returns a data store implementation associated with this provider for the given parameters.
+     * Creates a data store instance associated with this provider for the given parameters.
      * The {@code DataStoreProvider} instance needs to be known before parameters are initialized,
      * since the parameters are implementation-dependent. Example:
      *
@@ -601,7 +600,7 @@ public abstract class DataStoreProvider {
      * which is then passed to {@link #open(StorageConnector)}.
      *
      * @param  parameters  opening parameters as defined by {@link #getOpenParameters()}.
-     * @return a data store implementation associated with this provider for the given parameters.
+     * @return a data store instance associated with this provider for the given parameters.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      *
      * @see #LOCATION
@@ -611,7 +610,8 @@ public abstract class DataStoreProvider {
      * @since 0.8
      */
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        return open(URIDataStoreProvider.connector(this, Objects.requireNonNull(parameters)));
+        // IllegalOpenParameterException thrown if `parameters` is null.
+        return open(URIDataStoreProvider.connector(this, parameters));
     }
 
     /**

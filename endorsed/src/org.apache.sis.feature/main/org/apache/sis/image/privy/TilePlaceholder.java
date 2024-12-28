@@ -34,6 +34,7 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.system.ReferenceQueueConsumer;
+import org.apache.sis.image.DataType;
 
 
 /**
@@ -286,8 +287,8 @@ public class TilePlaceholder {
         WithCross(final RenderedImage image) {
             super(image.getSampleModel());
             samples = new double[model.getNumBands()];
-            if (ImageUtilities.isIntegerType(model)) {
-                final boolean isUnsigned = ImageUtilities.isUnsignedType(model);
+            if (DataType.isInteger(model)) {
+                final boolean isUnsigned = DataType.isUnsigned(model);
                 for (int i=0; i<samples.length; i++) {
                     int size = model.getSampleSize(i);
                     if (!isUnsigned) size--;

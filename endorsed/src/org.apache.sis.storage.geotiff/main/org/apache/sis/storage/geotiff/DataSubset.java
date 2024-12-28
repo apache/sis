@@ -546,7 +546,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             final int limit    = bank.limit();
             final int capacity = bank.capacity();   // Equals `this.capacity` except for packed sample model.
             if (limit != capacity) {
-                final Vector v = Vector.create(bank.limit(capacity), ImageUtilities.isUnsignedType(model));
+                final Vector v = Vector.create(bank.limit(capacity), DataType.isUnsigned(model));
                 final Number f = fillValues[band];
                 /*
                  * If all values are the same, we can delegate (indirectly) to an `Arrays.fill(…)` method.

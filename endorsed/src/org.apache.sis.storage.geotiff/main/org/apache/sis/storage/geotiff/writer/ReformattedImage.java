@@ -27,6 +27,7 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.pending.jdk.JDK18;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
@@ -208,8 +209,8 @@ found:  if (property instanceof Statistics[]) {
      */
     public int getSampleFormat() {
         final SampleModel sm = exportable.getSampleModel();
-        if (ImageUtilities.isUnsignedType(sm)) return SAMPLE_FORMAT_UNSIGNED_INTEGER;
-        if (ImageUtilities.isIntegerType(sm))  return SAMPLE_FORMAT_SIGNED_INTEGER;
+        if (DataType.isUnsigned(sm)) return SAMPLE_FORMAT_UNSIGNED_INTEGER;
+        if (DataType.isInteger(sm))  return SAMPLE_FORMAT_SIGNED_INTEGER;
         return SAMPLE_FORMAT_FLOATING_POINT;
     }
 

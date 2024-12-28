@@ -18,7 +18,6 @@ package org.apache.sis.metadata.sql.privy;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.StringTokenizer;
 import org.apache.sis.util.CharSequences;
 
 
@@ -268,13 +267,13 @@ public class SQLBuilder extends Syntax {
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendWildcardEscaped(final String value) {
-        final StringTokenizer tokens = new StringTokenizer(value, "_%", true);
-        while (tokens.hasMoreTokens()) {
-            buffer.append(tokens.nextToken());
-            if (!tokens.hasMoreTokens()) {
-                break;
+        final int start = buffer.length();
+        buffer.append(value);
+        for (int i = buffer.length(); --i >= start;) {
+            final char c = buffer.charAt(i);
+            if (c == '_' || c == '%') {
+                buffer.insert(i, escape);
             }
-            buffer.append(escape).append(tokens.nextToken());
         }
         return this;
     }

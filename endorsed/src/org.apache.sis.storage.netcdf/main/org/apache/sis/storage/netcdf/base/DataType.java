@@ -95,7 +95,7 @@ public enum DataType {
      * 32 bits unsigned integer (netCDF type 9).
      * Not available in netCDF classic format.
      */
-    UINT(Numbers.INTEGER, Long.class, true, true, (byte) 4, org.apache.sis.image.DataType.INT),
+    UINT(Numbers.INTEGER, Long.class, true, true, (byte) 4, org.apache.sis.image.DataType.UINT),
 
     /**
      * 64 bits signed integer (netCDF type 10).
