@@ -19,6 +19,8 @@ package org.apache.sis.storage.geotiff;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Logger;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Version;
 import org.apache.sis.storage.Aggregate;
@@ -34,11 +36,12 @@ import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider of {@link GeoTiffStore} instances. Given a {@link StorageConnector} input,
- * this class tries to instantiate a {@code GeoTiffStore}.
+ * The provider of {@code GeoTiffStore} instances.
+ * Given a {@link StorageConnector} input, this class tries to instantiate a {@link GeoTiffStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
@@ -80,14 +83,24 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     static final String COMPRESSION = "compression";
 
     /**
+     * The parameter descriptor for {@link #MODIFIERS}.
+     */
+    private static final ParameterDescriptor<FormatModifier[]> MODIFIERS_PARAM;
+
+    /**
+     * The parameter descriptor for {@link #COMPRESSION}.
+     */
+    private static final ParameterDescriptor<Compression> COMPRESSION_PARAM;
+
+    /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
     private static final ParameterDescriptorGroup OPEN_DESCRIPTOR;
     static {
-        final var builder     = new ParameterBuilder();
-        final var modifiers   = builder.addName(MODIFIERS).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Options)).create(FormatModifier[].class, null);
-        final var compression = builder.addName(COMPRESSION).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Compression)).create(Compression.class, null);
-        OPEN_DESCRIPTOR = builder.addName(Constants.GEOTIFF).createGroup(URIDataStoreProvider.LOCATION_PARAM, modifiers, compression);
+        final var builder = new ParameterBuilder();
+        MODIFIERS_PARAM   = builder.addName(MODIFIERS).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Options)).create(FormatModifier[].class, null);
+        COMPRESSION_PARAM = builder.addName(COMPRESSION).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Compression)).create(Compression.class, null);
+        OPEN_DESCRIPTOR   = builder.addName(Constants.GEOTIFF).createGroup(URIDataStoreProvider.LOCATION_PARAM, MODIFIERS_PARAM, COMPRESSION_PARAM);
     }
 
     /**
@@ -119,14 +132,14 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Returns the MIME type if the given storage appears to be supported by {@link GeoTiffStore}.
+     * Returns the MIME type if the given storage appears to be supported by {@code GeoTiffStore}.
      * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
      * or writing will succeed, only that there appears to be a reasonable chance of success
      * based on a brief inspection of the file header.
      *
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @return a {@linkplain ProbeResult#isSupported() supported} status with the MIME type
-     *         if the given storage seems to be readable by {@code GeoTiffStore} instances.
+     *         if the given storage seems to be readable by {@link GeoTiffStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
@@ -150,10 +163,10 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Creates a {@link GeoTiffStore} implementation associated with this provider.
+     * Creates a {@code GeoTiffStore} instance associated with this provider.
      *
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @return a data store implementation associated with this provider for the given storage.
+     * @return a data store instance associated with this provider for the given storage.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
@@ -162,6 +175,30 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
             return new WritableStore(this, connector);
         }
         return new GeoTiffStore(this, connector);
+    }
+
+    /**
+     * Creates a {@code GeoTiffStore} instance from the given parameters.
+     *
+     * @param  parameters  opening parameters as defined by {@link #getOpenParameters()}.
+     * @return a data store instance associated with this provider for the given parameters.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
+     *
+     * @since 1.5
+     */
+    @Override
+    public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
+        final var p = Parameters.castOrWrap(parameters);
+        final var connector = new StorageConnector(p.getValue(URIDataStoreProvider.LOCATION_PARAM));
+        final FormatModifier[] modifiers = p.getValue(MODIFIERS_PARAM);
+        if (modifiers != null) {
+            connector.setOption(FormatModifier.OPTION_KEY, modifiers);
+        }
+        final Compression compression = p.getValue(COMPRESSION_PARAM);
+        if (compression != null) {
+            connector.setOption(Compression.OPTION_KEY, compression);
+        }
+        return open(connector);
     }
 
     /**
