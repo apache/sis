@@ -98,6 +98,20 @@ public final class DataTypeTest extends TestCase {
     }
 
     /**
+     * Tests {@link DataType#toPrimitive()}.
+     */
+    @Test
+    public void testToPrimitive() {
+        assertEquals(DataType.BYTE,   DataType.BYTE  .toPrimitive());
+        assertEquals(DataType.SHORT,  DataType.USHORT.toPrimitive());
+        assertEquals(DataType.SHORT,  DataType.SHORT .toPrimitive());
+        assertEquals(DataType.INT,    DataType.INT   .toPrimitive());
+        assertEquals(DataType.INT,    DataType.UINT  .toPrimitive());
+        assertEquals(DataType.FLOAT,  DataType.FLOAT .toPrimitive());
+        assertEquals(DataType.DOUBLE, DataType.DOUBLE.toPrimitive());
+    }
+
+    /**
      * Tests {@link DataType#toFloat()}.
      */
     @Test

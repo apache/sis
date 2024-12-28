@@ -210,11 +210,9 @@ public final class RasterFactory extends Static {
      * @return buffer of the specified type and size.
      */
     public static Buffer createBuffer(final DataType dataType, final int capacity) {
-        switch (dataType) {
+        switch (dataType.toPrimitive()) {
             case BYTE:   return ByteBuffer  .allocate(capacity);
-            case USHORT: // Fallthrough
             case SHORT:  return ShortBuffer .allocate(capacity);
-            case UINT:   // Fallthrough
             case INT:    return IntBuffer   .allocate(capacity);
             case FLOAT:  return FloatBuffer .allocate(capacity);
             case DOUBLE: return DoubleBuffer.allocate(capacity);

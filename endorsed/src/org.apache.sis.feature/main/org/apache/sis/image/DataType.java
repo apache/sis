@@ -65,6 +65,9 @@ public enum DataType {
      * Mapped to {@link DataBuffer#TYPE_INT} in Java2D <abbr>API</abbr>.
      * Note that the sign of the latter Java2D type is ambiguous.
      * See {@link #forDataBufferType(int)} for more information.
+     *
+     * <p>This type is selected by default for all {@link DataBuffer#TYPE_INT}
+     * cases that cannot be resolved as an {@link #UINT} case.</p>
      */
     INT(DataBuffer.TYPE_INT, 0),
 
@@ -73,6 +76,9 @@ public enum DataType {
      * Mapped to {@link DataBuffer#TYPE_INT} in Java2D <abbr>API</abbr>.
      * Note that the sign of the latter Java2D type is ambiguous.
      * See {@link #forDataBufferType(int)} for more information.
+     *
+     * <p>This case is selected when the data are used with any packed sample model:
+     * {@link SinglePixelPackedSampleModel} or {@link MultiPixelPackedSampleModel}.</p>
      *
      * @since 1.5
      */
@@ -110,6 +116,7 @@ public enum DataType {
      * @see #forDataBufferType(int)
      */
     private static final DataType[] VALUES = ArraysExt.remove(values(), DataBuffer.TYPE_INT + 1, 1);
+    // Initialization trick: ordinal values would be DataBuffer.TYPE_* values is UINT wasn't present.
 
     /**
      * Creates a new enumeration value.
@@ -175,13 +182,13 @@ public enum DataType {
      *       and maximum value rounded toward positive infinity.</li>
      * </ul>
      *
-     * @param  range      the range of values.
-     * @param  asInteger  whether to handle floating point values as integers.
+     * @param  range         the range of values.
+     * @param  forceInteger  whether to handle floating point values as integers.
      * @return smallest data type for the given range of values.
      */
-    public static DataType forRange(final NumberRange<?> range, final boolean asInteger) {
+    public static DataType forRange(final NumberRange<?> range, final boolean forceInteger) {
         final byte nt = Numbers.getEnumConstant(range.getElementType());
-        if (!asInteger) {
+        if (!forceInteger) {
             if (nt >= Numbers.DOUBLE)   return DOUBLE;
             if (nt >= Numbers.FRACTION) return FLOAT;
         }
@@ -308,16 +315,14 @@ public enum DataType {
                 case Float.SIZE:  return FLOAT;
                 case Double.SIZE: return DOUBLE;
             }
-        } else {
+        } else if (size <= Integer.SIZE) {
             switch (size) {
                 case Short.SIZE:   return signed ? SHORT : USHORT;
                 case Integer.SIZE: return signed ? INT   : UINT;
+                default: if (!signed) return BYTE; else break;
             }
-            if (size <= Byte.SIZE) {
-                if (!signed) return BYTE;
-                argument = "signed";
-                value    =  signed;
-            }
+            argument = "signed";
+            value    =  signed;
         }
         throw new RasterFormatException(Resources.format(Resources.Keys.UnsupportedSampleType_3, size, argument, value));
     }
@@ -341,6 +346,30 @@ public enum DataType {
      */
     public final int bytes() {
         return Math.max(size() >>> 3, 1);
+    }
+
+    /**
+     * Returns whether this type is an integer type, signed or not.
+     * Integer types are {@link #BYTE}, {@link #USHORT}, {@link #SHORT}, {@link #INT} and {@link #UINT}.
+     *
+     * @return {@code true} if this type is an integer type.
+     */
+    public final boolean isInteger() {
+        return dataType <= DataBuffer.TYPE_INT;
+    }
+
+    /**
+     * Returns {@code true} if the given sample model uses an integer type.
+     * Returns {@code false} if the type is a floating point type or in case
+     * of doubt (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
+     *
+     * @param  sm  the sample model, or {@code null}.
+     * @return whether the given sample model uses an integer type.
+     *
+     * @since 1.5
+     */
+    public static boolean isInteger(final SampleModel sm) {
+        return (sm != null) && ImageUtilities.isIntegerType(sm.getDataType());
     }
 
     /**
@@ -383,27 +412,27 @@ public enum DataType {
     }
 
     /**
-     * Returns whether this type is an integer type, signed or not.
-     * Integer types are {@link #BYTE}, {@link #USHORT}, {@link #SHORT}, {@link #INT} and {@link #UINT}.
+     * Returns the primitive (signed) variant of this data type.
+     * This method returns the value that most closely maps to a Java primitive type of the same number of bits.
+     * Since all Java primitive types are signed, this method returns the signed variant of this type except for
+     * the special case of {@link #BYTE} (because {@code DataType} does not define signed variant of that type).
      *
-     * @return {@code true} if this type is an integer type.
-     */
-    public final boolean isInteger() {
-        return dataType <= DataBuffer.TYPE_INT;
-    }
-
-    /**
-     * Returns {@code true} if the given sample model uses an integer type.
-     * Returns {@code false} if the type is a floating point type or in case
-     * of doubt (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
+     * <p>More specifically, this methods replaces {@link #UINT} by {@link #INT},
+     * replaces {@link #USHORT} by {@link #SHORT}, and returns all other types unchanged.
+     * The purpose of this method is to simplify the {@code switch} statements with cases
+     * restricted to Java primitive types, such as mapping to specific <abbr>NIO</abbr>
+     * {@link java.nio.Buffer} subclasses.</p>
      *
-     * @param  sm  the sample model, or {@code null}.
-     * @return whether the given sample model works on integer values.
+     * @return the data type that most closely corresponds to a Java primitive type.
      *
      * @since 1.5
      */
-    public static boolean isInteger(final SampleModel sm) {
-        return (sm != null) && ImageUtilities.isIntegerType(sm.getDataType());
+    public final DataType toPrimitive() {
+        switch (dataType) {
+            default: return this;
+            case DataBuffer.TYPE_INT: return INT;
+            case DataBuffer.TYPE_USHORT: return SHORT;
+        }
     }
 
     /**

@@ -104,11 +104,9 @@ abstract class HorizontalPredictor extends PredictorChannel {
     static HorizontalPredictor create(final CompressionChannel input, final DataType dataType,
             final int pixelStride, final int width)
     {
-        switch (dataType) {
+        switch (dataType.toPrimitive()) {
             case BYTE:   return new Bytes   (input, pixelStride, width);
-            case USHORT: // Fall through
             case SHORT:  return new Shorts  (input, pixelStride, width);
-            case UINT:   // Fall through
             case INT:    return new Integers(input, pixelStride, width);
             case FLOAT:  return new Floats  (input, pixelStride, width);
             case DOUBLE: return new Doubles (input, pixelStride, width);
