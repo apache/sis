@@ -97,7 +97,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
      * Gets the paths to files used by this resource, or an empty value if unknown.
      */
     @Override
-    public final Optional<FileSet> getFileSet() {
+    public final Optional<FileSet> getFileSet() throws DataStoreException {
         return levels[0].getFileSet();
     }
 
