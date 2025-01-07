@@ -3131,7 +3131,6 @@ public class MetadataBuilder {
             }
         }
         final DefaultCitation c = getFormatCitation();
-        addIfNotPresent(c.getIdentifiers(), driver);
         addIfNotPresent(c.getOtherCitationDetails(),
                 Resources.formatInternational(Resources.Keys.ReadBy_2, (title != null) ? title : driver.getCodeSpace(),
                         (version != null) ? version : Vocabulary.formatInternational(Vocabulary.Keys.Unspecified)));
