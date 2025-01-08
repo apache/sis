@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.builder;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Queue;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
@@ -500,7 +499,7 @@ search: for (int j=numPoints; --j >= 0;) {
     public Envelope getSourceEnvelope() {
         if (gridSize != null) {
             final int dim = gridSize.length;
-            final GeneralEnvelope envelope = new GeneralEnvelope(dim);
+            final var envelope = new GeneralEnvelope(dim);
             for (int i=0; i <dim; i++) {
                 envelope.setRange(i, 0, gridSize[i] - 1);
             }
@@ -533,7 +532,7 @@ search: for (int j=numPoints; --j >= 0;) {
             throw new IllegalStateException(noData());
         }
         final int dim = points.length;
-        final GeneralEnvelope envelope = new GeneralEnvelope(dim);
+        final var envelope = new GeneralEnvelope(dim);
         for (int i=0; i<dim; i++) {
             final double[] values = points[i];
             double lower = Double.POSITIVE_INFINITY;
@@ -741,7 +740,7 @@ search: for (int j=numPoints; --j >= 0;) {
                 case 1: return new DirectPosition1D(data[0][offset]);
                 case 2: return new DirectPosition2D(data[0][offset], data[1][offset]);
             }
-            final GeneralDirectPosition pos = new GeneralDirectPosition(data.length);
+            final var pos = new GeneralDirectPosition(data.length);
             for (int i=0; i<data.length; i++) pos.setCoordinate(i, data[i][offset]);
             return pos;
         }
@@ -886,7 +885,7 @@ search:         for (int j=domain(); --j >= 0;) {
                 @Override protected DirectPosition getKey() {
                     final int[] gridSize = LinearTransformBuilder.this.gridSize;
                     final int dim = gridSize.length;
-                    final GeneralDirectPosition pos = new GeneralDirectPosition(dim);
+                    final var pos = new GeneralDirectPosition(dim);
                     int offset = index;
                     for (int i=0; i<dim; i++) {
                         final int size = gridSize[i];
@@ -1406,8 +1405,9 @@ search:         for (int j=domain(); --j >= 0;) {
                  * `double[]` arrays may be large (e.g. megabytes) and we want to avoid creating new arrays of
                  * such size for each projection to try.
                  */
-                final Queue<double[]> pool = new ArrayDeque<>();
-                final LinearTransformBuilder tmp = new LinearTransformBuilder(this);
+                final var pool = new ArrayDeque<double[]>();
+                final var tmp = new LinearTransformBuilder(this);
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final int numPoints = (gridLength != 0) ? gridLength : this.numPoints;
                 boolean needTargetReplace = false;
                 for (final ProjectedTransformTry alt : linearizers) {
@@ -1482,8 +1482,9 @@ search:         for (int j=domain(); --j >= 0;) {
      * that depend on affine transform assumption.</p>
      */
     private MatrixSIS fit() throws FactoryException {
-        final double[][] sources = this.sources;                    // Protect from changes.
-        final double[][] targets = this.targets;
+        // Protect `sources` and `targets` against accidental changes.
+        @SuppressWarnings("LocalVariableHidesMemberVariable") final double[][] sources = this.sources;
+        @SuppressWarnings("LocalVariableHidesMemberVariable") final double[][] targets = this.targets;
         if (targets == null) {
             throw new InvalidGeodeticParameterException(noData());
         }
@@ -1635,7 +1636,7 @@ search:         for (int j=domain(); --j >= 0;) {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(400);
+        final var buffer = new StringBuilder(400);
         final String lineSeparator;
         try {
             lineSeparator = appendTo(buffer, getClass(), null, Vocabulary.Keys.Result);
@@ -1686,7 +1687,7 @@ search:         for (int j=domain(); --j >= 0;) {
             vocabulary.appendLabel(Vocabulary.Keys.Preprocessing, buffer);
             buffer.append(lineSeparator);
             NumberFormat nf = null;
-            final TableAppender table = new TableAppender(buffer, " │ ");
+            final var table = new TableAppender(buffer, " │ ");
             table.appendHorizontalSeparator();
             table.append(vocabulary.getString(Vocabulary.Keys.Conversion)).nextColumn();
             table.append(vocabulary.getString(Vocabulary.Keys.Correlation)).nextLine();
@@ -1710,7 +1711,7 @@ search:         for (int j=domain(); --j >= 0;) {
             buffer.append(Strings.CONTINUATION_ITEM);
             vocabulary.appendLabel(resultKey, buffer);
             buffer.append(lineSeparator);
-            final TableAppender table = new TableAppender(buffer, " ");
+            final var table = new TableAppender(buffer, " ");
             table.setMultiLinesCells(true);
             table.append(Matrices.toString(transform.getMatrix())).nextColumn();
             table.append(lineSeparator).append("  ")

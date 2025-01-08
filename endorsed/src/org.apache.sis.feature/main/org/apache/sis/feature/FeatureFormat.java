@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.EnumSet;
@@ -374,7 +373,7 @@ public class FeatureFormat extends TabularFormat<Object> {
          * Create a table and format the header. Columns will be shown in Column enumeration order.
          */
         final Vocabulary resources = Vocabulary.forLocale(displayLocale);
-        final TableAppender table = new TableAppender(toAppendTo, columnSeparator);
+        final var table = new TableAppender(toAppendTo, columnSeparator);
         table.setMultiLinesCells(true);
         table.nextLine('─');
         boolean isFirstColumn = true;
@@ -396,9 +395,9 @@ public class FeatureFormat extends TabularFormat<Object> {
          * a row has no value, it will be skipped if and only if that row is optional (minimum occurrence
          * of zero).
          */
-        final StringBuffer  buffer  = new StringBuffer();
-        final FieldPosition dummyFP = new FieldPosition(-1);
-        final List<String>  remarks = new ArrayList<>();
+        final var buffer  = new StringBuffer();
+        final var dummyFP = new FieldPosition(-1);
+        final var remarks = new ArrayList<String>();
         for (final PropertyType propertyType : featureType.getProperties(true)) {
             Object value = null;
             int cardinality = -1;

@@ -96,7 +96,7 @@ public final class ConsistencyTest extends TestCase {
     public void debug() throws FactoryException {
         final String code = "EPSG::29871";
         final CoordinateReferenceSystem crs = CRS.forCode(code);
-        final WKTFormat format = new WKTFormat();
+        final var format = new WKTFormat();
         format.setConvention(Convention.WKT2);
         lookup(parseAndFormat(format, code, crs), crs);
     }
@@ -110,10 +110,10 @@ public final class ConsistencyTest extends TestCase {
     @Tag(TAG_SLOW)
     public void testCoordinateReferenceSystems() throws FactoryException {
         assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
-        final WKTFormat v1  = new WKTFormat();
-        final WKTFormat v1c = new WKTFormat();
-        final WKTFormat v2  = new WKTFormat();
-        final WKTFormat v2s = new WKTFormat();
+        final var v1  = new WKTFormat();
+        final var v1c = new WKTFormat();
+        final var v2  = new WKTFormat();
+        final var v2s = new WKTFormat();
         v1 .setConvention(Convention.WKT1);
         v1c.setConvention(Convention.WKT1_COMMON_UNITS);
         v2 .setConvention(Convention.WKT2);
@@ -230,7 +230,7 @@ public final class ConsistencyTest extends TestCase {
             }
         } catch (AssertionError e) {
             print(code, "ERROR", "WKT are not equal.");
-            final TableAppender table = new TableAppender();
+            final var table = new TableAppender();
             table.nextLine('═');
             table.setMultiLinesCells(true);
             table.append("Original WKT:");

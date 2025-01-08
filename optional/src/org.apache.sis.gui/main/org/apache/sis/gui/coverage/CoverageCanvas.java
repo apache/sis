@@ -1199,8 +1199,8 @@ public class CoverageCanvas extends MapCanvasAWT {
             return super.toString();
         }
         final String lineSeparator = System.lineSeparator();
-        final StringBuilder buffer = new StringBuilder(1000);
-        final TableAppender table  = new TableAppender(buffer);
+        final var buffer = new StringBuilder(1000);
+        final var table  = new TableAppender(buffer);
         table.setMultiLinesCells(true);
         try {
             table.nextLine('═');

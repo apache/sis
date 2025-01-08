@@ -16,7 +16,6 @@
  */
 package org.apache.sis.math;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -264,7 +263,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      */
     @Override
     public void format(Statistics stats, final Appendable toAppendTo) throws IOException {
-        final List<Statistics> list = new ArrayList<>(3);
+        final var list = new ArrayList<Statistics>(3);
         while (stats != null) {
             list.add(stats);
             stats = stats.differences();
@@ -304,7 +303,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             case 1: horizontalLine = '─'; separator += "│ "; break;
             case 2: horizontalLine = '═'; separator += "║ "; break;
         }
-        final TableAppender table = new TableAppender(toAppendTo, separator);
+        final var table = new TableAppender(toAppendTo, separator);
         final Vocabulary resources = Vocabulary.forLocale(headerLocale);
         /*
          * If there is a header for at least one statistics, write the full headers row.
@@ -401,7 +400,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     private static Format configure(final Format format, final Statistics stats, final boolean clone) {
         int multiplier = 1;
         if (format instanceof DecimalFormat) {
-            DecimalFormat df = (DecimalFormat) format;
+            var df = (DecimalFormat) format;
             multiplier = df.getMultiplier();
             /*
              * Check for scientific notation: the threshold below is high so that geocentric and projected
@@ -439,7 +438,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             int digits = Numerics.suggestFractionDigits(stats);
             digits -= DecimalFunctions.floorLog10(multiplier);
             digits = Math.max(0, digits);
-            NumberFormat nf = (NumberFormat) format;
+            var nf = (NumberFormat) format;
             if (digits != nf.getMinimumFractionDigits() ||
                 digits != nf.getMaximumFractionDigits())
             {

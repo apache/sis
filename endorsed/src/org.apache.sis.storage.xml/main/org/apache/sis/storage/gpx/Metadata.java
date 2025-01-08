@@ -315,7 +315,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<Responsibility> getPointOfContacts() {
         if (creator != null) {
-            final Person p = new Person(creator);
+            final var p = new Person(creator);
             return (author != null) ? UnmodifiableArrayList.wrap(new Responsibility[] {p, author})
                                     : Collections.singletonList(author);
         }
@@ -389,6 +389,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<ContentInformation> getContentInfo() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Store store = this.store;
         return (store != null) ? store.types.metadata : Collections.emptyList();
     }
@@ -401,6 +402,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<Format> getResourceFormats() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Store store = this.store;
         if (store != null) {
             Format f;
@@ -436,7 +438,7 @@ public final class Metadata extends SimpleMetadata {
             return true;
         }
         if (obj instanceof Metadata) {
-            final Metadata that = (Metadata) obj;
+            final var that = (Metadata) obj;
             return Objects.equals(this.creator,     that.creator)     &&
                    Objects.equals(this.name,        that.name)        &&
                    Objects.equals(this.description, that.description) &&
@@ -467,9 +469,9 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder();
+        final var buffer = new StringBuilder();
         buffer.append("GPX metadata").append(System.lineSeparator());
-        final TableAppender table = new TableAppender(buffer);
+        final var table = new TableAppender(buffer);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
         append(table, "Creator",     creator);

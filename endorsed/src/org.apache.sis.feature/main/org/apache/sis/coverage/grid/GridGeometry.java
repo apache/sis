@@ -394,8 +394,10 @@ public class GridGeometry implements LenientComparable, Serializable {
          */
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         ImmutableEnvelope envelope = other.envelope;            // We will share the same instance if possible.
-        ImmutableEnvelope computed = computeEnvelope(gridToCRS, getCoordinateReferenceSystem(envelope),
-                                                     toOther == null ? null : envelope);       // Clip.
+        ImmutableEnvelope computed = computeEnvelope(
+                gridToCRS,
+                getCoordinateReferenceSystem(envelope),
+                toOther == null ? null : envelope);             // Clip.
         if (computed == null || !computed.equals(envelope)) {
             envelope = computed;
         }
@@ -1826,7 +1828,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             return true;
         }
         if (object instanceof GridGeometry) {
-            final GridGeometry that = (GridGeometry) object;
+            final var that = (GridGeometry) object;
             if ((mode != ComparisonMode.STRICT || getClass().equals(object.getClass()))
                     && Utilities.deepEquals(extent,    that.extent,    mode)
                     && Utilities.deepEquals(gridToCRS, that.gridToCRS, mode))
@@ -1853,7 +1855,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     final boolean equalsApproximately(final ImmutableEnvelope othenv) {
         if (envelope != null) {
-            for (int i=envelope.getDimension(); --i >= 0;) {
+            for (int i = envelope.getDimension(); --i >= 0;) {
                 // Arbitrary threshold of ½ pixel.
                 final double ε = (resolution != null) ? resolution[i] * 0.5 : 0;
                 if (!MathFunctions.epsilonEqual(envelope.getLower(i), othenv.getLower(i), ε) ||
@@ -1927,7 +1929,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     @Debug
     public TreeTable toTree(final Locale locale, final int bitmask) {
         ArgumentChecks.ensureNonNull("locale", locale);
-        final TreeTable tree = new DefaultTreeTable(TableColumn.VALUE_AS_TEXT);
+        final var tree = new DefaultTreeTable(TableColumn.VALUE_AS_TEXT);
         final TreeTable.Node root = tree.getRoot();
         root.setValue(TableColumn.VALUE_AS_TEXT, Classes.getShortClassName(this));
         formatTo(locale, Vocabulary.forLocale(locale), bitmask, root);
@@ -2051,8 +2053,8 @@ public class GridGeometry implements LenientComparable, Serializable {
             if (section(GEOGRAPHIC_EXTENT, Vocabulary.Keys.GeographicExtent, false, false) ||
                 section(TEMPORAL_EXTENT,   Vocabulary.Keys.TemporalExtent, false, false))
             {
-                final TableAppender table = new TableAppender(buffer, "  ");
-                final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
+                final var table = new TableAppender(buffer, "  ");
+                final var nf = new AngleFormat("DD°MM′SS″", locale);
                 final GeographicBoundingBox bbox = ((bitmask & GEOGRAPHIC_EXTENT) != 0) ? geographicBBox() : null;
                 double westBoundLongitude = Double.NaN;
                 double eastBoundLongitude = Double.NaN;
@@ -2102,7 +2104,7 @@ public class GridGeometry implements LenientComparable, Serializable {
              */
             if (section(ENVELOPE, Vocabulary.Keys.Envelope, true, false)) {
                 final boolean appendResolution = (bitmask & RESOLUTION) != 0 && (resolution != null);
-                final TableAppender table = new TableAppender(buffer, "");
+                final var table = new TableAppender(buffer, "");
                 final int dimension = envelope.getDimension();
                 final NumberFormat nf = numberFormat();
                 for (int i=0; i<dimension; i++) {

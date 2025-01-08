@@ -1058,10 +1058,13 @@ public class ImageProcessor implements Cloneable {
     /**
      * Reformats the given image with a different sample model.
      * This operation <em>copies</em> the pixel values in a new image.
-     * Despite the copies being done on a tile-by-tile basis when each tile is  first requested,
+     * Despite the copies being done on a tile-by-tile basis when each tile is first requested,
      * this is still a relatively costly operation compared to the usual Apache <abbr>SIS</abbr>
      * approach of creating views as much as possible. Therefore, this method should be used only
      * when necessary.
+     *
+     * <h4>Preconditions</h4>
+     * The new sample model shall have the same number of bands as in the given image.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:

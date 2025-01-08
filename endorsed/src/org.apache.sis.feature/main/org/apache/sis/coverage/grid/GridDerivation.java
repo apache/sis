@@ -433,13 +433,14 @@ public class GridDerivation {
 
     /**
      * Adapts the base grid for the geographic area and resolution of the given grid geometry.
-     * The new grid geometry will cover the spatiotemporal region given by {@code areaOfInterest} envelope
-     * (coordinate operations are applied as needed if the Coordinate Reference Systems are not the same).
-     * The new grid geometry resolution will be integer multiples of the {@link #base} grid geometry resolution.
+     * The new grid geometry will cover the intersection of the {@linkplain #base} grid geometry
+     * and the spatiotemporal region given by {@code areaOfInterest} envelope.
+     * Coordinate operations are applied as needed if the Coordinate Reference Systems are not the same.
+     * The new grid geometry resolution will be integer multiples of the {@linkplain #base} grid geometry resolution.
      *
      * <p>If {@code gridExtent} contains only an envelope, then this method delegates to {@link #subgrid(Envelope, double...)}.
-     * Otherwise if {@code gridExtent} contains only an extent, then this method delegates to {@link #subgrid(GridExtent, long...)}.
-     * Otherwise the following information are mandatory:</p>
+     * Otherwise, if {@code gridExtent} contains only an extent, then this method delegates to {@link #subgrid(GridExtent, long...)}.
+     * Otherwise, the following information are mandatory:</p>
      * <ul>
      *   <li>{@linkplain GridGeometry#getExtent() Extent} in {@code areaOfInterest}.</li>
      *   <li>{@linkplain GridGeometry#getGridToCRS(PixelInCell) Grid to CRS} conversion in {@code areaOfInterest}.</li>
@@ -571,10 +572,10 @@ public class GridDerivation {
 
     /**
      * Requests a grid geometry over a sub-envelope and optionally with a coarser resolution.
-     * The given envelope does not need to be expressed in the same coordinate reference system (CRS)
-     * than {@linkplain GridGeometry#getCoordinateReferenceSystem() the CRS of the base grid geometry};
-     * coordinate conversions or transformations will be applied as needed.
-     * That envelope CRS may have fewer dimensions than the base grid geometry CRS,
+     * The given envelope does not need to be expressed in the same coordinate reference system (<abbr>CRS</abbr>)
+     * than {@linkplain GridGeometry#getCoordinateReferenceSystem() the CRS} of the {@linkplain #base} grid geometry.
+     * Coordinate conversions or transformations will be applied as needed.
+     * That envelope <abbr>CRS</abbr> may have less dimensions than the <abbr>CRS</abbr> of the base grid geometry,
      * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
      * The target resolution, if provided, shall be in same units and same order as the given envelope axes.
      * If the length of {@code resolution} array is less than the number of dimensions of {@code areaOfInterest},

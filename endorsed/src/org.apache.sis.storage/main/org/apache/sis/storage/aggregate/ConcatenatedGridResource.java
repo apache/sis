@@ -412,7 +412,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     @Override
     public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
         /*
-         * Validate arguments.
+         * Validate arguments. The slices to read will be from `lower` inclusive to `upper` exclusive.
          */
         if (ranges != null) {
             ranges = RangeArgument.validate(sampleDimensions.size(), ranges, listeners).getSelectedBands();

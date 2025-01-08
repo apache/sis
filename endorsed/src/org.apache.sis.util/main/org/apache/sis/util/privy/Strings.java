@@ -313,12 +313,14 @@ public final class Strings extends Static {
      * the whole entry is omitted. If a key is {@code null}, the value is written without the {@code "key="}
      * part. The latter happens typically when the first value is the object name.</p>
      *
+     * <p>If a value is an array, elements will be formatted up to an arbitrary string length limit.</p>
+     *
      * @param  classe      the class to format.
      * @param  properties  the (<var>key</var>=<var>value</var>) pairs.
      * @return a string representation of an instance of the given class having the given properties.
      */
     public static String toString(final Class<?> classe, final Object... properties) {
-        final StringBuilder buffer = new StringBuilder(32).append(Classes.getShortName(classe)).append('[');
+        final var buffer = new StringBuilder(80).append(Classes.getShortName(classe)).append('[');
         boolean isNext = false;
         for (int i=0; i<properties.length; i++) {
             final Object value = properties[++i];
@@ -330,17 +332,7 @@ public final class Strings extends Static {
                 if (name != null) {
                     buffer.append(name).append('=');
                 }
-                if (value.getClass().isArray()) {
-                    final int n = Array.getLength(value);
-                    if (n != 1) buffer.append('{');
-                    for (int j=0; j<n; j++) {
-                        if (j != 0) buffer.append(", ");
-                        append(Array.get(value, j), buffer);
-                    }
-                    if (n != 1) buffer.append('}');
-                } else {
-                    append(value, buffer);
-                }
+                appendWithHeuristic(value, buffer);
                 isNext = true;
             }
         }
@@ -348,13 +340,44 @@ public final class Strings extends Static {
     }
 
     /**
-     * Appends the given value in the given buffer, using quotes if the value is a character sequence.
+     * Appends the given value in the given buffer with the application of some heuristic rules.
+     * Those rules are aimed to produce representations of class property values with some hints
+     * about their types and some safety against values too long.
+     *
+     * <ul>
+     *   <li>If the value is an array, then the first array elements are appended up to an arbitrary limit.</li>
+     *   <li>Otherwise, if the value is a character sequence, then the value is appended as a quoted text.</li>
+     *   <li>Otherwise, the unquoted value (potentially the {@code "null"} string) is appended.</li>
+     * </ul>
+     *
+     * Those rules may change in any future <abbr>SIS</abbr> version.
+     *
+     * @param  value   the object or array to format.
+     * @param  buffer  the destination where to append the object or array elements.
      */
-    private static void append(final Object value, final StringBuilder buffer) {
-        final boolean isText = (value instanceof CharSequence);
-        if (isText) buffer.append('“');
-        buffer.append(value);
-        if (isText) buffer.append('”');
+    public static void appendWithHeuristic(final Object value, final StringBuilder buffer) {
+        if (value.getClass().isArray()) {
+            final int limit = buffer.length() + 80;
+            final int n = Array.getLength(value);
+            if (n != 1) buffer.append('{');
+            for (int j=0; j<n; j++) {
+                if (j != 0) buffer.append(", ");
+                if (buffer.length() > limit) {
+                    int remaining = n - j;
+                    if (remaining > 1) {
+                        buffer.append(remaining).append(" more…");
+                        break;
+                    }
+                }
+                buffer.append(Array.get(value, j));
+            }
+            if (n != 1) buffer.append('}');
+        } else {
+            final boolean isText = (value instanceof CharSequence);
+            if (isText) buffer.append('“');
+            buffer.append(value);
+            if (isText) buffer.append('”');
+        }
     }
 
     /**
@@ -394,7 +417,7 @@ public final class Strings extends Static {
                         value = "";
                     } else {
                         length = (i -= n) + 1;
-                        final StringBuilder buffer = new StringBuilder(length);
+                        final var buffer = new StringBuilder(length);
                         value = buffer.append(value, 0, i).append('…').toString();
                     }
                     break;

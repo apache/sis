@@ -498,7 +498,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             /** Returns {@code true} if the map contains the given (key, value) pair. */
             @Override public boolean contains(final Object e) {
                 if (e instanceof Entry<?,?>) {
-                    final Entry<?,?> entry = (Entry<?,?>) e;
+                    final var entry = (Entry<?,?>) e;
                     final Object value = get(entry.getKey());
                     if (value != null) {
                         return value.equals(entry.getValue());
@@ -521,7 +521,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
                 if (!(object instanceof Set<?>)) {
                     return false;
                 }
-                final Set<?> that = (Set<?>) object;
+                final var that = (Set<?>) object;
                 final EntryIterator<K,V> it = entryIterator();
                 if (it == null) {
                     return that.isEmpty();
@@ -651,7 +651,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
         if (!(object instanceof Map<?,?>)) {
             return false;
         }
-        final Map<?,?> that = (Map<?,?>) object;
+        final var that = (Map<?,?>) object;
         final EntryIterator<K,V> it = entryIterator();
         if (it == null) {
             return that.isEmpty();
@@ -695,7 +695,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     @Override
     public String toString() {
-        final TableAppender buffer = new TableAppender(" = ");
+        final var buffer = new TableAppender(" = ");
         buffer.setMultiLinesCells(true);
         final EntryIterator<K,V> it = entryIterator();
         if (it != null) while (it.next()) {

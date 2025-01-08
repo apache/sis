@@ -976,7 +976,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.3
      */
     public SortedMap<Integer,Long> getSliceCoordinates() {
-        final TreeMap<Integer,Long> slice = new TreeMap<>();
+        final var slice = new TreeMap<Integer,Long>();
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             final long value = coordinates[i];
@@ -1214,7 +1214,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             throw new IllegalArgumentException(Resources.format(
                     Resources.Keys.IllegalGridEnvelope_3, getAxisIdentification(index, index), low, high));
         }
-        final GridExtent copy = new GridExtent(this);
+        final var copy = new GridExtent(this);
         copy.coordinates[index] = low;
         copy.coordinates[ih] = high;
         return copy;
@@ -1275,7 +1275,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     final GeneralEnvelope toEnvelope() {
         final int dimension = getDimension();
-        final GeneralEnvelope envelope = new GeneralEnvelope(dimension);
+        final var envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
             long high = coordinates[i + dimension];
             if (high != Long.MAX_VALUE) high++;             // Make the coordinate exclusive before cast.
@@ -1432,7 +1432,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
             axisTypes[index] = axisType;
         }
-        final GridExtent ex = new GridExtent(newDim, axisTypes);
+        final var ex = new GridExtent(newDim, axisTypes);
         System.arraycopy(coordinates, 0,                 ex.coordinates, 0,                  index);
         System.arraycopy(coordinates, index,             ex.coordinates, index + 1,          dimension - index);
         System.arraycopy(coordinates, dimension,         ex.coordinates, newDim,             index);
@@ -1506,7 +1506,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 tt[i] = types[indices[i]];
             }
         }
-        final GridExtent sub = new GridExtent(td, tt);
+        final var sub = new GridExtent(td, tt);
         for (int i=0; i<td; i++) {
             final int j = indices[i];
             sub.coordinates[i]    = coordinates[j];
@@ -1538,7 +1538,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         if (isZero(margins, length)) {
             return this;
         }
-        final GridExtent resized = new GridExtent(this);
+        final var resized = new GridExtent(this);
         final long[] c = resized.coordinates;
         for (int i=0; i<length; i++) {
             final long p = margins[i];
@@ -1568,7 +1568,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
          */
         final int m = getDimension();
         final int length = Math.min(m, sizes.length);
-        final GridExtent resized = new GridExtent(this);
+        final var resized = new GridExtent(this);
         final long[] c = resized.coordinates;
         for (int i=0; i<length; i++) {
             final int s = sizes[i];
@@ -1606,7 +1606,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public GridExtent resize(final long... sizes) {
         final int m = getDimension();
         final int length = Math.min(m, sizes.length);
-        final GridExtent resize = new GridExtent(this);
+        final var resize = new GridExtent(this);
         final long[] c = resize.coordinates;
         for (int i=0; i<length; i++) {
             final long size = sizes[i];
@@ -1664,7 +1664,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public GridExtent subsample(final long... periods) {
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
-        final GridExtent sub = new GridExtent(this);
+        final var sub = new GridExtent(this);
         for (int i=0; i<length; i++) {
             final long s = periods[i];
             if (s > 1) {
@@ -1725,7 +1725,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public GridExtent upsample(final long... periods) {
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
-        final GridExtent sub = new GridExtent(this);
+        final var sub = new GridExtent(this);
         for (int i=0; i<length; i++) {
             final long s = periods[i];
             if (s > 1) {
@@ -1794,7 +1794,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
      */
     final GridExtent slice(final DirectPosition slicePoint, final int[] modifiedDimensions) {
-        final GridExtent slice = new GridExtent(this);
+        final var slice = new GridExtent(this);
         final int n = slicePoint.getDimension();
         final int m = getDimension();
         for (int k=0; k<n; k++) {
@@ -1807,7 +1807,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 if (c >= low && c <= high) {
                     slice.coordinates[i + m] = slice.coordinates[i] = c;
                 } else {
-                    final StringBuilder b = new StringBuilder();
+                    final var b = new StringBuilder();
                     for (int j=0; j<n; j++) {
                         if (j != 0) b.append(", ");
                         p = slicePoint.getCoordinate(j);
@@ -1890,7 +1890,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         if (isZero(translation, length)) {
             return this;
         }
-        final GridExtent translated = new GridExtent(this);
+        final var translated = new GridExtent(this);
         final long[] c = translated.coordinates;
         for (int i=0; i < length; i++) {
             final int  j = i + m;
@@ -2110,7 +2110,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     @Override
     public String toString() {
-        final StringBuilder out = new StringBuilder(256);
+        final var out = new StringBuilder(256);
         try {
             appendTo(out, Vocabulary.forLocale(null));
         } catch (IOException e) {
@@ -2127,7 +2127,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param vocabulary  resources for some words.
      */
     final void appendTo(final Appendable out, final Vocabulary vocabulary) throws IOException {
-        final TableAppender table = new TableAppender(out, "");
+        final var table = new TableAppender(out, "");
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             String name = null;
