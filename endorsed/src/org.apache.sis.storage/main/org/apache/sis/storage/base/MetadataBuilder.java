@@ -1620,7 +1620,7 @@ public class MetadataBuilder {
      *             └─Reference
      *                 ├─Title……………………………………………… Copyright (C), John Smith, 1992. All rights reserved.
      *                 ├─Date
-     *                 │   ├─Date……………………………………… 1992-01-01
+     *                 │   ├─Date……………………………………… 1992
      *                 │   └─Date type………………………… In force
      *                 └─Cited responsible party
      *                     ├─Party
@@ -1633,11 +1633,12 @@ public class MetadataBuilder {
      *   <li>{@code metadata/identificationInfo/resourceConstraint}</li>
      * </ul>
      *
+     * @param  locale  the language of the notice, or {@code null} if unspecified.
      * @param  notice  the legal notice, or {@code null} for no-operation.
      */
-    public final void parseLegalNotice(final String notice) {
+    public final void parseLegalNotice(final Locale locale, final String notice) {
         if (notice != null) {
-            LegalSymbols.parse(notice, constraints());
+            LegalSymbols.parse(locale, notice, constraints());
         }
     }
 

@@ -323,7 +323,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
          */
         final var dataId = new DefaultDataIdentification();
         {
-            final DefaultInternationalString description = new DefaultInternationalString();
+            final var description = new DefaultInternationalString();
             description.add(Locale.ENGLISH, "Metadata for an imaginary map.");
             description.add(Locale.FRENCH,  "Méta-données pour une carte imaginaire.");
             dataId.setAbstract(description);

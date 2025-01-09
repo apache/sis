@@ -49,7 +49,7 @@ public final class DefaultInternationalStringTest extends TestCase {
      */
     @Test
     public void testEnglishOnly() {
-        final DefaultInternationalString toTest = new DefaultInternationalString();
+        final var toTest = new DefaultInternationalString();
         toTest.add(Locale.ENGLISH, MESSAGE);
         assertSame(MESSAGE, toTest.toString());
         assertSame(MESSAGE, toTest.toString(null));
@@ -62,7 +62,7 @@ public final class DefaultInternationalStringTest extends TestCase {
      */
     @Test
     public void testEnglishAndFrench() {
-        final DefaultInternationalString toTest = new DefaultInternationalString(MESSAGE);
+        final var toTest = new DefaultInternationalString(MESSAGE);
         assertSame(MESSAGE, toTest.toString());
         toTest.add(Locale.ENGLISH,       MESSAGE_en);
         toTest.add(Locale.FRENCH,        MESSAGE_fr);     assertLocalized(toTest, MESSAGE_fr);
@@ -75,7 +75,7 @@ public final class DefaultInternationalStringTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final DefaultInternationalString toTest = new DefaultInternationalString(MESSAGE);
+        final var toTest = new DefaultInternationalString(MESSAGE);
         toTest.add(Locale.ENGLISH,       MESSAGE_en);
         toTest.add(Locale.FRENCH,        MESSAGE_fr);
         toTest.add(Locale.CANADA_FRENCH, MESSAGE_fr_CA);
@@ -102,7 +102,7 @@ public final class DefaultInternationalStringTest extends TestCase {
      */
     @Test
     public void testFormattable() {
-        final DefaultInternationalString toTest = new DefaultInternationalString(MESSAGE);
+        final var toTest = new DefaultInternationalString(MESSAGE);
         toTest.add(Locale.ENGLISH,       MESSAGE_en);
         toTest.add(Locale.FRENCH,        MESSAGE_fr);
         toTest.add(Locale.CANADA_FRENCH, MESSAGE_fr_CA);

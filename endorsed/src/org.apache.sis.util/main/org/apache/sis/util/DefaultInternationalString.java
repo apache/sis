@@ -64,12 +64,6 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     private Map<Locale,String> localeMap;
 
     /**
-     * An unmodifiable view of the entry set in {@link #localeMap}. This is the set of locales
-     * defined in this international string. Will be constructed only when first requested.
-     */
-    private transient Set<Locale> localeSet;
-
-    /**
      * Creates an initially empty international string. Localized strings can be added
      * using one of {@link #add add(…)} methods.
      */
@@ -91,6 +85,21 @@ public class DefaultInternationalString extends AbstractInternationalString impl
         } else {
             localeMap = Collections.emptyMap();
         }
+    }
+
+    /**
+     * Creates an international string initialized with the given string in the given locale.
+     * Additional localized strings can be added using one of {@link #add add(…)} methods.
+     *
+     * @param  locale  the locale for the {@code string} value.
+     * @param  string  the localized string.
+     *
+     * @since 1.5
+     */
+    public DefaultInternationalString(final Locale locale, String string) {
+        ArgumentChecks.ensureNonNull("locale", locale);
+        ArgumentChecks.ensureNonNull("string", string);
+        localeMap = Collections.singletonMap(locale, string);
     }
 
     /**
@@ -135,14 +144,12 @@ public class DefaultInternationalString extends AbstractInternationalString impl
         switch (localeMap.size()) {
             case 0: {
                 localeMap = Collections.singletonMap(locale, string);
-                localeSet = null;
                 defaultValue = null;                                // Will be recomputed when first needed.
                 return;
             }
             case 1: {
                 // If HashMap is replaced by another type, revisit `getLocales()`.
                 localeMap = new LinkedHashMap<>(localeMap);
-                localeSet = null;
                 break;
             }
         }
@@ -167,13 +174,9 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *       on the same lock as the one used for accessing the internal locale map.
      */
     public synchronized Set<Locale> getLocales() {
-        Set<Locale> locales = localeSet;
-        if (locales == null) {
-            locales = localeMap.keySet();
-            if (localeMap instanceof HashMap<?,?>) {
-                locales = Collections.unmodifiableSet(locales);
-            }
-            localeSet = locales;
+        Set<Locale> locales = localeMap.keySet();
+        if (localeMap instanceof HashMap<?,?>) {
+            locales = Collections.unmodifiableSet(locales);
         }
         return locales;
     }
@@ -319,7 +322,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      */
     public synchronized boolean isSubsetOf(final Object candidate) {
         if (candidate instanceof InternationalString) {
-            final InternationalString string = (InternationalString) candidate;
+            final var string = (InternationalString) candidate;
             for (final Map.Entry<Locale,String> entry : localeMap.entrySet()) {
                 final Locale locale = entry.getKey();
                 final String text   = entry.getValue();
@@ -335,7 +338,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                 }
             }
         } else if (candidate instanceof Map<?,?>) {
-            final Map<?,?> map = (Map<?,?>) candidate;
+            final var map = (Map<?,?>) candidate;
             return map.entrySet().containsAll(localeMap.entrySet());
         } else {
             return false;
@@ -352,7 +355,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     @Override
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final DefaultInternationalString that = (DefaultInternationalString) object;
+            final var that = (DefaultInternationalString) object;
             return Objects.equals(this.localeMap, that.localeMap);
         }
         return false;

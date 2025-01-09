@@ -16,18 +16,20 @@
  */
 package org.apache.sis.storage.base;
 
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.Collections;
+import java.time.Year;
+import java.util.Locale;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.constraint.Restriction;
+import org.opengis.util.InternationalString;
+import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
-import static org.apache.sis.util.privy.Constants.MILLISECONDS_PER_DAY;
 
 // Specific to the geoapi-4.0 branch:
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
@@ -86,8 +88,12 @@ final class LegalSymbols {
     /**
      * Implementation of {@link MetadataBuilder#parseLegalNotice(String)}, provided here for reducing
      * the number of class loading in the common case where there is no legal notice to parse.
+     *
+     * @param  locale       the language of the notice, or {@code null} if unspecified.
+     * @param  notice       the legal notice.
+     * @param  constraints  where to append the parsed notice.
      */
-    static void parse(final String notice, final DefaultLegalConstraints constraints) {
+    static void parse(final Locale locale, final String notice, final DefaultLegalConstraints constraints) {
         final int length = notice.length();
         final var buffer = new StringBuilder(length);
         int     year           = 0;         // The copyright year, or 0 if none.
@@ -198,6 +204,8 @@ parse:  for (int i = 0; i < length;) {
         }
         /*
          * End of parsing. Omit trailing spaces and some punctuations if any, then store the result.
+         * If a `Citation` already exist and could be for the same legal notice in different locales,
+         * it will be completed. Otherwise, a new citation will be created.
          */
         int i = buffer.length();
         while (i > 0) {
@@ -205,18 +213,91 @@ parse:  for (int i = 0; i < length;) {
             if (!isSpaceOrPunctuation(c)) break;
             i -= Character.charCount(c);
         }
-        final var c = new DefaultCitation(notice);
-        if (year != 0) {
-            final Date date = new Date(LocalDate.of(year, 1, 1).toEpochDay() * MILLISECONDS_PER_DAY);
-            c.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.IN_FORCE)));
+        DefaultCitation citation = null;
+        if (locale != null) {
+            for (Citation c : constraints.getReferences()) {
+                if (c instanceof DefaultCitation) {
+                    if (update(c.getTitle(), locale, notice)) {
+                        citation = (DefaultCitation) c;             // Set only on success.
+                        break;
+                    }
+                }
+            }
         }
+        if (citation == null) {
+            citation = new DefaultCitation(i18n(locale, notice));
+            constraints.getReferences().add(citation);
+        }
+        if (year != 0) {
+            final var date = new DefaultCitationDate(Year.of(year), DateType.IN_FORCE);
+            final var dates = citation.getDates();
+            if (!dates.contains(date)) {
+                dates.add(date);
+            }
+        }
+        /*
+         * At this point, the citation has been created and added to the contraints.
+         * If a party already exists, try to update the owner's name. This is based
+         * on the assumption that `LegalSymbols` is the only code putting 'i18n' in
+         * the constraints.
+         */
         if (i != 0) {
             buffer.setLength(i);
+            final String owner = buffer.toString();
+            if (locale != null) {
+                for (final var cited : citation.getCitedResponsibleParties()) {
+                    if (cited.getRole() == Role.OWNER) {
+                        for (final var party : cited.getParties()) {
+                            final var i18n = party.getName();
+                            if (CharSequences.startsWith(owner, i18n.toString(Locale.ENGLISH), true)) {
+                                /*
+                                 * Use case: name is followed by unwanted text because the
+                                 * `VALUES` special cases are provided in English only.
+                                 * Example: "John Smith, Tous droits réservés."
+                                 */
+                                return;
+                            }
+                            if (update(i18n, locale, owner)) {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
             // Same limitation as MetadataBuilder.party().
-            final var party = new AbstractParty(buffer, null);
-            final var r = new DefaultResponsibility(Role.OWNER, null, party);
-            c.setCitedResponsibleParties(Collections.singleton(r));
+            var party = new AbstractParty(i18n(locale, owner), null);
+            var cited = new DefaultResponsibility(Role.OWNER, null, party);
+            citation.getCitedResponsibleParties().add(cited);
         }
-        constraints.getReferences().add(c);
+    }
+
+    /**
+     * If the given international string is an instance of {@link DefaultInternationalString},
+     * add the language to it and returns {@code true}. Otherwise, returns {@code false} for
+     * notifying the caller that it needs to update the metadata itself.
+     *
+     * @param  i18n    the international string to update if possible.
+     * @param  locale  locale of the text.
+     * @param  text    the localized text.
+     */
+    private static boolean update(final InternationalString i18n, final Locale locale, final String text) {
+        if (i18n instanceof DefaultInternationalString) try {
+            ((DefaultInternationalString) i18n).add(locale, text);
+            return true;
+        } catch (IllegalArgumentException e) {
+            Logging.ignorableException(StoreUtilities.LOGGER, MetadataBuilder.class, "parseLegalNotice", e);
+        }
+        return (i18n != null) && text.equalsIgnoreCase(i18n.toString());
+    }
+
+    /**
+     * Creates a potentially international string for the given text.
+     *
+     * @param  locale  locale of the text, or {@code null} if unspecified.
+     * @param  text    the text to internationalize.
+     * @return the potentially international text.
+     */
+    private static CharSequence i18n(final Locale locale, final String text) {
+        return (locale != null) ? new DefaultInternationalString(locale, text) : text;
     }
 }
