@@ -1,0 +1,9 @@
+# Workaround for Maven bug https://issues.apache.org/jira/browse/MNG-7855
+# The content of this file is automatically derived from module-info.class file.
+# Should be used only if the JAR file was on class-path rather than module-path.
+org.apache.sis.map.service.se1.PointToScene2D$Spi
+org.apache.sis.map.service.se1.LineToScene2D$Spi
+org.apache.sis.map.service.se1.PolygonToScene2D$Spi
+org.apache.sis.map.service.se1.TextToScene2D$Spi
+org.apache.sis.map.service.se1.RasterToScene2D$Spi
+
