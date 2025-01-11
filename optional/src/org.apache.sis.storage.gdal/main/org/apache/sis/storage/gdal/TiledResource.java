@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -596,9 +597,20 @@ final class TiledResource extends TiledGridResource {
     @Override
     protected long[] getVirtualTileSize(final long[] subsampling) {
         return new long[] {
-            Math.multiplyExact(subsampling[0], tileWidth),
-            Math.multiplyExact(subsampling[1], tileHeight)
+            Math.min(Math.multiplyExact(subsampling[0], tileWidth),  Integer.toUnsignedLong(width)),
+            Math.min(Math.multiplyExact(subsampling[1], tileHeight), Integer.toUnsignedLong(height))
         };
+    }
+
+    /**
+     * Ensures that the region to read is inside the bounds of the resource.
+     * The upper values of the region may be out of bounds when the subsampling is not a divisor of the image size.
+     * the lower values should always be okay and are not checked by this method.
+     */
+    final void clipReadRegion(final Rectangle r) {
+        long max;
+        if (r.width  > (max = Integer.toUnsignedLong(width)  - r.x)) r.width  = Math.toIntExact(max);
+        if (r.height > (max = Integer.toUnsignedLong(height) - r.y)) r.height = Math.toIntExact(max);
     }
 
     /**

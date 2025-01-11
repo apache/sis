@@ -67,7 +67,8 @@ public final class LinearizerTest extends TestCase {
         assertFalse(transform instanceof LinearTransform);
 
         // Linear approximation by Least Square Root method.
-        LinearTransform linear = LinearTransformBuilder.approximate(transform, new Envelope2D(null, 0, 0, 3, 5));
+        var domain = new Envelope2D(null, 0, 0, 2, 4);  // Upper values are inclusive.
+        LinearTransform linear = LinearTransformBuilder.approximate(transform, domain);
         var expected = new Matrix3(111319, 0,   0,
                                    0, 110662, -62,
                                    0, 0, 1);

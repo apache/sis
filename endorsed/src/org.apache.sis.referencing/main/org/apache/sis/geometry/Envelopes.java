@@ -101,7 +101,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
@@ -155,7 +155,7 @@ public final class Envelopes extends Static {
             ArgumentChecks.ensureNonNullElement("components", i, env);
             sum += env.getDimension();
         }
-        final GeneralEnvelope compound = new GeneralEnvelope(sum);
+        final var compound = new GeneralEnvelope(sum);
         CoordinateReferenceSystem[] crsComponents = null;
         int firstAffectedCoordinate = 0;
         for (int i=0; i<components.length; i++) {
@@ -188,8 +188,8 @@ public final class Envelopes extends Static {
      * Computes the union of all given envelopes, transforming them to a common CRS if necessary.
      * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
      * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#add(Envelope)
-     * union is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
-     * {@linkplain CRS#suggestCommonTarget common CRS} before union is computed.
+     * union is computed} without transforming any envelope. Otherwise, all envelopes are transformed
+     * to a {@linkplain CRS#suggestCommonTarget common CRS} before union is computed.
      * The CRS of the returned envelope may different than the CRS of all given envelopes.
      *
      * @param  envelopes  the envelopes for which to compute union. Null elements are ignored.
@@ -208,8 +208,8 @@ public final class Envelopes extends Static {
      * Computes the intersection of all given envelopes, transforming them to a common CRS if necessary.
      * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
      * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#intersect(Envelope)
-     * intersection is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
-     * {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
+     * intersection is computed} without transforming any envelope. Otherwise, all envelopes are transformed
+     * to a {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
      * The CRS of the returned envelope may different than the CRS of all given envelopes.
      *
      * @param  envelopes  the envelopes for which to compute intersection. Null elements are ignored.
@@ -392,7 +392,7 @@ public final class Envelopes extends Static {
              * source CRS, it is not always the case. The metadata may be differents, or the
              * transform may be a datum shift without Bursa-Wolf parameters, etc.
              */
-            final GeneralEnvelope transformed = new GeneralEnvelope(envelope);
+            final var transformed = new GeneralEnvelope(envelope);
             transformed.setCoordinateReferenceSystem(null);
             if (targetPt != null) {
                 for (int i=envelope.getDimension(); --i>=0;) {
@@ -426,8 +426,8 @@ public final class Envelopes extends Static {
         final double[]  coordinates   = new double[Math.multiplyExact(derivatives.length, targetDim)];
         final double[]  sourcePt      = new double[sourceDim];
         // A window over a single coordinate in the `coordinates` array.
-        final DirectPositionView ordinatesView = new DirectPositionView.Double(coordinates, 0, targetDim);
-        final WraparoundInEnvelope.Controller wc = new WraparoundInEnvelope.Controller(transform);
+        final var ordinatesView = new DirectPositionView.Double(coordinates, 0, targetDim);
+        final var wc = new WraparoundInEnvelope.Controller(transform);
         do {
             for (int i=sourceDim; --i>=0;) {
                 sourcePt[i] = envelope.getMinimum(i);
@@ -504,8 +504,8 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
              * the Rectangle2D case the calculation was bundled right inside the main loop in order
              * to avoid the need for storage.
              */
-            final DirectPositionView sourceView = new DirectPositionView.Double(sourcePt, 0, sourceDim);
-            final CurveExtremum extremum = new CurveExtremum();
+            final var sourceView = new DirectPositionView.Double(sourcePt, 0, sourceDim);
+            final var extremum = new CurveExtremum();
             for (int pointIndex=0; pointIndex < derivatives.length; pointIndex++) {
                 final Matrix D1 = derivatives[pointIndex];
                 if (D1 != null) {
@@ -978,10 +978,10 @@ poles:  for (int i=0; i<dimension; i++) {
     /**
      * Transforms potentially many times an envelope using the given math transform.
      * If the given envelope is {@code null}, then this method returns an empty envelope.
-     * Otherwise if the transform does not contain any
+     * Otherwise, if the transform does not contain any
      * {@link org.apache.sis.referencing.operation.transform.WraparoundTransform} step,
      * then this method is equivalent to {@link #transform(MathTransform, Envelope)} returned in an array of length 1.
-     * Otherwise this method returns many transformed envelopes where each envelope describes approximately the same region.
+     * Otherwise, this method returns many transformed envelopes where each envelope describes approximately the same region.
      * If the envelope CRS is geographic, the many envelopes are the same envelope shifted by 360° of longitude.
      * If the envelope CRS is projected, then the 360° shifts are applied before the map projection.
      * It may result in very different coordinates.
@@ -1003,7 +1003,7 @@ poles:  for (int i=0; i<dimension; i++) {
         if (envelope == null) {
             return new GeneralEnvelope[0];
         }
-        final List<GeneralEnvelope> results = new ArrayList<>(4);
+        final var results = new ArrayList<GeneralEnvelope>(4);
         final GeneralEnvelope transformed = transform(transform, envelope, null, results);
         if (results.isEmpty() && transformed != null) {
             return new GeneralEnvelope[] {transformed};
@@ -1098,7 +1098,7 @@ poles:  for (int i=0; i<dimension; i++) {
         if (dimension < 2) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyEnvelope2D));
         }
-        final StringBuilder buffer = new StringBuilder("POLYGON(");
+        final var buffer = new StringBuilder("POLYGON(");
         String separator = "(";
         for (int corner = 0; corner < CORNERS.length; corner += 2) {
             for (int i=0; i<dimension; i++) {

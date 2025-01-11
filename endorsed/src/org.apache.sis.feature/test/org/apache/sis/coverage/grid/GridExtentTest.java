@@ -114,10 +114,10 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testCreateFromEnvelope() {
-        final GeneralEnvelope env = new GeneralEnvelope(HardCodedCRS.IMAGE);
+        final var env = new GeneralEnvelope(HardCodedCRS.IMAGE);
         env.setRange(0, -23.01, 30.107);
         env.setRange(1,  12.97, 18.071);
-        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
+        var extent = new GridExtent(env, false, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
         assertExtentEquals(extent, 0, -23, 29);
         assertExtentEquals(extent, 1,  13, 17);
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
@@ -130,11 +130,11 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testCreateFromThinEnvelope() {
-        final GeneralEnvelope env = new GeneralEnvelope(3);
+        final var env = new GeneralEnvelope(3);
         env.setRange(0,  11.22,  11.23);
         env.setRange(1, -23.02, -23.01);
         env.setRange(2,  34.91,  34.92);
-        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
+        var extent = new GridExtent(env, false, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
         assertExtentEquals(extent, 0,  11,  11);
         assertExtentEquals(extent, 1, -24, -24);
         assertExtentEquals(extent, 2,  34,  34);
@@ -146,13 +146,13 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testRoundings() {
-        final GeneralEnvelope env = new GeneralEnvelope(6);
+        final var env = new GeneralEnvelope(6);
         env.setRange(0, 1.49999, 3.49998);      // Round to [1…3), stored as [1…2].
         env.setRange(1, 1.50001, 3.49998);      // Round to [2…3), stored as [1…2] (not [2…2]) because the span is close to 2.
         env.setRange(2, 1.49998, 3.50001);      // Round to [1…4), stored as [1…2] (not [1…3]) because the span is close to 2.
         env.setRange(3, 1.49999, 3.50002);      // Round to [1…4), stored as [2…3] because the upper part is closer to integer.
         env.setRange(4, 1.2,     3.8);          // Round to [1…4), stores as [1…3] because the span is not close enough to integer.
-        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
+        var extent = new GridExtent(env, false, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
         assertExtentEquals(extent, 0, 1, 2);
         assertExtentEquals(extent, 1, 1, 2);
         assertExtentEquals(extent, 2, 1, 2);
@@ -183,8 +183,8 @@ public final class GridExtentTest extends TestCase {
      * Implementation of {@link #testAppend()} and {@link #testInsert()}.
      */
     private void appendOrInsert(final int offset, final int rowIndex) {
-        GridExtent extent = new GridExtent(new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW},
-                                           new long[] {100, 200}, new long[] {500, 800}, true);
+        var extent = new GridExtent(new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW},
+                                    new long[] {100, 200}, new long[] {500, 800}, true);
         extent = extent.insertDimension(offset, DimensionNameType.TIME, 40, 50, false);
         assertEquals(3, extent.getDimension(), "dimension");
         assertExtentEquals(extent, 0,        100, 500);
@@ -275,6 +275,28 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridExtent#contains(GridExtent)} and {@link GridExtent#intersects(GridExtent)}.
+     */
+    @Test
+    public void testContainsAndIntersects() {
+        final var t1 = new GridExtent(null, new long[] {100, 600}, new long[] {300, 800}, true);
+        final var t2 = new GridExtent(null, new long[] {200, 600}, new long[] {300, 700}, true);
+        final var t3 = new GridExtent(null, new long[] { 50, 700}, new long[] {150, 800}, true);
+        assertTrue (t1.contains  (t2));
+        assertFalse(t2.contains  (t1));
+        assertTrue (t1.intersects(t2));
+        assertTrue (t2.intersects(t1));
+        assertFalse(t1.contains  (t3));
+        assertFalse(t3.contains  (t1));
+        assertTrue (t1.intersects(t3));
+        assertTrue (t3.intersects(t1));
+        assertFalse(t2.contains  (t3));
+        assertFalse(t3.contains  (t2));
+        assertFalse(t2.intersects(t3));
+        assertFalse(t3.intersects(t2));
+    }
+
+    /**
      * Creates another arbitrary extent for tests of union and intersection.
      */
     private static GridExtent createOther() {
@@ -337,7 +359,7 @@ public final class GridExtentTest extends TestCase {
         final GridExtent other = new GridExtent(
                 new DimensionNameType[] {DimensionNameType.VERTICAL},
                 new long[] {-4}, new long[] {17}, true);
-        final GridExtent extent = new GridExtent(domain, other);
+        final var extent = new GridExtent(domain, other);
 
         assertArrayEquals(new DimensionNameType[] {
             DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME, DimensionNameType.VERTICAL
@@ -354,7 +376,7 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testSlice() {
-        final GeneralDirectPosition slicePoint = new GeneralDirectPosition(226.7, 47.2);
+        final var slicePoint = new GeneralDirectPosition(226.7, 47.2);
         final GridExtent extent = create3D();
         final GridExtent slice  = extent.slice(slicePoint, new int[] {1, 2});
         assertEquals(3, slice.getDimension(), "dimension");
@@ -378,7 +400,7 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testGetSubspaceDimensions() {
-        final GridExtent extent = new GridExtent(null, new long[] {100, 5, 200, 40}, new long[] {500, 5, 800, 40}, true);
+        var extent = new GridExtent(null, new long[] {100, 5, 200, 40}, new long[] {500, 5, 800, 40}, true);
         assertMapEquals(Map.of(1, 5L, 3, 40L), extent.getSliceCoordinates());
         assertSubspaceEquals(extent, 0,  2  );
         assertSubspaceEquals(extent, 0,1,2  );
@@ -405,10 +427,10 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testCornerToCRS() {
-        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
         aoi.setRange(0,  40, 55);
         aoi.setRange(1, -10, 70);
-        final GridExtent extent = new GridExtent(null,
+        final var extent = new GridExtent(null,
                 new long[] {-20, -25},
                 new long[] { 10,  15}, false);
         /*
@@ -445,7 +467,7 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testToEnvelope() throws TransformException {
-        final GridExtent extent = new GridExtent(new DimensionNameType[] {
+        final var extent = new GridExtent(new DimensionNameType[] {
             DimensionNameType.COLUMN,
             DimensionNameType.ROW,
             DimensionNameType.TIME
@@ -469,7 +491,7 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testToTransformedEnvelope() throws TransformException {
-        final GridExtent extent = new GridExtent(new DimensionNameType[] {
+        final var extent = new GridExtent(new DimensionNameType[] {
             DimensionNameType.ROW,
             DimensionNameType.TIME,
             DimensionNameType.COLUMN,
@@ -501,7 +523,7 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testToString() throws IOException {
-        final StringBuilder buffer = new StringBuilder(100);
+        final var buffer = new StringBuilder(100);
         create3D().appendTo(buffer, Vocabulary.forLocale(Locale.ENGLISH));
         assertMultilinesEquals(
                 "Column: [100 … 499] (400 cells)\n" +
@@ -515,7 +537,7 @@ public final class GridExtentTest extends TestCase {
     @Test
     @DisplayName("Empty translation returns same extent instance")
     public void testZeroTranslation() {
-        final GridExtent extent = new GridExtent(10, 10);
+        final var extent = new GridExtent(10, 10);
         assertSame(extent, extent.translate());
         assertSame(extent, extent.translate(0));
         assertSame(extent, extent.translate(0, 0));
@@ -528,7 +550,7 @@ public final class GridExtentTest extends TestCase {
     @Test
     @DisplayName("Translating only first dimensions leave others untouched")
     public void testTranslateOneDimension() {
-        final GridExtent base = new GridExtent(null, new long[] {
+        final var base = new GridExtent(null, new long[] {
             0, 0, 0,
             2, 2, 2
         });
@@ -556,7 +578,7 @@ public final class GridExtentTest extends TestCase {
     @Test
     @DisplayName("Translating all dimensions")
     public void testTranslateAllDimensions() {
-        final GridExtent base = new GridExtent(null, new long[] {
+        final var base = new GridExtent(null, new long[] {
             -1, -1, -2, 10,
              2,  2,  2, 20
         });

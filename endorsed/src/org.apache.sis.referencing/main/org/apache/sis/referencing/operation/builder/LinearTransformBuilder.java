@@ -254,7 +254,8 @@ public class LinearTransformBuilder extends TransformBuilder {
      * the given {@code gridToCRS} transform.
      *
      * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
-     * @param  domain  domain of integer source coordinates for which to get a linear approximation.
+     * @param  domain     domain of integer source coordinates for which to get a linear approximation.
+     *                    Both lower and upper coordinate values are <em>inclusive</em>.
      * @return a linear approximation of given transform for the specified domain.
      * @throws FactoryException if the transform approximation cannot be computed.
      *

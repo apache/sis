@@ -387,7 +387,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                                 isEmpty &= (byteCounts[b] == 0);
                             }
                             /*
-                             * If the length if zero for all bands, the GDAL "sparse files" convention said
+                             * If the length is zero for all bands, the GDAL "sparse files" convention said
                              * that pixel values are not stored in the file and are assumed zero for all pixels.
                              * This is a GDAL-specific convention but seems reasonable. Note that the default
                              * fill value zero is different than `TilePlaceholder` default, which can be NaN.

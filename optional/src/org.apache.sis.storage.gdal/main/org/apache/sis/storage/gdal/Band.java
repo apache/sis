@@ -33,6 +33,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.image.privy.AssertionMessages;
 import org.apache.sis.image.privy.RasterFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
@@ -295,20 +296,20 @@ final class Band {
          * For that reason, we test them unconditionally instead of using the `assert` statement.
          */
         if (!raster.getBounds().contains(rasterBounds)) {
-            throw new AssertionError(rasterBounds);
+            throw new AssertionError(AssertionMessages.notContained(raster.getBounds(), rasterBounds));
         }
         if (transferBuffer.byteSize() < Math.multiplyFull(rasterBounds.width, rasterBounds.height) * dataSize) {
             throw new AssertionError(rasterBounds);
         }
-        for (int i=0; i < selectedBands.length; i++) {
-            final Buffer buffer = RasterFactory.wrapAsBuffer(dataBuffer, bankIndices[i])
-                    .position(sampleModel.getOffset(
-                            rasterBounds.x - raster.getSampleModelTranslateX(),
-                            rasterBounds.y - raster.getSampleModelTranslateY(), i));
+        for (int b=0; b < selectedBands.length; b++) {
+            final int x = rasterBounds.x - raster.getSampleModelTranslateX();
+            final int y = rasterBounds.y - raster.getSampleModelTranslateY();
+            final int offset = sampleModel.getOffset(x, y, b);      // Where to write in the Java array.
+            final Buffer buffer = RasterFactory.wrapAsBuffer(dataBuffer, bankIndices[b]).position(offset);
             final int err;
             try {
                 err = (int) gdal.rasterIO.invokeExact(
-                        selectedBands[i].handle,
+                        selectedBands[b].handle,
                         readWriteFlags,         // Either GF_Read to read a region of data, or GF_Write to write a region of data.
                         resourceBounds.x,       // First column of the region to be accessed. Zero to start from the left side.
                         resourceBounds.y,       // First row of the region to be accessed. Zero to start from the top.
@@ -338,7 +339,7 @@ final class Band {
      * @param  gdal             set of handles for invoking <abbr>GDAL</abbr> functions.
      * @param  resourceBounds   region to read in resource coordinates. (0,0) is the upper-left pixel.
      * @param  imageBounds      region to write in image coordinates (may cover more than one tile).
-     * @param  imageType       the <abbr>GDAL</abbr> data type of the destination raster.
+     * @param  imageType        the <abbr>GDAL</abbr> data type of the destination raster.
      * @return whether the operation was successful according <abbr>GDAL</abbr>.
      * @throws DataStoreException if <var>GDAL</var> reported a warning or fatal error.
      */
