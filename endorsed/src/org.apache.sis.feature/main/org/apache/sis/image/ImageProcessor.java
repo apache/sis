@@ -1016,6 +1016,10 @@ public class ImageProcessor implements Cloneable {
      * that some sources will never be drawn (i.e., are fully hidden behind the first images).
      * If only one source appears to be effectively used, this method returns that image directly.</p>
      *
+     * <h4>Optimization</h4>
+     * The returned image may share some tiles from any source images (without copy)
+     * if the tile can be used directly with no change.
+     *
      * <h4>Preconditions</h4>
      * All source images shall have the same number of bands (but not necessarily the same sample model).
      * All source images should have equivalent color model, otherwise color consistency is not guaranteed.

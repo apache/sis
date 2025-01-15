@@ -17,6 +17,7 @@
 package org.apache.sis.storage.aggregate;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.TransformException;
@@ -29,6 +30,7 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
@@ -242,7 +244,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         final Object[] c = slices.clone();
         for (int i=0; i<c.length; i++) {
             if (!isDeferred(i)) {
-                final GridCoverage source = (GridCoverage) c[i];        // Should never fail.
+                final var source = (GridCoverage) c[i];     // Should never fail.
                 changed |= (c[i] = source.forConvertedValues(converted)) != source;
                 template = source;
             } else {
@@ -268,44 +270,41 @@ final class ConcatenatedGridCoverage extends GridCoverage {
      * Most recently used slices are cached for future invocations of this method.
      *
      * @param  extent  a subspace of this grid coverage where all dimensions except two have a size of 1 cell.
-     * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
+     * @return the grid slice as a rendered image. Image location is relative to {@code extent}.
      */
     @Override
     public RenderedImage render(GridExtent extent) {
-        int lower = startAt, upper = lower + slices.length;
+        int lower = startAt;
+        int upper = lower + slices.length;
         if (extent != null) {
             upper = locator.getUpper(extent, lower, upper);
             lower = locator.getLower(extent, lower, upper);
         } else {
             extent = gridGeometry.getExtent();
         }
-        final GridGeometry   request;           // The geographic area and temporal extent requested by user.
-        final GridGeometry[] candidates;        // Grid geometry of all slices that intersect the request.
-        final int count = upper - lower;
-        if (count > 1) {
+        int count = upper - lower;
+        if (count == 1) {
+            return slice(extent, lower);
+        }
+        /*
+         * We have a non-trivial number of source coverages to aggregate.
+         * The `failure` exception will be thrown at the end of this method
+         * if a merge was attempted but could not find suitable sources.
+         */
+        DisjointExtentException failure = null;
+        if (count > 0) {
             if (strategy == null) {
-                /*
-                 * Cannot infer a slice. If the user specified a single slice but that slice
-                 * maps to more than one coverage, the error message tells that this problem
-                 * can be avoided by specifying a merge strategy.
-                 */
-                final short message;
-                final Object[] arguments;
-                if (locator.isSlice(extent)) {
-                    message   = Resources.Keys.NoSliceMapped_3;
-                    arguments = new Object[] {locator.getDimensionName(extent), lower, count};
-                } else {
-                    message   = Resources.Keys.NoSliceSpecified_2;
-                    arguments = new Object[] {locator.getDimensionName(extent), count};
-                }
-                throw new SubspaceNotSpecifiedException(Resources.format(message, arguments));
+                throw new SubspaceNotSpecifiedException(Resources.format(
+                        Resources.Keys.NoSliceMapped_3, locator.getDimensionName(extent), lower, count));
             }
             /*
-             * Prepare a list of slice candidates. Later in this method, a single slice will be selected
+             * Prepare a list of slice candidates. Later in this method, a single slice may be selected
              * among those candidates using the user-specified merge strategy. Elements in `candidates`
-             * array will become null if that candidate did not worked and we want to look again among
+             * array will be removed if that candidate did not worked and we want to look again among
              * remaining candidates.
              */
+            final GridGeometry   request;           // The geographic area and temporal extent requested by user.
+            final GridGeometry[] candidates;        // Grid geometry of all slices that intersect the request.
             try {
                 request    = new GridGeometry(getGridGeometry(), extent, null);
                 candidates = new GridGeometry[count];
@@ -318,53 +317,68 @@ final class ConcatenatedGridCoverage extends GridCoverage {
             } catch (DataStoreException | TransformException e) {
                 throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotSelectSlice), e);
             }
-        } else {
-            request    = null;
-            candidates = null;
+            /*
+             * The following loop should be executed exactly once. However, it may happen that the "best" slice
+             * actually does not intersect the requested extent, for example because the merge strategy looked
+             * only for temporal intersection and did not saw that the geographic extent does not intersect.
+             */
+            final int[] indexes = ArraysExt.range(lower, lower + count);
+            final var   sources = new RenderedImage[count];
+            do {
+                int accepted = 0;
+                for (final int i : strategy.filter(request, Arrays.copyOf(candidates, count))) {
+                    try {
+                        sources[accepted] = slice(extent, indexes[i]);
+                        accepted++;     // On a separated line for incrementing only on success.
+                    } catch (DisjointExtentException e) {
+                        if (failure == null) failure = e;
+                        else failure.addSuppressed(e);
+                        final int remaining = --count - i;
+                        System.arraycopy(candidates, i+1, candidates, i, remaining);
+                        System.arraycopy(indexes,    i+1, indexes,    i, remaining);
+                    }
+                }
+                if (accepted > 0) {
+                    if (failure != null) {
+                        Logging.ignorableException(LOGGER, ConcatenatedGridCoverage.class, "render", failure);
+                    }
+                    return strategy.aggregate(ArraysExt.resize(sources, accepted));
+                }
+            } while (count > 0);
         }
         /*
-         * The following loop should be executed exactly once. However, it may happen that the "best" slice
-         * actually does not intersect the requested extent, for example because the merge strategy looked
-         * only for temporal intersection and did not saw that the geographic extents do not intersect.
+         * No coverage found in the specified area of interest.
          */
-        DisjointExtentException failure = null;
-        if (count > 0) do {
-            int index = lower;
-            if (candidates != null) {
-                final Integer n = strategy.apply(request, candidates);
-                if (n == null) break;
-                candidates[n] = null;
-                index += n;
-            }
-            final Object slice = slices[index];
-            final GridCoverage coverage;
-            if (!isDeferred(index)) {
-                coverage = (GridCoverage) slice;        // This cast should never fail.
-            } else try {
-                coverage = loader.getOrLoad(index, (GridCoverageResource) slice).forConvertedValues(isConverted);
-            } catch (DataStoreException e) {
-                throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotReadSlice_1, index + startAt), e);
-            }
-            /*
-             * At this point, coverage of the "best" slice has been fetched from the cache or read from resource.
-             * Delegate the rendering to that coverage, after converting the extent from this grid coverage space
-             * to the slice coordinate space. If the coverage said that the converted extent does not intersect,
-             * try the "next best" slice until we succeed or until we exhausted the candidate list.
-             */
-            try {
-                final RenderedImage image = coverage.render(locator.toSliceExtent(extent, index));
-                if (failure != null) {
-                    Logging.ignorableException(LOGGER, ConcatenatedGridCoverage.class, "render", failure);
-                }
-                return image;
-            } catch (DisjointExtentException e) {
-                if (failure == null) failure = e;
-                else failure.addSuppressed(e);
-            }
-        } while (candidates != null);
         if (failure == null) {
             failure = new DisjointExtentException(gridGeometry.getExtent(), extent, locator.searchDimension);
         }
         throw failure;
+    }
+
+    /**
+     * Processes to the rendering of a single slice.
+     *
+     * @param  extent  a subspace of this grid coverage where all dimensions except two have a size of 1 cell.
+     * @param  index   index of the slice to render.
+     * @return the grid slice as a rendered image. Image location is relative to {@code extent}.
+     * @throws CannotEvaluateException if the slice cannot be rendered.
+     */
+    private RenderedImage slice(final GridExtent extent, final int index) {
+        final Object slice = slices[index];
+        final GridCoverage coverage;
+        if (!isDeferred(index)) {
+            coverage = (GridCoverage) slice;        // This cast should never fail.
+        } else try {
+            coverage = loader.getOrLoad(index, (GridCoverageResource) slice).forConvertedValues(isConverted);
+        } catch (DataStoreException e) {
+            throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotReadSlice_1, index + startAt), e);
+        }
+        /*
+         * At this point, coverage of the "best" slice has been fetched from the cache or read from resource.
+         * Delegate the rendering to that coverage, after converting the extent from this grid coverage space
+         * to the slice coordinate space. If the coverage said that the converted extent does not intersect,
+         * try the "next best" slice until we succeed or until we exhausted the candidate list.
+         */
+        return coverage.render(locator.toSliceExtent(extent, index));
     }
 }

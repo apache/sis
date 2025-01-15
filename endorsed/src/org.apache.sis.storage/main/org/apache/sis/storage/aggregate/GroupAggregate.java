@@ -170,7 +170,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
         for (int i=0; i < copy.length; i++) {
             final Resource c = copy[i];
             if (c instanceof AggregatedResource) {
-                final AggregatedResource component = (AggregatedResource) c;
+                final var component = (AggregatedResource) c;
                 changed |= ((copy[i] = component.apply(strategy)) != component);
             }
         }
@@ -291,7 +291,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     static ImmutableEnvelope unionOfComponents(final Resource[] components)
             throws DataStoreException, TransformException
     {
-        final Envelope[] envelopes = new Envelope[components.length];
+        final var envelopes = new Envelope[components.length];
         for (int i=0; i < components.length; i++) {
             final Resource r = components[i];
             if (r instanceof AbstractResource) {
@@ -319,7 +319,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
-        final MetadataBuilder builder = new MetadataBuilder();
+        final var builder = new MetadataBuilder();
         builder.addTitle(name);
         builder.addExtent(envelope, listeners);
         if (sampleDimensions != null) {

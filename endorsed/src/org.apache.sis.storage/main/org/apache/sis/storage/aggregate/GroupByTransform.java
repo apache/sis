@@ -63,6 +63,14 @@ final class GroupByTransform extends Group<GridSlice> {
     MergeStrategy strategy;
 
     /**
+     * Whether the members of this group are the tiles of a mosaic.
+     * This is {@code true} if all dimensions have tiles of the same size with an increment equal to that size.
+     *
+     * @see DimensionSelector#isMosaic
+     */
+    private boolean isMosaic;
+
+    /**
      * Creates a new group of objects associated to the given transform.
      *
      * @param  geometry   geometry of the grid coverage or resource.
@@ -73,6 +81,7 @@ final class GroupByTransform extends Group<GridSlice> {
         this.geometry  = geometry;
         this.gridToCRS = gridToCRS;
         this.strategy  = strategy;
+        this.isMosaic  = true;
     }
 
     /**
@@ -112,28 +121,36 @@ final class GroupByTransform extends Group<GridSlice> {
     /**
      * Returns grid dimensions to aggregate, in order of recommendation.
      * Aggregations should use the first dimension in the returned list.
+     * This method opportunistically updates {@link #isMosaic}.
      *
      * @todo A future version should add {@code findMosaicDimensions()}, which should be tested first.
      */
     private int[] findConcatenatedDimensions() {
         final DimensionSelector[] selects;
         synchronized (members) {                // Should no longer be needed at this step, but we are paranoiac.
-            int i = members.size();
+            int sliceIndex = members.size();
             selects = new DimensionSelector[geometry.getDimension()];
-            for (int dim = selects.length; --dim >= 0;) {
-                selects[dim] = new DimensionSelector(dim, i);
+            for (int dimension = selects.length; --dimension >= 0;) {
+                selects[dimension] = new DimensionSelector(dimension, sliceIndex);
             }
-            while (--i >= 0) {
-                members.get(i).getGridExtent(i, selects);
+            while (--sliceIndex >= 0) {
+                members.get(sliceIndex).getGridExtent(sliceIndex, selects);
             }
         }
+        /*
+         * The above block collected information about all slices in this group.
+         * The following code computes the increment along each grid dimension,
+         * then finds which axis is the one on which the members are slices.
+         */
         Arrays.stream(selects).parallel().forEach(DimensionSelector::finish);
         Arrays.sort(selects);       // Contains usually less than 5 elements.
-        final int[] dimensions = new int[selects.length];
+        final var dimensions = new int[selects.length];
         int count = 0;
-        for (int i=selects.length; --i >= 0;) {
-            if (selects[i].isConstantPosition) break;
-            dimensions[count++] = selects[i].dimension;
+        for (int dimension = selects.length; --dimension >= 0;) {
+            final DimensionSelector select = selects[dimension];
+            if (select.isConstantPosition) break;
+            dimensions[count++] = select.dimension;
+            isMosaic &= select.isMosaic;
         }
         return ArraysExt.resize(dimensions, count);
     }
@@ -147,19 +164,32 @@ final class GroupByTransform extends Group<GridSlice> {
      * @return the concatenated resource.
      */
     final Resource createResource(final StoreListeners parentListeners, final List<SampleDimension> ranges) {
-        final int n = members.size();
-        if (n == 1) {
+        final int count = members.size();
+        if (count == 1) {
             return members.get(0).resource;
         }
-        final var slices = new GridCoverageResource[n];
+        final var slices = new GridCoverageResource[count];
         final String name = getName(parentListeners);
         final int[] dimensions = findConcatenatedDimensions();
-        if (dimensions.length == 0) {
-            for (int i=0; i<n; i++) slices[i] = members.get(i).resource;
+        if (isMosaic) {
+            if (strategy == null) {
+                /*
+                 * We can safely default to the "overlay" merge strategy.
+                 * There is no ambiguity, because no tile should overlap.
+                 * The "overlay" operation should be able to share tile
+                 * references without copying pixel values in the common
+                 * case where all tiles use the same `SampleModel`.
+                 */
+                strategy = MergeStrategy.opaqueOverlay(null);
+            }
+        } else if (dimensions.length == 0) {
+            // Unable to group the slices in a multi-dimensional cube.
+            for (int i=0; i<count; i++) slices[i] = members.get(i).resource;
             return new GroupAggregate(parentListeners, name, slices, ranges);
         }
-        final GridSliceLocator locator = new GridSliceLocator(members, dimensions[0], slices);
-        final GridGeometry     domain  = locator.union(geometry, members, GridSlice::getGridExtent);
+        // The following constructor fills itself the `slices` array content.
+        final var locator = new GridSliceLocator(members, dimensions[0], slices);
+        final GridGeometry domain = locator.union(geometry, members, GridSlice::getGridExtent);
         return new ConcatenatedGridResource(name, parentListeners, domain, ranges, slices, locator, strategy);
     }
 }

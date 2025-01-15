@@ -41,6 +41,7 @@ import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.TilePlaceholder;
 
 
 /**
@@ -75,6 +76,11 @@ final class ImageOverlay extends MultiSourceImage {
      * The length of this array is the number of sources, in same order.
      */
     private final Area[] contributions;
+
+    /**
+     * Pool of shared rasters for empty tiles. Used when to sources intersect a tile to compute.
+     */
+    private final TilePlaceholder emptyTiles;
 
     /**
      * Creates a new image overlay or returns one of the given sources if equivalent.
@@ -192,6 +198,7 @@ final class ImageOverlay extends MultiSourceImage {
         super(sources, bounds, minTile, sampleModel, colorModel, parallel);
         this.validArea = validArea.isRectangular() ? validArea.getBounds2D() : validArea;
         this.contributions = contributions;
+        emptyTiles = TilePlaceholder.empty(sampleModel);
     }
 
     /**
@@ -390,22 +397,60 @@ final class ImageOverlay extends MultiSourceImage {
      */
     @Override
     protected Raster computeTile(final int tileX, final int tileY, WritableRaster target) {
-        if (target == null) {
-            target = createTile(tileX, tileY);
-        }
-        final Rectangle aoi = target.getBounds();
+        final Rectangle aoi = new Rectangle(
+                ImageUtilities.tileToPixelX(this, tileX),
+                ImageUtilities.tileToPixelY(this, tileY),
+                getTileWidth(),
+                getTileHeight());
+
+        Raster shared = null;
         final int n = getNumSources();
         for (int i=n; --i >= 0;) {
             if (contributions[i].intersects(aoi)) {
                 final RenderedImage source = getSource(i);
                 final Rectangle bounds = getBounds();
                 ImageUtilities.clipBounds(source, bounds);
-                if (!bounds.isEmpty()) {
-                    copyData(bounds, source, target);
+                if (bounds.isEmpty()) {
+                    continue;
                 }
+                /*
+                 * Found a source image which intersects the tile to write. If this is the first time,
+                 * get the source tile at the same coordinates as the destination tile. If the raster
+                 * covers exactly the same region, maybe we will be able to return it directly without
+                 * copying the pixel values.
+                 */
+                if (target == null) {
+                    if (shared == null) {
+                        final int tx = ImageUtilities.pixelToTileX(source, aoi.x);
+                        final int dx = tx - source.getMinTileX();
+                        if (dx >= 0 && dx < source.getNumXTiles()) {
+                            final int ty = ImageUtilities.pixelToTileY(source, aoi.y);
+                            final int dy = ty - source.getMinTileY();
+                            if (dy >= 0 && dy < source.getNumYTiles()) {
+                                shared = source.getTile(tx, ty);
+                                if (shared.getMinX() == aoi.x && shared.getMinY() == aoi.y) {
+                                    if (sampleModel.equals(shared.getSampleModel())) {
+                                        continue;   // Accept the tile and skip the copy operation.
+                                    }
+                                }
+                                shared = null;
+                            }
+                        }
+                    }
+                    /*
+                     * The source tile cannot be used directly. Its value will be copied in a new tile.
+                     * If `shared` was a candidate for return without copy, it needs to be copied now.
+                     */
+                    target = WritableRaster.createWritableRaster(sampleModel, aoi.getLocation());
+                    if (shared != null) {
+                        target.setRect(shared);
+                        shared = null;
+                    }
+                }
+                copyData(bounds, source, target);
             }
         }
-        return target;
+        return (target != null) ? target : (shared != null) ? shared : emptyTiles.create(aoi.getLocation());
     }
 
     /**

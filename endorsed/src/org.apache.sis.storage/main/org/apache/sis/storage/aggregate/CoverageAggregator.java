@@ -282,7 +282,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      */
     public void add(final GridCoverageResource resource) throws DataStoreException {
         final GroupBySample bySample = GroupBySample.getOrAdd(members, resource.getSampleDimensions());
-        final GridSlice slice = new GridSlice(resource);
+        final var slice = new GridSlice(resource);
         final List<GridSlice> slices;
         try {
             slices = slice.getList(bySample.members, strategy).members;
@@ -336,7 +336,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
         final var  names   = new DimensionNameType[] {
             GridExtent.typeFromAxis(crs.getCoordinateSystem().getAxis(0)).orElse(null)
         };
-        final GridExtent extent = new GridExtent(names, indices, indices, true);
+        final var extent = new GridExtent(names, indices, indices, true);
         final MathTransform gridToCRS = MathTransforms.linear(span, Math.fma(index, -span, lower));
         add(resource, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
     }
@@ -362,12 +362,12 @@ public final class CoverageAggregator extends Group<GroupBySample> {
          * but a future version may use the state of this `CoverageAggregator`, for example making a better
          * effort to align the resources on the same "gridToCRS" transform.
          */
-        final DefaultTemporalCRS crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
+        final var crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
         double scale  = crs.toValue(span);
         double offset = crs.toValue(lower);
         long   index  = Numerics.roundAndClamp(offset / scale);             // See comment in above method.
         offset = crs.toValue(lower.minus(span.multipliedBy(index)));
-        final GridExtent extent = new GridExtent(DimensionNameType.TIME, index, index, true);
+        final var extent = new GridExtent(DimensionNameType.TIME, index, index, true);
         final MathTransform gridToCRS = MathTransforms.linear(scale, offset);
         add(resource, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
     }
@@ -546,7 +546,8 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * Returns the algorithm to apply when more than one grid coverage can be found at the same grid index.
      * This is the most recent value set by a call to {@link #setMergeStrategy(MergeStrategy)},
      * or {@code null} if no strategy has been specified. In the latter case,
-     * a {@link SubspaceNotSpecifiedException} will be thrown by {@link GridCoverage#render(GridExtent)}
+     * {@link SubspaceNotSpecifiedException} will be thrown in situations of ambiguity.
+     * An ambiguity happens at {@link GridCoverage#render(GridExtent)} invocation time
      * if more than one source coverage (slice) is found for a specified grid index.
      *
      * @return algorithm to apply for merging source coverages at the same grid index, or {@code null} if none.

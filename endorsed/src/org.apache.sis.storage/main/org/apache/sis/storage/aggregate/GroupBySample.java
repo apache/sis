@@ -54,7 +54,7 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
      */
     @Override
     final String createName(final Locale locale) {
-        final StringJoiner name = new StringJoiner(", ");
+        final var name = new StringJoiner(", ");
         for (final SampleDimension range : ranges) {
             name.add(range.getName().toInternationalString().toString(locale));
         }
@@ -77,7 +77,7 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
                     return c;
                 }
             }
-            final GroupBySample c = new GroupBySample(ranges);
+            final var c = new GroupBySample(ranges);
             groups.add(c);
             return c;
         }

@@ -1144,7 +1144,7 @@ public class GridDerivation {
      * The slicing is applied on all dimensions except the specified dimensions to keep.
      *
      * <h4>Example</h4>
-     * given a <var>n</var>-dimensional cube, the following call creates a slice of the two first dimensions
+     * Given a <var>n</var>-dimensional cube, the following call creates a slice of the two first dimensions
      * (numbered 0 and 1, typically the dimensions of <var>x</var> and <var>y</var> axes)
      * located at the center (ratio 0.5) of all other dimensions (typically <var>z</var> and/or <var>t</var> axes):
      *
@@ -1163,7 +1163,7 @@ public class GridDerivation {
         ArgumentChecks.ensureNonNull("dimensionsToKeep", dimensionsToKeep);
         subGridSetter = "sliceByRatio";
         final GridExtent extent = getBaseExtentExpanded(true);
-        final GeneralDirectPosition slicePoint = new GeneralDirectPosition(extent.getDimension());
+        final var slicePoint = new GeneralDirectPosition(extent.getDimension());
         baseExtent = extent.sliceByRatio(slicePoint, sliceRatio, dimensionsToKeep);
         if (scaledExtent != null) {
             scaledExtent = scaledExtent.sliceByRatio(slicePoint, sliceRatio, dimensionsToKeep);

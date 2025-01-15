@@ -101,7 +101,7 @@ final class GridSlice {
                     return c;
                 }
             }
-            final GroupByTransform c = new GroupByTransform(geometry, gridToCRS, strategy);
+            final var c = new GroupByTransform(geometry, gridToCRS, strategy);
             transforms.add(c);
             return c;
         }
@@ -121,10 +121,11 @@ final class GridSlice {
      * This is invoked by {@link GroupByTransform#findConcatenatedDimensions()} for choosing
      * a dimension to concatenate.
      */
-    final void getGridExtent(final int i, final DimensionSelector[] writeTo) {
+    final void getGridExtent(final int sliceIndex, final DimensionSelector[] writeTo) {
         final GridExtent extent = getGridExtent();
         for (int dim = writeTo.length; --dim >= 0;) {
-            writeTo[dim].setSliceExtent(i, Math.subtractExact(extent.getMedian(dim), offset[dim]), extent.getSize(dim));
+            long position = Math.subtractExact(extent.getMedian(dim), offset[dim]);
+            writeTo[dim].setSliceExtent(sliceIndex, position, extent.getSize(dim));
         }
     }
 

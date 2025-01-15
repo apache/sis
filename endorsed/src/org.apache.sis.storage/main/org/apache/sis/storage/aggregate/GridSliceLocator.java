@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.aggregate;
 
-import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -86,7 +85,7 @@ final class GridSliceLocator {
         sliceLows  = new long[resources.length];
         sliceHighs = new long[resources.length];
         offsets    = new long[resources.length][];
-        final Map<GridSlice,long[]> shared = new HashMap<>();
+        final var shared = new HashMap<GridSlice,long[]>();
         for (int i=0; i<resources.length; i++) {
             final GridSlice  slice  = slices.get(i);
             final GridExtent extent = slice.getGridExtent();
@@ -111,7 +110,7 @@ final class GridSliceLocator {
     final <E> GridGeometry union(final GridGeometry base, final List<E> slices, final Function<E,GridExtent> getter) {
         GridExtent extent = base.getExtent();
         final int dimension = extent.getDimension();
-        final DimensionNameType[] axes = new DimensionNameType[dimension];
+        final var axes = new DimensionNameType[dimension];
         final long[] low  = new long[dimension];
         final long[] high = new long[dimension];
         for (int i=0; i<dimension; i++) {
@@ -202,7 +201,7 @@ final class GridSliceLocator {
     }
 
     /**
-     * Return the name of the extent axis in the search dimension.
+     * Returns the name of the extent axis in the search dimension.
      *
      * @param  extent  the extent from which to get an axis label.
      * @return label for the search axis.

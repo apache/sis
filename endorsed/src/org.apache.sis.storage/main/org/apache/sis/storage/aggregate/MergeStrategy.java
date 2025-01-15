@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.aggregate;
 
+import java.awt.Rectangle;
+import java.awt.image.RenderedImage;
 import java.time.Instant;
 import java.time.Duration;
 import org.apache.sis.storage.Resource;
@@ -24,6 +26,8 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.referencing.privy.ExtentSelector;
+import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Strings;
 
 
@@ -31,47 +35,87 @@ import org.apache.sis.util.privy.Strings;
  * Algorithm to apply when more than one grid coverage can be found at the same grid index.
  * A merge may happen if an aggregated coverage is created with {@link CoverageAggregator},
  * and the extent of some source coverages are overlapping in the dimension to aggregate.
+ * {@code MergeStrategy} is ignored if only one coverage is contained in a requested extent.
  *
  * <h2>Example</h2>
  * A collection of {@link GridCoverage} instances may represent the same phenomenon
- * (for example Sea Surface Temperature) over the same geographic area but at different dates and times.
- * {@link CoverageAggregator} can be used for building a single data cube with a time axis.
+ * (for example, air temperature) over the same geographic area but at different days.
+ * In such case, {@link CoverageAggregator} can build a three-dimensional data cube
+ * where each source coverage is located at a different position on the time axis.
  * But if two coverages have overlapping time ranges, and if a user request data in the overlapping region,
- * then the aggregated coverages have more than one source coverages capable to provide the requested data.
- * This enumeration specify how to handle this multiplicity.
+ * then there is an ambiguity about which data to return.
+ * This {@code MergeStrategy} specifies how to handle this multiplicity.
  *
  * <h2>Default behavior</h2>
  * If no merge strategy is specified, then the default behavior is to throw
- * {@link SubspaceNotSpecifiedException} when the {@link GridCoverage#render(GridExtent)} method
- * is invoked and more than one source coverage (slice) is found for a specified grid index.
+ * {@link SubspaceNotSpecifiedException} in situations of ambiguity.
+ * An ambiguity happens at {@link GridCoverage#render(GridExtent)} invocation time
+ * if more than one source coverage (slice) is found for a specified grid index.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   1.3
+ * @version 1.5
+ *
+ * @see CoverageAggregator#setMergeStrategy(MergeStrategy)
+ *
+ * @since 1.3
  */
-public final class MergeStrategy {
+public abstract class MergeStrategy {
     /**
-     * Selects a single slice using criteria based first on temporal extent, then on geographic area.
-     * This default instance do not use any duration.
+     * Creates a new merge strategy.
      *
-     * @see #selectByTimeThenArea(Duration)
+     * @since 1.5
      */
-    private static final MergeStrategy SELECT_BY_TIME = new MergeStrategy(null);
+    protected MergeStrategy() {
+    }
 
     /**
-     * Temporal granularity of the time of interest, or {@code null} if none.
-     * If non-null, intersections with TOI will be rounded to an integer number of this granularity.
-     * This is useful if data are expected at an approximately regular interval
-     * and we want to ignore slight variations in the temporal extent declared for each image.
+     * Builds an {@linkplain org.apache.sis.image.ImageProcessor#overlay image overlay} of all sources.
+     * The source images added first have precedence (foreground). Images added last are in background.
+     * All bands are referenced or copied verbatim, without special treatment for the alpha channel.
+     * In other words, this merge strategy does not handle transparency in overlapping regions.
+     *
+     * @param  areaOfInterest  range of pixel coordinates, or {@code null} for the union of all images.
+     * @return a merge strategy for building an overlay of all source images.
+     *
+     * @since 1.5
      */
-    private final Duration timeGranularity;
+    public static MergeStrategy opaqueOverlay(final Rectangle areaOfInterest) {
+        Overlay strategy = Overlay.DEFAULT;
+        if (areaOfInterest != null) {
+            strategy = new Overlay(strategy.processor, new Rectangle(areaOfInterest));
+        }
+        return strategy;
+    }
 
     /**
-     * Creates a new merge strategy. This constructor is private for now because
-     * we have not yet decided a callback API for custom merges.
+     * The implementation returned by {@link #opaqueOverlay(Rectangle)}.
      */
-    private MergeStrategy(final Duration timeGranularity) {
-        this.timeGranularity = timeGranularity;
+    private static final class Overlay extends MergeStrategy {
+        /** The default instance with no particular area of interest specified. */
+        static final Overlay DEFAULT = new Overlay(new ImageProcessor(), null);
+
+        /** The image processor with the configuration to use. */
+        final ImageProcessor processor;
+
+        /** The area of interest, or {@code null} if none. */
+        private final Rectangle areaOfInterest;
+
+        /** Creates a new strategy for an image in the given area. */
+        Overlay(final ImageProcessor processor, final Rectangle areaOfInterest) {
+            this.processor = processor;
+            this.areaOfInterest = areaOfInterest;
+        }
+
+        /** Aggregates the given sources. */
+        @Override protected RenderedImage aggregate(RenderedImage[] sources) {
+            return processor.overlay(sources, areaOfInterest);
+        }
+
+        /** Returns a string representation of this strategy for debugging purposes. */
+        @Override public String toString() {
+            return Strings.toString(MergeStrategy.class, null,
+                    "opaqueOverlay", "areaOfInterest", areaOfInterest);
+        }
     }
 
     /**
@@ -118,49 +162,93 @@ public final class MergeStrategy {
      * Current implementation does not check the vertical dimension.
      * This check may be added in a future version.
      *
-     * @param  timeGranularity  the temporal granularity of the Time of Interest (TOI), or {@code null} if none.
+     * @param  timeGranularity  the temporal granularity of the Time of Interest (<abbr>TOI</abbr>), or {@code null} if none.
      * @return a merge strategy for selecting a slice based on temporal criteria first.
      */
     public static MergeStrategy selectByTimeThenArea(final Duration timeGranularity) {
-        return (timeGranularity != null) ? new MergeStrategy(timeGranularity) : SELECT_BY_TIME;
+        return (timeGranularity != null) ? new FilterByTime(timeGranularity) : FilterByTime.DEFAULT;
     }
 
     /**
-     * Applies the merge using the strategy represented by this instance.
-     * Current implementation does only a slice selection.
-     * A future version may allow real merge operations.
-     *
-     * @param  request     the geographic area and temporal extent requested by user.
-     * @param  candidates  grid geometry of all slices that intersect the request. Null elements are ignored.
-     * @return index of best slice according the heuristic rules of this {@code MergeStrategy}.
+     * The implementation returned by {@link #selectByTimeThenArea(Duration)}.
      */
-    final Integer apply(final GridGeometry request, final GridGeometry[] candidates) {
-        final ExtentSelector<Integer> selector = new ExtentSelector<>(
-                request.getGeographicExtent().orElse(null),
-                request.getTemporalExtent());
+    private static final class FilterByTime extends MergeStrategy {
+        /**
+         * The default instance with no time granularity.
+         * Temporal positions are compared at their full precision.
+         */
+        static final FilterByTime DEFAULT = new FilterByTime(null);
 
-        if (timeGranularity != null) {
-            selector.setTimeGranularity(timeGranularity);
-            selector.alternateOrdering = true;
+        /**
+         * Temporal granularity of the time of interest, or {@code null} if none.
+         * If non-null, intersections with TOI will be rounded to an integer number of this granularity.
+         * This is useful if data are expected at an approximately regular interval
+         * and we want to ignore slight variations in the temporal extent declared for each image.
+         */
+        private final Duration timeGranularity;
+
+        /**
+         * Creates a new strategy for the given time granularity.
+         */
+        FilterByTime(final Duration timeGranularity) {
+            this.timeGranularity = timeGranularity;
         }
-        for (int i=0; i < candidates.length; i++) {
-            final GridGeometry candidate = candidates[i];
-            if (candidate != null) {
-                final Instant[] t = candidate.getTemporalExtent();
-                final int n = t.length;
-                selector.evaluate(candidate.getGeographicExtent().orElse(null),
-                                  (n == 0) ? null : t[0],
-                                  (n == 0) ? null : t[n-1], i);
+
+        /**
+         * Selects a single coverage using the strategy represented by this instance.
+         * May return an empty array if there is no source that can be used.
+         *
+         * @param  request     the geographic area and temporal extent requested by user.
+         * @param  candidates  grid geometry of all slices that intersect the request. Null elements are ignored.
+         * @return index of best slice according the heuristic rules of this {@code MergeStrategy}, or empty.
+         */
+        @Override
+        protected int[] filter(final GridGeometry request, final GridGeometry[] candidates) {
+            final var selector = new ExtentSelector<Integer>(
+                    request.getGeographicExtent().orElse(null),
+                    request.getTemporalExtent());
+
+            if (timeGranularity != null) {
+                selector.setTimeGranularity(timeGranularity);
+                selector.alternateOrdering = true;
             }
+            for (int i=0; i < candidates.length; i++) {
+                final GridGeometry candidate = candidates[i];
+                if (candidate != null) {
+                    final Instant[] t = candidate.getTemporalExtent();
+                    final int n = t.length;
+                    selector.evaluate(candidate.getGeographicExtent().orElse(null),
+                                      (n == 0) ? null : t[0],
+                                      (n == 0) ? null : t[n-1], i);
+                }
+            }
+            final Integer best = selector.best();
+            return (best != null) ? new int[] {best} : ArraysExt.EMPTY_INT;
         }
-        return selector.best();
+
+        /**
+         * Returns the single image selected by the filter.
+         * The array length should always be exactly one.
+         */
+        @Override
+        protected RenderedImage aggregate(RenderedImage[] sources) {
+            return sources[0];
+        }
+
+        /**
+         * Returns a string representation of this strategy for debugging purposes.
+         */
+        @Override
+        public String toString() {
+            return Strings.toString(MergeStrategy.class, null,
+                    "selectByTimeThenArea", "timeGranularity", timeGranularity);
+        }
     }
 
     /**
-     * Returns a resource with same data as specified resource but using this merge strategy.
+     * Returns a resource with the same data as the specified resource, but using this merge strategy.
      * If the given resource is an instance created by {@link CoverageAggregator} and uses a different strategy,
-     * then a new resource using this merge strategy is returned. Otherwise the given resource is returned as-is.
-     * The returned resource will share the same resources and caches than the given resource.
+     * then a new resource using this merge strategy is returned. Otherwise, the given resource is returned as-is.
      *
      * @param  resource  the resource for which to update the merge strategy, or {@code null}.
      * @return resource with updated merge strategy, or {@code null} if the given resource was null.
@@ -173,12 +261,34 @@ public final class MergeStrategy {
     }
 
     /**
-     * Returns a string representation of this strategy for debugging purposes.
+     * Returns the indexes of the coverages to use in the aggregation.
+     * The {@code candidates} array contains the grid geometries of all coverages that intersect the request.
+     * This method can decide to accept none of those candidates (by returning an empty array), or to select
+     * exactly one (for example, based on {@linkplain #selectByTimeThenArea a temporal criterion}),
+     * or on the contrary to select all of them, or any intermediate choice.
      *
-     * @return string representation of this strategy.
+     * <p>The default implementation selects all candidates (i.e., filter nothing).</p>
+     *
+     * @param  request     the geographic area and temporal extent requested by user.
+     * @param  candidates  grid geometry of all slices that intersect the request.
+     * @return indexes of the slices to use according the heuristic rules of this {@code MergeStrategy}.
+     *
+     * @since 1.5
      */
-    @Override
-    public String toString() {
-        return Strings.toString(getClass(), "algo", "selectByTimeThenArea", "timeGranularity", timeGranularity);
+    protected int[] filter(GridGeometry request, GridGeometry[] candidates) {
+        return ArraysExt.range(0, candidates.length);
     }
+
+    /**
+     * Aggregates images that have been accepted by the filter. The length of the {@code sources} array
+     * is equal or smaller than the length of the index array returned by {@link #filter filter(…)}.
+     * The array may be shorter if some images were outside the request, but the array always contains
+     * at least one element.
+     *
+     * @param  sources  the images accepted by the filter.
+     * @return the result of the aggregation.
+     *
+     * @since 1.5
+     */
+    protected abstract RenderedImage aggregate(RenderedImage[] sources);
 }

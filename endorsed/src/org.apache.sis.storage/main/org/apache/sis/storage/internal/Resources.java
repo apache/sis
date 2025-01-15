@@ -328,8 +328,8 @@ public class Resources extends IndexedResourceBundle {
         public static final short NoCommonFeatureType = 75;
 
         /**
-         * Index {1} in dimension “{0}” maps to {2} slices. This error can be avoided by specifying a
-         * merge strategy.
+         * Cell coordinate {1} in dimension “{0}” maps to {2} slices or tiles. A smaller extent or a
+         * merge strategy should be specified.
          */
         public static final short NoSliceMapped_3 = 79;
 
