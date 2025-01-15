@@ -64,7 +64,7 @@ dependencyResolutionManagement {
             library("jaxb.api",      "jakarta.xml.bind",       "jakarta.xml.bind-api").version {strictly("[4.0, 5.0[");  prefer("4.0.2")}
             library("jaxb.impl",     "org.glassfish.jaxb",     "jaxb-runtime")        .version {strictly("[4.0, 5.0[");  prefer("4.0.5")}
             library("yasson",        "org.eclipse",            "yasson")              .version {strictly("[3.0, 4.0[");  prefer("3.0.3")}
-            library("jts.core",      "org.locationtech.jts",   "jts-core")            .version {strictly("[1.15, 2.0["); prefer("1.19.0")}
+            library("jts.core",      "org.locationtech.jts",   "jts-core")            .version {strictly("[1.15, 2.0["); prefer("1.20.0")}
             library("esri.geometry", "com.esri.geometry",      "esri-geometry-api")   .version {strictly("[2.0, 3.0[");  prefer("2.2.4")}
             library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("7.6.7")}
             library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.5.3")}
