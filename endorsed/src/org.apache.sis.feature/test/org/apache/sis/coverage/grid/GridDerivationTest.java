@@ -93,8 +93,11 @@ public final class GridDerivationTest extends TestCase {
         envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
+        GridDerivation change = grid.derive().subgrid(envelope);
+        assertFalse(change.hasSubsampling());
+        assertTrue(change.getGridTransform(PixelInCell.CELL_CENTER).isIdentity());
         assertExtentEquals(new long[] {370,  40,  4},
-                           new long[] {389, 339, 10}, grid.derive().subgrid(envelope).getIntersection());
+                           new long[] {389, 339, 10}, change.getIntersection());
     }
 
     /**
@@ -142,6 +145,8 @@ public final class GridDerivationTest extends TestCase {
         GridExtentTest.assertExtentEquals(extent, 1, -1000, 8000);
         assertArrayEquals(new long[] {50, 300}, change.getSubsampling());               // s = scaleQuery / scaleBase
         assertArrayEquals(new long[] {0, -100}, change.getSubsamplingOffsets());
+        assertFalse(change.getGridTransform(PixelInCell.CELL_CENTER).isIdentity());
+        assertTrue(change.hasSubsampling());
         /*
          * Above (50, 300) subsampling shall be applied and the `gridToCRS` transform adjusted consequently.
          */
@@ -460,6 +465,7 @@ public final class GridDerivationTest extends TestCase {
         GridExtentTest.assertExtentEquals(extent, 1,   low, 8000);
         assertArrayEquals(new long[] {39, 294},    change.getSubsampling());
         assertArrayEquals(new long[] { 0, offset}, change.getSubsamplingOffsets());
+        assertTrue(change.hasSubsampling());
 
         final GridGeometry tg = change.build();
         extent = tg.getExtent();
@@ -491,6 +497,8 @@ public final class GridDerivationTest extends TestCase {
          * Subsampling values checked below shall be equal or smaller
          * than the values given to `maximumSubsampling(…)`.
          */
+        assertTrue(change.hasSubsampling());
+        assertFalse(change.getGridTransform(PixelInCell.CELL_CORNER).isIdentity());
         assertArrayEquals(new long[] {15,  84}, change.getSubsampling());
         assertArrayEquals(new long[] { 0, -70}, change.getSubsamplingOffsets());
         assertMatrixEquals(new Matrix3(30,   0, 200,

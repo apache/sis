@@ -215,7 +215,7 @@ public class GridDerivation {
 
     /**
      * Intersection between the grid envelope and the area of interest, computed when only envelopes are available.
-     * Normally we do not compute this envelope directly; instead we compute the grid extent and the "grid to CRS"
+     * Normally we do not compute this envelope directly. Instead, we compute the grid extent and the "grid to CRS"
      * transform. This envelope is computed only if it cannot be computed from other grid geometry properties.
      *
      * @see #subgrid(Envelope, double...)
@@ -474,8 +474,9 @@ public class GridDerivation {
 
     /**
      * Adapts the base grid for the geographic area and resolution of the given grid geometry.
-     * The new grid geometry will cover the intersection of the {@linkplain #base} grid geometry
-     * and the spatiotemporal region given by {@code areaOfInterest} envelope.
+     * By default, the new grid geometry will cover the intersection of the {@linkplain #base}
+     * grid geometry and the spatiotemporal region given by {@code areaOfInterest} envelope.
+     * Whether that intersection is clipped can be {@linkplain #clipping(GridClippingMode) configured}.
      * Coordinate operations are applied as needed if the Coordinate Reference Systems are not the same.
      * The new grid geometry resolution will be integer multiples of the {@linkplain #base} grid geometry resolution.
      *
@@ -555,14 +556,14 @@ public class GridDerivation {
             }
             scales = areaOfInterest.resolution;
             /*
-             * In principle `resolution` is always null here because it is computed from `gridToCRS`,
-             * which is null (otherwise `isExtentOnly()` would have been false). However, an exception
-             * to this rule happens if `areaOfInterest` has been computed by another `GridDerivation`,
-             * in which case the resolution requested by user is saved even when `gridToCRS` is null.
-             * In that case the resolution is relative to the base grid of the other `GridDerivation`.
-             * Note however that the `resolution` field is only an approximation (the exact transform
-             * would have been stored in `gridToCRS` if it was non-null) and the subsampling offsets
-             * are lost (they would also have been stored in `gridToCRS`).
+             * In principle, the above `resolution` should be null because it could not be derived from `gridToCRS`,
+             * because the latter is null (otherwise `isExtentOnly()` would have been false). However, an exception
+             * to this rule happens if the given `areaOfInterest` has been computed by another `GridDerivation`,
+             * in which case the resolution requested by the user was saved even if no `gridToCRS` was available.
+             * That resolution is relative to the base grid of the other `GridDerivation` instead of this one,
+             * but we ignore that details because the `resolution` field is only indicative, especially since
+             * the subsampling offsets are lost. If the exact resolution and subsampling offsets where known,
+             * they would have been stored in `gridToCRS`.
              */
         } else try {
             final MathTransform nowraparound;
@@ -574,6 +575,13 @@ public class GridDerivation {
                 finder.nowraparound();
                 nowraparound = finder.gridToGrid();
             } else {
+                /*
+                 * Get the transform from the base grid to the grid of `areaOfInterest`.
+                 * There is two variants, depending on whether the user wants tight box:
+                 *
+                 * - Default:   map pixel corners with exclusive upper grid coordinate value.
+                 * - Tight box: map pixel centers with inclusive upper grid coordinate value.
+                 */
                 final boolean tight = (pointsToInclude == PixelInCell.CELL_CENTER);
                 if (tight) {
                     finder.setAnchor(PixelInCell.CELL_CENTER);
@@ -905,7 +913,7 @@ public class GridDerivation {
 
     /**
      * Requests a grid geometry over a sub-region of the base grid geometry and optionally with subsampling.
-     * The given grid geometry must have the same number of dimension than the base grid geometry.
+     * The given grid geometry must have the same number of dimensions than the base grid geometry.
      * If the length of {@code subsampling} array is less than the number of dimensions,
      * then no subsampling will be applied on the missing dimensions.
      *
@@ -921,7 +929,7 @@ public class GridDerivation {
      *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
      * </ul>
      *
-     * @param  areaOfInterest  the desired grid extent in unit of base grid cell (i.e. ignoring subsampling),
+     * @param  areaOfInterest  the desired grid extent in units of base grid cells (i.e. ignoring subsampling),
      *                         or {@code null} for not restricting the sub-grid to a sub-area.
      * @param  subsampling     the subsampling to apply on each grid dimension, or {@code null} if none.
      *                         All values shall be greater than zero. If the array length is shorter than
@@ -1293,6 +1301,49 @@ public class GridDerivation {
     }
 
     /**
+     * Returns the transform from derived <em>grid</em> coordinates to base <em>grid</em> coordinates.
+     * In the {@linkplain LinearTransform#getMatrix() matrix representation} of this transform,
+     * the scale factors on the diagonal are the {@linkplain #getSubsampling() subsampling values} and the
+     * translation terms in the last column are the {@linkplain #getSubsamplingOffsets() subsampling offsets}.
+     *
+     * @return transform of <em>grid</em> coordinates from the derived grid to the {@linkplain #base} grid.
+     *
+     * @see #getSubsampling()
+     * @see #getSubsamplingOffsets()
+     *
+     * @since 1.5
+     */
+    public LinearTransform getGridTransform(final PixelInCell anchor) {
+        LinearTransform tr = toBase;
+        if (tr == null) {
+            return MathTransforms.identity(base.getDimension());
+        }
+        // Result of concatenating linear transforms should always be a linear transform.
+        return (LinearTransform) PixelTranslation.translateGridToGrid(tr, PixelInCell.CELL_CORNER, anchor);
+    }
+
+    /**
+     * Returns whether the conversion from the base grid to the derived grid contains a scale factor.
+     * A return value of {@code false} means that <em>all</em> the following are true:
+     *
+     * <ul>
+     *   <li>{@link #getSubsampling()} returns an array filled with the value 1.</li>
+     *   <li>{@link #getSubsamplingOffsets()} returns an array filled with the value 0.</li>
+     *   <li>{@link #getGridTransform(PixelInCell)} returns an identity transform (regardless the argument).</li>
+     * </ul>
+     *
+     * Conversely, a return value of {@code true} means that the above are false,
+     * except the subsampling offsets which may still be zero.
+     *
+     * @return whether the conversion from the base grid to the derived grid contains a scale factor.
+     *
+     * @since 1.5
+     */
+    public boolean hasSubsampling() {
+        return (toBase != null) && !toBase.isIdentity();
+    }
+
+    /**
      * Returns the strides for accessing cells along each axis of the base grid.
      * Those values define part of the conversion from <em>derived</em> grid coordinates
      * (<var>x</var>, <var>y</var>, <var>z</var>) to {@linkplain #base} grid coordinates
@@ -1321,6 +1372,7 @@ public class GridDerivation {
      *         grid has been constructed by a call to {@link #subgrid(Envelope, double...)}.
      *
      * @see #getSubsamplingOffsets()
+     * @see #getGridTransform(PixelInCell)
      * @see #subgrid(GridGeometry)
      * @see #subgrid(GridExtent, long...)
      *
@@ -1444,6 +1496,7 @@ public class GridDerivation {
      *         derived grid has been constructed by a call to {@link #subgrid(Envelope, double...)}.
      *
      * @see #getSubsampling()
+     * @see #getGridTransform(PixelInCell)
      * @see #subgrid(GridGeometry)
      * @see #subgrid(GridExtent, long...)
      *
