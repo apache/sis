@@ -1714,9 +1714,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Creates a new grid extent upsampled by the given number of cells along each grid dimensions.
-     * This method multiplies {@linkplain #getLow(int) low} and {@linkplain #getHigh(int) high} coordinates
-     * by the given periods.
-     *
+     * This method multiplies the {@linkplain #getLow(int) low coordinates}
+     * and the {@linkplain #getSize(int) size} by the given periods.
      * This method does not change the number of dimensions of the grid extent.
      *
      * <h4>Number of arguments</h4>
@@ -1885,8 +1884,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  translation  translation to apply on each axis in order.
-     * @return a grid extent whose coordinates (both low and high ones) have been translated by given amounts.
+     * @param  translation  translation to apply on each axis in order. Can be an array of any length.
+     * @return a grid extent whose coordinates (both low and high ones) have been translated by the given numbers.
      *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
@@ -1895,7 +1894,24 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @since 1.1
      */
-    public GridExtent translate(final long... translation) {
+    public final GridExtent translate(final long... translation) {
+        return translate(translation, false);
+    }
+
+    /**
+     * Returns an extent translated by the given number of cells, optionally in the reverse direction.
+     * Invoking this method is equivalent to invoking {@link #translate(long...)}, except that this method
+     * use the negative values of the given translation terms if the {@code negate} argument is {@code true}.
+     *
+     * @param  translation  translation to apply on each axis in order. Can be an array of any length.
+     * @param  negate       whether to use the negative values of the given translation terms.
+     * @return a grid extent whose coordinates (both low and high ones) have been translated by the given numbers.
+     *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @since 1.5
+     */
+    public GridExtent translate(final long[] translation, final boolean negate) {
         final int m = getDimension();
         final int length = Math.min(m, translation.length);
         if (isZero(translation, length)) {
@@ -1906,8 +1922,14 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         for (int i=0; i < length; i++) {
             final int  j = i + m;
             final long t = translation[i];
-            c[i] = Math.addExact(c[i], t);
-            c[j] = Math.addExact(c[j], t);
+            if (negate) {
+                // Do not negate `t` because it may overflow. Use `subtractExact(…)` instead.
+                c[i] = Math.subtractExact(c[i], t);
+                c[j] = Math.subtractExact(c[j], t);
+            } else {
+                c[i] = Math.addExact(c[i], t);
+                c[j] = Math.addExact(c[j], t);
+            }
         }
         return translated;
     }

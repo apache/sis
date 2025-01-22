@@ -212,11 +212,7 @@ class WritableStore extends WorldFileStore {
          * Must be done before to compare with existing grid.
          */
         final GridExtent extent = gg.getExtent();
-        final long[] translation = new long[extent.getDimension()];
-        for (int i=0; i<translation.length; i++) {
-            translation[i] = Math.negateExact(extent.getLow(i));
-        }
-        gg = gg.shiftGrid(translation);
+        gg = gg.shiftGrid(extent.getLow().getCoordinateValues(), true);
         /*
          * If the data store already contains a coverage, then the given grid geometry
          * must be identical to the existing one, in which case there is nothing to do.

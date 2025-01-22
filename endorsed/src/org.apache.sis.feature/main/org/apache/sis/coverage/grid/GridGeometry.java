@@ -1618,7 +1618,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  translation  translation to apply on each grid axis in order.
      * @return a grid geometry whose coordinates (both low and high ones) and
-     *         the "grid to CRS" transforms have been translated by given amounts.
+     *         the "grid to CRS" transforms have been translated by given numbers.
      *         If the given translation is a no-op (no value or only 0 ones), then this grid is returned as is.
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
@@ -1626,11 +1626,29 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @since 1.3
      */
-    public GridGeometry shiftGrid(final long... translation) {
+    public final GridGeometry shiftGrid(final long... translation) {
+        return shiftGrid(translation, false);
+    }
+
+    /**
+     * Translates grid coordinates by the given number of cells, optionally in the reverse direction.
+     * Invoking this method is equivalent to invoking {@link #shiftGrid(long...)}, except that this method
+     * use the negative values of the given translation terms if the {@code negate} argument is {@code true}.
+     *
+     * @param  translation  translation to apply on each grid axis in order. Can be an array of any length.
+     * @param  negate       whether to use the negative values of the given translation terms.
+     * @return a grid geometry whose coordinates (both low and high ones) and
+     *         the "grid to CRS" transforms have been translated by given numbers.
+     *         If the given translation is a no-op (no value or only 0 ones), then this grid is returned as is.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @since 1.5
+     */
+    public GridGeometry shiftGrid(final long[] translation, final boolean negate) {
         ArgumentChecks.ensureNonNull("translation", translation);
         GridExtent newExtent = extent;
         if (newExtent != null) {
-            newExtent = newExtent.translate(translation);
+            newExtent = newExtent.translate(translation, negate);
             if (newExtent == extent) return this;
         }
         MathTransform t1 = gridToCRS;
@@ -1640,7 +1658,8 @@ public class GridGeometry implements LenientComparable, Serializable {
             final double[] vector = new double[getDimension()];
             for (int i=Math.min(vector.length, translation.length); --i >= 0;) {
                 isZero &= (translation[i] == 0);
-                vector[i] = Math.negateExact(translation[i]);
+                double v = translation[i];
+                vector[i] = negate ? v : -v;    // Really negate if `negate` is false.
             }
             if (isZero) return this;
             final MathTransform t = MathTransforms.translation(vector);
@@ -1819,11 +1838,13 @@ public class GridGeometry implements LenientComparable, Serializable {
             throws TransformException
     {
         GridExtent result = other.getExtent();
-        final MathTransform tr = other.createTransformTo(this, include);
-        if (!tr.isIdentity()) {
-            final boolean isCenter = (include == PixelInCell.CELL_CENTER);
-            final GeneralEnvelope bounds = result.toEnvelope(tr, isCenter, tr, null);
-            result = new GridExtent(bounds, isCenter, rounding, GridClippingMode.NONE, null, null, extent, null);
+        if (cornerToCRS != other.cornerToCRS || gridToCRS != other.gridToCRS) {   // Quick check for a common case.
+            final MathTransform tr = other.createTransformTo(this, include);
+            if (!tr.isIdentity()) {
+                final boolean isCenter = (include == PixelInCell.CELL_CENTER);
+                final GeneralEnvelope bounds = result.toEnvelope(tr, isCenter, tr, null);
+                result = new GridExtent(bounds, isCenter, rounding, GridClippingMode.NONE, null, null, extent, null);
+            }
         }
         return result;
     }

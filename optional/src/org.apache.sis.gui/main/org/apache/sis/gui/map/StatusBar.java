@@ -711,10 +711,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             if (sliceExtent != null) {
                 final long[] offset = new long[dimension];
                 for (final int i : getXYDimensions()) {
-                    offset[i] = Math.negateExact(sliceExtent.getLow(i));
+                    offset[i] = sliceExtent.getLow(i);
                 }
-                sliceExtent = sliceExtent.translate(offset);
-                geometry = geometry.shiftGrid(offset);              // Does not change the "real world" envelope.
+                sliceExtent = sliceExtent.translate(offset, true);
+                geometry = geometry.shiftGrid(offset, true);        // Does not change the "real world" envelope.
                 try {
                     geometry = geometry.relocate(sliceExtent);      // Changes the "real world" envelope.
                 } catch (TransformException e) {
