@@ -99,6 +99,11 @@ final class TiledCoverage extends TiledGridCoverage {
                     if (!band.adviseRead(gdal, resourceBounds, imageBounds, rasterType)) break;
                 }
             }
+            /*
+             * Immediate reading of all tiles that intersect the requested region.
+             * Pixel values are copied twice: GDAL ⟶ `transferBuffer` ⟶ tiles.
+             * The transfer buffer is reused for each tile.
+             */
             final var result = new WritableRaster[iterator.tileCountInQuery];
             try (Arena arena = Arena.ofConfined()) {
                 final MemorySegment transferBuffer = arena.allocate(getTileLength());
@@ -109,11 +114,22 @@ final class TiledCoverage extends TiledGridCoverage {
                         rasterBounds.translate(tile.getMinX(), tile.getMinY());
                         assert (imageBounds == null) || imageBounds.contains(rasterBounds)
                                 : AssertionMessages.notContained(imageBounds, rasterBounds);
-
+                        /*
+                         * The coordinates to give to GDAL are derived from the AOI coordinates in the most
+                         * straightforward way (`tight` = false) because GDAL will compute subsampling with
+                         * the ratio between `resourceBounds` and `rasterBounds`. A consequence is that the
+                         * bounding box may be larger than the image bounds, which is why a clip is needed.
+                         * The clip would be unneeded if we used `tight` = true, but the ratio would have
+                         * slight rounding errors compared to the desired subsampling and we are not sure
+                         * how GDAL would handle that.
+                         */
                         resourceBounds = iterator.imageToResource(rasterBounds, false);
                         owner.clipReadRegion(resourceBounds);
-
-                        // Conversion from uncropped coordinates to cropped coordinates before reading.
+                        /*
+                         * Conversion from uncropped coordinates to cropped coordinates before reading.
+                         * The crop is needed only when reading from a single large tile. It is a no-op
+                         * when reading a tiled image.
+                         */
                         iterator.getUncroppedTileLocation().ifPresent((p) -> rasterBounds.translate(p.x, p.y));
                         if (!Band.transfer(gdal, OpenFlag.READ, bands, owner.dataType, resourceBounds, tile, rasterBounds, transferBuffer)) {
                             break;      // Exception will be thrown by `throwOnFailure(…)`

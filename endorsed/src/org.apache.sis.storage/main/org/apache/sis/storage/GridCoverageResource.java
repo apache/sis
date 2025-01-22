@@ -143,7 +143,7 @@ public interface GridCoverageResource extends DataSet {
      * are <em>not</em> constrained to the resolutions returned by this method. Those resolutions are only hints
      * about resolution values where read operations are likely to be more efficient.</p>
      *
-     * @return preferred resolutions for read operations in this data store, or an empty array if none.
+     * @return preferred resolutions for read operations in this data store, or an empty list if none.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      *
      * @see GridGeometry#getResolution(boolean)

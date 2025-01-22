@@ -604,8 +604,9 @@ final class TiledResource extends TiledGridResource {
 
     /**
      * Ensures that the region to read is inside the bounds of the resource.
-     * The upper values of the region may be out of bounds when the subsampling is not a divisor of the image size.
-     * the lower values should always be okay and are not checked by this method.
+     * The upper values of the region may be out of bounds when the subsampling is not a divisor of the image size,
+     * because the <var>r</var> bounds intentionally contains trailing pixels that will be skipped by subsampling.
+     * The lower values should always be okay and are not checked by this method.
      */
     final void clipReadRegion(final Rectangle r) {
         long max;

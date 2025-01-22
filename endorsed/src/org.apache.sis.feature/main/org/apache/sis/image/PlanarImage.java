@@ -677,11 +677,12 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(100).append(Classes.getShortClassName(this))
-                .append("[(").append(getWidth()).append(" × ").append(getHeight()).append(") pixels");
+        final var buffer = new StringBuilder(100).append(Classes.getShortClassName(this))
+                .append("[(").append(getWidth()).append(" × ").append(getHeight()).append(") pixels starting at ")
+                .append('(').append(getMinX()).append(", ").append(getMinY()).append(')');
         final SampleModel sm = getSampleModel();
         if (sm != null) {
-            buffer.append(" × ").append(sm.getNumBands()).append(" bands");
+            buffer.append(" in ").append(sm.getNumBands()).append(" bands");
             final String type = ImageUtilities.getDataTypeName(sm);
             if (type != null) {
                 buffer.append(" of type ").append(type);
@@ -694,7 +695,7 @@ public abstract class PlanarImage implements RenderedImage {
          */
         final ColorModel cm = getColorModel();
 colors: if (cm != null) {
-            buffer.append("; ");
+            buffer.append(". Colors: ");
             if (cm instanceof IndexColorModel) {
                 buffer.append(((IndexColorModel) cm).getMapSize()).append(" indexed colors");
             } else {
