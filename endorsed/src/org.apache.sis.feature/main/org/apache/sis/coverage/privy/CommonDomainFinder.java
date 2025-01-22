@@ -293,7 +293,7 @@ public final class CommonDomainFinder {
         } catch (FactoryException | NoninvertibleTransformException | MismatchedDimensionException e) {
             throw new IllegalGridGeometryException(Resources.format(Resources.Keys.IncompatibleGridGeometries), e);
         }
-        final long[] offset = integerTranslation(MathTransforms.getMatrix(change), null);
+        final long[] offset = integerTranslation(MathTransforms.getMatrix(change));
         if (offset == null) {
             throw new IllegalGridGeometryException(Resources.format(Resources.Keys.IncompatibleGridGeometries));
         }
@@ -318,17 +318,15 @@ public final class CommonDomainFinder {
 
     /**
      * If the given matrix is the identity matrix except for translation terms, returns the translation.
-     * Translation terms must be integer values and will be stored in the given {@code offset} array.
-     * If the matrix is not an integer translation, this method return {@code null} without modifying
-     * the given {@code offset} array.
+     * These translation terms must be integer values. If the matrix is not an integer translation,
+     * this method return {@code null}.
      *
      * @param  change  conversion between two grid geometries, or {@code null}.
-     * @param  offset  where to store translation terms if the change is an integer translation, or {@code null}.
      * @return the translation terms, or {@code null} if the given matrix does not met the conditions.
      *
      * @see org.apache.sis.referencing.operation.matrix.Matrices#isTranslation(Matrix)
      */
-    public static long[] integerTranslation(final Matrix change, long[] offset) {
+    public static long[] integerTranslation(final Matrix change) {
         if (change == null) {
             return null;
         }
@@ -352,13 +350,7 @@ public final class CommonDomainFinder {
                 }
             }
         }
-        /*
-         * Store the translation terms after we have determined that they are integers.
-         * It must be an "all or nothing" operation (unless an exception is thrown).
-         */
-        if (offset == null) {
-            offset = new long[numRows - 1];
-        }
+        final long[] offset = new long[numRows - 1];
         final int i = numCols - 1;
         if (change instanceof ExtendedPrecisionMatrix) {
             final var epm = (ExtendedPrecisionMatrix) change;

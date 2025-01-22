@@ -16,11 +16,9 @@
  */
 package org.apache.sis.storage.aggregate;
 
-import java.util.List;
 import java.util.Locale;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.Utilities;
 
 
@@ -46,10 +44,19 @@ final class GroupByCRS<E> extends Group<E> {
     /**
      * Creates a new group of objects associated to the given CRS.
      *
+     * @param  parent  the parent group in which this group is a child.
      * @param  crs  coordinate reference system of this group, or {@code null}.
      */
-    private GroupByCRS(final CoordinateReferenceSystem crs) {
+    GroupByCRS(final GroupBySample parent, final CoordinateReferenceSystem crs) {
+        super(parent);
         this.crs = crs;
+    }
+
+    /**
+     * Returns whether an object having the given <abbr>CRS</abbr> can be a member of this group.
+     */
+    final boolean accepts(final CoordinateReferenceSystem candidate) {
+        return Utilities.equalsIgnoreMetadata(crs, candidate);
     }
 
     /**
@@ -60,42 +67,5 @@ final class GroupByCRS<E> extends Group<E> {
     @Override
     final String createName(final Locale locale) {
         return IdentifiedObjects.getDisplayName(crs, locale);
-    }
-
-    /**
-     * Returns the group of objects associated to the given grid geometry.
-     * The CRS comparisons ignore metadata.
-     * This method takes a synchronization lock on the given list.
-     *
-     * @param  <E>       type of objects in groups.
-     * @param  groups    the list where to search for a group.
-     * @param  geometry  geometry of the grid coverage or resource.
-     * @return group of objects associated to the given CRS (never null).
-     */
-    static <E> GroupByCRS<E> getOrAdd(final List<GroupByCRS<E>> groups, final GridGeometry geometry) {
-        return getOrAdd(groups, geometry.isDefined(GridGeometry.CRS) ? geometry.getCoordinateReferenceSystem() : null);
-    }
-
-    /**
-     * Returns the group of objects associated to the given CRS.
-     * The CRS comparisons ignore metadata.
-     * This method takes a synchronization lock on the given list.
-     *
-     * @param  <E>     type of objects in groups.
-     * @param  groups  the list where to search for a group.
-     * @param  crs     coordinate reference system of the desired group, or {@code null}.
-     * @return group of objects associated to the given CRS (never null).
-     */
-    private static <E> GroupByCRS<E> getOrAdd(final List<GroupByCRS<E>> groups, final CoordinateReferenceSystem crs) {
-        synchronized (groups) {
-            for (final GroupByCRS<E> c : groups) {
-                if (Utilities.equalsIgnoreMetadata(crs, c.crs)) {
-                    return c;
-                }
-            }
-            final GroupByCRS<E> c = new GroupByCRS<>(crs);
-            groups.add(c);
-            return c;
-        }
     }
 }

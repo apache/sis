@@ -120,7 +120,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short CanNotReadPixel_3 = 68;
 
         /**
-         * Cannot read slice at index {0}.
+         * Cannot read slice or tile “{0}”.
          */
         public static final short CanNotReadSlice_1 = 78;
 
@@ -452,6 +452,11 @@ public class Resources extends IndexedResourceBundle {
          * The “{0}” feature at {1} has a {3} coordinate values, while we expected a multiple of {2}.
          */
         public static final short UnexpectedNumberOfCoordinates_4 = 58;
+
+        /**
+         * Expected a resolution of {0} but got {1} for the slice or tile “{2}”.
+         */
+        public static final short UnexpectedSliceResolution_3 = 84;
 
         /**
          * Unfiltered data.

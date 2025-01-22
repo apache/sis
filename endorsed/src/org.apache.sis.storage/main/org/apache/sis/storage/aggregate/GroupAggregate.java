@@ -17,25 +17,15 @@
 package org.apache.sis.storage.aggregate;
 
 import java.util.List;
-import java.util.Collection;
-import java.util.Optional;
 import java.util.function.BiConsumer;
-import org.opengis.util.GenericName;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
-import org.apache.sis.util.privy.Strings;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.geometry.ImmutableEnvelope;
 
 
 /**
@@ -44,31 +34,13 @@ import org.apache.sis.geometry.ImmutableEnvelope;
  * This is used as temporary object during analysis, then kept alive in last resort
  * when we cannot build a single time series from a sequence of coverages at different times.
  *
- * <p>This class intentionally does not override {@link #getIdentifier()} because
- * it would not be a persistent identifier.</p>
- *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class GroupAggregate extends AbstractResource implements Aggregate, AggregatedResource {
+final class GroupAggregate extends AggregatedResource implements Aggregate {
     /**
      * Minimum number of components for keeping this aggregate after analysis.
      */
     private static final int KEEP_ALIVE = 2;
-
-    /**
-     * The identifier for this aggregate, or {@code null} if none.
-     * This is optionally supplied by users for their own purposes.
-     * There is no default value.
-     *
-     * @see #getIdentifier()
-     */
-    private GenericName identifier;
-
-    /**
-     * Name of this aggregate, or {@code null} if none.
-     * This is <strong>not</strong> a persistent identifier.
-     */
-    private String name;
 
     /**
      * The components of this aggregate. Array elements are initially null, but should all become non-null
@@ -87,20 +59,6 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     private boolean componentsAreLeaves;
 
     /**
-     * The envelope of this aggregate, or {@code null} if not yet computed.
-     * May also be {@code null} if no component declare an envelope, or if the union cannot be computed.
-     *
-     * @see #getEnvelope()
-     */
-    private ImmutableEnvelope envelope;
-
-    /**
-     * Whether {@link #envelope} has been initialized.
-     * The envelope may still be null if the initialization failed.
-     */
-    private boolean envelopeIsEvaluated;
-
-    /**
      * The sample dimensions of all children in this group, or an empty collection if they are not the same.
      * This field is initially null, but should become non-null after a {@code fill(…)} method has been invoked.
      * This is used for metadata only.
@@ -111,33 +69,31 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
      * Creates a new aggregate with the specified number of components.
      * One of the {@code fill(…)} methods must be invoked after this constructor.
      *
-     * @param listeners  listeners of the parent resource, or {@code null} if none.
      * @param name       name of this aggregate, or {@code null} if none.
+     * @param listeners  listeners of the parent resource, or {@code null} if none.
      * @param count      expected number of components.
      *
      * @see Group#prepareAggregate(StoreListeners)
      */
-    GroupAggregate(final StoreListeners listeners, final String name, final int count) {
-        super(listeners, count < KEEP_ALIVE);
+    GroupAggregate(final String name, final StoreListeners listeners, final int count) {
+        super(name, listeners, count < KEEP_ALIVE);
         components = new Resource[count];
-        this.name = name;
     }
 
     /**
      * Creates a new aggregate with the specified components, which will receive no further processing.
      * This is invoked when the caller has not been able to group the slices in a multi-dimensional cube.
-     * The result stay an aggregate of heterogynous resources.
+     * The result stay an aggregate of heterogeneous resources.
      *
-     * @param listeners         listeners of the parent resource, or {@code null} if none.
      * @param name              name of this aggregate, or {@code null} if none.
+     * @param listeners         listeners of the parent resource, or {@code null} if none.
      * @param components        the resources to uses as components of this aggregate.
      * @param sampleDimensions  sample dimensions common to all grid coverage resources.
      */
-    GroupAggregate(final StoreListeners listeners, final String name, final GridCoverageResource[] components,
+    GroupAggregate(final String name, final StoreListeners listeners, final GridCoverageResource[] components,
                    final List<SampleDimension> sampleDimensions)
     {
-        super(listeners, true);
-        this.name = name;
+        super(name, listeners, true);
         this.components = components;
         this.componentsAreLeaves = true;
         this.sampleDimensions = sampleDimensions;
@@ -150,10 +106,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
      * @param  components  components with the new merge strategy.
      */
     private GroupAggregate(final GroupAggregate source, final Resource[] components) {
-        super(source.listeners, true);
-        name                = source.name;
-        envelope            = source.envelope;
-        envelopeIsEvaluated = source.envelopeIsEvaluated;
+        super(source);
         sampleDimensions    = source.sampleDimensions;
         componentsAreLeaves = source.componentsAreLeaves;
         this.components     = components;
@@ -164,17 +117,19 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
      * This is the implementation of {@link MergeStrategy#apply(Resource)} public method.
      */
     @Override
-    public final synchronized Resource apply(final MergeStrategy strategy) {
-        boolean changed = false;
-        final Resource[] copy = components.clone();
-        for (int i=0; i < copy.length; i++) {
-            final Resource c = copy[i];
-            if (c instanceof AggregatedResource) {
-                final var component = (AggregatedResource) c;
-                changed |= ((copy[i] = component.apply(strategy)) != component);
+    final Resource apply(final MergeStrategy strategy) {
+        synchronized (getSynchronizationLock()) {
+            boolean changed = false;
+            final Resource[] copy = components.clone();
+            for (int i=0; i < copy.length; i++) {
+                final Resource c = copy[i];
+                if (c instanceof AggregatedResource) {
+                    final var component = (AggregatedResource) c;
+                    changed |= ((copy[i] = component.apply(strategy)) != component);
+                }
             }
+            return changed ? new GroupAggregate(this, copy) : this;
         }
-        return changed ? new GroupAggregate(this, copy) : this;
     }
 
     /**
@@ -228,88 +183,17 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
             }
         }
         if (components.length == 1) {
-            final Resource c = components[0];
-            if (c instanceof AggregatedResource) {
-                ((AggregatedResource) c).setName(name);
-            }
-            return c;
+            return configureReplacement(components[0]);
         }
         return aggregator.existingAggregate(components).orElse(this);
-    }
-
-    /**
-     * Sets the identifier of this resource.
-     */
-    @Override
-    public void setIdentifier(final GenericName identifier) {
-        this.identifier = identifier;
-    }
-
-
-    /**
-     * Returns the resource persistent identifier as specified by the
-     * user in {@link CoverageAggregator}. There is no default value.
-     */
-    @Override
-    public Optional<GenericName> getIdentifier() {
-        return Optional.ofNullable(identifier);
     }
 
     /**
      * Returns the components of this aggregate.
      */
     @Override
-    public Collection<Resource> components() {
+    public final List<Resource> components() {
         return UnmodifiableArrayList.wrap(components);
-    }
-
-    /**
-     * Returns the spatiotemporal envelope of this resource.
-     *
-     * @return the spatiotemporal resource extent.
-     * @throws DataStoreException if an error occurred while reading or computing the envelope.
-     */
-    @Override
-    public synchronized Optional<Envelope> getEnvelope() throws DataStoreException {
-        if (!envelopeIsEvaluated) {
-            try {
-                envelope = unionOfComponents(components);
-            } catch (TransformException e) {
-                listeners.warning(e);
-            }
-            envelopeIsEvaluated = true;
-        }
-        return Optional.ofNullable(envelope);
-    }
-
-    /**
-     * Computes the union of envelopes provided by all the given resources.
-     *
-     * @param  components  the components for which to extract the envelope.
-     * @return union of envelope of all components, or {@code null} if none.
-     */
-    static ImmutableEnvelope unionOfComponents(final Resource[] components)
-            throws DataStoreException, TransformException
-    {
-        final var envelopes = new Envelope[components.length];
-        for (int i=0; i < components.length; i++) {
-            final Resource r = components[i];
-            if (r instanceof AbstractResource) {
-                envelopes[i] = ((AbstractResource) r).getEnvelope().orElse(null);
-            } else if (r instanceof GridCoverageResource) {
-                envelopes[i] = ((GridCoverageResource) r).getEnvelope().orElse(null);
-            }
-        }
-        return ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes));
-    }
-
-    /**
-     * Modifies the name of the resource.
-     * This information is used for metadata.
-     */
-    @Override
-    public void setName(final String name) {
-        this.name = name;
     }
 
     /**
@@ -318,23 +202,12 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
      * (if they are the same for all children) and the geographic bounding box.
      */
     @Override
-    protected Metadata createMetadata() throws DataStoreException {
-        final var builder = new MetadataBuilder();
-        builder.addTitle(name);
-        builder.addExtent(envelope, listeners);
+    protected void createMetadata(final MetadataBuilder builder) throws DataStoreException {
+        builder.addExtent(getEnvelope().orElse(null), listeners);
         if (sampleDimensions != null) {
             for (final SampleDimension band : sampleDimensions) {
                 builder.addNewBand(band);
             }
         }
-        return builder.build();
-    }
-
-    /**
-     * Returns a string representation of this aggregate for debugging purposes.
-     */
-    @Override
-    public String toString() {
-        return Strings.toString(getClass(), "name", name, "size", components.length);
     }
 }

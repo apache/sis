@@ -17,11 +17,15 @@
 package org.apache.sis.storage.aggregate;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.stream.Stream;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
 
 
 /**
@@ -45,13 +49,39 @@ abstract class Group<E> {
      * because that part may be parallelized by {@link CoverageAggregator#addResources(Stream)}.
      * No synchronization is needed after.
      */
-    final List<E> members;
+    final List<E> members = new ArrayList<>();
+
+    /**
+     * A pool of shared objects that may be reused in many places. There is a single map per instance
+     * of {@link CoverageAggregator}, which is then shared by all groups contained in the aggregator.
+     * The keys and values in the pool shall be immutable or objects handled as if they were immutable.
+     */
+    private final Map<Object,Object> sharedInstances;
+
+    /**
+     * The processor to use for creating grid coverages. This is the place where, for example,
+     * specifying the color model to use when creating band aggregated resources.
+     *
+     * @see CoverageAggregator#setColorizer(Colorizer)
+     */
+    final GridCoverageProcessor processor;
 
     /**
      * Creates a new group of objects associated to some attribute defined by subclasses.
      */
-    Group() {
-        members = new ArrayList<>();
+    Group(final GridCoverageProcessor processor) {
+        this.processor  = processor;
+        sharedInstances = new HashMap<>();
+    }
+
+    /**
+     * Creates a new group of objects which are children of the given group.
+     *
+     * @param  parent  the parent group in which this group is a child.
+     */
+    Group(final Group<?> parent) {
+        sharedInstances = parent.sharedInstances;
+        processor = parent.processor;
     }
 
     /**
@@ -84,7 +114,48 @@ abstract class Group<E> {
      * @return an initially empty aggregate.
      */
     final GroupAggregate prepareAggregate(final StoreListeners listeners) {
-        return new GroupAggregate(listeners, getName(listeners), members.size());
+        return new GroupAggregate(getName(listeners), listeners, members.size());
+    }
+
+    /**
+     * Returns a unique instance of the given object.
+     *
+     * @param  <E>     type of the object to share.
+     * @param  object  the object for which to get a unique instance.
+     * @return shared instance of the given object.
+     */
+    @SuppressWarnings("unchecked")
+    final <E> E unique(final E object) {
+        Object existing = sharedInstances.putIfAbsent(object, object);
+        return (E) (existing != null ? existing : object);
+    }
+
+    /**
+     * Returns a unique instance of the given array.
+     *
+     * @param  array  the array for which to get a unique instance.
+     * @return shared instance of the given array.
+     */
+    final long[] unique(final long[] array) {
+        Object existing = sharedInstances.putIfAbsent(new Key(array), array);
+        return (existing != null) ? (long[]) existing : array;
+    }
+
+    /**
+     * Workaround for the use of arrays as keys in a hash map.
+     */
+    private static final class Key {
+        private final long[] array;
+
+        Key(final long[] array) {
+            this.array = array;
+        }
+        @Override public boolean equals(final Object other) {
+            return (other instanceof Key) && Arrays.equals(array, ((Key) other).array);
+        }
+        @Override public int hashCode() {
+            return Arrays.hashCode(array);
+        }
     }
 
     /**

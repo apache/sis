@@ -19,16 +19,18 @@ package org.apache.sis.storage.aggregate;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Comparator;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.privy.CommonDomainFinder;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
@@ -39,7 +41,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class GroupByTransform extends Group<GridSlice> {
+final class GroupByTransform extends Group<GridSlice> implements Comparator<GridSlice> {
     /**
      * Geometry of the grid coverage or resource. This is copied from the first
      * {@link GridSlice#geometry} found in iteration order for this group.
@@ -71,16 +73,23 @@ final class GroupByTransform extends Group<GridSlice> {
     private boolean isMosaic;
 
     /**
+     * The dimension for the coordinate values to sort.
+     *
+     * @see #compare(GridSlice, GridSlice)
+     */
+    private int searchDimension;
+
+    /**
      * Creates a new group of objects associated to the given transform.
      *
+     * @param  parent     the parent group in which this group is a child.
      * @param  geometry   geometry of the grid coverage or resource.
      * @param  gridToCRS  value of {@code geometry.getGridToCRS(GridSlice.CELL_ANCHOR)}.
-     * @param  strategy   algorithm to apply when more than one grid coverage can be found at the same grid index.
      */
-    GroupByTransform(final GridGeometry geometry, final MathTransform gridToCRS, final MergeStrategy strategy) {
+    GroupByTransform(final GroupByCRS<GroupByTransform> parent, final GridGeometry geometry, final MathTransform gridToCRS) {
+        super(parent);
         this.geometry  = geometry;
         this.gridToCRS = gridToCRS;
-        this.strategy  = strategy;
         this.isMosaic  = true;
     }
 
@@ -96,7 +105,7 @@ final class GroupByTransform extends Group<GridSlice> {
         final StringBuffer  b = new StringBuffer(v.getLabel(Vocabulary.Keys.Resolution));
         final NumberFormat  f = NumberFormat.getIntegerInstance(v.getLocale());
         final FieldPosition p = new FieldPosition(0);
-        String separator = "";
+        String separator = " ";
         for (final double r : geometry.getResolution(true)) {     // Should not fail when `gridToCRS` exists.
             f.setMaximumFractionDigits(Math.max(DecimalFunctions.fractionDigitsForDelta(r / 100, false), 0));
             f.format(r, b.append(separator), p);
@@ -106,16 +115,19 @@ final class GroupByTransform extends Group<GridSlice> {
     }
 
     /**
-     * Returns the conversion of pixel coordinates from this group to a slice if that conversion is linear.
+     * Returns the translation of pixel coordinates from this group to slice coordinates.
+     * This method returns a non-null value only if the transform is linear, has no scale
+     * or shear factors and the translation terms are integer.
      *
-     * @param  crsToGrid  the "CRS to slice" transform.
-     * @return the conversion as an affine transform, or {@code null} if null or if the conversion is non-linear.
+     * @param  crsToGrid  the "CRS to grid" transform of the slice for which to compute the offset.
+     * @return the translation terms, or {@code null} if not representable as integers.
      */
-    final Matrix linearTransform(final MathTransform crsToGrid) {
-        if (gridToCRS.getTargetDimensions() == crsToGrid.getSourceDimensions()) {
-            return MathTransforms.getMatrix(MathTransforms.concatenate(gridToCRS, crsToGrid));
+    final long[] integerTranslation(final MathTransform crsToGrid) {
+        if (gridToCRS.getTargetDimensions() != crsToGrid.getSourceDimensions()) {
+            return null;
         }
-        return null;
+        return CommonDomainFinder.integerTranslation(
+                MathTransforms.getMatrix(MathTransforms.concatenate(gridToCRS, crsToGrid)));
     }
 
     /**
@@ -134,7 +146,11 @@ final class GroupByTransform extends Group<GridSlice> {
                 selects[dimension] = new DimensionSelector(dimension, sliceIndex);
             }
             while (--sliceIndex >= 0) {
-                members.get(sliceIndex).getGridExtent(sliceIndex, selects);
+                final GridExtent extent = members.get(sliceIndex).extentInGroup;
+                for (int dim = selects.length; --dim >= 0;) {
+                    long position = extent.getMedian(dim);
+                    selects[dim].setSliceExtent(sliceIndex, position, extent.getSize(dim));
+                }
             }
         }
         /*
@@ -165,31 +181,44 @@ final class GroupByTransform extends Group<GridSlice> {
      */
     final Resource createResource(final StoreListeners parentListeners, final List<SampleDimension> ranges) {
         final int count = members.size();
-        if (count == 1) {
-            return members.get(0).resource;
+        switch (count) {
+            case 0: throw new AssertionError();     // Should never happen as one element is always added after construction.
+            case 1: return members.get(0).resource;
         }
-        final var slices = new GridCoverageResource[count];
         final String name = getName(parentListeners);
         final int[] dimensions = findConcatenatedDimensions();
-        if (isMosaic) {
-            if (strategy == null) {
-                /*
-                 * We can safely default to the "overlay" merge strategy.
-                 * There is no ambiguity, because no tile should overlap.
-                 * The "overlay" operation should be able to share tile
-                 * references without copying pixel values in the common
-                 * case where all tiles use the same `SampleModel`.
-                 */
-                strategy = MergeStrategy.opaqueOverlay(null);
-            }
-        } else if (dimensions.length == 0) {
+        if (dimensions.length == 0) {
             // Unable to group the slices in a multi-dimensional cube.
+            final var slices = new GridCoverageResource[members.size()];
             for (int i=0; i<count; i++) slices[i] = members.get(i).resource;
-            return new GroupAggregate(parentListeners, name, slices, ranges);
+            return new GroupAggregate(name, parentListeners, slices, ranges);
         }
-        // The following constructor fills itself the `slices` array content.
-        final var locator = new GridSliceLocator(members, dimensions[0], slices);
-        final GridGeometry domain = locator.union(geometry, members, GridSlice::getGridExtent);
-        return new ConcatenatedGridResource(name, parentListeners, domain, ranges, slices, locator, strategy);
+        searchDimension = dimensions[0];        // Must be set before `Arrays.sort(…)`.
+        if (isMosaic && strategy == null) {
+            /*
+             * We can safely default to the "overlay" merge strategy.
+             * There is no ambiguity, because no tile should overlap.
+             * The "overlay" operation should be able to share tile
+             * references without copying pixel values in the common
+             * case where all tiles use the same `SampleModel`.
+             */
+            strategy = MergeStrategy.opaqueOverlay(null);
+        }
+        final GridSlice[] slices = members.toArray(GridSlice[]::new);
+        Arrays.parallelSort(slices, this);
+        final var locator = new GridSliceLocator(geometry, slices, searchDimension);
+        return new ConcatenatedGridResource(name, parentListeners, ranges, locator, strategy, processor);
+    }
+
+    /**
+     * Compares to slice for order. The coordinates which are compared must
+     * be the one used by {@link GridSliceLocator} for binary searches.
+     *
+     * @see GridSliceLocator#sliceLows
+     */
+    @Override
+    public final int compare(final GridSlice o1, final GridSlice o2) {
+        return Long.compare(o1.extentInGroup.getLow(searchDimension),
+                            o2.extentInGroup.getLow(searchDimension));
     }
 }
