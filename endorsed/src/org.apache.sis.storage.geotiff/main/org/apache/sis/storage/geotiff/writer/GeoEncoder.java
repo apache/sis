@@ -259,7 +259,7 @@ public final class GeoEncoder {
             return;
         }
         final CoordinateReferenceSystem crs = horizontal.getCoordinateReferenceSystem();
-        axisDirections = CoordinateSystems.getAxisDirections(crs.getCoordinateSystem());
+        axisDirections = CoordinateSystems.getSimpleAxisDirections(crs.getCoordinateSystem());
         if (crs instanceof ProjectedCRS) {
             writeCRS((ProjectedCRS) crs);
         } else if (crs instanceof GeodeticCRS) {

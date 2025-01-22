@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.OptionalInt;
 import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 import static org.apache.sis.util.privy.Constants.EPSG_METRE;
@@ -28,8 +29,7 @@ import static org.apache.sis.util.privy.Constants.EPSG_AXIS_DEGREES;
 
 
 /**
- * Map units of measurement and axis directions to {@link org.opengis.referencing.cs.CoordinateSystem}
- * objects defined in the EPSG database.
+ * Map units of measurement and axis directions to {@link CoordinateSystem} objects defined in the EPSG database.
  * Current version uses hard-coded mapping.
  *
  * @author  Rémi Maréchal (Geomatys)
@@ -132,7 +132,7 @@ final class Codes {
      */
     private static final Map<Codes,Codes> EPSG = new HashMap<>(31);
     static {
-        final AxisDirection[] directions = new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH};
+        final var directions = new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH};
         final int addVertical = AxisDirection.UP.ordinal() << (2 * Byte.SIZE);
         OptionalInt packed = pack(directions);
         short unit = EPSG_METRE;

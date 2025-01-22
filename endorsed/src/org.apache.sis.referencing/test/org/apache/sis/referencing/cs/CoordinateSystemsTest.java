@@ -162,11 +162,31 @@ public final class CoordinateSystemsTest extends TestCase {
     }
 
     /**
+     * Tests {@link CoordinateSystems#getSimpleAxisDirections(CoordinateSystem)}.
+     */
+    @Test
+    public void testGetSimpleAxisDirections() {
+        final AxisDirection n90 = parseAxisDirection("North along 90°E");
+        final AxisDirection n00 = parseAxisDirection("North along 0°E");
+        final var cs = new AbstractCS(Map.of(NAME_KEY, "Polar"),
+                new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, "Easting"),  "E", n90, Units.METRE),
+                new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, "Northing"), "N", n00, Units.METRE),
+                HardCodedAxes.DEPTH);
+
+        final var expected = new AxisDirection[] {n90, n00, AxisDirection.DOWN};
+        assertArrayEquals(expected, getAxisDirections(cs));
+
+        expected[0] = AxisDirection.EAST;
+        expected[1] = AxisDirection.NORTH;
+        assertArrayEquals(expected, getSimpleAxisDirections(cs));
+    }
+
+    /**
      * Tests {@link CoordinateSystems#hasAllTargetTypes(CoordinateSystem, CoordinateSystem)}.
      */
     @Test
     public void testHasAllTargetTypes() {
-        final DefaultCompoundCS cs = new DefaultCompoundCS(HardCodedCS.GEODETIC_2D, HardCodedCS.GRAVITY_RELATED_HEIGHT);
+        final var cs = new DefaultCompoundCS(HardCodedCS.GEODETIC_2D, HardCodedCS.GRAVITY_RELATED_HEIGHT);
         assertTrue (CoordinateSystems.hasAllTargetTypes(cs, HardCodedCS.GRAVITY_RELATED_HEIGHT));
         assertFalse(CoordinateSystems.hasAllTargetTypes(cs, HardCodedCS.DAYS));
         assertTrue (CoordinateSystems.hasAllTargetTypes(cs, HardCodedCS.GEODETIC_2D));
