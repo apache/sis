@@ -37,7 +37,7 @@ INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
   ('EPSG',    'https://epsg.org/'),
   ('ESRI',    'https://www.esri.com/'),
   ('GDAL',    'https://gdal.org/'),
-  ('GeoTIFF', 'https://trac.osgeo.org/geotiff/'),
+  ('GeoTIFF', 'https://www.ogc.org/publications/standard/geotiff/'),
   ('IHO',     'https://www.iho.int/'),
   ('IOGP',    'https://www.iogp.org/'),
   ('ISBN',    'https://www.isbn-international.org/'),

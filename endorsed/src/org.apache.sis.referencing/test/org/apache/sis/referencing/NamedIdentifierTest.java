@@ -105,7 +105,7 @@ public final class NamedIdentifierTest extends TestCase {
      * Creates an internationalized name with a code set to "name" localized in English, French and Japanese.
      */
     private NamedIdentifier createI18N() {
-        final DefaultInternationalString i18n = new DefaultInternationalString();
+        final var i18n = new DefaultInternationalString();
         i18n.add(Locale.ENGLISH,  "name");
         i18n.add(Locale.FRENCH,   "nom");
         i18n.add(Locale.JAPANESE, "名前");

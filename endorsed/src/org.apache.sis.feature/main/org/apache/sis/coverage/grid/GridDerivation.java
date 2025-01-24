@@ -43,6 +43,7 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.StringBuilders;
@@ -72,14 +73,15 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * Then the grid geometry is created by a call to {@link #build()}.
  * The {@link #getIntersection()} method can also be invoked for the {@link GridExtent} part without subsampling.
  *
- * <p>All methods in this class preserve the number of dimensions. For example, the {@link #slice(DirectPosition)} method
+ * <h2>Multi-dimensional grids</h2>
+ * All methods in this class preserve the number of dimensions. For example, the {@link #slice(DirectPosition)} method
  * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <i>slice point</i>,
  * but does not remove those dimensions from the grid geometry.
- * For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</p>
+ * For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @see GridGeometry#derive()
  * @see GridGeometry#selectDimensions(int[])
@@ -131,6 +133,13 @@ public class GridDerivation {
      * @see #maximumSubsampling(long...)
      */
     private long[] maximumSubsampling;
+
+    /**
+     * The points of a grid extent to include in the result.
+     *
+     * @see #pointsToInclude(PixelInCell)
+     */
+    private PixelInCell pointsToInclude;
 
     // ──────── FIELDS COMPUTED BY METHODS IN THIS CLASS ──────────────────────────────────────────────────────────────
 
@@ -206,7 +215,7 @@ public class GridDerivation {
 
     /**
      * Intersection between the grid envelope and the area of interest, computed when only envelopes are available.
-     * Normally we do not compute this envelope directly; instead we compute the grid extent and the "grid to CRS"
+     * Normally we do not compute this envelope directly. Instead, we compute the grid extent and the "grid to CRS"
      * transform. This envelope is computed only if it cannot be computed from other grid geometry properties.
      *
      * @see #subgrid(Envelope, double...)
@@ -221,10 +230,11 @@ public class GridDerivation {
      * @see GridGeometry#derive()
      */
     protected GridDerivation(final GridGeometry base) {
-        this.base  = Objects.requireNonNull(base);
-        baseExtent = base.extent;                    // May be null.
-        rounding   = GridRoundingMode.NEAREST;
-        clipping   = GridClippingMode.STRICT;
+        this.base       = Objects.requireNonNull(base);
+        baseExtent      = base.extent;                  // May be null.
+        pointsToInclude = PixelInCell.CELL_CORNER;
+        rounding        = GridRoundingMode.NEAREST;
+        clipping        = GridClippingMode.STRICT;
     }
 
     /**
@@ -238,12 +248,48 @@ public class GridDerivation {
     }
 
     /**
+     * Specifies the points of a given grid extent to include in the result.
+     * This information is used when a grid extent is specified in units different than the units
+     * of the {@linkplain #base} grid cells, which may happen with {@link #subgrid(GridGeometry)}.
+     * In such case, the specified area of interest (<abbr>AOI</abbr>) needs to be transformed to the
+     * units of the {@linkplain #base} grid, and this property specifies what to include in the result:
+     *
+     * <ul>
+     *   <li>With {@code CELL_CENTER}, the built extent contains the cell centers of the <abbr>AOI</abbr>.</li>
+     *   <li>With {@code CELL_CORNER}, the built extent contains the cell corners of the <abbr>AOI</abbr>.
+     *       It includes both lower and upper corners, thus covering the full cell areas.</li>
+     * </ul>
+     *
+     * An extent of cell centers may be smaller than an extent of cell areas by a size,
+     * on each border, of ½ of the size of the cells of given <abbr>AOI</abbr>.
+     *
+     * <p>If this method is never invoked, the default value is {@link PixelInCell#CELL_CORNER}
+     * (built grid extent covering the full cell areas of the given <abbr>AOI</abbr> extent).
+     * If this method is invoked too late, an {@link IllegalStateException} is thrown.</p>
+     *
+     * @param  include  {@code CELL_CENTER} for an extent containing cell centers, or
+     *                  {@code CELL_CORNER} for an extent containing all cell corners (i.e. full areas).
+     * @return {@code this} for method call chaining.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
+     *
+     * @see GridGeometry#extentOf(GridGeometry, PixelInCell, GridRoundingMode)
+     *
+     * @since 1.5
+     */
+    public GridDerivation pointsToInclude(final PixelInCell include) {
+        ensureSubgridNotSet();
+        pointsToInclude = Objects.requireNonNull(include);
+        return this;
+    }
+
+    /**
      * Controls behavior of rounding from floating point values to integers.
      * This setting modifies computations performed by the following methods
      * (it has no effect on other methods in this {@code GridDerivation} class):
      * <ul>
      *   <li>{@link #slice(DirectPosition)}</li>
      *   <li>{@link #subgrid(Envelope, double...)}</li>
+     *   <li>{@link #subgrid(GridGeometry)}</li>
      * </ul>
      *
      * If this method is never invoked, the default value is {@link GridRoundingMode#NEAREST}.
@@ -251,8 +297,7 @@ public class GridDerivation {
      *
      * @param  mode  the new rounding mode.
      * @return {@code this} for method call chaining.
-     * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
-     *         has already been invoked.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      */
     public GridDerivation rounding(final GridRoundingMode mode) {
         ensureSubgridNotSet();
@@ -266,8 +311,7 @@ public class GridDerivation {
      *
      * @param  mode  whether to clip the derived grid extent.
      * @return {@code this} for method call chaining.
-     * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
-     *         has already been invoked.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
      * @since 1.1
      */
@@ -306,8 +350,7 @@ public class GridDerivation {
      * @param  cellCounts  number of cells by which to expand the grid extent.
      * @return {@code this} for method call chaining.
      * @throws IllegalArgumentException if a value is negative.
-     * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
-     *         has already been invoked.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
      * @see GridExtent#expand(long...)
      */
@@ -337,8 +380,7 @@ public class GridDerivation {
      * @param  cellCounts  number of cells in all tiles or chunks.
      * @return {@code this} for method call chaining.
      * @throws IllegalArgumentException if a value is zero or negative.
-     * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
-     *         has already been invoked.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
      * @since 1.1
      */
@@ -392,8 +434,7 @@ public class GridDerivation {
      * @param  subsampling  maximal subsampling values (inclusive).
      * @return {@code this} for method call chaining.
      * @throws IllegalArgumentException if a value is zero or negative.
-     * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
-     *         has already been invoked.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
      * @since 1.5
      */
@@ -433,13 +474,15 @@ public class GridDerivation {
 
     /**
      * Adapts the base grid for the geographic area and resolution of the given grid geometry.
-     * The new grid geometry will cover the spatiotemporal region given by {@code areaOfInterest} envelope
-     * (coordinate operations are applied as needed if the Coordinate Reference Systems are not the same).
-     * The new grid geometry resolution will be integer multiples of the {@link #base} grid geometry resolution.
+     * By default, the new grid geometry will cover the intersection of the {@linkplain #base}
+     * grid geometry and the spatiotemporal region given by {@code areaOfInterest} envelope.
+     * Whether that intersection is clipped can be {@linkplain #clipping(GridClippingMode) configured}.
+     * Coordinate operations are applied as needed if the Coordinate Reference Systems are not the same.
+     * The new grid geometry resolution will be integer multiples of the {@linkplain #base} grid geometry resolution.
      *
      * <p>If {@code gridExtent} contains only an envelope, then this method delegates to {@link #subgrid(Envelope, double...)}.
-     * Otherwise if {@code gridExtent} contains only an extent, then this method delegates to {@link #subgrid(GridExtent, long...)}.
-     * Otherwise the following information are mandatory:</p>
+     * Otherwise, if {@code gridExtent} contains only an extent, then this method delegates to {@link #subgrid(GridExtent, long...)}.
+     * Otherwise, the following information are mandatory:</p>
      * <ul>
      *   <li>{@linkplain GridGeometry#getExtent() Extent} in {@code areaOfInterest}.</li>
      *   <li>{@linkplain GridGeometry#getGridToCRS(PixelInCell) Grid to CRS} conversion in {@code areaOfInterest}.</li>
@@ -492,14 +535,16 @@ public class GridDerivation {
      * @throws DisjointExtentException if the given grid of interest does not intersect the grid extent.
      * @throws IncompleteGridGeometryException if a mandatory property of a grid geometry is absent.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
-     * @throws IllegalStateException if a {@link #subgrid(Envelope, double...) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
-     *         method has already been invoked.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
      * @see #getIntersection()
      * @see #getSubsampling()
      */
     public GridDerivation subgrid(final GridGeometry areaOfInterest) {
         ensureSubgridNotSet();
+        if (base.equals(areaOfInterest, ComparisonMode.BY_CONTRACT)) {
+            return this;
+        }
         if (areaOfInterest.isEnvelopeOnly()) {
             return subgrid(areaOfInterest.envelope, (double[]) null);
         }
@@ -511,46 +556,56 @@ public class GridDerivation {
             }
             scales = areaOfInterest.resolution;
             /*
-             * In principle `resolution` is always null here because it is computed from `gridToCRS`,
-             * which is null (otherwise `isExtentOnly()` would have been false). However, an exception
-             * to this rule happens if `areaOfInterest` has been computed by another `GridDerivation`,
-             * in which case the resolution requested by user is saved even when `gridToCRS` is null.
-             * In that case the resolution is relative to the base grid of the other `GridDerivation`.
-             * Note however that the `resolution` field is only an approximation (the exact transform
-             * would have been stored in `gridToCRS` if it was non-null) and the subsampling offsets
-             * are lost (they would also have been stored in `gridToCRS`).
+             * In principle, the above `resolution` should be null because it could not be derived from `gridToCRS`,
+             * because the latter is null (otherwise `isExtentOnly()` would have been false). However, an exception
+             * to this rule happens if the given `areaOfInterest` has been computed by another `GridDerivation`,
+             * in which case the resolution requested by the user was saved even if no `gridToCRS` was available.
+             * That resolution is relative to the base grid of the other `GridDerivation` instead of this one,
+             * but we ignore that details because the `resolution` field is only indicative, especially since
+             * the subsampling offsets are lost. If the exact resolution and subsampling offsets where known,
+             * they would have been stored in `gridToCRS`.
              */
-        } else {
-            if (base.equals(areaOfInterest)) {
-                return this;
-            }
-            final MathTransform mapCenters;
-            final GridExtent domain = areaOfInterest.extent;
+        } else try {
+            final MathTransform nowraparound;
             final var finder = new CoordinateOperationFinder(areaOfInterest, base);
             finder.verifyPresenceOfCRS(false);
-            try {
-                final MathTransform mapCorners = (domain != null) ? finder.gridToGrid() : null;
+            final GridExtent domain = areaOfInterest.extent;
+            if (domain == null) {
                 finder.setAnchor(PixelInCell.CELL_CENTER);
                 finder.nowraparound();
-                mapCenters = finder.gridToGrid();       // We will use only the scale factors.
-                if (domain != null) {
-                    final GeneralEnvelope[] envelopes;
-                    if (mapCorners != null) {
-                        envelopes = domain.toEnvelopes(mapCorners, mapCenters, null);
-                    } else {
-                        envelopes = new GeneralEnvelope[] {domain.toEnvelope()};
-                    }
-                    setBaseExtentClipped(envelopes);
-                    if (baseExtent != base.extent && baseExtent.equals(domain)) {
-                        baseExtent = domain;            // Share common instance.
-                    }
+                nowraparound = finder.gridToGrid();
+            } else {
+                /*
+                 * Get the transform from the base grid to the grid of `areaOfInterest`.
+                 * There is two variants, depending on whether the user wants tight box:
+                 *
+                 * - Default:   map pixel corners with exclusive upper grid coordinate value.
+                 * - Tight box: map pixel centers with inclusive upper grid coordinate value.
+                 */
+                final boolean tight = (pointsToInclude == PixelInCell.CELL_CENTER);
+                if (tight) {
+                    finder.setAnchor(PixelInCell.CELL_CENTER);
+                } // Else default value is PixelInCell.CELL_CORNER.
+                final MathTransform gridToGrid = finder.gridToGrid();
+                finder.setAnchor(tight ? PixelInCell.CELL_CORNER : PixelInCell.CELL_CENTER);
+                finder.nowraparound();
+                nowraparound = finder.gridToGrid();   // We will use only the scale factors.
+                final GeneralEnvelope[] envelopes;
+                if (gridToGrid.isIdentity()) {
+                    envelopes = new GeneralEnvelope[] {domain.toEnvelope(tight)};
+                } else {
+                    envelopes = domain.toEnvelopes(gridToGrid, tight, nowraparound, null);
+                }
+                setBaseExtentClipped(tight, envelopes);
+                if (baseExtent != base.extent && baseExtent.equals(domain)) {
+                    baseExtent = domain;            // Share common instance.
                 }
                 subGridSetter = "subgrid";
-            } catch (FactoryException | TransformException e) {
-                throw new IllegalGridGeometryException(e, "areaOfInterest");
             }
-            // The `domain` extent must be the source of the `mapCenters` transform.
-            scales = GridGeometry.resolution(mapCenters, domain, PixelInCell.CELL_CENTER);
+            // The `domain` extent must be the source of the `nowraparound` transform.
+            scales = GridGeometry.resolution(nowraparound, domain, PixelInCell.CELL_CENTER);
+        } catch (FactoryException | TransformException e) {
+            throw new IllegalGridGeometryException(e, "areaOfInterest");
         }
         /*
          * The subsampling will determine the scale factors in the transform from the given desired grid geometry
@@ -571,10 +626,10 @@ public class GridDerivation {
 
     /**
      * Requests a grid geometry over a sub-envelope and optionally with a coarser resolution.
-     * The given envelope does not need to be expressed in the same coordinate reference system (CRS)
-     * than {@linkplain GridGeometry#getCoordinateReferenceSystem() the CRS of the base grid geometry};
-     * coordinate conversions or transformations will be applied as needed.
-     * That envelope CRS may have fewer dimensions than the base grid geometry CRS,
+     * The given envelope does not need to be expressed in the same coordinate reference system (<abbr>CRS</abbr>)
+     * than {@linkplain GridGeometry#getCoordinateReferenceSystem() the CRS} of the {@linkplain #base} grid geometry.
+     * Coordinate conversions or transformations will be applied as needed.
+     * That envelope <abbr>CRS</abbr> may have less dimensions than the <abbr>CRS</abbr> of the base grid geometry,
      * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
      * The target resolution, if provided, shall be in same units and same order as the given envelope axes.
      * If the length of {@code resolution} array is less than the number of dimensions of {@code areaOfInterest},
@@ -609,8 +664,7 @@ public class GridDerivation {
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent, no "grid to CRS" transform,
      *         or no CRS (unless {@code areaOfInterest} has no CRS neither, in which case the CRS are assumed the same).
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
-     * @throws IllegalStateException if a {@link #subgrid(GridGeometry) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
-     *         method has already been invoked.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
      * @see #getIntersection()
      * @see #getSubsampling()
@@ -666,7 +720,7 @@ public class GridDerivation {
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
                 indices = wraparound(baseToAOI, cornerToCRS).shift(areaOfInterest);
-                setBaseExtentClipped(indices);
+                setBaseExtentClipped(false, indices);
             }
             if (indices == null || indices.getDimension() != dimension) {
                 indices = new GeneralEnvelope(dimension);
@@ -731,7 +785,7 @@ public class GridDerivation {
                      * The `margin` and `chunkSize` arguments must be null because `scaledExtent` uses different units.
                      * The margin and chunk size were applied during `baseExtent` computation and copied in `indices`.
                      */
-                    scaledExtent = new GridExtent(indices, rounding, clipping, null, null, null, modifiedDimensions);
+                    scaledExtent = new GridExtent(indices, false, rounding, clipping, null, null, null, modifiedDimensions);
                     if (extent.equals(scaledExtent)) scaledExtent = extent;                 // Share common instance.
                     affine = Matrices.createIdentity(dimension + 1);
                     for (int k=0; k<subsampling.length; k++) {
@@ -830,19 +884,19 @@ public class GridDerivation {
      * As a consequence of above context, margin and chunk size are in units of the base extent.
      * They are not in units of cells of the size that we get after subsampling.
      *
-     * @param  indices  the envelopes to intersect in units of {@link #base} grid coordinates.
-     *                  Shall contain at least one element.
+     * @param  isHighIncluded  whether the upper coordinate values are inclusive instead of exclusive.
+     * @param  indices         at least one envelope to intersect, in units of {@link #base} grid coordinates.
      * @throws DisjointExtentException if the given envelope does not intersect the grid extent.
      *
      * @see #getBaseExtentExpanded(boolean)
      */
-    private void setBaseExtentClipped(final GeneralEnvelope... indices) {
+    private void setBaseExtentClipped(final boolean isHighIncluded, final GeneralEnvelope... indices) {
         GridExtent sub = null;
         IllegalArgumentException error = null;
         int i = 0;
         do try {
             // Intentional IndexOutOfBoundsException if the `indices` array does not contain at least one element.
-            GridExtent c = new GridExtent(indices[i], rounding, clipping, margin, chunkSize, baseExtent, modifiedDimensions);
+            var c = new GridExtent(indices[i], isHighIncluded, rounding, clipping, margin, chunkSize, baseExtent, modifiedDimensions);
             sub = (sub == null) ? c : sub.union(c);
         } catch (DisjointExtentException e) {
             if (error == null) error = e;
@@ -859,7 +913,7 @@ public class GridDerivation {
 
     /**
      * Requests a grid geometry over a sub-region of the base grid geometry and optionally with subsampling.
-     * The given grid geometry must have the same number of dimension than the base grid geometry.
+     * The given grid geometry must have the same number of dimensions than the base grid geometry.
      * If the length of {@code subsampling} array is less than the number of dimensions,
      * then no subsampling will be applied on the missing dimensions.
      *
@@ -875,7 +929,7 @@ public class GridDerivation {
      *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
      * </ul>
      *
-     * @param  areaOfInterest  the desired grid extent in unit of base grid cell (i.e. ignoring subsampling),
+     * @param  areaOfInterest  the desired grid extent in units of base grid cells (i.e. ignoring subsampling),
      *                         or {@code null} for not restricting the sub-grid to a sub-area.
      * @param  subsampling     the subsampling to apply on each grid dimension, or {@code null} if none.
      *                         All values shall be greater than zero. If the array length is shorter than
@@ -884,8 +938,7 @@ public class GridDerivation {
      * @throws DisjointExtentException if the given area of interest does not intersect the grid extent.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent, no "grid to CRS" transform,
      *         or no CRS (unless {@code areaOfInterest} has no CRS neither, in which case the CRS are assumed the same).
-     * @throws IllegalStateException if a {@link #subgrid(GridGeometry) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
-     *         method has already been invoked.
+     * @throws IllegalStateException if a {@code subgrid(…)} or {@code slice(…)} method has already been invoked.
      *
      * @see #getIntersection()
      * @see #getSubsampling()
@@ -1099,7 +1152,7 @@ public class GridDerivation {
      * The slicing is applied on all dimensions except the specified dimensions to keep.
      *
      * <h4>Example</h4>
-     * given a <var>n</var>-dimensional cube, the following call creates a slice of the two first dimensions
+     * Given a <var>n</var>-dimensional cube, the following call creates a slice of the two first dimensions
      * (numbered 0 and 1, typically the dimensions of <var>x</var> and <var>y</var> axes)
      * located at the center (ratio 0.5) of all other dimensions (typically <var>z</var> and/or <var>t</var> axes):
      *
@@ -1118,7 +1171,7 @@ public class GridDerivation {
         ArgumentChecks.ensureNonNull("dimensionsToKeep", dimensionsToKeep);
         subGridSetter = "sliceByRatio";
         final GridExtent extent = getBaseExtentExpanded(true);
-        final GeneralDirectPosition slicePoint = new GeneralDirectPosition(extent.getDimension());
+        final var slicePoint = new GeneralDirectPosition(extent.getDimension());
         baseExtent = extent.sliceByRatio(slicePoint, sliceRatio, dimensionsToKeep);
         if (scaledExtent != null) {
             scaledExtent = scaledExtent.sliceByRatio(slicePoint, sliceRatio, dimensionsToKeep);
@@ -1200,7 +1253,7 @@ public class GridDerivation {
      * @param  nonNull  whether the returned value should be guaranteed non-null.
      * @throws IncompleteGridGeometryException if {@code nonNull} is {@code true} and the grid geometry has no extent.
      *
-     * @see #setBaseExtentClipped(GeneralEnvelope)
+     * @see #setBaseExtentClipped(boolean, GeneralEnvelope...)
      */
     private GridExtent getBaseExtentExpanded(final boolean nonNull) {
         if (nonNull && baseExtent == null) {
@@ -1234,16 +1287,60 @@ public class GridDerivation {
      * expanded by the {@linkplain #margin(int...) specified margin} (if any)
      * and potentially with some {@linkplain GridExtent#getSize(int) grid sizes} set to 1
      * if a {@link #slice(DirectPosition) slice(…)} method has been invoked.
-     * The returned extent is in units of the {@link #base} grid cells, i.e.
-     * {@linkplain #getSubsampling() subsampling} is ignored.
+     * The returned extent is in units of the {@linkplain #base} grid cells,
+     * (i.e. {@linkplain #getSubsampling() subsampling} is ignored).
      *
-     * <p>This method can be invoked after {@link #build()} for getting additional information.</p>
+     * <p>This method can be invoked after {@link #build()} for getting additional information.
+     * It can also be invoked without {@code build()} if only this information is desired.</p>
      *
      * @return intersection of grid geometry extents in units of {@link #base} grid cells.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent.
      */
     public GridExtent getIntersection() {
         return getBaseExtentExpanded(true);
+    }
+
+    /**
+     * Returns the transform from derived <em>grid</em> coordinates to base <em>grid</em> coordinates.
+     * In the {@linkplain LinearTransform#getMatrix() matrix representation} of this transform,
+     * the scale factors on the diagonal are the {@linkplain #getSubsampling() subsampling values} and the
+     * translation terms in the last column are the {@linkplain #getSubsamplingOffsets() subsampling offsets}.
+     *
+     * @return transform of <em>grid</em> coordinates from the derived grid to the {@linkplain #base} grid.
+     *
+     * @see #getSubsampling()
+     * @see #getSubsamplingOffsets()
+     *
+     * @since 1.5
+     */
+    public LinearTransform getGridTransform(final PixelInCell anchor) {
+        LinearTransform tr = toBase;
+        if (tr == null) {
+            return MathTransforms.identity(base.getDimension());
+        }
+        // Result of concatenating linear transforms should always be a linear transform.
+        return (LinearTransform) PixelTranslation.translateGridToGrid(tr, PixelInCell.CELL_CORNER, anchor);
+    }
+
+    /**
+     * Returns whether the conversion from the base grid to the derived grid contains a scale factor.
+     * A return value of {@code false} means that <em>all</em> the following are true:
+     *
+     * <ul>
+     *   <li>{@link #getSubsampling()} returns an array filled with the value 1.</li>
+     *   <li>{@link #getSubsamplingOffsets()} returns an array filled with the value 0.</li>
+     *   <li>{@link #getGridTransform(PixelInCell)} returns an identity transform (regardless the argument).</li>
+     * </ul>
+     *
+     * Conversely, a return value of {@code true} means that the above are false,
+     * except the subsampling offsets which may still be zero.
+     *
+     * @return whether the conversion from the base grid to the derived grid contains a scale factor.
+     *
+     * @since 1.5
+     */
+    public boolean hasSubsampling() {
+        return (toBase != null) && !toBase.isIdentity();
     }
 
     /**
@@ -1275,6 +1372,7 @@ public class GridDerivation {
      *         grid has been constructed by a call to {@link #subgrid(Envelope, double...)}.
      *
      * @see #getSubsamplingOffsets()
+     * @see #getGridTransform(PixelInCell)
      * @see #subgrid(GridGeometry)
      * @see #subgrid(GridExtent, long...)
      *
@@ -1398,6 +1496,7 @@ public class GridDerivation {
      *         derived grid has been constructed by a call to {@link #subgrid(Envelope, double...)}.
      *
      * @see #getSubsampling()
+     * @see #getGridTransform(PixelInCell)
      * @see #subgrid(GridGeometry)
      * @see #subgrid(GridExtent, long...)
      *

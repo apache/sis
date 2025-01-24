@@ -367,7 +367,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
     @Debug
     protected final void printInternalWKT() {
         @SuppressWarnings("UseOfSystemOutOrSystemErr")
-        final TableAppender table = new TableAppender(System.out);
+        final var table = new TableAppender(System.out);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
         table.append("WKT of “").append(getName()).append('”').nextColumn();

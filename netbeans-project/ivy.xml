@@ -17,7 +17,7 @@
         <dependency org="org.glassfish.jaxb"     name="jaxb-runtime"            rev="4.0.5"/>
         <dependency org="org.eclipse"            name="yasson"                  rev="3.0.3"/>
         <dependency org="com.esri.geometry"      name="esri-geometry-api"       rev="2.2.4"/>
-        <dependency org="org.locationtech.jts"   name="jts-core"                rev="1.19.0"/>
+        <dependency org="org.locationtech.jts"   name="jts-core"                rev="1.20.0"/>
         <dependency org="org.postgresql"         name="postgresql"              rev="42.7.3"/>
         <dependency org="edu.ucar"               name="cdm-core"                rev="5.5.3"/>
         <dependency org="edu.ucar"               name="udunits"                 rev="5.5.3"/>

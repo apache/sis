@@ -311,11 +311,7 @@ public class RenderingData implements CloneAccess {
      *                 This is an array of length {@value #BIDIMENSIONAL} almost always equal to {0,1}.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    public final void setImageSpace(final GridGeometry domain, final List<SampleDimension> ranges, final int[] xyDims) {
-        dataRanges   = ranges;
-        dataGeometry = domain;
-        xyDimensions = xyDims;
-        processor.setFillValues(SampleDimensions.backgrounds(dataRanges));
+    public final void setImageSpace(GridGeometry domain, final List<SampleDimension> ranges, final int[] xyDims) {
         /*
          * If the grid geometry does not define a "grid to CRS" transform, set it to an identity transform.
          * We do that because this class needs a complete `GridGeometry` as much as possible.
@@ -328,9 +324,23 @@ public class RenderingData implements CloneAccess {
                 crs = domain.getCoordinateReferenceSystem();
             }
             final GridExtent extent = domain.getExtent();
-            dataGeometry = new GridGeometry(extent, PixelInCell.CELL_CENTER,
+            domain = new GridGeometry(extent, PixelInCell.CELL_CENTER,
                     MathTransforms.identity(extent.getDimension()), crs);
         }
+        dataGeometry = domain;
+        dataRanges   = ranges;
+        xyDimensions = xyDims;
+        processor.setFillValues(SampleDimensions.backgrounds(dataRanges));
+    }
+
+    /**
+     * Returns {@code true} if the {@link #dataGeometry} properties specified by the argument are set.
+     *
+     * @param  bitmask  any combination of {@link GridGeometry#CRS}, {@link GridGeometry#ENVELOPE} or other bits.
+     * @return {@code true} if all the specified properties are defined by {@link #dataGeometry}.
+     */
+    private boolean isDefined(final int bitmask) {
+        return (dataGeometry != null) && dataGeometry.isDefined(bitmask);
     }
 
     /**
@@ -396,7 +406,7 @@ public class RenderingData implements CloneAccess {
             xyDims = (sliceExtent == null) ? ArraysExt.range(0, BIDIMENSIONAL)
                      : sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
         } else {
-            ImageRenderer r = new ImageRenderer(coverage, sliceExtent);
+            var r = new ImageRenderer(coverage, sliceExtent);
             domain = r.getImageGeometry(BIDIMENSIONAL);
             xyDims = r.getXYDimensions();
         }
@@ -411,7 +421,7 @@ public class RenderingData implements CloneAccess {
          */
         if (old != null && cornerToObjective != null && objectiveToCenter != null) {
             MathTransform toNew = null, toOld = null;
-            if (old.isDefined(GridGeometry.CRS) && domain.isDefined(GridGeometry.CRS)) {
+            if (old.isDefined(GridGeometry.CRS) && isDefined(GridGeometry.CRS)) {
                 final CoordinateReferenceSystem oldCRS = old.getCoordinateReferenceSystem();
                 final CoordinateReferenceSystem newCRS = dataGeometry.getCoordinateReferenceSystem();
                 if (newCRS != oldCRS) {             // Quick check for the vast majority of cases.
@@ -489,7 +499,7 @@ public class RenderingData implements CloneAccess {
      * The coordinates are expressed in the CRS of the source coverage.
      */
     private DirectPosition getSourceMedian() {
-        if (dataGeometry.isDefined(GridGeometry.ENVELOPE)) {
+        if (isDefined(GridGeometry.ENVELOPE)) {
             return AbstractEnvelope.castOrCopy(dataGeometry.getEnvelope()).getMedian();
         }
         return null;
@@ -565,7 +575,7 @@ public class RenderingData implements CloneAccess {
      * @throws TransformException if an error occurred while transforming coordinates from grid to new CRS.
      */
     public final void setObjectiveCRS(final CoordinateReferenceSystem objectiveCRS) throws TransformException {
-        if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) try {
+        if (changeOfCRS == null && objectiveCRS != null && isDefined(GridGeometry.CRS)) try {
             changeOfCRS = CRS.findOperation(dataGeometry.getCoordinateReferenceSystem(), objectiveCRS,
                                             dataGeometry.getGeographicExtent().orElse(null));
             final double accuracy = CRS.getLinearAccuracy(changeOfCRS);

@@ -450,13 +450,14 @@ public class ParameterFormat extends TabularFormat<Object> {
     private void format(final String name, final ParameterDescriptorGroup group,
             final ParameterValueGroup values, final Appendable out) throws IOException
     {
-        final boolean             isBrief        = (contentLevel == ContentLevel.BRIEF);
-        final boolean             showObligation = !isBrief || (values == null);
-        final boolean             hasColors      = (colors != null);
-        final String              lineSeparator  = this.lineSeparator;
-        final Map<String,Integer> remarks        = new LinkedHashMap<>();
-        final ParameterTableRow   header         = new ParameterTableRow(group, displayLocale, preferredCodespaces, remarks, isBrief);
-        final String              groupCodespace = header.getCodeSpace();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final String  lineSeparator  = this.lineSeparator;
+        final boolean isBrief        = (contentLevel == ContentLevel.BRIEF);
+        final boolean showObligation = !isBrief || (values == null);
+        final boolean hasColors      = (colors != null);
+        final var     remarks        = new LinkedHashMap<String,Integer>();
+        final var     header         = new ParameterTableRow(group, displayLocale, preferredCodespaces, remarks, isBrief);
+        final String  groupCodespace = header.getCodeSpace();
         /*
          * Prepares the information to be printed later as table rows. We scan all rows before to print them
          * in order to compute the width of codespaces. During this process, we split the objects to be printed
@@ -465,7 +466,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          */
         int codespaceWidth = 0;
         final Collection<?> elements = (values != null) ? values.values() : group.descriptors();
-        final Map<GeneralParameterDescriptor, ParameterTableRow> descriptorValues = JDK19.newLinkedHashMap(elements.size());
+        final var descriptorValues = JDK19.<GeneralParameterDescriptor, ParameterTableRow>newLinkedHashMap(elements.size());
         List<Object> deferredGroups = null;                 // To be created only if needed (it is usually not).
         for (final Object element : elements) {
             final GeneralParameterValue parameter;
@@ -492,11 +493,11 @@ public class ParameterFormat extends TabularFormat<Object> {
             Object value = null;
             Unit<?> unit = null;
             if (parameter instanceof ParameterValue<?>) {
-                final ParameterValue<?> p = (ParameterValue<?>) parameter;
+                final var p = (ParameterValue<?>) parameter;
                 value = p.getValue();
                 unit  = p.getUnit();
             } else if (descriptor instanceof ParameterDescriptor<?>) {
-                final ParameterDescriptor<?> p = (ParameterDescriptor<?>) descriptor;
+                final var p = (ParameterDescriptor<?>) descriptor;
                 value = p.getDefaultValue();
                 unit  = p.getUnit();
             }
@@ -518,11 +519,11 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   - Value domains are formatted.
          *   - Position of the character on which to do the alignment are remembered.
          */
-        int     unitWidth             = 0;
-        int     valueDomainAlignment  = 0;
-        boolean writeCodespaces       = (groupCodespace == null);
-        final   StringBuffer  buffer  = new StringBuffer();
-        final   FieldPosition dummyFP = new FieldPosition(-1);
+        int unitWidth            = 0;
+        int valueDomainAlignment = 0;
+        boolean writeCodespaces  = (groupCodespace == null);
+        final var buffer  = new StringBuffer();
+        final var dummyFP = new FieldPosition(-1);
         for (final Map.Entry<GeneralParameterDescriptor,ParameterTableRow> entry : descriptorValues.entrySet()) {
             final GeneralParameterDescriptor descriptor = entry.getKey();
             if (descriptor instanceof ParameterDescriptor<?>) {
@@ -642,10 +643,10 @@ public class ParameterFormat extends TabularFormat<Object> {
             nextColumn(table);
             final GeneralParameterDescriptor generalDescriptor = entry.getKey();
             if (generalDescriptor instanceof ParameterDescriptor<?>) {
+                final var descriptor = (ParameterDescriptor<?>) generalDescriptor;
                 /*
                  * Writes value type.
                  */
-                final ParameterDescriptor<?> descriptor = (ParameterDescriptor<?>) generalDescriptor;
                 final Class<?> valueClass = descriptor.getValueClass();
                 if (valueClass != null) {  // Should never be null, but let be safe.
                     table.append(getFormat(Class.class).format(valueClass, buffer, dummyFP).toString());
@@ -828,8 +829,8 @@ public class ParameterFormat extends TabularFormat<Object> {
          * the scope of some alias to be processed below.
          */
         boolean hasIdentifiers = false;
-        final List<String[]> rows = new ArrayList<>();
-        final Map<String,Integer> columnIndices = new LinkedHashMap<>();
+        final var rows = new ArrayList<String[]>();
+        final var columnIndices = new LinkedHashMap<String,Integer>();
         columnIndices.put(null, 0);                 // See above comment for the meaning of "null" here.
         if (preferredCodespaces != null) {
             for (final String codespace : preferredCodespaces) {
@@ -905,7 +906,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * on the user list, then those codespaces will be written in the order we found them.
          */
         final boolean hasColors = (colors != null);
-        final TableAppender table = new TableAppender(out, columnSeparator);
+        final var table = new TableAppender(out, columnSeparator);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
         for (String codespace : columnIndices.keySet()) {
@@ -1031,7 +1032,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      */
     @Override
     public ParameterFormat clone() {
-        final ParameterFormat clone = (ParameterFormat) super.clone();
+        final var clone = (ParameterFormat) super.clone();
         // No need to clone 'preferredCodespaces'.
         clone.colors = clone.colors.clone();
         return clone;

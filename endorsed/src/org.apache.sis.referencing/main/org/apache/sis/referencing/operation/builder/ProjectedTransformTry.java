@@ -358,7 +358,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
         transform = transform.clone();
         for (int j=0; j<projToGrid.length; j++) {
             final int d = projToGrid[j];
-            for (int i=transform.getNumCol(); --i >= 0;) {
+            for (int i = transform.getNumCol(); --i >= 0;) {
                 transform.setNumber(d, i, newValues.getNumber(j, i));
             }
         }
@@ -403,7 +403,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof Map.Entry<?,?>) {
-            final Map.Entry<?,?> other = (Map.Entry<?,?>) obj;
+            final var other = (Map.Entry<?,?>) obj;
             return name.equals(other.getKey()) && projection.equals(other.getValue());
         }
         return false;
@@ -455,7 +455,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
      */
     @Override
     public String toString() {
-        final TableAppender buffer = new TableAppender("  ");
+        final var buffer = new TableAppender("  ");
         summarize(buffer, null, null);
         return buffer.toString();
     }

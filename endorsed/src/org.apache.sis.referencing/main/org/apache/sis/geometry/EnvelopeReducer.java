@@ -29,8 +29,7 @@ import org.apache.sis.util.Utilities;
 
 /**
  * Applies union or intersection operations on a sequence of envelopes.
- * This utility class infers the a common coordinate reference system
- * for performing the reduce operation.
+ * This utility class infers a common coordinate reference system for performing the reduce operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  *
@@ -76,7 +75,7 @@ class EnvelopeReducer {
 
     /**
      * Applies the reduce operation on the given {@code result} envelope.
-     * The result is modified in-place.
+     * The {@code result} envelope is modified in-place.
      */
     void reduce(GeneralEnvelope result, Envelope other) {
         result.add(other);
@@ -84,7 +83,7 @@ class EnvelopeReducer {
 
     /**
      * Applies the reduce operation on the given {@code result} bounding box.
-     * The result is modified in-place.
+     * The {@code result} envelope is modified in-place.
      */
     void reduce(DefaultGeographicBoundingBox result, GeographicBoundingBox other) {
         result.add(other);

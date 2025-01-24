@@ -31,11 +31,14 @@ import org.apache.sis.pending.jdk.JDK16;
  * Tiles are kept by strong references until a memory usage limit is reached, in which case
  * the references of oldest tiles become soft references.
  *
+ * <p>The same {@link Raster} may be shared by many images. Removing the tiles of an image
+ * does not impact other images even if they share the same rasters.</p>
+ *
  * <h2>Design note</h2>
  * The use of a common cache for all images makes easier to set an application-wide limit
  * (for example 25% of available memory). The use of soft reference does not cause as much
  * memory retention as it may seem because those references are hold only as long as the
- * image exist. When an image is garbage collected, the corresponding soft references are
+ * image exists. When an image is garbage collected, the corresponding soft references are
  * {@linkplain Key#dispose() cleaned}.
  *
  * @author  Martin Desruisseaux (Geomatys)

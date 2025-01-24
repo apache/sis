@@ -46,7 +46,7 @@ public final class FreeTextMarshallingTest extends TestCase {
      * Returns the expected string.
      */
     private static DefaultInternationalString getExpectedI18N() {
-        final DefaultInternationalString i18n = new DefaultInternationalString();
+        final var i18n = new DefaultInternationalString();
         i18n.add(Locale.ENGLISH, "OpenSource Project");
         i18n.add(Locale.FRENCH,  "Projet OpenSource");
         i18n.add(Locale.ITALIAN, "Progetto OpenSource");

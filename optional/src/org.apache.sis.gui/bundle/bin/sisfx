@@ -73,6 +73,17 @@ then
     . "$BASE_DIR/conf/setenv.sh"
 fi
 
+#
+# Optional UCAR dependencies, if present, need to be added to the environment.
+#
+shopt -s nullglob
+files=("$BASE_DIR"/lib/cdm-core-*.jar)
+if [ ${#files[@]} -gt 0 ]; then
+  ADD_OPTIONAL_MODULES="--add-modules cdm.core,udunits,com.google.common"
+else
+  ADD_OPTIONAL_MODULES=
+fi
+shopt -u nullglob
 
 #
 # Execute SIS with any optional JAR that the user may put in the `lib` directory.
@@ -82,5 +93,6 @@ java -splash:"$BASE_DIR/lib/logo.jpg" \
      -Djava.util.logging.config.class="org.apache.sis.util.logging.Initializer" \
      -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \
      -Dderby.stream.error.file="$BASE_DIR/log/derby.log" \
+     $ADD_OPTIONAL_MODULES \
      --module org.apache.sis.gui/org.apache.sis.gui.DataViewer \
      $SIS_OPTS "$@"

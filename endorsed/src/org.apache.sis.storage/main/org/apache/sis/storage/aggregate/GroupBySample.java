@@ -19,6 +19,7 @@ package org.apache.sis.storage.aggregate;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringJoiner;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.SampleDimension;
 
 
@@ -41,9 +42,11 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     /**
      * Creates a new group of objects associated to the list of sample dimensions.
      *
+     * @param  parent  the parent group in which this group is a child.
      * @param  ranges  the sample dimensions of this group.
      */
-    private GroupBySample(final List<SampleDimension> ranges) {
+    GroupBySample(final CoverageAggregator parent, final List<SampleDimension> ranges) {
+        super(parent);
         this.ranges = List.copyOf(ranges);
     }
 
@@ -54,7 +57,7 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
      */
     @Override
     final String createName(final Locale locale) {
-        final StringJoiner name = new StringJoiner(", ");
+        final var name = new StringJoiner(", ");
         for (final SampleDimension range : ranges) {
             name.add(range.getName().toInternationalString().toString(locale));
         }
@@ -62,25 +65,47 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     }
 
     /**
-     * Returns the group of objects associated to the given ranges.
-     * This method takes a synchronization lock on the given list.
-     *
-     * @param  <E>     type of objects in groups.
-     * @param  groups  the list where to search for a group.
-     * @param  ranges  sample dimensions of the desired group.
-     * @return group of objects associated to the given ranges (never null).
+     * Returns whether an object having the given sample dimensions can be a member of this group.
      */
-    static GroupBySample getOrAdd(final List<GroupBySample> groups, final List<SampleDimension> ranges) {
-        synchronized (groups) {
-            for (final GroupBySample c : groups) {
-                if (ranges.equals(c.ranges)) {
-                    return c;
+    final boolean accepts(final List<SampleDimension> candidate) {
+        return ranges.equals(candidate);
+    }
+
+    /**
+     * Returns the group of objects associated to the given <abbr>CRS</abbr>.
+     * The <abbr>CRS</abbr> comparisons ignore metadata.
+     *
+     * @param  crs  the coordinate reference to search (may be null).
+     * @return group of objects associated to the given CRS (never null).
+     */
+    final GroupByCRS<GroupByTransform> getOrAdd(final CoordinateReferenceSystem crs) {
+        synchronized (members) {
+            GroupByCRS<GroupByTransform> group;
+            for (int i = members.size(); --i >= 0;) {
+                group = members.get(i);
+                if (group.accepts(crs)) {
+                    return group;
                 }
             }
-            final GroupBySample c = new GroupBySample(ranges);
-            groups.add(c);
-            return c;
+            group = new GroupByCRS<>(this, crs);
+            members.add(group);
+            return group;
         }
+    }
+
+    /**
+     * Returns whether this group contains the given slice.
+     * This is used for assertions only.
+     */
+    final boolean contains(final GridSlice slice) {
+        for (GroupByCRS<GroupByTransform> byCRS : members) {
+            for (GroupByTransform group : byCRS.members) {
+                if (group.members.contains(slice)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

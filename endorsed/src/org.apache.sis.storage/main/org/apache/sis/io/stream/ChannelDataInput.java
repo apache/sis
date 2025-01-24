@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.EOFException;
+import java.io.UnsupportedEncodingException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -30,6 +31,7 @@ import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
@@ -941,12 +943,13 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Decodes a string from a sequence of bytes in the given encoding. This method tries to avoid the creation
-     * of a temporary {@code byte[]} array when possible.
+     * Decodes a string from a sequence of bytes in the given encoding.
+     * This method tries to avoid the creation of a temporary {@code byte[]} array when possible.
      *
-     * <p>This convenience method shall be used only for relatively small number of {@link String} instances
-     * to decode, for example attribute values in the file header. For large amount of data, consider using
-     * {@link java.nio.charset.CharsetDecoder} instead.</p>
+     * <h4>Performance note</h4>
+     * This convenience method should be used only for small number of short {@link String} instances
+     * to decode, for example attribute values in the file header. For large amount of data, consider
+     * using {@link java.nio.charset.CharsetDecoder} instead.
      *
      * @param  length    number of bytes to read.
      * @param  encoding  the character encoding.
@@ -973,10 +976,117 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Reads in a string that has been encoded using a UTF-8 string.
+     * Reads a null-terminated US-ASCII, ISO-LATIN-1, UTF-8, UTF-16 or UTF-32 string.
+     * Note that {@code 0x00} is always the one-byte NUL character in UTF-8.
+     * It cannot be part of a multi-byte character's representation by design.
+     *
+     * <p>The character encoding should be specified in argument. If {@code null}, this method infers
+     * the encoding with the following rules specified by ISO 14496-12 (Base Media File Format):</p>
+     *
+     * <ul>
+     *   <li>If the string starts with a Byte Order Mark (<abbr>BOM</abbr>), then UTF-16 encoding is assumed.</li>
+     *   <li>Otherwise, UTF-8 encoding is assumed. This method does not test whether the string is well-formed.</li>
+     * </ul>
+     *
+     * <h4>Limitations</h4>
+     * This convenience method should be used only for small number of short {@link String} instances to decode
+     * using one of the encoding specified in {@link StandardCharsets}. For large amount of data, or for support
+     * of any encoding other than the standard ones, use {@link java.nio.charset.CharsetDecoder} instead.
+     *
+     * @param  encoding  the character encoding, or {@code null} for UTF-8 or UTF-16 depending on whether a <abbr>BOM</abbr> is present.
+     * @return the character string, possibly empty.
+     * @throws UnsupportedEncodingException if the encoding is not one of the {@link StandardCharsets}.
+     * @throws IOException if an error occurred while reading the string.
+     */
+    public final String readNullTerminatedString(Charset encoding) throws IOException {
+        long start = position();
+        if (encoding == null) {
+            /*
+             * If the string may be UTF-16, check for the Byte Order Mark (BOM).
+             * If none, UTF-8 is assumed. This semantic is used by ISO 14496-12
+             * (Base Media File Format).
+             */
+            switch (readByte()) {
+                case (byte) 0x00: return "";
+                case (byte) 0xFE: if (readByte() == (byte) 0xFF) encoding = StandardCharsets.UTF_16BE; break;
+                case (byte) 0xFF: if (readByte() == (byte) 0xFE) encoding = StandardCharsets.UTF_16LE; break;
+            }
+            if (encoding == null) {
+                encoding = StandardCharsets.UTF_8;
+                buffer.position(buffer.position() - Byte.BYTES);
+                // No need to push back the first character because it is known to be non-zero.
+            } else {
+                start += Short.BYTES;
+            }
+        }
+        /*
+         * Get the number of bytes per character. This number determines the size of the NUL terminator.
+         * This information is not provided in the `Charset` API (as of Java 23), which is the reason why
+         * this method supports only `StandardCharsets` values.
+         */
+        final int charSize;
+        final String name = encoding.name();
+        if (name.equals("US-ASCII") || name.equals("ISO-8859-1") || name.equals("UTF-8")) {
+            charSize = Byte.BYTES;
+        } else if (name.startsWith("UTF-16")) {
+            charSize = Short.BYTES;
+        } else if (name.startsWith("UTF-32")) {
+            charSize = Integer.BYTES;
+        } else {
+            throw new UnsupportedEncodingException(name);
+        }
+        /*
+         * Search the nul terminator directly in the buffer. If we need to read more bytes,
+         * we will try to do that without discarding the first characters of the strings.
+         */
+        int base = buffer.position();
+search: for (;;) {
+            if (charSize == 1) {
+                // Optimization for the most common cases: US-ASCII, ISO-LATIN-1, UTF-8.
+                while (buffer.hasRemaining()) {
+                    if (buffer.get() == 0) {
+                        break search;
+                    }
+                }
+            } else {
+                while (buffer.remaining() >= charSize) {
+                    int c = (charSize <= Short.BYTES) ? buffer.getShort() : buffer.getInt();
+                    if (c == 0) break search;
+                }
+            }
+            /*
+             * Need more bytes. If there is enough room in the buffer either at the beginning (base > 0)
+             * or at the end (limit < capacity), temporarily move the position back to the base before
+             * to invoke `ensureBufferContains(…)` for avoiding to discard the bytes that we will need.
+             */
+            final int count = buffer.position() - base;
+            final int need  = count + charSize;
+            if (buffer.capacity() - need >= 0) {
+                buffer.position(base);
+                ensureBufferContains(need);
+                base = buffer.position();
+                buffer.position(base + count);
+            } else {
+                // Cannot avoid to discard what we have read before.
+                ensureBufferContains(charSize);
+            }
+        }
+        int size = Math.toIntExact(position() - start - charSize);
+        if (size <= 0) return "";   // Shortcut for a common case.
+        seek(start);
+        String value = readString(size, encoding);
+        skipNBytes(charSize);       // Skip the NUL terminal character.
+        return value;
+    }
+
+    /**
+     * Reads in a string that has been encoded using a Java modified UTF-8 string.
+     * The number of bytes to read is encoded in the next unsigned short integer of the stream.
      *
      * @return the string reads from the stream.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
+     *
+     * @see DataInput#readUTF()
      */
     @Override
     public final String readUTF() throws IOException {
@@ -1038,6 +1148,19 @@ loop:   while (hasRemaining()) {
         n = Math.min(n, buffer.remaining());
         buffer.position(buffer.position() + n);
         return n;
+    }
+
+    /**
+     * Skips over and discards exactly <var>n</var> bytes of data from this input stream.
+     *
+     * @param  n  number of bytes to skip. Can be negative.
+     * @throws IOException if an error occurred while reading.
+     */
+    public final void skipNBytes(int n) throws IOException {
+        n -= skipBytes(n);
+        if (n != 0) {
+            seek(Math.addExact(position(), n));
+        }
     }
 
     /**

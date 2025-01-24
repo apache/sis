@@ -46,6 +46,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -138,12 +139,9 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     private volatile MergeStrategy strategy;
 
     /**
-     * The processor to use for creating grid coverages. Created only when first needed.
-     * This is used for specifying the color model when creating band aggregated resources.
-     *
-     * @see #processor()
+     * A sequential number of determining the order in which slices are rendered.
      */
-    private GridCoverageProcessor processor;
+    private int sequence;
 
     /**
      * Creates an initially empty aggregator with no listeners.
@@ -161,8 +159,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *        This is usually the listeners of the {@link org.apache.sis.storage.DataStore}.
      */
     public CoverageAggregator(final StoreListeners listeners) {
-        this.listeners = listeners;
-        aggregates = new HashMap<>();
+        this(listeners, new GridCoverageProcessor());
     }
 
     /**
@@ -173,8 +170,9 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *                   or {@code null} for a default processor.
      */
     CoverageAggregator(final StoreListeners listeners, final GridCoverageProcessor processor) {
-        this(listeners);
-        this.processor = processor;
+        super(processor);
+        this.listeners = listeners;
+        aggregates = new HashMap<>();
     }
 
     /**
@@ -199,7 +197,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      */
     public void add(final GridCoverage coverage) {
         try {
-            add(new MemoryGridResource(listeners, coverage, processor()));
+            add(new MemoryGridResource(listeners, coverage, processor));
         } catch (DataStoreException e) {
             /*
              * `DataStoreException` are never thrown by `MemoryGridResource`.
@@ -231,7 +229,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.5
      */
     public void add(GridCoverage coverage, GridGeometry dimToAdd) {
-        add(processor().appendDimensions(coverage, dimToAdd));
+        add(processor.appendDimensions(coverage, dimToAdd));
     }
 
     /**
@@ -249,7 +247,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.5
      */
     public void add(GridCoverage coverage, double lower, double span, SingleCRS crs) {
-        add(processor().appendDimension(coverage, lower, span, crs));
+        add(processor.appendDimension(coverage, lower, span, crs));
     }
 
     /**
@@ -269,7 +267,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.5
      */
     public void add(GridCoverage coverage, Instant lower, Duration span) {
-        add(processor().appendDimension(coverage, lower, span));
+        add(processor.appendDimension(coverage, lower, span));
     }
 
     /**
@@ -281,17 +279,27 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @throws DataStoreException if the resource cannot be used.
      */
     public void add(final GridCoverageResource resource) throws DataStoreException {
-        final GroupBySample bySample = GroupBySample.getOrAdd(members, resource.getSampleDimensions());
-        final GridSlice slice = new GridSlice(resource);
-        final List<GridSlice> slices;
+        final List<SampleDimension> ranges = resource.getSampleDimensions();
+        GroupBySample bySample;
+        final int order;
+search: synchronized (members) {
+            order = sequence++;
+            for (int i = members.size(); --i >= 0;) {   // Most recently added group is more likely to be the desired one.
+                bySample = members.get(i);
+                if (bySample.accepts(ranges)) {
+                    break search;
+                }
+            }
+            bySample = new GroupBySample(this, ranges);
+            members.add(bySample);
+        }
+        final GridSlice slice;
         try {
-            slices = slice.getList(bySample.members, strategy).members;
+            slice = new GridSlice(order, resource, bySample, strategy);
         } catch (NoninvertibleTransformException e) {
             throw new DataStoreContentException(e);
         }
-        synchronized (slices) {
-            slices.add(slice);
-        }
+        assert bySample.contains(slice);
     }
 
     /**
@@ -307,7 +315,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.5
      */
     public void add(GridCoverageResource resource, GridGeometry dimToAdd) throws DataStoreException {
-        add(DimensionAppender.create(processor(), resource, dimToAdd));
+        add(DimensionAppender.create(processor, resource, dimToAdd));
     }
 
     /**
@@ -336,7 +344,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
         final var  names   = new DimensionNameType[] {
             GridExtent.typeFromAxis(crs.getCoordinateSystem().getAxis(0)).orElse(null)
         };
-        final GridExtent extent = new GridExtent(names, indices, indices, true);
+        final var extent = new GridExtent(names, indices, indices, true);
         final MathTransform gridToCRS = MathTransforms.linear(span, Math.fma(index, -span, lower));
         add(resource, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
     }
@@ -362,12 +370,12 @@ public final class CoverageAggregator extends Group<GroupBySample> {
          * but a future version may use the state of this `CoverageAggregator`, for example making a better
          * effort to align the resources on the same "gridToCRS" transform.
          */
-        final DefaultTemporalCRS crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
+        final var crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
         double scale  = crs.toValue(span);
         double offset = crs.toValue(lower);
         long   index  = Numerics.roundAndClamp(offset / scale);             // See comment in above method.
         offset = crs.toValue(lower.minus(span.multipliedBy(index)));
-        final GridExtent extent = new GridExtent(DimensionNameType.TIME, index, index, true);
+        final var extent = new GridExtent(DimensionNameType.TIME, index, index, true);
         final MathTransform gridToCRS = MathTransforms.linear(scale, offset);
         add(resource, new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs));
     }
@@ -512,7 +520,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      */
     public void addRangeAggregate(final GridCoverageResource[] sources, final int[][] bandsPerSource) throws DataStoreException {
         if (sources.length != 0) {
-            add(BandAggregateGridResource.create(listeners, sources, bandsPerSource, processor()));
+            add(BandAggregateGridResource.create(listeners, sources, bandsPerSource, processor));
         }
     }
 
@@ -525,7 +533,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.4
      */
     public Colorizer getColorizer() {
-        return processor().getColorizer();
+        return processor.getColorizer();
     }
 
     /**
@@ -539,14 +547,15 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.4
      */
     public void setColorizer(final Colorizer colorizer) {
-        processor().setColorizer(colorizer);
+        processor.setColorizer(colorizer);
     }
 
     /**
      * Returns the algorithm to apply when more than one grid coverage can be found at the same grid index.
      * This is the most recent value set by a call to {@link #setMergeStrategy(MergeStrategy)},
      * or {@code null} if no strategy has been specified. In the latter case,
-     * a {@link SubspaceNotSpecifiedException} will be thrown by {@link GridCoverage#render(GridExtent)}
+     * {@link SubspaceNotSpecifiedException} will be thrown in situations of ambiguity.
+     * An ambiguity happens at {@link GridCoverage#render(GridExtent)} invocation time
      * if more than one source coverage (slice) is found for a specified grid index.
      *
      * @return algorithm to apply for merging source coverages at the same grid index, or {@code null} if none.
@@ -577,16 +586,6 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
-     * Returns the processor to use for creating grid coverages.
-     */
-    private synchronized GridCoverageProcessor processor() {
-        if (processor == null) {
-            processor = new GridCoverageProcessor();
-        }
-        return processor;
-    }
-
-    /**
      * Builds a resource which is the aggregation or concatenation of all components added to this aggregator.
      * The returned resource will be an instance of {@link GridCoverageResource} if possible,
      * or an instance of {@link Aggregate} if some heterogeneity in grid geometries or sample dimensions
@@ -611,7 +610,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
         aggregate.fillWithChildAggregates(this, GroupBySample::createComponents);
         final Resource result = aggregate.simplify(this);
         if (result instanceof AggregatedResource) {
-            ((AggregatedResource) result).setIdentifier(identifier);
+            ((AggregatedResource) result).identifier = identifier;
         }
         return result;
     }

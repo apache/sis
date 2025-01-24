@@ -163,8 +163,8 @@ public class DomainLinearizer {
      */
     public GridGeometry apply(final GridGeometry gg) throws TransformException {
         if (gg.nonLinears != 0) try {
-            MathTransform   gridToCRS   = gg.requireGridToCRS(true);
-            GeneralEnvelope domain      = gg.extent.toEnvelope();
+            MathTransform   gridToCRS   = gg.requireGridToCRS(true);    // Map pixel center.
+            GeneralEnvelope domain      = gg.extent.toEnvelope(true);   // Inclusive bounds.
             MathTransform   approximate = modify(LinearTransformBuilder.approximate(gridToCRS, domain));
             MathTransform   gridToGrid  = MathTransforms.concatenate(gridToCRS, approximate.inverse());
             domain = Envelopes.transform(gridToGrid, domain);

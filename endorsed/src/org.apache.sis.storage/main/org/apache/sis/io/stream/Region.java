@@ -293,7 +293,7 @@ public final class Region {
      */
     @Override
     public String toString() {
-        final TableAppender table = new TableAppender(" ");
+        final var table = new TableAppender(" ");
         table.setCellAlignment(TableAppender.ALIGN_RIGHT);
         table.append("size").nextColumn();
         table.append("skip").nextLine();

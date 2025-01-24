@@ -82,10 +82,8 @@ public final class ShapeRecord {
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         final int shapeType = channel.readInt();
         final boolean match = io.decode(channel,this, filter);
-        if (!match) {
-            //move to record end
-            channel.seek(position + byteSize);
-        }
+        //always move to record end, size is sometime larger then the geometry bytes
+        channel.seek(position + byteSize);
         return match;
     }
 

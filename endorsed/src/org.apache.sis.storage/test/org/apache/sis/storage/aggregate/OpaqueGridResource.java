@@ -16,8 +16,10 @@
  */
 package org.apache.sis.storage.aggregate;
 
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.base.GridResourceWrapper;
+import org.apache.sis.storage.base.MemoryGridResource;
 
 
 /**
@@ -33,7 +35,14 @@ final class OpaqueGridResource extends GridResourceWrapper {
     private final GridCoverageResource source;
 
     /**
-     * Creates a new wrapper.
+     * Creates a new wrapper for the given coverage.
+     */
+    OpaqueGridResource(final GridCoverage source) {
+        this.source = new MemoryGridResource(null, source, null);
+    }
+
+    /**
+     * Creates a new wrapper for the given resource.
      */
     OpaqueGridResource(final GridCoverageResource source) {
         this.source = source;

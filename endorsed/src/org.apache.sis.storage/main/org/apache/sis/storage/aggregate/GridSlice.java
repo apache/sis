@@ -16,157 +16,224 @@
  */
 package org.apache.sis.storage.aggregate;
 
-import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import org.opengis.referencing.operation.Matrix;
+import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.coverage.privy.CommonDomainFinder;
+import org.apache.sis.image.privy.ReshapedImage;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.Strings;
+import static org.apache.sis.image.privy.ImageUtilities.LOGGER;
 
 
 /**
- * A grid resource which is a slice in a larger coverage.
- * A slice is not necessarily 1 cell tick; larger slices are accepted.
+ * Wrapper for a grid resource which is a slice in a larger coverage.
+ * A slice is not necessarily 1 cell tick, larger slices are accepted.
  *
  * <h2>Usage context</h2>
- * Instances of {@code Gridslice} are grouped by CRS, then instances having the same CRS
+ * Instances of {@code GridSlice} are grouped by CRS, then instances having the same CRS
  * are grouped by "grid to CRS" transform in the {@link GroupByTransform#members} list.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class GridSlice {
+final class GridSlice implements Comparable<GridSlice> {
+    /**
+     * For easier identification of codes that assume two-dimensional slices.
+     */
+    static final int BIDIMENSIONAL = 2;
+
     /**
      * The "pixel in cell" value used for all "grid to CRS" computations.
      */
     static final PixelInCell CELL_ANCHOR = PixelInCell.CELL_CORNER;
 
     /**
-     * The resource associated to this slice.
+     * The order of this slice relative to other slices. The slices with smaller numbers
+     * should be rendered on top (foreground) of slices with larger numbers (background).
+     *
+     * @see #compareTo(GridSlice)
+     */
+    private final int order;
+
+    /**
+     * The resource which will be used for reading the data of this slice.
+     * Note that the grid cells may not by in the coordinate system of the
+     * concatenated resource grid cells.
      */
     final GridCoverageResource resource;
 
     /**
-     * Geometry of the grid coverage or resource.
+     * Extent of this slice in units of the concatenated grid resource.
+     * This is the {@linkplain #resource} extent translated by the {@link #offsets} (by subtraction).
      */
-    private final GridGeometry geometry;
+    final GridExtent extentInGroup;
 
     /**
-     * Translation from source coordinates of {@link GroupByTransform#gridToCRS}
-     * to grid coordinates of {@link #geometry}. Shall be considered read-only
-     * after initialization of {@link #setOffset(MatrixSIS)}.
+     * Translation for converting coordinates of the group to the coordinate system of this slice.
+     * This is a translation from source coordinates of {@link GroupByTransform#gridToCRS} to grid coordinates
+     * of the {@linkplain #resource}. Shall be handled as read-only, because potentially shared by many slices.
      */
     private final long[] offset;
 
     /**
-     * Creates a new slice for the specified resource.
-     *
-     * @param  slice  resource associated to this slice.
-     */
-    GridSlice(final GridCoverageResource slice) throws DataStoreException {
-        resource = slice;
-        geometry = slice.getGridGeometry();
-        offset   = new long[geometry.getDimension()];
-    }
-
-    /**
-     * Returns the group of objects associated to the CRS and "grid to CRS" transform.
-     * The CRS comparisons ignore metadata and transform comparisons ignore integer translations.
+     * Adds a new slice to the group of slices associated to compatible CRS and "grid to CRS" transform.
+     * The CRS comparisons ignore metadata and the transform comparisons ignore integer translations.
      * This method takes a synchronization lock on the given list.
      *
-     * @param  groups    the list where to search for a group.
+     * @param  order     the order of this slice relative to other slices.
+     * @param  resource  resource associated to this slice.
+     * @param  bySample  the list where to search for a group.
      * @param  strategy  algorithm to apply when more than one grid coverage can be found at the same grid index.
-     * @return group of objects associated to the given transform (never null).
      * @throws NoninvertibleTransformException if the transform is not invertible.
      * @throws ArithmeticException if a translation term is NaN or overflows {@code long} integer capacity.
      */
-    final GroupByTransform getList(final List<GroupByCRS<GroupByTransform>> groups, final MergeStrategy strategy)
-            throws NoninvertibleTransformException
+    GridSlice(final int order,
+              final GridCoverageResource resource,
+              final GroupBySample bySample,
+              final MergeStrategy strategy)
+            throws DataStoreException, NoninvertibleTransformException
     {
+        this.order    = order;
+        this.resource = resource;
+        final GridGeometry  geometry  = resource.getGridGeometry();
         final MathTransform gridToCRS = geometry.getGridToCRS(CELL_ANCHOR);
         final MathTransform crsToGrid = gridToCRS.inverse();
-        final List<GroupByTransform> transforms = GroupByCRS.getOrAdd(groups, geometry).members;
-        synchronized (transforms) {
-            for (final GroupByTransform c : transforms) {
-                final Matrix groupToSlice = c.linearTransform(crsToGrid);
-                if (CommonDomainFinder.integerTranslation(groupToSlice, offset) != null) {
-                    c.strategy = strategy;
-                    return c;
+        /*
+         * Finds the pyramid level where to insert this slice or tile.
+         * A pyramid level is a group of similar transforms in a group of CRS.
+         */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        long[] offset;
+        GroupByTransform slices;
+        final var crs = geometry.isDefined(GridGeometry.CRS) ? geometry.getCoordinateReferenceSystem() : null;
+        final GroupByCRS<GroupByTransform> crsGroup = bySample.getOrAdd(crs);
+        final List<GroupByTransform> transforms = crsGroup.members;
+search: synchronized (transforms) {
+            for (int i = transforms.size(); --i >= 0;) {
+                slices = transforms.get(i);
+                offset = slices.integerTranslation(crsToGrid);
+                if (offset != null) {
+                    break search;
                 }
             }
-            final GroupByTransform c = new GroupByTransform(geometry, gridToCRS, strategy);
-            transforms.add(c);
-            return c;
+            offset = new long[geometry.getDimension()];
+            slices = new GroupByTransform(crsGroup, geometry, gridToCRS);
+            transforms.add(slices);
+        }
+        slices.strategy = strategy;
+        this.offset     = offset = slices.unique(offset);
+        extentInGroup   = slices.unique(geometry.getExtent().translate(offset, true));
+        final List<GridSlice> addTo = slices.members;
+        synchronized (addTo) {
+            addTo.add(this);
         }
     }
 
     /**
-     * Returns the grid extent of this slice. The grid coordinate system is specific to this slice.
-     * For converting grid coordinates to the concatenated grid coordinate system, {@link #offset}
-     * must be subtracted.
+     * Creates a slice for the same data as the specified slice, but at a different location or resolution.
      */
-    final GridExtent getGridExtent() {
-        return geometry.getExtent();
+    private GridSlice(GridSlice source, GridCoverageResource coverage, GridExtent inGroup, long[] toSlice) {
+        order         = source.order;
+        resource      = coverage;
+        extentInGroup = inGroup;
+        offset        = toSlice;
     }
 
     /**
-     * Writes information about grid extent into the given {@code DimensionSelector} objects.
-     * This is invoked by {@link GroupByTransform#findConcatenatedDimensions()} for choosing
-     * a dimension to concatenate.
+     * Returns a slice for the result of reading the given source slice.
+     *
+     * @param  coverage  the coverage which has been read, wrapped in a resource.
+     * @param  extent    the extent of the given coverage.
+     * @param  inGroup   the extent of this slice in units of the concatenated grid resource.
+     * @throws DataStoreReferencingException if this constructor cannot fit the given coverage in the grid mosaic.
      */
-    final void getGridExtent(final int i, final DimensionSelector[] writeTo) {
-        final GridExtent extent = getGridExtent();
-        for (int dim = writeTo.length; --dim >= 0;) {
-            writeTo[dim].setSliceExtent(i, Math.subtractExact(extent.getMedian(dim), offset[dim]), extent.getSize(dim));
+    final GridSlice resolve(final GridCoverageResource coverage, final GridExtent extent, GridExtent inGroup)
+            throws DataStoreReferencingException
+    {
+        long[] toSlice = new long[inGroup.getDimension()];
+        for (int i = toSlice.length; --i >= 0;) {
+            long value = extent .getSize(i);
+            long scale = inGroup.getSize(i);    // Higher subsampling → smaller size.
+            if (value % scale == 0) {
+                scale = value / scale;
+                value = extent.getLow(i);
+                if (value % scale == 0) {
+                    value /= scale;             // Low coordinate with same resolution as `inGroup`.
+                    toSlice[i] = Math.subtractExact(inGroup.getLow(i), value);
+                    continue;
+                }
+            }
+            throw new DataStoreReferencingException(Resources.format(Resources.Keys.IncompatibleGridGeometry));
         }
+        if (Arrays.equals(toSlice, offset)) {
+            toSlice = offset;
+        }
+        if (inGroup.equals(extentInGroup, ComparisonMode.IGNORE_METADATA)) {
+            inGroup = extentInGroup;
+            if (toSlice == offset && coverage.equals(resource)) {
+                return this;
+            }
+        }
+        return new GridSlice(this, coverage, inGroup, toSlice);
     }
 
     /**
-     * Returns the low grid index in the given dimension, relative to the grid of the group.
-     * This is invoked by {@link GroupByTransform#sortAndGetLows(int)} for sorting coverages.
-     *
-     * @param  dim  dimension of the desired grid coordinates.
-     * @return low index in the coordinate system of the group grid.
+     * Returns an identifier of this slice for formatting error messages.
+     * In case of exception, this method pretends that the warning has been logged by
+     * {@link ConcatenatedGridCoverage#render(GridExtent)} because it is the caller of this method.
      */
-    final long getGridLow(final int dim) {
-        return Math.subtractExact(geometry.getExtent().getLow(dim), offset[dim]);
+    final Object getIdentifier() {
+        try {
+            var identifier = resource.getIdentifier();
+            if (identifier.isPresent()) {
+                return identifier.get();
+            }
+        } catch (DataStoreException e) {
+            Logging.unexpectedException(LOGGER, ConcatenatedGridCoverage.class, "render", e);
+        }
+        return order;
     }
 
     /**
-     * Returns the translation from source coordinates of {@link GroupByTransform#gridToCRS} to
-     * grid coordinates of {@link #geometry}. This method returns a unique instance if possible.
+     * Renders this slice or tile in an extent specified in coordinates relative to the aggregation.
+     * This method translates the request extent to the cell coordinate system of the coverage to load,
+     * then translates the result back to the original coordinate system of the given extent.
      *
-     * @param  shared  a pool of existing offset instances.
-     * @return translation from aggregated grid geometry to slice. Shall be considered read-only.
+     * @param  coverage  the grid coverage to render.
+     * @param  request   requested extent in units of aggregated grid coverage cells.
+     * @param  subdim    an array of length 2 containing the dimensions of <var>x</var> and <var>y</var> axes.
+     * @return the rendered image with (0,0) locate at the beginning of the requested extent.
      */
-    final long[] getOffset(final Map<GridSlice,long[]> shared) {
-        final long[] old = shared.putIfAbsent(this, offset);
-        return (old != null) ? old : offset;
+    final RenderedImage render(final GridCoverage coverage, final GridExtent request, final int[] subdim) {
+        final RenderedImage image = coverage.render(request.translate(offset));
+        final long tx = Math.negateExact(offset[subdim[0]]);
+        final long ty = Math.negateExact(offset[subdim[1]]);
+        if ((tx | ty) == 0) {
+            return image;
+        }
+        final var translated = new ReshapedImage(image, tx, ty);
+        return translated.isIdentity() ? translated.source : translated;
     }
 
     /**
-     * Compares the offset of this grid slice with the offset of given slice.
-     * This method is defined only for the purpose of {@link #getOffset(Map)}.
-     * Equality should not be used in other context.
+     * Compares this slice with the given slice for rendering order.
+     *
+     * @param  other  the other slice to compare with this slice.
+     * @return -1 if this slice should be rendered first, +1 if the other slice should be first.
      */
     @Override
-    public final boolean equals(final Object other) {
-        return (other instanceof GridSlice) && Arrays.equals(((GridSlice) other).offset, offset);
-    }
-
-    /**
-     * Returns a hash code for the offset consistently with {@link #equals(Object)} purpose.
-     */
-    @Override
-    public final int hashCode() {
-        return Arrays.hashCode(offset);
+    public final int compareTo(final GridSlice other) {
+        return Integer.compare(order, other.order);
     }
 
     /**
@@ -180,6 +247,12 @@ final class GridSlice {
         } catch (DataStoreException e) {
             id = e.toString();
         }
-        return Strings.toString(getClass(), null, id);
+        final long[] location = new long[extentInGroup.getDimension()];
+        final long[] size = new long[location.length];
+        for (int i=0; i<location.length; i++) {
+            location[i] = extentInGroup.getLow(i);
+            size[i] = extentInGroup.getSize(i);
+        }
+        return Strings.toString(getClass(), null, id, "location", location, "size", size, "order", order);
     }
 }

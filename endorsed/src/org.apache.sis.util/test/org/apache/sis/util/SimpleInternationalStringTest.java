@@ -44,7 +44,7 @@ public final class SimpleInternationalStringTest extends TestCase {
      */
     @Test
     public void testSimple() {
-        final SimpleInternationalString toTest = new SimpleInternationalString(MESSAGE);
+        final var toTest = new SimpleInternationalString(MESSAGE);
         assertSame(MESSAGE, toTest.toString());
         assertSame(MESSAGE, toTest.toString(null));
         assertSame(MESSAGE, toTest.toString(Locale.ROOT));
@@ -57,8 +57,8 @@ public final class SimpleInternationalStringTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final SimpleInternationalString before = new SimpleInternationalString(MESSAGE);
-        final SimpleInternationalString after  = assertSerializedEquals(before);
+        final var before = new SimpleInternationalString(MESSAGE);
+        final var after  = assertSerializedEquals(before);
         assertEquals(MESSAGE, after.toString());
         assertEquals(MESSAGE, after.toString(null));
         assertEquals(MESSAGE, after.toString(Locale.ROOT));
@@ -71,7 +71,7 @@ public final class SimpleInternationalStringTest extends TestCase {
      */
     @Test
     public void testPrintf() {
-        final SimpleInternationalString toTest = new SimpleInternationalString(MESSAGE);
+        final var toTest = new SimpleInternationalString(MESSAGE);
         assertEquals(MESSAGE,                               String.format("%s", toTest));
         assertEquals("    This is an unlocalized message.", String.format("%35s", toTest));
         assertEquals("This is an unlocalized message.    ", String.format("%-35s", toTest));

@@ -521,7 +521,7 @@ public class Tile implements Serializable {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this)).append('[');
+        final var buffer = new StringBuilder(Classes.getShortClassName(this)).append('[');
         if ((xSubsampling | ySubsampling) != 0) {
             buffer.append("location=(");
             if (width == 0 && height == 0) {
@@ -571,7 +571,7 @@ public class Tile implements Serializable {
      * @return a string representation of the given tiles as a table.
      */
     static String toString(final Collection<Tile> tiles, final int maximum) {
-        final StringWriter writer = new StringWriter();
+        final var writer = new StringWriter();
         try {
             writeTable(tiles, writer, maximum);
         } catch (IOException e) {
@@ -594,7 +594,7 @@ public class Tile implements Serializable {
      */
     public static void writeTable(final Collection<Tile> tiles, final Writer out, final int maximum) throws IOException {
         int remaining = maximum;
-        final TableAppender table = new TableAppender(out);
+        final var table = new TableAppender(out);
         table.setMultiLinesCells(false);
         table.nextLine('═');
         table.append("Format\tInput\tindex\tx\ty\twidth\theight\tdx\tdy\n");

@@ -803,7 +803,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * tiles from the cache and stops observation of {@link WritableRenderedImage} sources.
      * This image should not be used anymore after this method call.
      *
-     * <p><b>Note:</b> keep in mind that this image may be referenced as a source of other images.
+     * <p><b>Note:</b> caller should keep in mind that this image may be referenced as a source of other images.
      * In case of doubt, it may be safer to rely on the garbage collector instead of invoking this method.</p>
      */
     @Override

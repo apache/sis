@@ -134,7 +134,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
                 new GridCoverageResource[] {firstAndSecondBands, thirdAndFourthBands, fifthAndSixthBands},
                 new int[][] {null, new int[] {1, 0}, new int[] {1}}, processor);
         if (opaque) {
-            ((BandAggregateGridResource) aggregation).setIdentifier(testName);
+            ((BandAggregateGridResource) aggregation).identifier = testName;
             assertEquals(testName, aggregation.getIdentifier().orElse(null));
         }
         assertAllPixelsEqual(aggregation.read(null), 101, 102, 104, 103, 106);
@@ -208,7 +208,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
      * Asserts that all pixels in the rendered image have the expected value.
      *
      * @param  coverage  the coverage for which to verify pixel values.
-     * @param  pixel     the expected pixel value.
+     * @param  pixel     the expected pixel values.
      */
     private static void assertAllPixelsEqual(final GridCoverage coverage, final int... pixel) {
         final int numBands = pixel.length;

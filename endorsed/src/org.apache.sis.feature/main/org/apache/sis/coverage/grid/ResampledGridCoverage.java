@@ -461,7 +461,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
                 GeneralEnvelope bounds = new GeneralEnvelope(complete.getEnvelope());
                 bounds.intersect(target.getEnvelope());
                 bounds = Envelopes.transform(targetCornerToCRS.inverse(), bounds);
-                targetExtent = new GridExtent(bounds, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, targetExtent, null);
+                targetExtent = new GridExtent(bounds, false, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, targetExtent, null);
                 complete = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
                 isGeometryExplicit = true;
             }
@@ -501,13 +501,13 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             final MathTransform crsToGrid, final boolean center) throws TransformException
     {
         final MathTransform sourceToTarget = MathTransforms.concatenate(cornerToCRS, crsToGrid);
-        final GeneralEnvelope bounds = source.toEnvelope(sourceToTarget, sourceToTarget, null);
+        final GeneralEnvelope bounds = source.toEnvelope(sourceToTarget, false, sourceToTarget, null);
         if (center) {
             final double[] vector = new double[bounds.getDimension()];
             Arrays.fill(vector, 0.5);
             bounds.translate(vector);       // Convert cell centers to cell corners.
         }
-        return new GridExtent(bounds, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
+        return new GridExtent(bounds, false, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
     }
 
     /**
@@ -533,7 +533,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
              * If a dimension cannot be converted (e.g. because a `gridToCRS` transform has a NaN
              * factor in that dimension), the corresponding source grid coordinates will be copied.
              */
-            final GeneralEnvelope sourceBounds = sliceExtent.toEnvelope(toSourceCorner, toSourceCenter, null);
+            final GeneralEnvelope sourceBounds = sliceExtent.toEnvelope(toSourceCorner, false, toSourceCenter, null);
             final int dimension = sourceBounds.getDimension();
             if (sourceBounds.isEmpty()) {
                 final GridExtent se = source.gridGeometry.getExtent();
@@ -591,7 +591,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             final int[] margin = new int[dimension];
             margin[sourceDimX] = supportSizeX;
             margin[sourceDimY] = supportSizeY;
-            sourceExtent = new GridExtent(sourceBounds, GridRoundingMode.ENCLOSING, null, margin, null, null, null);
+            sourceExtent = new GridExtent(sourceBounds, false, GridRoundingMode.ENCLOSING, null, margin, null, null, null);
             /*
              * The transform inputs must be two-dimensional (outputs may be more flexible). If this is not the case,
              * try to extract a two-dimensional part operating only on the slice dimensions having an extent larger

@@ -36,6 +36,7 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.privy.RangeArgument;
 import org.apache.sis.image.privy.ColorModelFactory;
 import org.apache.sis.image.privy.ImageUtilities;
@@ -226,7 +227,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     /**
      * Returns {@code true} if the reader can load truncated tiles. Truncated tiles may happen in the
      * last row and last column of a tile matrix when the image size is not a multiple of the tile size.
-     * Some file formats, such as GeoTIFF, unconditionally stores full tiles, in which case this method
+     * Some file formats, such as GeoTIFF, unconditionally store full tiles, in which case this method
      * should return {@code false}. At the opposite, some implementations, such as <abbr>GDAL</abbr>,
      * accept only requests over the valid area, in which case this method should return {@code true}.
      *
@@ -412,7 +413,9 @@ check:  if (dataType.isInteger()) {
         /**
          * The area to read in unit of the full coverage (without subsampling).
          * This is the intersection between user-specified domain and enclosing
-         * {@link TiledGridResource} domain, expanded to an integer number of tiles.
+         * {@link TiledGridResource} domain, expanded to an integer number of chunks.
+         * A chunk size is usually a tile size, but not necessarily as there is other
+         * criteria to take in account such as "atom" size and subsampling.
          */
         final GridExtent readExtent;
 
@@ -558,11 +561,16 @@ check:  if (dataType.isInteger()) {
                  * Build the domain in units of subsampled pixels, and get the same extent (`readExtent`)
                  * without subsampling, i.e. in units of cells of the original grid resource.
                  */
-                final GridDerivation target = gridGeometry.derive().chunkSize(chunkSize)
+                final GridDerivation target = gridGeometry.derive()
+                            .pointsToInclude(PixelInCell.CELL_CENTER)       // For tight bounding box.
+                            .chunkSize(chunkSize)
                             .maximumSubsampling(maxSubsmp)
                             .rounding(GridRoundingMode.ENCLOSING)
                             .subgrid(domain);
-
+                /*
+                 * Post-condition: we could have put `assert gridGeometry.contains(domain)` below,
+                 * if it wasn't for the `chunkSize` argument which can make the result larger.
+                 */
                 domain     = target.build();
                 readExtent = target.getIntersection();
                 /*

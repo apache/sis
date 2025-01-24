@@ -350,7 +350,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
         final NumberFormat f = NumberFormat.getInstance();
         f.setMinimumFractionDigits(n);
         f.setMaximumFractionDigits(n);
-        final TableAppender table = new TableAppender("  ");
+        final var table = new TableAppender("  ");
         table.setCellAlignment(TableAppender.ALIGN_RIGHT);
         for (int level=0; level <= count; level++) {
             final double[] rs = resolutionSquared[level];

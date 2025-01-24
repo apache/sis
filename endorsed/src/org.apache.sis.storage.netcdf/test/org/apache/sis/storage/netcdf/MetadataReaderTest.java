@@ -133,8 +133,6 @@ public final class MetadataReaderTest extends TestCase {
             entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title", "NetCDF Classic and 64-bit Offset Format"),
             entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].party[0].name", "Open Geospatial Consortium"),
             entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR),
-            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.identifier[0].codeSpace", ucar ? "UCAR" : "SIS"),
-            entry("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.identifier[0].code", "NetCDF"),
 
             // Read from the file
             entry("dateInfo[0].date",                                                        actual(LocalDateTime.of(2018, 5, 15, 13, 1), ucar)),

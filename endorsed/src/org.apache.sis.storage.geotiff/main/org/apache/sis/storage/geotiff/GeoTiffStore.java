@@ -470,6 +470,20 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the paths to the files used by this GeoTIFF store.
+     * The fileset contains the path of the file given at construction time.
+     *
+     * @return files used by this resource, or an empty value if unknown.
+     * @throws DataStoreException if an error occurred while preparing the set of files.
+     *
+     * @since 1.5
+     */
+    @Override
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        return (path != null) ? Optional.of(new FileSet(path)) : Optional.empty();
+    }
+
+    /**
      * {@return the object to use for parsing and formatting dates}.
      */
     final DateFormat getDateFormat() {

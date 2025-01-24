@@ -220,7 +220,7 @@ public final class TreeTableFormatTest extends TestCase {
      * do not have translations in all tested languages.
      */
     private static void testLocalizedFormatInEnglishEnvironment() {
-        final DefaultInternationalString i18n = new DefaultInternationalString();
+        final var i18n = new DefaultInternationalString();
         i18n.add(Locale.ENGLISH,  "An English sentence");
         i18n.add(Locale.FRENCH,   "Une phrase en français");
         i18n.add(Locale.JAPANESE, "日本語の言葉");

@@ -236,7 +236,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     @Override
     public boolean equals(final Object object) {
         if (object instanceof DirectionAlongMeridian) {
-            final DirectionAlongMeridian that = (DirectionAlongMeridian) object;
+            final var that = (DirectionAlongMeridian) object;
             return baseDirection.equals(that.baseDirection) &&
                    Numerics.equals(meridian, that.meridian);
         }
@@ -263,7 +263,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     public String toString() {
         String name = baseDirection.name();
         final int length = name.length();
-        final StringBuilder buffer = new StringBuilder(length);
+        final var buffer = new StringBuilder(length);
         for (int i=0; i<length;) {
             final int c = name.codePointAt(i);
             buffer.appendCodePoint(i == 0 ? Character.toUpperCase(c) : Character.toLowerCase(c));

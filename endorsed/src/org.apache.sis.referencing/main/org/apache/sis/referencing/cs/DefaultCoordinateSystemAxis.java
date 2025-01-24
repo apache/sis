@@ -622,7 +622,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * only if the range meaning is "wraparound" for both axes, because only in such case a
          * coordinate operation may shift some coordinate values (typically ±360° on longitudes).
          */
-        final CoordinateSystemAxis that = (CoordinateSystemAxis) object;
+        final var that = (CoordinateSystemAxis) object;
         if (!equalsIgnoreMetadata(that, mode, this.getRangeMeaning() == RangeMeaning.WRAPAROUND &&
                                               that.getRangeMeaning() == RangeMeaning.WRAPAROUND))
         {
@@ -754,7 +754,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (!isWKT1) {
             final String a = formatter.getTransliterator().toLatinAbbreviation(cs, dir, getAbbreviation());
             if (a != null && !a.equals(name)) {
-                final StringBuilder buffer = new StringBuilder();
+                final var buffer = new StringBuilder();
                 if (name != null) {
                     buffer.append(name).append(' ');
                 }

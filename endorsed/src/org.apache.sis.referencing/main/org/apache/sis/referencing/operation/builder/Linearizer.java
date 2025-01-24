@@ -53,7 +53,8 @@ final class Linearizer {
      * for transforms that can be processed easily.</p>
      *
      * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
-     * @param  domain  domain of integer source coordinates for which to get a linear approximation.
+     * @param  domain     domain of integer source coordinates for which to get a linear approximation.
+     *                    Both lower and upper coordinate values are <em>inclusive</em>.
      * @return a linear approximation of given transform for the specified domain.
      * @throws FactoryException if the transform approximation cannot be computed.
      */
@@ -126,6 +127,10 @@ checkResidual:  if (grid instanceof ResidualGrid) {
     /**
      * Computes a linear approximation of the given transform. This is an expensive fallback used only
      * when we could not find an existing value by inspection of {@code gridToCRS} transform steps.
+     *
+     * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
+     * @param  domain     domain of integer source coordinates for which to get a linear approximation.
+     *                    Both lower and upper coordinate values are <em>inclusive</em>.
      */
     private static MathTransform compute(final MathTransform gridToCRS, final Envelope domain,
             final DatumShiftGrid<?,?> grid) throws TransformException, FactoryException
@@ -134,7 +139,7 @@ checkResidual:  if (grid instanceof ResidualGrid) {
         final double[] shift = new double[size.length];
         for (int i=0; i<size.length; i++) {
             double lower = Math.rint(domain.getMinimum(i));
-            double upper = Math.rint(domain.getMaximum(i));
+            double upper = Math.rint(domain.getMaximum(i)) + 1;     // Make exclusive.
             if (grid != null) {
                 final double h = grid.getGridSize(i);
                 if (upper > h) upper = h;
@@ -147,7 +152,7 @@ checkResidual:  if (grid instanceof ResidualGrid) {
             shift[i] = lower;
             size [i] = (int) span;
         }
-        final LinearTransformBuilder builder = new LinearTransformBuilder(size);
+        final var builder = new LinearTransformBuilder(size);
         final LinearTransform translate = MathTransforms.translation(shift);
         builder.setControlPoints(MathTransforms.concatenate(translate, gridToCRS));
         return MathTransforms.concatenate(translate.inverse(), builder.create(null));

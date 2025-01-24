@@ -33,7 +33,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.WritableAggregate;
@@ -211,12 +210,7 @@ class WritableStore extends WorldFileStore {
          * Make sure that the grid geometry starts at (0,0).
          * Must be done before to compare with existing grid.
          */
-        final GridExtent extent = gg.getExtent();
-        final long[] translation = new long[extent.getDimension()];
-        for (int i=0; i<translation.length; i++) {
-            translation[i] = Math.negateExact(extent.getLow(i));
-        }
-        gg = gg.shiftGrid(translation);
+        gg = gg.shiftGridToZeros();
         /*
          * If the data store already contains a coverage, then the given grid geometry
          * must be identical to the existing one, in which case there is nothing to do.

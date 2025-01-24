@@ -46,6 +46,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
@@ -59,6 +60,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.privy.AxisDirections;
@@ -105,10 +107,20 @@ public final class GeoEncoder {
     private final StoreListeners listeners;
 
     /**
-     * Overall configuration of the GeoTIFF file, or {@code null} if none.
+     * Overall description of the GeoTIFF file, or {@code null} if none.
      * This is the value to store in {@link GeoKeys#Citation}.
      */
     private String citation;
+
+    /**
+     * Whether the map projection is a pseudo-projection. The latter has no GeoTIFF code.
+     * Therefore, they need to be replaced by the non-pseudo variant with adjustments of
+     * object names and ellipsoid axis lengths.
+     *
+     * @see MapProjection#sourceOfPseudo()
+     * @see #writeEllipsoid(Ellipsoid)
+     */
+    private boolean isPseudoProjection;
 
     /**
      * The axis directions of the grid geometry, or {@code null} if none.
@@ -231,9 +243,10 @@ public final class GeoEncoder {
      * @throws IncompleteGridGeometryException if the grid geometry is incomplete.
      * @throws IncompatibleResourceException if the grid geometry cannot be encoded.
      */
-    public void write(final GridGeometry grid, final MetadataFetcher<?> metadata)
+    public void write(GridGeometry grid, final MetadataFetcher<?> metadata)
             throws FactoryException, TransformException, IncommensurableException, IncompatibleResourceException
     {
+        grid = grid.shiftGridToZeros();
         citation = CollectionsExt.first(metadata.transformationDimension);
         isPoint  = CollectionsExt.first(metadata.cellGeometry) == CellGeometry.POINT;
         final var anchor = isPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER;
@@ -259,7 +272,7 @@ public final class GeoEncoder {
             return;
         }
         final CoordinateReferenceSystem crs = horizontal.getCoordinateReferenceSystem();
-        axisDirections = CoordinateSystems.getAxisDirections(crs.getCoordinateSystem());
+        axisDirections = CoordinateSystems.getSimpleAxisDirections(crs.getCoordinateSystem());
         if (crs instanceof ProjectedCRS) {
             writeCRS((ProjectedCRS) crs);
         } else if (crs instanceof GeodeticCRS) {
@@ -278,8 +291,8 @@ public final class GeoEncoder {
         final VerticalCRS vertical = CRS.getVerticalComponent(fullCRS, true);
         if (vertical != null) {
             final CoordinateSystem cs = vertical.getCoordinateSystem();
-            final int vi = AxisDirections.indexOfColinear(fullCRS.getCoordinateSystem(), cs);
-            if (vi >= 0 && Arrays.binarySearch(dimensions, vi) < 0) {
+            final int verticalDimension = AxisDirections.indexOfColinear(fullCRS.getCoordinateSystem(), cs);
+            if (verticalDimension >= 0 && Arrays.binarySearch(dimensions, verticalDimension) < 0) {
                 writeCRS(vertical);
                 axisDirections = Arrays.copyOf(axisDirections, BIDIMENSIONAL+1);
                 axisDirections[BIDIMENSIONAL] = cs.getAxis(0).getDirection();
@@ -290,7 +303,7 @@ public final class GeoEncoder {
                         final int s;
                         switch (i) {
                             default:            s = dimensions[i];        break;    // Shear from horizontal dimensions.
-                            case BIDIMENSIONAL: s = vi;                   break;    // Scale from vertical dimension.
+                            case BIDIMENSIONAL: s = verticalDimension;    break;    // Scale from vertical dimension.
                             case MATRIX_SIZE-1: s = more.getNumCol() - 1; break;    // Translation.
                         }
                         // Copy the rows of the third dimension.
@@ -369,48 +382,82 @@ public final class GeoEncoder {
             throw unsupportedType(cs);
         }
         /*
-         * Start writing GeoTIFF keys for the geodetic CRS, potentially followed by datum, prime meridian and ellipsoid
-         * in that order. The order matter because GeoTIFF specification requires keys to be sorted in increasing order.
-         * A difficulty is that units of measurement are between prime meridian and ellipsoid, and the angular unit is
-         * needed for projected CRS too.
+         * Start writing GeoTIFF keys for the geodetic CRS, potentially
          */
         writeModelType(isBaseCRS ? GeoCodes.ModelTypeProjected : type);
         if (writeEPSG(GeoKeys.GeodeticCRS, crs)) {
-            writeName(GeoKeys.GeodeticCitation, "GCS Name", crs);
-            final GeodeticDatum  datum = PseudoDatum.of(crs);
-            if (writeEPSG(GeoKeys.GeodeticDatum, datum)) {
-                appendName(WKTKeywords.Datum, datum);
-                final PrimeMeridian primem = datum.getPrimeMeridian();
-                final double longitude;
-                if (writeEPSG(GeoKeys.PrimeMeridian, primem)) {
-                    appendName(WKTKeywords.PrimeM, datum);
-                    longitude = primem.getGreenwichLongitude();
-                } else {
-                    longitude = 0;                                      // Means "do not write prime meridian".
-                }
-                final Ellipsoid     ellipsoid  = datum.getEllipsoid();
-                final Unit<Length>  axisUnit   = ellipsoid.getAxisUnit();
-                final Unit<?>       linearUnit = units.putIfAbsent(UnitKey.LINEAR, axisUnit);
-                final UnitConverter toLinear   = axisUnit.getConverterToAny(linearUnit != null ? linearUnit : axisUnit);
-                writeUnit(UnitKey.LINEAR);     // Must be after the `units` map have been updated.
-                writeUnit(UnitKey.ANGULAR);
-                if (writeEPSG(GeoKeys.Ellipsoid, ellipsoid)) {
-                    appendName(WKTKeywords.Ellipsoid, ellipsoid);
-                    writeDouble(GeoKeys.SemiMajorAxis, toLinear.convert(ellipsoid.getSemiMajorAxis()));
-                    if (ellipsoid.isSphere() || !ellipsoid.isIvfDefinitive()) {
-                        writeDouble(GeoKeys.SemiMinorAxis, toLinear.convert(ellipsoid.getSemiMinorAxis()));
-                    } else {
-                        writeDouble(GeoKeys.InvFlattening, ellipsoid.getInverseFlattening());
-                    }
-                }
-                if (longitude != 0) {
-                    Unit<Angle> unit = primem.getAngularUnit();
-                    UnitConverter c = unit.getConverterToAny(units.getOrDefault(UnitKey.ANGULAR, Units.DEGREE));
-                    writeDouble(GeoKeys.PrimeMeridianLongitude, c.convert(longitude));
-                }
-            }
+            writeName(GeoKeys.GeodeticCitation, "GCS Name", isPseudoProjection ? null : crs);
+            writeDatum(PseudoDatum.of(crs));
         } else if (isBaseCRS) {
             writeUnit(UnitKey.ANGULAR);         // Map projection parameters may need this unit.
+        }
+    }
+
+    /**
+     * Writes entries for the geodetic datum, followed by prime meridian and ellipsoid in that order.
+     * The order matter because GeoTIFF specification requires keys to be sorted in increasing order.
+     * A difficulty is that units of measurement are between prime meridian and ellipsoid,
+     * and the angular unit is needed for projected CRS too.
+     * This is handled by storing units in the {@link #units} map.
+     *
+     * @param  datum  the datum to write.
+     * @throws FactoryException if an error occurred while fetching an EPSG code.
+     * @throws IncommensurableException if a measure uses an unexpected unit of measurement.
+     * @throws IncompatibleResourceException if the datum has an incompatible property.
+     */
+    private void writeDatum(final GeodeticDatum datum)
+            throws FactoryException, IncommensurableException, IncompatibleResourceException
+    {
+        if (writeEPSG(GeoKeys.GeodeticDatum, datum)) {
+            appendName(WKTKeywords.Datum, datum);
+            final boolean previous = disableEPSG;
+            disableEPSG &= !isPseudoProjection;     // Re-enable the use of EPSG codes for the prime meridian.
+
+            double longitude = 0;   // Means "do not write prime meridian".
+            final PrimeMeridian primem = datum.getPrimeMeridian();
+            if (writeEPSG(GeoKeys.PrimeMeridian, primem)) {
+                appendName(WKTKeywords.PrimeM, datum);
+                longitude = primem.getGreenwichLongitude();
+            }
+            disableEPSG = previous;
+            writeEllipsoid(datum.getEllipsoid());
+            if (longitude != 0) {
+                Unit<Angle> unit = primem.getAngularUnit();
+                UnitConverter c = unit.getConverterToAny(units.getOrDefault(UnitKey.ANGULAR, Units.DEGREE));
+                writeDouble(GeoKeys.PrimeMeridianLongitude, c.convert(longitude));
+            }
+        }
+    }
+
+    /**
+     * Writes the effective ellipsoid. "Effective" means that if a pseudo-projection is used,
+     * then the calculation uses a semi-minor axis length equals to the semi-major axis length.
+     *
+     * @param  ellipsoid  the ellipsoid to write.
+     * @throws FactoryException if an error occurred while fetching an EPSG code.
+     * @throws IncommensurableException if a measure uses an unexpected unit of measurement.
+     * @throws IncompatibleResourceException if the ellipsoid has an incompatible property.
+     */
+    private void writeEllipsoid(final Ellipsoid ellipsoid)
+            throws FactoryException, IncommensurableException, IncompatibleResourceException
+    {
+        final Unit<Length>  axisUnit   = ellipsoid.getAxisUnit();
+        final Unit<?>       linearUnit = units.putIfAbsent(UnitKey.LINEAR, axisUnit);
+        final UnitConverter toLinear   = axisUnit.getConverterToAny(linearUnit != null ? linearUnit : axisUnit);
+        writeUnit(UnitKey.LINEAR);     // Must be after the `units` map has been updated.
+        writeUnit(UnitKey.ANGULAR);
+        if (writeEPSG(GeoKeys.Ellipsoid, ellipsoid)) {
+            appendName(WKTKeywords.Ellipsoid, ellipsoid);
+            double axisLength = toLinear.convert(ellipsoid.getSemiMajorAxis());
+            writeDouble(GeoKeys.SemiMajorAxis, axisLength);
+            if (!isPseudoProjection) {
+                if (ellipsoid.isIvfDefinitive() && !ellipsoid.isSphere()) {
+                    writeDouble(GeoKeys.InvFlattening, ellipsoid.getInverseFlattening());
+                    return;
+                }
+                axisLength = toLinear.convert(ellipsoid.getSemiMinorAxis());
+            }
+            writeDouble(GeoKeys.SemiMinorAxis, axisLength);
         }
     }
 
@@ -426,13 +473,23 @@ public final class GeoEncoder {
     private boolean writeCRS(final ProjectedCRS crs)
             throws FactoryException, IncommensurableException, IncompatibleResourceException
     {
+        final boolean previous = disableEPSG;
+        final Conversion projection = crs.getConversionFromBase();
+        OperationMethod method = projection.getMethod();
+        if (method instanceof MapProjection) {
+            isPseudoProjection = !method.equals(method = ((MapProjection) method).sourceOfPseudo());
+            disableEPSG = isPseudoProjection;
+        }
+        /*
+         * Write the base CRS only after `isPseudoProjection` has been determined,
+         * because it changes the way to write the datum and the ellipsoid.
+         */
         writeCRS(crs.getBaseCRS(), true);
+        disableEPSG = previous;
         if (writeEPSG(GeoKeys.ProjectedCRS, crs)) {
             writeName(GeoKeys.ProjectedCitation, null, crs);
             addUnits(UnitKey.PROJECTED, crs.getCoordinateSystem());
-            final Conversion projection = crs.getConversionFromBase();
             if (writeEPSG(GeoKeys.Projection, projection)) {
-                final var method = projection.getMethod();
                 final short projCode = getGeoCode(0, method);
                 writeShort(GeoKeys.ProjMethod, projCode);
                 writeUnit(UnitKey.PROJECTED);
@@ -527,7 +584,7 @@ public final class GeoEncoder {
      *
      * @param  key     the numeric identifier of the GeoTIFF key.
      * @param  type    type of object for which to write the name, or {@code null} for no multiple-names citation.
-     * @param  object  the object for which to write the name.
+     * @param  object  the object for which to write the name, or {@code null} for an unnamed object.
      */
     private void writeName(final short key, final String type, final IdentifiedObject object) {
         String name = IdentifiedObjects.getName(object, null);
@@ -548,6 +605,15 @@ public final class GeoEncoder {
      * @param  object  the object for which to write the name.
      */
     private void appendName(final String type, final IdentifiedObject object) {
+        if (isPseudoProjection) {
+            /*
+             * The caller is writing a "Pseudo-Mercator" or "Pseudo-Sinusoidal" projection
+             * using the standard variant ("Mercator" or "Sinusoidal") but with a modified
+             * semi-minor axis length. Therefore, the ellipsoid name is no longer correct,
+             * and by consequence the datum name neither.
+             */
+            return;
+        }
         final String name = IdentifiedObjects.getName(object, null);
         if (name != null) {
             int i      = citationLengthIndex;

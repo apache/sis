@@ -171,7 +171,7 @@ final class SampleRangeFormat extends RangeFormat {
      * @return the range to write, or {@code null} if the given {@code range} argument was null.
      */
     private String formatMeasure(final Range<?> range) {
-        final NumberFormat nf = (NumberFormat) elementFormat;
+        final var nf  = (NumberFormat) elementFormat;
         final int min = nf.getMinimumFractionDigits();
         final int max = nf.getMaximumFractionDigits();
         final int ndigits = numFractionDigits[currentIndex];
@@ -206,8 +206,8 @@ final class SampleRangeFormat extends RangeFormat {
         /*
          * Write table header: │ Values │ Measures │ name │
          */
-        final StringBuilder buffer = new StringBuilder(800);
-        final TableAppender table = new TableAppender(buffer, " │ ");
+        final var buffer = new StringBuilder(800);
+        final var table = new TableAppender(buffer, " │ ");
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
         table.setCellAlignment(TableAppender.ALIGN_CENTER);

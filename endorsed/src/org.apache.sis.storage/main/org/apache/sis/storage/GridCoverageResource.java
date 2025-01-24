@@ -143,7 +143,7 @@ public interface GridCoverageResource extends DataSet {
      * are <em>not</em> constrained to the resolutions returned by this method. Those resolutions are only hints
      * about resolution values where read operations are likely to be more efficient.</p>
      *
-     * @return preferred resolutions for read operations in this data store, or an empty array if none.
+     * @return preferred resolutions for read operations in this data store, or an empty list if none.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      *
      * @see GridGeometry#getResolution(boolean)
@@ -205,7 +205,7 @@ public interface GridCoverageResource extends DataSet {
      * then this method will try to return a grid coverage matching the given grid geometry on a best-effort basis;
      * the coverage actually returned may have a different resolution, cover a different area in a different CRS,
      * <i>etc</i>. The general contract is that the returned coverage should not contain less data than a coverage
-     * matching exactly the given geometry.
+     * matching exactly the given geometry, ignoring the areas outside the resource domain.
      *
      * <p>The returned coverage shall contain the exact set of sample dimensions specified by the {@code range} argument,
      * in the specified order (the "best-effort basis" flexibility applies only to the grid geometry, not to the ranges).

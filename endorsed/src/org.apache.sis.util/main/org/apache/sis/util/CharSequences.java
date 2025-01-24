@@ -209,7 +209,7 @@ public final class CharSequences extends Static {
         if (text instanceof StringBuilder) return ((StringBuilder) text).codePointCount(fromIndex, toIndex);
         if (text instanceof StringBuffer)  return ((StringBuffer)  text).codePointCount(fromIndex, toIndex);
         if (text instanceof CharBuffer) {
-            final CharBuffer buffer = (CharBuffer) text;
+            final var buffer = (CharBuffer) text;
             if (buffer.hasArray() && !buffer.isReadOnly()) {
                 final int position = buffer.position();
                 return Character.codePointCount(buffer.array(), position + fromIndex, position + toIndex);
@@ -259,7 +259,7 @@ public final class CharSequences extends Static {
         int n = 0;
         if (text != null) {
             if (text instanceof String) {
-                final String s = (String) text;
+                final var s = (String) text;
                 for (int i=s.indexOf(toSearch); ++i != 0; i=s.indexOf(toSearch, i)) {
                     n++;
                 }
@@ -1039,7 +1039,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
                      * (a more efficient approach would be to perform bulk appends). However, we presume
                      * that this block will be rarely executed, so it is not worth to optimize it.
                      */
-                    final StringBuilder buffer = new StringBuilder(length - n).append(text, 0, i);
+                    final var buffer = new StringBuilder(length - n).append(text, 0, i);
                     while ((i += n) < length) {
                         c = codePointAt(text, i);
                         n = Character.charCount(c);
@@ -1218,7 +1218,7 @@ searchWordBreak:    while (true) {
         if (identifier == null) {
             return null;
         }
-        final StringBuilder buffer = new StringBuilder(identifier.length());
+        final var buffer = new StringBuilder(identifier.length());
         final int length = identifier.length();
         for (int i=0; i<length;) {
             int c = codePointAt(identifier, i);
@@ -1320,7 +1320,7 @@ searchWordBreak:    while (true) {
          * this method to unconditionally returns a new StringBuilder.
          */
         final int length = identifier.length();
-        final StringBuilder buffer = new StringBuilder(length + 8);
+        final var buffer = new StringBuilder(length + 8);
         final int lastIndex = (length != 0) ? length - charCount(codePointBefore(identifier, length)) : 0;
         int last = 0;
         for (int i=1; i<=length;) {
@@ -1379,7 +1379,7 @@ searchWordBreak:    while (true) {
         text = trimWhitespaces(text);
         if (text != null && !isAcronym(text)) {
             final int length = text.length();
-            final StringBuilder buffer = new StringBuilder(8);              // Acronyms are usually short.
+            final var buffer = new StringBuilder(8);        // Acronyms are usually short.
             boolean wantChar = true;
             for (int i=0; i<length;) {
                 final int c = codePointAt(text, i);
@@ -2106,7 +2106,7 @@ cmp:    while (ia < lga) {
          * All special cases have been examined. Return the concatenation of (possibly shortened)
          * common prefix and suffix.
          */
-        final StringBuilder buffer = new StringBuilder(prefixLength + suffixLength).append(prefix);
+        final var buffer = new StringBuilder(prefixLength + suffixLength).append(prefix);
         final int c1 = codePointBefore(prefix, prefixLength);
         final int c2 = codePointAt(suffix, suffixStart);
         if (isLetterOrDigit(c1) && isLetterOrDigit(c2)) {
@@ -2232,7 +2232,7 @@ cmp:    while (ia < lga) {
             if (i >= 0) {
                 int p = 0;
                 final int sl = toSearch.length();
-                final StringBuilder buffer = new StringBuilder(length + (replaceBy.length() - sl));
+                final var buffer = new StringBuilder(length + (replaceBy.length() - sl));
                 do {
                     buffer.append(text, p, i).append(replaceBy);
                     i = indexOf(text, toSearch, p = i + sl, length);

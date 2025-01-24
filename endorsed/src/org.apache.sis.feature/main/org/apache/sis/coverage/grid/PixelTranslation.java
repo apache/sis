@@ -196,6 +196,26 @@ public final class PixelTranslation extends Static implements Serializable {
 
     /**
      * Converts a math transform from a "pixel in cell" convention to another "pixel in cell" convention.
+     * The given transform is from the grid coordinates of a {@link GridGeometry} to the grid coordinates
+     * of another {@code GridGeometry}.
+     *
+     * @param  gridToGrid  the transform from a grid geometry to another grid geometry.
+     * @param  current     the pixel in cell convention of the given {@code gridToCRS} transform.
+     * @param  desired     the pixel in cell convention of the desired transform.
+     * @return the "grid to grid" transform using the new convention, or {@code null} if {@code gridToGrid} was null.
+     */
+    static MathTransform translateGridToGrid(MathTransform gridToGrid, final PixelInCell current, final PixelInCell desired) {
+        final double offset = desired.translationFromCentre - current.translationFromCentre;
+        if (offset != 0) {
+            gridToGrid = MathTransforms.concatenate(
+                    MathTransforms.uniformTranslation(gridToGrid.getSourceDimensions(),  offset), gridToGrid,
+                    MathTransforms.uniformTranslation(gridToGrid.getTargetDimensions(), -offset));
+        }
+        return gridToGrid;
+    }
+
+    /**
+     * Converts a math transform from a "pixel in cell" convention to another "pixel in cell" convention.
      * This method concatenates −½, 0 or +½ translations on <em>all</em> dimensions before the given transform.
      * If the two given conventions are the same, then this method returns the given transform unchanged.
      *
@@ -212,9 +232,9 @@ public final class PixelTranslation extends Static implements Serializable {
      * by +½, because the grid coordinates (0,0) relative to cell center is (½,½) relative to cell corner.
      *
      * @param  gridToCRS  a math transform from pixel coordinates to any CRS, or {@code null}.
-     * @param  current    the pixel orientation of the given {@code gridToCRS} transform.
-     * @param  desired    the pixel orientation of the desired transform.
-     * @return the translation from {@code current} to {@code desired}, or {@code null} if {@code gridToCRS} was null.
+     * @param  current    the pixel in cell convention of the given {@code gridToCRS} transform.
+     * @param  desired    the pixel in cell convention of the desired transform.
+     * @return the "grid to CRS" transform using the new convention, or {@code null} if {@code gridToCRS} was null.
      * @throws IllegalArgumentException if {@code current} or {@code desired} is not a known code list value.
      */
     public static MathTransform translate(final MathTransform gridToCRS, final PixelInCell current, final PixelInCell desired) {
@@ -263,7 +283,7 @@ public final class PixelTranslation extends Static implements Serializable {
      * @param  desired     the pixel orientation of the desired transform.
      * @param  xDimension  the dimension of <var>x</var> coordinates (pixel columns). Often 0.
      * @param  yDimension  the dimension of <var>y</var> coordinates (pixel rows). Often 1.
-     * @return the translation from {@code current} to {@code desired}, or {@code null} if {@code gridToCRS} was null.
+     * @return the "grid to CRS" transform using the new convention, or {@code null} if {@code gridToCRS} was null.
      * @throws IllegalArgumentException if {@code current} or {@code desired} is not a known code list value.
      */
     public static MathTransform translate(final MathTransform gridToCRS,

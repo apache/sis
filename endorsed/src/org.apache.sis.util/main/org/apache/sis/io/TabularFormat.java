@@ -45,7 +45,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p><b>Formatting table without border:</b></p>
  * {@snippet lang="java" :
- *     TableAppender table = new TableAppender(out, "");
+ *     var table = new TableAppender(out, "");
  *     // ... do some work, then add a column separator:
  *     table.append(beforeFill);
  *     table.nextColumn(fillCharacter);
@@ -54,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p><b>Formatting table with a border:</b></p>
  * {@snippet lang="java" :
- *     TableAppender table = new TableAppender(out, columnSeparator);
+ *     var table = new TableAppender(out, columnSeparator);
  *     // ... do some work, then add a column separator:
  *     table.append(beforeFill);
  *     table.nextColumn(fillCharacter);
@@ -168,7 +168,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * @return the pattern of the current column separator.
      */
     public String getColumnSeparatorPattern() {
-        final StringBuilder buffer = new StringBuilder(8);
+        final var buffer = new StringBuilder(8);
         buffer.append(beforeFill).append('\uFFFF').append(columnSeparator);
         StringBuilders.replace(buffer, "\\", "\\\\");
         StringBuilders.replace(buffer, "?",  "\\?");
@@ -229,7 +229,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     public void setColumnSeparatorPattern(final String pattern) throws IllegalArgumentException {
         ArgumentChecks.ensureNonEmpty("pattern", pattern);
         final int length = pattern.length();
-        final StringBuilder buffer = new StringBuilder(length);
+        final var buffer = new StringBuilder(length);
         boolean escape  = false;
         boolean trim    = false;
         String  prefix  = null;
@@ -317,7 +317,7 @@ scan:   for (int i=0; i<length; i++) {
      */
     protected Matcher getColumnSeparatorMatcher(final CharSequence text) {
         if (parsePattern == null) {
-            final StringBuilder pattern = new StringBuilder(beforeFill).append(fillCharacter);
+            final var pattern = new StringBuilder(beforeFill).append(fillCharacter);
             String tmp = pattern.toString();
             pattern.setLength(0);
             pattern.append(Pattern.quote(tmp)).append('*');

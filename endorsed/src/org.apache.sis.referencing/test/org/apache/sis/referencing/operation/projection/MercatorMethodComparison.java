@@ -166,10 +166,10 @@ public final class MercatorMethodComparison {
      * optionally with a comparison with {@link ConformalProjection}.
      */
     private void compare(final int numSamples, final TableAppender summarize) throws ProjectionException {
-        final Statistics iterativeMethodErrors = new Statistics("Iterative method error");
-        final Statistics seriesExpansionErrors = new Statistics("Series expansion error");
-        final Statistics implementationErrors  = new Statistics("Implementation error");
-        final Random random = new Random();
+        final var iterativeMethodErrors = new Statistics("Iterative method error");
+        final var seriesExpansionErrors = new Statistics("Series expansion error");
+        final var implementationErrors  = new Statistics("Implementation error");
+        final var random = new Random();
         for (int i=0; i<numSamples; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
             final double t = 1 / expΨ(φ);
@@ -227,7 +227,7 @@ public final class MercatorMethodComparison {
      * @throws ProjectionException if an error occurred in {@link ConformalProjection#φ(double)}.
      */
     public static void printErrorForExcentricities(final double min, final double max) throws ProjectionException {
-        final TableAppender table = new TableAppender(out);
+        final var table = new TableAppender(out);
         table.appendHorizontalSeparator();
         table.append("Eccentricity");            table.nextColumn();
         table.append("Mean iterative error");    table.nextColumn();

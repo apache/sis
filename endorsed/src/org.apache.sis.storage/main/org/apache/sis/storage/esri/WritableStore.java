@@ -211,6 +211,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
              * "NaN" because the default is -9999, and we need to overwrite that default if it cannot be used.
              */
             final ChannelDataOutput out = (output != null) ? output : h.channel(input().input);
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Number nodataValue = setCoverage(coverage, data, band);
             header.put(NODATA_VALUE, nodataValue);
             writeHeader(header, out);

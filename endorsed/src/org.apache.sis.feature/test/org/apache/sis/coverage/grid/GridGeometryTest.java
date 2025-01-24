@@ -287,7 +287,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testNonLinear() {
-        final GridExtent extent = new GridExtent(
+        final var extent = new GridExtent(
                 new DimensionNameType[] {
                     DimensionNameType.COLUMN,
                     DimensionNameType.ROW,
@@ -317,7 +317,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testFromGeospatialEnvelope() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
         final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
@@ -352,7 +352,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testFromExtentAndEnvelope() {
-        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
         aoi.setRange(0,  40, 55);
         aoi.setRange(1, -10, 70);
         final GridExtent extent = new GridExtent(null,
@@ -411,7 +411,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testFromExtentAndDisplayEnvelope() {
-        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        final var aoi = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         aoi.setRange(1,  40, 55);
         aoi.setRange(0, -10, 70);
         final GridExtent extent = new GridExtent(null,
@@ -495,7 +495,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testGetEnvelope() throws TransformException {
-        GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(12, 18),
                 PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
@@ -555,6 +555,7 @@ public final class GridGeometryTest extends TestCase {
 
     /**
      * Tests {@link GridGeometry#shiftGrid(long[])}.
+     * Also opportunistically tests the closely-related {@link GridGeometry#shiftGridToZeros()} method.
      */
     @Test
     public void testShiftGrid() {
@@ -569,10 +570,17 @@ public final class GridGeometryTest extends TestCase {
         /*
          * The "real world" envelope should be unchanged by grid translation.
          */
+        assertSame(grid, grid.shiftGridToZeros());
         final Envelope envelope = grid.getEnvelope();
-        grid = grid.shiftGrid(12, 15);
-        assertExtentEquals(new long[] {12, 15}, new long[] {12 + 16, 15 + 9}, grid.getExtent());
-        assertEquals(envelope, grid.getEnvelope());
+        GridGeometry shifted = grid.shiftGrid(12, 15);
+        assertExtentEquals(new long[] {12, 15}, new long[] {12 + 16, 15 + 9}, shifted.getExtent());
+        assertEquals(envelope, shifted.getEnvelope());
+        /*
+         * Shift back to zero.
+         */
+        assertNotEquals(grid, shifted);
+        shifted = shifted.shiftGridToZeros();
+        assertEquals(grid, shifted);
     }
 
     /**
@@ -582,7 +590,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testRelocate() throws TransformException {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(10, 10),
                 PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
@@ -609,7 +617,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testSelectDimensions() {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
                 PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
                         0,   0.5, 0,  -90,
@@ -657,7 +665,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testRemoveScalelessDimension() {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
                 PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
                         0,   0.5, 0,  -90,
@@ -700,7 +708,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testConcatenate() throws FactoryException {
-        final GridGeometry lower = new GridGeometry(
+        final var lower = new GridGeometry(
                 new GridExtent(null, null, new long[] {17, 10}, true),
                 PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix3(
@@ -709,7 +717,7 @@ public final class GridGeometryTest extends TestCase {
                     0,   0,   1)),
                 HardCodedCRS.WGS84);
 
-        final GridGeometry upper = new GridGeometry(
+        final var upper = new GridGeometry(
                 new GridExtent(null, null, new long[] {4}, true),
                 PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix2(
@@ -717,7 +725,7 @@ public final class GridGeometryTest extends TestCase {
                     0,  1)),
                 HardCodedCRS.TIME);
 
-        final GridGeometry expected = new GridGeometry(
+        final var expected = new GridGeometry(
                 new GridExtent(null, null, new long[] {17, 10, 4}, true),
                 PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix4(
@@ -727,7 +735,7 @@ public final class GridGeometryTest extends TestCase {
                     0,   0,  0,  1)),
                 HardCodedCRS.WGS84_WITH_TIME);
 
-        final GridGeometry actual = new GridGeometry(lower, upper);
+        final var actual = new GridGeometry(lower, upper);
         assertTrue(actual.equals(expected, ComparisonMode.DEBUG));
     }
 
@@ -736,7 +744,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testCreateImageCRS() {
-        final GridGeometry gg = new GridGeometry(
+        final var gg = new GridGeometry(
                 new GridExtent(null, null, new long[] {17, 10, 4}, true),
                 PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix4(
@@ -763,7 +771,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testCreateTransformTo() throws TransformException {
-        final GridGeometry source = new GridGeometry(
+        final var source = new GridGeometry(
                 new GridExtent(17, 10),
                 PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix3(
@@ -772,7 +780,7 @@ public final class GridGeometryTest extends TestCase {
                     0,   0,   1)),
                 HardCodedCRS.WGS84);
 
-        final GridGeometry target = new GridGeometry(
+        final var target = new GridGeometry(
                 new GridExtent(200, 300),
                 PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix3(
@@ -786,5 +794,48 @@ public final class GridGeometryTest extends TestCase {
                                       10,   0,  10,
                                        0,   0,   1),
                 MathTransforms.getMatrix(tr), STRICT, "createTransformTo");
+    }
+
+    /**
+     * Tests {@link GridGeometry#contains(GridGeometry)} and {@link GridGeometry#intersects(GridGeometry)}.
+     */
+    @Test
+    public void testContainsAndIntersects() {
+        final var outer = new GridGeometry(
+                new GridExtent(17, 10),
+                PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                    1,   0,  -7,
+                    0,  -1,  50,
+                    0,   0,   1)),
+                HardCodedCRS.WGS84);
+
+        final var inner = new GridGeometry(
+                new GridExtent(7, 4),
+                PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                    0,  -2,  50,
+                    2,   0,  -7,
+                    0,   0,   1)),
+                HardCodedCRS.WGS84_LATITUDE_FIRST);
+
+        final var other = new GridGeometry(
+                new GridExtent(17, 10),
+                PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                    1,   0,  -7,
+                    0,  -1,  80,
+                    0,   0,   1)),
+                HardCodedCRS.WGS84);
+
+        assertTrue (outer.contains(inner));
+        assertFalse(inner.contains(outer));
+        assertFalse(inner.contains(other));
+        assertFalse(outer.contains(other));
+
+        assertTrue (outer.intersects(inner));
+        assertTrue (inner.intersects(outer));
+        assertFalse(inner.intersects(other));
+        assertFalse(outer.intersects(other));
     }
 }
