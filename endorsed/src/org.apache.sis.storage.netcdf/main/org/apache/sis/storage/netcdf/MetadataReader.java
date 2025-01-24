@@ -219,7 +219,7 @@ final class MetadataReader extends MetadataBuilder {
         if (value == null) {
             return List.of();
         }
-        final List<String> items = new ArrayList<>();
+        final var items = new ArrayList<String>();
         int start = 0;      // Index of the first character of the next item to add in the list.
         int end;            // Index after the last character of the next item to add in the list.
         int next;           // Index of the next separator (comma) after `end`.

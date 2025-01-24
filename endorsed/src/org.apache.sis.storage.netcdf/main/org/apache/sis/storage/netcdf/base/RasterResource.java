@@ -211,10 +211,10 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      */
     public static List<Resource> create(final Decoder decoder, final DataStore lock) throws IOException, DataStoreException {
         assert Thread.holdsLock(lock);
-        final Variable[]     variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
-        final List<Variable> siblings  = new ArrayList<>(4);                    // Usually has only 1 element, sometimes 2.
-        final List<Resource> resources = new ArrayList<>(variables.length);     // The raster resources to be returned.
-        final Map<GenericName,List<RasterResource>> byName = new HashMap<>();   // For detecting name collisions.
+        final Variable[] variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
+        final var siblings  = new ArrayList<Variable>(4);                   // Usually has only 1 element, sometimes 2.
+        final var resources = new ArrayList<Resource>(variables.length);    // The raster resources to be returned.
+        final var byName = new HashMap<GenericName,List<RasterResource>>(); // For detecting name collisions.
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
             if (!VariableRole.isCoverage(variable)) {
@@ -316,7 +316,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
                 }
                 numBands = siblings.size();
             }
-            final RasterResource r = new RasterResource(decoder, name.trim(), grid, siblings, numBands, bandDimension, lock);
+            final var r = new RasterResource(decoder, name.trim(), grid, siblings, numBands, bandDimension, lock);
             r.addToNameMap(byName);
             resources.add(r);
             siblings.clear();
@@ -392,7 +392,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
-        final MetadataBuilder metadata = new MetadataBuilder();
+        final var metadata = new MetadataBuilder();
         String title = null;
         for (final Variable v : data) {
             title = (String) CharSequences.commonWords(title, v.getDescription());
@@ -642,7 +642,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
          */
         final GridGeometry targetDomain;
         final DataBuffer imageBuffer;
-        final SampleDimension[] bands = new SampleDimension[rangeIndices.getNumBands()];
+        final var bands = new SampleDimension[rangeIndices.getNumBands()];
         int[] bandOffsets = null;                                                   // By default, all bands start at index 0.
         try {
             final GridDerivation targetGeometry = gridGeometry.derive()
