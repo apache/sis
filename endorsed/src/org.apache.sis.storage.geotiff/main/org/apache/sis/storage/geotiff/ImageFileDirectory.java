@@ -1000,7 +1000,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case (short) TAG_COPYRIGHT: {
                 for (final String value : type.readAsStrings(input(), count, encoding())) {
-                    metadata.parseLegalNotice(value);
+                    metadata.parseLegalNotice(null, value);
                 }
                 break;
             }

@@ -43,7 +43,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * <p>For example, the following code:</p>
  *
  * {@snippet lang="java" :
- *     TableAppender table = new TableAppender(System.out);
+ *     var table = new TableAppender(System.out);
  *     table.nextLine('═');
  *     table.append("English\tFrench\tr.e.d.\n");
  *     table.nextLine('-');
@@ -702,9 +702,10 @@ public class TableAppender extends Appender implements Flushable {
      * repeated.
      */
     private void writeTable() throws IOException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String columnSeparator = this.columnSeparator;
-        final Cell[]     currentLine = new Cell[maximalColumnWidths.length];
-        final int          cellCount = cells.size();
+        final Cell[] currentLine     = new Cell[maximalColumnWidths.length];
+        final int    cellCount       = cells.size();
         for (int cellIndex=0; cellIndex<cellCount; cellIndex++) {
             /*
              * Copies in `currentLine` every cells to write in the current table row.

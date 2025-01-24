@@ -44,6 +44,7 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -394,8 +395,10 @@ public class GridGeometry implements LenientComparable, Serializable {
          */
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         ImmutableEnvelope envelope = other.envelope;            // We will share the same instance if possible.
-        ImmutableEnvelope computed = computeEnvelope(gridToCRS, getCoordinateReferenceSystem(envelope),
-                                                     toOther == null ? null : envelope);       // Clip.
+        ImmutableEnvelope computed = computeEnvelope(
+                gridToCRS,
+                getCoordinateReferenceSystem(envelope),
+                toOther == null ? null : envelope);             // Clip.
         if (computed == null || !computed.equals(envelope)) {
             envelope = computed;
         }
@@ -478,7 +481,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     {
         final GeneralEnvelope env;
         if (extent != null && cornerToCRS != null) {
-            env = extent.toEnvelope(cornerToCRS, specified, limits);
+            env = extent.toEnvelope(cornerToCRS, false, specified, limits);
             env.setCoordinateReferenceSystem(crs);
             if (limits != null) {
                 env.intersect(limits);
@@ -544,8 +547,8 @@ public class GridGeometry implements LenientComparable, Serializable {
             GeneralEnvelope env;
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
-                extent = new GridExtent(env, rounding, GridClippingMode.STRICT, null, null, null, null);
-                env = extent.toEnvelope(cornerToCRS, gridToCRS, envelope);
+                extent = new GridExtent(env, false, rounding, GridClippingMode.STRICT, null, null, null, null);
+                env = extent.toEnvelope(cornerToCRS, false, gridToCRS, envelope);
                 // Use `gridToCRS` specified by the user, not `this.gridToCRS`.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");
@@ -1072,7 +1075,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                 clip = null;
             }
             MathTransform tr = MathTransforms.concatenate(cornerToCRS, op.getMathTransform());
-            final GeneralEnvelope env = extent.toEnvelope(tr, tr, clip);
+            final GeneralEnvelope env = extent.toEnvelope(tr, false, tr, clip);
             env.setCoordinateReferenceSystem(op.getTargetCRS());
             env.normalize();
             if (clip != null) {
@@ -1615,7 +1618,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  translation  translation to apply on each grid axis in order.
      * @return a grid geometry whose coordinates (both low and high ones) and
-     *         the "grid to CRS" transforms have been translated by given amounts.
+     *         the "grid to CRS" transforms have been translated by given numbers.
      *         If the given translation is a no-op (no value or only 0 ones), then this grid is returned as is.
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
@@ -1623,11 +1626,29 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @since 1.3
      */
-    public GridGeometry shiftGrid(final long... translation) {
+    public final GridGeometry shiftGrid(final long... translation) {
+        return shiftGrid(translation, false);
+    }
+
+    /**
+     * Translates grid coordinates by the given number of cells, optionally in the reverse direction.
+     * Invoking this method is equivalent to invoking {@link #shiftGrid(long...)}, except that this method
+     * use the negative values of the given translation terms if the {@code negate} argument is {@code true}.
+     *
+     * @param  translation  translation to apply on each grid axis in order. Can be an array of any length.
+     * @param  negate       whether to use the negative values of the given translation terms.
+     * @return a grid geometry whose coordinates (both low and high ones) and
+     *         the "grid to CRS" transforms have been translated by given numbers.
+     *         If the given translation is a no-op (no value or only 0 ones), then this grid is returned as is.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @since 1.5
+     */
+    public GridGeometry shiftGrid(final long[] translation, final boolean negate) {
         ArgumentChecks.ensureNonNull("translation", translation);
         GridExtent newExtent = extent;
         if (newExtent != null) {
-            newExtent = newExtent.translate(translation);
+            newExtent = newExtent.translate(translation, negate);
             if (newExtent == extent) return this;
         }
         MathTransform t1 = gridToCRS;
@@ -1637,7 +1658,8 @@ public class GridGeometry implements LenientComparable, Serializable {
             final double[] vector = new double[getDimension()];
             for (int i=Math.min(vector.length, translation.length); --i >= 0;) {
                 isZero &= (translation[i] == 0);
-                vector[i] = Math.negateExact(translation[i]);
+                double v = translation[i];
+                vector[i] = negate ? v : -v;    // Really negate if `negate` is false.
             }
             if (isZero) return this;
             final MathTransform t = MathTransforms.translation(vector);
@@ -1645,6 +1667,25 @@ public class GridGeometry implements LenientComparable, Serializable {
             t2 = MathTransforms.concatenate(t, t2);
         }
         return new GridGeometry(newExtent, t1, t2, envelope, resolution, nonLinears);
+    }
+
+    /**
+     * Translates the grid to lower coordinate values of zero without changing the "real world" coordinates.
+     * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
+     * i.e. both low and high grid coordinates are displaced by the same number of cells.
+     * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
+     * "real world" coordinates.
+     *
+     * @return a grid geometry whose lower coordinates are zeros.
+     * @throws ArithmeticException if the translation results in upper coordinates that overflow 64-bits integer.
+     *
+     * @since 1.5
+     */
+    public GridGeometry shiftGridToZeros() {
+        if (extent == null || extent.startsAtZero()) {
+            return this;
+        }
+        return shiftGrid(extent.getLow().getCoordinateValues(), true);
     }
 
     /**
@@ -1668,7 +1709,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         ensureDimensionMatches(getDimension(), newExtent);
         final ImmutableEnvelope relocated;
         if (cornerToCRS != null) {
-            final GeneralEnvelope env = newExtent.toEnvelope(cornerToCRS, gridToCRS, null);
+            final GeneralEnvelope env = newExtent.toEnvelope(cornerToCRS, false, gridToCRS, null);
             env.setCoordinateReferenceSystem(getCoordinateReferenceSystem(envelope));
             relocated = new ImmutableEnvelope(env);
         } else {
@@ -1754,9 +1795,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      * <p><b>Note:</b> the transform created by this method may be non-invertible.</p>
      *
      * @param  target  the grid which will be the target of returned transform.
-     * @param  anchor  {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
-     *                 {@linkplain PixelInCell#CELL_CORNER cell corner} for Java2D/JAI conventions.
+     * @param  anchor  {@code CELL_CENTER} for OGC conventions or
+     *                 {@code CELL_CORNER} for Java2D/JAI conventions.
      * @return transform from cell coordinates in this grid to cell coordinates in the given grid.
+     * @throws IncompleteGridGeometryException if there is not enough information in the two grid geometries.
      * @throws TransformException if the math transform cannot be created.
      *
      * @since 1.1
@@ -1768,7 +1810,7 @@ public class GridGeometry implements LenientComparable, Serializable {
          * Inverse `source` and `target` because `CoordinateOperationFinder.inverse(…)` does an
          * effort for using `WraparoundTransform` only if needed (contrarily to `gridToCRS(…)`).
          */
-        final CoordinateOperationFinder finder = new CoordinateOperationFinder(target, this);
+        final var finder = new CoordinateOperationFinder(target, this);
         finder.verifyPresenceOfCRS(false);
         finder.setAnchor(anchor);
         final MathTransform tr;
@@ -1781,20 +1823,136 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns a hash value for this grid geometry. This value needs not to remain
-     * consistent between different implementations of the same class.
+     * Returns the coordinate range of another grid geometry in units of cells of this grid geometry.
+     * This method gets the {@linkplain #createTransformTo transform between cell coordinates} and
+     * uses it for converting the extent of the {@code other} grid geometry. The grid coordinates
+     * are rounded to integers in a way specified by the {@link GridRoundingMode} argument.
+     * The result does not need to be contained or to intersect the extent of this grid geometry.
+     *
+     * <p>The {@code include} argument specifies whether to transform cell corners or cell centers:</p>
+     * <ul>
+     *   <li>With {@code CELL_CENTER}, the returned extent contains the cell centers of {@code other}.</li>
+     *   <li>With {@code CELL_CORNER}, the returned extent contains the cell corners of {@code other}.
+     *       It includes both lower and upper corners, thus covering the full cell areas.</li>
+     * </ul>
+     * <p>An extent of cell centers may be smaller than an extent of cell areas by a size,
+     * on each border, of ½ of the size of the cells of {@code other}.</p>
+     *
+     * <p>Note that if the transformation involves, for example, a rotation or a map projection,
+     * then the returned extent may encompass more cells than the real extent of {@code other}.
+     * See {@linkplain Envelopes#transform(Envelope, CoordinateReferenceSystem) envelope transformations}
+     * for more information.</p>
+     *
+     * @param  other     the other grid geometry from which to get the extent in units of this grid geometry.
+     * @param  include   {@code CELL_CENTER} for an extent containing cell centers, or
+     *                   {@code CELL_CORNER} for an extent containing all cell corners (i.e. full areas).
+     * @param  rounding  whether to round grid coordinates to nearest, enclosing or contained bounds.
+     * @return the extent of the other grid geometry in cell units of this grid geometry.
+     * @throws IncompleteGridGeometryException if there is not enough information in the two grid geometries.
+     * @throws TransformException if the grid extent cannot be transformed to the units of this grid geometry.
+     *
+     * @since 1.5
      */
-    @Override
-    public int hashCode() {
-        int code = (int) serialVersionUID;
-        if (gridToCRS != null) {
-            code += gridToCRS.hashCode();
+    public GridExtent extentOf(final GridGeometry other, final PixelInCell include, final GridRoundingMode rounding)
+            throws TransformException
+    {
+        GridExtent result = other.getExtent();
+        if (cornerToCRS != other.cornerToCRS || gridToCRS != other.gridToCRS) {   // Quick check for a common case.
+            final MathTransform tr = other.createTransformTo(this, include);
+            if (!tr.isIdentity()) {
+                final boolean isCenter = (include == PixelInCell.CELL_CENTER);
+                final GeneralEnvelope bounds = result.toEnvelope(tr, isCenter, tr, null);
+                result = new GridExtent(bounds, isCenter, rounding, GridClippingMode.NONE, null, null, extent, null);
+            }
         }
-        if (extent != null) {
-            code += extent.hashCode();
+        return result;
+    }
+
+    /**
+     * Returns {@code true} if this grid geometry intersects the given grid geometry.
+     * This method compares the coordinates of the two {@linkplain #extentOf grid extents} when possible,
+     * or between the two {@linkplain #getEnvelope(CoordinateReferenceSystem) envelopes} otherwise (fallback).
+     * This method may conservatively return {@code true} if an accurate answer would be expensive to compute.
+     * Therefore, a return value of {@code true} is not a guarantee that the two grids really intersect.
+     * However, a return value of {@code false} guarantees that the two grids do <em>not</em> intersect.
+     *
+     * <p>The comparison is performed in units of this grid geometry by converting the other grid if necessary.
+     * Consequently, if the <abbr>CRS</abbr> and "grid to CRS" transform are not the same in the two grids,
+     * then this method may not be symmetric. In other words, it is <em>not</em> guaranteed that
+     * {@code A.intersects(B) = B.intersects(A)} for all (<var>A</var>, <var>B</var>) pairs.</p>
+     *
+     * @param  other  the other grid geometry to test for intersection.
+     * @return whether the other grid geometry intersects or may intersect this grid geometry.
+     * @throws IncompleteGridGeometryException if there is not enough information in the two grid geometries.
+     *
+     * @see GridExtent#intersects(GridExtent)
+     *
+     * @since 1.5
+     */
+    public boolean intersects(final GridGeometry other) {
+        return interacts(other, true);
+    }
+
+    /**
+     * Returns {@code true} if this grid geometry contains the given grid geometry within a tolerance of ½ cell.
+     * This method compares the coordinates of the two {@linkplain #extentOf grid extents} when possible,
+     * or between the two {@linkplain #getEnvelope(CoordinateReferenceSystem) envelopes} otherwise (fallback).
+     * The comparison is exact if the two grids use the same <abbr>CRS</abbr> and "grid to <abbr>CRS</abbr>".
+     * Otherwise, a coordinate transformations may be applied with the following approximations:
+     *
+     * <ul>
+     *   <li>The comparison is between extents containing {@linkplain PixelInCell#CELL_CENTER cell centers}.
+     *       Because the {@code other} extent may be smaller compared to an extent computed over cell areas,
+     *       this approach introduces a tolerance of ½ cell in units of the {@code other} grid.</li>
+     *   <li>Cell coordinates are rounded to nearest integers.
+     *       This approach adds another tolerance of ½ cell in units of {@code this} grid.</li>
+     *   <li>If the coordinate transformation between the two grids is non-linear or produces a rotation,
+     *       the transformed extent of {@code other} may contain more cells that the reality.
+     *       In such cases, this method may return {@code false} even if a more extensive test
+     *       would have returned {@code true}.</li>
+     * </ul>
+     *
+     * This method may conservatively return {@code false} if an accurate answer would be too expensive
+     * (because of the last point in above list), or if the coordinates cannot be transformed.
+     *
+     * <h4>Usage</h4>
+     * This method behavior is well defined when the two grids are members of the same image mosaic or pyramid:
+     * same <abbr>CRS</abbr> together with "grid to <abbr>CRS</abbr>" transforms that differ only by scale and
+     * translation factors with integer values.
+     * For other cases, this method should be considered as merely a hint because of above approximations.
+     *
+     * @param  other  the other grid geometry to test for inclusion.
+     * @return whether the other grid geometry is contained in this grid geometry.
+     * @throws IncompleteGridGeometryException if there is not enough information in the two grid geometries.
+     *
+     * @see GridExtent#contains(GridExtent)
+     *
+     * @since 1.5
+     */
+    public boolean contains(final GridGeometry other) {
+        return interacts(other, false);
+    }
+
+    /**
+     * Implementation of {@link #contains(GridGeometry)} and {@link #intersects(GridGeometry)} methods.
+     */
+    private boolean interacts(final GridGeometry other, final boolean intersects) {
+        try {
+            if (extent != null && other.extent != null) {
+                var source = getExtent();
+                var target = extentOf(other,
+                        intersects ? PixelInCell.CELL_CORNER : PixelInCell.CELL_CENTER,
+                        intersects ? GridRoundingMode.ENCLOSING : GridRoundingMode.NEAREST);
+                return intersects ? source.intersects(target) : source.contains(target);
+            }
+            // Fallback used only if there is no grid extent.
+            var source = AbstractEnvelope.castOrCopy(getEnvelope());
+            var target = other.getEnvelope(getCoordinateReferenceSystem());
+            return intersects ? source.intersects(target) : source.contains(target);
+        } catch (TransformException e) {
+            recoverableException(intersects ? "intersects" : "contains", e);
+            return intersects;
         }
-        // We do not check the envelope since it has a determinist relationship with other attributes.
-        return code;
     }
 
     /**
@@ -1826,7 +1984,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             return true;
         }
         if (object instanceof GridGeometry) {
-            final GridGeometry that = (GridGeometry) object;
+            final var that = (GridGeometry) object;
             if ((mode != ComparisonMode.STRICT || getClass().equals(object.getClass()))
                     && Utilities.deepEquals(extent,    that.extent,    mode)
                     && Utilities.deepEquals(gridToCRS, that.gridToCRS, mode))
@@ -1853,7 +2011,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     final boolean equalsApproximately(final ImmutableEnvelope othenv) {
         if (envelope != null) {
-            for (int i=envelope.getDimension(); --i >= 0;) {
+            for (int i = envelope.getDimension(); --i >= 0;) {
                 // Arbitrary threshold of ½ pixel.
                 final double ε = (resolution != null) ? resolution[i] * 0.5 : 0;
                 if (!MathFunctions.epsilonEqual(envelope.getLower(i), othenv.getLower(i), ε) ||
@@ -1864,6 +2022,23 @@ public class GridGeometry implements LenientComparable, Serializable {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns a hash value for this grid geometry. This value needs not to remain
+     * consistent between different implementations of the same class.
+     */
+    @Override
+    public int hashCode() {
+        int code = (int) serialVersionUID;
+        if (gridToCRS != null) {
+            code += gridToCRS.hashCode();
+        }
+        if (extent != null) {
+            code += extent.hashCode();
+        }
+        // We do not check the envelope since it has a determinist relationship with other attributes.
+        return code;
     }
 
     /**
@@ -1927,7 +2102,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     @Debug
     public TreeTable toTree(final Locale locale, final int bitmask) {
         ArgumentChecks.ensureNonNull("locale", locale);
-        final TreeTable tree = new DefaultTreeTable(TableColumn.VALUE_AS_TEXT);
+        final var tree = new DefaultTreeTable(TableColumn.VALUE_AS_TEXT);
         final TreeTable.Node root = tree.getRoot();
         root.setValue(TableColumn.VALUE_AS_TEXT, Classes.getShortClassName(this));
         formatTo(locale, Vocabulary.forLocale(locale), bitmask, root);
@@ -2051,8 +2226,8 @@ public class GridGeometry implements LenientComparable, Serializable {
             if (section(GEOGRAPHIC_EXTENT, Vocabulary.Keys.GeographicExtent, false, false) ||
                 section(TEMPORAL_EXTENT,   Vocabulary.Keys.TemporalExtent, false, false))
             {
-                final TableAppender table = new TableAppender(buffer, "  ");
-                final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
+                final var table = new TableAppender(buffer, "  ");
+                final var nf = new AngleFormat("DD°MM′SS″", locale);
                 final GeographicBoundingBox bbox = ((bitmask & GEOGRAPHIC_EXTENT) != 0) ? geographicBBox() : null;
                 double westBoundLongitude = Double.NaN;
                 double eastBoundLongitude = Double.NaN;
@@ -2102,7 +2277,7 @@ public class GridGeometry implements LenientComparable, Serializable {
              */
             if (section(ENVELOPE, Vocabulary.Keys.Envelope, true, false)) {
                 final boolean appendResolution = (bitmask & RESOLUTION) != 0 && (resolution != null);
-                final TableAppender table = new TableAppender(buffer, "");
+                final var table = new TableAppender(buffer, "");
                 final int dimension = envelope.getDimension();
                 final NumberFormat nf = numberFormat();
                 for (int i=0; i<dimension; i++) {

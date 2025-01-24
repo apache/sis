@@ -354,7 +354,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *         contains values of an unsupported type.
      */
     final Format[] getFormats(final TableColumn<?>[] columns, final boolean mandatory) throws IllegalStateException {
-        final Format[] formats = new Format[columns.length];
+        final var formats = new Format[columns.length];
         for (int i=0; i<formats.length; i++) {
             final Class<?> valueType = columns[i].getElementType();
             if ((formats[i] = getFormat(valueType)) == null) {
@@ -414,7 +414,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         int[] indentations      = new int[16];      // Number of spaces (ignoring drawing characters) for each level.
         TreeTable.Node lastNode = null;             // Last parsed node, having `indentation[level]` characters before its content.
         TreeTable.Node root     = null;             // First node found while parsing.
-        final DefaultTreeTable table = new DefaultTreeTable(columnIndices != null ? columnIndices : TableColumn.NAME_MAP);
+        final var table = new DefaultTreeTable(columnIndices != null ? columnIndices : TableColumn.NAME_MAP);
         final TableColumn<?>[] columns = DefaultTreeTable.getColumns(table.columnIndices);
         final Format[] formats = getFormats(columns, true);
         do {
@@ -457,7 +457,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
              * (without parent for now) and parse the values for each column. Columns with empty
              * text are not parsed (the value is left to null).
              */
-            final TreeTable.Node node = new DefaultTreeTable.Node(table);
+            final var node = new DefaultTreeTable.Node(table);
             matcher.region(indexOfValue, endOfLine);
             for (int ci=0; ci<columns.length; ci++) {
                 final boolean found = matcher.find();
@@ -685,7 +685,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             @SuppressWarnings("LocalVariableHidesMemberVariable")   // To be stored in the field if successful.
             Predicate<TreeTable.Node> filter = nodeFilter;
             if (tree instanceof TreeFormatCustomization) {
-                final TreeFormatCustomization custom = (TreeFormatCustomization) tree;
+                final var custom = (TreeFormatCustomization) tree;
                 final Predicate<TreeTable.Node> more = custom.filter();
                 if (more != null) {
                     filter = (filter != null) ? more.and(filter) : more;
@@ -886,7 +886,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             recursionGuard = new HashSet<>();
         }
         try {
-            final Writer out = new Writer(toAppendTo, tree, columns, recursionGuard);
+            final var out = new Writer(toAppendTo, tree, columns, recursionGuard);
             out.format(tree.getRoot(), 0);
             out.flush();
         } finally {
@@ -959,7 +959,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      */
     @Override
     public TreeTableFormat clone() {
-        final TreeTableFormat c = (TreeTableFormat) super.clone();
+        final var c = (TreeTableFormat) super.clone();
         c.recursionGuard = null;
         return c;
     }

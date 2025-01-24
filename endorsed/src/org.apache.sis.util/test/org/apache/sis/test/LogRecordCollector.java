@@ -186,7 +186,7 @@ final class LogRecordCollector extends Handler implements Runnable {
                 out.append(lineSeparator)
                    .append("The following tests have logged messages at level INFO or higher:").append(lineSeparator)
                    .append("See 'org.apache.sis.test.LoggingWatcher' for information about logging during tests.").append(lineSeparator);
-                final TableAppender table = new TableAppender(out);
+                final var table = new TableAppender(out);
                 table.setMultiLinesCells(false);
                 table.nextLine('═');
                 table.append("Test class");    table.nextColumn();

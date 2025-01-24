@@ -17,6 +17,7 @@
 package org.apache.sis.map.service.se1;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -79,7 +80,7 @@ public final class RasterToScene2D extends SymbolizerToScene2D<RasterSymbolizer<
 
                 //TODO handle raster symbolizer parameters.
 
-                state.graphics.drawRenderedImage(resampled.render(null), null);
+                state.graphics.drawRenderedImage(resampled.render(null), new AffineTransform());
 
             } catch (NoSuchDataException ex) {
                 //do nothing

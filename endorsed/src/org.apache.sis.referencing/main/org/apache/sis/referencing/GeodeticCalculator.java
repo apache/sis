@@ -1236,12 +1236,12 @@ public class GeodeticCalculator {
              */
             if ((validity & (START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH)) != 0) {
                 final String[] axes = ReferencingUtilities.getShortAxisNames(resources, crs);
-                final AngleFormat    azimuthFormat = new AngleFormat("DD°MM′SS″", locale);
-                final CoordinateFormat pointFormat = new CoordinateFormat(locale, null);
+                final var azimuthFormat = new AngleFormat("DD°MM′SS″", locale);
+                final var pointFormat = new CoordinateFormat(locale, null);
                 pointFormat.setSeparator("\t");      // For distributing coordinate values on different columns.
                 pointFormat.setDefaultCRS(crs);
                 pointFormat.setGroundPrecision(Quantities.create(Formulas.LINEAR_TOLERANCE, Units.METRE));
-                final TableAppender table = new TableAppender(buffer, " │ ");
+                final var table = new TableAppender(buffer, " │ ");
                 table.setCellAlignment(TableAppender.ALIGN_CENTER);
                 table.appendHorizontalSeparator();
                 for (final String axis : axes) {

@@ -515,7 +515,7 @@ public final class CRS extends Static {
          */
         boolean worldwide = false;
         DefaultGeographicBoundingBox domain = null;
-        final GeographicBoundingBox[] domains = new GeographicBoundingBox[sourceCRS.length];
+        final var domains = new GeographicBoundingBox[sourceCRS.length];
         for (int i=0; i < sourceCRS.length; i++) {
             final CoordinateReferenceSystem crs = sourceCRS[i];
             final GeographicBoundingBox bbox = getGeographicBoundingBox(crs);
@@ -1307,8 +1307,8 @@ choice: if (intersect != 0) {
                  * for letting SIS create or associate new ones, which will be two-dimensional now.
                  */
                 if (crs instanceof ProjectedCRS) {
-                    final ProjectedCRS  proj = (ProjectedCRS) crs;
-                    final GeographicCRS base = (GeographicCRS) getHorizontalComponent(proj.getBaseCRS());
+                    final var proj = (ProjectedCRS) crs;
+                    final var base = (GeographicCRS) getHorizontalComponent(proj.getBaseCRS());
                     Conversion fromBase = proj.getConversionFromBase();
                     fromBase = new DefaultConversion(IdentifiedObjects.getProperties(fromBase),
                             fromBase.getMethod(), null, fromBase.getParameterValues());

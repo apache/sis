@@ -16,7 +16,7 @@
  */
 package org.apache.sis.io.stream;
 
-import java.nio.channels.SeekableByteChannel;
+import java.nio.channels.ReadableByteChannel;
 
 
 /**
@@ -24,7 +24,7 @@ import java.nio.channels.SeekableByteChannel;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public abstract class ByteRangeChannel implements SeekableByteChannel {
+public abstract class ByteRangeChannel implements ReadableByteChannel {
     /**
      * Creates a new channel.
      */

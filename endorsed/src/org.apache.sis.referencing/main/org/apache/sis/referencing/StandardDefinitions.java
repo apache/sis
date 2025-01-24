@@ -122,9 +122,9 @@ final class StandardDefinitions {
      */
     static final Citation AUTHORITY;
     static {
-        final DefaultCitation c = new DefaultCitation();
+        final var c = new DefaultCitation();
         c.setTitle(Vocabulary.formatInternational(Vocabulary.Keys.SubsetOf_1, Constants.EPSG));
-        c.setEdition(new SimpleInternationalString(StandardDefinitions.VERSION));
+        c.setEdition(new SimpleInternationalString(VERSION));
         c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
         c.setOtherCitationDetails(NOTICE);
         c.transitionTo(DefaultCitation.State.FINAL);
@@ -147,7 +147,7 @@ final class StandardDefinitions {
      * @return the map of properties to give to constructors or factory methods.
      */
     private static Map<String,Object> properties(final int code, final String name, final String alias, final boolean world) {
-        final Map<String,Object> map = new HashMap<>(8);
+        final var map = new HashMap<String,Object>(8);
         if (code != 0) {
             map.put(IDENTIFIERS_KEY, new NamedIdentifier(AUTHORITY, Constants.EPSG, String.valueOf(code), VERSION, null));
         }
@@ -169,7 +169,7 @@ final class StandardDefinitions {
     private static void addWMS(final Map<String,Object> properties, final String code) {
         properties.put(IDENTIFIERS_KEY, new NamedIdentifier[] {
             (NamedIdentifier) properties.get(IDENTIFIERS_KEY),
-            new NamedIdentifier(Citations.WMS, code)
+            new NamedIdentifier(Citations.WMS, Constants.OGC, code, null, null)
         });
     }
 
@@ -199,7 +199,7 @@ final class StandardDefinitions {
         final ParameterValueGroup parameters = method.getParameters().createValue();
         String name = isUTM ? TransverseMercator.Zoner.UTM.setParameters(parameters, latitude, longitude)
                             : PolarStereographicA.setParameters(parameters, latitude >= 0);
-        final DefaultConversion conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
+        final var conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
 
         name = baseCRS.getName().getCode() + " / " + name;
         return new DefaultProjectedCRS(properties(code, name, null, false), baseCRS, conversion, derivedCS);
@@ -292,9 +292,9 @@ final class StandardDefinitions {
      * If another prime meridian is desired, the EPSG database shall be used.
      */
     static PrimeMeridian primeMeridian() {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(NAME_KEY, new NamedIdentifier(AUTHORITY, "Greenwich"));          // Name is fixed by ISO 19111.
-        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(AUTHORITY, GREENWICH));
+        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(AUTHORITY, Constants.EPSG, GREENWICH, VERSION, null));
         return new DefaultPrimeMeridian(properties, 0, Units.DEGREE);
     }
 

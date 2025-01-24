@@ -310,12 +310,14 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
 
     /**
      * Invoked when the {@link ComputedImage} has been garbage-collected. This method removes all cached
-     * tiles that were owned by the image and stops observing all sources.
+     * tiles that were owned by the image and stops observing all sources. If the same {@link Raster} was
+     * shared by many images, other images are not impacted.
      *
-     * This method should not perform other cleaning work because it is not guaranteed to be invoked if this
-     * {@code ComputedTiles} is not registered as a {@link TileObserver} and if {@link TileCache#GLOBAL} does
-     * not contain any tile for the {@link ComputedImage}. The reason is because there would be nothing
-     * preventing this weak reference to be garbage collected before {@code dispose()} is invoked.
+     * <p>This method should not perform other cleaning work because it is not guaranteed to be invoked.
+     * In some case, there is nothing preventing this weak reference to be garbage collected before this
+     * {@code dispose()} method is invoked. The case is: if {@code ComputedTiles} is not registered as a
+     * {@link TileObserver} and if {@link TileCache#GLOBAL} does not contain any tile associated to this
+     * {@link ComputedImage} in its key.</p>
      *
      * @see ComputedImage#dispose()
      */

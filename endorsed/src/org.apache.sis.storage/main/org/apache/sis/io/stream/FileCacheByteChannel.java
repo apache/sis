@@ -56,7 +56,7 @@ import static org.apache.sis.storage.base.StoreUtilities.LOGGER;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public abstract class FileCacheByteChannel extends ByteRangeChannel {
+public abstract class FileCacheByteChannel extends ByteRangeChannel implements SeekableByteChannel {
     /**
      * Size of the transfer buffer, in number of bytes.
      * This value does not need to be as large as {@link StorageConnector#DEFAULT_BUFFER_SIZE}

@@ -17,7 +17,6 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Optional;
-import java.nio.file.Path;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -113,9 +112,8 @@ abstract class DataCube extends TiledGridResource implements StoreResource {
      * Gets the paths to files used by this resource, or an empty value if unknown.
      */
     @Override
-    public final Optional<FileSet> getFileSet() {
-        final Path location = reader.store.path;
-        return (location != null) ? Optional.of(new FileSet(location)) : Optional.empty();
+    public final Optional<FileSet> getFileSet() throws DataStoreException {
+        return reader.store.getFileSet();
     }
 
     /**

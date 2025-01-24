@@ -35,7 +35,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.io.TabularFormat;
@@ -198,7 +197,7 @@ public class LocationFormat extends TabularFormat<Location> {
         ArgumentChecks.ensureNonNull("location", location);
         final Locale locale = getLocale(Locale.Category.DISPLAY);
         final Vocabulary vocabulary = Vocabulary.forLocale(locale);
-        final TableAppender table = new TableAppender(toAppendTo, "│ ", columnSeparator, " │");
+        final var table = new TableAppender(toAppendTo, "│ ", columnSeparator, " │");
         table.setMultiLinesCells(true);
         /*
          * Location type.
@@ -233,7 +232,7 @@ public class LocationFormat extends TabularFormat<Location> {
          * We may also need to change axis order (but not unit) of the envelope in order to match
          * the axis order of the geographic bounding box.
          */
-        final Extent extent = new DefaultExtent(null, location.getGeographicExtent(), null, location.getTemporalExtent());
+        final var extent = new DefaultExtent(null, location.getGeographicExtent(), null, location.getTemporalExtent());
         final Range<Date> time = Extents.getTimeRange(extent);
         if (time != null) {
             append(table, vocabulary, Vocabulary.Keys.StartDate, toString(time.getMinValue()));
@@ -429,7 +428,7 @@ public class LocationFormat extends TabularFormat<Location> {
     protected Format createFormat(final Class<?> valueType) {
         final Format f = super.createFormat(valueType);
         if (f instanceof NumberFormat) {
-            final NumberFormat nf = (NumberFormat) f;
+            final var nf = (NumberFormat) f;
             nf.setMinimumFractionDigits(0);
             nf.setMaximumFractionDigits(0);                     // 1 metre accuracy, assuming lengths in metres.
         } else if (f instanceof AngleFormat) {

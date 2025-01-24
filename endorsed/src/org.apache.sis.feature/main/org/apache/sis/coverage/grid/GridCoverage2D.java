@@ -45,6 +45,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.privy.ReshapedImage;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
@@ -90,7 +91,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 public class GridCoverage2D extends GridCoverage {
@@ -274,7 +275,7 @@ public class GridCoverage2D extends GridCoverage {
      */
     private static RenderedImage unwrapIfSameSize(RenderedImage data) {
         if (data instanceof ReshapedImage) {
-            final RenderedImage source = ((ReshapedImage) data).source;
+            final var source = ((ReshapedImage) data).source;
             if (source.getWidth() == data.getWidth() && source.getHeight() == data.getHeight()) {
                 data = source;
             }
@@ -347,8 +348,8 @@ public class GridCoverage2D extends GridCoverage {
      * @param  crs        coordinate reference system, or {@code null} if none.
      */
     private static GridExtent createExtent(final int dimension, final Rectangle bounds, final CoordinateReferenceSystem crs) {
-        final long[] low  = new long[dimension];
-        final long[] high = new long[dimension];
+        final var low  = new long[dimension];
+        final var high = new long[dimension];
         low [0] = bounds.x;
         low [1] = bounds.y;
         high[0] = bounds.width  + low[0] - 1;        // Inclusive.
@@ -588,11 +589,11 @@ public class GridCoverage2D extends GridCoverage {
             /*
              * Convert the coordinates from this grid coverage coordinate system to the image coordinate system.
              * The coverage coordinates may require 64 bits integers, but after translation the (x,y) coordinates
-             * should be in 32 bits integers range. Do not cast to 32 bits now however; this will be done later.
+             * should be in 32 bits integers range. Do not cast to 32 bits now however, this will be done later.
              */
             final long xmin = addExact(sliceExtent.getLow (xDimension), gridToImageX);
             final long ymin = addExact(sliceExtent.getLow (yDimension), gridToImageY);
-            final long xmax = addExact(sliceExtent.getHigh(xDimension), gridToImageX);
+            final long xmax = addExact(sliceExtent.getHigh(xDimension), gridToImageX);    // Inclusive
             final long ymax = addExact(sliceExtent.getHigh(yDimension), gridToImageY);
             /*
              * BufferedImage.getSubimage() returns a new image with upper-left coordinate at (0,0),
@@ -600,7 +601,7 @@ public class GridCoverage2D extends GridCoverage {
              * upper-left point is inside the image.
              */
             if (data instanceof BufferedImage) {
-                BufferedImage result = (BufferedImage) data;
+                var result = (BufferedImage) data;
                 /*
                  * BufferedImage origin should be (0, 0). But for consistency with image API,
                  * we consider it as variable.
@@ -645,7 +646,7 @@ public class GridCoverage2D extends GridCoverage {
              * with Raster.createChild(…), but that would force us to invoke RenderedImage.getTile(…) which
              * may force data loading earlier than desired.
              */
-            final ReshapedImage result = new ReshapedImage(data, xmin, ymin, xmax, ymax);
+            final var result = new ReshapedImage(data, xmin, ymin, xmax, ymax);
             return result.isIdentity() ? data : result;
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
@@ -665,9 +666,9 @@ public class GridCoverage2D extends GridCoverage {
     void appendDataLayout(final TreeTable.Node root, final Vocabulary vocabulary, final TableColumn<CharSequence> column) {
         final TreeTable.Node branch = root.newChild();
         branch.setValue(column, vocabulary.getString(Vocabulary.Keys.ImageLayout));
-        final NumberFormat nf = NumberFormat.getIntegerInstance(vocabulary.getLocale());
-        final FieldPosition pos = new FieldPosition(0);
-        final StringBuffer buffer = new StringBuffer();
+        final var nf = NumberFormat.getIntegerInstance(vocabulary.getLocale());
+        final var pos = new FieldPosition(0);
+        final var buffer = new StringBuffer();
 write:  for (int item=0; ; item++) try {
             switch (item) {
                 case 0: {

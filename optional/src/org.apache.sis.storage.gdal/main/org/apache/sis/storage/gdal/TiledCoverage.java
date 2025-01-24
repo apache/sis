@@ -27,6 +27,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.TiledGridCoverage;
 import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.image.privy.AssertionMessages;
 
 
 /**
@@ -82,7 +83,7 @@ final class TiledCoverage extends TiledGridCoverage {
         Rectangle resourceBounds = bidimensional(iterator.getFullRegionInResourceCoordinates());
         Rectangle imageBounds;
         try {
-            imageBounds = iterator.resourceToImage(resourceBounds);
+            imageBounds = iterator.resourceToImage(resourceBounds, false);
         } catch (ArithmeticException e) {
             // Ignore, this is used only as a hint.
             Logging.ignorableException(GDALStoreProvider.LOGGER, GDALStore.class, "read", e);
@@ -91,7 +92,6 @@ final class TiledCoverage extends TiledGridCoverage {
         synchronized (owner.getSynchronizationLock()) {
             final Band[]   bands      = owner.bands(includedBands);
             final GDAL     gdal       = owner.parent.getProvider().GDAL();
-            final var      result     = new WritableRaster[iterator.tileCountInQuery];
             final DataType rasterType = owner.dataType.forDataBufferType(model.getDataType());
             if (imageBounds != null) {
                 // Give a chance to the GDAL driver to prepare itself for the reading of all tiles in the AOI.
@@ -99,16 +99,38 @@ final class TiledCoverage extends TiledGridCoverage {
                     if (!band.adviseRead(gdal, resourceBounds, imageBounds, rasterType)) break;
                 }
             }
+            /*
+             * Immediate reading of all tiles that intersect the requested region.
+             * Pixel values are copied twice: GDAL ⟶ `transferBuffer` ⟶ tiles.
+             * The transfer buffer is reused for each tile.
+             */
+            final var result = new WritableRaster[iterator.tileCountInQuery];
             try (Arena arena = Arena.ofConfined()) {
                 final MemorySegment transferBuffer = arena.allocate(getTileLength());
                 do {
                     final WritableRaster tile = iterator.createRaster();
                     final Rectangle rasterBounds = iterator.getRegionInsideTile(true);
                     if (rasterBounds != null) {
-                        rasterBounds.x += tile.getMinX();
-                        rasterBounds.y += tile.getMinY();
-                        resourceBounds = iterator.imageToResource(rasterBounds);
-                        assert (imageBounds == null) || imageBounds.contains(rasterBounds) : rasterBounds + " not in " + imageBounds;
+                        rasterBounds.translate(tile.getMinX(), tile.getMinY());
+                        assert (imageBounds == null) || imageBounds.contains(rasterBounds)
+                                : AssertionMessages.notContained(imageBounds, rasterBounds);
+                        /*
+                         * The coordinates to give to GDAL are derived from the AOI coordinates in the most
+                         * straightforward way (`tight` = false) because GDAL will compute subsampling with
+                         * the ratio between `resourceBounds` and `rasterBounds`. A consequence is that the
+                         * bounding box may be larger than the image bounds, which is why a clip is needed.
+                         * The clip would be unneeded if we used `tight` = true, but the ratio would have
+                         * slight rounding errors compared to the desired subsampling and we are not sure
+                         * how GDAL would handle that.
+                         */
+                        resourceBounds = iterator.imageToResource(rasterBounds, false);
+                        owner.clipReadRegion(resourceBounds);
+                        /*
+                         * Conversion from uncropped coordinates to cropped coordinates before reading.
+                         * The crop is needed only when reading from a single large tile. It is a no-op
+                         * when reading a tiled image.
+                         */
+                        iterator.getUncroppedTileLocation().ifPresent((p) -> rasterBounds.translate(p.x, p.y));
                         if (!Band.transfer(gdal, OpenFlag.READ, bands, owner.dataType, resourceBounds, tile, rasterBounds, transferBuffer)) {
                             break;      // Exception will be thrown by `throwOnFailure(…)`
                         }

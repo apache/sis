@@ -82,7 +82,7 @@ public final class GridDerivationTest extends TestCase {
                 0.5, 0,   0, -180,
                 0,   0,   2,    3,
                 0,   0,   0,    1));
-        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
+        final var grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
         assertExtentEquals(
                 new long[] {336,  20,  4},
                 new long[] {401, 419, 10}, grid.getExtent());
@@ -93,8 +93,11 @@ public final class GridDerivationTest extends TestCase {
         envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
+        GridDerivation change = grid.derive().subgrid(envelope);
+        assertFalse(change.hasSubsampling());
+        assertTrue(change.getGridTransform(PixelInCell.CELL_CENTER).isIdentity());
         assertExtentEquals(new long[] {370,  40,  4},
-                           new long[] {389, 339, 10}, grid.derive().subgrid(envelope).getIntersection());
+                           new long[] {389, 339, 10}, change.getIntersection());
     }
 
     /**
@@ -102,8 +105,8 @@ public final class GridDerivationTest extends TestCase {
      * An arbitrary translation of (2,3) is added to the "grid to CRS" conversion.
      */
     private static GridGeometry grid(int xmin, int ymin, int xmax, int ymax, int xScale, int yScale) {
-        GridExtent extent = new GridExtent(null, new long[] {xmin, ymin}, new long[] {xmax, ymax}, true);
-        Matrix3 gridToCRS = new Matrix3();
+        var extent = new GridExtent(null, new long[] {xmin, ymin}, new long[] {xmax, ymax}, true);
+        var gridToCRS = new Matrix3();
         gridToCRS.m00 = xScale;
         gridToCRS.m11 = yScale;
         gridToCRS.m02 = 200;            // Arbitrary translation.
@@ -116,14 +119,34 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testSubgridFromOtherGrid() {
-        GridGeometry   query  = grid(  10,   -20,  110,  180, 100, -300);     // Envelope x: [1200 … 11300]   y: [-53800 … 6500]
-        GridGeometry   base   = grid(2000, -1000, 9000, 8000,   2,   -1);     // Envelope x: [4200 … 18202]   y: [ -7501 … 1500]
-        GridDerivation change = base.derive().subgrid(query);                 // Envelope x: [4200 … 11300]   y: [ -7501 … 1500]
+        testSubgridFromOtherGrid(PixelInCell.CELL_CORNER, 5549);
+    }
+
+    /**
+     * Same as {@link #testSubgridFromOtherGrid()} but requests tight result.
+     */
+    @Test
+    public void testTightSubgridFromOtherGrid() {
+        testSubgridFromOtherGrid(PixelInCell.CELL_CENTER, 5524);
+    }
+
+    /**
+     * Implementation of {@code test[Tight]SubgridFromOtherGrid()}.
+     *
+     * @param  include  value of {@code pointsToInclude} property.
+     * @param  high     expected high cell value of the result in dimension 0.
+     */
+    private void testSubgridFromOtherGrid(final PixelInCell include, final int high) {
+        GridGeometry   query  = grid(  10,   -20,  110,  180, 100, -300);               // Envelope x: [1200 … 11300]   y: [-53800 … 6500]
+        GridGeometry   base   = grid(2000, -1000, 9000, 8000,   2,   -1);               // Envelope x: [4200 … 18202]   y: [ -7501 … 1500]
+        GridDerivation change = base.derive().pointsToInclude(include).subgrid(query);  // Envelope x: [4200 … 11300]   y: [ -7501 … 1500]
         GridExtent     extent = change.getIntersection();
-        GridExtentTest.assertExtentEquals(extent, 0,  2000, 5549);            // Subrange of base extent.
+        GridExtentTest.assertExtentEquals(extent, 0,  2000, high);                      // Subrange of base extent.
         GridExtentTest.assertExtentEquals(extent, 1, -1000, 8000);
-        assertArrayEquals(new long[] {50, 300}, change.getSubsampling());    // s = scaleQuery / scaleBase
+        assertArrayEquals(new long[] {50, 300}, change.getSubsampling());               // s = scaleQuery / scaleBase
         assertArrayEquals(new long[] {0, -100}, change.getSubsamplingOffsets());
+        assertFalse(change.getGridTransform(PixelInCell.CELL_CENTER).isIdentity());
+        assertTrue(change.hasSubsampling());
         /*
          * Above (50, 300) subsampling shall be applied and the `gridToCRS` transform adjusted consequently.
          */
@@ -140,7 +163,7 @@ public final class GridDerivationTest extends TestCase {
          * That intersection should be approximately the same or smaller. Note that without the clipping documented in
          * `GridExtent(GridExtent, int...)` constructor, the envelope would have been larger.
          */
-        GeneralEnvelope expected = new GeneralEnvelope(2);
+        var expected = new GeneralEnvelope(2);
         expected.setRange(0,  4200, 11300);
         expected.setRange(1, -7501,  1500);
         assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
@@ -151,7 +174,7 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testSubExtentNonLinear() {
-        final GridExtent extent = new GridExtent(
+        final var extent = new GridExtent(
                 new DimensionNameType[] {
                     DimensionNameType.COLUMN,
                     DimensionNameType.ROW,
@@ -173,7 +196,7 @@ public final class GridDerivationTest extends TestCase {
          * main purpose of this test is to verify that TransformSeparator has been able to extract the
          * two-dimensional transform despite its non-linear component.
          */
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,  -4.997,  15.003);
         final GridExtent actual = grid.derive().subgrid(envelope).getIntersection();
@@ -190,7 +213,7 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testSubgridFromEnvelope() throws TransformException {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -70, +80);
         envelope.setRange(1,   5,  15);
         final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
@@ -244,7 +267,7 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testSubgridFromEnvelopeDifferentCRS() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -70, +80);
         envelope.setRange(1,   5,  15);
         final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
@@ -414,28 +437,49 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testSubgridWithTilingAndSubsampling() {
+        testSubgridWithTilingAndSubsampling(PixelInCell.CELL_CORNER, -910, -28, -3);
+    }
+
+    /**
+     * Same as {@link #testSubgridWithTilingAndSubsampling()} but requests tight result.
+     */
+    @Test
+    public void testTightSubgridWithTilingAndSubsampling() {
+        testSubgridWithTilingAndSubsampling(PixelInCell.CELL_CENTER, -770, -182, -2);
+    }
+
+    /**
+     * Implementation of {@code test[Tight]SubgridFromOtherGrid()}.
+     *
+     * @param  include  value of {@code pointsToInclude} property.
+     * @param  low      expected low cell value of the result in dimension 1.
+     * @param  offset   expected subsampling offset in dimension 1.
+     * @param  subLow   expected low cell value of the result in dimension 1 after subsampling.
+     */
+    private void testSubgridWithTilingAndSubsampling(final PixelInCell include, final int low, final int offset, final int subLow) {
         GridGeometry   query  = grid(  80,   -3,  110,    55, 100, -300);     // Envelope x: [8200 … 11300]   y: [-16300 … 1400]
         GridGeometry   base   = grid(2000, -1000, 9000, 8000,   2,   -1);     // Envelope x: [4200 … 18202]   y: [ -7501 … 1500]
-        GridDerivation change = base.derive().chunkSize(390, 70).subgrid(query);
+        GridDerivation change = base.derive().chunkSize(390, 70).pointsToInclude(include).subgrid(query);
         GridExtent     extent = change.getIntersection();
         GridExtentTest.assertExtentEquals(extent, 0,  3900, 5849);
-        GridExtentTest.assertExtentEquals(extent, 1,  -910, 8000);
-        assertArrayEquals(new long[] {39, 294}, change.getSubsampling());
-        assertArrayEquals(new long[] { 0, -28}, change.getSubsamplingOffsets());
+        GridExtentTest.assertExtentEquals(extent, 1,   low, 8000);
+        assertArrayEquals(new long[] {39, 294},    change.getSubsampling());
+        assertArrayEquals(new long[] { 0, offset}, change.getSubsamplingOffsets());
+        assertTrue(change.hasSubsampling());
 
         final GridGeometry tg = change.build();
         extent = tg.getExtent();
-        GridExtentTest.assertExtentEquals(extent, 0, 100, 149);
-        GridExtentTest.assertExtentEquals(extent, 1,  -3,  27);
+        GridExtentTest.assertExtentEquals(extent, 0, 100,   149);
+        GridExtentTest.assertExtentEquals(extent, 1, subLow, 27);
         assertMatrixEquals(new Matrix3(78,    0, 200,
-                                        0, -294, 528,
+                                        0, -294, 500 - offset,
                                         0,    0,   1),
                 MathTransforms.getMatrix(tg.getGridToCRS(PixelInCell.CELL_CORNER)),
                 STRICT, "gridToCRS");
 
-        GeneralEnvelope expected = new GeneralEnvelope(2);
+        var expected = new GeneralEnvelope(2);
         expected.setRange(0,  8000, 11900);
-        expected.setRange(1, -7501,  1410);
+        expected.setRange(1, -7501,  500 - low);
         assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
     }
 
@@ -453,6 +497,8 @@ public final class GridDerivationTest extends TestCase {
          * Subsampling values checked below shall be equal or smaller
          * than the values given to `maximumSubsampling(…)`.
          */
+        assertTrue(change.hasSubsampling());
+        assertFalse(change.getGridTransform(PixelInCell.CELL_CORNER).isIdentity());
         assertArrayEquals(new long[] {15,  84}, change.getSubsampling());
         assertArrayEquals(new long[] { 0, -70}, change.getSubsamplingOffsets());
         assertMatrixEquals(new Matrix3(30,   0, 200,
@@ -507,7 +553,7 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testSlice() {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
                 PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
                         0,   0.5, 0,  -90,
@@ -598,7 +644,7 @@ public final class GridDerivationTest extends TestCase {
                 HardCodedCRS.WGS84,
                 HardCodedCRS.TIME);
 
-        final GeneralEnvelope geo3d = new GeneralEnvelope(crs3d);
+        final var geo3d = new GeneralEnvelope(crs3d);
         geo3d.setEnvelope(-180, -90, 1865.128, 180, 90, 1865.256);
         base = new GridGeometry(
                 PixelInCell.CELL_CORNER,
@@ -632,14 +678,14 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testAntiMeridianCrossingInSubgrid() {
-        final GridExtent be = new GridExtent(null, new long[] {0, -64800}, new long[] {168000, 21600}, false);
-        final GridExtent qe = new GridExtent(256, 256);
-        final double bs = 350d / 168000;                    // We will use [-175 …  175]° of longitude.
-        final double qs =  10d / 256;                       // We will use [-182 … -172]° of longitude.
-        final AffineTransform2D bt = new AffineTransform2D(bs, 0, 0, -bs, -175, -45);
-        final AffineTransform2D qt = new AffineTransform2D(qs, 0, 0, -qs, -182,  90);
-        final GridGeometry base  = new GridGeometry(be, PixelInCell.CELL_CORNER, bt, HardCodedCRS.WGS84);
-        final GridGeometry query = new GridGeometry(qe, PixelInCell.CELL_CORNER, qt, HardCodedCRS.WGS84);
+        final var    be    = new GridExtent(null, new long[] {0, -64800}, new long[] {168000, 21600}, false);
+        final var    qe    = new GridExtent(256, 256);
+        final double bs    = 350d / 168000;             // We will use [-175 …  175]° of longitude.
+        final double qs    =  10d / 256;                // We will use [-182 … -172]° of longitude.
+        final var    bt    = new AffineTransform2D(bs, 0, 0, -bs, -175, -45);
+        final var    qt    = new AffineTransform2D(qs, 0, 0, -qs, -182,  90);
+        final var    base  = new GridGeometry(be, PixelInCell.CELL_CORNER, bt, HardCodedCRS.WGS84);
+        final var    query = new GridGeometry(qe, PixelInCell.CELL_CORNER, qt, HardCodedCRS.WGS84);
         /*
          * The [-182 … -172]° longitude range intersects [-175 …  175]° only in the [-175 … -172]° part.
          * The [-182 … -175]° part becomes [178 … 185]° after wraparound, which still outside the base
@@ -661,14 +707,14 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testAntiMeridianCrossingInEnvelope() {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(200, 180), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
                         1,  0, 80,
                         0, -1, 90,
                         0,  0,  1)), HardCodedCRS.WGS84);
 
-        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
         areaOfInterest.setRange(0, 140, -179);                 // Cross anti-meridian.
         areaOfInterest.setRange(1, -90,   90);
 
@@ -762,8 +808,8 @@ public final class GridDerivationTest extends TestCase {
         /*
          * Verify that the area of interest contains the full grid.
          */
-        final GeneralEnvelope e1 = new GeneralEnvelope(grid.getGeographicExtent().get());
-        final GeneralEnvelope e2 = new GeneralEnvelope(areaOfInterest.getGeographicExtent().get());
+        final var e1 = new GeneralEnvelope(grid.getGeographicExtent().get());
+        final var e2 = new GeneralEnvelope(areaOfInterest.getGeographicExtent().get());
         assertTrue(e2.contains(e1));
         /*
          * Expect the same longitude range as `grid` since it is fully included in `areaOfInterest`.
@@ -782,18 +828,18 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testSubgridFromShiftedAOI() {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(20, 140), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
                         1,  0, 80,
                         0, -1, 70,
                         0,  0,  1)), HardCodedCRS.WGS84);
 
-        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
         areaOfInterest.setRange(0,  70,  90);
         areaOfInterest.setRange(1, -80,  60);
 
-        final GeneralEnvelope expected = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var expected = new GeneralEnvelope(HardCodedCRS.WGS84);
         expected.setRange(0,  80,  90);
         expected.setRange(1, -70,  60);
         GridGeometry subgrid;
@@ -826,18 +872,18 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testAreaOfInterestExpansion() {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(340, 140), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
                         1,  0, 5,
                         0, -1, 70,
                         0,  0,  1)), HardCodedCRS.WGS84);
 
-        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
         areaOfInterest.setRange(0, -30,  40);
         areaOfInterest.setRange(1, -60,  60);
 
-        final GeneralEnvelope expected = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var expected = new GeneralEnvelope(HardCodedCRS.WGS84);
         expected.setRange(0,   5, 345);
         expected.setRange(1, -60,  60);
 
@@ -850,14 +896,14 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testOutsideDomain() {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(10, 20), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
                         2, 0, 0,
                         0, 2, 0,
                         0, 0, 1)), HardCodedCRS.WGS84);
 
-        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
         areaOfInterest.setRange(0, 60, 85);
         areaOfInterest.setRange(1, 15, 30);
         try {
@@ -899,7 +945,7 @@ public final class GridDerivationTest extends TestCase {
      */
     @Test
     public void testWithMarginOnly() {
-        final GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(10, 20), PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix3(
                         2, 0, 0,

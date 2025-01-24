@@ -24,7 +24,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Pattern of {@link CoordinateSystemAxis} together with resource to use for localized axis name.
+ * Pattern of a {@link CoordinateSystemAxis} together with the resource to use for localized axis name.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

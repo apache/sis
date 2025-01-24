@@ -55,7 +55,7 @@ public final class StringAdapterTest extends TestCase {
      */
     @Test
     public void testToLocalizedString() {
-        final DefaultInternationalString i18n = new DefaultInternationalString();
+        final var i18n = new DefaultInternationalString();
         i18n.add(Locale.ENGLISH,  "A word");
         i18n.add(Locale.FRENCH,   "Un mot");
         i18n.add(Locale.JAPANESE, "言葉");

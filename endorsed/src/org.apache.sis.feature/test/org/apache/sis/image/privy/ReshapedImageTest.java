@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.grid;
+package org.apache.sis.image.privy;
 
 import java.util.Random;
 import java.awt.image.DataBuffer;
@@ -145,7 +145,7 @@ public final class ReshapedImageTest extends TestCase {
      */
     @Test
     public void testMultiTiles() {
-        final Random random = TestUtilities.createRandomNumberGenerator(219970242558564L);
+        final Random random = TestUtilities.createRandomNumberGenerator();
         final int dataMinX, dataMinY;
         dataMinX  = random.nextInt(20) - 10;
         dataMinY  = random.nextInt(20) - 10;
@@ -155,9 +155,9 @@ public final class ReshapedImageTest extends TestCase {
         numYTiles = 4;
         width     = numXTiles * TILE_WIDTH;
         height    = numYTiles * TILE_HEIGHT;
-        final TiledImageMock data = new TiledImageMock(DataBuffer.TYPE_USHORT, 1, dataMinX, dataMinY,
-                                        width, height, TILE_WIDTH, TILE_HEIGHT, minTileX, minTileY,
-                                        random.nextBoolean());  // Banded or interleaved sample model
+        final var data = new TiledImageMock(DataBuffer.TYPE_USHORT, 1, dataMinX, dataMinY,
+                width, height, TILE_WIDTH, TILE_HEIGHT, minTileX, minTileY,
+                random.nextBoolean());  // Banded or interleaved sample model
         data.validate();
         data.initializeAllTiles(0);
         /*
@@ -165,7 +165,7 @@ public final class ReshapedImageTest extends TestCase {
          */
         tileXOffset = (minX =  7) - minTileX * TILE_WIDTH;
         tileYOffset = (minY = 13) - minTileY * TILE_HEIGHT;
-        ReshapedImage image = new ReshapedImage(data, dataMinX - 7, dataMinY - 13, 100, 100);
+        var image = new ReshapedImage(data, dataMinX - 7, dataMinY - 13, 100, 100);
         verifyLayout(image);
         assertValuesEqual(image.getData(), 0, new int[][] {
             { 100,  101,  102  ,   200,  201,  202  ,   300,  301,  302  ,   400,  401,  402  ,   500,  501,  502},

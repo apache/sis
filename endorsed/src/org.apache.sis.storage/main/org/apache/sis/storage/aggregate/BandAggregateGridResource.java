@@ -18,9 +18,6 @@ package org.apache.sis.storage.aggregate;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.Optional;
-import org.opengis.util.GenericName;
-import org.opengis.metadata.Metadata;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -64,14 +61,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * @see CoverageAggregator#addRangeAggregate(GridCoverageResource[], int[][])
  */
-final class BandAggregateGridResource extends AbstractGridCoverageResource implements AggregatedResource {
-    /**
-     * Persistent identifier of this resource, or {@code null} if none.
-     *
-     * @see #getIdentifier()
-     */
-    private GenericName identifier;
-
+final class BandAggregateGridResource extends AggregatedResource implements GridCoverageResource {
     /**
      * The source grid coverage resources.
      */
@@ -130,7 +120,7 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
                                       final BandAggregateArgument<GridCoverageResource> aggregate,
                                       final GridCoverageProcessor processor)
     {
-        super(parentListeners, false);
+        super(null, parentListeners, false);
         this.sources          = aggregate.sources();
         this.gridGeometry     = aggregate.domain(BandAggregateGridResource::domain);
         this.sampleDimensions = List.copyOf(aggregate.ranges());
@@ -263,32 +253,13 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
         }
     }
 
-    /** Not applicable to this implementation. */
-    @Override public Resource apply(MergeStrategy strategy) {return this;}
-
-    /** Not applicable to this implementation. */
-    @Override public void setName(String name) {}
-
     /**
-     * Sets the identifier of this resource. This is invoked by {@link CoverageAggregator} only
-     * and should not be invoked anymore after this resource has been returned to the user.
-     *
-     * @param  identifier  identifier of the combined grid coverage resource, or {@code null} if none.
+     * Returns the source grid coverage resources.
+     * Used by the parent class for computing the envelope.
      */
     @Override
-    public void setIdentifier(final GenericName identifier) {
-        this.identifier = identifier;
-    }
-
-    /**
-     * Returns the resource identifier if available.
-     *
-     * @return an identifier for the band aggregation.
-     * @throws DataStoreException if the identifier cannot be obtained.
-     */
-    @Override
-    public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.ofNullable(identifier);
+    final List<Resource> components() {
+        return UnmodifiableArrayList.wrap(sources);
     }
 
     /**
@@ -322,17 +293,14 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
      * {@linkplain AbstractGridCoverageResource#createMetadata() super-class method},
      * with the addition of lineage information for each source.
      *
-     * @return the newly created metadata, or {@code null} if unknown.
      * @throws DataStoreException if an error occurred while reading metadata from a resource.
      */
     @Override
-    protected Metadata createMetadata() throws DataStoreException {
-        MetadataBuilder builder = new MetadataBuilder();
+    protected void createMetadata(final MetadataBuilder builder) throws DataStoreException {
         builder.addDefaultMetadata(this, listeners);
         for (GridCoverageResource source : sources) {
             builder.addSource(source.getMetadata());
         }
-        return builder.build();
     }
 
     /**
@@ -343,11 +311,13 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
      * @throws DataStoreException if an error occurred while reading definitions from an underlying resource.
      */
     @Override
-    public synchronized List<double[]> getResolutions() throws DataStoreException {
-        if (resolutions == null) {
-            resolutions = ConcatenatedGridResource.commonResolutions(sources);
+    public List<double[]> getResolutions() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            if (resolutions == null) {
+                resolutions = ConcatenatedGridResource.commonResolutions(sources);
+            }
+            return UnmodifiableArrayList.wrap(resolutions);
         }
-        return UnmodifiableArrayList.wrap(resolutions);
     }
 
     /**
@@ -358,13 +328,15 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
      * @throws DataStoreException if an error occurred while fetching data store configuration.
      */
     @Override
-    public synchronized RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
+    public RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
         RasterLoadingStrategy conservative = RasterLoadingStrategy.AT_GET_TILE_TIME;
-        for (final GridCoverageResource source : sources) {
-            RasterLoadingStrategy s = source.getLoadingStrategy();
-            if (s.ordinal() < conservative.ordinal()) {
-                conservative = s;
-                if (s.ordinal() == 0) break;
+        synchronized (getSynchronizationLock()) {
+            for (final GridCoverageResource source : sources) {
+                RasterLoadingStrategy s = source.getLoadingStrategy();
+                if (s.ordinal() < conservative.ordinal()) {
+                    conservative = s;
+                    if (s.ordinal() == 0) break;
+                }
             }
         }
         return conservative;
@@ -378,10 +350,12 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
      * @throws DataStoreException if an error occurred while setting data store configuration.
      */
     @Override
-    public synchronized boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
+    public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
         boolean accepted = true;
-        for (final GridCoverageResource source : sources) {
-            accepted &= source.setLoadingStrategy(strategy);
+        synchronized (getSynchronizationLock()) {
+            for (final GridCoverageResource source : sources) {
+                accepted &= source.setLoadingStrategy(strategy);
+            }
         }
         return accepted;
     }

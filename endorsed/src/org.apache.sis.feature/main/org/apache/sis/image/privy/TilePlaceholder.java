@@ -49,9 +49,8 @@ public class TilePlaceholder {
      * Identifies workaround for two JDK bugs.
      *
      * <p><a href="https://bugs.openjdk.java.net/browse/JDK-8166038">JDK-8166038</a>:
-     * If {@link BufferedImage} cannot be used, fallback on {@link org.apache.sis.coverage.grid.ReshapedImage}
-     * at the cost of an image larger than necessary. In such case, the tests need to specify the sub-region
-     * of pixels to verify.</p>
+     * If {@link BufferedImage} cannot be used, fallback on {@link ReshapedImage} at the cost of an image
+     * larger than necessary. In such case, the tests need to specify the sub-region of pixels to verify.</p>
      *
      * <p><a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>:
      * call to {@code Graphics2D.drawRenderedImage(…)} fails if the image contains more than one tile

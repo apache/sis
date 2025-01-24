@@ -255,7 +255,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      */
     @Override
     public DefaultTreeTable clone() throws CloneNotSupportedException {
-        final DefaultTreeTable clone = (DefaultTreeTable) super.clone();
+        final var clone = (DefaultTreeTable) super.clone();
         if (clone.root instanceof Cloneable) {
             clone.root = (TreeTable.Node) Cloner.cloneIfPublic(clone.root);
         }
@@ -279,7 +279,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             return true;
         }
         if (other != null && other.getClass() == getClass()) {
-            final DefaultTreeTable that = (DefaultTreeTable) other;
+            final var that = (DefaultTreeTable) other;
             return columnIndices.equals(that.columnIndices) &&
                     Objects.equals(getRoot(), that.getRoot());
         }
@@ -450,7 +450,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         public Node(final Node parent) {
             this.parent = parent;
             columnIndices = parent.columnIndices;
-            final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
+            final var addTo = (TreeNodeList) parent.getChildren();
             addTo.addChild(addTo.size(), this);
         }
 
@@ -466,7 +466,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         public Node(final Node parent, final int index) {
             this.parent = parent;
             columnIndices = parent.columnIndices;
-            final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
+            final var addTo = (TreeNodeList) parent.getChildren();
             addTo.addChild(Objects.checkIndex(index, addTo.size() + 1), this);
         }
 
@@ -635,15 +635,6 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         }
 
         /**
-         * Returns the user object associated to this node.
-         * The default implementation returns {@code null}.
-         */
-        @Override
-        public Object getUserObject() {
-            return null;
-        }
-
-        /**
          * Returns a clone of this node without parent.
          * This method recursively clones all {@linkplain #getChildren() children},
          * but does not clone the column {@linkplain #getValue(TableColumn) values}.
@@ -737,6 +728,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         @Override
         public int hashCode() {
             int hash = 0;
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Object[] values = this.values;
             if (values != null) {
                 /*
@@ -769,6 +761,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          */
         @Override
         public String toString() {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Object[] values = this.values;
             if (values != null) {
                 for (final Object value : values) {
@@ -782,9 +775,9 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             }
             String name = getClass().getSimpleName();
             if (parent != null) {
-                final Collection<TreeTable.Node> children = parent.getChildren();
-                if (children instanceof List<?>) {
-                    name = name + '-' + ((List<TreeTable.Node>) children).indexOf(this);
+                final Collection<TreeTable.Node> pc = parent.getChildren();
+                if (pc instanceof List<?>) {
+                    name = name + '-' + ((List<TreeTable.Node>) pc).indexOf(this);
                 }
             }
             return name;

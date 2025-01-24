@@ -103,7 +103,7 @@ public abstract class Dimension extends NamedElement {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(30);
+        final var buffer = new StringBuilder(30);
         String name = getName();
         if (name != null) {
             buffer.append(name);

@@ -1613,9 +1613,9 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      */
     @Override
     public final String toString() {
-        final StringBuilder buffer = new StringBuilder("GeoTIFF keys ").append(majorRevision).append('.')
+        final var buffer = new StringBuilder("GeoTIFF keys ").append(majorRevision).append('.')
                 .append(minorRevision).append(" in ").append(listeners.getSourceName()).append(System.lineSeparator());
-        final TableAppender table = new TableAppender(buffer, " ");
+        final var table = new TableAppender(buffer, " ");
         for (Map.Entry<Short,Object> entry : geoKeys.entrySet()) {
             final short key = entry.getKey();
             table.append(String.valueOf(key)).nextColumn();

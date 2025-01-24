@@ -249,7 +249,7 @@ public final class AxisDirections extends Static {
     }
 
     /**
-     * Returns {@code true} if the given direction is a user-defined direction (i.e. is not defined by GeoAPI).
+     * Returns {@code true} if the given direction is a user-defined direction (i.e., is not defined by GeoAPI).
      *
      * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the given direction is user-defined.

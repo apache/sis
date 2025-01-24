@@ -125,7 +125,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
             intersection = source.derive()
                     .rounding(GridRoundingMode.ENCLOSING)
                     .subgrid(domain).getIntersection();             // Take in account the change of CRS if needed.
-            if (intersection.equals(source.getExtent())) {
+            if (intersection.contains(source.getExtent())) {
                 intersection = null;                                // Will request the whole image.
                 domain = source;
             }
@@ -172,9 +172,9 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
             if (intersection.equals(source.getExtent())) {
                 return subset;
             } else {
+                var crs = source.isDefined(GridGeometry.CRS) ? source.getCoordinateReferenceSystem() : null;
                 domain = new GridGeometry(intersection, PixelInCell.CELL_CORNER,
-                        source.getGridToCRS(PixelInCell.CELL_CORNER),
-                        source.getCoordinateReferenceSystem());
+                        source.getGridToCRS(PixelInCell.CELL_CORNER), crs);
             }
         }
         return new GridCoverageBuilder()
@@ -182,5 +182,43 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
                 .setDomain(domain)
                 .setRanges(subset.getSampleDimensions())
                 .build();
+    }
+
+    /**
+     * Tests whether this memory grid resource is wrapping the same coverage than the given object.
+     * This method requires also the listeners and processor to be the equal.
+     *
+     * @param  obj  the object to compare.
+     * @return whether the two objects are memory resources wrapping the same coverage.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof MemoryGridResource) {
+            final var other = (MemoryGridResource) obj;
+            return coverage.equals(other.coverage)   &&
+                   processor.equals(other.processor) &&
+                   listeners.equals(other.listeners);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for consistency with {@code equals(Object)}.
+     *
+     * @return a hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return coverage.hashCode() + 31*processor.hashCode() + 37*listeners.hashCode();
+    }
+
+    /**
+     * Returns the string representation of the wrapped coverage.
+     *
+     * @return the string representation of the wrapped coverage.
+     */
+    @Override
+    public String toString() {
+        return coverage.toString();
     }
 }

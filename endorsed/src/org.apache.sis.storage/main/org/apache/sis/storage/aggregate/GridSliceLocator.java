@@ -16,27 +16,39 @@
  */
 package org.apache.sis.storage.aggregate;
 
-import java.util.Map;
-import java.util.List;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.function.Function;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Types;
 
 
 /**
  * Coordinates of slices together with search methods.
+ * An instance of {@code GridSliceLocator} is retained for the lifetime of {@link ConcatenatedGridResource}.
  *
  * @todo Bilinear search needs to be replaced by an R-Tree.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class GridSliceLocator {
+    /**
+     * The slices contained in the aggregated resource.
+     * This array shall be considered as read-only.
+     */
+    final GridSlice[] slices;
+
+    /**
+     * The grid geometry of the aggregated resource which is using this locator.
+     * The {@link #sliceLows}, {@link #sliceHighs} and {@link GridSlice#offset}
+     * arrays are expressed in units of cells of this grid geometry.
+     *
+     * @see ConcatenatedGridResource#getGridGeometry()
+     */
+    final GridGeometry gridGeometry;
+
     /**
      * The dimension on which the searches are done.
      *
@@ -48,161 +60,115 @@ final class GridSliceLocator {
     final int searchDimension;
 
     /**
-     * Lows grid coordinates of each slice (inclusive) in the search dimension.
+     * Low grid coordinates of each slice (inclusive) in the search dimension.
      * Values must be sorted in increasing order. Duplicated values may exist.
      *
      * @todo Replace by an R-Tree.
+     *
+     * @see GroupByTransform#compare(GridSlice, GridSlice)
      */
     private final long[] sliceLows;
 
     /**
-     * Highs grid coordinates of each slice (inclusive) in the search dimension.
+     * High grid coordinates of each slice (inclusive) in the search dimension.
      * Values are for slices in the same order as {@link #sliceLows}.
-     * This is not <strong>not</strong> guaranteed to be sorted in increasing order.
      *
      * @todo Replace by an R-Tree.
      */
     private final long[] sliceHighs;
 
     /**
-     * Translation from source coordinates of {@link GroupByTransform#gridToCRS} to grid coordinates
-     * of {@link Gridslice#geometry}. Values are for slices in the same order as {@link #sliceLows}.
-     */
-    private final long[][] offsets;
-
-    /**
-     * Creates a new locator for slices at given coordinates.
+     * Creates a new locator for the given slices.
+     * The {@link #gridGeometry} will be the union of all grid extents in the concatenated resource.
      *
+     * <h4>Prerequisites</h4>
+     * All resources shall have the same "grid to CRS" transform, ignoring the translation terms.
+     * This is not verified by this constructor.
+     *
+     * @param domain           base geometry to expand to the union of the grid geometry of all resources.
      * @param slices           descriptions of the grid resources to use as slices in a multi-dimensional cube.
      * @param searchDimension  the dimension on which the searches for grid slices are done.
-     * @param resources        an array of initially null elements where to store the resources.
      */
-    GridSliceLocator(final List<GridSlice> slices, final int searchDimension, final GridCoverageResource[] resources) {
+    GridSliceLocator(GridGeometry domain, final GridSlice[] selected, final int searchDimension) {
         this.searchDimension = searchDimension;
-
-        // TODO: use `parallelSort(…)` if https://bugs.openjdk.org/browse/JDK-8059093 is fixed.
-        slices.sort((o1, o2) -> Long.compare(o1.getGridLow(searchDimension), o2.getGridLow(searchDimension)));
-
-        sliceLows  = new long[resources.length];
-        sliceHighs = new long[resources.length];
-        offsets    = new long[resources.length][];
-        final Map<GridSlice,long[]> shared = new HashMap<>();
-        for (int i=0; i<resources.length; i++) {
-            final GridSlice  slice  = slices.get(i);
-            final GridExtent extent = slice.getGridExtent();
-            final long[]     offset = slice.getOffset(shared);
-            final long       dimOff = offset[searchDimension];
-            sliceLows [i] = Math.subtractExact(extent.getLow (searchDimension), dimOff);
-            sliceHighs[i] = Math.subtractExact(extent.getHigh(searchDimension), dimOff);
-            resources [i] = slice.resource;
-            offsets   [i] = offset;
-        }
-    }
-
-    /**
-     * Creates a new grid geometry which is the union of all grid extent in the concatenated resource.
-     *
-     * @param  <E>     type of slice objects.
-     * @param  base    base geometry to expand.
-     * @param  slices  objects providing the grid extents.
-     * @param  getter  getter method for getting the grid extents from slices.
-     * @return expanded grid geometry.
-     */
-    final <E> GridGeometry union(final GridGeometry base, final List<E> slices, final Function<E,GridExtent> getter) {
-        GridExtent extent = base.getExtent();
-        final int dimension = extent.getDimension();
-        final DimensionNameType[] axes = new DimensionNameType[dimension];
-        final long[] low  = new long[dimension];
-        final long[] high = new long[dimension];
+        this.slices          = selected;
+        this.sliceLows       = new long[selected.length];
+        this.sliceHighs      = new long[selected.length];
+        GridExtent aoi = domain.getExtent();
+        final int dimension = aoi.getDimension();
+        final var axes = new DimensionNameType[dimension];
+        final var low  = new long[dimension];
+        final var high = new long[dimension];
         for (int i=0; i<dimension; i++) {
-            axes[i] = extent.getAxisType(i).orElse(null);
-            low [i] = extent.getLow (i);
-            high[i] = extent.getHigh(i);
+            axes[i] = aoi.getAxisType(i).orElse(null);
+            low [i] = Long.MAX_VALUE;
+            high[i] = Long.MIN_VALUE;
         }
-        boolean changed = false;
-        final int count = slices.size();
-        for (int i=0; i<count; i++) {
-            final GridExtent slice = getter.apply(slices.get(i));
+        for (int i=0; i<slices.length; i++) {
+            final GridSlice  slice  = slices[i];
+            final GridExtent extent = slice.extentInGroup;
+            sliceLows [i] = extent.getLow (searchDimension);
+            sliceHighs[i] = extent.getHigh(searchDimension);
             for (int j=0; j<dimension; j++) {
-                final long offset = offsets[i][j];
-                long v;
-                if ((v = Math.subtractExact(slice.getLow (j), offset)) < low [j]) {low [j] = v; changed = true;}
-                if ((v = Math.subtractExact(slice.getHigh(j), offset)) > high[j]) {high[j] = v; changed = true;}
+                low [j] = Math.min(low [j], extent.getLow (j));
+                high[j] = Math.max(high[j], extent.getHigh(j));
             }
         }
-        if (!changed) {
-            return base;
+        if (!aoi.equals(aoi = new GridExtent(axes, low, high, true))) {
+            var crs = domain.isDefined(GridGeometry.CRS) ? domain.getCoordinateReferenceSystem() : null;
+            domain = new GridGeometry(aoi, GridSlice.CELL_ANCHOR, domain.getGridToCRS(GridSlice.CELL_ANCHOR), crs);
         }
-        extent = new GridExtent(axes, low, high, true);
-        return new GridGeometry(extent, GridSlice.CELL_ANCHOR, base.getGridToCRS(GridSlice.CELL_ANCHOR),
-                                base.isDefined(GridGeometry.CRS) ? base.getCoordinateReferenceSystem() : null);
+        gridGeometry = domain;
     }
 
     /**
-     * Returns the extent to use for querying a coverage from the slice at the given index.
+     * Returns the indexes of the slices that intersect the given extent.
      *
-     * @param  extent  extent in units of aggregated grid coverage cells.
-     * @param  slice   index of the slice to which to delegate an operation.
-     * @return extent in units of the slice grid coverage.
+     * @param  request  the extent to search.
+     * @return indexes of slices that intersect the given extent.
      */
-    final GridExtent toSliceExtent(final GridExtent extent, final int slice) {
-        return extent.translate(offsets[slice]);
-    }
-
-    /**
-     * Returns the index after the last slice which may intersect the given extent.
-     *
-     * @param sliceExtent  the extent to search.
-     * @param fromIndex    index of the first slice to include in the search.
-     * @param toIndex      index after the last slice to include in the search.
-     */
-    final int getUpper(final GridExtent sliceExtent, final int fromIndex, final int toIndex) {
-        final long high = sliceExtent.getHigh(searchDimension);
-        int upper = Arrays.binarySearch(sliceLows, fromIndex, toIndex, high);
+    final int[] find(final GridExtent request) {
+        /*
+         * Find by elimination: slices cannot intersect if:
+         *
+         *   • slice.low  > request.high   — `upper` is the index of the first such slice.
+         *   • slice.high < request.low    — `lower` is the index after the last such slice.
+         */
+        int lower;
+        final long high = request.getHigh(searchDimension);
+        int upper = Arrays.binarySearch(sliceLows, high);
         if (upper < 0) {
-            upper = ~upper;         // Index of first slice that cannot intersect, because slice.low > high.
+            lower = upper = ~upper;     // Tild, not minus.
         } else {
-            do upper++;
-            while (upper < toIndex && sliceLows[upper] <= high);
-        }
-        return upper;
-    }
-
-    /**
-     * Returns the index of the first slice which intersect the given extent.
-     * This method performs a linear search. For better performance, it should be invoked
-     * with {@code toIndex} parameter set to {@link #getUpper(GridExtent, int, int)} value.
-     *
-     * <h4>Limitations</h4>
-     * Current implementation assumes that {@link #sliceHighs} are sorted in increasing order,
-     * which is not guaranteed. For a robust search, we would need an R-Tree.
-     *
-     * @param sliceExtent  the extent to search.
-     * @param fromIndex    index of the first slice to include in the search.
-     * @param toIndex      index after the last slice to include in the search.
-     */
-    final int getLower(final GridExtent sliceExtent, final int fromIndex, int toIndex) {
-        final long low = sliceExtent.getLow(searchDimension);
-        while (toIndex > fromIndex) {
-            if (sliceHighs[--toIndex] < low) {
-                return toIndex + 1;
+            lower = upper;
+            while (++upper < sliceLows.length) {
+                if (sliceLows[upper] > high) break;
             }
         }
-        return toIndex;
+        final long low = request.getLow(searchDimension);
+        lower = Arrays.binarySearch(sliceHighs, 0, lower, low);
+        if (lower < 0) {
+            lower = ~lower;
+        } else {
+            while (--lower >= 0) {
+                if (sliceHighs[lower] < low) break;
+            }
+            lower++;
+        }
+        int count = 0;
+        final var selection = new int[upper - lower];
+        for (int i=lower; i<upper; i++) {
+            final GridSlice slice = slices[i];
+            if (request.intersects(slice.extentInGroup)) {
+                selection[count++] = i;
+            }
+        }
+        return ArraysExt.resize(selection, count);
     }
 
     /**
-     * Returns {@code true} if the grid extent in the search dimension is a slice of size 1.
-     *
-     * @param  sliceExtent  the extent to search.
-     * @return whether the extent is a slice in the search dimension.
-     */
-    final boolean isSlice(final GridExtent sliceExtent) {
-        return sliceExtent.getLow(searchDimension) == sliceExtent.getHigh(searchDimension);
-    }
-
-    /**
-     * Return the name of the extent axis in the search dimension.
+     * Returns the name of the extent axis in the search dimension.
+     * Used for formatting error messages in exceptions.
      *
      * @param  extent  the extent from which to get an axis label.
      * @return label for the search axis.

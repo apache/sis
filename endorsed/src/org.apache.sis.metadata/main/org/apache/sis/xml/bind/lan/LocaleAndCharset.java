@@ -84,14 +84,11 @@ public final class LocaleAndCharset implements Node {
         return node.getParent();
     }
 
-    /**
+    /*
+     * Inherit `isEditable(…)` from the `Node` interface:
      * Considers this node as non-editable since it represents the key in a map, and keys cannot be modified
-     * through the {@link Map.Entry} interface. However, {@link Child} will be editable for the value column.
+     * through the `Map.Entry` interface. However, `Child` will be editable for the value column.
      */
-    @Override
-    public boolean isEditable(final TableColumn<?> column) {
-        return false;
-    }
 
     /**
      * Returns {@code false} since this node can have a children, which is the {@link Child}.
@@ -207,7 +204,6 @@ public final class LocaleAndCharset implements Node {
         @Override public boolean          isEditable(TableColumn<?> c) {return node.isEditable(c);}
         @Override public boolean          isLeaf()                     {return true;}
         @Override public Collection<Node> getChildren()                {return Collections.emptySet();}
-        @Override public Node             newChild()                   {throw new UnsupportedOperationException();}
 
         /** Returns the value at the given column, with hard-coded names. */
         @Override public <V> V getValue(final TableColumn<V> column) {

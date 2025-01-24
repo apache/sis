@@ -166,7 +166,7 @@ public class BufferedGridCoverage extends GridCoverage {
         final long expectedSize = getSampleCount(extent, numBands);
         final long bufferSize = Math.multiplyFull(data.getSize(), numBanks);
         if (bufferSize < expectedSize) {
-            final StringBuilder b = new StringBuilder();
+            final var b = new StringBuilder();
             for (int i=0; i < extent.getDimension(); i++) {
                 if (i != 0) b.append(" × ");
                 b.append(extent.getSize(i));
@@ -254,7 +254,7 @@ public class BufferedGridCoverage extends GridCoverage {
         }
         try {
             return cachedRenderings.computeIfAbsent(sliceExtent, (slice) -> {
-                ImageRenderer renderer = new ImageRenderer(this, slice);
+                var renderer = new ImageRenderer(this, slice);
                 renderer.setData(data);
                 return renderer.createImage();
             });

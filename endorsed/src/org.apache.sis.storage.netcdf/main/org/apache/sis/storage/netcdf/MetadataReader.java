@@ -219,7 +219,7 @@ final class MetadataReader extends MetadataBuilder {
         if (value == null) {
             return List.of();
         }
-        final List<String> items = new ArrayList<>();
+        final var items = new ArrayList<String>();
         int start = 0;      // Index of the first character of the next item to add in the list.
         int end;            // Index after the last character of the next item to add in the list.
         int next;           // Index of the next separator (comma) after `end`.
@@ -879,7 +879,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds information about all netCDF variables. This is the {@code <mdb:contentInfo>} element in XML.
+     * Adds information about all netCDF variables. This is the {@code <mdb:contentInfo>} element in <abbr>XML</abbr>.
      * This method groups variables by their domains, i.e. variables having the same set of axes, ignoring order,
      * are grouped together. Variables having only a subset of axes are also grouped together with the variables
      * having more dimension.
@@ -895,17 +895,19 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * We differ metadata writing for giving us a chance to group related contents.
          */
         final var features  = new LinkedHashSet<Dimension>();
-        final var coverages = new LinkedHashMap<Set<String>, List<Variable>>();
+        final var coverages = new LinkedHashMap<Set<Object>, List<Variable>>();
         for (final Variable variable : decoder.getVariables()) {
             if (VariableRole.isCoverage(variable)) {
                 final var dimensions = variable.getGridDimensions();
-                final String[] names = new String[dimensions.size()];
+                final var names = new Object[dimensions.size()];
                 for (int i=0; i<names.length; i++) {
-                    names[i] = dimensions.get(i).getName();
+                    Object name = dimensions.get(i).getName();
+                    if (name == null) name = i;
+                    names[i] = name;
                 }
                 coverages.computeIfAbsent(Set.of(names), (key) -> {
-                    for (Map.Entry<Set<String>, List<Variable>> entry : coverages.entrySet()) {
-                        final Set<String> previous = entry.getKey();
+                    for (Map.Entry<Set<Object>, List<Variable>> entry : coverages.entrySet()) {
+                        final Set<Object> previous = entry.getKey();
                         if (previous.containsAll(key) || key.containsAll(previous)) {
                             // Share with all keys that are subset or superset.
                             return entry.getValue();

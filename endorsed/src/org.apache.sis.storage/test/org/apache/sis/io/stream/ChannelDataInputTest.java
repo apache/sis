@@ -21,6 +21,7 @@ import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 // Test dependencies
@@ -147,13 +148,94 @@ public final class ChannelDataInputTest extends ChannelDataTestCase {
     @Test
     public void testReadString() throws IOException {
         final String expected = "お元気ですか";
-        final byte[] array    = expected.getBytes("UTF-8");
-        assertEquals(expected.length()*3, array.length); // Sanity check.
-        final ChannelDataInput input = new ChannelDataInput("testReadString",
-                new DripByteChannel(array, random, 1, 32),
-                ByteBuffer.allocate(array.length + 4), false);
+        final byte[] array = expected.getBytes(StandardCharsets.UTF_8);
+        assertEquals(expected.length()*3, array.length);    // Sanity check.
+        final var input = new ChannelDataInput("testReadString",
+                              new DripByteChannel(array, random, 1, 32),
+                              ByteBuffer.allocate(array.length + 4), false);
         assertEquals(expected, input.readString(array.length, StandardCharsets.UTF_8));
         assertFalse(input.buffer.hasRemaining());
+    }
+
+    /**
+     * Tests the {@link ChannelDataInput#readNullTerminatedString(Charset)} method.
+     *
+     * @throws IOException should never happen since we read and write in memory only.
+     */
+    public void testReadNullTerminatedString() throws IOException {
+        for (int i=0; i<=8; i++) {
+            String  expected = "theatre théâtre 劇場";
+            Charset encoding;
+            int     charSize;
+            char    bom = 0;
+            switch (i) {
+                case 0: {
+                    encoding = StandardCharsets.US_ASCII;
+                    expected = expected.substring(0, expected.indexOf(' '));
+                    charSize = Byte.BYTES;
+                    break;
+                }
+                case 1: {
+                    encoding = StandardCharsets.ISO_8859_1;
+                    expected = expected.substring(0, expected.lastIndexOf(' '));
+                    charSize = Byte.BYTES;
+                    break;
+                }
+                case 2: {
+                    encoding = StandardCharsets.UTF_8;
+                    charSize = Byte.BYTES;
+                    break;
+                }
+                case 3: {
+                    encoding = StandardCharsets.UTF_16;
+                    charSize = Short.BYTES;
+                    break;
+                }
+                case 4: {
+                    encoding = StandardCharsets.UTF_16BE;
+                    charSize = Short.BYTES;
+                    break;
+                }
+                case 5: {
+                    encoding = StandardCharsets.UTF_16LE;
+                    charSize = Short.BYTES;
+                    break;
+                }
+                case 6: {
+                    encoding = StandardCharsets.UTF_8;
+                    charSize = Byte.BYTES;
+                    bom      = ' ';             // Arbitrary value for meaning "do not write BOM".
+                    break;
+                }
+                case 7: {
+                    encoding = StandardCharsets.UTF_16BE;
+                    charSize = Short.BYTES;
+                    bom      = '\uFEFF';
+                    break;
+                }
+                case 8: {
+                    encoding = StandardCharsets.UTF_16LE;
+                    charSize = Short.BYTES;
+                    bom      = '\uFFFE';        // BOM with swapped bytes.
+                    break;
+                }
+                default: throw new AssertionError(i);
+            }
+            int base = random.nextInt(5) + 3;
+            final byte[] bytes = expected.getBytes(encoding);
+            final byte[] array = new byte[base + bytes.length + charSize];
+            System.arraycopy(bytes, 0, array, base, bytes.length);
+            if (bom > ' ') {
+                array[--base] = (byte) (bom & 0xFF);
+                array[--base] = (byte) (bom >>> Byte.SIZE);
+            }
+            final var input = new ChannelDataInput("testReadNullTerminatedString",
+                                  new DripByteChannel(array, random, charSize, 24),
+                                  ByteBuffer.allocate(array.length + 4), false);
+            input.seek(base);
+            assertEquals(expected, input.readNullTerminatedString(bom == 0 ? encoding : null));
+            assertFalse(input.buffer.hasRemaining());
+        }
     }
 
     /**
@@ -166,11 +248,11 @@ public final class ChannelDataInputTest extends ChannelDataTestCase {
     public void testSeekOnForwardOnlyChannel() throws IOException {
         int length = random.nextInt(2048) + 1024;
         final byte[] array = createRandomArray(length);
-        length -= Long.BYTES; // Safety against buffer underflow.
+        length -= Long.BYTES;   // Safety against buffer underflow.
         final ByteBuffer buffer = ByteBuffer.wrap(array);
-        final ChannelDataInput input = new ChannelDataInput("testSeekOnForwardOnlyChannel",
-                new DripByteChannel(array, random, 1, 2048),
-                ByteBuffer.allocate(random.nextInt(64) + 16), false);
+        final var input = new ChannelDataInput("testSeekOnForwardOnlyChannel",
+                              new DripByteChannel(array, random, 1, 2048),
+                              ByteBuffer.allocate(random.nextInt(64) + 16), false);
         int position = 0;
         while (position < length) {
             input.seek(position);
@@ -187,11 +269,12 @@ public final class ChannelDataInputTest extends ChannelDataTestCase {
      */
     @Test
     public void testPrefetch() throws IOException {
-        final int        length = random.nextInt(256) + 128;
-        final byte[]     array  = createRandomArray(length);
-        final ByteBuffer buffer = ByteBuffer.allocate(random.nextInt(64) + 16);
-        final ChannelDataInput input = new ChannelDataInput("testPrefetch",
-                new DripByteChannel(array, random, 1, 64), buffer, false);
+        final int    length = random.nextInt(256) + 128;
+        final byte[] array  = createRandomArray(length);
+        final var    buffer = ByteBuffer.allocate(random.nextInt(64) + 16);
+        final var    input  = new ChannelDataInput("testPrefetch",
+                                  new DripByteChannel(array, random, 1, 64),
+                                  buffer, false);
         int position = 0;
         while (position != length) {
             if (random.nextBoolean()) {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.coverage.grid;
+package org.apache.sis.image.privy;
 
 import java.util.Vector;
 import java.util.Objects;
@@ -35,18 +35,18 @@ import org.apache.sis.image.PlanarImage;
 
 /**
  * A view over another image with the origin relocated to a new position.
- * Only the pixel coordinates are changed; the tile indices stay the same.
+ * Only the pixel coordinates are changed, the tile indices stay the same.
  * However, the image view may expose less tiles than the wrapped image.
  * This wrapper does not change image size otherwise than by an integer number of tiles.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class ReshapedImage extends PlanarImage {
+public final class ReshapedImage extends PlanarImage {
     /**
      * The image to translate.
      */
-    final RenderedImage source;
+    public final RenderedImage source;
 
     /**
      * Value to add for converting a column index from the coordinate system of the wrapped image
@@ -80,6 +80,33 @@ final class ReshapedImage extends PlanarImage {
     private final int minTileX, minTileY;
 
     /**
+     * Creates an image with the data of the given image translated by the given amount.
+     * The number of tiles and their indexes are unchanged.
+     *
+     * @param  source  the image to translate.
+     * @param  tx      the translation to apply on <var>x</var> coordinates.
+     * @param  ty      the translation to apply on <var>y</var> coordinates.
+     * @throws ArithmeticException if image indices would overflow 32-bits integer capacity.
+     */
+    public ReshapedImage(RenderedImage source, long tx, long ty) {
+        while (source instanceof ReshapedImage) {
+            final var r = (ReshapedImage) source;
+            tx = addExact(r.offsetX, tx);
+            ty = addExact(r.offsetY, ty);
+            source = r.source;
+        }
+        this.source = source;
+        offsetX  = toIntExact(tx);
+        offsetY  = toIntExact(ty);
+        minX     = toIntExact(tx + source.getMinX());
+        minY     = toIntExact(ty + source.getMinY());
+        width    = source.getWidth();
+        height   = source.getHeight();
+        minTileX = source.getMinTileX();
+        minTileY = source.getMinTileY();
+    }
+
+    /**
      * Creates a new image with the same data as the given image but located at different coordinates.
      * In addition, this constructor can reduce the number of tiles.
      *
@@ -88,9 +115,9 @@ final class ReshapedImage extends PlanarImage {
      * @param  ymin    minimal <var>y</var> coordinate of the requested region, inclusive.
      * @param  xmax    maximal <var>x</var> coordinate of the requested region, inclusive.
      * @param  ymax    maximal <var>y</var> coordinate of the requested region, inclusive.
-     * @throws ArithmeticException if image indices would overflow 32 bits integer capacity.
+     * @throws ArithmeticException if image indices would overflow 32-bits integer capacity.
      */
-    ReshapedImage(final RenderedImage source, final long xmin, final long ymin, final long xmax, final long ymax) {
+    public ReshapedImage(final RenderedImage source, final long xmin, final long ymin, final long xmax, final long ymax) {
         this.source = source;
         /*
          * Compute indices of all tiles to retain in this image. All local fields are `long` in order to force
@@ -106,14 +133,14 @@ final class ReshapedImage extends PlanarImage {
         final long th     = source.getTileHeight();
         final long xo     = source.getTileGridXOffset();
         final long yo     = source.getTileGridYOffset();
-        final long minTX  = floorDiv(max(lowerX, xmin) - xo, tw);   // Indices of the first tile to retain.
-        final long minTY  = floorDiv(max(lowerY, ymin) - yo, th);
-        final long maxTX  = floorDiv(min(upperX, xmax) - xo, tw);   // Indices of the last tile to retain (inclusive).
-        final long maxTY  = floorDiv(min(upperY, ymax) - yo, th);
+        final long minTX  = floorDiv(max(xmin, lowerX)   - xo, tw);   // Indices of the first tile to retain.
+        final long minTY  = floorDiv(max(ymin, lowerY)   - yo, th);
+        final long maxTX  = floorDiv(min(xmax, upperX-1) - xo, tw);   // Indices of the last tile to retain (inclusive).
+        final long maxTY  = floorDiv(min(ymax, upperY-1) - yo, th);
         /*
          * Coordinates in source image of the first pixel to show in this relocated image.
          * They are the coordinates of the upper-left corner of the first tile to retain,
-         * clamped to image bounds if needed. This is not yet coordinates of this image.
+         * clamped to image bounds if needed. This is not yet the coordinates of this image.
          */
         final long sx = max(lowerX, minTX * tw + xo);
         final long sy = max(lowerY, minTY * th + yo);
@@ -137,7 +164,7 @@ final class ReshapedImage extends PlanarImage {
     /**
      * Returns {@code true} if this image does not move and does not subset the wrapped image.
      */
-    final boolean isIdentity() {
+    public boolean isIdentity() {
         // The use of >= is a paranoiac check, but the > case should never happen actually.
         return offsetX == 0 && offsetY == 0 && width >= source.getWidth() && height >= source.getHeight();
     }

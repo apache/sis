@@ -158,41 +158,33 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@code "name"}</td>
      *     <td>{@link GenericName}</td>
      *     <td>(none)</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#CODE_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getCode()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#CODESPACE_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getCodeSpace()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
      *     <td>{@link String} or {@link Citation}</td>
      *     <td>{@link #getAuthority()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#VERSION_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getVersion()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getDescription()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
      *     <td>{@link Locale}</td>
      *     <td>(none)</td>

@@ -23,6 +23,7 @@ import org.apache.sis.util.privy.Strings;
 
 /**
  * A helper class for choosing the dimension on which to perform aggregation.
+ * An instance is created for each dimension of the grid geometry of a group.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -40,51 +41,87 @@ final class DimensionSelector implements Comparable<DimensionSelector> {
     private final long[] positions;
 
     /**
+     * The largest extent size found among all slices.
+     * Together with {@link #sumOfSize}, it provides a way to check is the size is constant.
+     */
+    private long maxSize;
+
+    /**
      * Sum of grid extent size of each slice.
      * This is updated for each new slice added to this selector.
      */
     private BigInteger sumOfSize;
 
     /**
-     * Increment in unit of the extent size. This calculation is based on mean values only.
-     * It is computed after the {@link #positions} array has been completed with data from all slices.
+     * {@code true} if the increment between each slice is constant and equals to the extent size.
+     * In such case, the slices are actually tiles of constant size in a regular tile matrix.
+     * This is used for setting the value of {@link GroupByTransform#isMosaic}.
+     *
+     * <h4>Validity</h4>
+     * This value is valid only after {@link #finish()} has been invoked, which is itself invoked
+     * only after the {@link #positions} array has been completed with data from all slices.
+     */
+    boolean isMosaic;
+
+    /**
+     * {@code true} if all {@link #positions} values are the same.
+     * For example, for a list of slices in the same geographic area but at different days <var>t</var>,
+     * this flag will typically be {@code true} for the horizontal dimensions and {@code false} for the
+     * temporal dimension.
+     *
+     * <h4>Validity</h4>
+     * This value is valid only after {@link #finish()} has been invoked, which is itself invoked
+     * only after the {@link #positions} array has been completed with data from all slices.
+     */
+    boolean isConstantPosition;
+
+    /**
+     * Average position increment in unit of the extent size.
+     * Small values mean that the position barely changes compared to the slice size.
+     * This is used for {@linkplain #compareTo choosing a preferred aggregation axis}.
+     *
+     * <h4>Validity</h4>
+     * This value is valid only after {@link #finish()} has been invoked, which is itself invoked
+     * only after the {@link #positions} array has been completed with data from all slices.
      */
     private double relativeIncrement;
 
     /**
      * Difference between minimal and maximal increment.
-     * This is computed after the {@link #positions} array has been completed with data from all slices.
+     * Small values suggest that the increment is more stable compared to large values.
+     * This is used for {@linkplain #compareTo choosing a preferred aggregation axis}.
+     *
+     * <h4>Validity</h4>
+     * This value is valid only after {@link #finish()} has been invoked, which is itself invoked
+     * only after the {@link #positions} array has been completed with data from all slices.
      */
     private long incrementRange;
 
     /**
-     * {@code true} if all {@link #positions} values are the same.
-     * This field is valid only after {@link #finish()} call.
-     */
-    boolean isConstantPosition;
-
-    /**
      * Prepares a new selector for a single dimension.
      *
-     * @param  dim  the dimension examined by this selector.
-     * @param  n    number of slices.
+     * @param  dimension   the dimension examined by this selector.
+     * @param  sliceCount  number of slices.
      */
-    DimensionSelector(final int dim, final int n) {
-        dimension = dim;
-        positions = new long[n];
-        sumOfSize = BigInteger.ZERO;
+    DimensionSelector(final int dimension, final int sliceCount) {
+        this.dimension = dimension;
+        this.positions = new long[sliceCount];
+        this.sumOfSize = BigInteger.ZERO;
     }
 
     /**
-     * Sets the extent of a single slice.
+     * Sets the position and size of a single slice. The given position can be the low, mid or high grid coordinate,
+     * or anything else, as long as the choice is kept consistent across calls to this method on the same instance.
+     * The positions can be in any order, not necessarily increasing with the slice index.
      *
-     * @param i     index of the slice.
-     * @param pos   position of the slice. Could be low, mid or high index, as long as the choice is kept consistent.
-     * @param size  size of the extent, in number of cells.
+     * @param sliceIndex  index of the slice.
+     * @param position    position of the slice from an arbitrary measurement process.
+     * @param extentSize  size of the extent, in number of cells.
      */
-    final void setSliceExtent(final int i, final long pos, final long size) {
-        positions[i] = pos;
-        sumOfSize = sumOfSize.add(BigInteger.valueOf(size));
+    final void setSliceExtent(final int sliceIndex, final long position, final long extentSize) {
+        positions[sliceIndex] = position;
+        maxSize = Math.max(maxSize, extentSize);
+        sumOfSize = sumOfSize.add(BigInteger.valueOf(extentSize));
     }
 
     /**
@@ -107,14 +144,15 @@ final class DimensionSelector implements Comparable<DimensionSelector> {
                 previous = p;
             }
         }
-        isConstantPosition = (maxInc == 0);
+        isMosaic = isConstantPosition = (maxInc == 0);
         if (minInc <= maxInc) {
             relativeIncrement = sumOfInc.doubleValue() / sumOfSize.doubleValue();
             incrementRange = maxInc - minInc;   // Cannot overflow because minInc >= 0.
-            /*
-             * TODO: we may have a mosaic if `incrementRange == 0 && maxInc == size`.
-             *       Or maybe we could accept `maxInc <= minSize`.
-             */
+            isMosaic = (incrementRange == 0) && (isConstantPosition || maxInc == maxSize);
+        }
+        if (isMosaic) {
+            // Verify that all tiles have the same size.
+            isMosaic = sumOfSize.equals(BigInteger.valueOf(maxSize).multiply(BigInteger.valueOf(positions.length)));
         }
     }
 
@@ -142,6 +180,11 @@ final class DimensionSelector implements Comparable<DimensionSelector> {
      */
     @Override
     public String toString() {
-        return Strings.toString(getClass(), "dimension", dimension, "relativeIncrement", relativeIncrement);
+        return Strings.toString(getClass(),
+                "dimension",          dimension,
+                "isMosaic",           isMosaic,
+                "isConstantPosition", isConstantPosition,
+                "relativeIncrement",  relativeIncrement,
+                "incrementRange",     incrementRange);
     }
 }

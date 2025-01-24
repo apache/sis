@@ -103,9 +103,9 @@ public final class PT_FreeText extends GO_CharacterString {
      */
     public static PT_FreeText create(final InternationalString text) {
         if (text instanceof DefaultInternationalString) {
-            final DefaultInternationalString df = (DefaultInternationalString) text;
+            final var df = (DefaultInternationalString) text;
             final Set<Locale> locales = df.getLocales();
-            final TextGroup[] textGroup = new TextGroup[locales.size()];
+            final var textGroup = new TextGroup[locales.size()];
             int n = 0;
             for (final Locale locale : locales) {
                 if (locale != null && !locale.equals(Locale.ROOT)) {
@@ -120,8 +120,8 @@ public final class PT_FreeText extends GO_CharacterString {
                  * the implementation (DefaultInternationalString) is known to support null.
                  */
                 final Context context = Context.current();
-                return new PT_FreeText(df.toString(context != null ? context.getLocale() : null),
-                        ArraysExt.resize(textGroup, n));
+                String s = df.toString(context != null ? context.getLocale() : null);
+                return new PT_FreeText(s, ArraysExt.resize(textGroup, n));
             }
         }
         return null;
@@ -137,6 +137,7 @@ public final class PT_FreeText extends GO_CharacterString {
      * @return {@code true} if the given text has been found.
      */
     private boolean contains(final String search) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final TextGroup[] textGroup = this.textGroup;
         if (textGroup != null) {
             for (final TextGroup group : textGroup) {
@@ -179,6 +180,7 @@ public final class PT_FreeText extends GO_CharacterString {
          * DefaultInternationalString.
          */
         DefaultInternationalString i18n = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final TextGroup[] textGroup = this.textGroup;
         if (textGroup != null) {
             for (final TextGroup group : textGroup) {

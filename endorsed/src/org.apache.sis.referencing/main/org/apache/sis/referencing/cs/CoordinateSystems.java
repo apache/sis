@@ -563,11 +563,42 @@ next:   for (final CoordinateSystem cs : targets) {
      * @since 0.8
      */
     public static AxisDirection[] getAxisDirections(final CoordinateSystem cs) {
-        final AxisDirection[] directions = new AxisDirection[cs.getDimension()];
+        final var directions = new AxisDirection[cs.getDimension()];
         for (int i=0; i<directions.length; i++) {
             final CoordinateSystemAxis axis = cs.getAxis(i);
             ArgumentChecks.ensureNonNullElement("cs", i, cs);
             ArgumentChecks.ensureNonNullElement("cs[#].direction", i, directions[i] = axis.getDirection());
+        }
+        return directions;
+    }
+
+    /**
+     * Returns the axis directions, replacing "North/South along meridian" by a cardinal direction.
+     * When a {@linkplain #isAlongMeridian direction along a meridian} is detected,
+     * this method uses the axis abbreviation for the direction by East or North.
+     *
+     * <h4>Example</h4>
+     * The <q>WGS 84 / UPS South (E,N)</q> coordinate reference system has two axis
+     * oriented toward North: <q>North along 90°E</q> and <q>North along 0°E</q>.
+     * Those axes are conventionally named <q>Easting (E)</q> and <q>Northing (N)</q>.
+     * This method uses those conventional names for returning (east, north) directions.
+     *
+     * @param  cs  the coordinate system.
+     * @return the simple axis directions for the specified coordinate system.
+     * @throws NullPointerException if {@code cs} is null, or one of its axes or directions is null.
+     *
+     * @since 1.5
+     */
+    public static AxisDirection[] getSimpleAxisDirections(final CoordinateSystem cs) {
+        final var directions = getAxisDirections(cs);
+        for (int i=0; i<directions.length; i++) {
+            if (isAlongMeridian(directions[i])) {
+                final String abbreviation = cs.getAxis(i).getAbbreviation();
+                if (abbreviation != null && abbreviation.length() == 1) {
+                    AxisDirection r = AxisDirections.fromAbbreviation(abbreviation.charAt(0));
+                    if (r != null) directions[i] = r;
+                }
+            }
         }
         return directions;
     }

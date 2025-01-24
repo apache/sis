@@ -1223,7 +1223,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                         final MatrixSIS m;
                         objectiveCRS = objectiveBounds.getCoordinateReferenceSystem();
                         if (objectiveCRS != null) {
-                            AxisDirection[] srcAxes = CoordinateSystems.getAxisDirections(objectiveCRS.getCoordinateSystem());
+                            AxisDirection[] srcAxes = CoordinateSystems.getSimpleAxisDirections(objectiveCRS.getCoordinateSystem());
                             m = Matrices.createTransform(objectiveBounds, srcAxes, target, toDisplayDirections(srcAxes));
                         } else {
                             m = Matrices.createTransform(objectiveBounds, target);

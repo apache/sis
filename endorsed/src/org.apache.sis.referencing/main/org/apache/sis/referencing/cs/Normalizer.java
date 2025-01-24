@@ -51,7 +51,7 @@ import static org.apache.sis.referencing.privy.NilReferencingObject.UNNAMED;
 
 
 /**
- * Derives an coordinate system from an existing one for {@link AxesConvention}.
+ * Derives a coordinate system from an existing one for a given {@link AxesConvention}.
  * The main usage for this class is to reorder the axes in some fixed order like
  * (<var>x</var>, <var>y</var>, <var>z</var>) or (<var>longitude</var>, <var>latitude</var>).
  *
@@ -200,7 +200,7 @@ final class Normalizer implements Comparable<Normalizer> {
      * @param angularUnitOrder  -1 for sorting angular units first, +1 for sorting them last, or 0 if neutral.
      */
     static boolean sort(final CoordinateSystemAxis[] axes, final int angularUnitOrder) {
-        final Normalizer[] wrappers = new Normalizer[axes.length];
+        final var wrappers = new Normalizer[axes.length];
         for (int i=0; i<axes.length; i++) {
             wrappers[i] = new Normalizer(axes[i], angularUnitOrder);
         }
@@ -240,7 +240,7 @@ final class Normalizer implements Comparable<Normalizer> {
         final String abbreviation = axis.getAbbreviation();
         final String newAbbr = sameDirection ? abbreviation :
                 AxisDirections.suggestAbbreviation(axis.getName().getCode(), newDir, newUnit);
-        final Map<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         if (newAbbr.equals(abbreviation)) {
             properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
         } else {
@@ -290,7 +290,7 @@ final class Normalizer implements Comparable<Normalizer> {
          * axes before normalization in order to detect which axes have been reused
          * and whether reused axes are in the same order as before.
          */
-        final CoordinateSystemAxis[] oldAxes = new CoordinateSystemAxis[dimension];
+        final var oldAxes = new CoordinateSystemAxis[dimension];
         int n = 0;
         for (int i=0; i<dimension; i++) {
             final CoordinateSystemAxis axis = cs.getAxis(i);
@@ -391,7 +391,7 @@ final class Normalizer implements Comparable<Normalizer> {
      */
     private static AbstractCS shiftAxisRange(final CoordinateSystem cs) {
         boolean changed = false;
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
+        final var axes = new CoordinateSystemAxis[cs.getDimension()];
         for (int i=0; i<axes.length; i++) {
             CoordinateSystemAxis axis = cs.getAxis(i);
             if (axis.getRangeMeaning() == RangeMeaning.WRAPAROUND) {
@@ -421,7 +421,7 @@ final class Normalizer implements Comparable<Normalizer> {
      * and the minimum and maximum values which are set to the given values.
      */
     private static CoordinateSystemAxis forRange(final CoordinateSystemAxis axis, final double min, final double max) {
-        final Map<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
         properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, min);
         properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, max);

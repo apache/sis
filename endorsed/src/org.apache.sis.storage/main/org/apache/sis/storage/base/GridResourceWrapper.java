@@ -213,6 +213,7 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      */
     @Override
     public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final GridCoverageResource source;
         try {
             source = source();

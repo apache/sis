@@ -28,6 +28,8 @@ import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -112,6 +114,11 @@ public class HyperRectangleWriter {
          * @see #length()
          */
         private long length;
+
+        /**
+         * The number of bits in a pixel, or 0 if the sample model is not multi-pixel packed.
+         */
+        private int pixelBitStride;
 
         /**
          * Number of elements (not necessarily bytes) between a pixel and the next pixel.
@@ -213,20 +220,34 @@ public class HyperRectangleWriter {
          * @return writer for rasters using the specified sample model (never {@code null}).
          */
         private HyperRectangleWriter create(final SampleModel sm, final int[] bandOffsets) {
-            final long[] sourceSize  = {scanlineStride, sm.getHeight()};
+            final int width, height;
+            ArgumentChecks.ensureStrictlyPositive("width",  width  = sm.getWidth());
+            ArgumentChecks.ensureStrictlyPositive("height", height = sm.getHeight());
+            ArgumentChecks.ensureStrictlyPositive("scanlineStride", scanlineStride);    // May be less than `width`.
+            ArgumentChecks.ensureBetween("pixelStride", 1, scanlineStride, pixelStride);
+            final long[] sourceSize  = {
+                scanlineStride,
+                height
+            };
             if (region == null) {
-                region = new Rectangle(sm.getWidth(), sm.getHeight());
+                region = new Rectangle(width, height);
             }
-            final long[] regionLower = new long[] {
+            final long[] regionLower = {
                 region.x - (long) sampleModelTranslateX,
                 region.y - (long) sampleModelTranslateY
             };
-            final long[] regionUpper = new long[] {
+            final long[] regionUpper = {
                 regionLower[0] + region.width,
                 regionLower[1] + region.height
             };
-            regionLower[0] = Math.multiplyExact(regionLower[0], pixelStride);
-            regionUpper[0] = Math.multiplyExact(regionUpper[0], pixelStride);
+            regionLower[0] *= pixelStride;      // Should not overflow for reasonable values of pixel stride.
+            regionUpper[0] *= pixelStride;
+            if (pixelBitStride != 0) {
+                final int dataSize = DataBuffer.getDataTypeSize(sm.getDataType());
+                ArgumentChecks.ensureBetween("pixelBitStride", 1, dataSize, pixelBitStride);
+                regionLower[0] = Math.floorDiv(regionLower[0] * pixelBitStride, dataSize);
+                regionUpper[0] = JDK18.ceilDiv(regionUpper[0] * pixelBitStride, dataSize);
+            }
             var subset = new Region(sourceSize, regionLower, regionUpper, new long[] {1,1});
             length = subset.length;
             if (bandOffsets == null || (bandOffsets.length == pixelStride && ArraysExt.isRange(0, bandOffsets))) {
@@ -368,6 +389,7 @@ public class HyperRectangleWriter {
             bankIndices    = new int[1];   // Length is NOT the number of bands.
             bankOffsets    = bankIndices;
             pixelStride    = 1;
+            pixelBitStride = sm.getPixelBitStride();
             scanlineStride = sm.getScanlineStride();
             if (isSupported(this, sm)) {
                 return create(sm, null);

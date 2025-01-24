@@ -419,7 +419,7 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
     /**
      * Wrapper around a {@link SeekableByteChannel} which will observe the ranges of bytes read or written.
      */
-    final class Observer extends ByteRangeChannel {
+    final class Observer extends ByteRangeChannel implements SeekableByteChannel {
         /**
          * The channel doing the actual read or write operations.
          */

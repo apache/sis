@@ -43,27 +43,27 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.referencing.privy.AxisDirections;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
-import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -457,6 +457,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * <p><b>API note:</b> this constructor is not public because its contract is a bit approximate.</p>
      *
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
+     * @param  isHighIncluded      whether the upper coordinate values are inclusive instead of exclusive.
      * @param  rounding            controls behavior of rounding from floating point values to integers.
      * @param  clipping            how to clip this extent to the enclosing extent. Ignored if {@code enclosing} is null.
      * @param  margin              if non-null, expands the extent by that number of cells on each envelope dimension.
@@ -467,11 +468,15 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *                             This argument is ignored if {@code enclosing} is null.
      * @throws DisjointExtentException if the given envelope does not intersect the enclosing grid extent.
      *
-     * @see #toEnvelope(MathTransform, MathTransform, Envelope)
+     * @see #toEnvelope(MathTransform, boolean, MathTransform, Envelope)
      * @see #slice(DirectPosition, int[])
      */
-    GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final GridClippingMode clipping,
-               final int[] margin, final int[] chunkSize, final GridExtent enclosing, final int[] modifiedDimensions)
+    GridExtent(final AbstractEnvelope envelope, final boolean isHighIncluded,   // Arguments used together.
+               final GridRoundingMode rounding,
+               final GridClippingMode clipping,
+               final int[] margin,
+               final int[] chunkSize,
+               final GridExtent enclosing, final int[] modifiedDimensions)      // Arguments used together.
     {
         final int dimension = envelope.getDimension();
         coordinates = (enclosing != null) ? enclosing.coordinates.clone() : allocate(dimension);
@@ -515,7 +520,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 case ENCLOSING: {
                     lower = (long) Math.floor(min);
                     upper = (long) Math.ceil (max);
-                    if (lower != upper) upper--;                                // For making the coordinate inclusive.
+                    if (lower != upper && !isHighIncluded) upper--;             // For making the coordinate inclusive.
                     break;
                 }
                 case CONTAINED: {
@@ -527,7 +532,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     } else {
                         lower = (long) lo;
                         upper = (long) hi;
-                        if (lower != upper) upper--;                            // For making the coordinate inclusive.
+                        if (lower != upper && !isHighIncluded) upper--;         // For making the coordinate inclusive.
                     }
                     break;
                 }
@@ -539,7 +544,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                             upper = --lower;
                         }
                     } else {
-                        upper--;                                                // For making the coordinate inclusive.
+                        if (!isHighIncluded) upper--;                           // For making the coordinate inclusive.
                         /*
                          * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
                          * For example if `min` was 1.49999 and `max` was 2.50001, the rounding will create a [1…3] range
@@ -976,7 +981,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.3
      */
     public SortedMap<Integer,Long> getSliceCoordinates() {
-        final TreeMap<Integer,Long> slice = new TreeMap<>();
+        final var slice = new TreeMap<Integer,Long>();
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             final long value = coordinates[i];
@@ -1214,7 +1219,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             throw new IllegalArgumentException(Resources.format(
                     Resources.Keys.IllegalGridEnvelope_3, getAxisIdentification(index, index), low, high));
         }
-        final GridExtent copy = new GridExtent(this);
+        final var copy = new GridExtent(this);
         copy.coordinates[index] = low;
         copy.coordinates[ih] = high;
         return copy;
@@ -1222,10 +1227,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Transforms this grid extent to a "real world" envelope using the given transform.
-     * The transform shall map <em>cell corner</em> to real world coordinates.
+     * The given transform shall map <em>cell corners</em> to real world coordinates.
      *
      * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
-     * @return this grid extent in real world coordinates.
+     * @return this grid extent in real world coordinates. Upper coordinate values are exclusive.
      * @throws TransformException if the envelope cannot be computed with the given transform.
      *
      * @see GridGeometry#getEnvelope()
@@ -1235,7 +1240,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
         ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
-        final GeneralEnvelope envelope = toEnvelope(cornerToCRS, cornerToCRS, null);
+        final GeneralEnvelope envelope = toEnvelope(cornerToCRS, false, cornerToCRS, null);
         final Matrix gridToCRS = MathTransforms.getMatrix(cornerToCRS);
         if (gridToCRS != null && Matrices.isAffine(gridToCRS)) try {
             envelope.setCoordinateReferenceSystem(GridExtentCRS.forExtentAlone(gridToCRS, getAxisTypes()));
@@ -1247,40 +1252,24 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Transforms this grid extent to a "real world" envelope using the given transform.
-     * The transform shall map <em>cell corner</em> to real world coordinates.
+     * The transform shall map cell corners or cell centers to real world coordinates.
      * This method does not set the envelope coordinate reference system.
      *
-     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
-     * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
-     *                      If different, then this is assumed to map cell centers instead of cell corners.
-     * @param  fallback     bounds to use if some values are still NaN after conversion, or {@code null} if none.
-     * @return this grid extent in real world coordinates.
+     * @param  gridToCRS  a transform from cell corners or cell centers to real world coordinates.
+     * @param  isCenter   whether the "grid to CRS" transform maps cell center instead of cell corners.
+     * @param  specified  the transform specified by the user. May be the same as {@code gridToCRS}.
+     * @param  fallback   bounds to use if some values are still NaN after conversion, or {@code null} if none.
+     * @return this grid extent in real world coordinates. Upper coordinates are inclusive if {@code isCenter} is true.
      * @throws TransformException if the envelope cannot be computed with the given transform.
-     *
-     * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
      *
      * @see GridGeometry#getEnvelope(CoordinateReferenceSystem)
      */
-    final GeneralEnvelope toEnvelope(final MathTransform cornerToCRS, final MathTransform gridToCRS, final Envelope fallback)
+    final GeneralEnvelope toEnvelope(final MathTransform gridToCRS, final boolean isCenter,
+                                     final MathTransform specified, final Envelope fallback)
             throws TransformException
     {
-        final GeneralEnvelope envelope = Envelopes.transform(cornerToCRS, toEnvelope());
-        complete(envelope, gridToCRS, gridToCRS != cornerToCRS, fallback);
-        return envelope;
-    }
-
-    /**
-     * Returns the coordinates of this grid extent in an envelope.
-     * The returned envelope has no CRS.
-     */
-    final GeneralEnvelope toEnvelope() {
-        final int dimension = getDimension();
-        final GeneralEnvelope envelope = new GeneralEnvelope(dimension);
-        for (int i=0; i<dimension; i++) {
-            long high = coordinates[i + dimension];
-            if (high != Long.MAX_VALUE) high++;             // Make the coordinate exclusive before cast.
-            envelope.setRange(i, coordinates[i], high);     // Possible loss of precision in cast to `double` type.
-        }
+        final GeneralEnvelope envelope = Envelopes.transform(gridToCRS, toEnvelope(isCenter));
+        complete(envelope, specified, (specified == gridToCRS) == isCenter, fallback);
         return envelope;
     }
 
@@ -1289,25 +1278,45 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * This method usually returns exactly one envelope, but may return more envelopes if the given transform
      * contains at least one {@link org.apache.sis.referencing.operation.transform.WraparoundTransform} step.
      *
-     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
-     * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
-     *                      If different, then this is assumed to map cell centers instead of cell corners.
-     * @param  fallback     bounds to use if some values are still NaN after conversion, or {@code null} if none.
-     * @return this grid extent in real world coordinates.
+     * @param  gridToCRS  a transform from cell corners or cell centers to real world coordinates.
+     * @param  isCenter   whether the "grid to CRS" transform maps cell center instead of cell corners.
+     * @param  specified  the transform specified by the user. May be the same as {@code gridToCRS}.
+     * @param  fallback   bounds to use if some values are still NaN after conversion, or {@code null} if none.
+     * @return this grid extent in real world coordinates. Upper coordinate values are exclusive.
      * @throws TransformException if the envelope cannot be computed with the given transform.
      *
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
-     *
      * @see GridGeometry#getEnvelope(CoordinateReferenceSystem)
      */
-    final GeneralEnvelope[] toEnvelopes(final MathTransform cornerToCRS, final MathTransform gridToCRS, final Envelope fallback)
+    final GeneralEnvelope[] toEnvelopes(final MathTransform gridToCRS, final boolean isCenter,
+                                        final MathTransform specified, final Envelope fallback)
             throws TransformException
     {
-        final GeneralEnvelope[] envelopes = Envelopes.wraparound(cornerToCRS, toEnvelope());
+        final GeneralEnvelope[] envelopes = Envelopes.wraparound(gridToCRS, toEnvelope(isCenter));
         for (final GeneralEnvelope envelope : envelopes) {
-            complete(envelope, gridToCRS, gridToCRS != cornerToCRS, fallback);
+            complete(envelope, specified, (specified == gridToCRS) == isCenter, fallback);
         }
         return envelopes;
+    }
+
+    /**
+     * Returns the coordinates of this grid extent in an envelope.
+     * The returned envelope has no CRS.
+     *
+     * @param  isHighIncluded  whether the upper coordinate values should be inclusive instead of exclusive.
+     * @return an envelope with the coordinates of this grid extent, optionally with exclusive upper values.
+     */
+    final GeneralEnvelope toEnvelope(final boolean isHighIncluded) {
+        final int dimension = getDimension();
+        final var envelope = new GeneralEnvelope(dimension);
+        for (int i=0; i<dimension; i++) {
+            long high = coordinates[i + dimension];
+            if (!isHighIncluded && high != Long.MAX_VALUE) {
+                high++;     // Make the coordinate exclusive before cast to `double`.
+            }
+            envelope.setRange(i, coordinates[i], high);     // Possible loss of precision in cast to `double` type.
+        }
+        return envelope;
     }
 
     /**
@@ -1318,7 +1327,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * we need the minimal number of NaN values.
      *
      * @param  envelope   the envelope to complete if empty.
-     * @param  gridToCRS  the transform specified by user.
+     * @param  gridToCRS  the transform from which to get translation coefficients if needed.
      * @param  isCenter   whether the "grid to CRS" transform maps cell center instead of cell corners.
      * @param  fallback   bounds to use if some values are still NaN after conversion, or {@code null} if none.
      */
@@ -1432,7 +1441,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
             axisTypes[index] = axisType;
         }
-        final GridExtent ex = new GridExtent(newDim, axisTypes);
+        final var ex = new GridExtent(newDim, axisTypes);
         System.arraycopy(coordinates, 0,                 ex.coordinates, 0,                  index);
         System.arraycopy(coordinates, index,             ex.coordinates, index + 1,          dimension - index);
         System.arraycopy(coordinates, dimension,         ex.coordinates, newDim,             index);
@@ -1506,7 +1515,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 tt[i] = types[indices[i]];
             }
         }
-        final GridExtent sub = new GridExtent(td, tt);
+        final var sub = new GridExtent(td, tt);
         for (int i=0; i<td; i++) {
             final int j = indices[i];
             sub.coordinates[i]    = coordinates[j];
@@ -1538,7 +1547,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         if (isZero(margins, length)) {
             return this;
         }
-        final GridExtent resized = new GridExtent(this);
+        final var resized = new GridExtent(this);
         final long[] c = resized.coordinates;
         for (int i=0; i<length; i++) {
             final long p = margins[i];
@@ -1568,7 +1577,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
          */
         final int m = getDimension();
         final int length = Math.min(m, sizes.length);
-        final GridExtent resized = new GridExtent(this);
+        final var resized = new GridExtent(this);
         final long[] c = resized.coordinates;
         for (int i=0; i<length; i++) {
             final int s = sizes[i];
@@ -1606,7 +1615,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public GridExtent resize(final long... sizes) {
         final int m = getDimension();
         final int length = Math.min(m, sizes.length);
-        final GridExtent resize = new GridExtent(this);
+        final var resize = new GridExtent(this);
         final long[] c = resize.coordinates;
         for (int i=0; i<length; i++) {
             final long size = sizes[i];
@@ -1659,12 +1668,13 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
      * @see GridDerivation#subgrid(GridExtent, long...)
+     *
      * @since 1.5
      */
     public GridExtent subsample(final long... periods) {
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
-        final GridExtent sub = new GridExtent(this);
+        final var sub = new GridExtent(this);
         for (int i=0; i<length; i++) {
             final long s = periods[i];
             if (s > 1) {
@@ -1704,9 +1714,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Creates a new grid extent upsampled by the given number of cells along each grid dimensions.
-     * This method multiplies {@linkplain #getLow(int) low} and {@linkplain #getHigh(int) high} coordinates
-     * by the given periods.
-     *
+     * This method multiplies the {@linkplain #getLow(int) low coordinates}
+     * and the {@linkplain #getSize(int) size} by the given periods.
      * This method does not change the number of dimensions of the grid extent.
      *
      * <h4>Number of arguments</h4>
@@ -1720,12 +1729,13 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws ArithmeticException if the upsampled extent overflows the {@code long} capacity.
      *
      * @see GridGeometry#upsample(long...)
+     *
      * @since 1.5
      */
     public GridExtent upsample(final long... periods) {
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
-        final GridExtent sub = new GridExtent(this);
+        final var sub = new GridExtent(this);
         for (int i=0; i<length; i++) {
             final long s = periods[i];
             if (s > 1) {
@@ -1794,7 +1804,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
      */
     final GridExtent slice(final DirectPosition slicePoint, final int[] modifiedDimensions) {
-        final GridExtent slice = new GridExtent(this);
+        final var slice = new GridExtent(this);
         final int n = slicePoint.getDimension();
         final int m = getDimension();
         for (int k=0; k<n; k++) {
@@ -1807,7 +1817,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 if (c >= low && c <= high) {
                     slice.coordinates[i + m] = slice.coordinates[i] = c;
                 } else {
-                    final StringBuilder b = new StringBuilder();
+                    final var b = new StringBuilder();
                     for (int j=0; j<n; j++) {
                         if (j != 0) b.append(", ");
                         p = slicePoint.getCoordinate(j);
@@ -1874,8 +1884,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  translation  translation to apply on each axis in order.
-     * @return a grid extent whose coordinates (both low and high ones) have been translated by given amounts.
+     * @param  translation  translation to apply on each axis in order. Can be an array of any length.
+     * @return a grid extent whose coordinates (both low and high ones) have been translated by the given numbers.
      *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
@@ -1884,19 +1894,42 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @since 1.1
      */
-    public GridExtent translate(final long... translation) {
+    public final GridExtent translate(final long... translation) {
+        return translate(translation, false);
+    }
+
+    /**
+     * Returns an extent translated by the given number of cells, optionally in the reverse direction.
+     * Invoking this method is equivalent to invoking {@link #translate(long...)}, except that this method
+     * use the negative values of the given translation terms if the {@code negate} argument is {@code true}.
+     *
+     * @param  translation  translation to apply on each axis in order. Can be an array of any length.
+     * @param  negate       whether to use the negative values of the given translation terms.
+     * @return a grid extent whose coordinates (both low and high ones) have been translated by the given numbers.
+     *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @since 1.5
+     */
+    public GridExtent translate(final long[] translation, final boolean negate) {
         final int m = getDimension();
         final int length = Math.min(m, translation.length);
         if (isZero(translation, length)) {
             return this;
         }
-        final GridExtent translated = new GridExtent(this);
+        final var translated = new GridExtent(this);
         final long[] c = translated.coordinates;
         for (int i=0; i < length; i++) {
             final int  j = i + m;
             final long t = translation[i];
-            c[i] = Math.addExact(c[i], t);
-            c[j] = Math.addExact(c[j], t);
+            if (negate) {
+                // Do not negate `t` because it may overflow. Use `subtractExact(…)` instead.
+                c[i] = Math.subtractExact(c[i], t);
+                c[j] = Math.subtractExact(c[j], t);
+            } else {
+                c[i] = Math.addExact(c[i], t);
+                c[j] = Math.addExact(c[j], t);
+            }
         }
         return translated;
     }
@@ -1929,10 +1962,64 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns whether this extent contains the given extent.
+     * The given extent shall have the same number of dimensions as this extent.
+     * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
+     * be the same in all dimensions, ignoring types that are unspecified.
+     *
+     * @param  other  the grid to text for inclusion.
+     * @return whether this grid contains the given grid.
+     * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
+     * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
+     *
+     * @see GridGeometry#contains(GridGeometry)
+     *
+     * @since 1.5
+     */
+    public boolean contains(final GridExtent other) {
+        ensureSameAxes(other, "other");
+        final int n = coordinates.length;
+        final int m = n >>> 1;
+        int i = 0;
+        for (; i<m; i++) if (other.coordinates[i] < coordinates[i]) return false;   // Low
+        for (; i<n; i++) if (other.coordinates[i] > coordinates[i]) return false;   // High
+        return true;
+    }
+
+    /**
+     * Returns whether this extent intersects the given extent.
+     * The given extent shall have the same number of dimensions as this extent.
+     * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
+     * be the same in all dimensions, ignoring types that are unspecified.
+     *
+     * <p>This method is symmetric: it is guaranteed that
+     * {@code A.intersects(B) = B.intersects(A)} for all (<var>A</var>, <var>B</var>) pairs.</p>
+     *
+     * @param  other  the grid to text for inclusion.
+     * @return whether this grid intersects the given grid.
+     * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
+     * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
+     *
+     * @see GridGeometry#intersects(GridGeometry)
+     *
+     * @since 1.5
+     */
+    public boolean intersects(final GridExtent other) {
+        ensureSameAxes(other, "other");
+        final int m = coordinates.length >>> 1;
+        for (int i=0; i<m; i++) {
+            if (other.coordinates[i] > coordinates[i+m] || other.coordinates[i+m] < coordinates[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns the intersection of this grid extent with the given grid extent.
      * The given extent shall have the same number of dimensions as this extent.
      * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
-     * be the same in all dimensions, ignoring types that are absent.
+     * be the same in all dimensions, ignoring types that are unspecified.
      *
      * @param  other  the grid to intersect with.
      * @return the intersection result. May be one of the existing instances.
@@ -1950,7 +2037,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * Returns the union of this grid extent with the given grid extent.
      * The given extent shall have the same number of dimensions as this extent.
      * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
-     * be the same in all dimensions, ignoring types that are absent.
+     * be the same in all dimensions, ignoring types that are unspecified.
      *
      * @param  other  the grid to combine with.
      * @return the union result. May be one of the existing instances.
@@ -2110,7 +2197,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     @Override
     public String toString() {
-        final StringBuilder out = new StringBuilder(256);
+        final var out = new StringBuilder(256);
         try {
             appendTo(out, Vocabulary.forLocale(null));
         } catch (IOException e) {
@@ -2127,7 +2214,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param vocabulary  resources for some words.
      */
     final void appendTo(final Appendable out, final Vocabulary vocabulary) throws IOException {
-        final TableAppender table = new TableAppender(out, "");
+        final var table = new TableAppender(out, "");
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             String name = null;

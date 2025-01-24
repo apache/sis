@@ -115,8 +115,11 @@ public interface TreeTable {
      * In addition, each {@code Node} can be associated to an arbitrary object by the
      * {@link #getUserObject()} method. This object is not used directly by the tree tables.
      *
+     * <h2>Default implementation</h2>
+     * The methods providing a default implementations are suitable for unmodifiable tree nodes.
+     *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 0.8
+     * @version 1.5
      * @since   0.3
      */
     public interface Node {
@@ -174,7 +177,9 @@ public interface TreeTable {
          * @return the new child.
          * @throws UnsupportedOperationException if this node cannot add new children.
          */
-        Node newChild() throws UnsupportedOperationException;
+        default Node newChild() throws UnsupportedOperationException {
+            throw new UnsupportedOperationException();
+        }
 
         /**
          * Returns the value in the given column, or {@code null} if none.
@@ -203,7 +208,9 @@ public interface TreeTable {
          * @see #isEditable(TableColumn)
          * @category table
          */
-        <V> void setValue(TableColumn<V> column, V value) throws IllegalArgumentException, UnsupportedOperationException;
+        default <V> void setValue(TableColumn<V> column, V value) throws IllegalArgumentException, UnsupportedOperationException {
+            throw new UnsupportedOperationException();
+        }
 
         /**
          * Determines whether the value in the specified column is editable. If the given
@@ -216,7 +223,9 @@ public interface TreeTable {
          *         otherwise.
          * @category table
          */
-        boolean isEditable(TableColumn<?> column);
+        default boolean isEditable(TableColumn<?> column) {
+            return false;
+        }
 
         /**
          * Returns the user object associated to this node.
@@ -231,7 +240,9 @@ public interface TreeTable {
          * @return any object stored at this node by the user, or {@code null} if none.
          * @category tree
          */
-        Object getUserObject();
+        default Object getUserObject() {
+            return null;
+        }
 
         /**
          * Returns {@code true} if the given object is a node with the same content as this node.
