@@ -1670,6 +1670,25 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Translates the grid to lower coordinate values of zero without changing the "real world" coordinates.
+     * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
+     * i.e. both low and high grid coordinates are displaced by the same number of cells.
+     * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
+     * "real world" coordinates.
+     *
+     * @return a grid geometry whose lower coordinates are zeros.
+     * @throws ArithmeticException if the translation results in upper coordinates that overflow 64-bits integer.
+     *
+     * @since 1.5
+     */
+    public GridGeometry shiftGridToZeros() {
+        if (extent == null || extent.startsAtZero()) {
+            return this;
+        }
+        return shiftGrid(extent.getLow().getCoordinateValues(), true);
+    }
+
+    /**
      * Returns a grid geometry with the given grid extent, which implies a new "real world" computation.
      * The "grid to CRS" transforms and the resolution stay the same as this {@code GridGeometry}.
      * The "real world" envelope is recomputed for the new grid extent using the "grid to CRS" transforms.

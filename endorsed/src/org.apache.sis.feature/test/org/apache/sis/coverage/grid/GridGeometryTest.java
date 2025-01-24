@@ -555,6 +555,7 @@ public final class GridGeometryTest extends TestCase {
 
     /**
      * Tests {@link GridGeometry#shiftGrid(long[])}.
+     * Also opportunistically tests the closely-related {@link GridGeometry#shiftGridToZeros()} method.
      */
     @Test
     public void testShiftGrid() {
@@ -569,10 +570,17 @@ public final class GridGeometryTest extends TestCase {
         /*
          * The "real world" envelope should be unchanged by grid translation.
          */
+        assertSame(grid, grid.shiftGridToZeros());
         final Envelope envelope = grid.getEnvelope();
-        grid = grid.shiftGrid(12, 15);
-        assertExtentEquals(new long[] {12, 15}, new long[] {12 + 16, 15 + 9}, grid.getExtent());
-        assertEquals(envelope, grid.getEnvelope());
+        GridGeometry shifted = grid.shiftGrid(12, 15);
+        assertExtentEquals(new long[] {12, 15}, new long[] {12 + 16, 15 + 9}, shifted.getExtent());
+        assertEquals(envelope, shifted.getEnvelope());
+        /*
+         * Shift back to zero.
+         */
+        assertNotEquals(grid, shifted);
+        shifted = shifted.shiftGridToZeros();
+        assertEquals(grid, shifted);
     }
 
     /**

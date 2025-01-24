@@ -243,9 +243,10 @@ public final class GeoEncoder {
      * @throws IncompleteGridGeometryException if the grid geometry is incomplete.
      * @throws IncompatibleResourceException if the grid geometry cannot be encoded.
      */
-    public void write(final GridGeometry grid, final MetadataFetcher<?> metadata)
+    public void write(GridGeometry grid, final MetadataFetcher<?> metadata)
             throws FactoryException, TransformException, IncommensurableException, IncompatibleResourceException
     {
+        grid = grid.shiftGridToZeros();
         citation = CollectionsExt.first(metadata.transformationDimension);
         isPoint  = CollectionsExt.first(metadata.cellGeometry) == CellGeometry.POINT;
         final var anchor = isPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER;
@@ -290,8 +291,8 @@ public final class GeoEncoder {
         final VerticalCRS vertical = CRS.getVerticalComponent(fullCRS, true);
         if (vertical != null) {
             final CoordinateSystem cs = vertical.getCoordinateSystem();
-            final int vi = AxisDirections.indexOfColinear(fullCRS.getCoordinateSystem(), cs);
-            if (vi >= 0 && Arrays.binarySearch(dimensions, vi) < 0) {
+            final int verticalDimension = AxisDirections.indexOfColinear(fullCRS.getCoordinateSystem(), cs);
+            if (verticalDimension >= 0 && Arrays.binarySearch(dimensions, verticalDimension) < 0) {
                 writeCRS(vertical);
                 axisDirections = Arrays.copyOf(axisDirections, BIDIMENSIONAL+1);
                 axisDirections[BIDIMENSIONAL] = cs.getAxis(0).getDirection();
@@ -302,7 +303,7 @@ public final class GeoEncoder {
                         final int s;
                         switch (i) {
                             default:            s = dimensions[i];        break;    // Shear from horizontal dimensions.
-                            case BIDIMENSIONAL: s = vi;                   break;    // Scale from vertical dimension.
+                            case BIDIMENSIONAL: s = verticalDimension;    break;    // Scale from vertical dimension.
                             case MATRIX_SIZE-1: s = more.getNumCol() - 1; break;    // Translation.
                         }
                         // Copy the rows of the third dimension.
