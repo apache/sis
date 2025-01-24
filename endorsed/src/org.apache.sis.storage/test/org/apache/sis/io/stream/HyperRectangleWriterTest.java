@@ -22,6 +22,10 @@ import java.lang.reflect.Array;
 import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.ToDoubleFunction;
+import java.awt.image.Raster;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.util.Arrays;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -203,5 +207,45 @@ public final class HyperRectangleWriterTest extends TestCase {
         final double[] source = allocate(double[]::new, Double.BYTES);
         writer.write(output, source, offset);
         verifyWrittenBytes(ByteBuffer::getDouble, Double.BYTES);
+    }
+
+    /**
+     * Tests writing a binary image through the builder.
+     *
+     * @throws IOException should never happen since we are writing in memory.
+     */
+    @Test
+    public void testBinaryImage() throws IOException {
+        final var image = new BufferedImage(10, 4, BufferedImage.TYPE_BYTE_BINARY);
+        final var tile = image.getRaster();
+        for (int y = tile.getHeight(); --y >= 0;) {
+            for (int x = tile.getWidth(); --x >= 0;) {
+                tile.setSample(x, y, 0, x ^ y);
+            }
+        }
+        assertArrayEquals(new byte[] {
+            (byte) 0b01010101, (byte) 0b01000000,
+            (byte) 0b10101010, (byte) 0b10000000,
+            (byte) 0b01010101, (byte) 0b01000000,
+            (byte) 0b10101010, (byte) 0b10000000,
+        }, writePixelValues(tile));
+    }
+
+    /**
+     * Writes the pixel values of the given raster and returns the written bytes.
+     * This method assumes that the raster uses {@link DataBufferByte}.
+     *
+     * @param  tile  the tile to write.
+     * @return written pixel values.
+     * @throws IOException should never happen since we are writing in memory.
+     */
+    private byte[] writePixelValues(final Raster tile) throws IOException {
+        final var container = new ByteArrayChannel(new byte[40], false);
+        output = new ChannelDataOutput("Test", container, ByteBuffer.allocate(20));
+        writer = new HyperRectangleWriter.Builder().create(tile, -1, -1);
+        writer.write(output, ((DataBufferByte) tile.getDataBuffer()).getData(), 0, false);
+        output.flush();
+        actual = container.toBuffer();
+        return Arrays.copyOfRange(actual.array(), 0, actual.limit());
     }
 }
