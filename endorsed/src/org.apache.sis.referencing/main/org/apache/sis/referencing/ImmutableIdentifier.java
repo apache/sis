@@ -100,7 +100,7 @@ import static org.apache.sis.util.collection.Containers.property;
  * </li></ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @see org.apache.sis.metadata.iso.DefaultIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
@@ -215,33 +215,27 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#CODE_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getCode()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#CODESPACE_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getCodeSpace()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
      *     <td>{@link String} or {@link Citation}</td>
      *     <td>{@link #getAuthority()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#VERSION_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getVersion()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getDescription()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
      *     <td>{@link Locale}</td>
      *     <td>(none)</td>
@@ -461,8 +455,9 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#33">WKT 2 specification §7.3.4</a>
      */
     @Override
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     protected String formatTo(final Formatter formatter) {
-        String keyword = null;
+        final String keyword;
         /*
          * The code, codeSpace, authority and version local variables in this method usually have the exact same
          * value than the fields of the same name in this class.  But we get those values by invoking the public
@@ -471,61 +466,61 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
          * than using the public methods.
          */
         final String code = getCode();
-        if (code != null) {
-            final String   codeSpace = getCodeSpace();
-            final Citation authority = getAuthority();
-            final String cs = (codeSpace != null) ? codeSpace : Identifiers.getIdentifier(authority, true);
-            if (cs != null) {
-                final Convention convention = formatter.getConvention();
-                if (convention.majorVersion() == 1) {
-                    keyword = WKTKeywords.Authority;
-                    formatter.append(cs,   ElementKind.IDENTIFIER);
-                    formatter.append(code, ElementKind.IDENTIFIER);
-                } else {
-                    keyword = WKTKeywords.Id;
-                    formatter.append(cs, ElementKind.IDENTIFIER);
-                    appendCode(formatter, code);
-                    final String version = getVersion();
-                    if (version != null) {
-                        appendCode(formatter, version);
-                    }
-                    /*
-                     * In order to simplify the WKT, format the citation only if it is different than the code space.
-                     * We will also omit the citation if this identifier is for a parameter value, because parameter
-                     * values are handled in a special way by the international standard:
-                     *
-                     *   - ISO 19162 explicitly said that we shall format the identifier for the root element only,
-                     *     and omit the identifier for all inner elements EXCEPT parameter values and operation method.
-                     *   - Exclusion of identifier for inner elements is performed by the Formatter class, so it does
-                     *     not need to be checked here.
-                     *   - Parameter values are numerous, while operation methods typically appear only once in a WKT
-                     *     document. So we will simplify the parameter values only (not the operation methods) except
-                     *     if the parameter value is the root element (in which case we will format full identifier).
-                     */
-                    final FormattableObject enclosing = formatter.getEnclosingElement(1);
-                    final boolean              isRoot = formatter.getEnclosingElement(2) == null;
-                    if (isRoot || !(enclosing instanceof ParameterValue<?>)) {
-                        final String citation = Identifiers.getIdentifier(authority, false);
-                        if (citation != null && !citation.equals(cs)) {
-                            formatter.append(new Cite(citation));
+        String codeSpace = getCodeSpace();
+        final Citation authority = getAuthority();
+        if (codeSpace == null) {
+            codeSpace = Identifiers.getIdentifier(authority, true);
+        }
+        if (code == null || codeSpace == null) {
+            formatter.setInvalidWKT(getClass(), null);
+        }
+        formatter.append(codeSpace, ElementKind.IDENTIFIER);
+        final Convention convention = formatter.getConvention();
+        if (convention.majorVersion() == 1) {
+            keyword = WKTKeywords.Authority;
+            formatter.append(code, ElementKind.IDENTIFIER);
+        } else {
+            keyword = WKTKeywords.Id;
+            appendCode(formatter, code);
+            final String version = getVersion();
+            if (version != null) {
+                appendCode(formatter, version);
+            }
+            /*
+             * In order to simplify the WKT, format the citation only if it is different than the code space.
+             * We will also omit the citation if this identifier is for a parameter value, because parameter
+             * values are handled in a special way by the international standard:
+             *
+             *   - ISO 19162 explicitly said that we shall format the identifier for the root element only,
+             *     and omit the identifier for all inner elements EXCEPT parameter values and operation method.
+             *   - Exclusion of identifier for inner elements is performed by the Formatter class, so it does
+             *     not need to be checked here.
+             *   - Parameter values are numerous, while operation methods typically appear only once in a WKT
+             *     document. So we will simplify the parameter values only (not the operation methods) except
+             *     if the parameter value is the root element (in which case we will format full identifier).
+             */
+            final FormattableObject enclosing = formatter.getEnclosingElement(1);
+            final boolean              isRoot = formatter.getEnclosingElement(2) == null;
+            if (isRoot || !(enclosing instanceof ParameterValue<?>)) {
+                final String citation = Identifiers.getIdentifier(authority, false);
+                if (citation != null && !citation.equals(codeSpace)) {
+                    formatter.append(new Cite(citation));
+                }
+            }
+            /*
+             * Do not format the optional URI element for internal convention,
+             * because this property is currently computed rather than stored.
+             * Other conventions format only for the ID[…] of root element.
+             */
+            if (isRoot && enclosing != null && convention != Convention.INTERNAL) {
+                final String urn = NameMeaning.toURN(enclosing.getClass(), codeSpace, version, code);
+                if (urn != null) {
+                    formatter.append(new FormattableObject() {
+                        @Override protected String formatTo(final Formatter formatter) {
+                            formatter.append(urn, null);
+                            return WKTKeywords.URI;
                         }
-                    }
-                    /*
-                     * Do not format the optional URI element for internal convention,
-                     * because this property is currently computed rather than stored.
-                     * Other conventions format only for the ID[…] of root element.
-                     */
-                    if (isRoot && enclosing != null && convention != Convention.INTERNAL) {
-                        final String urn = NameMeaning.toURN(enclosing.getClass(), cs, version, code);
-                        if (urn != null) {
-                            formatter.append(new FormattableObject() {
-                                @Override protected String formatTo(final Formatter formatter) {
-                                    formatter.append(urn, null);
-                                    return WKTKeywords.URI;
-                                }
-                            });
-                        }
-                    }
+                    });
                 }
             }
         }

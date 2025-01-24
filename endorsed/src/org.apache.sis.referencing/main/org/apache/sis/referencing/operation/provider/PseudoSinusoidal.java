@@ -53,4 +53,14 @@ public final class PseudoSinusoidal extends Sinusoidal {
     public PseudoSinusoidal() {
         super(parameters());
     }
+
+    /**
+     * Returns the non-pseudo variant of this map projection.
+     *
+     * @return the non-pseudo variant of this map projection.
+     */
+    @Override
+    public MapProjection sourceOfPseudo() {
+        return new Sinusoidal();
+    }
 }

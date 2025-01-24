@@ -51,7 +51,7 @@ public final class Identifiers extends Static {
      * (ignoring case). This particular combination of code and codespace is handled in a special way.
      *
      * <p>This method can be used for identifying where in Apache SIS source code the relationship between
-     * EPSG authority and IOGP code space is hard-coded.</p>
+     * <abbr>EPSG</abbr> authority and <abbr>IOGP</abbr> code space is hard-coded.</p>
      *
      * @param  codeSpace  the identifier code space, or {@code null}.
      * @param  code       the identifier code, or {@code null}.

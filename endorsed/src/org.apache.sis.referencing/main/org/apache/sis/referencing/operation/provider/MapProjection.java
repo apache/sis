@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 import jakarta.xml.bind.annotation.XmlTransient;
@@ -139,7 +138,7 @@ public abstract class MapProjection extends AbstractProvider {
             new NamedIdentifier(Citations.GEOTIFF, "SemiMajorAxis"),
             new NamedIdentifier(Citations.PROJ4,   "a")
         };
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(AUTHORITY_KEY,  Citations.OGC);
         properties.put(NAME_KEY,       Constants.SEMI_MAJOR);
         properties.put(ALIAS_KEY,      aliases);
@@ -177,6 +176,22 @@ public abstract class MapProjection extends AbstractProvider {
               EllipsoidalCS.class, true,
               CartesianCS.class, false,
               (byte) 2);
+    }
+
+    /**
+     * If this map projection is a pseudo-projection, returns the non-pseudo variant.
+     * Otherwise, returns {@code this}.
+     *
+     * <h4>Purpose</h4>
+     * Some formats such as GeoTIFF supports only a hard-coded list of map projection methods.
+     * GeoTIFF has a code for {@link Sinusoidal} but none for {@link PseudoSinusoidal}.
+     * Therefore, the writer needs to replace the latter by the former with adjustment
+     * of the ellipsoid axis lengths.
+     *
+     * @return the non-pseudo variant of this map projection, or {@code this} if none.
+     */
+    public MapProjection sourceOfPseudo() {
+        return this;
     }
 
     /**

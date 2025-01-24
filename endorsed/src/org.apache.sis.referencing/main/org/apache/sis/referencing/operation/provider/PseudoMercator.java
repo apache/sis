@@ -56,4 +56,14 @@ public final class PseudoMercator extends AbstractMercator {
     public PseudoMercator() {
         super(PARAMETERS);
     }
+
+    /**
+     * Returns the non-pseudo variant of this map projection.
+     *
+     * @return the non-pseudo variant of this map projection.
+     */
+    @Override
+    public MapProjection sourceOfPseudo() {
+        return new Mercator1SP();
+    }
 }
