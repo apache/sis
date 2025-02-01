@@ -900,12 +900,12 @@ makeGeom:   if (!isEmpty) {
                     } else {
                         value = p.read(extent, null);               // Force the type to `Vector`.
                     }
-                    final Map<Integer,String> enumeration = p.getEnumeration();
+                    final Map<Long,String> enumeration = p.getEnumeration();
                     if (enumeration != null && value instanceof Vector) {
                         final var data = (Vector) value;
                         final var meanings = new String[data.size()];
                         for (int j=0; j<meanings.length; j++) {
-                            String m = enumeration.get(data.intValue(j));
+                            String m = enumeration.get(data.longValue(j));
                             meanings[j] = (m != null) ? m : "";
                         }
                         value = Arrays.asList(meanings);

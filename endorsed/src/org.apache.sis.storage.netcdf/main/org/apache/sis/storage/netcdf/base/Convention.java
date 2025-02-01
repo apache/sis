@@ -507,14 +507,6 @@ public class Convention {
                     value = bp;
                     break;
                 }
-                case "crs_wkt": {
-                    /*
-                     * CF-Convention said that even if a WKT definition is provided, other attributes shall be present
-                     * and have precedence over the WKT definition. Consequently, purpose of WKT in netCDF files is not
-                     * obvious (except for CompoundCRS). We ignore them for now.
-                     */
-                    continue;
-                }
                 default: {
                     if (ln.endsWith(NAME_SUFFIX)) {
                         value = node.getAttributeAsString(name);

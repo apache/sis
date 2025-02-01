@@ -65,8 +65,8 @@ public class Resources extends IndexedResourceBundle {
         public static final short CanNotComputeVariablePosition_2 = 6;
 
         /**
-         * Cannot create the Coordinate Reference System for “{1}” in the “{0}” netCDF file. The reason
-         * is: {2}
+         * Cannot create the Coordinate Reference System “{1}” in the “{0}” netCDF file. The reason is:
+         * {2}
          */
         public static final short CanNotCreateCRS_3 = 11;
 
@@ -143,6 +143,12 @@ public class Resources extends IndexedResourceBundle {
         public static final short IllegalValueRange_4 = 16;
 
         /**
+         * The CRS declared by WKT is inconsistent with the attributes of “{1}” in the “{0}” netCDF
+         * file.
+         */
+        public static final short InconsistentCRS_2 = 29;
+
+        /**
          * Attributes “{1}” and “{2}” on variable “{0}” have different lengths: {3} and {4}
          * respectively.
          */
@@ -182,9 +188,10 @@ public class Resources extends IndexedResourceBundle {
         public static final short UnexpectedDimensionForVariable_4 = 2;
 
         /**
-         * Unknown projection parameters in file “{0}”: {1}
+         * The attributes of “{1}” in the “{0}” netCDF file contains unknown projection parameters:
+         * {2}.
          */
-        public static final short UnknownProjectionParameters_2 = 25;
+        public static final short UnknownProjectionParameters_3 = 25;
 
         /**
          * Variable “{1}” in file “{0}” has {2,number} dimensions but only {3,number} can be associated
@@ -196,6 +203,11 @@ public class Resources extends IndexedResourceBundle {
          * NetCDF file “{0}” uses unsupported data type {2} for variable “{1}”.
          */
         public static final short UnsupportedDataType_3 = 5;
+
+        /**
+         * Value “{2}” of enumeration “{0}” cannot be converted to the ‘{1}’ type.
+         */
+        public static final short UnsupportedEnumerationValue_3 = 28;
     }
 
     /**

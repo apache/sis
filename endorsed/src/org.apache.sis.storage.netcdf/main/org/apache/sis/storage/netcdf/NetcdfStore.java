@@ -195,7 +195,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
-            final MetadataReader reader = new MetadataReader(decoder());
+            final var reader = new MetadataReader(decoder());
             metadata = reader.read();
         } catch (IOException | ArithmeticException e) {
             throw new DataStoreException(e);
@@ -216,7 +216,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<TreeTable> getNativeMetadata() throws DataStoreException {
-        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
+        final var table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
         final TreeTable.Node root = table.getRoot();
         root.setValue(TableColumn.NAME, Constants.NETCDF);
         decoder().addAttributesTo(root);
@@ -235,6 +235,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) try {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Decoder decoder = decoder();
             Resource[] resources = decoder.getDiscreteSampling(this);
             final List<Resource> grids = RasterResource.create(decoder, this);

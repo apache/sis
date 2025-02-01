@@ -133,7 +133,7 @@ public abstract class Variable extends Node {
      * @see #setEnumeration(Map)
      * @see #getEnumeration()
      */
-    private Map<Integer,String> enumeration;
+    private Map<Long,String> enumeration;
 
     /**
      * The grid associated to this variable, or {@code null} if none or not yet computed.
@@ -197,7 +197,7 @@ public abstract class Variable extends Node {
 
     /**
      * Initializes the map of enumeration values. If the given map is non-null, then the enumerations are set
-     * to the specified map (by direct reference; the map is not cloned). Otherwise this method auto-detects
+     * to the specified map (by direct reference, the map is not cloned). Otherwise this method auto-detects
      * if this variable is an enumeration.
      *
      * <p>This method is invoked by subclass constructors for completing {@code Variable} creation.
@@ -208,7 +208,7 @@ public abstract class Variable extends Node {
      * @see #getEnumeration()
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    protected final void setEnumeration(Map<Integer,String> enumeration) {
+    protected final void setEnumeration(Map<Long,String> enumeration) {
         if (enumeration == null) {
             String srcLabels, srcNumbers;           // For more accurate message in case of warning.
             CharSequence[] labels = getAttributeAsStrings(srcLabels = AttributeNames.FLAG_NAMES, ' ');
@@ -224,13 +224,15 @@ public abstract class Variable extends Node {
             if (numbers != null) {
                 final int n = numbers.size();
                 if (n != count) {
-                    warning(Variable.class, "setEnumeration", Resources.Keys.MismatchedAttributeLength_5,
+                    warning(Variable.class, "setEnumeration", null,
+                            Resources.Keys.MismatchedAttributeLength_5,
                             getName(), srcNumbers, srcLabels, n, count);
                     if (n < count) count = n;
                 }
             } else {
                 numbers = Vector.createSequence(0, 1, count);
-                warning(Variable.class, "setEnumeration", Resources.Keys.MissingVariableAttribute_3,
+                warning(Variable.class, "setEnumeration", null,
+                        Resources.Keys.MissingVariableAttribute_3,
                         getFilename(), getName(), AttributeNames.FLAG_VALUES);
             }
             /*
@@ -245,7 +247,8 @@ public abstract class Variable extends Node {
             for (int i=0; i<count; i++) try {
                 final CharSequence label = labels[i];
                 if (label != null) {
-                    enumeration.merge(numbers.intValue(i), label.toString(), (o,n) -> {
+                    long value = numbers.longValue(i);
+                    enumeration.merge(value, label.toString(), (o,n) -> {
                         return o.equals(n) ? o : o + " | " + n;
                     });
                 }
@@ -254,12 +257,12 @@ public abstract class Variable extends Node {
                     error = e;
                     invalids = new StringBuilder();
                 } else {
+                    error.addSuppressed(e);
                     final int length = invalids.length();
-                    final boolean tooManyErrors = (length > 100);                   // Arbitrary limit.
+                    final boolean tooManyErrors = (length > 100);   // Arbitrary limit in number of characters.
                     if (tooManyErrors && invalids.charAt(length - 1) == '…') {
                         continue;
                     }
-                    error.addSuppressed(e);
                     invalids.append(", ");
                     if (tooManyErrors) {
                         invalids.append('…');
@@ -269,8 +272,8 @@ public abstract class Variable extends Node {
                 invalids.append(numbers.stringValue(i));
             }
             if (invalids != null) {
-                error(Variable.class, "setEnumeration", error,
-                      Errors.Keys.CanNotConvertValue_2, invalids, numbers.getElementType());
+                warning(Variable.class, "setEnumeration", error,
+                        Resources.Keys.UnsupportedEnumerationValue_3, getName(), numbers.getElementType(), invalids);
             }
         }
         if (!enumeration.isEmpty()) {
@@ -625,7 +628,7 @@ public abstract class Variable extends Node {
                     final Dimension gridDimension = domain.remove(label);
                     dimensions[i] = gridDimension;
                     if (gridDimension == null) {
-                        warning(Variable.class, "getGridGeometry",        // Caller (indirectly) for this method.
+                        warning(Variable.class, "getGridGeometry", null,  // Caller (indirectly) for this method.
                                 Resources.Keys.CanNotRelateVariableDimension_3, getFilename(), getName(), label);
                         return null;
                     }
@@ -685,8 +688,8 @@ public abstract class Variable extends Node {
     public final GridGeometry getGridGeometry() throws IOException, DataStoreException {
         if (!gridDetermined) {
             gridDetermined = true;                      // Set first so we don't try twice in case of failure.
-            final GridMapping gridMapping = GridMapping.forVariable(this);
-            final GridAdjustment adjustment = new GridAdjustment();
+            final var gridMapping = GridMapping.forVariable(this);
+            final var adjustment = new GridAdjustment();
             final Grid info = findGrid(adjustment);
             if (info != null) {
                 /*
@@ -745,7 +748,7 @@ public abstract class Variable extends Node {
                 if (grid != null) {
                     if (grid.isDefined(GridGeometry.EXTENT)) {
                         GridExtent extent = grid.getExtent();
-                        final long[] sizes = new long[extent.getDimension()];
+                        final var sizes = new long[extent.getDimension()];
                         boolean needsResize = false;
                         for (int i=sizes.length; --i >= 0;) {
                             final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
@@ -757,7 +760,8 @@ public abstract class Variable extends Node {
                         if (needsResize) {
                             final double[] dataToGridIndices = adjustment.dataToGridIndices();
                             if (dataToGridIndices == null || dataToGridIndices.length < sizes.length) {
-                                warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
+                                warning(Variable.class, "getGridGeometry", null,
+                                        Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
                                 return null;
                             }
                             extent = extent.resize(sizes);
@@ -908,7 +912,7 @@ public abstract class Variable extends Node {
      * @see #setEnumeration(Map)
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final Map<Integer,String> getEnumeration() {
+    final Map<Long,String> getEnumeration() {
         return enumeration;
     }
 

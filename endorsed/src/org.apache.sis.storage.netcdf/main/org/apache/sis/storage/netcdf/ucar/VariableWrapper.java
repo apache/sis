@@ -54,6 +54,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -94,9 +95,15 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
          * If the UCAR library recognizes this variable as an enumeration, we will use UCAR services.
          * Only if UCAR did not recognized the enumeration, fallback on Apache SIS implementation.
          */
-        Map<Integer,String> enumeration = null;
+        Map<Long,String> enumeration = null;
         if (variable.getDataType().isEnum()) {
-            enumeration = variable.getEnumTypedef().getMap();
+            Map<Integer,String> m = variable.getEnumTypedef().getMap();
+            if (m != null) {
+                enumeration = JDK19.newHashMap(m.size());
+                for (Map.Entry<Integer,String> entry : m.entrySet()) {
+                    enumeration.put(Integer.toUnsignedLong(entry.getKey()), entry.getValue());
+                }
+            }
         }
         setEnumeration(enumeration);        // Use SIS fallback if `enumeration` is null.
     }
