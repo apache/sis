@@ -190,8 +190,12 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     @Override
     protected final GenericName getIdentifier() {
-        // Should never be empty (see `DataCube.getIdentifier()` contract).
-        return source.getIdentifier().get();
+        /*
+         * Should never be empty (see `DataCube.getIdentifier()` contract).
+         * Nevertheless use a fallback if the identifier is empty, because
+         * this method is invoked for formatting error messages.
+         */
+        return source.getIdentifier().orElseGet(() -> source.reader.store.createLocalName("overview"));
     }
 
     /**

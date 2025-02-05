@@ -273,10 +273,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the namespace to use in identifier of components, or {@code null} if none.
+     * Returns the namespace to use in component identifiers, or {@code null} if none.
      * This method must be invoked inside a block synchronized on {@code this}.
      */
-    final NameSpace namespace() {
+    private NameSpace namespace() {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Reader reader = this.reader;
         if (!isNamespaceSet && reader != null) {
@@ -297,6 +297,17 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             isNamespaceSet = true;
         }
         return namespace;
+    }
+
+    /**
+     * Creates a name in the namespace of this store.
+     * This method must be invoked inside a block synchronized on {@code this}.
+     *
+     * @param  tip  the tip of the name to create.
+     * @return a name in the scope of this store.
+     */
+    final GenericName createLocalName(final String tip) {
+        return reader.nameFactory.createLocalName(namespace(), tip);
     }
 
     /**

@@ -488,8 +488,7 @@ final class ImageFileDirectory extends DataCube {
                     // Should not happen because `setOverviewIdentifier(…)` should have been invoked.
                     return Optional.empty();
                 }
-                final String tip = String.valueOf(index + 1);
-                GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), tip);
+                GenericName name = reader.store.createLocalName(String.valueOf(index + 1));
                 name = name.toFullyQualifiedName();     // Because "1" alone is not very informative.
                 final var source = new SchemaModifier.Source(reader.store, index, getDataType());
                 identifier = reader.store.customizer.customize(source, name);
