@@ -519,7 +519,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * If that assumption was not true, we would have to adjust `capacity`, `lower[0]` and `upper[0]`
          * (we may do that as an optimization in a future version).
          */
-        final var hr     = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), input());
+        final var hr     = new HyperRectangleReader(ImageUtilities.toNumberEnum(type), input());
         final var region = new Region(size, lower, upper, subsampling);
         final var banks  = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
