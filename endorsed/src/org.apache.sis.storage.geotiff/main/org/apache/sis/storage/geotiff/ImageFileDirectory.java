@@ -506,7 +506,7 @@ final class ImageFileDirectory extends DataCube {
      * @param  overview  1 for the first overview, 2 for the next one, etc.
      */
     final void setOverviewIdentifier(final NameSpace base, final int overview) {
-        identifier = reader.nameFactory.createLocalName(base, "overview-" + overview);
+        identifier = reader.store.nameFactory.createLocalName(base, "overview-" + overview);
     }
 
     /**
