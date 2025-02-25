@@ -747,6 +747,27 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
+         * Returns the given raster relocated at the current <abbr>AOI</abbr> position.
+         * This method does not need to be invoked for tiles created by {@link #createRaster()},
+         * but may need to be invoked for tiles created in a different way.
+         * If the given raster is already at the current <abbr>AOI</abbr> position,
+         * then this method returns that raster directly.
+         *
+         * @param  raster  the raster to move at the current <abbr>AOI</abbr> position.
+         * @return the relocated raster (may be {@code raster} itself).
+         *
+         * @see Raster#createTranslatedChild(int, int)
+         */
+        public Raster moveRaster(final Raster raster) {
+            final int x = getTileOrigin(X_DIMENSION);
+            final int y = getTileOrigin(Y_DIMENSION);
+            if (raster.getMinX() == x && raster.getMinY() == y) {
+                return raster;
+            }
+            return raster.createTranslatedChild(x, y);
+        }
+
+        /**
          * Returns the location (relative to the cropped tile) of the upper-left corner of the uncropped tile.
          * This value should be present only when reading an image made of a single potentially huge tile,
          * and the {@link #readExtent} has been cropped for avoiding to read that huge tile in whole.
