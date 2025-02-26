@@ -224,20 +224,21 @@ public class StorageConnector implements Serializable {
      */
     private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(16);
     static {
-        add(String.class,            StorageConnector::createString);
-        add(ByteBuffer.class,        StorageConnector::createByteBuffer);
-        add(DataInput.class,         StorageConnector::createDataInput);
-        add(DataOutput.class,        StorageConnector::createDataOutput);
-        add(ImageInputStream.class,  StorageConnector::createImageInputStream);
-        add(ImageOutputStream.class, StorageConnector::createImageOutputStream);
-        add(InputStream.class,       StorageConnector::createInputStream);
-        add(OutputStream.class,      StorageConnector::createOutputStream);
-        add(Reader.class,            StorageConnector::createReader);
-        add(DataSource.class,        StorageConnector::createDataSource);
-        add(Connection.class,        StorageConnector::createConnection);
-        add(ChannelDataInput.class,  StorageConnector::createChannelDataInput);   // Undocumented case (SIS internal)
-        add(ChannelDataOutput.class, StorageConnector::createChannelDataOutput);  // Undocumented case (SIS internal)
-        add(ChannelFactory.class,    (s) -> null);                                // Undocumented. Shall not cache.
+        add(String.class,                  StorageConnector::createString);
+        add(ByteBuffer.class,              StorageConnector::createByteBuffer);
+        add(DataInput.class,               StorageConnector::createDataInput);
+        add(DataOutput.class,              StorageConnector::createDataOutput);
+        add(ImageInputStream.class,        StorageConnector::createImageInputStream);
+        add(ImageOutputStream.class,       StorageConnector::createImageOutputStream);
+        add(InputStream.class,             StorageConnector::createInputStream);
+        add(OutputStream.class,            StorageConnector::createOutputStream);
+        add(Reader.class,                  StorageConnector::createReader);
+        add(DataSource.class,              StorageConnector::createDataSource);
+        add(Connection.class,              StorageConnector::createConnection);
+        add(ChannelDataInput.class,        StorageConnector::createChannelDataInput);         // Undocumented case (SIS internal)
+        add(ChannelDataOutput.class,       StorageConnector::createChannelDataOutput);        // Undocumented case (SIS internal)
+        add(ChannelImageInputStream.class, StorageConnector::createChannelImageInputStream);  // Undocumented case (SIS internal)
+        add(ChannelFactory.class,          (s) -> null);                                      // Undocumented. Shall not cache.
         /*
          * ChannelFactory may have been created as a side effect of creating a ReadableByteChannel.
          * Caller should have asked for another type (e.g. InputStream) before to ask for that type.
@@ -1081,7 +1082,7 @@ public class StorageConnector implements Serializable {
      * This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.
      *
-     * @return input channel, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
+     * @return input channel, or {@code null} if none or if {@linkplain #probing} result has been determined externally.
      * @throws IOException if an error occurred while opening a channel for the input.
      *
      * @see #createChannelDataOutput()
@@ -1150,7 +1151,7 @@ public class StorageConnector implements Serializable {
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
-     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined externally.
      * @throws IOException if an error occurred while opening a stream for the input.
      *
      * @see #createDataOutput()
@@ -1326,13 +1327,42 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Creates an {@link ChannelImageInputStream} from the {@link ChannelDataInput} if possible.
+     * This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.
+     *
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined externally.
+     */
+    private ChannelImageInputStream createChannelImageInputStream() throws IOException, DataStoreException {
+        final Coupled c;
+        final ChannelImageInputStream asImageInput;
+        ChannelDataInput input = getStorageAs(ChannelDataInput.class);
+        if (input != null)  {
+            c = getView(ChannelDataInput.class);
+            if (input instanceof ChannelImageInputStream) {
+                asImageInput = (ChannelImageInputStream) input;
+            } else {
+                asImageInput = new ChannelImageInputStream(input);
+                c.view = asImageInput;   // Upgrade existing instance for all views.
+            }
+        } else {
+            if (!wasProbingAbsentFile()) {
+                addView(ChannelImageInputStream.class, null);   // Remember that there is no view.
+            }
+            return null;
+        }
+        views.put(ChannelImageInputStream.class, c);            // Share the same `Coupled` instance.
+        return asImageInput;
+    }
+
+    /**
      * Creates an {@link ImageInputStream} from the {@link DataInput} if possible. This method casts
      * {@code DataInput} if such cast is allowed, or upgrades {@link ChannelDataInput} implementation.
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
-     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined externally.
      */
     private ImageInputStream createImageInputStream() throws IOException, DataStoreException {
         final Coupled c;
@@ -1375,7 +1405,7 @@ public class StorageConnector implements Serializable {
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
-     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined externally.
      *
      * @see #createOutputStream()
      */
@@ -1407,7 +1437,7 @@ public class StorageConnector implements Serializable {
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
-     * @return input characters, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
+     * @return input characters, or {@code null} if none or if {@linkplain #probing} result has been determined externally.
      */
     private Reader createReader() throws IOException, DataStoreException {
         final InputStream input = getStorageAs(InputStream.class);
@@ -1598,7 +1628,7 @@ public class StorageConnector implements Serializable {
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
-     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined offline.
+     * @return input stream, or {@code null} if none or if {@linkplain #probing} result has been determined externally.
      */
     private ImageOutputStream createImageOutputStream() throws IOException, DataStoreException {
         final ImageOutputStream asDataOutput;
@@ -1749,6 +1779,7 @@ public class StorageConnector implements Serializable {
      * @see #getStorageAs(Class)
      * @see DataStoreProvider#open(StorageConnector)
      */
+    @SuppressWarnings("element-type-mismatch")
     public void closeAllExcept(final Object view) throws DataStoreException {
         if (views == null) {
             views = Map.of();               // For blocking future usage of this StorageConnector instance.
