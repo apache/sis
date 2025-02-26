@@ -98,7 +98,7 @@ public abstract class NamedElement {
      * @param  method     the caller method to report, preferable a public method.
      * @param  exception  the exception that occurred, or {@code null} if none.
      * @param  resources  the resources bundle for {@code key} and {@code arguments}, or {@code null} for {@link Resources}.
-     * @param  key        one or {@link Resources.Keys} constants.
+     * @param  key        one of the {@code resources} constants (by default, a {@link Resources.Keys} constant).
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
     static void warning(final StoreListeners listeners, final Class<?> caller, final String method,

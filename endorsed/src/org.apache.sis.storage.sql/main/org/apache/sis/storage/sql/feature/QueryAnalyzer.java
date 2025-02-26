@@ -18,7 +18,6 @@ package org.apache.sis.storage.sql.feature;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.sql.ResultSet;
@@ -41,11 +40,6 @@ import org.apache.sis.metadata.sql.privy.Reflection;
  */
 final class QueryAnalyzer extends FeatureAnalyzer {
     /**
-     * The query submitted by user.
-     */
-    private final String query;
-
-    /**
      * All columns, without filtering for separating attributes from associations.
      */
     private final Column[] columns;
@@ -67,7 +61,6 @@ final class QueryAnalyzer extends FeatureAnalyzer {
             throws Exception
     {
         super(analyzer, new TableReference(name, definition));
-        this.query = query;
         /*
          * Get the list of all columns in the query. We do that now because we will need this list
          * for finding primary keys (below) and also before `getForeignerKeys(…)` can be executed.
@@ -78,7 +71,7 @@ final class QueryAnalyzer extends FeatureAnalyzer {
             columns = new Column[meta.getColumnCount()];
             columnsPerTable = new HashMap<>();
             for (int i=1; i <= columns.length; i++) {
-                final Column column = new Column(meta, i, quote);
+                final var column = new Column(meta, i, quote);
                 columns[i-1] = column;
                 /*
                  * In order to identify geometry columns, we need to know the table where the column come from.
@@ -86,7 +79,7 @@ final class QueryAnalyzer extends FeatureAnalyzer {
                  */
                 final String table = Strings.trimOrNull(meta.getTableName(i));
                 if (table != null) {
-                    final TableReference source = new TableReference(
+                    final var source = new TableReference(
                             Strings.trimOrNull(meta.getCatalogName(i)),
                             Strings.trimOrNull(meta.getSchemaName(i)),
                             table, null);
@@ -172,7 +165,7 @@ final class QueryAnalyzer extends FeatureAnalyzer {
         /*
          * Creates attributes only after we updated all columns with geometry informations.
          */
-        final List<Column> attributes = new ArrayList<>();
+        final var attributes = new ArrayList<Column>();
         for (final Column column : columns) {
             if (createAttribute(column)) {
                 attributes.add(column);

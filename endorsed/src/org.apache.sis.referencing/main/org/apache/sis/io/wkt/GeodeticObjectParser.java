@@ -1735,11 +1735,14 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     {
         final Element element = parent.pullElement(mode,
                 (csType != null) ? new String[] {WKTKeywords.BaseGeodCRS,       // [0]  WKT 2 in ProjectedCRS or DerivedCRS
-                                                 WKTKeywords.GeogCS}            // [1]  WKT 1 in ProjectedCRS
+                                                 WKTKeywords.BaseGeogCRS,       // [1]  WKT 2 as a specialization of above
+                                                 WKTKeywords.GeogCS}            // [2]  WKT 1 in ProjectedCRS
                                  : new String[] {WKTKeywords.GeodeticCRS,       // [0]  WKT 2
-                                                 WKTKeywords.GeogCS,            // [1]  WKT 1
-                                                 WKTKeywords.GeodCRS,           // [2]  WKT 2
-                                                 WKTKeywords.GeocCS});          // [3]  WKT 1
+                                                 WKTKeywords.GeographicCRS,     // [1]  WKT 2 as a specialization of above
+                                                 WKTKeywords.GeogCS,            // [2]  WKT 1
+                                                 WKTKeywords.GeodCRS,           // [3]  WKT 2
+                                                 WKTKeywords.GeogCRS,           // [4]  WKT 2 as a specialization of above
+                                                 WKTKeywords.GeocCS});          // [5]  WKT 1
         if (element == null) {
             return null;
         }
@@ -1785,7 +1788,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 }
                 break;
             }
-            case 1: {
+            case 2: {
                 /*
                  * WKT 1 "GeogCS" (Geographic) element.
                  */
@@ -1796,7 +1799,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 dimension   = 2;
                 break;
             }
-            case 3: {
+            case 5: {
                 /*
                  * WKT 1 "GeocCS" (Geocentric) element.
                  */

@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import org.opengis.util.NameFactory;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
@@ -34,7 +33,6 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.reader.Type;
 import org.apache.sis.storage.geotiff.reader.XMLMetadata;
-import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -134,11 +132,6 @@ final class Reader extends IOBase {
     private boolean deferredNeedsSort;
 
     /**
-     * The factory to use for creating image identifiers.
-     */
-    final NameFactory nameFactory;
-
-    /**
      * Creates a new GeoTIFF reader which will read data from the given input.
      * The input must be at the beginning of the GeoTIFF file.
      *
@@ -147,9 +140,8 @@ final class Reader extends IOBase {
      */
     Reader(final GeoTiffStore store, final ChannelDataInput input) throws IOException, DataStoreException {
         super(store);
-        this.input       = input;
-        this.doneIFD     = new HashSet<>();
-        this.nameFactory = DefaultNameFactory.provider();
+        this.input   = input;
+        this.doneIFD = new HashSet<>();
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
          * Those characters identify the byte order. Note that we do not need to care

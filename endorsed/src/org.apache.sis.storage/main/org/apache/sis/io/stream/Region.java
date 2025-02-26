@@ -55,6 +55,8 @@ public final class Region {
     /**
      * Position of the first value to read.
      * This position is zero if the value of all {@code regionLower} elements is zero.
+     *
+     * @see #getStartByteOffset(long)
      */
     final long startAt;
 
@@ -78,6 +80,8 @@ public final class Region {
      * Additional values to add to {@link #skips}, but in bytes instead of as a number of values.
      * This is the only field in this {@link Region} class to be expressed in byte units.
      * This offset is rarely provided.
+     *
+     * @see #setAdditionalByteOffset(int, long)
      */
     private long[] skipBytes;
 
@@ -193,10 +197,12 @@ public final class Region {
      * Returns the offset in bytes where reading should start.
      * Offset is relative to the first sample value of the hyper-cube.
      *
-     * @param  sampleSize   size of sample values, in bytes.
+     * @param  sampleSize   size of sample values, in bytes. The value is usually between {@value Byte#BYTES} and
+     *         {@value Long#BYTES}, but the type is nevertheless a {@code long} for implementation convenience.
      * @return offset in bytes relative to the first sample value.
+     * @throws ArithmeticException if the offset overflows the 64-bits integer capacity.
      */
-    final long offset(long sampleSize) {
+    public final long getStartByteOffset(long sampleSize) {
         if (skipBytes != null) {
             // This additional offset is in bytes.
             sampleSize = addExact(sampleSize, skipBytes[0]);
@@ -248,7 +254,8 @@ public final class Region {
     }
 
     /**
-     * Returns the size after reading only the sub-region at the given subsampling in the given dimension.
+     * Returns the size after reading only the sub-region in the given dimension.
+     * This size takes in account the sub-sampling specified at construction time.
      *
      * @param  dimension  the dimension for which to get the target size.
      * @return expected number of elements in the given dimension.

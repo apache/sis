@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Optional;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -77,7 +78,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.5
  * @since   0.3
  */
 public final class Citations extends Static {
@@ -515,6 +516,37 @@ public final class Citations extends Static {
     }
 
     /**
+     * Returns a predefined citation for the given identifier.
+     * This method can be used as an alternative to {@link #fromName(String)}
+     * when the caller wants to conservatively restrict the result to a well-known set of authorities.
+     *
+     * @param  identifier  the citation title (or alternate title), or {@code null}.
+     * @return a predefined citation using the specified name.
+     *
+     * @since 1.5
+     */
+    public static Optional<Citation> predefined(String identifier) {
+        if (identifier == null || ((identifier = identifier.strip()).isEmpty())) {
+            return null;
+        }
+        for (final CitationConstant citation : CITATIONS) {
+            if (equalsFiltered(identifier, citation.namespace)) {
+                return Optional.of(citation);
+            }
+        }
+        Citation citation;
+        if (equalsFiltered(identifier, Constants.CRS) || equalsFiltered(identifier, "WMS")) {
+            citation = WMS;
+        } else if (equalsFiltered(identifier, "IOGP") || equalsFiltered(identifier, "OGP")) {
+            // "OGP" is the old name of "IOGP" organization.
+            citation = IOGP;
+        } else {
+            return Optional.empty();
+        }
+        return Optional.of(citation);
+    }
+
+    /**
      * Returns a citation of the given identifier. The method makes the following choice:
      *
      * <ul>
@@ -531,23 +563,11 @@ public final class Citations extends Static {
         if (identifier == null || ((identifier = identifier.strip()).isEmpty())) {
             return null;
         }
-        for (final CitationConstant citation : CITATIONS) {
-            if (equalsFiltered(identifier, citation.namespace)) {
-                return citation;
-            }
+        Citation citation = predefined(identifier).orElse(null);
+        if (citation == null) {
+            citation = new SimpleCitation(identifier);
         }
-        if (equalsFiltered(identifier, Constants.CRS) || equalsFiltered(identifier, "WMS")) {
-            return WMS;
-        }
-        // "OGP" is the old name of "IOGP" organization.
-        if (equalsFiltered(identifier, "IOGP") || equalsFiltered(identifier, "OGP")) {
-            return IOGP;
-        }
-        /*
-         * If we found no match, org.apache.sis.metadata.internal.ServicesForUtility expects
-         * that we return anything that is not an instance of CitationConstant.
-         */
-        return new SimpleCitation(identifier);
+        return citation;
     }
 
     /**

@@ -227,7 +227,7 @@ public final class Axis extends NamedElement {
             }
         }
         if (!isConsistent) {
-            coordinates.warning(Grid.class, "getAxes",              // Caller of this constructor.
+            coordinates.warning(Grid.class, "getAxes", null,        // Caller of this constructor.
                     Resources.Keys.AmbiguousAxisDirection_4, coordinates.getFilename(), coordinates.getName(), dir, check);
             if (isSigned) {
                 if (AxisDirections.isOpposite(dir)) {

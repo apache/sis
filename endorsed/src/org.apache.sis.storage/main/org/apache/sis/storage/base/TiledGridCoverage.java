@@ -68,7 +68,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * When there is a subsampling, cell coordinates in this coverage are divided by the subsampling factors.
  * Conversions are done by {@link #coverageToResourceCoordinate(long, int)}.
  *
- * <p><b>DEsign note:</b> {@code TiledGridCoverage} use the same cell coordinates as the originating
+ * <p><b>Design note:</b> {@code TiledGridCoverage} uses the same cell coordinates as the originating
  * {@link TiledGridResource} (when no subsampling) because those two classes use {@code long} integers.
  * There is no integer overflow to avoid.</p>
  *
@@ -240,7 +240,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final boolean deferredTileReading;
 
     /**
-     * Creates a new tiled grid coverage.
+     * Creates a new tiled grid coverage. This constructor does not load any tile.
+     * Callers should invoke {@link TiledGridResource#preload(GridCoverage)} after
+     * construction for loading tiles when immediate loading was requested by user.
      *
      * @param  subset  description of the {@link TiledGridResource} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
@@ -742,6 +744,27 @@ public abstract class TiledGridCoverage extends GridCoverage {
             final int x = getTileOrigin(X_DIMENSION);
             final int y = getTileOrigin(Y_DIMENSION);
             return Raster.createWritableRaster(getCoverage().model, new Point(x, y));
+        }
+
+        /**
+         * Returns the given raster relocated at the current <abbr>AOI</abbr> position.
+         * This method does not need to be invoked for tiles created by {@link #createRaster()},
+         * but may need to be invoked for tiles created in a different way.
+         * If the given raster is already at the current <abbr>AOI</abbr> position,
+         * then this method returns that raster directly.
+         *
+         * @param  raster  the raster to move at the current <abbr>AOI</abbr> position.
+         * @return the relocated raster (may be {@code raster} itself).
+         *
+         * @see Raster#createTranslatedChild(int, int)
+         */
+        public Raster moveRaster(final Raster raster) {
+            final int x = getTileOrigin(X_DIMENSION);
+            final int y = getTileOrigin(Y_DIMENSION);
+            if (raster.getMinX() == x && raster.getMinY() == y) {
+                return raster;
+            }
+            return raster.createTranslatedChild(x, y);
         }
 
         /**

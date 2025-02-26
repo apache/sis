@@ -361,10 +361,10 @@ public final class ColorModelFactory {
         final int categoryCount = pieceStarts.length - 1;
         if (numBands == 1 && categoryCount <= 0) {
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            final int[] nBits = {
+            final int[] numBits = {
                 DataBuffer.getDataTypeSize(dataType)
             };
-            return unique(new ComponentColorModel(cs, nBits, false, true, Transparency.OPAQUE, dataType));
+            return unique(new ComponentColorModel(cs, numBits, false, true, Transparency.OPAQUE, dataType));
         }
         /*
          * Interpolates the colors in the color palette. Colors that do not fall
@@ -386,7 +386,7 @@ public final class ColorModelFactory {
                 expand(colors, colorMap, lower, upper);
             }
         }
-        return createIndexColorModel(numBands, visibleBand, colorMap, true, transparent);
+        return createIndexColorModel(null, 0, numBands, visibleBand, colorMap, true, transparent);
     }
 
     /**
@@ -421,28 +421,33 @@ public final class ColorModelFactory {
      * <p>This methods caches previously created instances using weak references,
      * because index color model may be big (up to 256 kb).</p>
      *
-     * @param  numBands     the number of bands.
-     * @param  visibleBand  the band to display.
-     * @param  ARGB         an array of ARGB values.
-     * @param  hasAlpha     indicates whether alpha values are contained in the {@code ARGB} array.
-     * @param  transparent  the transparent pixel, or -1 for auto-detection.
+     * @param  transferType  the transfer type, or {@code null} for automatic.
+     * @param  numBits       the number of bits in sample values, or 0 for automatic.
+     * @param  numBands      the number of bands (usually 1).
+     * @param  visibleBand   the band to display (usually {@value #DEFAULT_VISIBLE_BAND}).
+     * @param  ARGB          an array of ARGB values.
+     * @param  hasAlpha      indicates whether alpha values are contained in the {@code ARGB} array.
+     * @param  transparent   the transparent pixel, or -1 for auto-detection.
      * @return an index color model for the specified array of ARGB values.
      */
-    public static IndexColorModel createIndexColorModel(final int numBands, final int visibleBand, final int[] ARGB,
+    public static IndexColorModel createIndexColorModel(final DataType transferType, int numBits,
+            final int numBands, final int visibleBand, final int[] ARGB,
             final boolean hasAlpha, final int transparent)
     {
         /*
          * No need to scan the ARGB values in search of a transparent pixel;
          * the IndexColorModel constructor does that for us.
          */
-        final int length   = ARGB.length;
-        final int bits     = getBitCount(length);
-        final int dataType = getTransferType(length);
+        final int length = ARGB.length;
+        if (numBits == 0) {
+            numBits = getBitCount(length);
+        }
+        final int dataType = (transferType != null) ? transferType.toDataBufferType() : getTransferType(length);
         final IndexColorModel cm;
         if (numBands == 1) {
-            cm = new IndexColorModel(bits, length, ARGB, 0, hasAlpha, transparent, dataType);
+            cm = new IndexColorModel(numBits, length, ARGB, 0, hasAlpha, transparent, dataType);
         } else {
-            cm = new MultiBandsIndexColorModel(bits, length, ARGB, 0, hasAlpha, transparent,
+            cm = new MultiBandsIndexColorModel(numBits, length, ARGB, 0, hasAlpha, transparent,
                                                dataType, numBands, visibleBand);
         }
         return CACHE.unique(cm);
@@ -450,7 +455,7 @@ public final class ColorModelFactory {
 
     /**
      * Returns a unique instance of the given color model.
-     * This method is a shortcut used when the return type does not need to be a specialized type.
+     * The color models are kept by weak references.
      *
      * @param  cm  the color model.
      * @return a unique instance of the given color model.

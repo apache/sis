@@ -113,7 +113,7 @@ public final class HyperRectangleReaderTest extends TestCase {
          * different than zero.
          */
         final int origin = random.nextInt(10);
-        final byte[] array = new byte[origin + length*Short.BYTES];
+        final var array  = new byte[origin + length*Short.BYTES];
         for (int i=0; i<origin; i++) {
             array[i] = (byte) random.nextInt(0x100);
         }
@@ -133,9 +133,9 @@ public final class HyperRectangleReaderTest extends TestCase {
         }
         assertEquals(length, view.position());
         if (useChannel) {
-            final ByteArrayChannel channel = new ByteArrayChannel(array, true);
-            final ByteBuffer       buffer  = ByteBuffer.allocate(random.nextInt(20) + 20).order(ByteOrder.nativeOrder());
-            final ChannelDataInput input   = new ChannelDataInput("HyperRectangle in channel", channel, buffer, false);
+            final var channel = new ByteArrayChannel(array, true);
+            final var buffer  = ByteBuffer.allocate(random.nextInt(20) + 20).order(ByteOrder.nativeOrder());
+            final var input   = new ChannelDataInput("HyperRectangle in channel", channel, buffer, false);
             reader = new HyperRectangleReader(Numbers.SHORT, input);
             reader.setOrigin(origin);
         } else {
@@ -149,7 +149,7 @@ public final class HyperRectangleReaderTest extends TestCase {
      * then compares against the expected values.
      */
     private void verifyRegionRead() throws IOException {
-        final short[] data = (short[]) reader.read(new Region(size, lower, upper, subsampling));
+        final var data = (short[]) reader.read(new Region(size, lower, upper, subsampling));
         int p = 0;
         final long s3 = subsampling[3];
         final long s2 = subsampling[2];

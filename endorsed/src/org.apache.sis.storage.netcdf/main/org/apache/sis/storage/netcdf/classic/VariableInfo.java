@@ -236,7 +236,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             final long actual = Integer.toUnsignedLong(size);
             if (actual != expected) {
                 if (expected != 0) {
-                    warning(ChannelDecoder.class, "readVariables",          // Caller of this constructor.
+                    warning(ChannelDecoder.class, "readVariables", null,      // Caller of this constructor.
                             Resources.Keys.MismatchedVariableSize_3, getFilename(), name, actual - expected);
                 }
                 if (actual > offsetToNextRecord) {

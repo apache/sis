@@ -17,13 +17,13 @@
 package org.apache.sis.storage.aggregate;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.stream.Stream;
 import org.apache.sis.util.privy.Strings;
+import org.apache.sis.storage.base.ArrayOfLongs;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 
@@ -137,25 +137,7 @@ abstract class Group<E> {
      * @return shared instance of the given array.
      */
     final long[] unique(final long[] array) {
-        Object existing = sharedInstances.putIfAbsent(new Key(array), array);
-        return (existing != null) ? (long[]) existing : array;
-    }
-
-    /**
-     * Workaround for the use of arrays as keys in a hash map.
-     */
-    private static final class Key {
-        private final long[] array;
-
-        Key(final long[] array) {
-            this.array = array;
-        }
-        @Override public boolean equals(final Object other) {
-            return (other instanceof Key) && Arrays.equals(array, ((Key) other).array);
-        }
-        @Override public int hashCode() {
-            return Arrays.hashCode(array);
-        }
+        return new ArrayOfLongs(array).unique(sharedInstances);
     }
 
     /**

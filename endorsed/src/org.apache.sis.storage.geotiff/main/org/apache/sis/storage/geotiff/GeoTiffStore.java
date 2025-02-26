@@ -72,6 +72,7 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 
@@ -150,13 +151,19 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     final Path path;
 
     /**
+     * The factory to use for creating image identifiers.
+     */
+    final NameFactory nameFactory;
+
+    /**
      * The data store identifier created from the filename, or {@code null} if none.
      * Defined as a namespace for use as the scope of children resources (the images).
      * This is created when first needed.
      *
      * <h4>Design note</h4>
-     * We do not create this field in the constructor because its creation invokes
-     * the user-overrideable {@link #customize(int, GenericName)} method.
+     * We do not create this field in the constructor because this value can be provided by
+     * the user-specified {@link #customizer}, which would receive a reference to {@code this}
+     * before its construction is completed.
      *
      * @see #namespace()
      */
@@ -245,6 +252,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     {
         super(parent, provider, connector, hidden);
         this.hidden = hidden;
+        nameFactory = DefaultNameFactory.provider();
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION_KEY);
@@ -273,30 +281,40 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the namespace to use in identifier of components, or {@code null} if none.
+     * Returns the namespace to use in component identifiers, or {@code null} if none.
      * This method must be invoked inside a block synchronized on {@code this}.
      */
-    final NameSpace namespace() {
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final Reader reader = this.reader;
-        if (!isNamespaceSet && reader != null) {
-            final NameFactory f = reader.nameFactory;
+    private NameSpace namespace() {
+        assert Thread.holdsLock(this);
+        if (!isNamespaceSet && (reader != null || writer != null)) {
             GenericName name = null;
             /*
              * We test `location != null` because if the location was not convertible to URI,
              * then the string representation is probably a class name, which is not useful.
              */
             if (location != null) {
-                String filename = IOUtilities.filenameWithoutExtension(reader.input.filename);
-                name = f.createLocalName(null, filename);
+                String filename = (reader != null ? reader.input : writer.output).filename;
+                filename = IOUtilities.filenameWithoutExtension(filename);
+                name = nameFactory.createLocalName(null, filename);
             }
             name = customizer.customize(new SchemaModifier.Source(this), name);
             if (name != null) {
-                namespace = f.createNameSpace(name, null);
+                namespace = nameFactory.createNameSpace(name, null);
             }
             isNamespaceSet = true;
         }
         return namespace;
+    }
+
+    /**
+     * Creates a name in the namespace of this store.
+     * This method must be invoked inside a block synchronized on {@code this}.
+     *
+     * @param  tip  the tip of the name to create.
+     * @return a name in the scope of this store.
+     */
+    final GenericName createLocalName(final String tip) {
+        return nameFactory.createLocalName(namespace(), tip);
     }
 
     /**

@@ -67,6 +67,13 @@ public class GridTest extends TestCase {
     }
 
     /**
+     * Returns the coordinate system axes for the <abbr>CRS</abbr> decoded from the given file.
+     */
+    private Axis[] axes(final TestData data) throws IOException, DataStoreException {
+        return getSingleton(filter(selectDataset(data).getGridCandidates())).getAxes(decoder());
+    }
+
+    /**
      * Tests {@link Grid#getSourceDimensions()} and {@code Grid.getTargetDimensions()}.
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -92,7 +99,7 @@ public class GridTest extends TestCase {
      */
     @Test
     public void testAxes2D() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridCandidates())).getAxes(decoder());
+        final Axis[] axes = axes(TestData.NETCDF_2D_GEOGRAPHIC);
         assertEquals(2, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];
@@ -115,7 +122,7 @@ public class GridTest extends TestCase {
      */
     @Test
     public void testAxes4D() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridCandidates())).getAxes(decoder());
+        final Axis[] axes = axes(TestData.NETCDF_4D_PROJECTED);
         assertEquals(includeRuntimeDimension ? 5 : 4, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];
@@ -156,8 +163,8 @@ public class GridTest extends TestCase {
         final Node data = selectDataset(TestData.NETCDF_4D_PROJECTED).findNode("CIP");
         final GridMapping mapping = GridMapping.forVariable((Variable) data);
         assertNotNull(mapping);
-        assertInstanceOf(ProjectedCRS.class, mapping.crs);
-        final ParameterValueGroup pg = ((ProjectedCRS) mapping.crs).getConversionFromBase().getParameterValues();
+        assertInstanceOf(ProjectedCRS.class, mapping.crs());
+        final ParameterValueGroup pg = ((ProjectedCRS) mapping.crs()).getConversionFromBase().getParameterValues();
         assertEquals( 25,    pg.parameter("Latitude of false origin")         .doubleValue());
         assertEquals(-95,    pg.parameter("Longitude of false origin")        .doubleValue());
         assertEquals( 25,    pg.parameter("Latitude of 1st standard parallel").doubleValue());

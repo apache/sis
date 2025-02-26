@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.net.URISyntaxException;
-import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
@@ -425,8 +424,8 @@ final class RawRasterStore extends RasterStore {
             throw missingProperty(header, (nrows == 0) ? NROWS : NCOLS);
         }
         // Invoke following method now because it does argument validation.
-        final int dataType = DataType.forNumberOfBits(nbits, false, signed).toDataBufferType();
-        final int bytesPerSample = DataBuffer.getDataTypeSize(dataType) / Byte.SIZE;            // Can be zero.
+        final var dataType = DataType.forNumberOfBits(nbits, false, signed);
+        final int bytesPerSample = dataType.bytes();
         switch (geomask) {
             case 0:  ulymap = ncols - 1; break;     // No property specified.
             case 3:  break;                         // ULXMAP and ULYMAP specified.
@@ -454,6 +453,7 @@ final class RawRasterStore extends RasterStore {
          * block must be consistent with the expectations of `read(…)` method implementation.
          */
         SampleModel sampleModel = null;
+        final int bt = dataType.toDataBufferType();
         switch (layout) {
             case BIL: {
                 ignoredProperty(BANDGAPBYTES, bandGapBytes);
@@ -467,7 +467,7 @@ final class RawRasterStore extends RasterStore {
                     for (int i=1; i<nbands; i++) {
                         bandOffsets[i] = multiplyExact(bandStride, i);
                     }
-                    sampleModel = new ComponentSampleModel(dataType, ncols, nrows, 1, scanlineStride, bankIndices, bandOffsets);
+                    sampleModel = new ComponentSampleModel(bt, ncols, nrows, 1, scanlineStride, bankIndices, bandOffsets);
                 }
                 break;
             }
@@ -480,7 +480,7 @@ final class RawRasterStore extends RasterStore {
                 if (bytesPerSample != 0) {
                     final int   scanlineStride = wholeDiv(totalRowBytes, bytesPerSample);
                     final int[] bandOffsets    = ArraysExt.range(0, nbands);
-                    sampleModel = new PixelInterleavedSampleModel(dataType, ncols, nrows, nbands, scanlineStride, bandOffsets);
+                    sampleModel = new PixelInterleavedSampleModel(bt, ncols, nrows, nbands, scanlineStride, bandOffsets);
                 }
                 break;
             }
@@ -493,7 +493,7 @@ final class RawRasterStore extends RasterStore {
                     final int   scanlineStride = wholeDiv(totalRowBytes, bytesPerSample);
                     final int[] bankIndices    = ArraysExt.range(0, nbands);
                     final int[] bandOffsets    = new int[nbands];
-                    sampleModel = new BandedSampleModel(dataType, ncols, nrows, scanlineStride, bankIndices, bandOffsets);
+                    sampleModel = new BandedSampleModel(bt, ncols, nrows, scanlineStride, bankIndices, bandOffsets);
                 }
                 break;
             }
@@ -503,13 +503,13 @@ final class RawRasterStore extends RasterStore {
             if (nbands != 1) {
                 throw new DataStoreContentException(errors().getString(Errors.Keys.InconsistentAttribute_2, nbits, NBITS));
             }
-            sampleModel = new MultiPixelPackedSampleModel(dataType, ncols, nrows, nbits, totalRowBytes, 0);
+            sampleModel = new MultiPixelPackedSampleModel(bt, ncols, nrows, nbits, totalRowBytes, 0);
         }
         /*
          * Prepare the reader as the last step because non-null `reader` field is used
          * as a sentinel value meaning that the initialization has been completed.
          */
-        reader = new RawRasterReader(gg, sampleModel, bandGapBytes, input);
+        reader = new RawRasterReader(gg, dataType, sampleModel, bandGapBytes, input);
         reader.setOrigin(skipBytes);
     }
 

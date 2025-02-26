@@ -66,7 +66,7 @@ public class HyperRectangleReader {
      */
     public HyperRectangleReader(final byte dataType, final ChannelDataInput input) throws DataStoreContentException {
         switch (dataType) {
-            case Numbers.BYTE:      reader = input.new BytesReader  (           null); break;
+            case Numbers.BYTE:      reader = input.new BytesReader  ((byte[])   null); break;
             case Numbers.CHARACTER: reader = input.new CharsReader  ((char[])   null); break;
             case Numbers.SHORT:     reader = input.new ShortsReader ((short[])  null); break;
             case Numbers.INTEGER:   reader = input.new IntsReader   ((int[])    null); break;
@@ -136,6 +136,26 @@ public class HyperRectangleReader {
     }
 
     /**
+     * Sets the destination where values will be stored.
+     * It is caller's responsibility to ensure that the buffer has sufficient capacity.
+     * If this method is not invoked, the destination array will be created automatically.
+     *
+     * <h4>Limitations</h4>
+     * The current implementation accepts only buffer wrapping Java array starting at zero.
+     * The buffer limit is ignored. Those limitations may be resolved in a future version.
+     *
+     * @param  dest  buffer wrapping the array where values will be stored.
+     * @throws UnsupportedOperationException if the buffer is not backed by an accessible array or does not start at 0.
+     * @throws ClassCastException if {@code array} is an array of the primitive type identified by {@code dataType}.
+     */
+    public final void setDestination(final Buffer dest) {
+        if ((dest.arrayOffset() | dest.position()) != 0) {
+            throw new UnsupportedOperationException();
+        }
+        reader.setDest(dest.array());
+    }
+
+    /**
      * Reads data in the given region. It is caller's responsibility to ensure that the {@code Region}
      * object has been created with a {@code size} argument equals to this hyper-rectangle size.
      *
@@ -179,7 +199,7 @@ public class HyperRectangleReader {
         final long[] strides = new long[region.getDimension() - contiguousDataDimension];
         final int[]   cursor = new int[strides.length];
         final int sampleSize = sampleSize();
-        long  streamPosition = Math.addExact(origin, region.offset(sampleSize));
+        long  streamPosition = Math.addExact(origin, region.getStartByteOffset(sampleSize));
         int    arrayPosition = 0;
         for (int i=0; i<strides.length; i++) {
             strides[i] = region.stride(i + contiguousDataDimension, contiguousDataLength, sampleSize);
@@ -187,7 +207,9 @@ public class HyperRectangleReader {
         }
         final int limit = region.targetLength(region.getDimension());
         try {
-            reader.createDataArray(Math.max(capacity, limit));
+            if (reader.dataArray() == null) {
+                reader.createDataArray(Math.max(capacity, limit));
+            }
             final Buffer view = reader.view();
 loop:       do {
                 reader.seek(streamPosition);

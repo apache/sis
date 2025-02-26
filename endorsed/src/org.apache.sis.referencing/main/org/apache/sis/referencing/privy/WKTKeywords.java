@@ -100,8 +100,11 @@ public final class WKTKeywords extends Static {
             Datum         = "Datum",
             GeodeticDatum = "GeodeticDatum",
             GeodeticCRS   = "GeodeticCRS",
+            GeographicCRS = "GeographicCRS",
             BaseGeodCRS   = "BaseGeodCRS",
+            BaseGeogCRS   = "BaseGeogCRS",
             GeodCRS       = "GeodCRS",
+            GeogCRS       = "GeogCRS",
             GeogCS        = "GeogCS",
             GeocCS        = "GeocCS";
 

@@ -349,7 +349,7 @@ public final class ImageUtilities extends Static {
     }
 
     /**
-     * The values to be returned by {@link #toNumberEnum(int)}.
+     * The values to be returned by {@link #toNumberEnum(DataType)}.
      */
     private static final byte[] NUMBER_ENUMS = {
         Numbers.BYTE, Numbers.SHORT, Numbers.SHORT, Numbers.INTEGER, Numbers.FLOAT, Numbers.DOUBLE
@@ -359,11 +359,11 @@ public final class ImageUtilities extends Static {
      * Converts a {@link DataBuffer} enumeration value to {@link Numbers} enumeration value.
      * This method ignores whether the type is signed or unsigned.
      *
-     * @param  dataType  the {@link DataBuffer} enumeration value.
+     * @param  type  the {@link DataBuffer} enumeration value.
      * @return the {@link Numbers} enumeration value.
      */
-    public static byte toNumberEnum(final int dataType) {
-        return (dataType >= 0 && dataType < NUMBER_ENUMS.length) ? NUMBER_ENUMS[dataType] : Numbers.OTHER;
+    public static byte toNumberEnum(final DataType type) {
+        return NUMBER_ENUMS[type.toDataBufferType()];
     }
 
     /**

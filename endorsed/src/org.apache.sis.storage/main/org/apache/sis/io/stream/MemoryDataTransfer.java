@@ -42,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
+final class MemoryDataTransfer extends DataTransfer implements ReadableByteChannel {
     /**
      * The actual {@code DataTransfer} implementation.
      */
@@ -75,7 +75,7 @@ final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
      * Moves to the given byte position in the buffer.
      */
     @Override
-    public void seek(long position) throws IOException {
+    void seek(long position) throws IOException {
         final int dataSizeShift = dataSizeShift();
         if (position < 0 || (position & ((1 << dataSizeShift) - 1)) != 0) {
             throw new IOException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "position", position));
@@ -91,14 +91,14 @@ final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
     /**
      * Delegates to the actual implementation.
      */
-    @Override public String filename()                  {return reader.filename();}
-    @Override public int    dataSizeShift()             {return reader.dataSizeShift();}
-    @Override public Object dataArray()                 {return reader.dataArray();}
-    @Override public Buffer dataArrayAsBuffer()         {return reader.dataArrayAsBuffer();}
-    @Override public Buffer view()                      {return reader.view();}
-    @Override public Buffer createView()                {return reader.createView();}
-    @Override public void   createDataArray(int length) {reader.createDataArray(length);}
-    @Override public void   setDest(Object array)       {reader.setDest(array);}
+    @Override String filename()                  {return reader.filename();}
+    @Override int    dataSizeShift()             {return reader.dataSizeShift();}
+    @Override Object dataArray()                 {return reader.dataArray();}
+    @Override Buffer dataArrayAsBuffer()         {return reader.dataArrayAsBuffer();}
+    @Override Buffer view()                      {return reader.view();}
+    @Override Buffer createView()                {return reader.createView();}
+    @Override void   createDataArray(int length) {reader.createDataArray(length);}
+    @Override void   setDest(Object array)       {reader.setDest(array);}
 
     /**
      * Reads {@code length} values from the buffer and stores them into the array known to subclass,
@@ -109,7 +109,7 @@ final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
      * @param  length  the number of values to read.
      */
     @Override
-    public void readFully(final Buffer view, final int offset, final int length) {
+    void readFully(final Buffer view, final int offset, final int length) {
         reader.transfer(offset, length);
     }
 

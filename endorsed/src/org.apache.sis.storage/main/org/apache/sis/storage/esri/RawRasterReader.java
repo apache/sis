@@ -73,6 +73,12 @@ final class RawRasterReader extends HyperRectangleReader {
     final GridGeometry gridGeometry;
 
     /**
+     * The enumeration value that represents the type of sample values.
+     * Shall be consistent with {@code layout.getDataType()}.
+     */
+    private final DataType dataType;
+
+    /**
      * Image layout, which describes also the layout of data to read.
      */
     final SampleModel layout;
@@ -95,16 +101,18 @@ final class RawRasterReader extends HyperRectangleReader {
      * Creates a new reader for the given input.
      *
      * @param  gridGeometry  the full image size together with the "grid to CRS" transform.
+     * @param  dataType      the type of sample value. Shall be consistent with {@code layout}.
      * @param  layout        the image layout, which describes also the layout of data to read.
      * @param  bandGapBytes  Number of bytes to skip between band. Used with {@link BandedSampleModel} only.
      * @param  input         the channel from which to read the values, together with a buffer for transferring data.
      * @throws DataStoreContentException if the given {@code dataType} is not one of the supported values.
      */
-    public RawRasterReader(final GridGeometry gridGeometry, final SampleModel layout, final int bandGapBytes,
-            final ChannelDataInput input) throws DataStoreContentException
+    public RawRasterReader(final GridGeometry gridGeometry, final DataType dataType, final SampleModel layout,
+            final int bandGapBytes, final ChannelDataInput input) throws DataStoreContentException
     {
-        super(ImageUtilities.toNumberEnum(layout.getDataType()), input);
+        super(ImageUtilities.toNumberEnum(dataType), input);
         this.gridGeometry = gridGeometry;
+        this.dataType     = dataType;
         this.layout       = layout;
         this.bandGapBytes = bandGapBytes;
     }
@@ -198,8 +206,8 @@ final class RawRasterReader extends HyperRectangleReader {
         final Buffer[] buffer;
         SampleModel sm = layout;
         boolean bandSubsetApplied = range.isIdentity();
-        if (layout instanceof BandedSampleModel) {
-            final BandedSampleModel cm = (BandedSampleModel) layout;
+        if (sm instanceof BandedSampleModel) {
+            final var cm = (BandedSampleModel) sm;
             if (!(ArraysExt.allEquals(cm.getBandOffsets(), 0)) && ArraysExt.isRange(0, cm.getBankIndices())) {
                 throw new DataStoreException("Not yet supported.");
             }
@@ -239,7 +247,7 @@ final class RawRasterReader extends HyperRectangleReader {
         if (regionWidth != width || regionHeight != height) {
             sm = sm.createCompatibleSampleModel(regionWidth, regionHeight);
         }
-        final DataBuffer data = RasterFactory.wrap(DataType.forDataBufferType(sm.getDataType()), buffer);
+        final DataBuffer data = RasterFactory.wrap(dataType, buffer);
         WritableRaster raster = WritableRaster.createWritableRaster(sm, data, null);
         if (!bandSubsetApplied) {
             raster = raster.createWritableChild(0, 0, raster.getWidth(), raster.getHeight(), 0, 0, range.getSelectedBands());

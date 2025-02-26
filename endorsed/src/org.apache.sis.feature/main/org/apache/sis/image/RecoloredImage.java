@@ -342,7 +342,8 @@ final class RecoloredImage extends ImageAdapter {
                 ARGB[i] = icm.getRGB(Math.round((i - start) * scale) + validMin);
             }
             final SampleModel sm = source.getSampleModel();
-            cm = ColorModelFactory.createIndexColorModel(sm.getNumBands(), visibleBand, ARGB, icm.hasAlpha(), icm.getTransparentPixel());
+            cm = ColorModelFactory.createIndexColorModel(null, 0, sm.getNumBands(),
+                    visibleBand, ARGB, icm.hasAlpha(), icm.getTransparentPixel());
         } else {
             /*
              * Wraps the given image with its colors ramp scaled between the given bounds. If the given image is

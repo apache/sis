@@ -126,16 +126,24 @@ public abstract class Decoder extends ReferencingFactoryContainer {
     final Datum[] datumCache;
 
     /**
-     * The CRS and <i>grid to CRS</i> transform defined by attributes in a variable. For example, GDAL uses
-     * {@code "spatial_ref_sys"} and {@code "GeoTransform"} attributes associated to a variable having the name
-     * specified by the {@code "grid_mapping"} attribute.
+     * Information for building <abbr>CRS</abbr>s and <i>grid to CRS</i> transforms for variables.
+     * The {@link GridMapping} class supports different conventions: the <abbr>CF</abbr> conventions
+     * are tried first, followed by <abbr>GDAL</abbr> conventions (pair of {@code "spatial_ref_sys"}
+     * and {@code "GeoTransform"} attributes), then <abbr>ESRI</abbr> conventions.
+     * The keys are variable names from two sources:
      *
-     * <p>Keys are either {@link Variable} instance for which we found a grid mapping, or {@link String} instances
-     * if we found some variables with {@code "grid_mapping"} attribute values.</p>
+     * <ol>
+     *   <li>Name of an usually empty variable referenced by a {@code "grid_mapping"} attribute on the actual data.
+     *       This is the standard approach, as it allows many variables to reference the same <abbr>CRS</abbr>
+     *       definition by declaring the same value in their {@code "grid_mapping"} attribute.</li>
+     *   <li>Name of the actual data variable when the attributes are found directly on that variable.
+     *       This approach is non-standard, as it does not allow the sharing of the same <abbr>CRS</abbr>
+     *       definition by many variables. But it is nevertheless observed in practice.</li>
+     * </ol>
      *
      * @see GridMapping#forVariable(Variable)
      */
-    final Map<Object,GridMapping> gridMapping;
+    final Map<String,GridMapping> gridMapping;
 
     /**
      * Cache of localization grids created for a given pair of (<var>x</var>,<var>y</var>) axes.
@@ -438,9 +446,9 @@ public abstract class Decoder extends ReferencingFactoryContainer {
     public final List<CoordinateReferenceSystem> getReferenceSystemInfo() throws IOException, DataStoreException {
         final var list = new ArrayList<CoordinateReferenceSystem>();
         for (final Variable variable : getVariables()) {
-            final GridMapping m = GridMapping.forVariable(variable);
-            if (m != null) {
-                addIfNotPresent(list, m.crs);
+            final var gm = GridMapping.forVariable(variable);
+            if (gm != null) {
+                addIfNotPresent(list, gm.crs());
             }
         }
         /*

@@ -24,7 +24,6 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ComparisonMode;
 import static org.apache.sis.util.privy.Numerics.*;
-import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 import static org.apache.sis.pending.jdk.JDK19.FLOAT_PRECISION;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
@@ -77,18 +76,21 @@ public final class NumericsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Numerics#ceilDiv(int, int)} and {@link Numerics#ceilDiv(long, long)}.
+     * Tests {@link Numerics#snapToCeil(int, int)}.
      */
-    @Test
-    public void testCeilDiv() {
-        assertEquals( 4,  ceilDiv( 12,  3 ));
-        assertEquals( 4L, ceilDiv( 12L, 3L));
-        assertEquals( 3,  ceilDiv(  8,  3 ));
-        assertEquals( 3L, ceilDiv(  8L, 3L));
-        assertEquals(-4,  ceilDiv(-12,  3 ));
-        assertEquals(-4L, ceilDiv(-12L, 3L));
-        assertEquals(-2,  ceilDiv( -8,  3 ));
-        assertEquals(-2L, ceilDiv( -8L, 3L));
+    public void testSnapToCeil() {
+        boolean negative = false;
+        do {    // Executed exactly twice.
+            final int divisor = negative ? -3 : 3;
+            assertEquals(  9, Numerics.snapToCeil(  9, divisor));
+            assertEquals( 12, Numerics.snapToCeil( 10, divisor));
+            assertEquals( 12, Numerics.snapToCeil( 11, divisor));
+            assertEquals( 12, Numerics.snapToCeil( 12, divisor));
+            assertEquals( -9, Numerics.snapToCeil( -9, divisor));
+            assertEquals( -9, Numerics.snapToCeil(-10, divisor));
+            assertEquals( -9, Numerics.snapToCeil(-11, divisor));
+            assertEquals(-12, Numerics.snapToCeil(-12, divisor));
+        } while (negative = !negative);
     }
 
     /**

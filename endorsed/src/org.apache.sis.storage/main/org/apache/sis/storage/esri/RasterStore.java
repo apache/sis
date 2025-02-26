@@ -255,7 +255,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 break;
             }
         }
-        return ColorModelFactory.createIndexColorModel(numBands, VISIBLE_BAND, ARGB, true, -1);
+        return ColorModelFactory.createIndexColorModel(null, 0, numBands, VISIBLE_BAND, ARGB, true, -1);
     }
 
     /**

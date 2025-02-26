@@ -507,7 +507,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
              * unsigned integer with a signed one).
              */
             if (range.isEmpty()) {
-                band.warning(RasterResource.class, "getSampleDimensions", Resources.Keys.IllegalValueRange_4,
+                band.warning(RasterResource.class, "getSampleDimensions", null, Resources.Keys.IllegalValueRange_4,
                         band.getFilename(), band.getName(), range.getMinValue(), range.getMaxValue());
             } else {
                 String name = band.getDescription();
@@ -594,12 +594,12 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * @return {@code true} if flag attributes have been found, or {@code false} otherwise.
      */
     private static boolean createEnumeration(final SampleDimension.Builder builder, final Variable band) {
-        final Map<Integer,String> enumeration = band.getEnumeration();
+        final Map<Long,String> enumeration = band.getEnumeration();
         if (enumeration == null) {
             return false;
         }
-        for (final Map.Entry<Integer,String> entry : enumeration.entrySet()) {
-            final Number value = entry.getKey();
+        for (final Map.Entry<Long,String> entry : enumeration.entrySet()) {
+            final Long value = entry.getKey();
             CharSequence name = entry.getValue();
             if (name == null) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed);

@@ -90,7 +90,7 @@ public final class NameToIdentifier implements ReferenceIdentifier {
                 return null;
             }
         }
-        return Citations.fromName(scope.head().toString());
+        return Citations.predefined(scope.head().toString()).orElse(null);
     }
 
     /**

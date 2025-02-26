@@ -26,11 +26,17 @@ import java.nio.Buffer;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-interface DataTransfer {
+abstract class DataTransfer {
+    /**
+     * Creates a new instance.
+     */
+    DataTransfer() {
+    }
+
     /**
      * Returns a file identifier for error messages or debugging purpose.
      */
-    String filename();
+    abstract String filename();
 
     /**
      * Returns the size of the Java primitive type which is the element of the array.
@@ -40,41 +46,41 @@ interface DataTransfer {
      *     dataSize = 1 << dataSizeShift;
      * }
      */
-    int dataSizeShift();
+    abstract int dataSizeShift();
 
     /**
      * Returns the data as a {@code char[]}, {@code short[]}, {@code int[]}, {@code long[]},
      * {@code float[]} or {@code double[]} array. This is either the array given in argument
      * to the subclass constructor, or the array created by {@link #createDataArray(int)}.
      */
-    Object dataArray();
+    abstract Object dataArray();
 
     /**
      * Returns {@link #dataArray()} wrapped in a buffer.
      */
-    Buffer dataArrayAsBuffer();
+    abstract Buffer dataArrayAsBuffer();
 
     /**
      * Creates a destination array of the given length.
      */
-    void createDataArray(int length);
+    abstract void createDataArray(int length);
 
     /**
      * Sets the destination to the given data array, which may be {@code null}.
      */
-    void setDest(Object array) throws ClassCastException;
+    abstract void setDest(Object array) throws ClassCastException;
 
     /**
      * Returns the view created by the last call to {@link #createView()}, or {@code null} if none.
      */
-    Buffer view();
+    abstract Buffer view();
 
     /**
      * Creates a new buffer of the type required by the array to fill.
      * This method is guaranteed to be invoked exactly once, after the
      * {@link ChannelDataInput#buffer} contains enough data.
      */
-    Buffer createView();
+    abstract Buffer createView();
 
     /**
      * Moves to the given position in the stream.
@@ -82,7 +88,7 @@ interface DataTransfer {
      * @param  position  the position where to move.
      * @throws IOException if the stream cannot be moved to the given position.
      */
-    void seek(long position) throws IOException;
+    abstract void seek(long position) throws IOException;
 
     /**
      * Reads {@code length} values from the stream and stores them into the array known to subclass,
@@ -97,5 +103,5 @@ interface DataTransfer {
      * @param  length   the number of values to read.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
-    void readFully(Buffer view, int offset, int length) throws IOException;
+    abstract void readFully(Buffer view, int offset, int length) throws IOException;
 }
