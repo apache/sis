@@ -184,7 +184,7 @@ publishing {
             }
         }
         create<MavenPublication>("storage.gimi") {
-            var module = "org.apache.sis.storage.gimi"
+            var module = "org.apache.sis.storage.geoheif"
             groupId    = "org.apache.sis.storage"
             artifactId = "sis-gimi"
             artifact(layout.buildDirectory.file("libs/${module}.jar"))
