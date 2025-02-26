@@ -27,6 +27,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.TiledGridCoverage;
 import org.apache.sis.storage.base.TiledGridResource;
+
+// Test dependencies
 import org.apache.sis.image.privy.AssertionMessages;
 
 

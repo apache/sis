@@ -39,7 +39,6 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.ReferenceSystemType;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -66,6 +65,7 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.AttributeGroup;
+import org.opengis.referencing.ReferenceSystemType;
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.datum.DatumEnsemble;
 
