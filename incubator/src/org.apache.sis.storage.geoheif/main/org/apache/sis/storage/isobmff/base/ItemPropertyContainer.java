@@ -17,9 +17,9 @@
 package org.apache.sis.storage.isobmff.base;
 
 import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.ContainerBox;
-import org.apache.sis.storage.DataStoreException;
 
 
 /**

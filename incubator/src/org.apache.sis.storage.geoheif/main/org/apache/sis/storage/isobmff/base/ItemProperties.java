@@ -20,10 +20,10 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.ContainerBox;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.TreeTable;
 
 

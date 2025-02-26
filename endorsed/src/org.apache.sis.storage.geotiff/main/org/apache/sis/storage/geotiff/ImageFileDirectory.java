@@ -53,6 +53,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.privy.ColorModelBuilder;
 import org.apache.sis.image.privy.ColorModelFactory;
 import org.apache.sis.image.privy.SampleModelBuilder;
@@ -66,7 +67,6 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.image.DataType;
 import org.apache.sis.pending.jdk.JDK18;
 
 

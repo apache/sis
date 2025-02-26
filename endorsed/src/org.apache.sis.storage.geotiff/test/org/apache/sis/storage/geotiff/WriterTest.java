@@ -41,9 +41,9 @@ import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.privy.ColorModelBuilder;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.image.DataType;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

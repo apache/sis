@@ -17,8 +17,8 @@
 package org.apache.sis.storage.isobmff;
 
 import java.util.UUID;
-import java.io.IOException;
 import java.util.ServiceLoader;
+import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
