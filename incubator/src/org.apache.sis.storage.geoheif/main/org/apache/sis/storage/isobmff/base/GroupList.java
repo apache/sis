@@ -16,20 +16,48 @@
  */
 package org.apache.sis.storage.isobmff.base;
 
-import org.apache.sis.storage.isobmff.Box;
+import java.io.IOException;
+import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.ContainerBox;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
+ * Grouping of items, which may also group tracks.
+ * The group share a particular characteristic or have particular relationship.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@link Meta} box.
+ *
+ * <h4>Content</h4>
+ * Children should be {@link EntityToGroup} instances.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public class GroupList extends Box {
+public final class GroupList extends ContainerBox {
+    /**
+     * Numerical representation of the {@code "grpl"} box type.
+     */
+    public static final int BOXTYPE = ((((('g' << 8) | 'r') << 8) | 'p') << 8) | 'l';
 
-    public static final String FCC = "grpl";
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public boolean isContainer() {
-        return true;
+    public final int type() {
+        return BOXTYPE;
     }
 
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws DataStoreException if the stream contains inconsistent or unsupported data.
+     */
+    public GroupList(final Reader reader) throws IOException, DataStoreException {
+        super(reader, null, false);
+    }
 }

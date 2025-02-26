@@ -15,4 +15,14 @@
  * limitations under the License.
  */
 
+/**
+ * Boxes defined by <abbr>ISO</abbr> 23008-12 — Image File Format.
+ * This is part of the "High efficiency coding and media delivery in heterogeneous environments" series.
+ *
+ * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://www.iso.org/standard/83650.html">ISO/IEC 23008-12:2022 —
+ * High efficiency coding and media delivery in heterogeneous environments — Part 12: Image File Format</a>
+ */
 package org.apache.sis.storage.isobmff.image;

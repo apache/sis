@@ -14,8 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geoheif;
+package org.apache.sis.storage.isobmff.gimi;
+
+import java.util.UUID;
+
+// Test dependencies
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-public final class StoreTest {
+/**
+ * Verifies the <abbr>UUID</abbr> declared in extensions.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ */
+public final class ExtensionTest {
+    /**
+     * Creates a new test case.
+     */
+    public ExtensionTest() {
+    }
+
+    /**
+     * Verifies the <abbr>UUID</abbr> declared in extensions.
+     */
+    @Test
+    public void verifyUUIDs() {
+        assertEquals(UUID.fromString("4a66efa7-e541-526c-9427-9e77617feb7d"), UnknownProperty.EXTENDED_TYPE);
+    }
 }

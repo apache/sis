@@ -16,27 +16,66 @@
  */
 package org.apache.sis.storage.isobmff.base;
 
+import java.time.Duration;
 import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.isobmff.FullBox;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
- * Container: MovieBox
+ * Overall information relevant to the entire presentation considered as a whole.
+ *
+ * @todo Not yet implemented. This is currently an almost empty box.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@link Movie} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public final class MovieHeader extends FullBox {
+public final class MovieHeader extends HeaderBox {
+    /**
+     * Numerical representation of the {@code "mvhd"} box type.
+     */
+    public static final int BOXTYPE = ((((('m' << 8) | 'v') << 8) | 'h') << 8) | 'd';
 
-    public static final String FCC = "mvhd";
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        super.readProperties(reader);
-        //TODO
+    public final int type() {
+        return BOXTYPE;
     }
 
+    /**
+     * The number of time units that pass in one second.
+     */
+    @Interpretation(Type.UNSIGNED)
+    public final int timescale;
 
+    /**
+     * Length of the presentation.
+     */
+    public final Duration duration;
 
+    /*
+     * Other information not yet parsed: preferred rate to play the presentation, preferred playback volume,
+     * transformation matrix for the video, next track identifier to be added to the presentation.
+     */
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws DataStoreContentException if the box version is unsupported.
+     */
+    public MovieHeader(final Reader reader) throws IOException, DataStoreContentException {
+        super(reader);
+        final ChannelDataInput input = reader.input;
+        timescale = input.readInt();
+        duration = duration(input, timescale);
+    }
 }

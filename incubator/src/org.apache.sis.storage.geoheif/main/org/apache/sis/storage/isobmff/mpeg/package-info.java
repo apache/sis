@@ -15,4 +15,14 @@
  * limitations under the License.
  */
 
+/**
+ * Boxes defined by <abbr>ISO</abbr> 23001-17 — MPEG systems technologies.
+ * Part 17 is about the carriage of uncompressed video and images in ISO base media file format.
+ *
+ * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://www.iso.org/standard/82528.html">ISO/IEC 23001-17:2024 —
+ * MPEG systems technologies — Part 17: Carriage of uncompressed video and images in ISO base media file format</a>
+ */
 package org.apache.sis.storage.isobmff.mpeg;

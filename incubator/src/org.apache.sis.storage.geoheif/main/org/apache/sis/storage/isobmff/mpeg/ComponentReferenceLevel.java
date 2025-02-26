@@ -17,21 +17,43 @@
 package org.apache.sis.storage.isobmff.mpeg;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
+ * Describes the minimum and maximum values for components present in the image data.
+ *
+ * @todo Not yet implemented.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@link ItemPropertyContainer} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public class ComponentReferenceLevel extends FullBox {
+public final class ComponentReferenceLevel extends FullBox {
+    /**
+     * Numerical representation of the {@code "clev"} box type.
+     */
+    public static final int BOXTYPE = ((((('c' << 8) | 'l') << 8) | 'e') << 8) | 'v';
 
-    public static final String FCC = "clev";
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        throw new IOException("Not supported yet");
+    public final int type() {
+        return BOXTYPE;
+    }
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     */
+    public ComponentReferenceLevel(final Reader reader) throws IOException {
+        super(reader);
     }
 }

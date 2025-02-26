@@ -16,263 +16,99 @@
  */
 package org.apache.sis.storage.isobmff;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
+import org.apache.sis.storage.base.MetadataBuilder;
 
 
 /**
+ * Building block defined by a unique type identifier and a length in bytes.
+ * All data in a GeoHEIF file are contained in boxes, there is no other data within the file.
+ * A box may be a {@link ContainerBox} containing other boxes.
+ *
+ * <h4>Reading process</h4>
+ * Each box in the input stream starts with an header declaring the size and the box type.
+ * This header is parsed by the {@link Reader} for determining which {@code Box} class to instantiate.
+ * The <dfn>box payload</dfn> is defined as all bytes in a box following the header.
+ * The box payload shall be read by the {@code Box} subclass constructor.
+ * Constructors do not need to read the payload fully, as remaining bytes will be automatically skipped.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public class Box {
+public abstract class Box extends TreeNode {
+    /**
+     * The epoch of dates in <abbr>ISO</abbr> <abbr>BMFF</abbr> files.
+     * This is fixed to midnight, January 1, 1904 in UTC time.
+     */
+    protected static final Instant EPOCH = Instant.ofEpochMilli(-2082844800000L);
 
     /**
-     * Offset of the box in the file.
+     * Creates a new box. The header, which contains the size and the box type, shall have been read by the caller.
+     * Therefore, there is no more field to read in this constructor. The <dfn>box payload</dfn> (all bytes after
+     * the header) shall be read by the subclass constructor. It is okay to read the payload only partially.
      */
-    public long boxOffset;
-    /**
-     * Offset of the box payload in the file.
-     */
-    public long payloadOffset;
-    /**
-     * Size in bytes of the box, 0 if it extends to the end of the file.
-     */
-    public long size;
-    /**
-     * FourCC box identifier.
-     * if type is uuid only then uuid field is defined.
-     */
-    public String type;
-    /**
-     * Universal Unique Identifier, can be null.
-     */
-    public UUID uuid;
+    protected Box() {
+    }
 
     /**
-     * Box may have children boxes.
-     */
-    private List<Box> children;
-
-    /**
-     * Keep reader reference for reading when needed
-     * Use it in a sync block.
-     */
-    protected Reader reader;
-    private boolean loaded;
-
-    /**
+     * Returns the four-character type of this box. This is the value defined in the {@code BOXTYPE} constant
+     * of each sub-class. If the value is {@link Extension#BOXTYPE}, then the {@link #extendedType()} method
+     * shall return a non-null value.
      *
-     * @param reader to read from, channel position is undefined after this operation
+     * @return the four-character type of this box.
+     *
+     * @see #formatFourCC(int)
      */
-    public void setLoader(Reader reader) {
-        this.reader = reader;
+    public abstract int type();
+
+    /**
+     * Returns the identifier of this box. For normative boxes defined by <abbr>ISO</abbr> 14496,
+     * the identifier is derived by an algorithm defined in the <abbr>ISO</abbr> specification.
+     * For all other boxes, this is the value of the {@code EXTENDED_TYPE} constant defined in
+     * each {@link Extension} sub-class.
+     *
+     * @return the box identifier.
+     */
+    public UUID extendedType() {
+        return new UUID((((long) type()) << Integer.SIZE) | 0x0011_0010, 0x8000_00AA00389B71L);
     }
 
     /**
-     * Read box payload, may be values or children boxes.
+     * Returns a unique key for the type of this box.
+     * This is either {@link #type()} or {@link #extendedType()}.
      *
-     * @throws java.io.IOException
+     * @return a unique key for the type of this box.
      */
-    public synchronized final void readPayload() throws IOException {
-        if (loaded) return;
-        loaded = true;
-        synchronized (reader) {
-            if (isContainer()) {
-                readChildren(reader);
-            } else {
-                reader.channel.seek(payloadOffset);
-                readProperties(reader);
-                if (reader.channel.getStreamPosition() != boxOffset + size) {
-                    throw new IOException("Incorrect offset after reading " + this.getClass().getSimpleName() + " properties, box end has not been reached, position : " + reader.channel.getStreamPosition() + " expected : " + (boxOffset + size));
-                }
-            }
-        }
+    public Object typeKey() {
+        return type();
     }
 
     /**
-     * Read properties
+     * Returns a human-readable name for this node to shown in the tree.
+     * This method adds the {@linkplain #typeKey() type} between parenthesis after the box name.
      *
-     * @param cdi to read from, channel position is undefined after this operation
-     * @throws java.io.IOException
+     * @return Human-readable name of this node.
      */
-    protected void readProperties(Reader reader) throws IOException {
-        //skip to box end
-        reader.channel.seek(boxOffset + size);
-    }
-
-    private void readChildren(Reader reader) throws IOException {
-        if (!isContainer()) throw new IOException("Box is not a container.");
-        if (children != null) return;
-
-        reader.channel.seek(payloadOffset);
-        final List<Box> children = new ArrayList<>();
-        if (size == 0) {
-            //go to file end
-            try {
-                while (true) {
-                    final Box box = reader.readBox();
-                    reader.channel.seek(box.boxOffset + box.size);
-                    children.add(box);
-                    if (box.size == 0) break; //last box
-                }
-            } catch (EOFException ex) {
-                //expected
-            }
-        } else {
-            while (reader.channel.getStreamPosition() < boxOffset+size) {
-                final Box box = reader.readBox();
-                reader.channel.seek(box.boxOffset + box.size);
-                children.add(box);
-                if (box.size == 0) break; //last box
-            }
-        }
-        this.children = Collections.unmodifiableList(children);
-    }
-
-    public boolean isContainer() {
-        return false;
-    }
-
-    /**
-     *
-     * @param cdi to read from, channel position is undefined after this operation
-     * @return list of children boxes
-     * @throws IOException
-     */
-    public final List<Box> getChildren() throws IOException {
-        readPayload();
-        return children;
-    }
-
-    public Box getChild(String fourCC, String uuid) throws IOException {
-        List<Box> children = getChildren();
-        for (Box b : children) {
-            if (b.type.equals(fourCC)) {
-                if (uuid != null && !uuid.equals(b.uuid.toString())) {
-                    continue;
-                }
-                return b;
-            }
-        }
-        return null;
-    }
-
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getSimpleName());
-        sb.append(this instanceof FullBox ? " - FullBox" : " - Box");
-        sb.append("(").append(type);
-        sb.append(",offset:").append(boxOffset);
-        sb.append(",size:").append(size);
-        if (uuid != null) sb.append(",uuid:").append(uuid);
-        if (this instanceof FullBox fb) {
-            sb.append(",version: ").append(fb.version);
-            sb.append(",flags: ").append(fb.flags);
+    public String typeName() {
+        String name = super.typeName();
+        Object type = typeKey();
+        if (type instanceof Integer fourCC) {
+            type = formatFourCC(fourCC);
         }
-        sb.append(")");
-
-        final String p = propertiesToString();
-        if (!p.isBlank()) sb.append("\n  ").append(p.replaceAll("\n", "\n  "));
-        if (isContainer()) {
-            sb.append(" CONTAINER");
-            try {
-                final List<Box> children = getChildren();
-                return TreeNode.toStringTree(sb.toString(), children);
-            } catch (IOException ex) {
-                sb.append(" - ERROR loading boxes");
-            }
+        if (type != null) {
+            name = name + " (" + type + ')';
         }
-        return sb.toString();
+        return name;
     }
 
     /**
-     * @return this box subclass properties as string
+     * Converts node properties to <abbr>ISO</abbr> 19115 metadata if applicable.
+     * The default implementation does nothing.
+     *
+     * @param  builder  the builder where to set metadata information.
      */
-    protected String propertiesToString() {
-        return beanToString(this);
-    }
-
-    public static int fourCCtoInt(String fourcc) {
-        return (fourcc.charAt(0) << 24) |
-               (fourcc.charAt(1) << 16) |
-               (fourcc.charAt(2) << 8) |
-               (fourcc.charAt(3));
-    }
-
-    public static String intToFourCC(int value) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append((char)((value>>>24) & 0xFF));
-        sb.append((char)((value>>>16) & 0xFF));
-        sb.append((char)((value>>>8) & 0xFF));
-        sb.append((char)((value) & 0xFF));
-        return sb.toString();
-    }
-
-    public static String beanToString(Object obj) {
-        Class<? extends Object> clazz = obj.getClass();
-        if (!(clazz == Box.class || clazz == FullBox.class)) {
-
-            final List<Field> fields = new ArrayList<>();
-            while (!(clazz == Box.class || clazz == FullBox.class) && clazz != null) {
-                fields.addAll(0, Arrays.asList(clazz.getDeclaredFields()));
-                clazz = clazz.getSuperclass();
-            }
-
-            final StringBuilder sb = new StringBuilder();
-            for (Field field : fields) {
-                if (Modifier.isStatic(field.getModifiers())) continue;
-                if (!Modifier.isPublic(field.getModifiers())) continue;
-                if (!sb.isEmpty()) sb.append('\n');
-                sb.append(field.getName()).append(" : ");
-                try {
-                    Object value = field.get(obj);
-                    if (value instanceof Collection) {
-                        value = ((Collection) value).toArray();
-                    }
-
-                    if (value != null && value.getClass().isArray()) {
-                        final Class<?> componentType = value.getClass().getComponentType();
-                        int length = Array.getLength(value);
-                        if (value instanceof boolean[]) {
-                            sb.append(Arrays.toString((boolean[])value));
-                        } else if (value instanceof byte[]) {
-                            sb.append(Arrays.toString((byte[])value));
-                        } else if (value instanceof int[]) {
-                            sb.append(Arrays.toString((int[])value));
-                        } else if (value instanceof double[]) {
-                            sb.append(Arrays.toString((double[])value));
-                        } else if (value instanceof String[]) {
-                            sb.append(Arrays.toString((String[])value));
-                        } else {
-                            if (length > 0) {
-                                int maxCount = 2000000000;
-                                for (int i = 0; i < length && i < maxCount; i++) {
-                                    String str = String.valueOf(Array.get(value, i));
-                                    sb.append("\n [").append(i).append("]:").append(str.replaceAll("\n", "\n     "));
-                                }
-                                if (length >= maxCount) sb.append("\n [...").append(length).append("]: ... more values...");
-                            }
-                        }
-
-                    } else {
-                        sb.append(value);
-                    }
-                } catch (IllegalArgumentException | IllegalAccessException ex) {
-                    sb.append("- can not acces value");
-                }
-            }
-            return sb.toString();
-        }
-        return "";
+    public void metadata(MetadataBuilder builder) {
     }
 }

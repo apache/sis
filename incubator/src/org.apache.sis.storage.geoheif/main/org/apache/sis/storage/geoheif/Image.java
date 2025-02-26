@@ -16,219 +16,99 @@
  */
 package org.apache.sis.storage.geoheif;
 
+import java.nio.ByteOrder;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
+import java.awt.image.Raster;
+import java.awt.image.RasterFormatException;
+import javax.imageio.ImageTypeSpecifier;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.isobmff.Box;
-import org.apache.sis.storage.isobmff.Reader;
-import org.apache.sis.storage.isobmff.base.ItemInfoEntry;
-import org.apache.sis.storage.isobmff.base.ItemLocation;
-import org.apache.sis.storage.isobmff.base.ItemProperties;
-import org.apache.sis.storage.isobmff.base.ItemPropertyAssociation;
-import org.apache.sis.storage.isobmff.base.ItemPropertyContainer;
-import org.apache.sis.storage.isobmff.base.ItemReference;
-import org.apache.sis.storage.isobmff.base.MediaData;
-import org.apache.sis.storage.isobmff.base.Meta;
-import org.apache.sis.storage.isobmff.base.PrimaryItem;
-import org.apache.sis.storage.isobmff.base.SingleItemTypeReference;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.isobmff.ByteReader;
 
 
 /**
- * Regroup properties of a single item of the file.
+ * A single image ({@code 'unci'} item type) from the HEIF file.
+ * An image may be used as a tile in a larger image ({@code 'grid'} item type).
+ * In the uncompressed case, the image may be implicitly tiled if {@link #numXTiles} is greater than 1.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-final class Image {
-
-    private static final ItemLocation.Item NO_LOCATION = new ItemLocation.Item();
-
-    public final GeoHeifStore store;
-    public final ItemInfoEntry entry;
-
-    // caches
-    private List<Box> properties;
-    private List<SingleItemTypeReference> references;
-    private ItemLocation.Item location;
-    private Boolean isPrimary;
-
-    public Image(GeoHeifStore store, ItemInfoEntry entry) throws IllegalArgumentException, DataStoreException, IOException {
-        this.store = store;
-        this.entry = entry;
-    }
-
+abstract class Image {
     /**
-     * @return true if this item is the primary item defined in the file
+     * A name that identifies this image, for debugging purposes.
      */
-    public synchronized boolean isPrimary() throws DataStoreException {
-        if (isPrimary != null) return isPrimary;
-        try {
-            final Box meta = store.getRootBox().getChild(Meta.FCC, null);
-            final PrimaryItem primaryItem = (PrimaryItem) meta.getChild(PrimaryItem.FCC, null);
-            if (primaryItem != null) {
-                isPrimary = primaryItem.itemId == entry.itemId;
-            } else {
-                isPrimary = true;
-            }
-        } catch (IOException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
-
-        return isPrimary;
-    }
+    private final String name;
 
     /**
-     * List all property boxes.
+     * Number of columns and rows in the tile matrix.
+     * This is usually not supported for compressed tiles.
+     */
+    protected final int numXTiles, numYTiles;
+
+    /**
+     * The provider of bytes to read from the <abbr>ISOBMFF</abbr> box.
+     * The bytes are read from the {@link ChannelDataInput} at a position specified by the box.
+     */
+    protected final ByteReader locator;
+
+    /**
+     * The byte order to use for reading the sample values of the image.
+     */
+    protected final ByteOrder byteOrder;
+
+    /**
+     * Creates a new tile.
      *
-     * @return list of property boxes, can be empty.
+     * @param  builder  helper class for building the grid geometry and sample dimensions.
+     * @param  locator  the provider of bytes to read from the <abbr>ISOBMFF</abbr> box.
+     * @param  name     a name that identifies this image, for debugging purpose.
+     * @throws RasterFormatException if the sample model cannot be created.
      */
-    public synchronized List<Box> getProperties() throws DataStoreException {
-        if (properties != null) return properties;
-
-        //extract properties
-        properties = new ArrayList<>();
-        try {
-            final Box meta = store.getRootBox().getChild(Meta.FCC, null);
-            final Box itemProperties = meta.getChild(ItemProperties.FCC, null);
-            if (itemProperties != null) {
-                final ItemPropertyContainer itemPropertiesContainer = (ItemPropertyContainer) itemProperties.getChild(ItemPropertyContainer.FCC, null);
-                final List<Box> allProperties = itemPropertiesContainer.getChildren();
-                final ItemPropertyAssociation itemPropertiesAssociations = (ItemPropertyAssociation) itemProperties.getChild(ItemPropertyAssociation.FCC, null);
-                for (ItemPropertyAssociation.Entry en : itemPropertiesAssociations.entries) {
-                    if (en.itemId == entry.itemId) {
-                        for (int i : en.propertyIndex) {
-                            properties.add(allProperties.get(i - 1)); //starts at 1
-                        }
-                        break;
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
-        return properties;
+    protected Image(final CoverageBuilder builder, final ByteReader locator, final String name) {
+        this.locator = locator;
+        this.name    = name;
+        byteOrder    = builder.byteOrder();
+        numXTiles    = builder.numTiles(0);
+        numYTiles    = builder.numTiles(1);
+        // Do NOT invoke `builder.sampleModel()`, because that information is not available for all types.
     }
 
     /**
-     * Override property boxes.
+     * Returns the sample model and color model of this image.
+     * For uncompressed image, this information is not available and this method always throws an exception.
+     * For some other profiles such as JPEG, the sample and color models are encoded in this image payload.
+     * The size of the sample model shall be the tile size.
      *
-     * @param boxes not null
+     * @param  store   the store that opened the <abbr>HEIF</abbr> file.
+     * @throws DataStoreContentException if this image does not include information about the sample/color models.
+     * @throws DataStoreException if another problem occurred with the content of the <abbr>HEIF</abbr> file.
+     * @throws IOException if an I/O error occurred.
      */
-    synchronized void setProperties(List<Box> boxes) {
-        this.properties = boxes;
-    }
-
-    public synchronized List<SingleItemTypeReference> getReferences() throws DataStoreException {
-        if (references != null) return references;
-
-        //extract outter references
-        references = new ArrayList<>();
-        try {
-            final Box meta = store.getRootBox().getChild(Meta.FCC, null);
-            final ItemReference itemReferences = (ItemReference) meta.getChild(ItemReference.FCC, null);
-            if (itemReferences != null) {
-                for (SingleItemTypeReference sitr : itemReferences.references) {
-                    if (sitr.fromItemId == entry.itemId) {
-                        references.add(sitr);
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
-
-        return references;
-    }
-
-    synchronized void setReferences(List<SingleItemTypeReference> refs) {
-        this.references = refs;
-    }
-
-    public synchronized ItemLocation.Item getLocation() throws DataStoreException {
-        if (location != null) return location == NO_LOCATION ? null : location;
-
-        //extract location
-        location = NO_LOCATION;
-        try {
-            final Box meta = store.getRootBox().getChild(Meta.FCC, null);
-            final ItemLocation itemLocation = (ItemLocation) meta.getChild(ItemLocation.FCC, null);
-            if (itemLocation != null) {
-                for (ItemLocation.Item en : itemLocation.items) {
-                    if (en.itemId == entry.itemId) {
-                        location = en;
-                        break;
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
-        return location == NO_LOCATION ? null : location;
+    protected ImageTypeSpecifier getImageType(final GeoHeifStore store) throws DataStoreException, IOException {
+        throw new DataStoreContentException("Cannot determine the sample model.");
     }
 
     /**
-     * @param offset start position to read from
-     * @param count number of bytes to read, -1 for all
-     * @param target Optional array to write into
-     * @param targetOffset if target is provided, offset to start writing at
-     * @return new or provided array
-     * @throws DataStoreException
+     * Reads a single tile.
+     *
+     * @param  store    the data store reading a tile.
+     * @param  tileX    0-based column index of the tile to read, starting from image left.
+     * @param  tileY    0-based column index of the tile to read, starting from image top.
+     * @param  context  contains the target raster or the image reader to use.
+     * @return tile filled with the pixel values read by this method.
      */
-    public byte[] getData(long dataOffset, int count, byte[] target, int targetOffset) throws DataStoreException {
-        try {
-            final ItemLocation.Item location = getLocation();
-            if (location == null) {
-                //read data from the default mediadata box
-                MediaData mediaData = (MediaData) store.getRootBox().getChild(MediaData.FCC, null);
-                return mediaData.getData(dataOffset, count, target, targetOffset);
-            } else if (location.constructionMethod == 0) {
-                //absolute location
-                if (location.dataReferenceIndex == 0) {
-                    //compute total size
-                    final int length = IntStream.of(location.extentLength).sum();
-                    //read datas
-                    if (count == -1) count = length;
-                    if (target == null) targetOffset = 0; //ignore user value if array is null
-                    final byte[] data = target == null ? new byte[count] : target;
-                    final Reader reader = store.getReader();
-                    synchronized (reader) {
-                        long remaining = count;
-                        int bufferOffset = 0;
-                        for (int i = 0, currentOffset = 0; i < location.extentLength.length && remaining > 0; i++) {
-                            if (dataOffset <= currentOffset) {
-                                reader.channel.seek(location.baseOffset + location.extentOffset[i]);
-                                final long toRead = Math.min(remaining, location.extentLength[i]);
-                                reader.channel.readFully(data, bufferOffset + targetOffset, Math.toIntExact(toRead));
-                                bufferOffset += toRead;
-                                remaining -= toRead;
-                            } else if (dataOffset >= (currentOffset + location.extentLength[i])) {
-                                //skip the full block
-                            } else if (dataOffset > currentOffset) {
-                                long toSkip = dataOffset - currentOffset;
-                                reader.channel.seek(location.baseOffset + location.extentOffset[i] + toSkip);
-                                final long toRead = Math.min(remaining, location.extentLength[i] - toSkip);
-                                reader.channel.readFully(data, bufferOffset + targetOffset, Math.toIntExact(toRead));
-                                bufferOffset += toRead;
-                                remaining -= toRead;
-                            }
-                            currentOffset += location.extentLength[i];
-                        }
-                    }
-                    return data;
-                } else {
-                    throw new IOException("Not supported yet");
-                }
-            } else if (location.constructionMethod == 1) {
-                throw new IOException("Not supported yet");
-            } else if (location.constructionMethod == 2) {
-                throw new IOException("Not supported yet");
-            } else {
-                throw new DataStoreException("Unexpected construction method " + location.constructionMethod);
-            }
-        } catch (IOException ex) {
-            throw new DataStoreException("Failed reading data", ex);
-        }
-    }
+    protected abstract Raster readTile(final GeoHeifStore store, final long tileX, final long tileY,
+            final ImageResource.Coverage.ReadContext context) throws IOException, DataStoreException;
 
+    /**
+     * Returns the name of this image, for debugging purposes.
+     *
+     * @return the name of this image.
+     */
+    @Override
+    public String toString() {
+        return name;
+    }
 }

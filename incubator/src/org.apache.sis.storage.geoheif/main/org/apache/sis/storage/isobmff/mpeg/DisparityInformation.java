@@ -17,21 +17,43 @@
 package org.apache.sis.storage.isobmff.mpeg;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
+ * Describes how values of a disparity map should be interpreted.
+ *
+ * @todo Not yet implemented.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@link ItemPropertyContainer} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public class DisparityInformation extends FullBox {
+public final class DisparityInformation extends FullBox {
+    /**
+     * Numerical representation of the {@code "disi"} box type.
+     */
+    public static final int BOXTYPE = ((((('d' << 8) | 'i') << 8) | 's') << 8) | 'i';
 
-    public static final String FCC = "disi";
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        throw new IOException("Not supported yet");
+    public final int type() {
+        return BOXTYPE;
+    }
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     */
+    public DisparityInformation(final Reader reader) throws IOException {
+        super(reader);
     }
 }

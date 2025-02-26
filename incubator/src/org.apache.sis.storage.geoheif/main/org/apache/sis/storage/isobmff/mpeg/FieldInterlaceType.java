@@ -17,21 +17,40 @@
 package org.apache.sis.storage.isobmff.mpeg;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
+ * Describes the field layout in a sample data in case of interlaced video content.
+ *
+ * @todo Not yet implemented.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public class FieldInterlaceType extends FullBox {
+public final class FieldInterlaceType extends FullBox {
+    /**
+     * Numerical representation of the {@code "ilce"} box type.
+     */
+    public static final int BOXTYPE = ((((('i' << 8) | 'l') << 8) | 'c') << 8) | 'e';
 
-    public static final String FCC = "ilce";
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        throw new IOException("Not supported yet");
+    public final int type() {
+        return BOXTYPE;
+    }
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     */
+    public FieldInterlaceType(final Reader reader) throws IOException {
+        super(reader);
     }
 }

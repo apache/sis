@@ -16,8 +16,13 @@
  */
 
 /**
- * GIMI store.
+ * A data store that can read GeoHEIF files as grid coverages.
+ * The <abbr>HEIF</abbr> abbreviation stands for <q>High Efficiency Image Format</q>.
+ * This implementation supports only a subset of the data structures ("boxes")
+ * that an <abbr>HEIF</abbr> file may contain.
+ * The supported subset should be sufficient for georeferenced images.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  */
 package org.apache.sis.storage.geoheif;

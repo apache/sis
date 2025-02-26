@@ -16,20 +16,46 @@
  */
 package org.apache.sis.storage.isobmff.base;
 
-import org.apache.sis.storage.isobmff.Box;
+import java.io.IOException;
+import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.ContainerBox;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
- * Container: File, or OriginalFileTypeBox
+ * Brand information applying to the original file before transformation.
+ * For example, a file using a compressed {@link Movie} box is no longer
+ * compliant to any brand defined prior the introduction of compressed boxes.
+ *
+ * <h4>Container</h4>
+ * The container can be the file or another {@link OriginalFileType} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public final class OriginalFileType extends Box {
+public final class OriginalFileType extends ContainerBox {
+    /**
+     * Numerical representation of the {@code "otyp"} box type.
+     */
+    public static final int BOXTYPE = ((((('o' << 8) | 't') << 8) | 'y') << 8) | 'p';
 
-    public static final String FCC = "otyp";
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public boolean isContainer() {
-        return true;
+    public final int type() {
+        return BOXTYPE;
+    }
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws DataStoreException if the stream contains inconsistent or unsupported data.
+     */
+    public OriginalFileType(final Reader reader) throws IOException, DataStoreException {
+        super(reader, null, false);
     }
 }

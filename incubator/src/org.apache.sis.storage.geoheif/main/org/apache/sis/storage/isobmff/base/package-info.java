@@ -15,4 +15,15 @@
  * limitations under the License.
  */
 
+/**
+ * Boxes defined by <abbr>ISO</abbr> 14496-12 — ISO base media file format.
+ * This is part of the "Coding of audio-visual objects" series.
+ * This package contains only a subset of the standard boxes.
+ *
+ * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://www.iso.org/standard/83102.html">ISO/IEC 14496-12:2022 —
+ * Coding of audio-visual objects — Part 12: ISO base media file format</a>
+ */
 package org.apache.sis.storage.isobmff.base;

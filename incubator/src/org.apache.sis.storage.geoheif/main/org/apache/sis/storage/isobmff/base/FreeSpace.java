@@ -20,12 +20,38 @@ import org.apache.sis.storage.isobmff.Box;
 
 
 /**
- * Container: File or other box
+ * A box with a content that can be ignored.
+ *
+ * <h4>Container</h4>
+ * The container can be the file or another box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
 public final class FreeSpace extends Box {
+    /**
+     * Numerical representation of the {@code "free"} box type.
+     */
+    public static final int BOXTYPE = ((((('f' << 8) | 'r') << 8) | 'e') << 8) | 'e';
 
-    public static final String FCC = "skip";
-    public static final String FCC_FREE = "free";
+    /**
+     * Numerical representation of the {@code "skip"} box type.
+     * This is an alternative type for this box.
+     */
+    public static final int SKIP = ((((('s' << 8) | 'k') << 8) | 'i') << 8) | 'p';
+
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
+    @Override
+    public final int type() {
+        return BOXTYPE;
+    }
+
+    /**
+     * Creates a new box with no data.
+     */
+    public FreeSpace() {
+    }
 }

@@ -17,24 +17,46 @@
 package org.apache.sis.storage.isobmff.base;
 
 import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 
 
 /**
+ * An item in a group list.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@link GroupList} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public class EntityToGroup extends FullBox {
+public abstract class EntityToGroup extends FullBox {
+    /**
+     * Unique identifier assigned to the particular grouping.
+     * Should not be equal to any other {@code groupID} or {@code itemID}.
+     */
+    public final int groupID;
 
-    public int groupId;
-    public int[] entitiesId;
+    /**
+     * Identifiers of items in the group.
+     */
+    public final int[] entityID;
 
-    @Override
-    protected void readProperties(Reader reader) throws IOException {
-        groupId = reader.channel.readInt();
-        entitiesId = reader.channel.readInts(reader.channel.readInt());
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws UnsupportedVersionException if the box version is unsupported.
+     * @throws NegativeArraySizeException if an unsigned integer exceeds the capacity of 32-bits signed integers.
+     */
+    public EntityToGroup(final Reader reader) throws IOException, UnsupportedVersionException {
+        super(reader);
+        requireVersionZero();
+        final ChannelDataInput input = reader.input;
+        groupID  = input.readInt();
+        entityID = input.readInts(input.readInt());
     }
-
-
 }

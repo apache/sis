@@ -109,9 +109,10 @@ module org.apache.sis.util {
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
+            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
-            org.apache.sis.storage.gdal,                // In the "incubator" sub-project.
+            org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.cloud.aws,
             org.apache.sis.console,
@@ -129,10 +130,11 @@ module org.apache.sis.util {
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
+            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
             org.apache.sis.portrayal,
-            org.apache.sis.storage.gdal,                // In the "incubator" sub-project.
+            org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.storage.gsf,                 // In the "incubator" sub-project.
             org.apache.sis.cloud.aws,
             org.apache.sis.console,
@@ -154,7 +156,7 @@ module org.apache.sis.util {
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
-            org.apache.sis.storage.gdal,                // In the "incubator" sub-project.
+            org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.storage.gsf,                 // In the "incubator" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.console,
@@ -171,6 +173,7 @@ module org.apache.sis.util {
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
+            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.console,
             org.apache.sis.portrayal,
             org.apache.sis.gui;                         // In the "optional" sub-project.
