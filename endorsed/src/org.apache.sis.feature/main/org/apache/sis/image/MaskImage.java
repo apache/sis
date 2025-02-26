@@ -48,7 +48,7 @@ final class MaskImage extends SourceAlignedImage {
      * Creates a new instance for the given image.
      */
     MaskImage(final ResampledImage image) {
-        super(image, ColorModelFactory.createIndexColorModel(
+        super(image, ColorModelFactory.createIndexColorModel(null, 0,
                 1, Math.max(0, ImageUtilities.getVisibleBand(image)), new int[] {0, -1}, true, 0));
 
         MathTransform converter = null;

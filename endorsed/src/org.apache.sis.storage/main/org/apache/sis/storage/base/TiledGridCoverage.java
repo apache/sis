@@ -68,7 +68,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * When there is a subsampling, cell coordinates in this coverage are divided by the subsampling factors.
  * Conversions are done by {@link #coverageToResourceCoordinate(long, int)}.
  *
- * <p><b>DEsign note:</b> {@code TiledGridCoverage} use the same cell coordinates as the originating
+ * <p><b>Design note:</b> {@code TiledGridCoverage} uses the same cell coordinates as the originating
  * {@link TiledGridResource} (when no subsampling) because those two classes use {@code long} integers.
  * There is no integer overflow to avoid.</p>
  *
@@ -240,7 +240,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final boolean deferredTileReading;
 
     /**
-     * Creates a new tiled grid coverage.
+     * Creates a new tiled grid coverage. This constructor does not load any tile.
+     * Callers should invoke {@link TiledGridResource#preload(GridCoverage)} after
+     * construction for loading tiles when immediate loading was requested by user.
      *
      * @param  subset  description of the {@link TiledGridResource} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.

@@ -1610,7 +1610,9 @@ final class ImageFileDirectory extends DataCube {
             final DataType type = getDataType();
             if (type != null) try {
                 var size = new Dimension(tileWidth, tileHeight);
-                sampleModel = new SampleModelBuilder(type, size, samplesPerPixel, bitsPerSample, isPlanar).build();
+                var numBits = new int[samplesPerPixel];
+                Arrays.fill(numBits, bitsPerSample);
+                sampleModel = new SampleModelBuilder(type, size, numBits, isPlanar).build();
             } catch (IllegalArgumentException | RasterFormatException e) {
                 error = e;
             }
@@ -1750,7 +1752,7 @@ final class ImageFileDirectory extends DataCube {
                 case PHOTOMETRIC_INTERPRETATION_RGB: {
                     if (alphaBand >= 0) alphaBand += 3;     // Must add the number of color bands.
                     final var builder = new ColorModelBuilder().bitsPerSample(bitsPerSample)
-                            .alphaBand(alphaBand).isAlphaPremultiplied(isAlphaPremultiplied);
+                            .alphaBand(alphaBand).alphaPremultiplied(isAlphaPremultiplied);
                     if (getSampleModel(null) instanceof SinglePixelPackedSampleModel) {
                         colorModel = builder.createPackedRGB();
                     } else {
@@ -1773,7 +1775,8 @@ final class ImageFileDirectory extends DataCube {
                                 | ((colorMap.intValue(bi++) & 0xFF00) >>> Byte.SIZE);
                     }
                     int transparent = Double.isFinite(noData) ? (int) Math.round(noData) : -1;
-                    colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, VISIBLE_BAND, ARGB, true, transparent);
+                    colorModel = ColorModelFactory.createIndexColorModel(null, 0,
+                            samplesPerPixel, VISIBLE_BAND, ARGB, true, transparent);
                     break;
                 }
             }

@@ -66,10 +66,11 @@ public abstract class AbstractResource implements Resource {
 
     /**
      * A description of this resource as an unmodifiable metadata, or {@code null} if not yet computed.
-     * If non-null, this metadata should contain at least the resource {@linkplain #getIdentifier() identifier}.
-     * Those metadata are created by {@link #createMetadata()} when first needed.
+     * This metadata should contain at least the resource {@linkplain #getIdentifier() identifier}.
+     * This field is initialized by {@link #getMetadata()} when first needed.
      *
      * @see #getMetadata()
+     * @see #createMetadata()
      */
     private volatile Metadata metadata;
 
@@ -152,7 +153,8 @@ public abstract class AbstractResource implements Resource {
     }
 
     /**
-     * Returns a description of this resource. This method invokes {@link #createMetadata()}
+     * Returns a description of this resource.
+     * The implementation invokes {@link #createMetadata()}
      * in a synchronized block when first needed, then caches the result.
      *
      * @return information about this resource (never {@code null}).
@@ -189,7 +191,7 @@ public abstract class AbstractResource implements Resource {
      * @throws DataStoreException if an error occurred while reading metadata from this resource.
      */
     protected Metadata createMetadata() throws DataStoreException {
-        final MetadataBuilder builder = new MetadataBuilder();
+        final var builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
         return builder.build();
     }
