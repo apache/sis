@@ -17,34 +17,69 @@
 package org.apache.sis.storage.isobmff.mpeg;
 
 import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 
 
 /**
- * From ISO/IEC 23001-17:2024 amendment 1
- * TODO : find box structure, it seems to have a variable size
+ * From ISO/IEC 23001-17:2024 amendment 1.
+ *
+ * @todo Find box structure, it seems to have a variable size. Document.
+ * The specification was not yet published at the time of writing this class.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@link ItemPropertyContainer} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
 public final class TAIClockInfo extends FullBox {
+    /**
+     * Numerical representation of the {@code "taic"} box type.
+     */
+    public static final int BOXTYPE = ((((('t' << 8) | 'a') << 8) | 'i') << 8) | 'c';
 
-    public static final String FCC = "taic";
-
-    public int timeUncertainty;
-    public int clockResolution;
-    public int clockDriftRate;
-    public int unknown;
-    public int clockType;
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    protected void readProperties(Reader reader) throws IOException {
-        timeUncertainty = reader.channel.readInt();
-        clockResolution = reader.channel.readInt();
-        clockDriftRate = reader.channel.readInt();
-        unknown = reader.channel.readInt();
-        clockType = (int) reader.channel.readBits(2);
-        reader.channel.skipRemainingBits();
+    public final int type() {
+        return BOXTYPE;
     }
 
+    @Interpretation(Type.UNSIGNED)
+    public final int timeUncertainty;
+
+    @Interpretation(Type.UNSIGNED)
+    public final int clockResolution;
+
+    @Interpretation(Type.UNSIGNED)
+    public final int clockDriftRate;
+
+    @Interpretation(Type.UNSIGNED)
+    public final int unknown;
+
+    @Interpretation(Type.UNSIGNED)
+    public final byte clockType;
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws UnsupportedVersionException if the box version is unsupported.
+     */
+    public TAIClockInfo(final Reader reader) throws IOException, UnsupportedVersionException {
+        super(reader);
+        requireVersionZero();
+        final ChannelDataInput input = reader.input;
+        timeUncertainty = input.readInt();
+        clockResolution = input.readInt();
+        clockDriftRate  = input.readInt();
+        unknown         = input.readInt();
+        clockType = (byte) (input.readByte() >>> 6);
+    }
 }

@@ -17,33 +17,63 @@
 package org.apache.sis.storage.isobmff.image;
 
 import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
-import org.apache.sis.storage.isobmff.base.ItemFullProperty;
+import org.apache.sis.storage.isobmff.UnsupportedVersionException;
+import org.apache.sis.storage.isobmff.base.ItemPropertyContainer;
 
 
 /**
+ * A property containing the width and height of the associated image item.
+ * Every image item shall be associated with one property of this type,
+ * prior to the association of all transformative properties.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@link ItemPropertyContainer} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public final class ImageSpatialExtents extends ItemFullProperty {
+public final class ImageSpatialExtents extends FullBox {
+    /**
+     * Numerical representation of the {@code "ispe"} box type.
+     */
+    public static final int BOXTYPE = ((((('i' << 8) | 's') << 8) | 'p') << 8) | 'e';
 
-    public static final String FCC = "ispe";
-
-    public int imageWidth;
-    public int imageHeight;
-
-    public ImageSpatialExtents() {
-    }
-
-    public ImageSpatialExtents(int imageWidth, int imageHeight) {
-        this.imageWidth = imageWidth;
-        this.imageHeight = imageHeight;
-    }
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    protected void readProperties(Reader reader) throws IOException {
-        imageWidth = reader.channel.readInt();
-        imageHeight = reader.channel.readInt();
+    public final int type() {
+        return BOXTYPE;
     }
 
+    /**
+     * The width of the reconstructed image in pixels.
+     */
+    @Interpretation(Type.UNSIGNED)
+    public final int imageWidth;
+
+    /**
+     * The height of the reconstructed image in pixels.
+     */
+    @Interpretation(Type.UNSIGNED)
+    public final int imageHeight;
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws UnsupportedVersionException if the box version is unsupported.
+     */
+    public ImageSpatialExtents(final Reader reader) throws IOException, UnsupportedVersionException {
+        super(reader);
+        requireVersionZero();
+        final ChannelDataInput input = reader.input;
+        imageWidth  = input.readInt();
+        imageHeight = input.readInt();
+    }
 }

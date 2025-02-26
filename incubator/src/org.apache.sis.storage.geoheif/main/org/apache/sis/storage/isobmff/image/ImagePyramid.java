@@ -17,47 +17,102 @@
 package org.apache.sis.storage.isobmff.image;
 
 import java.io.IOException;
-import org.apache.sis.storage.isobmff.Box;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.isobmff.TreeNode;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 import org.apache.sis.storage.isobmff.base.EntityToGroup;
 
 
 /**
+ * Information about a pyramid of images.
+ *
+ * @todo At the time of writing this class, this box type is defined in a draft ISO standard and not yet approved.
+ *       Needs to be reviewed after ISO revision approval.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
 public final class ImagePyramid extends EntityToGroup {
+    /**
+     * Numerical representation of the {@code "pymd"} box type.
+     */
+    public static final int BOXTYPE = ((((('p' << 8) | 'y') << 8) | 'm') << 8) | 'd';
 
-    public static final String FCC = "pymd";
-
-    public static final class Matrix {
-        public int layerBinning;
-        public int tilesInLayerRowMinus1;
-        public int tilesInLayerColumnMinus1;
-
-        @Override
-        public String toString() {
-            return Box.beanToString(this);
-        }
-    }
-
-    public int tileSizeX;
-    public int tileSizeY;
-    public Matrix[] matrices;
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    protected void readProperties(Reader reader) throws IOException {
-        super.readProperties(reader);
-        tileSizeX = reader.channel.readUnsignedShort();
-        tileSizeY = reader.channel.readUnsignedShort();
+    public final int type() {
+        return BOXTYPE;
+    }
 
-        matrices = new Matrix[entitiesId.length];
-        for (int i = 0; i < matrices.length; i++) {
-            matrices[i] = new Matrix();
-            matrices[i].layerBinning = reader.channel.readUnsignedShort();
-            matrices[i].tilesInLayerRowMinus1 = reader.channel.readUnsignedShort();
-            matrices[i].tilesInLayerColumnMinus1 = reader.channel.readUnsignedShort();
+    /**
+     * A tile matrix in an image pyramid.
+     *
+     * @todo At the time of writing this class, this box type is defined in a draft ISO standard and not yet approved.
+     *       Needs to be reviewed after ISO revision approval.
+     */
+    public static final class Matrix extends TreeNode {
+        /**
+         * Identification of the layer.
+         */
+        public final int layerBinning;
+
+        /**
+         * Number of tiles in each row.
+         */
+        public final int tilesInLayerRow;
+
+        /**
+         * Number of tiles each column.
+         */
+        public final int tilesInLayerColumn;
+
+        /**
+         * Creates a new tile matrix.
+         *
+         * @param  input  the stream from which to read the tile matrix.
+         * @throws IOException if an error occurred while reading the tile matrix.
+         */
+        Matrix(final ChannelDataInput input) throws IOException {
+            layerBinning       = input.readUnsignedShort();
+            tilesInLayerRow    = input.readUnsignedShort() + 1;
+            tilesInLayerColumn = input.readUnsignedShort() + 1;
         }
     }
 
+    /**
+     * Tile width in pixels.
+     */
+    public final int tileSizeX;
+
+    /**
+     * Tile height in pixels.
+     */
+    public final int tileSizeY;
+
+    /**
+     * The tile matrices for each pyramid level.
+     */
+    public final Matrix[] matrices;
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws UnsupportedVersionException if the box version is unsupported.
+     */
+    public ImagePyramid(final Reader reader) throws IOException, UnsupportedVersionException {
+        super(reader);
+        final ChannelDataInput input = reader.input;
+        tileSizeX = input.readUnsignedShort();
+        tileSizeY = input.readUnsignedShort();
+        matrices = new Matrix[entityID.length];
+        for (int i=0; i<matrices.length; i++) {
+            matrices[i] = new Matrix(input);
+        }
+    }
 }

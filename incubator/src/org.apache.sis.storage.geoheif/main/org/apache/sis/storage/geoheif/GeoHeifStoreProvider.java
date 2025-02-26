@@ -16,9 +16,7 @@
  */
 package org.apache.sis.storage.geoheif;
 
-import java.net.URI;
-import java.nio.file.Path;
-import org.opengis.parameter.ParameterDescriptor;
+import java.nio.ByteBuffer;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.Aggregate;
@@ -28,56 +26,54 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.GridCoverageResource;
-import static org.apache.sis.storage.DataStoreProvider.LOCATION;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.tiling.TiledResource;
+import org.apache.sis.storage.isobmff.base.FileType;
 
 
 /**
+ * The provider of {@code GeoHeifStore} instances.
+ * Given a {@link StorageConnector} input, this class tries to instantiate a {@link GeoHeifStore}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  */
 @StoreMetadata(formatName    = GeoHeifStoreProvider.NAME,
+               fileSuffixes  = {"heif", "heij", "heic", "avif"},
                capabilities  = {Capability.READ},
-               fileSuffixes  = {"heij", "heif", "heic", "avif"},
-               resourceTypes = {Aggregate.class, GridCoverageResource.class, TiledResource.class},
-               yieldPriority = false)
-public final class GeoHeifStoreProvider extends DataStoreProvider {
-
+               resourceTypes = {Aggregate.class, GridCoverageResource.class, TiledResource.class})
+public class GeoHeifStoreProvider extends DataStoreProvider {
     /**
      * Format name.
      */
-    public static final String NAME = "GIMI";
+    static final String NAME = "GeoHEIF";
 
     /**
-     * Format mime type.
+     * The MIME type for GeoHEIF files.
      */
-    public static final String MIME_TYPE = "application/x-gimi";
+    private static final String MIME_TYPE = "image/heif";
 
     /**
-     * URI to the gimi file.
+     * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    public static final ParameterDescriptor<URI> PATH = new ParameterBuilder()
-            .addName(LOCATION)
-            .setRequired(true)
-            .create(URI.class, null);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR;
+    static {
+        final var builder = new ParameterBuilder();
+        OPEN_DESCRIPTOR   = builder.addName(NAME).createGroup(URIDataStoreProvider.LOCATION_PARAM);
+    }
 
     /**
-     * Shapefile store creation parameters.
-     */
-    public static final ParameterDescriptorGroup PARAMETERS_DESCRIPTOR =
-            new ParameterBuilder().addName(NAME).addName("GimiParameters").createGroup(
-                PATH);
-
-    /**
-     * Default constructor.
+     * Creates a new provider.
      */
     public GeoHeifStoreProvider() {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
      */
     @Override
     public String getShortName() {
@@ -85,34 +81,54 @@ public final class GeoHeifStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns a description of all parameters accepted by this provider for opening a GeoHEIF file.
+     *
+     * @return description of available parameters for opening a GeoHEIF file.
      */
     @Override
     public ParameterDescriptorGroup getOpenParameters() {
-        return PARAMETERS_DESCRIPTOR;
+        return OPEN_DESCRIPTOR;
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the MIME type if the given storage appears to be supported by {@code GeoHeifStore}.
+     * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
+     * or writing will succeed, only that there appears to be a reasonable chance of success
+     * based on a brief inspection of the file header.
+     *
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @return a {@linkplain ProbeResult#isSupported() supported} status with the MIME type
+     *         if the given storage seems to be readable by {@link GeoHeifStore} instances.
+     * @throws DataStoreException if an I/O error occurred.
      */
     @Override
-    public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
-        final Path path = connector.getStorageAs(Path.class);
-        if (path != null) {
-            final String name = path.getFileName().toString().toLowerCase();
-            if (name.endsWith(".heij") || name.endsWith(".heif") || name.endsWith(".heic") || name.endsWith(".avif")) {
-                return new ProbeResult(true, MIME_TYPE, null);
+    public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
+        return probeContent(connector, ByteBuffer.class, (buffer) -> {
+            if (buffer.remaining() < 2 * Integer.BYTES) {
+                return ProbeResult.INSUFFICIENT_BYTES;
             }
-        }
-        return ProbeResult.UNSUPPORTED_STORAGE;
+            // Default buffer order is big endian.
+            final int size = buffer.getInt();
+            if (size == 0 || size == 1 || size >= 4*Integer.BYTES) {
+                switch (buffer.getInt()) {      // Box identifier.
+                    case FileType.BOXTYPE: {
+                        return new ProbeResult(true, MIME_TYPE, null);
+                    }
+                }
+            }
+            return ProbeResult.UNSUPPORTED_STORAGE;
+        });
     }
 
     /**
-     * {@inheritDoc }
+     * Creates a {@code GeoHeifStore} instance associated with this provider.
+     *
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @return a data store instance associated with this provider for the given storage.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
-    public DataStore open(StorageConnector connector) throws DataStoreException {
-        return new GeoHeifStore(connector);
+    public DataStore open(final StorageConnector connector) throws DataStoreException {
+        return new GeoHeifStore(this, connector);
     }
-
 }

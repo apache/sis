@@ -17,52 +17,80 @@
 package org.apache.sis.storage.isobmff.mpeg;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.base.ColourInformation;
+import org.apache.sis.storage.isobmff.base.ItemPropertyContainer;
 
 
 /**
- * From ISO 23001-17
+ * Describes two or more components with the same type.
+ * For example, two monochrome components representing different portions of the electromagnetic spectrum.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@link ItemPropertyContainer} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public final class ComponentDefinition extends Box{
+public final class ComponentDefinition extends Box {
+    /**
+     * Numerical representation of the {@code "cmpd"} box type.
+     */
+    public static final int BOXTYPE = ((((('c' << 8) | 'm') << 8) | 'p') << 8) | 'd';
 
-    public static final String FCC = "cmpd";
-
-    public static final int CT_MONOCHROME = 0;
-    public static final int CT_LUMA_Y = 1;
-    public static final int CT_CHROMA_CB_U = 2;
-    public static final int CT_CHROMA_CR_V = 3;
-    public static final int CT_RED = 4;
-    public static final int CT_GREEN = 5;
-    public static final int CT_BLUE = 6;
-    public static final int CT_ALPHA = 7;
-    public static final int CT_DEPTH = 8;
-    public static final int CT_DISPARITY = 9;
-    public static final int CT_PALETTE = 10;
-    public static final int CT_FILTER = 11;
-    public static final int CT_PADDED = 12;
-    public static final int CT_CYAN = 13;
-    public static final int CT_MAGENTA = 14;
-    public static final int CT_YELLOW = 15;
-    public static final int CT_KEY = 16;
-
-    public int[] componentType;
-    public String[] componentTypeURI;
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        final int componentCount = reader.channel.readInt();
-        componentType = new int[componentCount];
-        componentTypeURI = new String[componentCount];
-
-        for (int i = 0; i < componentCount; i++) {
-            componentType[i] = reader.channel.readUnsignedShort();
-            if (componentType[i] >= 0x8000) {
-                componentTypeURI[i] = reader.readUtf8String();
-            }
-        }
+    public final int type() {
+        return BOXTYPE;
     }
 
+    /**
+     * How pixel data should be displayed. Values are either instance of {@link ComponentType}, {@link URI},
+     * {@link String} (when the <abbr>URI</abbr> cannot be parsed) or {@link Integer}, in preference order.
+     * In the latter case, the integer value is the user-defined component type.
+     *
+     * @see Component#type
+     * @see ColourInformation
+     */
+    public final Object[] componentTypes;
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws NegativeArraySizeException if an unsigned integer exceeds the capacity of 32-bits signed integers.
+     */
+    public ComponentDefinition(final Reader reader) throws IOException, UnsupportedEncodingException {
+        final ChannelDataInput input = reader.input;
+        final int count = input.readInt();
+        componentTypes = new Object[count];
+        for (int i=0; i<count; i++) {
+            final short type = input.readShort();
+            Object value;
+            if (type >= 0) {
+                value = ComponentType.valueOf(type);
+            } else {
+                final String uri = reader.readNullTerminatedString(false);
+                if (uri != null) try {
+                    value = new URI(uri);
+                    value = reader.unique(value);
+                } catch (URISyntaxException e) {
+                    reader.cannotParse(e, uri, true);
+                    value = uri;
+                } else {
+                    value = Short.toUnsignedInt(type);
+                }
+            }
+            componentTypes[i] = value;
+        }
+    }
 }

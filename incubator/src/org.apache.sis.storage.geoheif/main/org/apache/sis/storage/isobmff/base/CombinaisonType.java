@@ -22,24 +22,42 @@ import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
+ * An element in the {@code ExtendedType} box indicating the brands required for decoding the file.
  *
- * Container : ExtendedTypeBox
+ * <h4>Container</h4>
+ * The container can be an {@link ExtendedType} box.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
 public final class CombinaisonType extends Box {
+    /**
+     * Numerical representation of the {@code "tyco"} box type.
+     */
+    public static final int BOXTYPE = ((((('t' << 8) | 'y') << 8) | 'c') << 8) | 'o';
 
-    public static final String FCC = "tyco";
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
+    @Override
+    public final int type() {
+        return BOXTYPE;
+    }
 
     /**
      * List of compatible brands.
      */
-    public int[] compatibleBrands;
+    @Interpretation(Type.FOURCC)
+    public final int[] compatibleBrands;
 
-    @Override
-    public void readProperties(Reader reader) throws IOException {
-        int nbCmp = Math.toIntExact(((boxOffset + size) - reader.channel.getStreamPosition()) / 4);
-        compatibleBrands = reader.channel.readInts(nbCmp);
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     */
+    public CombinaisonType(final Reader reader) throws IOException {
+        compatibleBrands = reader.readRemainingInts();
     }
-
 }

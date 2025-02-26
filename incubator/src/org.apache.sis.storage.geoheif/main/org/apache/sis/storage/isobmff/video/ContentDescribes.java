@@ -16,16 +16,41 @@
  */
 package org.apache.sis.storage.isobmff.video;
 
+import java.io.IOException;
+import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.base.SingleItemTypeReference;
 
 
 /**
+ * Place holder for future work.
+ *
+ * @todo Not yet implemented.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public class ContentDescribes extends SingleItemTypeReference{
+public final class ContentDescribes extends SingleItemTypeReference {
+    /**
+     * Numerical representation of the {@code "cdsc"} box type.
+     */
+    public static final int BOXTYPE = ((((('c' << 8) | 'd') << 8) | 's') << 8) | 'c';
 
-    public static final String FCC = "cdsc";
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
+    @Override
+    public final int type() {
+        return BOXTYPE;
+    }
 
-
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     */
+    public ContentDescribes(final Reader reader) throws IOException {
+        super(reader, false);
+    }
 }

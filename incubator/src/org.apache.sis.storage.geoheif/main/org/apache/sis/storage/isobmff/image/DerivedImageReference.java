@@ -16,14 +16,39 @@
  */
 package org.apache.sis.storage.isobmff.image;
 
+import java.io.IOException;
+import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.base.SingleItemTypeReference;
 
 
 /**
+ * Identifies an item as a derived image. The output image of a derived image is
+ * obtained by applying transformative item properties to the reconstructed image.
  *
  * @author Johann Sorel (Geomatys)
  */
 public final class DerivedImageReference extends SingleItemTypeReference {
+    /**
+     * Numerical representation of the {@code "dimg"} box type.
+     */
+    public static final int BOXTYPE = ((((('d' << 8) | 'i') << 8) | 'm') << 8) | 'g';
 
-    public static final String FCC = "dimg";
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
+    @Override
+    public final int type() {
+        return BOXTYPE;
+    }
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     */
+    public DerivedImageReference(final Reader reader) throws IOException {
+        super(reader, false);
+    }
 }

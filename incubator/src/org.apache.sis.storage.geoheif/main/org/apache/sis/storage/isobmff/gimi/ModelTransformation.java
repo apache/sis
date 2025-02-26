@@ -18,38 +18,72 @@ package org.apache.sis.storage.isobmff.gimi;
 
 import java.io.IOException;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
-import org.apache.sis.storage.isobmff.base.ItemFullProperty;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
+ * Coefficients of the matrix that defines the "grid to <abbr>CRS</abbr>" coordinate conversion.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public final class ModelTransformation extends ItemFullProperty {
+public final class ModelTransformation extends FullBox {
+    /**
+     * Numerical representation of the {@code "mtxf"} box type.
+     */
+    public static final int BOXTYPE = ((((('m' << 8) | 't') << 8) | 'x') << 8) | 'f';
 
-    public static final String UUID = "763cf838-b630-440b-84f8-be44bf9910af";
-
-    public double[] transform;
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    protected void readProperties(Reader reader) throws IOException {
-        if ((flags & 0x01) == 1) {
-            //2D
-            transform = reader.channel.readDoubles(6);
-        } else {
-            //3D
-            transform = reader.channel.readDoubles(12);
-        }
+    public final int type() {
+        return BOXTYPE;
     }
 
-    public MathTransform toMathTransform() {
-        if (transform.length == 6) {
-            return new AffineTransform2D(transform[0], transform[3], transform[1], transform[4], transform[2], transform[5]);
-        } else {
-            throw new UnsupportedOperationException("3D transform not supported yet");
-        }
+    /**
+     * The matrix coefficients as an array of 6 or 12 elements, for the 2D and 3D case respectively.
+     */
+    public final double[] coefficients;
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws DataStoreContentException if the box version is unsupported.
+     */
+    public ModelTransformation(final Reader reader) throws IOException, DataStoreContentException {
+        super(reader);
+        requireVersionZero();
+        final int n = ((flags & 0x01) != 0) ? 6 : 12;
+        coefficients = reader.input.readDoubles(n);
     }
 
+    /**
+     * Returns the transform encoded in this box.
+     *
+     * @throws DataStoreContentException if the array length is inconsistent.
+     */
+    public MathTransform toMathTransform() throws DataStoreContentException {
+        final int dimension = (coefficients.length > 6) ? 3 : 2;
+        final MatrixSIS m = Matrices.createIdentity(dimension + 1);
+        int k = 0;
+        for (int j=0; j<dimension; j++) {           // n   rows
+            for (int i=0; i<=dimension; i++) {      // n+1 columns
+                m.setElement(j, i, coefficients[k++]);
+            }
+        }
+        if (k != coefficients.length) {
+            throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, k, coefficients.length));
+        }
+        return MathTransforms.linear(m);
+    }
 }
