@@ -1,0 +1,4 @@
+# Workaround for Maven bug https://issues.apache.org/jira/browse/MNG-7855
+# The content of this file is automatically derived from module-info.class file.
+# Should be used only if the JAR file was on class-path rather than module-path.
+org.apache.sis.storage.geoheif.GeoHeifStoreProvider

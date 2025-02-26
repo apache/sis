@@ -54,7 +54,7 @@ module org.apache.sis.storage {
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
             org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
-            org.apache.sis.storage.gimi,                // In the "incubator" sub-project.
+            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "incubator" sub-project.
@@ -70,7 +70,7 @@ module org.apache.sis.storage {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
-            org.apache.sis.storage.gimi,                // In the "incubator" sub-project.
+            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "incubator" sub-project.
