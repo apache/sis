@@ -190,8 +190,12 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     @Override
     protected final GenericName getIdentifier() {
-        // Should never be empty (see `DataCube.getIdentifier()` contract).
-        return source.getIdentifier().get();
+        /*
+         * Should never be empty (see `DataCube.getIdentifier()` contract).
+         * Nevertheless use a fallback if the identifier is empty, because
+         * this method is invoked for formatting error messages.
+         */
+        return source.getIdentifier().orElseGet(() -> source.reader.store.createLocalName("overview"));
     }
 
     /**
@@ -515,7 +519,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * If that assumption was not true, we would have to adjust `capacity`, `lower[0]` and `upper[0]`
          * (we may do that as an optimization in a future version).
          */
-        final var hr     = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), input());
+        final var hr     = new HyperRectangleReader(ImageUtilities.toNumberEnum(type), input());
         final var region = new Region(size, lower, upper, subsampling);
         final var banks  = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {

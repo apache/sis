@@ -131,7 +131,7 @@ final class Writer extends IOBase implements Flushable {
     /**
      * The stream where to write the data.
      */
-    private final ChannelDataOutput output;
+    final ChannelDataOutput output;
 
     /**
      * Whether the lengths and offsets shall be written as 64-bits integers instead of 32-bits integers.

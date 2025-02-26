@@ -20,7 +20,6 @@ import java.time.Instant;
 import java.time.Duration;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAmount;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Iterator;
@@ -90,6 +89,7 @@ import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.privy.Merger;
+import org.apache.sis.temporal.TimeMethods;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.privy.AxisDirections;
@@ -1142,20 +1142,19 @@ public class MetadataBuilder {
      * If two dates are of the same type, retains the latest one if the type name starts with {@code "LATE_"}
      * or retains the earliest date otherwise.
      */
-    private static void addEarliest(final Collection<CitationDate> dates, final CitationDate cd, final DateType type) {
+    private static void addEarliest(final Collection<CitationDate> dates, final CitationDate date, final DateType type) {
         for (final Iterator<CitationDate> it = dates.iterator(); it.hasNext();) {
-            final CitationDate co = it.next();
-            if (type.equals(co.getDateType())) {
-                final Date oldDate = co.getDate();
-                final Date newDate = cd.getDate();
-                if (type.name().startsWith("LATE_") ? oldDate.before(newDate) : oldDate.after(newDate)) {
+            final CitationDate existing = it.next();
+            if (type.equals(existing.getDateType())) {
+                final int method = type.name().startsWith("LATE_") ? TimeMethods.BEFORE : TimeMethods.AFTER;
+                if (TimeMethods.compareAny(method, existing.getReferenceDate(), date.getReferenceDate())) {
                     it.remove();
                     break;
                 }
                 return;
             }
         }
-        dates.add(cd);
+        dates.add(date);
     }
 
     /**
@@ -2045,7 +2044,7 @@ public class MetadataBuilder {
      * @param  distance  the resolution in metres, or {@code NaN} for no-operation.
      */
     public final void addLinearResolution(final double distance) {
-        if (Double.isFinite(distance)) {
+        if (distance > 0 && distance != Double.POSITIVE_INFINITY) {
             final var r = new DefaultResolution();
             r.setDistance(shared(distance));
             addIfNotPresent(identification().getSpatialResolutions(), r);

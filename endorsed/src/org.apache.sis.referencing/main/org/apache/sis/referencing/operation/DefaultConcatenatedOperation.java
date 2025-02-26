@@ -168,7 +168,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                             final MathTransformFactory  mtFactory)
             throws FactoryException
     {
-        final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
+        final var flattened = new ArrayList<CoordinateOperation>(operations.length);
         final CoordinateReferenceSystem crs = initialize(properties, operations, flattened, mtFactory,
                 sourceCRS, (sourceCRS == null), (coordinateOperationAccuracy == null));
 
@@ -288,9 +288,11 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             if (op instanceof ConcatenatedOperation) {
                 final var nested = ((ConcatenatedOperation) op).getOperations().toArray(CoordinateOperation[]::new);
                 previous = initialize(properties, nested, flattened, null, previous, false, setAccuracy);
-            } else if (!step.isIdentity()) {
+            } else {
                 // Note: operation (source, target) may be in reverse order, but it should be taken as metadata.
-                flattened.add(op);
+                if (!step.isIdentity()) {
+                    flattened.add(op);
+                }
                 previous = target;          // For next iteration cycle.
             }
             if (mtFactory != null) {

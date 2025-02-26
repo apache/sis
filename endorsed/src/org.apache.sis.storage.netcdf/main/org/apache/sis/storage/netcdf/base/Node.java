@@ -266,10 +266,11 @@ public abstract class Node extends NamedElement {
      *
      * @param  caller     the caller class to report, preferably a public class.
      * @param  method     the caller method to report, preferable a public method.
+     * @param  exception  the exception that occurred, or {@code null} if none.
      * @param  key        one or {@link Resources.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
+    protected final void warning(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
         warning(decoder.listeners, caller, method, null, null, key, arguments);
     }
 

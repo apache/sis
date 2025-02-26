@@ -108,36 +108,49 @@ public final class SampleModelBuilder {
      *
      * @param  type           type of sample values.
      * @param  size           tile width and height in pixels.
-     * @param  numBands       number of bands.
-     * @param  bitsPerSample  number of bits per sample values.
+     * @param  bitsPerSample  number of bits per sample values. The array length is the number of bands.
      * @param  isBanded       {@code true} if each band is stored in a separated bank.
      * @throws RasterFormatException if the arguments imply a sample model of unsupported type.
      */
     public SampleModelBuilder(final DataType type, final Dimension size,
-            final int numBands, final int bitsPerSample, final boolean isBanded)
+            final int[] bitsPerSample, final boolean isBanded)
     {
         this.dataType  = type.toDataBufferType();
         this.width     = size.width;
         this.height    = size.height;
-        this.numBands  = numBands;
+        this.numBands  = bitsPerSample.length;
         scanlineStride = width;
         pixelStride    = 1;
-        if (bitsPerSample != type.size()) {
+        boolean packed = true;
+        final int elementSize = type.size();
+        for (int n : bitsPerSample) {
+            if (n >= elementSize) {
+                packed = false;
+                break;
+            }
+        }
+        if (packed) {
             if (numBands == 1) {
                 // MultiPixelPackedSampleModel
                 pixelStride    = 0;
-                numberOfBits   = bitsPerSample;
-                scanlineStride = JDK18.ceilDiv(Math.multiplyExact(width, numberOfBits), type.size());
+                numberOfBits   = bitsPerSample[0];
+                scanlineStride = JDK18.ceilDiv(Math.multiplyExact(width, numberOfBits), elementSize);
             } else if (!isBanded) {
                 // SinglePixelPackedSampleModel
+                int shift = 0;
                 bitMasks = new int[numBands];
-                bitMasks[0] = (1 << bitsPerSample) - 1;
-                for (int i=1; i < bitMasks.length; i++) {
-                    bitMasks[i] = bitMasks[i-1] << bitsPerSample;
+                for (int i=0; i<numBands; i++) {
+                    final int n = bitsPerSample[i];
+                    ArgumentChecks.ensureBetween("bitsPerSample", 1, elementSize, n);
+                    bitMasks[i] = ((1 << n) - 1) << shift;
+                    shift += n;
+                }
+                if (shift > elementSize) {
+                    throw new RasterFormatException(Errors.format(Errors.Keys.IntegerOverflow_1, elementSize));
                 }
             } else {
                 // TODO: we can support that with a little bit more work.
-                throw new RasterFormatException(Errors.format(Errors.Keys.UnsupportedType_1, "bitsPerSample=" + type.size()));
+                throw new RasterFormatException(Errors.format(Errors.Keys.UnsupportedType_1, "bitsPerSample=" + bitsPerSample[0]));
             }
         } else if (isBanded) {
             // BandedSampleModel

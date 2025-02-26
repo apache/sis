@@ -45,6 +45,7 @@ import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.sql.postgis.Postgres;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.ResourceInternationalString;
 
@@ -59,6 +60,11 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Alexis Manin (Geomatys)
  */
 public final class Analyzer {
+    /**
+     * Types of table accepted by this class.
+     */
+    private static final String[] ACCEPTED_TABLE_TYPES = {"TABLE", "VIEW", "BASE TABLE", "MATERIALIZED VIEW"};
+
     /**
      * Information about the spatial database to analyze.
      */
@@ -169,7 +175,7 @@ public final class Analyzer {
         try (ResultSet reflect = metadata.getTableTypes()) {
             while (reflect.next()) {
                 final String type = reflect.getString(Reflection.TABLE_TYPE);
-                if ("TABLE".equalsIgnoreCase(type) || "VIEW".equalsIgnoreCase(type) || "BASE TABLE".equalsIgnoreCase(type)) {
+                if (ArraysExt.containsIgnoreCase(ACCEPTED_TABLE_TYPES, type)) {
                     types.add(type);
                 }
             }

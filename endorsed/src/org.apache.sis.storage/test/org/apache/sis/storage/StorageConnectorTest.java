@@ -219,6 +219,22 @@ public final class StorageConnectorTest extends TestCase {
     public void testGetAsImageInputStream() throws DataStoreException, IOException {
         final StorageConnector connector = create(false);
         final ImageInputStream in = connector.getStorageAs(ImageInputStream.class);
+        assertSame(connector.getStorageAs(ChannelImageInputStream.class), in);
+        assertSame(connector.getStorageAs(DataInput.class), in);
+        connector.closeAllExcept(null);
+    }
+
+    /**
+     * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link ChannelImageInputStream} type.
+     *
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
+     */
+    @Test
+    public void testGetAsChannelImageInputStream() throws DataStoreException, IOException {
+        final StorageConnector connector = create(false);
+        final ChannelImageInputStream in = connector.getStorageAs(ChannelImageInputStream.class);
+        assertSame(connector.getStorageAs(ImageInputStream.class), in);
         assertSame(connector.getStorageAs(DataInput.class), in);
         connector.closeAllExcept(null);
     }

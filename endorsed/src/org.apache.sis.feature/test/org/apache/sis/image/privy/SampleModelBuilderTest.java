@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image.privy;
 
+import java.util.Arrays;
 import java.awt.Dimension;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
@@ -57,12 +58,25 @@ public final class SampleModelBuilderTest extends TestCase {
     }
 
     /**
+     * Returns an array of bits per sample.
+     *
+     * @param  numBands  number of bands.
+     * @param  numBits   number of bits per sample in each band.
+     * @return the array to give to {@link SampleModelBuilder} constructor.
+     */
+    private static int[] bitsPerSample(final int numBands, final int numBits) {
+        final var bitsPerSample = new int[numBands];
+        Arrays.fill(bitsPerSample, numBits);
+        return bitsPerSample;
+    }
+
+    /**
      * Tests the creation and modification of a {@link BandedSampleModel}.
      */
     @Test
     public void testBanded() {
         final BandedSampleModel model = test(BandedSampleModel.class,
-                new SampleModelBuilder(DataType.FLOAT, size(), NUM_BANDS, Float.SIZE, true));
+                new SampleModelBuilder(DataType.FLOAT, size(), bitsPerSample(NUM_BANDS, Float.SIZE), true));
 
         assertArrayEquals(new int[] {1, 0, 2}, model.getBankIndices());
         assertArrayEquals(new int[] {0, 0, 0}, model.getBandOffsets());
@@ -77,7 +91,7 @@ public final class SampleModelBuilderTest extends TestCase {
     @Test
     public void testPixelInterleaved() {
         final PixelInterleavedSampleModel model = test(PixelInterleavedSampleModel.class,
-                new SampleModelBuilder(DataType.BYTE, size(), NUM_BANDS, Byte.SIZE, false));
+                new SampleModelBuilder(DataType.BYTE, size(), bitsPerSample(NUM_BANDS, Byte.SIZE), false));
 
         assertArrayEquals(new int[] {0, 0, 0}, model.getBankIndices());
         assertArrayEquals(new int[] {1, 0, 2}, model.getBandOffsets());
@@ -94,7 +108,7 @@ public final class SampleModelBuilderTest extends TestCase {
     @Test
     public void testSinglePixelPacked() {
         final SinglePixelPackedSampleModel model = test(SinglePixelPackedSampleModel.class,
-                new SampleModelBuilder(DataType.INT, size(), NUM_BANDS, 5, false));
+                new SampleModelBuilder(DataType.INT, size(), bitsPerSample(NUM_BANDS, 5), false));
 
         final int[] expected = {
             0b1111100000,           // Band 2 specified, 1 after compression.
@@ -114,7 +128,7 @@ public final class SampleModelBuilderTest extends TestCase {
     @Test
     public void testPixelMultiPixelPacked() {
         final int bitsPerSample = 4;
-        var builder = new SampleModelBuilder(DataType.INT, size(), 1, bitsPerSample, false);
+        var builder = new SampleModelBuilder(DataType.INT, size(), bitsPerSample(1, bitsPerSample), false);
         final var model = (MultiPixelPackedSampleModel) builder.build();
 
         assertEquals(bitsPerSample, model.getPixelBitStride());

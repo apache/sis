@@ -142,7 +142,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
             if (namespace == null) {
                 final ImageFileDirectory base = levels[0];
                 // Identifier should never be empty (see `DataCube.getIdentifier()` contract).
-                namespace = base.reader.nameFactory.createNameSpace(base.getIdentifier().get(), null);
+                namespace = base.reader.store.nameFactory.createNameSpace(base.getIdentifier().get(), null);
             }
             dir.setOverviewIdentifier(namespace, index);
         }

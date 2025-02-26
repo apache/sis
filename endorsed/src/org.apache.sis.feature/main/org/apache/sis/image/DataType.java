@@ -338,14 +338,13 @@ public enum DataType {
 
     /**
      * Returns the size in bytes of this data type.
-     * If the {@linkplain #size() number of bits} is smaller than {@value Byte#SIZE}, then this method returns 1.
      *
-     * @return size in bytes of this data type, not smaller than 1.
+     * @return size in bytes of this data type, from 1 to 4 inclusive.
      *
      * @since 1.3
      */
     public final int bytes() {
-        return Math.max(size() >>> 3, 1);
+        return size() >>> 3;        // `size()` is never smaller than 8.
     }
 
     /**

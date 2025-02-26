@@ -92,7 +92,7 @@ public final class BandSelectImageTest extends TestCase {
         if (icm) {
             final int[] ARGB = new int[256];
             ColorModelFactory.expand(new int[] {0xFF000000, 0xFFFFFFFF}, ARGB, 0, ARGB.length);
-            cm = ColorModelFactory.createIndexColorModel(numBands, checkedBand, ARGB, true, -1);
+            cm = ColorModelFactory.createIndexColorModel(null, 0, numBands, checkedBand, ARGB, true, -1);
         } else {
             cm = ColorModelFactory.createGrayScale(DataBuffer.TYPE_BYTE, numBands, checkedBand, Byte.MIN_VALUE, Byte.MAX_VALUE);
         }

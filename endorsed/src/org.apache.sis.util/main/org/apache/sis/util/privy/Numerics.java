@@ -210,6 +210,25 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Makes the given value a multiple of the given divisor, rounding up.
+     * If the given value is already a multiple of the divisor, then it is returned as-is.
+     * Otherwise, this method returns the next multiple of the divisor which is greater than the given value.
+     *
+     * @param  value    the value which need to be a multiple of {@code divisor}.
+     * @param  divisor  the divisor. Cannot be zero. The sign is ignored (always handed as positive).
+     * @return the smallest multiple of {@code divisor} which is ≥ {@code value}.
+     */
+    public static int snapToCeil(int value, final int divisor) {
+        final int r = value % divisor;      // Always has the sign of `value`.
+        if (r > 0) {
+            value += Math.abs(divisor) - r;
+        } else {
+            value -= r;
+        }
+        return value;
+    }
+
+    /**
      * Returns x/y with the requirement that the division must be integer.
      *
      * @param  x  the dividend.
