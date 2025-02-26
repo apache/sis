@@ -69,7 +69,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
-import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultAssociatedResource;

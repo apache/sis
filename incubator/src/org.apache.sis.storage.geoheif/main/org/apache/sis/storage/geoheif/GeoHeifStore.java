@@ -17,9 +17,9 @@
 package org.apache.sis.storage.geoheif;
 
 import java.net.URI;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.logging.Level;
