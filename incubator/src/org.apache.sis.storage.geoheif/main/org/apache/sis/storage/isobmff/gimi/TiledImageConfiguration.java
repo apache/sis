@@ -22,19 +22,35 @@ import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
- * Definition from OGC TestBed 20 : tild.pdf
+ * Configuration of the tile matrix.
  *
- * CAUTION : this is not final and may be changed in HEIF specification.
+ * @todo Not yet implemented.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
 public final class TiledImageConfiguration extends FullBox {
+    /**
+     * Numerical representation of the {@code "tilC"} box type.
+     */
+    public static final int BOXTYPE = ((((('t' << 8) | 'i') << 8) | 'l') << 8) | 'C';
 
-    public static final String FCC = "tilC";
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        throw new IOException("Not supported yet");
+    public final int type() {
+        return BOXTYPE;
     }
 
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     */
+    public TiledImageConfiguration(final Reader reader) throws IOException {
+        super(reader);
+    }
 }

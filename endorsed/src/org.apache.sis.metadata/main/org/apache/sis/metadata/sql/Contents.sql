@@ -15,6 +15,7 @@ CREATE TABLE metadata."Format" (
 
 INSERT INTO metadata."Citation" ("ID", "alternateTitle", "citedResponsibleParty", "title") VALUES
   ('GeoTIFF', 'GeoTIFF',    'OGC',  'GeoTIFF Coverage Encoding Profile'),
+  ('GeoHEIF', 'GeoHEIF',     NULL,  'GeoHEIF Coverage Encoding'),
   ('NetCDF',  'NetCDF',     'OGC',  'NetCDF Classic and 64-bit Offset Format'),
   ('PNG',     'PNG',         NULL,  'PNG (Portable Network Graphics) Specification'),
   ('RAWGRD',   NULL,        'ESRI', 'BIL, BIP, and BSQ raster files'),
@@ -25,6 +26,7 @@ INSERT INTO metadata."Citation" ("ID", "alternateTitle", "citedResponsibleParty"
 
 INSERT INTO metadata."Format" ("ID", "formatSpecificationCitation") VALUES
   ('GeoTIFF', 'GeoTIFF'),
+  ('GeoHEIF', 'GeoHEIF'),
   ('NetCDF',  'NetCDF'),
   ('PNG',     'PNG'),
   ('RAWGRD',  'RAWGRD'),

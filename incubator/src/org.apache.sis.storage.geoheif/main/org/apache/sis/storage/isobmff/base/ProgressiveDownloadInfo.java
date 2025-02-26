@@ -17,24 +17,46 @@
 package org.apache.sis.storage.isobmff.base;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
- * Container: File
+ * Combination of effective file download bit-rate, together with a suggested initial playback delay.
+ *
+ * @todo Not yet implemented. This is currently an empty box.
+ *
+ * <h4>Container</h4>
+ * The container can be the file.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
 public final class ProgressiveDownloadInfo extends FullBox {
+    /**
+     * Numerical representation of the {@code "pdin"} box type.
+     */
+    public static final int BOXTYPE = ((((('p' << 8) | 'd') << 8) | 'i') << 8) | 'n';
 
-    public static final String FCC = "pdin";
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        super.readProperties(reader);
-        //TODO
+    public final int type() {
+        return BOXTYPE;
     }
 
+    // Not yet implemented (to repeat until end of box):
+    // public final int rate, initialDelay;
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     */
+    public ProgressiveDownloadInfo(final Reader reader) throws IOException {
+        super(reader);
+    }
 }

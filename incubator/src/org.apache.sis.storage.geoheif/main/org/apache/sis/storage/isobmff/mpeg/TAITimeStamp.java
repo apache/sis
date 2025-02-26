@@ -17,30 +17,59 @@
 package org.apache.sis.storage.isobmff.mpeg;
 
 import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
-import org.apache.sis.storage.isobmff.base.ItemFullProperty;
+import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 
 
 /**
+ * From ISO/IEC 23001-17:2024 amendment 1.
+ *
+ * @todo Verify box structure and document.
+ * The specification was not yet published at the time of writing this class.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TAITimeStamp extends ItemFullProperty {
+public final class TAITimeStamp extends FullBox {
+    /**
+     * Numerical representation of the {@code "itai"} box type.
+     */
+    public static final int BOXTYPE = ((((('i' << 8) | 't') << 8) | 'a') << 8) | 'i';
 
-    public static final String FCC = "itai";
+    @Interpretation(Type.UNSIGNED)
+    public final long TAITimestamp;
 
-    public long TAITimestamp;
-    public boolean synchronizationState;
-    public boolean timestampGenerationFailure;
-    public boolean timestampIsModified;
+    public final boolean synchronizationState;
 
+    public final boolean timestampGenerationFailure;
+
+    public final boolean timestampIsModified;
+
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    protected void readProperties(Reader reader) throws IOException {
-        TAITimestamp = reader.channel.readLong();
-        synchronizationState = reader.channel.readBit() == 1;
-        timestampGenerationFailure = reader.channel.readBit() == 1;
-        timestampIsModified = reader.channel.readBit() == 1;
-        reader.channel.skipRemainingBits();
+    public final int type() {
+        return BOXTYPE;
     }
 
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws UnsupportedVersionException if the box version is unsupported.
+     */
+    public TAITimeStamp(final Reader reader) throws IOException, UnsupportedVersionException {
+        super(reader);
+        requireVersionZero();
+        final ChannelDataInput input = reader.input;
+        TAITimestamp = input.readLong();
+        final byte f = input.readByte();
+        synchronizationState       = (f & 0b10000000) != 0;
+        timestampGenerationFailure = (f & 0x01000000) != 0;
+        timestampIsModified        = (f & 0x00100000) != 0;
+    }
 }

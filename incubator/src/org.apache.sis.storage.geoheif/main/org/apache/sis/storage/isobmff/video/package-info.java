@@ -15,4 +15,14 @@
  * limitations under the License.
  */
 
+/**
+ * Boxes defined by <abbr>ISO</abbr> 14496-10 — Advanced video coding.
+ * This is part of the "Coding of audio-visual objects" series.
+ *
+ * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://www.iso.org/standard/83529.html">ISO/IEC 14496-10:2022 —
+ * Coding of audio-visual objects — Part 10: Advanced video coding</a>
+ */
 package org.apache.sis.storage.isobmff.video;

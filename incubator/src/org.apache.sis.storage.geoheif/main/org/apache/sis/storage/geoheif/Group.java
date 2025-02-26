@@ -16,52 +16,58 @@
  */
 package org.apache.sis.storage.geoheif;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import org.opengis.util.GenericName;
-import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.isobmff.base.EntityToGroup;
-import org.apache.sis.util.iso.Names;
+import org.apache.sis.storage.AbstractResource;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
 /**
- * An unidentified group of entities.
+ * An aggregation of other resources.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public final class Group extends AbstractResource implements Aggregate {
+final class Group extends AbstractResource implements Aggregate {
+    /**
+     * Name of this group.
+     */
+    private final GenericName name;
 
-    private final GeoHeifStore store;
-    final EntityToGroup group;
+    /**
+     * The components of this group.
+     */
+    private final GridCoverageResource[] components;
 
-    //cache linked resources
-    private List<Resource> components;
-
-    public Group(GeoHeifStore store, EntityToGroup group) {
-        super(null);
-        this.store = store;
-        this.group = group;
+    /**
+     * Creates a new group of grid coverage resources.
+     *
+     * @param store       the parent of this aggregate.
+     * @param name        the name of this aggregate.
+     * @param components  the child resources.
+     */
+    Group(final GeoHeifStore store, final GenericName name, final GridCoverageResource[] components) {
+        super(store);
+        this.name = name;
+        this.components = components;
     }
 
+    /**
+     * Returns the name of this aggregate.
+     */
     @Override
-    public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.of(Names.createLocalName(null, null, "EntityGroup " + group.groupId));
+    public Optional<GenericName> getIdentifier() {
+        return Optional.of(name);
     }
 
+    /**
+     * Returns all components of this aggregate.
+     */
     @Override
-    public synchronized Collection<? extends Resource> components() throws DataStoreException {
-        if (components != null) return components;
-
-        components = new ArrayList<>(group.entitiesId.length);
-        for (int entityId : group.entitiesId) {
-            components.add(store.getComponent(entityId));
-        }
-        return components;
+    public Collection<GridCoverageResource> components() {
+        return UnmodifiableArrayList.wrap(components);
     }
-
 }

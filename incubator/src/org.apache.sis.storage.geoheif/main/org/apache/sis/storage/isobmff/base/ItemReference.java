@@ -17,34 +17,63 @@
 package org.apache.sis.storage.isobmff.base;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.sis.storage.isobmff.Box;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
+ * Linking of one item to others via typed references.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
-public class ItemReference extends FullBox {
+public final class ItemReference extends FullBox {
+    /**
+     * Numerical representation of the {@code "iref"} box type.
+     */
+    public static final int BOXTYPE = ((((('i' << 8) | 'r') << 8) | 'e') << 8) | 'f';
 
-    public static final String FCC = "iref";
-
-    public List<SingleItemTypeReference> references;
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        references = new ArrayList<>();
+    public final int type() {
+        return BOXTYPE;
+    }
 
-        while (reader.channel.getStreamPosition() < boxOffset+size) {
-            final Box box = reader.readBox(version == 0 ? new SingleItemTypeReference() : new SingleItemTypeReferenceLarge());
-            if (!(box instanceof SingleItemTypeReference)) {
-                throw new IOException("Expected only SingleItemTypeReference boxes in ItemReference but encounter a " + box);
-            }
-            reader.channel.seek(box.boxOffset + box.size);
-            references.add((SingleItemTypeReference) box);
+    /**
+     * All the references. All elements are non-null, but the array index may not
+     * correspond to the index in the file because of the exclusion of null values.
+     */
+    public final SingleItemTypeReference[] references;
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws UnsupportedVersionException if the box version is unsupported.
+     * @throws ArrayStoreException if an item is not an instance of {@link SingleItemTypeReference}.
+     * @throws DataStoreException if another logical error occurred.
+     */
+    public ItemReference(final Reader reader) throws IOException, DataStoreException {
+        super(reader);
+        requireVersionZero();
+        references = reader.readChildren(null, false).toArray(SingleItemTypeReference[]::new);
+    }
+
+    /**
+     * Converts node properties of all children to <abbr>ISO</abbr> 19115 metadata.
+     *
+     * @param  builder  the builder where to set metadata information.
+     */
+    @Override
+    public void metadata(final MetadataBuilder builder) {
+        for (final SingleItemTypeReference child : references) {
+            child.metadata(builder);
         }
     }
 }

@@ -180,9 +180,9 @@ module org.apache.sis.referencing {
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
-            org.apache.sis.storage.earthobservation,
             org.apache.sis.storage.geoheif,                 // In the "incubator" sub-project.
-            org.apache.sis.storage.gdal,                    // In the "incubator" sub-project.
+            org.apache.sis.storage.earthobservation,
+            org.apache.sis.storage.gdal,                    // In the "optional" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.console,
             org.apache.sis.openoffice,
@@ -192,7 +192,7 @@ module org.apache.sis.referencing {
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.netcdf,
-            org.apache.sis.storage.gdal,                    // In the "incubator" sub-project.
+            org.apache.sis.storage.gdal,                    // In the "optional" sub-project.
             org.apache.sis.storage.earthobservation,
             org.apache.sis.profile.japan;
 

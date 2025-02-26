@@ -17,29 +17,63 @@
 package org.apache.sis.storage.isobmff.base;
 
 import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 
 
 /**
- * Container: MediaBox or MetaBox
+ * Media type of the track. For example, a video would be stored in a video track,
+ * identified by being handled by a video handler.
+ *
+ * <h4>Container</h4>
+ * The container can be a {@code Media} box or a {@link Meta}.
  *
  * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
 public final class HandlerReference extends FullBox {
+    /**
+     * Numerical representation of the {@code "hdlr"} box type.
+     */
+    public static final int BOXTYPE = ((((('h' << 8) | 'd') << 8) | 'l') << 8) | 'r';
 
-    public static final String FCC = "hdlr";
-
-    public int preDefined;
-    public String handlerType;
-    public String name;
-
+    /**
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
+     */
     @Override
-    public void readProperties(Reader reader) throws IOException {
-        preDefined = reader.channel.readInt();
-        handlerType = intToFourCC(reader.channel.readInt());
-        final int[] reserved = reader.channel.readInts(3);
-        name = reader.readUtf8String();
+    public final int type() {
+        return BOXTYPE;
     }
 
+    /**
+     * The format of the {@code Meta} box content.
+     * The value {@code "null"} indicates that this box is merely used to hold resources.
+     */
+    @Interpretation(Type.FOURCC)
+    public final int handlerType;
+
+    /**
+     * Human-readable name for the track type, or {@code null} if none.
+     * This is for debugging and inspection purposes.
+     */
+    public final String name;
+
+    /**
+     * Creates a new box and loads the payload from the given reader.
+     *
+     * @param  reader  the reader from which to read the payload.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws UnsupportedVersionException if the box version is unsupported.
+     */
+    public HandlerReference(final Reader reader) throws IOException, UnsupportedVersionException {
+        super(reader);
+        requireVersionZero();
+        final ChannelDataInput input = reader.input;
+        handlerType = (int) input.readLong();       // The high bits are currently reserved and not used.
+        input.skipNBytes(3 * Integer.BYTES);
+        name = reader.readNullTerminatedString(false);
+    }
 }

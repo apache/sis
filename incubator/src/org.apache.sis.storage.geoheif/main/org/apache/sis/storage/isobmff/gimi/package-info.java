@@ -15,4 +15,11 @@
  * limitations under the License.
  */
 
+/**
+ * Boxes defined by <abbr>OGC</abbr> for the use of <abbr>ISO</abbr> <abbr>BMFF</abbr> for storing geospatial data.
+ * At the time of writing this code, this is not yet an approved standard.
+ *
+ * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
+ */
 package org.apache.sis.storage.isobmff.gimi;
