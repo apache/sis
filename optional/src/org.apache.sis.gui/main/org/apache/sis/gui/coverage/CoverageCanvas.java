@@ -58,6 +58,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.Colorizer;
@@ -77,6 +78,7 @@ import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
@@ -88,7 +90,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * instance (given by {@link #coverageProperty}) will change automatically according the zoom level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see CoverageExplorer
  *
@@ -102,6 +104,15 @@ public class CoverageCanvas extends MapCanvasAWT {
      * than {@link Integer#MAX_VALUE}.
      */
     private static final int OVERFLOW_SAFETY_MARGIN = 10_000_000;
+
+    /**
+     * Maximal surface or volume (in number of cells) of the data to load.
+     * If showing the full image would cause a larger amount of data to be loaded,
+     * then the widget will zoom on a smaller area by default. This is based on the
+     * assumption that data are tiled, and therefore zooming will reduce the amount
+     * of data to load.
+     */
+    private static final int MAXIMAL_CELL_COUNT = 5000 * 5000;
 
     /**
      * Whether to print debug information. If {@code true}, we use {@link System#out} instead of logging
@@ -581,24 +592,57 @@ public class CoverageCanvas extends MapCanvasAWT {
                     GridGeometry domain;
                     final Long id = LogHandler.loadingStart(resource);
                     try {
+                        double[] scales;
                         if (coverage != null) {
                             domain = coverage.getGridGeometry();
                             ranges = coverage.getSampleDimensions();
+                            scales = null;
                         } else {
                             domain = resource.getGridGeometry();
                             ranges = resource.getSampleDimensions();
+                            scales = CollectionsExt.lastNonNull(resource.getResolutions());
                         }
-                        /*
-                         * The domain should never be null and should always be complete (including envelope).
-                         * Nevertheless we try to be safe, since `setNewSource(…)` wants a complete geometry.
-                         * So if the envelope is missing but the extent is present, then the missing part was
-                         * the "grid to CRS" transform. We use an identity transform with a "display CRS".
-                         */
-                        if (domain != null && !domain.isDefined(GridGeometry.ENVELOPE) && domain.isDefined(GridGeometry.EXTENT)) {
-                            final GridExtent extent = domain.getExtent();
-                            final int dimension = extent.getDimension();
-                            domain = new GridGeometry(extent, PixelInCell.CELL_CORNER, MathTransforms.identity(dimension),
-                                            (dimension == BIDIMENSIONAL) ? CommonCRS.Engineering.DISPLAY.crs() : null);
+                        if (domain != null) {
+                            /*
+                             * The domain should never be null and should always be complete (including envelope).
+                             * Nevertheless we try to be safe, since `setNewSource(…)` wants a complete geometry.
+                             * So if the envelope is missing but the extent is present, then the missing part was
+                             * the "grid to CRS" transform. We use an identity transform with a "display CRS".
+                             */
+                            if (!domain.isDefined(GridGeometry.ENVELOPE) && domain.isDefined(GridGeometry.EXTENT)) {
+                                final GridExtent extent = domain.getExtent();
+                                final int dimension = extent.getDimension();
+                                domain = new GridGeometry(extent, PixelInCell.CELL_CORNER, MathTransforms.identity(dimension),
+                                                (dimension == BIDIMENSIONAL) ? CommonCRS.Engineering.DISPLAY.crs() : null);
+                            }
+                            /*
+                             * Compute the maximum zoom out. Usually, we want to show the full image.
+                             * But if the image has no pyramid, showing the full image may cause the
+                             * loading of a large amount of data. We are better to limit the zoom to
+                             * a small area.
+                             */
+                            if (domain.isDefined(GridGeometry.ENVELOPE | GridGeometry.RESOLUTION)) {
+                                if (scales == null) {
+                                    scales = domain.getResolution(true);
+                                }
+                                double ratio = MAXIMAL_CELL_COUNT;
+                                final Envelope bounds = domain.getEnvelope();
+                                final int dimension = Math.min(BIDIMENSIONAL, Math.min(bounds.getDimension(), scales.length));
+                                for (int i=0; i<dimension; i++) {
+                                    ratio *= scales[i] / bounds.getSpan(i);  // Equivalent to /= span_in_pixels.
+                                }
+                                if (ratio < 1) {
+                                    ratio = Math.pow(ratio, 1d / dimension);
+                                    final double out = (1 - ratio) / 2;      // Fraction of bounds to take out on each side.
+                                    final var zoomArea = new GeneralEnvelope(bounds);
+                                    for (int i=0; i<dimension; i++) {
+                                        final double margin = zoomArea.getSpan(i) * out;
+                                        zoomArea.setRange(i, zoomArea.getLower(i) + margin, zoomArea.getUpper(i) - margin);
+                                    }
+                                    // Pretend that the data domain is smaller than reality.
+                                    domain = domain.derive().subgrid(zoomArea, null).build();
+                                }
+                            }
                         }
                     } finally {
                         LogHandler.loadingStop(id);

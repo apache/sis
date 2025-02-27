@@ -140,6 +140,24 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the last non-null element of the given list.
+     *
+     * @param  <T>   the type of elements contained in the list.
+     * @param  list  the list from which to get the last non-null element, or {@code null}.
+     * @return the last non-null element, or {@code null} if the given list is null or empty.
+     */
+    public static <T> T lastNonNull(final List<T> collection) {
+        if (collection != null) {
+            int i = collection.size();
+            while (--i >= 0) {
+                T e = collection.get(i);
+                if (e != null) return e;
+            }
+        }
+        return null;
+    }
+
+    /**
      * If the given iterable contains exactly one non-null element, returns that element.
      * Otherwise returns {@code null}.
      *
