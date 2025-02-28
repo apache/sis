@@ -443,6 +443,22 @@ public final class MatricesTest extends TestCase {
     }
 
     /**
+     * Tests {@link Matrices#forceNonZeroScales(Matrix, double)}.
+     */
+    public void testForceNonZeroScales() {
+        MatrixSIS matrix = Matrices.create(4, 4, new double[] {
+            2, 0, 0, 8,
+            0, 0, 4, 7,
+            0, 0, 0, 6,
+            0, 0, 0, 1
+        });
+        MatrixSIS expected = matrix.clone();
+        expected.setElement(2, 1, 3);
+        assertTrue(Matrices.forceNonZeroScales(matrix, 3));
+        assertEquals(expected, matrix);
+    }
+
+    /**
      * Tests {@link Matrices#equals(Matrix, Matrix, double, boolean)}.
      */
     @Test

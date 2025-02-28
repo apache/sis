@@ -97,7 +97,11 @@ public final class GeoEncoder {
 
     /**
      * Size of the model transformation matrix, in number of rows and columns.
-     * This size is fixed by the GeoTIFF specification.
+     * This size is fixed by the GeoTIFF specification. If some rows need to
+     * be added for filling the space, they will be filled with zero values
+     * (i.e., the matrix will be singular until the reader removes those rows).
+     *
+     * @see org.apache.sis.storage.geotiff.reader.GridGeometryBuilder#DEFAULT_SCALE_FACTOR
      */
     private static final int MATRIX_SIZE = 4;
 
