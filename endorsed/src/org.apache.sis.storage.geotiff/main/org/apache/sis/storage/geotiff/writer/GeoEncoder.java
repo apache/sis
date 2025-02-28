@@ -38,6 +38,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.VerticalCS;
@@ -79,6 +80,7 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.pending.jdk.JDK15;
 
 
@@ -134,6 +136,12 @@ public final class GeoEncoder {
      * Axis order and axis directions may be different than the (east, north, up) directions mandated by GeoTIFF.
      */
     private AxisDirection[] axisDirections;
+
+    /**
+     * The longitude axis if the <abbr>CRS</abbr> is geodetic,
+     * or {@code null} if the <abbr>CRS</abbr> is projected or unknown.
+     */
+    private CoordinateSystemAxis longitudeAxis;
 
     /**
      * The conversion from grid coordinates to full CRS, which determines the model transformation.
@@ -412,6 +420,7 @@ public final class GeoEncoder {
     {
         final short type;
         final CoordinateSystem cs = crs.getCoordinateSystem();
+        longitudeAxis = cs.getAxis(AxisDirections.indexOfColinear(cs, AxisDirection.EAST));
         addUnits(UnitKey.ANGULAR, cs);
         if (cs instanceof EllipsoidalCS) {
             type = GeoCodes.ModelTypeGeographic;
@@ -872,6 +881,24 @@ public final class GeoEncoder {
             target[1] = AxisDirection.NORTH;
             gridToCRS = Matrices.createTransform(axisDirections, target).multiply(gridToCRS);
             axisDirections = null;      // For avoiding to do the multiplication again.
+        }
+        /*
+         * If the first axis is a longitude axis, ensure that the longitude is in the [−180 … +180]° range.
+         * We need this shift because the source CRS may be using the [0 … 360]° range (for example, when
+         * the data come from a netCDF file), but CRS in GeoTIFF are implicitly in [−180 … +180]°.
+         */
+        if (longitudeAxis != null) try {
+            final double max = Units.DEGREE.getConverterToAny(longitudeAxis.getUnit()).convert(Longitude.MAX_VALUE);
+            if (Math.abs(longitudeAxis.getMaximumValue() - max) > max / Longitude.MAX_VALUE) {  // Arbitrary tolerance.
+                final int translationColumn = gridToCRS.getNumCol() - 1;
+                double translation = gridToCRS.getElement(0, translationColumn);
+                translation = Math.IEEEremainder(translation, 2*max);
+                if (translation == max) translation = -translation;
+                gridToCRS.setElement(0, translationColumn, translation);
+            }
+        } catch (IncommensurableException e) {
+            // Should never happen. If happen anyway, we will simply not shift the longitude coordinate.
+            listeners.warning(e);
         }
         /*
          * Copy matrix coefficients. This matrix size is always 4×4, no matter the size of the `gridToCRS` matrix.
