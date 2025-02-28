@@ -2019,7 +2019,7 @@ public class MetadataBuilder {
                 final double distance = unit.getConverterToAny(targetUnit).convert(resolution[i]);
                 if (setter == null) {
                     addTemporalResolution(distance);
-                } else if (Double.isFinite(distance)) {
+                } else if (distance > 0 && distance != Double.POSITIVE_INFINITY) {
                     var r = new DefaultResolution();
                     setter.accept(r, shared(distance));
                     addIfNotPresent(identification().getSpatialResolutions(), r);
@@ -2060,7 +2060,7 @@ public class MetadataBuilder {
      * @param  duration  the resolution in days, or {@code NaN} for no-operation.
      */
     public final void addTemporalResolution(final double duration) {
-        if (Double.isFinite(duration)) {
+        if (duration > 0 && duration != Double.POSITIVE_INFINITY) {
             addIfNotPresent(identification().getTemporalResolutions(),
                     Duration.ofNanos(Math.round(duration * Constants.NANOSECONDS_PER_DAY)));
         }
@@ -2261,7 +2261,7 @@ public class MetadataBuilder {
 
     /**
      * Sets the degree of detail in the given dimension.
-     * This method does nothing if the given resolution if NaN or infinite.
+     * This method does nothing if the given resolution is NaN or infinite.
      * Storage location is:
      *
      * <ul>
@@ -2273,7 +2273,7 @@ public class MetadataBuilder {
      * @param  unit        the resolution unit, of {@code null} if unknown.
      */
     public final void setAxisResolution(final int dimension, double resolution, final Unit<?> unit) {
-        if (Double.isFinite(resolution)) {
+        if (resolution > 0 && resolution != Double.POSITIVE_INFINITY) {
             /*
              * Value should be a Quantity<?>. Since GeoAPI does not yet allow that,
              * we convert to metres for now. Future version should store the value
