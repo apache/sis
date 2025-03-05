@@ -30,6 +30,7 @@ import java.nio.file.InvalidPathException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.NoSuchElementException;
+
 import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
@@ -704,7 +705,25 @@ search:     if (key != null) {
             path = sb.toString();
         }
         try {
-            return new URI(SCHEME, fs.accessKey, bucket, -1, path, null, null);
+            if (fs != null) {
+                /*
+                 * We can address two different URI formats, depending on whether the file system is self-hosted or not:
+                 * - Self-Hosted path : s3://accessKey@host:port/bucket/key
+                 * - AWS path : s3://accessKey@bucket/key
+                 * We also verify bucket presence to allow relative paths URIs.
+                 */
+                if (fs.host != null && fs.port < 0) {
+                    throw new IllegalStateException("Self-hosted file system shall have a port number.");
+                } else if (fs.host == null && fs.port >= 0) {
+                    throw new IllegalStateException("Port number specified, but no host name. Incompatible with self-hosted and AWS file system.");
+                }
+                boolean selfHosted = fs.host != null && fs.port >= 0;
+                String host = (selfHosted && bucket != null) ? fs.host : bucket;
+                int port = (selfHosted && bucket != null) ? fs.port : -1;
+                String uriPath = (selfHosted && bucket != null) ? "/" + bucket + (path != null ? path : "") : (path != null ? path : "");
+                return new URI(SCHEME, fs.accessKey, host, port, uriPath, null, null);
+            }
+            throw new IllegalStateException("No filesystem associated with this path.");
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -718,11 +737,24 @@ search:     if (key != null) {
         if (bucket == null && !isDirectory) {
             return key;
         }
+        /*
+         * We can address two different URI formats, depending on whether the file system is self-hosted or not:
+         * - Self-Hosted path : s3://accessKey@host:port/bucket/key
+         * - AWS path : s3://accessKey@bucket/key
+         */
+        if (fs.host != null && fs.port < 0) {
+            throw new IllegalStateException("Self-hosted file system shall have a port number.");
+        } else if (fs.host == null && fs.port >= 0) {
+            throw new IllegalStateException("Port number specified, but no host name. Incompatible with self-hosted and AWS file system.");
+        }
         final StringBuilder sb = new StringBuilder();
         if (bucket != null) {
             sb.append(SCHEME).append(SCHEME_SEPARATOR);
             if (fs.accessKey != null) {
                 sb.append(fs.accessKey).append('@');
+            }
+            if (fs.host != null && fs.port >= 0) {
+                sb.append(fs.host).append(':').append(fs.port).append('/');
             }
             sb.append(bucket);
         }

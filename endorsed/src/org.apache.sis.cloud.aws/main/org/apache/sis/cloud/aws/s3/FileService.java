@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cloud.aws.s3;
 
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -65,7 +66,9 @@ import org.apache.sis.util.collection.Containers;
  *
  * <ul>
  *   <li>{@code S3://bucket/file}</li>
+ *   <li>{@code S3://host:port/bucket/file}</li>
  *   <li>{@code S3://accessKey@bucket/file} (password not allowed)</li>
+ *   <li>{@code S3://accessKey@host:port/bucket/key} (password not allowed)</li>
  * </ul>
  *
  * "Files" are S3 keys interpreted as paths with components separated by the {@code '/'} separator.
@@ -75,7 +78,8 @@ import org.apache.sis.util.collection.Containers;
  * instead of the data to access, and can be a global configuration for the server.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @author  Quentin Bialota (Geomatys)
+ * @version 1.7
  * @since   1.2
  */
 public class FileService extends FileSystemProvider {
@@ -94,6 +98,42 @@ public class FileService extends FileSystemProvider {
     private static final String DEFAULT_ACCESS_KEY = "";
 
     /**
+     * An arbitrary string used as part of the key in the {@link #fileSystems} map
+     * when the user did not specified explicitly a host.
+     * In such case, the default host is the Amazon host and is defined with the region.
+     *
+     * Host can also be defined with:
+     * <ul>
+     *   <li>{@code #S3_HOST_URL} Java system properties.</li>
+     * </ul>
+     */
+    private static final String DEFAULT_HOST_KEY = null;
+
+    /**
+     * An arbitrary string used as part of the key in the {@link #fileSystems} map
+     * when the user did not specified explicitly a port.
+     * In such case, no port is assigned, the default port is used
+     *
+     * Port can also be defined with :
+     * <ul>
+     *   <li>{@code #S3_PORT} Java system properties.</li>
+     * </ul>
+     */
+    private static final int DEFAULT_PORT_KEY = -1;
+
+    /**
+     * A boolean used as part of the key in the {@link #fileSystems} map
+     * when the user did not specified explicitly a protocol.
+     * In such case, the default protocol is HTTPS
+     *
+     * Port can also be defined with :
+     * <ul>
+     *   <li>{@code #S3_IS_HTTPS} Java system properties.</li>
+     * </ul>
+     */
+    private static final boolean DEFAULT_IS_HTTPS = true;
+
+    /**
      * The property for the secret access key (password).
      * Values shall be instances of {@link String}.
      * If not specified, the AWS SDK default mechanism searches for the first of the following:
@@ -106,6 +146,34 @@ public class FileService extends FileSystemProvider {
      * @see #newFileSystem(URI, Map)
      */
     public static final String AWS_SECRET_ACCESS_KEY = "aws.secretAccessKey";
+
+    /**
+     * The property for the host (mandatory if not using AWS S3).
+     * Values shall be instances of {@link String}.
+     *
+     * @see #newFileSystem(URI, Map)
+     * @since 1.7
+     */
+    public static final String S3_HOST_URL = "org.apache.sis.s3.hostURL";
+
+    /**
+     * The property for the port (mandatory if not using AWS S3).
+     * Values shall be instances of {@link Integer}.
+     *
+     * @see #newFileSystem(URI, Map)
+     * @since 1.7
+     */
+    public static final String S3_PORT = "org.apache.sis.s3.port";
+
+    /**
+     * The property for the protocol (optional).
+     * Values shall be instances of {@link Boolean}.
+     * Default value : True (HTTPS)
+     *
+     * @see #newFileSystem(URI, Map)
+     * @since 1.7
+     */
+    public static final String S3_IS_HTTPS = "org.apache.sis.s3.isHttps";
 
     /**
      * The property for the secret access key (password).
@@ -134,7 +202,7 @@ public class FileService extends FileSystemProvider {
     /**
      * All file systems created by this provider. Keys are AWS S3 access keys.
      */
-    private final ConcurrentMap<String, ClientFileSystem> fileSystems;
+    private final ConcurrentMap<ClientFileSystemKey, ClientFileSystem> fileSystems;
 
     /**
      * Creates a new provider of file systems for Amazon S3.
@@ -193,7 +261,8 @@ public class FileService extends FileSystemProvider {
      *     {@linkplain Region#of(String) convertible} to region.</li>
      * </ul>
      *
-     * @param  uri         a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"}.
+     * @param  uri         a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"}
+     *                     or {@code s3://accessKey@host:port/bucket/file} (in this second case, host AND port are mandatory).
      * @param  properties  properties to configure the file system, or {@code null} if none.
      * @return the new file system.
      * @throws IllegalArgumentException if the URI or the map contains invalid values.
@@ -204,6 +273,8 @@ public class FileService extends FileSystemProvider {
     @Override
     public FileSystem newFileSystem(final URI uri, final Map<String,?> properties) throws IOException {
         final String accessKey = getAccessKey(uri);
+        String host = uri.getHost();
+        int port = uri.getPort();
         final String secret;
         if (accessKey == null || (secret = Containers.property(properties, AWS_SECRET_ACCESS_KEY, String.class)) == null) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.MissingAccessKey_2, (accessKey == null) ? 0 : 1, uri));
@@ -216,19 +287,60 @@ public class FileService extends FileSystemProvider {
         } else {
             region = Containers.property(properties, AWS_REGION, Region.class);
         }
-        final class Creator implements Function<String, ClientFileSystem> {
-            /** Identifies if a new file system is created. */ boolean created;
 
-            /** Invoked if the map does not already contains the file system. */
-            @Override public ClientFileSystem apply(final String key) {
+        final class Creator implements Function<ClientFileSystemKey, ClientFileSystem> {
+            /** Identifies if a new file system is created. */ boolean created;
+            /** Store URI Syntax exception. */ URISyntaxException exception;
+
+            @Override
+            public ClientFileSystem apply(final ClientFileSystemKey key) {
                 created = true;
-                return new ClientFileSystem(FileService.this, region, key, secret, separator);
+                try {
+                    return new ClientFileSystem(FileService.this, region, key.host, key.port, key.isHttps, key.accessKey, secret, separator);
+                } catch (URISyntaxException ex) {
+                    created = false;
+                    exception = ex;
+                    return null; // Nothing added to the map
+                }
             }
         }
+
+        Boolean isHttps;
+        if ((isHttps = Containers.property(properties, S3_IS_HTTPS, Boolean.class)) == null) {
+            isHttps = DEFAULT_IS_HTTPS;
+        }
+
+        /*
+         * In case of Self-Hosted S3, if host and port are not found in the URI
+         * We check in java properties
+         * Else we use Default values (=> use AWS S3)
+         */
+        if (port < 0) {
+            if ((host = Containers.property(properties, S3_HOST_URL, String.class)) != null) {
+                Integer portProp = Containers.property(properties, S3_PORT, Integer.class);
+                //  In case of Self-Hosted S3, if port is not found in the URI, but a host is defined
+                if (portProp == null || portProp < 0) {
+                    if (isHttps) {
+                        port = 443; // Default HTTPS port
+                    } else {
+                        port = 80; // Default HTTP port
+                    }
+                } else {
+                    port = portProp;
+                }
+
+            } else {
+                host = DEFAULT_HOST_KEY;
+                port = DEFAULT_PORT_KEY;
+            }
+        }
+
         final Creator c = new Creator();
-        final ClientFileSystem fs = fileSystems.computeIfAbsent(accessKey, c);
+        final ClientFileSystem fs = fileSystems.computeIfAbsent(new ClientFileSystemKey(accessKey, host, port, isHttps), c);
         if (c.created) {
             return fs;
+        } else if (c.exception != null) {
+            throw new IllegalArgumentException("Invalid URI: " + uri, c.exception);
         }
         throw new FileSystemAlreadyExistsException(Resources.format(Resources.Keys.FileSystemInitialized_2, 1, accessKey));
     }
@@ -237,28 +349,87 @@ public class FileService extends FileSystemProvider {
      * Removes the given file system from the cache.
      * This method is invoked after the file system has been closed.
      */
-    final void dispose(String identifier) {
+    final void dispose(ClientFileSystemKey identifier) {
         if (identifier == null) {
-            identifier = DEFAULT_ACCESS_KEY;
+            identifier = new ClientFileSystemKey(DEFAULT_ACCESS_KEY, DEFAULT_HOST_KEY, DEFAULT_PORT_KEY, DEFAULT_IS_HTTPS);
         }
         fileSystems.remove(identifier);
     }
 
     /**
-     * Returns the file system associated to the {@link #DEFAULT_ACCESS_KEY}.
+     * Returns the file system associated to the {@link #DEFAULT_ACCESS_KEY}, {@link #DEFAULT_HOST_KEY}, {@link #DEFAULT_PORT_KEY} and {@link #DEFAULT_IS_HTTPS}.
      *
      * @throws SdkException if the file system cannot be created.
      */
     private ClientFileSystem getDefaultFileSystem() {
-        return fileSystems.computeIfAbsent(DEFAULT_ACCESS_KEY, (key) -> new ClientFileSystem(this, S3Client.create()));
+        return fileSystems.computeIfAbsent(new ClientFileSystemKey(DEFAULT_ACCESS_KEY, DEFAULT_HOST_KEY, DEFAULT_PORT_KEY, DEFAULT_IS_HTTPS), (key) ->
+                new ClientFileSystem(this, S3Client.create(), null));
+    }
+
+    /**
+     * Returns the file system associated to the {@link #DEFAULT_HOST_KEY} and {@link #DEFAULT_PORT_KEY}.
+     *
+     * @param accessKey     the access key
+     * @throws SdkException if the file system cannot be created.
+     */
+    private ClientFileSystem getDefaultFileSystem(String accessKey) {
+        return fileSystems.computeIfAbsent(
+                new ClientFileSystemKey(accessKey, DEFAULT_HOST_KEY, DEFAULT_PORT_KEY, DEFAULT_IS_HTTPS),
+                (key) ->
+                        new ClientFileSystem(this, S3Client.create(), key.accessKey));
+    }
+
+    /**
+     * Returns the file system associated to the {@link #DEFAULT_ACCESS_KEY}.
+     *
+     * @param host          the host
+     * @param port          the port
+     * @throws SdkException if the file system cannot be created.
+     * @throws URISyntaxException if the URI is not valid.
+     */
+    private ClientFileSystem getDefaultFileSystem(String host, Integer port) throws URISyntaxException {
+        ClientFileSystemKey key = new ClientFileSystemKey(DEFAULT_ACCESS_KEY, host, port, DEFAULT_IS_HTTPS);
+
+        synchronized (fileSystems) {
+            ClientFileSystem fs = fileSystems.get(key);
+            if (fs != null) return fs;
+            fs = new ClientFileSystem(this, null, key.host, key.port, key.isHttps, key.accessKey, null, null);
+            fileSystems.put(key, fs);
+            return fs;
+        }
+    }
+
+    /**
+     * Returns the file system associated to the {@link #DEFAULT_ACCESS_KEY}.
+     *
+     * @param host          the host
+     * @param port          the port
+     * @param isHttps       the protocol
+     * @throws SdkException if the file system cannot be created.
+     * @throws URISyntaxException if the URI is not valid.
+     */
+    private ClientFileSystem getDefaultFileSystem(String host, Integer port, boolean isHttps) throws URISyntaxException {
+        ClientFileSystemKey key = new ClientFileSystemKey(DEFAULT_ACCESS_KEY, host, port, isHttps);
+
+        // 1. Try to get the existing one first (no locking)
+        synchronized (fileSystems) {
+            ClientFileSystem fs = fileSystems.get(key);
+            if (fs != null) return fs;
+            fs = new ClientFileSystem(this, null, key.host, key.port, key.isHttps, key.accessKey, null, null);
+            fileSystems.put(key, fs);
+            return fs;
+        }
     }
 
     /**
      * Returns a reference to a file system that was created by the {@link #newFileSystem(URI, Map)} method.
      * If the file system has not been created or has been closed,
      * then this method throws {@link FileSystemNotFoundException}.
+     * If the given URI contains a port number, HTTP(S) protocol is determined by the port number (port 80 means HTTP, port 443 mean HTTPS).
+     * If another port is used we use the default protocol (HTTPS).
+     * A first attempt is made with the protocol determined from the port number, then a second attempt is made with the opposite protocol.
      *
-     * @param  uri  a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"}.
+     * @param  uri  a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"} or {@code "s3://accessKey@host:port/bucket/key"}.
      * @return the file system previously created by {@link #newFileSystem(URI, Map)}.
      * @throws IllegalArgumentException if the URI is not supported by this provider.
      * @throws FileSystemNotFoundException if the file system does not exist or has been closed.
@@ -266,10 +437,43 @@ public class FileService extends FileSystemProvider {
     @Override
     public FileSystem getFileSystem(final URI uri) {
         final String accessKey = getAccessKey(uri);
-        if (accessKey == null) {
-            return getDefaultFileSystem();
+        final String host = uri.getHost();
+        final int port = uri.getPort();
+
+        /*
+         * HTTPS or HTTP is not defined in the URI. By default, we use default value,
+         * except if the port is 80 or 443, in which case we use HTTP or HTTPS.
+         */
+        boolean isHttps = DEFAULT_IS_HTTPS;
+        if (port == 80) {
+            isHttps = false;
+        } else if (port == 443) {
+            isHttps = true;
         }
-        final ClientFileSystem fs = fileSystems.get(accessKey);
+
+        if (accessKey == null && port > -1) {
+            // No access key, but host and port are defined => Self Hosted
+            try {
+                return getDefaultFileSystem(host, port, isHttps);
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException("Invalid URI: " + uri, ex);
+            }
+        } else if (accessKey == null && port < 0) {
+            // No access key, no host, no port => AWS S3
+            return getDefaultFileSystem();
+        } else if (accessKey != null && port < 0) {
+            // Access key, no host, no port => AWS S3
+            return getDefaultFileSystem(accessKey);
+        }
+
+        /*
+         * Try to get the file system with the protocol determined from the port number, then try with the opposite protocol.
+         */
+        ClientFileSystem fs = fileSystems.get(new ClientFileSystemKey(accessKey, host, port, isHttps));
+        if (fs != null) {
+            return fs;
+        }
+        fs = fileSystems.get(new ClientFileSystemKey(accessKey, host, port, !isHttps));
         if (fs != null) {
             return fs;
         }
@@ -277,11 +481,12 @@ public class FileService extends FileSystemProvider {
     }
 
     /**
-     * Return a {@code Path} object by converting the given {@code URI}.
+     * Return a {@code Path} object by converting the given {@code URI} or {@code "s3://accessKey@host:port/bucket/key"}.
      * The resulting {@code Path} is associated with a {@link FileSystem}
      * that already exists or is constructed automatically.
      *
-     * @param  uri  a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"}.
+     * @param  uri a <abbr>URI</abbr> of the form {@code "s3://accessKey@bucket/file"} (AWS S3)
+     *             or {@code s3://accessKey@host:port/bucket/file} (Self-hosted S3) (in this second case, host AND port are mandatory).
      * @return the resulting {@code Path}.
      * @throws IllegalArgumentException if the URI is not supported by this provider.
      * @throws FileSystemNotFoundException if the file system does not exist and cannot be created automatically.
@@ -289,14 +494,9 @@ public class FileService extends FileSystemProvider {
     @Override
     public Path getPath(final URI uri) {
         final String accessKey = getAccessKey(uri);
-        final ClientFileSystem fs;
-        if (accessKey == null) {
-            fs = getDefaultFileSystem();
-        } else {
-            // TODO: we may need a way to get password here.
-            fs = fileSystems.computeIfAbsent(accessKey, (key) -> new ClientFileSystem(FileService.this, null, key, null, null));
-        }
         String host = uri.getHost();
+        final int port = uri.getPort();
+
         if (host == null) {
             /*
              * The host is null if the authority contains characters that are invalid for a host name.
@@ -308,7 +508,70 @@ public class FileService extends FileSystemProvider {
             if (host == null) host = uri.toString();
             throw new IllegalArgumentException(Resources.format(Resources.Keys.InvalidBucketName_1, host));
         }
-        final String path = uri.getPath();
+
+        ClientFileSystem fs;
+        if (accessKey == null) {
+            if (port < 0) {
+                fs = getDefaultFileSystem();
+            } else {
+                try {
+                    fs = getDefaultFileSystem(host, port);
+                } catch (URISyntaxException ex) {
+                    throw new IllegalArgumentException("Invalid URI: " + uri, ex);
+                }
+            }
+        } else {
+            // TODO: we may need a way to get password here.
+            // TODO: we may need a way to get SSL status here (is HTTPS or not)
+            ClientFileSystemKey fsKey;
+
+            if (port < 0) {
+                fsKey = new ClientFileSystemKey(accessKey, DEFAULT_HOST_KEY, DEFAULT_PORT_KEY, DEFAULT_IS_HTTPS);
+            } else {
+                fsKey = new ClientFileSystemKey(accessKey, host, port, DEFAULT_IS_HTTPS);
+            }
+
+            // Compute if absent
+            try {
+                synchronized (fileSystems) {
+                    fs = fileSystems.get(fsKey);
+                    if (fs == null) {
+                        fs = new ClientFileSystem(this, null, fsKey.host, fsKey.port, fsKey.isHttps, fsKey.accessKey, null, null);
+                        fileSystems.put(fsKey, fs);
+                    }
+                }
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException("Invalid URI: " + uri, ex);
+            }
+        }
+
+        String path = uri.getPath();
+
+        /*
+         * In case of custom host, bucket name will be the first element of the "uri.getPath()"
+         * We need to get the first element of this path (this will be the bucket), and the second part will be
+         */
+        if (fs.host != null) {
+            if (!(fs.host.equalsIgnoreCase(DEFAULT_HOST_KEY))) {
+                if (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+                String[] parts = path.split("/", 2);
+                if (parts.length >= 2) {
+                    // Bucket + Path specified (=> /bucket/path/to/folder)
+                    host = parts[0];
+                    path = "/" + parts[1];
+                } else if (parts.length == 1) {
+                    // Bucket specified (no path) (=> /bucket)
+                    host = parts[0];
+                    path = null;
+                }
+            }
+        }
+        /*
+         * - "host" in this part is the S3 bucket name
+         * - "path" is the path in this bucket
+         */
         return new KeyPath(fs, host, (path != null) ? new String[] {path} : CharSequences.EMPTY_ARRAY, true);
     }
 

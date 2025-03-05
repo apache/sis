@@ -54,7 +54,8 @@
  * All classes provided by this package are safe of usage in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @author  Quentin Bialota (Geomatys)
+ * @version 1.7
  *
  * @see <a href="https://sdk.amazonaws.com/java/api/latest/index.html">AWS SDK for Java</a>
  *

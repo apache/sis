@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
+import java.net.URISyntaxException;
+
 
 /**
  * Tests {@link ClientFileSystem}.
@@ -33,18 +35,29 @@ public final class ClientFileSystemTest extends TestCase {
      */
     private final ClientFileSystem fs;
 
+    private final ClientFileSystem fsSelfHosted;
+
     /**
      * Returns the file system to use for testing purpose.
      */
     static ClientFileSystem create() {
-        return new ClientFileSystem(new FileService(), null);
+        return new ClientFileSystem(new FileService(), null, null);
+    }
+
+    /**
+     * Returns the file system to use for testing purpose.
+     * This file system is configured for self-hosted S3 server.
+     */
+    static ClientFileSystem createSelfHosted() throws URISyntaxException {
+        return new ClientFileSystem(new FileService(), null, "testhost", 8581, true, null, null, null);
     }
 
     /**
      * Creates a new test case.
      */
-    public ClientFileSystemTest() {
+    public ClientFileSystemTest() throws URISyntaxException {
         fs = create();
+        fsSelfHosted = createSelfHosted();
     }
 
     /**
@@ -53,5 +66,6 @@ public final class ClientFileSystemTest extends TestCase {
     @Test
     public void testGetSeparator() {
         assertEquals("/", fs.getSeparator());
+        assertEquals("/", fsSelfHosted.getSeparator());
     }
 }

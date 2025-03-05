@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cloud.aws.s3;
 
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import software.amazon.awssdk.services.s3.model.Bucket;
@@ -38,18 +39,32 @@ public final class KeyPathTest extends TestCase {
     private final ClientFileSystem fs;
 
     /**
+     * The file system used to test self-hosted S3 paths.
+     */
+    private final ClientFileSystem fsSelfHosted;
+
+    /**
      * The path to test.
      */
     private final KeyPath absolute, relative;
 
     /**
+     * The path to test with self-hosted S3 file system.
+     */
+    private final KeyPath absoluteSelfHosted, relativeSelfHosted;
+
+    /**
      * Creates a new test case.
      */
-    public KeyPathTest() {
+    public KeyPathTest() throws URISyntaxException {
         fs = ClientFileSystemTest.create();
         final KeyPath root = new KeyPath(fs, Bucket.builder().name("the-bucket").build());
         absolute = new KeyPath(root, "first/second/third/the-file", false);
         relative = new KeyPath(fs, "second/third/the-file", false);
+        fsSelfHosted = ClientFileSystemTest.createSelfHosted();
+        final KeyPath rootSelfHosted = new KeyPath(fsSelfHosted, Bucket.builder().name("the-bucket").build());
+        absoluteSelfHosted = new KeyPath(rootSelfHosted, "first/second/third/the-file", false);
+        relativeSelfHosted = new KeyPath(fsSelfHosted, "second/third/the-file", false);
     }
 
     /**
@@ -243,5 +258,27 @@ public final class KeyPathTest extends TestCase {
         assertEquals(-1, absolute.compareTo(relative));
         assertEquals(+1, relative.compareTo(absolute));
         assertTrue(absolute.compareTo(new KeyPath(absolute, "first", true)) > 0);
+    }
+
+    /**
+     * Tests {@link KeyPath#toString()}.
+     */
+    @Test
+    public void testToString() {
+        assertEquals("S3://the-bucket/first/second/third/the-file", absolute.toString());
+        assertEquals("second/third/the-file", relative.toString());
+        assertEquals("S3://testhost:8581/the-bucket/first/second/third/the-file", absoluteSelfHosted.toString());
+        assertEquals("second/third/the-file", relativeSelfHosted.toString());
+    }
+
+    /**
+     * Tests {@link KeyPath#toUri()}.
+     */
+    @Test
+    public void testToUri() {
+        assertEquals("S3://the-bucket/first/second/third/the-file", absolute.toUri().toString());
+        assertEquals("S3:/second/third/the-file", relative.toUri().toString());
+        assertEquals("S3://testhost:8581/the-bucket/first/second/third/the-file", absoluteSelfHosted.toUri().toString());
+        assertEquals("S3:/second/third/the-file", relativeSelfHosted.toUri().toString());
     }
 }
