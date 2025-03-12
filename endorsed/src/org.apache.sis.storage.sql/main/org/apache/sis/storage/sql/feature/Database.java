@@ -296,6 +296,18 @@ public class Database<G> extends Syntax  {
     }
 
     /**
+     * Returns the value of a {@code LIKE} statement with wildcard characters escaped.
+     * The wildcard characters are {@code '_'} and {@code '%'}. This method is invoked
+     * when an exact match for the given value is desired.
+     *
+     * @param  value  the {@code LIKE} pattern to search.
+     * @return the given pattern with wildcard characters escaped.
+     */
+    final String escapeWildcards(final String value) {
+        return SQLUtilities.escape(value, escape);
+    }
+
+    /**
      * Detects automatically which spatial schema is in use. Detects also the catalog name and schema name.
      * This method is invoked exactly once after construction and before the analysis of feature tables.
      *
@@ -336,7 +348,7 @@ public class Database<G> extends Syntax  {
             String catalog = null, schema = null;
             for (final Map.Entry<String,Boolean> entry : ignoredTables.entrySet()) {
                 if (entry.getValue()) {
-                    String table = SQLUtilities.escape(entry.getKey(), escape);
+                    String table = escapeWildcards(entry.getKey());
                     try (ResultSet reflect = metadata.getTables(null, null, table, tableTypes)) {
                         while (reflect.next()) {
                             consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
@@ -363,14 +375,14 @@ public class Database<G> extends Syntax  {
          * The preference order will be defined by the `CRSEncoding` enumeration order.
          */
         if (spatialSchema != null) {
-            final String schema = SQLUtilities.escape(schemaOfSpatialTables, escape);
-            final String table  = SQLUtilities.escape(crsTable, escape);
+            final String schema = escapeWildcards(schemaOfSpatialTables);
+            final String table  = escapeWildcards(crsTable);
             for (Map.Entry<CRSEncoding, String> entry : spatialSchema.crsDefinitionColumn.entrySet()) {
                 String column = entry.getValue();
                 if (metadata.storesLowerCaseIdentifiers()) {
                     column = column.toLowerCase(Locale.US);
                 }
-                column = SQLUtilities.escape(column, escape);
+                column = escapeWildcards(column);
                 try (ResultSet reflect = metadata.getColumns(catalogOfSpatialTables, schema, table, column)) {
                     if (reflect.next()) {
                         crsEncodings.add(entry.getKey());

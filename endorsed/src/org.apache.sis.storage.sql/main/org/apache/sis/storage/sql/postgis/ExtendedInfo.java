@@ -94,6 +94,7 @@ final class ExtendedInfo extends InfoStatements {
      * Closes all prepared statements. This method does <strong>not</strong> close the connection.
      */
     @Override
+    @SuppressWarnings("ConvertToTryWithResources")
     public void close() throws SQLException {
         if (geographyColumns != null) {
             geographyColumns.close();

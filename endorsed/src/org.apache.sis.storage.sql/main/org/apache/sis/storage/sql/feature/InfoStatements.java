@@ -203,10 +203,35 @@ public class InfoStatements implements Localized, AutoCloseable {
             sql.append(", ").append(geomTypeColumn);
         }
         appendFrom(sql, table);
-        if (database.supportsCatalogs) appendColumn(sql, raster, schema.geomCatalogColumn).append("=? AND ");
-        if (database.supportsSchemas)  appendColumn(sql, raster, schema.geomSchemaColumn) .append("=? AND ");
+        /*
+         * In principle, all tables should be unambiguously specified with their catalog and schema name.
+         * However, some JDBC drivers do not provide this information in some circumstances such as materialized views.
+         * Therefore, we use the `LIKE` operator instead of `=` for making possible to disable the filtering by schema.
+         */
+        if (database.supportsCatalogs) appendColumn(sql, raster, schema.geomCatalogColumn).append(" LIKE ? AND ");
+        if (database.supportsSchemas)  appendColumn(sql, raster, schema.geomSchemaColumn) .append(" LIKE ? AND ");
         appendColumn(sql, raster, schema.geomTableColumn).append("=?");
         return connection.prepareStatement(sql.toString());
+    }
+
+    /**
+     * Sets the parameter value for a table catalog or schema. Those parameters use the {@code LIKE} statement
+     * in order to ignore the catalog or schema when it is not specified. A catalog or schema is not specified
+     * if the string is null or empty. The latter case may happens with some drivers with, for example,
+     * materialized views.
+     *
+     * @param  columnQuery  the query where to set the parameter.
+     * @param  p            index of the parameter to set.
+     * @param  source       catalog or schema name to set, or null or empty if unknown.
+     * @throws SQLException if an error occurred while setting the parameter value.
+     */
+    private void setCatalogOrSchema(final PreparedStatement columnQuery, final int p, String source) throws SQLException {
+        if (source == null || source.isEmpty()) {
+            source = "%";
+        } else {
+            source = database.escapeWildcards(source);
+        }
+        columnQuery.setString(p, source);
     }
 
     /**
@@ -251,8 +276,8 @@ public class InfoStatements implements Localized, AutoCloseable {
             final Map<String,Column> columns, final GeometryTypeEncoding typeValueKind) throws Exception
     {
         int p = 0;
-        if (database.supportsCatalogs) columnQuery.setString(++p, source.catalog);
-        if (database.supportsSchemas)  columnQuery.setString(++p, source.schema);
+        if (database.supportsCatalogs) setCatalogOrSchema(columnQuery, ++p, source.catalog);
+        if (database.supportsSchemas)  setCatalogOrSchema(columnQuery, ++p, source.schema);
         columnQuery.setString(++p, source.table);
         try (ResultSet result = columnQuery.executeQuery()) {
             while (result.next()) {
