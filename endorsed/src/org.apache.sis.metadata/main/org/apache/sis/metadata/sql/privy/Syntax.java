@@ -56,14 +56,20 @@ public class Syntax {
     /**
      * Creates a new {@code Syntax} initialized from the given database metadata.
      *
-     * @param  metadata     the database metadata.
+     * @param  metadata     the database metadata, or {@code null} if unavailable.
      * @param  quoteSchema  whether the schema name should be written between quotes.
      * @throws SQLException if an error occurred while fetching the database metadata.
      */
     public Syntax(final DatabaseMetaData metadata, final boolean quoteSchema) throws SQLException {
-        dialect = Dialect.guess(metadata);
-        quote   = metadata.getIdentifierQuoteString();
-        escape  = metadata.getSearchStringEscape();
+        if (metadata != null) {
+            dialect = Dialect.guess(metadata);
+            quote   = metadata.getIdentifierQuoteString();
+            escape  = metadata.getSearchStringEscape();
+        } else {
+            dialect = Dialect.ANSI;
+            quote   = "\"";
+            escape  = "\\";
+        }
         this.quoteSchema = quoteSchema;
     }
 

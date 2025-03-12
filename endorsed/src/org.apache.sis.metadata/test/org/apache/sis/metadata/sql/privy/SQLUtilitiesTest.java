@@ -39,7 +39,7 @@ public final class SQLUtilitiesTest extends TestCase {
      */
     @Test
     public void testToLikePattern() {
-        final StringBuilder buffer = new StringBuilder(30);
+        final var buffer = new StringBuilder(30);
         assertEquals("WGS84",                       toLikePattern(buffer, "WGS84"));
         assertEquals("WGS%84",                      toLikePattern(buffer, "WGS 84"));
         assertEquals("A%text%with%random%symbols%", toLikePattern(buffer, "A text !* with_random:/symbols;+"));
