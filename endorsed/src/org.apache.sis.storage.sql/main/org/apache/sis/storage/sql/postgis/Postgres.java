@@ -42,7 +42,6 @@ import org.apache.sis.storage.sql.feature.SpatialSchema;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -56,15 +55,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class Postgres<G> extends Database<G> {
-    /**
-     * Version of PostGIS extension, or {@code null} if PostGIS has not been found.
-     * Not to be confused with the version of PostgreSQL server, which is given by
-     * another class provided in the PostgreSQL JDBC driver.
-     *
-     * @see org.postgresql.core.ServerVersion
-     */
-    private final Version postgisVersion;
-
     /**
      * Creates a new session for a PostGIS database.
      *
@@ -83,19 +73,20 @@ public final class Postgres<G> extends Database<G> {
             throws SQLException
     {
         super(source, metadata, dialect, geomLibrary, contentLocale, listeners, locks);
-        Version version = null;
         try (Statement st = metadata.getConnection().createStatement();
              ResultSet result = st.executeQuery("SELECT public.PostGIS_version();"))
         {
             while (result.next()) {
-                version = parseVersion(result.getString(1));
-                if (version != null) break;
+                final Version version = parseVersion(result.getString(1));
+                if (version != null) {
+                    softwareVersions.put("PostGIS", version);
+                    break;
+                }
             }
         } catch (SQLException e) {
             log(Resources.forLocale(null).getLogRecord(Level.CONFIG,
                 Resources.Keys.SpatialExtensionNotFound_1, "PostGIS"));
         }
-        postgisVersion = version;
     }
 
     /**
@@ -119,20 +110,6 @@ public final class Postgres<G> extends Database<G> {
             }
         }
         return null;
-    }
-
-    /**
-     * Completes the given database version with information about PostGIS version.
-     *
-     * @param  version  name and version of the database.
-     * @return given text, completed with PostGIS information if present.
-     */
-    @Override
-    protected CharSequence completeDatabaseVersion(CharSequence version) {
-        if (version != null) {
-            return Vocabulary.formatInternational(Vocabulary.Keys.With_2, version, "PostGIS " + postgisVersion);
-        }
-        return version;
     }
 
     /**

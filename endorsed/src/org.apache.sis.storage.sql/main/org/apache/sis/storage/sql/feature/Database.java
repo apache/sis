@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.WeakHashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.LogRecord;
@@ -32,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
+import java.util.Collections;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
@@ -54,8 +56,10 @@ import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
 import org.opengis.metadata.citation.PresentationForm;
@@ -108,6 +112,16 @@ public class Database<G> extends Syntax  {
      * Provider of (pooled) connections to the database.
      */
     protected final DataSource source;
+
+    /**
+     * Version of the database software, together with versions of extensions if any.
+     * For example, in the case of a PostGIS database, this map should contain two entries:
+     * one with the "PostgreSQL" key and one with the "PostGIS" key, preferably in that order.
+     * This map is for information purpose only and should be completed by subclass constructors.
+     *
+     * @see #getDatabaseSoftwareVersions()
+     */
+    protected final Map<String, Version> softwareVersions;
 
     /**
      * The factory to use for creating geometric objects.
@@ -294,6 +308,23 @@ public class Database<G> extends Syntax  {
         supportsJavaTime   = dialect.supportsJavaTime();
         crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
         transactionLocks   = dialect.supportsConcurrency() ? null : locks;
+        softwareVersions   = new LinkedHashMap<>(4);
+        final String product = Strings.trimOrNull(metadata.getDatabaseProductName());
+        final String version = Strings.trimOrNull(metadata.getDatabaseProductVersion());
+        if (product != null || version != null) {
+            softwareVersions.put(product, version != null ? new Version(version) : null);
+        }
+    }
+
+    /**
+     * Returns the version of the database software, together with versions of extensions if any.
+     * For example, in the case of a database on PostgreSQL, this map may contain two entries:
+     * the first one with the "PostgreSQL" key, optionally followed by an entry with the "PostGIS" key.
+     *
+     * @return version of the database software as the first entry, followed by versions of extensions if any.
+     */
+    public final Map<String, Version> getDatabaseSoftwareVersions() {
+        return Collections.unmodifiableMap(softwareVersions);
     }
 
     /**
@@ -479,28 +510,23 @@ public class Database<G> extends Syntax  {
             builder.addFeatureType(table.featureType, table.countRows(metadata, false, false));
         }
         builder.addFormatName((spatialSchema != null) ? spatialSchema.name : "SQL database");
-        String server = metadata.getDatabaseProductName();
-        if (server != null && !server.isBlank()) {
-            CharSequence description = server;
-            final String version = metadata.getDatabaseProductVersion();
+        CharSequence description = null;
+        for (Map.Entry<String, Version> entry : softwareVersions.entrySet()) {
+            CharSequence software = entry.getKey();
+            if (software == null) software = "?";
+            Version version = entry.getValue();
             if (version != null) {
-                description = Vocabulary.formatInternational(Vocabulary.Keys.Version_2, server, version);
+                software = Vocabulary.formatInternational(Vocabulary.Keys.Version_2, software, version);
             }
-            builder.addFormatCitationDetails(completeDatabaseVersion(description));
+            if (description == null) {
+                description = software;
+            } else {
+                description = Vocabulary.formatInternational(Vocabulary.Keys.With_2, description, software);
+                // Above assumes that there is no more than two entries.
+            }
         }
+        builder.addFormatCitationDetails(description);
         builder.addFormatReaderSIS("SQL");      // Value of SQLStoreProvider.NAME.
-    }
-
-    /**
-     * Completes the given database version with information such as the version of the geospatial extension.
-     * For example, in the case of the PostgreSL database, this will add the PostGIS version.
-     * The default implementation returns the given text unchanged.
-     *
-     * @param  version  name and version of the database.
-     * @return given text, optionally completed with additional information.
-     */
-    protected CharSequence completeDatabaseVersion(CharSequence version) {
-        return version;
     }
 
     /**

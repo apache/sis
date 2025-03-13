@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.sql;
 
+import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Collection;
@@ -55,6 +56,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.Version;
 
 
 /**
@@ -416,11 +418,25 @@ public abstract class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the version of the database software, together with versions of extensions if any.
+     * For example, in the case of a database on PostgreSQL, this map may contain two entries:
+     * the first one with the "PostgreSQL" key, optionally followed by an entry with the "PostGIS" key.
+     *
+     * @return version of the database software as the first entry, followed by versions of extensions if any.
+     * @throws DataStoreException if an error occurred while fetching the metadata.
+     *
+     * @since 1.5
+     */
+    public Map<String, Version> getDatabaseSoftwareVersions() throws DataStoreException {
+        return model().getDatabaseSoftwareVersions();
+    }
+
+    /**
      * Returns information about the dataset as a whole. The returned metadata object can contain information
      * such as the list of feature types.
      *
      * @return information about the dataset.
-     * @throws DataStoreException if an error occurred while reading the data.
+     * @throws DataStoreException if an error occurred while fetching the metadata.
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
