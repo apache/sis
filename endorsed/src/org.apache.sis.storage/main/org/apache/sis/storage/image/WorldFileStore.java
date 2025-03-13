@@ -523,7 +523,7 @@ loop:   for (int convention=0;; convention++) {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
-            final MetadataBuilder builder = new MetadataBuilder();
+            final var builder = new MetadataBuilder();
             String format = reader().getFormatName();
             for (final String key : KNOWN_FORMATS) {
                 if (key.equalsIgnoreCase(format)) {
@@ -533,7 +533,7 @@ loop:   for (int convention=0;; convention++) {
                     break;
                 }
             }
-            builder.addFormatName(format);                          // Does nothing if `format` is null.
+            builder.addFormatName(format);      // Does nothing if `format` is null.
             builder.addFormatReaderSIS(WorldFileStoreProvider.NAME);
             builder.addResourceScope(ScopeCode.COVERAGE, null);
             builder.addSpatialRepresentation(null, getGridGeometry(MAIN_IMAGE), true);

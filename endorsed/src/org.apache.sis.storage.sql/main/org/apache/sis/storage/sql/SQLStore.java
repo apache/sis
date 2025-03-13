@@ -30,7 +30,6 @@ import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -83,11 +82,9 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * @see #getMetadata()
      */
     private static final String[] TITLE_GETTERS = {
-            "getDescription",           // PostgreSQL, SQL Server
+            "getApplicationName",       // PostgreSQL
             "getDataSourceName",        // Derby
-            "getDatabaseName",          // Derby, PostgreSQL, SQL Server, SQLite
-            "getUrl",                   // PostgreSQL, SQLite
-            "getURL"                    // SQL Server
+            "getDatabaseName"           // Derby, PostgreSQL, SQL Server, SQLite
     };
 
     /**
@@ -99,6 +96,18 @@ public abstract class SQLStore extends DataStore implements Aggregate {
     private static final String[] IDENTIFIER_GETTERS = {
             "getDatabaseName",
             "getDataSourceName"
+    };
+
+    /**
+     * Names of possible public getter methods for fetching additional citation details.
+     * Elements are sorted in preference order. The return value shall be a {@link String}.
+     * On PostgreSQL, the return value is a hard-coded string such as
+     * "Non-Pooling DataSource from PostgreSQL JDBC Driver 42.7.3"
+     *
+     * @see #getIdentifier()
+     */
+    private static final String[] DETAILS_GETTERS = {
+            "getDescription"            // PostgreSQL, SQL Server
     };
 
     /**
@@ -417,14 +426,14 @@ public abstract class SQLStore extends DataStore implements Aggregate {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             final var builder = new MetadataBuilder();
-            builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
+            builder.addIdentifier(identifier, MetadataBuilder.Scope.RESOURCE);
+            getDataSourceProperty(TITLE_GETTERS).ifPresent(builder::addTitle);
+            getDataSourceProperty(DETAILS_GETTERS).ifPresent(builder::addOtherCitationDetails);
             try (Connection c = source.getConnection()) {
                 model(c).metadata(c.getMetaData(), builder);
             } catch (Exception e) {
                 throw cannotExecute(e);
             }
-            getDataSourceProperty(TITLE_GETTERS).ifPresent(builder::addTitle);
-            builder.addIdentifier(identifier, MetadataBuilder.Scope.ALL);
             metadata = builder.buildAndFreeze();
         }
         return metadata;

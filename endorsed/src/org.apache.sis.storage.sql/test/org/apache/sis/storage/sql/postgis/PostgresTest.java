@@ -17,6 +17,7 @@
 package org.apache.sis.storage.sql.postgis;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.stream.Stream;
 import java.util.function.Supplier;
 import java.sql.Connection;
@@ -30,6 +31,9 @@ import java.lang.reflect.Method;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -55,6 +59,7 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.storage.sql.feature.GeometryGetterTest;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.metadata.sql.TestDatabase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -100,6 +105,19 @@ public final class PostgresTest extends TestCase {
     }
 
     /**
+     * Performs some verification of store metadata.
+     *
+     * @param  metadata  the metadata to verify.
+     */
+    private static void validate(final Metadata metadata) {
+        final Identification identification = TestUtilities.getSingleton(metadata.getIdentificationInfo());
+        assertTrue(identification.getSpatialRepresentationTypes().containsAll(
+                Arrays.asList(SpatialRepresentationType.TEXT_TABLE,
+                              SpatialRepresentationType.VECTOR,
+                              SpatialRepresentationType.GRID)));
+    }
+
+    /**
      * Tests reading and writing features and rasters.
      *
      * @throws Exception if an error occurred while testing the database.
@@ -109,17 +127,18 @@ public final class PostgresTest extends TestCase {
     public void testSpatialFeatures() throws Exception {
         try (TestDatabase database = TestDatabase.createOnPostgreSQL(SQLStoreTest.SCHEMA, true)) {
             database.executeSQL(List.of(resource("SpatialFeatures.sql")));
-            final StorageConnector connector = new StorageConnector(database.source);
+            final var connector = new StorageConnector(database.source);
             connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.JTS);
             final ResourceDefinition table = ResourceDefinition.table(null, SQLStoreTest.SCHEMA, "SpatialData");
             try (SimpleFeatureStore store = new SimpleFeatureStore(new SQLStoreProvider(), connector, table)) {
+                validate(store.getMetadata());
                 /*
                  * Invoke the private `model()` method. We have to use reflection because the class
                  * is not in the same package and we do not want to expose the method in public API.
                  */
                 final Method modelAccessor = SQLStore.class.getDeclaredMethod("model");
                 modelAccessor.setAccessible(true);
-                final Postgres<?> pg = (Postgres<?>) modelAccessor.invoke(store);
+                final var pg = (Postgres<?>) modelAccessor.invoke(store);
                 try (Connection connection = database.source.getConnection();
                      ExtendedInfo info = new ExtendedInfo(pg, connection))
                 {
@@ -181,7 +200,7 @@ public final class PostgresTest extends TestCase {
             final ResultSet r = stmt.executeQuery();
             assertTrue(r.next());
             final ReadableByteChannel channel = Channels.newChannel(encoding.decode(r.getBinaryStream(1)));
-            final ChannelDataInput input = new ChannelDataInput(test.filename, channel, ByteBuffer.allocate(50), false);
+            final var input = new ChannelDataInput(test.filename, channel, ByteBuffer.allocate(50), false);
             RasterReaderTest.compareReadResult(test, reader, input);
             assertFalse(r.next());
         }

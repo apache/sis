@@ -42,6 +42,7 @@ import org.apache.sis.storage.sql.feature.SpatialSchema;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -118,6 +119,20 @@ public final class Postgres<G> extends Database<G> {
             }
         }
         return null;
+    }
+
+    /**
+     * Completes the given database version with information about PostGIS version.
+     *
+     * @param  version  name and version of the database.
+     * @return given text, completed with PostGIS information if present.
+     */
+    @Override
+    protected CharSequence completeDatabaseVersion(CharSequence version) {
+        if (version != null) {
+            return Vocabulary.formatInternational(Vocabulary.Keys.With_2, version, "PostGIS " + postgisVersion);
+        }
+        return version;
     }
 
     /**

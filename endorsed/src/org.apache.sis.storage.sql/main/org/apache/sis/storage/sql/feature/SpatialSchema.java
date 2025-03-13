@@ -36,11 +36,12 @@ import java.util.Map;
  */
 public enum SpatialSchema {
     /**
-     * Table and column names as specified by Geopackage. This is the same thing as {@link #SQL_MM}
+     * Table and column names as specified by GeoPackage. This is the same thing as {@link #SQL_MM}
      * except for table names, for the case (Geopackage uses lower case) and for the addition of a
      * {@code geometry_type_name} column.
      */
     GEOPACKAGE(
+            "GeoPackage",                           // Human-readable name of this spaial schema.
             "gpkg_spatial_ref_sys",                 // Table for Spatial Reference System definitions.
             "srs_name",                             // Column for CRS names.
             "srs_id",                               // Column for CRS identifiers.
@@ -74,7 +75,8 @@ public enum SpatialSchema {
      * In Geopackage, this table is named {@code "gpkg_spatial_ref_sys"} but otherwise has identical content
      * except for the case (Geopackage uses lower case).
      */
-    SQL_MM("ST_SPATIAL_REFERENCE_SYSTEMS",          // Table for Spatial Reference System definitions.
+    SQL_MM("ISO-13249 SQL/MM",                      // Human-readable name of this spaial schema.
+           "ST_SPATIAL_REFERENCE_SYSTEMS",          // Table for Spatial Reference System definitions.
            "SRS_NAME",                              // Column for CRS names.
            "SRS_ID",                                // Column for CRS identifiers.
            "ORGANIZATION",                          // Column for CRS authority names.
@@ -104,6 +106,7 @@ public enum SpatialSchema {
      * }
      */
     SIMPLE_FEATURE(
+            "ISO 19125 / OGC Simple feature",       // Human-readable name of this spaial schema.
             "SPATIAL_REF_SYS",                      // Table for Spatial Reference System definitions.
             null,                                   // Column for CRS names, or `null` if none.
             "SRID",                                 // Column for CRS identifiers.
@@ -118,6 +121,11 @@ public enum SpatialSchema {
             "F_GEOMETRY_COLUMN",                    // Column where the column of each geometry column is stored.
             "GEOMETRY_TYPE",                        // Column where the type of each geometry column is stored.
             GeometryTypeEncoding.NUMERIC);          // How geometry types are encoded in the above-cited type column.
+
+    /**
+     * The name of this spatial schema.
+     */
+    final String name;
 
     /**
      * Name of the table for Spatial Reference System definitions.
@@ -205,6 +213,7 @@ public enum SpatialSchema {
     /**
      * Creates a new enumeration value.
      *
+     * @param name                    name of this spatial schema.
      * @param crsTable                name of the table for Spatial Reference System definitions.
      * @param crsNameColumn           name of the column for CRS names, or {@code null} if none.
      * @param crsIdentifierColumn     name of the column for CRS identifiers.
@@ -220,13 +229,14 @@ public enum SpatialSchema {
      * @param geomTypeColumn          name of the column where the type of each geometry column is stored, or null if none.
      * @param typeEncoding            how geometry types are encoded in the {@link #geomTypeColumn}.
      */
-    private SpatialSchema(String crsTable, String crsNameColumn, String crsIdentifierColumn,
+    private SpatialSchema(String name, String crsTable, String crsNameColumn, String crsIdentifierColumn,
                           String crsAuthorityNameColumn, String crsAuthorityCodeColumn,
                           Map<CRSEncoding,String> crsDefinitionColumn, String crsDescriptionColumn,
                           String geometryColumns, String geomCatalogColumn, String geomSchemaColumn,
                           String geomTableColumn, String geomColNameColumn, String geomTypeColumn,
                           GeometryTypeEncoding typeEncoding)
     {
+        this.name                   = name;
         this.crsTable               = crsTable;
         this.crsNameColumn          = crsNameColumn;
         this.crsIdentifierColumn    = crsIdentifierColumn;

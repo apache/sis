@@ -57,6 +57,8 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.resources.Vocabulary;
+import org.opengis.metadata.citation.PresentationForm;
 
 
 /**
@@ -465,6 +467,8 @@ public class Database<G> extends Syntax  {
      * @throws SQLException if an error occurred while fetching table information.
      */
     public final void metadata(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
+        builder.addPresentationForm(PresentationForm.TABLE_DIGITAL);
+        builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
         if (hasGeometry) {
             builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
         }
@@ -474,6 +478,29 @@ public class Database<G> extends Syntax  {
         for (final Table table : tables) {
             builder.addFeatureType(table.featureType, table.countRows(metadata, false, false));
         }
+        builder.addFormatName((spatialSchema != null) ? spatialSchema.name : "SQL database");
+        String server = metadata.getDatabaseProductName();
+        if (server != null && !server.isBlank()) {
+            CharSequence description = server;
+            final String version = metadata.getDatabaseProductVersion();
+            if (version != null) {
+                description = Vocabulary.formatInternational(Vocabulary.Keys.Version_2, server, version);
+            }
+            builder.addFormatCitationDetails(completeDatabaseVersion(description));
+        }
+        builder.addFormatReaderSIS("SQL");      // Value of SQLStoreProvider.NAME.
+    }
+
+    /**
+     * Completes the given database version with information such as the version of the geospatial extension.
+     * For example, in the case of the PostgreSL database, this will add the PostGIS version.
+     * The default implementation returns the given text unchanged.
+     *
+     * @param  version  name and version of the database.
+     * @return given text, optionally completed with additional information.
+     */
+    protected CharSequence completeDatabaseVersion(CharSequence version) {
+        return version;
     }
 
     /**
