@@ -110,10 +110,11 @@ public final class Analyzer {
     private final String[] tableTypes;
 
     /**
-     * Names of tables to ignore. This set includes at least the tables defined by the spatial
-     * schema standard from storing geometry columns, spatial reference systems, <i>etc.</i>
+     * Names of tables to ignore. This map includes at least the tables defined by the spatial
+     * schema standard for storing geometry columns, spatial reference systems, <i>etc</i>.
+     * The values tell whether the associated table exists in the database.
      */
-    private final Set<String> ignoredTables;
+    private final Map<String,Boolean> ignoredTables;
 
     /**
      * All tables created by analysis of the database structure. A {@code null} value means that the table
@@ -197,6 +198,21 @@ public final class Analyzer {
     }
 
     /**
+     * Returns whether the table of the given name does <em>not</em> exist in the database schema.
+     * This method recognizes only tables {@linkplain InfoStatements#completeIntrospection related
+     * to the spatial schema}. This method is not for checking the existence of feature tables.
+     * If there is no information about the given table, then this method returns {@code true}.
+     * It may result in a {@link SQLException} to be thrown later. This is intentional,
+     * in order to identify that a check is missing.
+     *
+     * @param  table  name of the information table to check.
+     * @return whether the table of the given name does <em>not</em> exist.
+     */
+    final boolean skipInfoTable(final String table) {
+        return Boolean.FALSE.equals(ignoredTables.get(table));      // Null values are mapped to `false`.
+    }
+
+    /**
      * Collects the names of all tables specified by user, ignoring standard tables such as {@code SPATIAL_REF_SYS}.
      * This method requires a list of tables to include in the model, but this list should not include dependencies.
      * This method will follow foreigner keys automatically.
@@ -218,7 +234,7 @@ public final class Analyzer {
             try (ResultSet reflect = metadata.getTables(names[2], names[1], names[0], tableTypes)) {
                 while (reflect.next()) {
                     final String table = getUniqueString(reflect, Reflection.TABLE_NAME);
-                    if (ignoredTables.contains(table)) {
+                    if (ignoredTables.containsKey(table)) {
                         continue;
                     }
                     declared.add(new TableReference(

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.sql.feature;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.EnumSet;
@@ -310,21 +309,25 @@ public class Database<G> extends Syntax  {
     /**
      * Detects automatically which spatial schema is in use. Detects also the catalog name and schema name.
      * This method is invoked exactly once after construction and before the analysis of feature tables.
+     * Various fields such as {@link #spatialSchema} are initialized by this method.
      *
      * @param  metadata    metadata to use for verifying which tables are present.
      * @param  tableTypes  the "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
-     * @return names of the standard tables defined by the spatial schema.
+     * @return names of tables to ignore when searching for feature tables, together with whether the table exists.
      */
-    final Set<String> detectSpatialSchema(final DatabaseMetaData metadata, final String[] tableTypes) throws SQLException {
+    final Map<String,Boolean> detectSpatialSchema(final DatabaseMetaData metadata, final String[] tableTypes)
+            throws SQLException
+    {
         /*
-         * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
-         * Note that the standard specified those names in upper-case letters, which is also
-         * the default case specified by the SQL standard. However, some databases use lower
-         * cases instead.
+         * The keys of `ignoredTables` are the tables defined by ISO 19125 / OGC Simple feature access part 2.
+         * Note that the standard specifies those names in upper-case letters, which is also the default case
+         * specified by the SQL standard. However, some databases use lower cases instead.
          */
         String crsTable = null;
         final var ignoredTables = new HashMap<String,Boolean>(8);
-        for (SpatialSchema convention : getPossibleSpatialSchemas(ignoredTables)) {
+        final SpatialSchema[] candidates = getPossibleSpatialSchemas(ignoredTables);
+        for (int i=0; i<candidates.length; i++) {
+            final SpatialSchema convention = candidates[i];
             String geomTable;
             crsTable  = convention.crsTable;
             geomTable = convention.geometryColumns;
@@ -335,8 +338,8 @@ public class Database<G> extends Syntax  {
                 crsTable  = crsTable .toUpperCase(Locale.US).intern();
                 geomTable = geomTable.toUpperCase(Locale.US).intern();
             }
-            ignoredTables.put(crsTable,  Boolean.TRUE);
-            ignoredTables.put(geomTable, Boolean.TRUE);
+            ignoredTables.put(crsTable,  null);  // `null` means that we have not yet checked if the table exists.
+            ignoredTables.put(geomTable, null);
             /*
              * Check if the database contains at least one "ignored" tables associated to `Boolean.TRUE`.
              * If many tables are found, ensure that the catalog and schema names are the same. If this
@@ -347,15 +350,19 @@ public class Database<G> extends Syntax  {
             boolean consistent = true;
             String catalog = null, schema = null;
             for (final Map.Entry<String,Boolean> entry : ignoredTables.entrySet()) {
-                if (entry.getValue()) {
+                // Unconditionally check table existence during the first iteration.
+                if (i == 0 || entry.getValue() == null) {
+                    boolean exists = false;
                     String table = escapeWildcards(entry.getKey());
                     try (ResultSet reflect = metadata.getTables(null, null, table, tableTypes)) {
                         while (reflect.next()) {
                             consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
                             consistent &= consistent(schema,  schema  = reflect.getString(Reflection.TABLE_SCHEM));
-                            found = true;
+                            found |= !Boolean.FALSE.equals(entry.getValue());  // Accept `true` and `null` values.
+                            exists = true;
                         }
                     }
+                    entry.setValue(exists);
                 }
             }
             if (found) {
@@ -390,7 +397,7 @@ public class Database<G> extends Syntax  {
                 }
             }
         }
-        return ignoredTables.keySet();
+        return ignoredTables;
     }
 
     /**
@@ -700,12 +707,12 @@ public class Database<G> extends Syntax  {
      * <p>The values in the map tells whether the table can be used as a sentinel value for determining
      * that the {@link SpatialSchema} enumeration value can be accepted.</p>
      *
-     * @param  tables  where to add names of tables that describe the spatial schema.
+     * @param  ignoredTables  where to add names of tables to ignore, together with whether they are sentinel tables.
      * @return the spatial schema conventions that may be supported by this database.
      *
      * @see #getSpatialSchema()
      */
-    protected SpatialSchema[] getPossibleSpatialSchemas(Map<String,Boolean> tables) {
+    protected SpatialSchema[] getPossibleSpatialSchemas(Map<String,Boolean> ignoredTables) {
         return SpatialSchema.values();
     }
 

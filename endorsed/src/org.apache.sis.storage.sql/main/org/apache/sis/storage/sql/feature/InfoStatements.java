@@ -72,6 +72,11 @@ import org.opengis.metadata.Identifier;
  *   <li>Finding a SRID from a Coordinate Reference System (CRS).</li>
  * </ul>
  *
+ * Some statements are used only during the {@linkplain Analyzer analysis} of the database schema.
+ * This is the case of the search for geometry information. Other statements are used every times
+ * that a query is executed. This is the case of the statements for fetching the CRS.
+ *
+ * <h2>Thread safety</h2>
  * This class is <strong>not</strong> thread-safe. Each instance should be used in a single thread.
  * Instances are created by {@link Database#createInfoStatements(Connection)}.
  *
@@ -108,8 +113,17 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * A statement for fetching geometric information for a specific column.
+     * May be {@code null} if not yet prepared or if the table does not exist.
+     * This field is valid if {@link #isAnalysisPrepared} is {@code true}.
      */
     protected PreparedStatement geometryColumns;
+
+    /**
+     * Whether the statements for schema analysis have been prepared.
+     * Includes {@link #geometryColumns}, but not fetching the CRS.
+     * A statement may still be null if the table has not been found.
+     */
+    protected boolean isAnalysisPrepared;
 
     /**
      * The statement for fetching CRS Well-Known Text (WKT) from a SRID code.
@@ -178,18 +192,23 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * Prepares the statement for fetching information about all geometry or raster columns in a specified table.
-     * This method is for {@link #completeIntrospection(TableReference, Map)} implementations.
+     * This method is for {@link #completeIntrospection(Analyzer, TableReference, Map)} implementations.
      *
-     * @param  table               name of the geometry table. Standard value is {@code "GEOMETRY_COLUMNS"}.
-     * @param  raster              whether the statement is for raster table instead of geometry table.
-     * @param  geomColNameColumn   column of geometry column name, or {@code null} for the standard value.
-     * @param  geomTypeColumn      column of geometry type, or {@code null} for the standard value, or "" for none.
-     * @return the prepared statement for querying the geometry table.
+     * @param  analyzer           the opaque temporary object used for analyzing the database schema.
+     * @param  table              name of the geometry table. Standard value is {@code "GEOMETRY_COLUMNS"}.
+     * @param  raster             whether the statement is for raster table instead of geometry table.
+     * @param  geomColNameColumn  column of geometry column name, or {@code null} for the standard value.
+     * @param  geomTypeColumn     column of geometry type, or {@code null} for the standard value, or "" for none.
+     * @return the prepared statement for querying the geometry table, or {@code null} if the table does not exist.
      * @throws SQLException if the statement cannot be created.
      */
-    protected final PreparedStatement prepareIntrospectionStatement(final String table, final boolean raster,
+    protected final PreparedStatement prepareIntrospectionStatement(
+            final Analyzer analyzer, final String table, final boolean raster,
             String geomColNameColumn, String geomTypeColumn) throws SQLException
     {
+        if (analyzer.skipInfoTable(table)) {
+            return null;
+        }
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
         final var sql = new SQLBuilder(database).append(SQLBuilder.SELECT);
         if (geomColNameColumn == null) {
@@ -236,30 +255,37 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * Gets all geometry and raster columns for the given table and sets information on the corresponding columns.
-     * Column instances in the {@code columns} map are modified in-place (the map itself is not modified).
-     * This method should be invoked before the {@link Column#valueGetter} field is set.
+     * Column instances in the {@code columns} map are modified in-place (the map content is not directly modified).
+     * This method should be invoked at least once before the {@link Column#valueGetter} field is set.
+     * It is invoked again for each table or query to analyze.
      *
-     * @param  source   the table for which to get all geometry columns.
-     * @param  columns  all columns for the specified table. Keys are column names.
+     * @param  analyzer  the opaque temporary object used for analyzing the database schema.
+     * @param  source    the table for which to get all geometry columns.
+     * @param  columns   all columns for the specified table. Keys are column names.
      * @throws DataStoreContentException if a logical error occurred in processing data.
      * @throws ParseException if the WKT cannot be parsed.
      * @throws SQLException if a SQL error occurred.
      */
-    public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
+    public void completeIntrospection(final Analyzer analyzer, final TableReference source, final Map<String,Column> columns)
+            throws Exception
+    {
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-        if (geometryColumns == null) {
-            geometryColumns = prepareIntrospectionStatement(schema.geometryColumns, false, null, null);
+        if (!isAnalysisPrepared) {
+            isAnalysisPrepared = true;
+            geometryColumns = prepareIntrospectionStatement(analyzer, schema.geometryColumns, false, null, null);
         }
         configureSpatialColumns(geometryColumns, source, columns, schema.typeEncoding);
     }
 
     /**
-     * Implementation of {@link #completeIntrospection(TableReference, Map)} for geometries,
-     * as a separated methods for allowing sub-classes to override above-cited method.
-     * May also be used for non-geometric columns such as rasters, in which case the
-     * {@code typeValueKind} argument shall be {@code null}.
+     * Sets information about the specified columns of the given table using the given query.
+     * This method is the implementation of {@link #completeIntrospection(Analyzer, TableReference, Map)},
+     * provided as a separated methods for allowing sub-classes to override the above-cited public method.
+     * This method is used for both geometric and non-geometric columns such as rasters, in which case the
+     * {@code typeValueKind} argument shall be {@code null}. The given {@code columnQuery} argument is the
+     * value returned by {@link #prepareIntrospectionStatement(Analyzer, String, boolean, String, String)}.
      *
-     * @param  columnQuery    a statement prepared by {@link #prepareIntrospectionStatement(String, boolean, String, String)}.
+     * @param  columnQuery    the statement for fetching information, or {@code null} if none.
      * @param  source         the table for which to get all geometry columns.
      * @param  columns        all columns for the specified table. Keys are column names.
      * @param  typeValueKind  {@code NUMERIC}, {@code TEXTUAL} or {@code null} if none.
@@ -275,6 +301,9 @@ public class InfoStatements implements Localized, AutoCloseable {
     protected final void configureSpatialColumns(final PreparedStatement columnQuery, final TableReference source,
             final Map<String,Column> columns, final GeometryTypeEncoding typeValueKind) throws Exception
     {
+        if (columnQuery == null) {
+            return;
+        }
         int p = 0;
         if (database.supportsCatalogs) setCatalogOrSchema(columnQuery, ++p, source.catalog);
         if (database.supportsSchemas)  setCatalogOrSchema(columnQuery, ++p, source.schema);

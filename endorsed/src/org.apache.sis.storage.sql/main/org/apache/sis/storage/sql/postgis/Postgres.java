@@ -197,7 +197,7 @@ public final class Postgres<G> extends Database<G> {
      * <p>The values in the map tells whether the table can be used as a sentinel value for
      * determining that the {@link SpatialSchema} enumeration value can be accepted.</p>
      *
-     * @param  tables  where to add names of tables that describe the spatial schema.
+     * @param  ignoredTables  where to add names of tables to ignore, together with whether they are sentinel tables.
      * @return the spatial schema convention supported by this database.
      */
     @Override

@@ -163,7 +163,7 @@ final class TableAnalyzer extends FeatureAnalyzer {
         }
         final InfoStatements spatialInformation = analyzer.spatialInformation;
         if (spatialInformation != null) {
-            spatialInformation.completeIntrospection(id, columns);
+            spatialInformation.completeIntrospection(analyzer, id, columns);
         }
         /*
          * Analyze the type of each column, which may be geometric as a consequence of above call.
