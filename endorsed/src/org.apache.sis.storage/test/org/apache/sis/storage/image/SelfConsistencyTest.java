@@ -56,7 +56,7 @@ public final class SelfConsistencyTest extends CoverageReadConsistency<WorldFile
     private static WorldFileStore openFile() throws IOException, DataStoreException {
         final URL url = WorldFileStoreTest.class.getResource("gradient.png");
         assertNotNull(url, "Test file not found.");
-        return new WorldFileStore(null, new StorageConnector(url));
+        return new WorldFileStore(new FormatFinder(null, new StorageConnector(url)));
     }
 
     /**

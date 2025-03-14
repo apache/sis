@@ -54,7 +54,7 @@ final class SingleImageStore extends WorldFileStore implements GridCoverageResou
      * @throws IOException if an error occurred while creating the image reader instance.
      */
     SingleImageStore(final FormatFinder format) throws DataStoreException, IOException {
-        super(format, true);
+        super(format);
     }
 
     /**

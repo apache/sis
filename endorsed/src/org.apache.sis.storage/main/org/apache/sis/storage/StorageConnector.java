@@ -18,7 +18,6 @@ package org.apache.sis.storage;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.IdentityHashMap;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
@@ -178,8 +177,8 @@ public class StorageConnector implements Serializable {
 
     /**
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
-     * telling that before resetting the {@code view}, we need to reset the {@code source} first. This flag should
-     * can be unset if any change in the position of {@code view} is immediately reflected in the position of
+     * telling that before resetting the {@code view}, we need to reset the {@code source} first. This flag can
+     * be unset if any change in the position of {@code view} is immediately reflected in the position of
      * {@code source}, and vice-versa.
      *
      * @see Coupled#cascadeOnReset()
@@ -188,8 +187,8 @@ public class StorageConnector implements Serializable {
 
     /**
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
-     * telling that {@code view} cannot be reset, so it should be set to {@code null} instead. This implies
-     * that a new view of the same type will be recreated next time it will be requested.
+     * telling that {@code view} cannot be reset, so it should be set to {@code null} instead. This implies that
+     * a new view of the same type will be recreated next time it will be requested.
      *
      * <p>When this flag is set, the {@link #CASCADE_ON_RESET} should usually be set at the same time.</p>
      */
@@ -1257,7 +1256,7 @@ public class StorageConnector implements Serializable {
             final ImageInputStream in = getStorageAs(ImageInputStream.class);
             if (in != null) {
                 in.mark();
-                final byte[] buffer = new byte[MINIMAL_BUFFER_SIZE];
+                final var buffer = new byte[MINIMAL_BUFFER_SIZE];
                 final int n = in.read(buffer);
                 in.reset();
                 if (n >= 1) {
@@ -1464,7 +1463,7 @@ public class StorageConnector implements Serializable {
     private DataSource createDataSource() throws DataStoreException {
         final URI uri = getStorageAs(URI.class);
         if (uri != null && Constants.JDBC.equalsIgnoreCase(uri.getScheme())) {
-            final var source = new URLDataSource(uri);
+            final DataSource source = new URLDataSource(uri);
             addView(DataSource.class, source, null, (byte) 0);
             return source;
         }
@@ -1638,13 +1637,16 @@ public class StorageConnector implements Serializable {
             Coupled c = views.get(DataOutput.class);
             views.put(ImageOutputStream.class, c);          // Share the same `Coupled` instance.
         } else {
+            final byte cascade;
             final ChannelDataOutput c = getStorageAs(ChannelDataOutput.class);
             if (c != null && c.channel instanceof ReadableByteChannel) {
                 asDataOutput = new ChannelImageOutputStream(c);
+                cascade = CASCADE_ON_RESET;
             } else {
                 asDataOutput = null;                        // Remember that there is no view.
+                cascade = 0;
             }
-            addView(ImageOutputStream.class, asDataOutput, ChannelDataOutput.class, (byte) 0);
+            addView(ImageOutputStream.class, asDataOutput, ChannelDataOutput.class, cascade);
         }
         return asDataOutput;
     }
@@ -1796,7 +1798,7 @@ public class StorageConnector implements Serializable {
          * Create a list of all views to close. The boolean value is TRUE if the view should be closed, or FALSE
          * if the view should be protected (not closed). FALSE values shall have precedence over TRUE values.
          */
-        final Map<AutoCloseable,Boolean> toClose = new IdentityHashMap<>(views.size());
+        final var toClose = new IdentityHashMap<AutoCloseable,Boolean>(views.size());
         for (Coupled c : views.values()) {
             Object v = c.view;
             if (v != view) {
@@ -1822,11 +1824,7 @@ public class StorageConnector implements Serializable {
         /*
          * Trim the map in order to keep only the views to close.
          */
-        for (final Iterator<Boolean> it = toClose.values().iterator(); it.hasNext();) {
-            if (Boolean.FALSE.equals(it.next())) {
-                it.remove();
-            }
-        }
+        toClose.values().removeIf((c) -> Boolean.FALSE.equals(c));
         /*
          * The "AutoCloseable.close() is not indempotent" problem
          * ------------------------------------------------------
@@ -1917,7 +1915,7 @@ public class StorageConnector implements Serializable {
         if (isClosed()) {
             return Resources.format(Resources.Keys.ClosedStorageConnector);
         }
-        final TreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
+        final var table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
         final TreeTable.Node root = table.getRoot();
         root.setValue(TableColumn.NAME,  Classes.getShortClassName(this));
         root.setValue(TableColumn.VALUE, getStorageName());
