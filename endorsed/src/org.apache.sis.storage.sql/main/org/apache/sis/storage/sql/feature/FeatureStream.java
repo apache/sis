@@ -311,7 +311,7 @@ final class FeatureStream extends DeferredStream<Feature> {
          * Build the full SQL statement here, without using `FeatureAdapter.sql`,
          * because we do not need to follow foreigner keys.
          */
-        final SQLBuilder sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT).append("COUNT(");
+        final var sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT).append("COUNT(");
         if (distinct) {
             String separator = "DISTINCT ";
             for (final Column attribute : table.attributes) {
@@ -401,7 +401,7 @@ final class FeatureStream extends DeferredStream<Feature> {
         final Connection connection = getConnection();
         setCloseHandler(connection);  // Executed only if `FeatureIterator` creation fails, discarded later otherwise.
         makeReadOnly(connection);
-        final FeatureIterator features = new FeatureIterator(table, connection, distinct, filter, sort, offset, count);
+        final var features = new FeatureIterator(table, connection, distinct, filter, sort, offset, count);
         setCloseHandler(features);
         return features;
     }

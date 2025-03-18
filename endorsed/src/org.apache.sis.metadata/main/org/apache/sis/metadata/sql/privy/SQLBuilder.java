@@ -299,6 +299,8 @@ public class SQLBuilder extends Syntax {
     /**
      * Appends a string as an escaped {@code LIKE} argument.
      * This method does not put any {@code '} character, and does not accept null argument.
+     * If the database does not have predefined wildcard characters, then the query result
+     * may contain false positives.
      *
      * <p>This method does not double the simple quotes of the given string on intent, because
      * it may be used in a {@code PreparedStatement}. If the simple quotes need to be doubled,
@@ -306,14 +308,20 @@ public class SQLBuilder extends Syntax {
      *
      * @param  value  the value to append.
      * @return this builder, for method call chaining.
+     *
+     * @see #escapeWildcards(String)
      */
     public final SQLBuilder appendWildcardEscaped(final String value) {
-        final int start = buffer.length();
-        buffer.append(value);
-        for (int i = buffer.length(); --i >= start;) {
-            final char c = buffer.charAt(i);
-            if (c == '_' || c == '%') {
-                buffer.insert(i, escape);
+        if (cannotEscapeWildcards()) {
+            buffer.append(value.replace("%", "_"));
+        } else {
+            final int start = buffer.length();
+            buffer.append(value);
+            for (int i = buffer.length(); --i >= start;) {
+                final char c = buffer.charAt(i);
+                if (c == '_' || c == '%') {
+                    buffer.insert(i, escape);
+                }
             }
         }
         return this;

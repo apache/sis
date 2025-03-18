@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.sql.feature;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -121,7 +120,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
                 ? table.database.createInfoStatements(connection) : null;
         String sql = adapter.sql;
         if (distinct || filter != null || sort != null || offset > 0 || count > 0) {
-            final SQLBuilder builder = new SQLBuilder(table.database).append(sql);
+            final var builder = new SQLBuilder(table.database).append(sql);
             if (distinct) {
                 builder.insertDistinctAfterSelect();
             }
@@ -293,7 +292,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
      * @return the feature as a singleton {@code Feature} or as a {@code Collection<Feature>}.
      */
     private Object fetchReferenced(final Feature owner) throws Exception {
-        final List<Feature> features = new ArrayList<>();
+        final var features = new ArrayList<Feature>();
         try (ResultSet r = statement.executeQuery()) {
             result = r;
             fetch(features::add, true);

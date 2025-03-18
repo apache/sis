@@ -98,13 +98,6 @@ public final class Analyzer {
     private final Map<String,String> uniqueStrings;
 
     /**
-     * The string to insert before wildcard characters ({@code '_'} or {@code '%'}) to escape.
-     * This is used by {@link #escape(String)} before to pass argument values (e.g. table name)
-     * to {@link DatabaseMetaData} methods expecting a pattern.
-     */
-    final String escape;
-
-    /**
      * The "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
      */
     private final String[] tableTypes;
@@ -163,7 +156,6 @@ public final class Analyzer {
             throws Exception
     {
         this.metadata      = metadata;
-        this.escape        = metadata.getSearchStringEscape();
         this.nameFactory   = DefaultNameFactory.provider();
         this.featureTables = new HashMap<>();
         this.uniqueStrings = new HashMap<>();

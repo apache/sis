@@ -50,8 +50,14 @@ public class Syntax {
     /**
      * The string that can be used to escape wildcard characters.
      * This is the value returned by {@link DatabaseMetaData#getSearchStringEscape()}.
+     * It may be null or empty if the database has no escape character, in which case
+     * the statement should be of the form {@code WHERE "column" LIKE ? ESCAPE '\'}
+     * (replace {@code '\'} by the desired escape character).
+     *
+     * @see #escapeWildcards(String)
+     * @see SQLBuilder#appendWildcardEscaped(String)
      */
-    protected final String escape;
+    final String escape;
 
     /**
      * Creates a new {@code Syntax} initialized from the given database metadata.
@@ -68,7 +74,7 @@ public class Syntax {
         } else {
             dialect = Dialect.ANSI;
             quote   = "\"";
-            escape  = "\\";
+            escape  = null;
         }
         this.quoteSchema = quoteSchema;
     }
@@ -83,5 +89,42 @@ public class Syntax {
         escape      = other.escape;
         quote       = other.quote;
         quoteSchema = other.quoteSchema;
+    }
+
+    /**
+     * Returns the given text with {@code '_'} and {@code '%'} characters escaped by the database-specific
+     * escape characters. This method should be invoked for escaping the values of all {@link DatabaseMetaData}
+     * method arguments having a name ending by {@code "Pattern"}. Note that not all arguments are patterns,
+     * please check carefully the {@link DatabaseMetaData} javadoc for each method.
+     *
+     * <h4>Example</h4>
+     * If a method expects an argument named {@code tableNamePattern}, then the value should be escaped
+     * if an exact match is desired. But if the argument name is only {@code tableName}, then the value
+     * should not be escaped.
+     *
+     * <h4>Missing escape characters</h4>
+     * Some databases do not provide an escape character. If the given {@code escape} is null or empty,
+     * then instead of escaping, this method will replace all occurrences of {@code '%'} by {@code '_'}.
+     * It will cause the database to return more metadata rows that desired. Callers should filter by
+     * comparing the table and schema name specified in each row against the original {@code name}.
+     *
+     * @param  text  the text to escape for use in a context equivalent to the {@code LIKE} statement.
+     * @return the given text with wildcard characters escaped.
+     */
+    public final String escapeWildcards(final String text) {
+        return SQLUtilities.escape(text, escape);
+    }
+
+    /**
+     * Returns {@code true} if the database can <em>not</em> escape wildcard characters.
+     * In such case, the string returned by {@link #escapeWildcards(String)} may produce
+     * false positive, and the callers need to apply additional filtering.
+     *
+     * <p>This is rarely true, but may happen with incomplete <abbr>JDBC</abbr> drivers.</p>
+     *
+     * @return whether the database can <em>not</em> escape wildcard characters.
+     */
+    public final boolean cannotEscapeWildcards() {
+        return (escape == null) || escape.isEmpty();
     }
 }

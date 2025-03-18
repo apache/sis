@@ -236,7 +236,7 @@ public class InfoStatements implements Localized, AutoCloseable {
     /**
      * Sets the parameter value for a table catalog or schema. Those parameters use the {@code LIKE} statement
      * in order to ignore the catalog or schema when it is not specified. A catalog or schema is not specified
-     * if the string is null or empty. The latter case may happens with some drivers with, for example,
+     * if the string is null or empty. The latter case may happen with some drivers with, for example,
      * materialized views.
      *
      * @param  columnQuery  the query where to set the parameter.

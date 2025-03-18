@@ -43,7 +43,6 @@ import org.apache.sis.metadata.sql.privy.Syntax;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -80,7 +79,7 @@ import org.opengis.metadata.citation.PresentationForm;
  * specialized methods or have non-standard behavior for some data types.</p>
  *
  * <h2>Specializations</h2>
- * Subclasses may be defined for some database engines. Methods that can be overridden are:
+ * Subclasses may be defined for some specific database drivers. Methods that can be overridden are:
  * <ul>
  *   <li>{@link #getPossibleSpatialSchemas(Map)}    for enumerating the spatial schema conventions that may be used.</li>
  *   <li>{@link #getMapping(Column)}                for adding column types to recognize.</li>
@@ -328,18 +327,6 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns the value of a {@code LIKE} statement with wildcard characters escaped.
-     * The wildcard characters are {@code '_'} and {@code '%'}. This method is invoked
-     * when an exact match for the given value is desired.
-     *
-     * @param  value  the {@code LIKE} pattern to search.
-     * @return the given pattern with wildcard characters escaped.
-     */
-    final String escapeWildcards(final String value) {
-        return SQLUtilities.escape(value, escape);
-    }
-
-    /**
      * Detects automatically which spatial schema is in use. Detects also the catalog name and schema name.
      * This method is invoked exactly once after construction and before the analysis of feature tables.
      * Various fields such as {@link #spatialSchema} are initialized by this method.
@@ -358,6 +345,7 @@ public class Database<G> extends Syntax  {
          */
         String crsTable = null;
         final var ignoredTables = new HashMap<String,Boolean>(8);
+        final boolean isSearchReliable = !cannotEscapeWildcards();
         final SpatialSchema[] candidates = getPossibleSpatialSchemas(ignoredTables);
         for (int i=0; i<candidates.length; i++) {
             final SpatialSchema convention = candidates[i];
@@ -386,13 +374,16 @@ public class Database<G> extends Syntax  {
                 // Unconditionally check table existence during the first iteration.
                 if (i == 0 || entry.getValue() == null) {
                     boolean exists = false;
-                    String table = escapeWildcards(entry.getKey());
-                    try (ResultSet reflect = metadata.getTables(null, null, table, tableTypes)) {
+                    final String table = entry.getKey();
+                    try (ResultSet reflect = metadata.getTables(null, null, escapeWildcards(table), tableTypes)) {
                         while (reflect.next()) {
-                            consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
-                            consistent &= consistent(schema,  schema  = reflect.getString(Reflection.TABLE_SCHEM));
-                            found |= !Boolean.FALSE.equals(entry.getValue());  // Accept `true` and `null` values.
-                            exists = true;
+                            // Double-check of the table name because not all software can escape wildcards.
+                            if (isSearchReliable || table.equals(reflect.getString(Reflection.TABLE_NAME))) {
+                                consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
+                                consistent &= consistent(schema,  schema  = reflect.getString(Reflection.TABLE_SCHEM));
+                                found |= !Boolean.FALSE.equals(entry.getValue());  // Accept `true` and `null` values.
+                                exists = true;
+                            }
                         }
                     }
                     entry.setValue(exists);
@@ -415,17 +406,21 @@ public class Database<G> extends Syntax  {
          * The preference order will be defined by the `CRSEncoding` enumeration order.
          */
         if (spatialSchema != null) {
-            final String schema = escapeWildcards(schemaOfSpatialTables);
-            final String table  = escapeWildcards(crsTable);
             for (Map.Entry<CRSEncoding, String> entry : spatialSchema.crsDefinitionColumn.entrySet()) {
                 String column = entry.getValue();
                 if (metadata.storesLowerCaseIdentifiers()) {
                     column = column.toLowerCase(Locale.US);
                 }
-                column = escapeWildcards(column);
-                try (ResultSet reflect = metadata.getColumns(catalogOfSpatialTables, schema, table, column)) {
-                    if (reflect.next()) {
-                        crsEncodings.add(entry.getKey());
+                try (ResultSet reflect = metadata.getColumns(catalogOfSpatialTables,    // No escape for this argument.
+                                             escapeWildcards(schemaOfSpatialTables),
+                                             escapeWildcards(crsTable),
+                                             escapeWildcards(column)))
+                {
+                    while (reflect.next()) {
+                        if (isSearchReliable || filterMetadata(reflect, schemaOfSpatialTables, crsTable, column)) {
+                            crsEncodings.add(entry.getKey());
+                            break;
+                        }
                     }
                 }
             }
@@ -570,6 +565,22 @@ public class Database<G> extends Syntax  {
             sql.appendIdentifier(schema).append('.');
         }
         sql.append(name);
+    }
+
+    /**
+     * Double-checks whether the metadata about a table or a column are for the item that we requested.
+     * We perform this double check because some database drivers have no predefined escape characters
+     * for wildcards. If any {@code String} argument is {@code null} or empty, it will be ignored.
+     *
+     * <p>Note that the catalog is not verified because the {@code catalog} argument in
+     * {@link DatabaseMetaData} is not a pattern.</p>
+     */
+    static boolean filterMetadata(ResultSet reflect, String schema, String table, String column)
+            throws SQLException
+    {
+        return (Strings.isNullOrEmpty(schema)  ||  schema.equals(reflect.getString(Reflection.TABLE_SCHEM))) &&
+               (Strings.isNullOrEmpty(table)   ||   table.equals(reflect.getString(Reflection.TABLE_NAME)))  &&
+               (Strings.isNullOrEmpty(column)  ||  column.equals(reflect.getString(Reflection.COLUMN_NAME)));
     }
 
     /**

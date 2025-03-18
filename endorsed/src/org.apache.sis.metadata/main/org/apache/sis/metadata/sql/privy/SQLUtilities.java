@@ -91,28 +91,37 @@ public final class SQLUtilities extends Static {
     }
 
     /**
-     * Returns the given pattern with {@code '_'} and {@code '%'} characters escaped by the database-specific
+     * Returns the given text with {@code '_'} and {@code '%'} characters escaped by the database-specific
      * escape characters. This method should be invoked for escaping the values of all {@link DatabaseMetaData}
-     * method arguments with a name ending by {@code "Pattern"}. Note that not all arguments are pattern; please
-     * checks carefully {@link DatabaseMetaData} javadoc for each method.
+     * method arguments having a name ending by {@code "Pattern"}. Note that not all arguments are patterns,
+     * please check carefully the {@link DatabaseMetaData} javadoc for each method.
      *
      * <h4>Example</h4>
-     * If a method expects an argument named {@code tableNamePattern},
-     * then that argument value should be escaped. But if the argument name is only {@code tableName},
-     * then the value should not be escaped.
+     * If a method expects an argument named {@code tableNamePattern}, then the value should be escaped
+     * if an exact match is desired. But if the argument name is only {@code tableName}, then the value
+     * should not be escaped.
      *
-     * @param  pattern  the pattern to escape, or {@code null} if none.
-     * @param  escape   value of {@link DatabaseMetaData#getSearchStringEscape()}.
-     * @return escaped strings, or the same instance as {@code pattern} if there are no characters to escape.
+     * <h4>Missing escape characters</h4>
+     * Some databases do not provide an escape character. If the given {@code escape} is null or empty,
+     * then instead of escaping, this method will replace all occurrences of {@code '%'} by {@code '_'}.
+     * It will cause the database to return more metadata rows that desired. Callers should filter by
+     * comparing the table and schema name specified in each row against the original {@code name}.
+     *
+     * @param  text    the text to escape for use in a context equivalent to the {@code LIKE} statement.
+     * @param  escape  value of {@link DatabaseMetaData#getSearchStringEscape()}. May be null or empty.
+     * @return the given text with wildcard characters escaped.
      */
-    public static String escape(final String pattern, final String escape) {
-        if (pattern != null) {
+    public static String escape(final String text, final String escape) {
+        if (text != null) {
+            if (escape == null || escape.isEmpty()) {
+                return text.replace("%", "_");
+            }
             StringBuilder buffer = null;
-            for (int i = pattern.length(); --i >= 0;) {
-                final char c = pattern.charAt(i);
+            for (int i = text.length(); --i >= 0;) {
+                final char c = text.charAt(i);
                 if (c == '_' || c == '%') {
                     if (buffer == null) {
-                        buffer = new StringBuilder(pattern);
+                        buffer = new StringBuilder(text);
                     }
                     buffer.insert(i, escape);
                 }
@@ -121,7 +130,7 @@ public final class SQLUtilities extends Static {
                 return buffer.toString();
             }
         }
-        return pattern;
+        return text;
     }
 
     /**

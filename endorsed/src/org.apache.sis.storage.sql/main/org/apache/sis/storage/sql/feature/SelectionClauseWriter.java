@@ -17,7 +17,6 @@
 package org.apache.sis.storage.sql.feature;
 
 import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -150,7 +149,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
      * @return a writer with unsupported functions removed.
      */
     final SelectionClauseWriter removeUnsupportedFunctions(final Database<?> database) {
-        final Map<String,SpatialOperatorName> unsupported = new HashMap<>();
+        final var unsupported = new HashMap<String, SpatialOperatorName>();
         try (Connection c = database.source.getConnection()) {
             final DatabaseMetaData metadata = c.getMetaData();
             /*
@@ -173,9 +172,9 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
              * Remove from above map all functions that are supported by the database.
              * This list is potentially large so we do not put those items in a map.
              */
-            final String pattern = (lowerCase ? "st_%" : "ST\\_%").replace("\\", metadata.getSearchStringEscape());
+            final String prefix = database.escapeWildcards(lowerCase ? "st_" : "ST_");
             try (ResultSet r = metadata.getFunctions(database.catalogOfSpatialTables,
-                                                     database.schemaOfSpatialTables, pattern))
+                                                     database.schemaOfSpatialTables, prefix + '%'))
             {
                 while (r.next()) {
                     unsupported.remove(r.getString("FUNCTION_NAME"));
