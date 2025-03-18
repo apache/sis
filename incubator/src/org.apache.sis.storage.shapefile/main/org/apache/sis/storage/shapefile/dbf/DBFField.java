@@ -161,14 +161,14 @@ public final class DBFField {
             case TYPE_INC :       valueClass = Object.class;  reader = this::readAutoIncrement; writer = this::writeAutoIncrement; break;
             case TYPE_FLOAT :     {
                 valueClass = Double.class;
-                reader = this::readNumber;         
-                writer = this::writeNumber; 
+                reader = this::readNumber;
+                writer = this::writeNumber;
                 format = NumberFormat.getNumberInstance(Locale.US);
                 format.setGroupingUsed(false);
                 format.setMaximumFractionDigits(fieldDecimals);
                 format.setMinimumFractionDigits(fieldDecimals);
                 break;
-            } 
+            }
             case TYPE_DOUBLE :    valueClass = Object.class;  reader = this::readDouble;        writer = this::writeDouble; break;
             case TYPE_OLE :       valueClass = Object.class;  reader = this::readOLE;           writer = this::writeOLE; break;
             default: throw new IllegalArgumentException("Unknown field type " + fieldType);
