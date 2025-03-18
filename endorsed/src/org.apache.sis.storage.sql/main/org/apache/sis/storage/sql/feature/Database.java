@@ -630,6 +630,9 @@ public class Database<G> extends Syntax  {
      *
      * @param  columnDefinition  information about the column to extract values from and expose through Java API.
      * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping,
+     *
+     * @see #getBinaryEncoding(Column)
+     * @see #getGeometryEncoding(Column)
      */
     protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
         /*
@@ -640,7 +643,7 @@ public class Database<G> extends Syntax  {
         final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
         return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS().orElse(null),
-                                    getBinaryEncoding(columnDefinition));
+                                    getBinaryEncoding(columnDefinition), getGeometryEncoding(columnDefinition));
     }
 
     /**
@@ -736,13 +739,29 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns an identifier of the way binary data are encoded by the JDBC driver.
+     * Returns an identifier of the way binary data are encoded by the <abbr>JDBC</abbr> driver.
+     * The default implementation returns {@link BinaryEncoding#RAW}.
      *
      * @param  columnDefinition  information about the column to extract binary values from.
      * @return how the binary data are returned by the JDBC driver.
+     *
+     * @see #forGeometry(Column)
      */
     protected BinaryEncoding getBinaryEncoding(final Column columnDefinition) {
         return BinaryEncoding.RAW;
+    }
+
+    /**
+     * Returns an identifier of the way geometries should be read and written.
+     * The default implementation returns {@link GeometryEncoding#WKB}.
+     *
+     * @param  columnDefinition  information about the column to extract geometry values from.
+     * @return how the geometry should be read or written (as text or as binary).
+     *
+     * @see #forGeometry(Column)
+     */
+    protected GeometryEncoding getGeometryEncoding(final Column columnDefinition) {
+        return GeometryEncoding.WKB;
     }
 
     /**

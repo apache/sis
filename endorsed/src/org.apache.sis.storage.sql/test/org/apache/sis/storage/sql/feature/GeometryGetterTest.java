@@ -65,7 +65,7 @@ public final class GeometryGetterTest extends TestCase {
     @SuppressWarnings("unchecked")
     private GeometryGetter<?,?> createReader(final GeometryLibrary library, final BinaryEncoding encoding) {
         GF = Geometries.factory(library);
-        return new GeometryGetter<>(GF, (Class) GF.rootClass, HardCodedCRS.WGS84, encoding);
+        return new GeometryGetter<>(GF, (Class) GF.rootClass, HardCodedCRS.WGS84, encoding, GeometryEncoding.WKB);
     }
 
     /**

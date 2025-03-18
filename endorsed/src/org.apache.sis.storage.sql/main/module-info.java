@@ -41,6 +41,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  * @version 1.5
  * @since   1.0
  */

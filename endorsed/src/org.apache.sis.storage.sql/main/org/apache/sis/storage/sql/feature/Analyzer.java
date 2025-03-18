@@ -45,6 +45,7 @@ import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.sql.postgis.Postgres;
+import org.apache.sis.storage.sql.duckdb.DuckDB;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.util.ArraysExt;
@@ -191,6 +192,7 @@ public final class Analyzer {
         final Dialect dialect = Dialect.guess(metadata);
         switch (dialect) {
             case POSTGRESQL: database = new Postgres<>(source, metadata, dialect, g, contentLocale, listeners, locks); break;
+            case DUCKDB:     database = new DuckDB<>  (source, metadata, dialect, g, contentLocale, listeners, locks); break;
             default:         database = new Database<>(source, metadata, dialect, g, contentLocale, listeners, locks); break;
         }
         ignoredTables = database.detectSpatialSchema(metadata, tableTypes);

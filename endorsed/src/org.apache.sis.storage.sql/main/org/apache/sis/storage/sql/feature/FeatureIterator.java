@@ -144,14 +144,19 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
             }
             sql = builder.appendFetchPage(offset, count).toString();
         }
-        result = connection.createStatement().executeQuery(sql);
-        dependencies = new FeatureIterator[adapter.dependencies.length];
-        statement = null;
+        /*
+         * Create the statement for the SQL query. The call to `createStatement()` should be at the end,
+         * after the call to `countRows(…)`, because some JDBC drivers close the statement when we ask
+         * for metadata (probably a bug, but not all JDBC drivers are mature).
+         */
         if (filter == null) {
             estimatedSize = Math.min(table.countRows(connection.getMetaData(), distinct, true), offset + count) - offset;
         } else {
             estimatedSize = 0;              // Cannot estimate the size if there is filtering conditions.
         }
+        result = connection.createStatement().executeQuery(sql);
+        dependencies = new FeatureIterator[adapter.dependencies.length];
+        statement = null;
     }
 
     /**

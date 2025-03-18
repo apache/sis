@@ -59,8 +59,8 @@ public final class RasterWriterTest extends TestCase {
      */
     private static void compareWriteResult(final TestRaster test) throws Exception {
         final Raster raster = test.createRaster();
-        final RasterWriter writer = new RasterWriter(null);
-        final ByteArrayOutputStream buffer = new ByteArrayOutputStream(test.length);
+        final var writer = new RasterWriter(null);
+        final var buffer = new ByteArrayOutputStream(test.length);
         final ChannelDataOutput output = test.output(buffer);
         writer.setGridToCRS(TestRaster.getGridGeometry());
         writer.write(raster, output);
