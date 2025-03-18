@@ -352,7 +352,7 @@ public class Database<G> extends Syntax  {
          */
         String crsTable = null;
         final var ignoredTables = new HashMap<String,Boolean>(8);
-        final boolean isSearchReliable = !cannotEscapeWildcards();
+        final boolean isSearchReliable = canEscapeWildcards();
         final SpatialSchema[] candidates = getPossibleSpatialSchemas(ignoredTables);
         for (int i=0; i<candidates.length; i++) {
             final SpatialSchema convention = candidates[i];

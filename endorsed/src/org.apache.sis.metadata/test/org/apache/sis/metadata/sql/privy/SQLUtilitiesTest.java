@@ -35,6 +35,17 @@ public final class SQLUtilitiesTest extends TestCase {
     }
 
     /**
+     * Tests {@link SQLUtilities#escape(String, String)}.
+     */
+    @Test
+    public void testEscape() {
+        assertEquals("foo",             SQLUtilities.escape("foo",          "\\"));
+        assertEquals("foo\\_biz\\%bar", SQLUtilities.escape("foo_biz%bar",  "\\"));
+        assertEquals("foo\\\\bar",      SQLUtilities.escape("foo\\bar",     "\\"));
+        assertEquals("foo#!#!bar#not",  SQLUtilities.escape("foo#!bar#not", "#!"));
+    }
+
+    /**
      * Tests {@link SQLUtilities#toLikePattern(String, int, int, boolean, boolean, StringBuilder)}.
      */
     @Test

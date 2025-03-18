@@ -104,9 +104,13 @@ public class Syntax {
      *
      * <h4>Missing escape characters</h4>
      * Some databases do not provide an escape character. If the given {@code escape} is null or empty,
-     * then instead of escaping, this method will replace all occurrences of {@code '%'} by {@code '_'}.
-     * It will cause the database to return more metadata rows that desired. Callers should filter by
+     * then this method conservatively returns the pattern unchanged, with the wildcards still active.
+     * It will cause the database to return more metadata rows than desired. Callers should filter by
      * comparing the table and schema name specified in each row against the original {@code name}.
+     *
+     * <p>Note: {@code '%'} could be replaced by {@code '_'} for reducing the number of false positives.
+     * However, if a database provides no escape character, maybe it does not support wildcards at all.
+     * Leaving the text unchanged and doing the filtering in the caller's code is more conservative.</p>
      *
      * @param  text  the text to escape for use in a context equivalent to the {@code LIKE} statement.
      * @return the given text with wildcard characters escaped.
@@ -116,15 +120,16 @@ public class Syntax {
     }
 
     /**
-     * Returns {@code true} if the database can <em>not</em> escape wildcard characters.
+     * Returns {@code false} if the database can <em>not</em> escape wildcard characters.
      * In such case, the string returned by {@link #escapeWildcards(String)} may produce
-     * false positive, and the callers need to apply additional filtering.
+     * false positives, and the caller needs to apply additional filtering.
      *
-     * <p>This is rarely true, but may happen with incomplete <abbr>JDBC</abbr> drivers.</p>
+     * <p>This method returns {@code true} for the vast majority of major databases,
+     * but it may return {@code false} with incomplete <abbr>JDBC</abbr> drivers.</p>
      *
-     * @return whether the database can <em>not</em> escape wildcard characters.
+     * @return whether the database can escape wildcard characters.
      */
-    public final boolean cannotEscapeWildcards() {
-        return (escape == null) || escape.isEmpty();
+    public final boolean canEscapeWildcards() {
+        return (escape != null) && !escape.isEmpty();
     }
 }

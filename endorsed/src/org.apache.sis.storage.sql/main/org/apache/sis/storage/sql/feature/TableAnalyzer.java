@@ -70,7 +70,7 @@ final class TableAnalyzer extends FeatureAnalyzer {
         this.dependencyOf = dependencyOf;
         this.tableEsc     = analyzer.database.escapeWildcards(id.table);
         this.schemaEsc    = analyzer.database.escapeWildcards(id.schema);
-        isSearchReliable = !analyzer.database.cannotEscapeWildcards()
+        isSearchReliable  = analyzer.database.canEscapeWildcards()
                 || (tableEsc == id.table && schemaEsc == id.schema);    // Identity checks are okay.
 
         try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(id.catalog, id.schema, id.table)) {

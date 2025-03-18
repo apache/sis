@@ -103,23 +103,25 @@ public final class SQLUtilities extends Static {
      *
      * <h4>Missing escape characters</h4>
      * Some databases do not provide an escape character. If the given {@code escape} is null or empty,
-     * then instead of escaping, this method will replace all occurrences of {@code '%'} by {@code '_'}.
-     * It will cause the database to return more metadata rows that desired. Callers should filter by
+     * then this method conservatively returns the pattern unchanged, with the wildcards still active.
+     * It will cause the database to return more metadata rows than desired. Callers should filter by
      * comparing the table and schema name specified in each row against the original {@code name}.
+     *
+     * <p>Note: {@code '%'} could be replaced by {@code '_'} for reducing the number of false positives.
+     * However, if a database provides no escape character, maybe it does not support wildcards at all.
+     * Leaving the text unchanged and doing the filtering in the caller's code is more conservative.</p>
      *
      * @param  text    the text to escape for use in a context equivalent to the {@code LIKE} statement.
      * @param  escape  value of {@link DatabaseMetaData#getSearchStringEscape()}. May be null or empty.
      * @return the given text with wildcard characters escaped.
      */
     public static String escape(final String text, final String escape) {
-        if (text != null) {
-            if (escape == null || escape.isEmpty()) {
-                return text.replace("%", "_");
-            }
+        if (text != null && escape != null && !escape.isEmpty()) {
+            final char escapeChar = escape.charAt(0);
             StringBuilder buffer = null;
             for (int i = text.length(); --i >= 0;) {
                 final char c = text.charAt(i);
-                if (c == '_' || c == '%') {
+                if (c == '_' || c == '%' || (c == escapeChar && text.startsWith(escape, i))) {
                     if (buffer == null) {
                         buffer = new StringBuilder(text);
                     }

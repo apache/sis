@@ -310,16 +310,16 @@ public class SQLBuilder extends Syntax {
      * @return this builder, for method call chaining.
      *
      * @see #escapeWildcards(String)
+     * @see #canEscapeWildcards()
      */
     public final SQLBuilder appendWildcardEscaped(final String value) {
-        if (cannotEscapeWildcards()) {
-            buffer.append(value.replace("%", "_"));
-        } else {
-            final int start = buffer.length();
-            buffer.append(value);
+        final int start = buffer.length();
+        buffer.append(value);
+        if (canEscapeWildcards()) {
+            final char escapeChar = escape.charAt(0);
             for (int i = buffer.length(); --i >= start;) {
                 final char c = buffer.charAt(i);
-                if (c == '_' || c == '%') {
+                if (c == '_' || c == '%' || (c == escapeChar && value.startsWith(escape, i))) {
                     buffer.insert(i, escape);
                 }
             }
