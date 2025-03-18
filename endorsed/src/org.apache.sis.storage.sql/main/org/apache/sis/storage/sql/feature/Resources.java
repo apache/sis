@@ -59,6 +59,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short AssumeUnsigned = 16;
 
         /**
+         * Cannot analyze fully the database schema because of incomplete metadata.
+         */
+        public static final short CanNotAnalyzeFully = 17;
+
+        /**
          * Cannot fetch a Coordinate Reference System (CRS) for SRID code {0}.
          */
         public static final short CanNotFetchCRS_1 = 8;

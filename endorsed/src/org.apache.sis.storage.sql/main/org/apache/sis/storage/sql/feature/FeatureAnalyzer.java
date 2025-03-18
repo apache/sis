@@ -219,7 +219,7 @@ abstract class FeatureAnalyzer {
         AttributeTypeBuilder<?> attribute = null;
         final boolean created = (isPrimaryKey || dependencies == null);
         if (created) {
-            final ValueGetter<?> getter = analyzer.setValueGetter(column);
+            final ValueGetter<?> getter = analyzer.setValueGetterOf(column);
             attribute = column.createAttribute(feature);
             /*
              * Some columns have special purposes: components of primary keys will be used for creating

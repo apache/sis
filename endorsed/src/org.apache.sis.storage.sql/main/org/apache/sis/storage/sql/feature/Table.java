@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.AbstractFeatureSet;
@@ -448,6 +449,11 @@ final class Table extends AbstractFeatureSet {
                         count = n;
                     }
                 }
+            }
+        } catch (SQLFeatureNotSupportedException e) {
+            if (!database.cannotCount) {
+                database.cannotCount = true;
+                database.listeners.warning(e);
             }
         }
         return count;

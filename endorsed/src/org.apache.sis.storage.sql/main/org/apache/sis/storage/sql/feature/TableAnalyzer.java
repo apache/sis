@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.SQLFeatureNotSupportedException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.util.privy.Strings;
@@ -76,6 +77,8 @@ final class TableAnalyzer extends FeatureAnalyzer {
             while (reflect.next()) {
                 primaryKey.add(analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME));
             }
+        } catch (SQLFeatureNotSupportedException e) {
+            analyzer.unavailableMetadata(e);
         }
         /*
          * Note: when a table contains no primary keys, we could still look for index columns
@@ -133,6 +136,14 @@ final class TableAnalyzer extends FeatureAnalyzer {
                 }
                 relations.add(relation);
             } while (!reflect.isClosed());
+        } catch (SQLFeatureNotSupportedException e) {
+            /*
+             * Some database implementations cannot not provide information about foreigner keys.
+             * We consider this limitation as non-fatal. The users will still see the table that,
+             * only their dependencies will not be visible. Instead, the foreigner key will appear
+             * as an ordinary attribute value.
+             */
+            analyzer.unavailableMetadata(e);
         }
         final int size = relations.size();
         return (size != 0) ? relations.toArray(new Relation[size]) : Relation.EMPTY;

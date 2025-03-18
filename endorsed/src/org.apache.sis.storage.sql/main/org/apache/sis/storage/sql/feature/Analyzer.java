@@ -27,10 +27,12 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Locale;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLFeatureNotSupportedException;
 import javax.sql.DataSource;
 import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
@@ -124,10 +126,10 @@ public final class Analyzer {
      * The last catalog and schema used for creating {@link #namespace}.
      * Used for determining if {@link #namespace} is still valid.
      */
-    private transient String catalog, schema;
+    private transient String lastCatalog, lastSchema;
 
     /**
-     * The namespace created with {@link #catalog} and {@link #schema}.
+     * The namespace created with {@link #lastCatalog} and {@link #lastSchema}.
      *
      * @see #namespace(String, String)
      */
@@ -137,6 +139,11 @@ public final class Analyzer {
      * User-specified modification to the features, or {@code null} if none.
      */
     SchemaModifier customizer;
+
+    /**
+     * Exception thrown when some metadata are not available, but the analysis can nevertheless continue.
+     */
+    private SQLFeatureNotSupportedException featureNotSupported;
 
     /**
      * Creates a new analyzer for a spatial database.
@@ -257,7 +264,21 @@ public final class Analyzer {
     }
 
     /**
-     * Reads a string from the given result set and return a unique instance of that string.
+     * Initializes the value getter of the given column. This method shall be invoked only after the geometry
+     * columns have been identified. This is invoked (indirectly) during {@link Table} construction.
+     */
+    final ValueGetter<?> setValueGetterOf(final Column column) {
+        ValueGetter<?> getter = database.getMapping(column);
+        if (getter == null) {
+            getter = database.getDefaultMapping();
+            warning(Resources.Keys.UnknownType_1, column.typeName);
+        }
+        column.valueGetter = getter;
+        return getter;
+    }
+
+    /**
+     * Reads a string from the given result set and returns a unique instance of that string.
      * This method should be invoked only for {@code String} instances that are going to be
      * stored in {@link Table} or {@link Relation} structures. There is no point to invoke
      * this method for example before to parse the string as a Boolean.
@@ -280,7 +301,7 @@ public final class Analyzer {
      * The namespace sets the name separator to {@code '.'} instead of {@code ':'}.
      */
     final NameSpace namespace(final String catalog, final String schema) {
-        if (!Objects.equals(this.schema, schema) || !Objects.equals(this.catalog, catalog)) {
+        if (!(Objects.equals(lastSchema, schema) && Objects.equals(lastCatalog, catalog))) {
             if (schema != null) {
                 final GenericName name;
                 if (catalog == null) {
@@ -292,8 +313,8 @@ public final class Analyzer {
             } else {
                 namespace = null;
             }
-            this.catalog = catalog;
-            this.schema  = schema;
+            lastCatalog = catalog;
+            lastSchema  = schema;
         }
         return namespace;
     }
@@ -357,7 +378,36 @@ public final class Analyzer {
     }
 
     /**
+     * Declares that some metadata cannot be fetched because on incomplete <abbr>JDBC</abbr> driver.
+     * This is invoked (indirectly) during {@link Table} construction.
+     * This method tries to avoid long chain of redundant exceptions.
+     *
+     * @param e the exception thrown by the <abbr>JDBC</abbr> driver.
+     */
+    final void unavailableMetadata(final SQLFeatureNotSupportedException e) {
+        if (featureNotSupported == null) {
+            featureNotSupported = e;
+        } else if (!equivalent(featureNotSupported, e)) {
+            for (final Throwable s : featureNotSupported.getSuppressed()) {
+                if (equivalent(s, e)) {
+                    return;
+                }
+            }
+            featureNotSupported.addSuppressed(e);
+        }
+    }
+
+    /**
+     * Returns whether two exceptions are considered equal for the purpose of warnings.
+     * Current implementation does not check the stack trace, because it can be costly.
+     */
+    private static boolean equivalent(final Throwable e1, final SQLException e2) {
+        return e1.getClass() == e2.getClass() && Objects.equals(e1.getMessage(), e2.getMessage());
+    }
+
+    /**
      * Reports a warning. Duplicated warnings will be ignored.
+     * This is invoked (indirectly) during {@link Table} construction.
      *
      * @param  key       one of {@link Resources.Keys} values.
      * @param  argument  the value to substitute to {0} tag in the warning message.
@@ -374,23 +424,14 @@ public final class Analyzer {
         for (final Table table : featureTables.values()) {
             table.setDeferredSearchTables(this, featureTables);
         }
+        if (featureNotSupported != null) {
+            LogRecord record = resources().getLogRecord(Level.WARNING, Resources.Keys.CanNotAnalyzeFully);
+            record.setThrown(featureNotSupported);
+            database.log(record);
+        }
         for (final ResourceInternationalString warning : warnings) {
             database.log(warning.toLogRecord(Level.WARNING));
         }
         return featureTables.values();
-    }
-
-    /**
-     * Initializes the value getter on the given column.
-     * This method shall be invoked only after geometry columns have been identified.
-     */
-    final ValueGetter<?> setValueGetter(final Column column) {
-        ValueGetter<?> getter = database.getMapping(column);
-        if (getter == null) {
-            getter = database.getDefaultMapping();
-            warning(Resources.Keys.UnknownType_1, column.typeName);
-        }
-        column.valueGetter = getter;
-        return getter;
     }
 }

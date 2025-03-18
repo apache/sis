@@ -180,6 +180,13 @@ public class Database<G> extends Syntax  {
     private boolean hasRaster;
 
     /**
+     * A flag for remembering that {@link SQLFeatureNotSupportedException} has already been reported
+     * during a count of the number of features. Used for avoiding to pollute the logs with the same
+     * warning repeated many times.
+     */
+    volatile boolean cannotCount;
+
+    /**
      * Catalog and schema of the {@code "GEOMETRY_COLUMNS"} and {@code "SPATIAL_REF_SYS"} tables,
      * or null or empty string if none. The actual table names depend on {@link #spatialSchema}.
      */

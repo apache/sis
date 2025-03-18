@@ -78,6 +78,10 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
 
     /**
      * Estimated number of remaining rows, or ≤ 0 if unknown.
+     * Zero is considered unknown (instead of only negative values)
+     * because some databases return 0 when they cannot count.
+     *
+     * @see Table#countRows(DatabaseMetaData, boolean, boolean)
      */
     private final long estimatedSize;
 
