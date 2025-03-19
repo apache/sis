@@ -489,7 +489,7 @@ public class InfoStatements implements Localized, AutoCloseable {
     private void log(final String method, final LogRecord warning) {
         if (warning != null) {
             warning.setLoggerName(Modules.SQL);
-            warning.setSourceClassName(getClass().getName());
+            warning.setSourceClassName(getClass().getCanonicalName());
             warning.setSourceMethodName(method);
             database.listeners.warning(warning);
         }
@@ -522,7 +522,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * responsible for holding a lock. It may be a read lock or write lock depending
      * on the {@link Connection#isReadOnly()} value.
      *
-     * @param  crs     the CRS for which to find a SRID, or {@code null}.
+     * @param  crs  the CRS for which to find a SRID, or {@code null}.
      * @return SRID for the given CRS, or 0 if the given CRS was null.
      * @throws Exception if an SQL error, parsing error or other error occurred.
      */

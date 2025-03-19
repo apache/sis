@@ -162,6 +162,7 @@ public final class GeometryGetterTest extends TestCase {
     public static CoordinateReferenceSystem getExpectedCRS(final int srid) throws FactoryException {
         final String code;
         switch (srid) {
+            case 0:    return null;
             case 3395: code = "EPSG:3395"; break;
             case 4326: return CommonCRS.WGS84.normalizedGeographic();
             default:   throw new AssertionError(srid);

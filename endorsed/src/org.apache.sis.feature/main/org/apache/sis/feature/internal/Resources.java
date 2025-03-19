@@ -337,6 +337,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short MismatchedValueClass_3 = 48;
 
         /**
+         * Mixed geometry implementations from two libraries: {0} and {1}.
+         */
+        public static final short MixedGeometryImplementation_2 = 91;
+
+        /**
          * No category for value {0}.
          */
         public static final short NoCategoryForValue_1 = 49;

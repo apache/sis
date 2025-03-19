@@ -231,7 +231,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     @SuppressWarnings("unchecked")
     final boolean write(final SelectionClause sql, final Filter<? super Feature> filter) {
         visit((Filter<Feature>) filter, sql);
-        return sql.isInvalid;
+        return sql.isInvalid();
     }
 
     /**
@@ -243,7 +243,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
      */
     private boolean write(final SelectionClause sql, final Expression<Feature, ?> expression) {
         visit(expression, sql);
-        return sql.isInvalid;
+        return sql.isInvalid();
     }
 
     /**
@@ -387,7 +387,8 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     /**
      * Appends a function name with an arbitrary number of parameters (potentially zero).
      * This method stops immediately if a parameter cannot be expressed in SQL, leaving
-     * the trailing part of the SQL in an invalid state.
+     * the trailing part of the SQL in an invalid state. Callers should check if this is
+     * the case by invoking {@link SelectionClause#isInvalid()} after this method call.
      */
     private final class Function implements BiConsumer<Filter<Feature>, SelectionClause> {
         /** Name the function. */
@@ -398,10 +399,27 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
             this.name = name;
         }
 
-        /** Writes the function as an SQL statement. */
+        /**
+         * Writes the function as an SQL statement. The function is usually spatial (with geometry operands),
+         * but not necessarily. If the given {@code filter} contains geometry operands specified as literal,
+         * {@link org.apache.sis.filter.Optimization} should have already transformed the literals to the CRS
+         * of the geometry column when those CRS are known. Therefore, it should not be needed to perform any
+         * geometry transformation in this method.
+         */
         @Override public void accept(final Filter<Feature> filter, final SelectionClause sql) {
-            sql.append(name);
-            writeParameters(sql, filter.getExpressions(), ", ", false);
+            sql.appendSpatialFunction(name);
+            final List<Expression<Feature, ?>> expressions = filter.getExpressions();
+            if (SelectionClause.REPLACE_UNSPECIFIED_CRS) {
+                for (Expression<Feature,?> exp : expressions) {
+                    if (exp instanceof ValueReference<?,?>) {
+                        if (sql.acceptColumnCRS((ValueReference<Feature,?>) exp)) {
+                            break;
+                        }
+                    }
+                }
+            }
+            writeParameters(sql, expressions, ", ", false);
+            sql.clearColumnCRS();
         }
     }
 }

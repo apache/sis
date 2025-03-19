@@ -190,7 +190,7 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
         final Logger logger = getLogger();
         final LogRecord record = new LogRecord(Level.WARNING, getLocalizedMessage(exception));
         record.setLoggerName(logger.getName());
-        record.setSourceClassName(getClass().getName());
+        record.setSourceClassName(getClass().getCanonicalName());
         record.setSourceMethodName(method);
         record.setThrown(exception);
         logger.log(record);

@@ -104,7 +104,7 @@ public abstract class GeometryTransform {
      * @throws TransformException if an error occurred while transforming a geometry.
      */
     public MultiPoint transform(final MultiPoint geom) throws TransformException {
-        final Point[] subs = new Point[geom.getNumGeometries()];
+        final var subs = new Point[geom.getNumGeometries()];
         for (int i = 0; i < subs.length; i++) {
             subs[i] = transform((Point) geom.getGeometryN(i));
         }
@@ -133,7 +133,7 @@ public abstract class GeometryTransform {
      * @throws TransformException if an error occurred while transforming a geometry.
      */
     public MultiLineString transform(final MultiLineString geom) throws TransformException {
-        final LineString[] subs = new LineString[geom.getNumGeometries()];
+        final var subs = new LineString[geom.getNumGeometries()];
         for (int i = 0; i < subs.length; i++) {
             subs[i] = transform((LineString) geom.getGeometryN(i));
         }
@@ -163,7 +163,7 @@ public abstract class GeometryTransform {
      */
     public Polygon transform(final Polygon geom) throws TransformException {
         final LinearRing exterior = transform(geom.getExteriorRing());
-        final LinearRing[] holes = new LinearRing[geom.getNumInteriorRing()];
+        final var holes = new LinearRing[geom.getNumInteriorRing()];
         for (int i = 0; i < holes.length; i++) {
             holes[i] = transform(geom.getInteriorRingN(i));
         }
@@ -179,7 +179,7 @@ public abstract class GeometryTransform {
      * @throws TransformException if an error occurred while transforming a geometry.
      */
     public MultiPolygon transform(final MultiPolygon geom) throws TransformException {
-        final Polygon[] subs = new Polygon[geom.getNumGeometries()];
+        final var subs = new Polygon[geom.getNumGeometries()];
         for (int i = 0; i < subs.length; i++) {
             subs[i] = transform((Polygon) geom.getGeometryN(i));
         }
@@ -195,7 +195,7 @@ public abstract class GeometryTransform {
      * @throws TransformException if an error occurred while transforming a geometry.
      */
     public GeometryCollection transform(final GeometryCollection geom) throws TransformException {
-        final Geometry[] subs = new Geometry[geom.getNumGeometries()];
+        final var subs = new Geometry[geom.getNumGeometries()];
         for (int i = 0; i < subs.length; i++) {
             subs[i] = transform(geom.getGeometryN(i));
         }

@@ -421,7 +421,7 @@ final class Table extends AbstractFeatureSet {
         if (query != null) {
             sql.append('(').append(query).append(") AS USER_QUERY");
         } else {
-            sql.appendIdentifier(name.catalog, name.schema, name.table);
+            sql.appendIdentifier(name.catalog, name.schema, name.table, true);
         }
     }
 

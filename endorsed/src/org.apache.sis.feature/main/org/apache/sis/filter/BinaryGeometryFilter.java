@@ -120,7 +120,7 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
             if (value != null) {
                 final GeometryWrapper gt = context.transform(value);
                 if (gt != value) {
-                    final Expression<R, GeometryWrapper> tr = new LeafExpression.Transformed<>(gt, literal);
+                    final var tr = new LeafExpression.Transformed<R, GeometryWrapper>(gt, literal);
                     switch (index) {
                         case 0:  expression1 = tr; break;
                         case 1:  expression2 = tr; break;

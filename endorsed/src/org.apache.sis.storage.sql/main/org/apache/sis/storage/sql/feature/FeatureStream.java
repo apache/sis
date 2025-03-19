@@ -35,6 +35,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
 import org.apache.sis.filter.privy.SortByComparator;
+import org.apache.sis.filter.privy.WarningEvent;
 import org.apache.sis.storage.DataStoreException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -177,17 +178,22 @@ final class FeatureStream extends DeferredStream<Feature> {
          * if we have a "F₀ AND F₁ AND F₂" chain, it is possible to have some Fₙ as SQL statements and
          * other Fₙ executed in Java code.
          */
-        final Optimization optimization = new Optimization();
-        optimization.setFeatureType(table.featureType);
         Stream<Feature> stream = this;
-        for (final Filter<? super Feature> filter : optimization.applyAndDecompose((Filter<? super Feature>) predicate)) {
-            if (filter == Filter.include()) continue;
-            if (filter == Filter.exclude()) return empty();
-            if (!selection.tryAppend(filterToSQL, filter)) {
-                // Delegate to Java code all filters that we cannot translate to SQL statement.
-                stream = super.filter(filter);
-                hasPredicates = true;
+        try {
+            WarningEvent.LISTENER.set(selection);
+            final var optimization = new Optimization();
+            optimization.setFeatureType(table.featureType);
+            for (final Filter<? super Feature> filter : optimization.applyAndDecompose((Filter<? super Feature>) predicate)) {
+                if (filter == Filter.include()) continue;
+                if (filter == Filter.exclude()) return empty();
+                if (!selection.tryAppend(filterToSQL, filter)) {
+                    // Delegate to Java code all filters that we cannot translate to SQL statement.
+                    stream = super.filter(filter);
+                    hasPredicates = true;
+                }
             }
+        } finally {
+            WarningEvent.LISTENER.remove();
         }
         return stream;
     }
@@ -323,12 +329,15 @@ final class FeatureStream extends DeferredStream<Feature> {
             sql.appendIdentifier(table.attributes[0].label);
         }
         table.appendFromClause(sql.append(')'));
-        if (selection != null && !selection.isEmpty()) {
-            sql.append(" WHERE ").append(selection.toString());
-        }
         lock(table.database.transactionLocks);
         try (Connection connection = getConnection()) {
             makeReadOnly(connection);
+            if (selection != null) {
+                final String filter = selection.query(connection, null);
+                if (filter != null) {
+                    sql.append(" WHERE ").append(filter);
+                }
+            }
             try (Statement st = connection.createStatement();
                  ResultSet rs = st.executeQuery(sql.toString()))
             {
@@ -337,7 +346,7 @@ final class FeatureStream extends DeferredStream<Feature> {
                     if (!rs.wasNull()) return n;
                 }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw cannotExecute(e);
         } finally {
             unlock();
@@ -394,15 +403,13 @@ final class FeatureStream extends DeferredStream<Feature> {
      */
     @Override
     protected Spliterator<Feature> createSourceIterator() throws Exception {
-        final String filter = (selection != null && !selection.isEmpty()) ? selection.toString() : null;
-        selection = null;             // Let the garbage collector do its work.
-
         lock(table.database.transactionLocks);
         final Connection connection = getConnection();
         setCloseHandler(connection);  // Executed only if `FeatureIterator` creation fails, discarded later otherwise.
         makeReadOnly(connection);
-        final var features = new FeatureIterator(table, connection, distinct, filter, sort, offset, count);
+        final var features = new FeatureIterator(table, connection, distinct, selection, sort, offset, count);
         setCloseHandler(features);
+        selection = null;             // Let the garbage collector do its work.
         return features;
     }
 

@@ -159,27 +159,52 @@ public class SQLBuilder extends Syntax {
     /**
      * Appends an identifier between quote characters.
      *
-     * @param  identifier  the identifier to append.
+     * @param  name  the identifier to append.
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder appendIdentifier(final String identifier) {
-        buffer.append(quote).append(identifier).append(quote);
+    public final SQLBuilder appendIdentifier(final String name) {
+        buffer.append(quote).append(name).append(quote);
         return this;
     }
 
     /**
      * Appends an identifier for an element in the given schema.
+     * The following rules apply:
      * <ul>
      *   <li>The given schema will be written only if non-null.</li>
-     *   <li>The given schema will be quoted only if {@code quoteSchema} is {@code true}.</li>
-     *   <li>The given identifier is always quoted.</li>
+     *   <li>The given schema will be quoted only if {@link #quoteSchema} is {@code true}.</li>
+     *   <li>The given name is always quoted.</li>
      * </ul>
      *
-     * @param  schema      the schema, or {@code null} or empty if none.
-     * @param  identifier  the identifier to append.
+     * @param  schema  the schema, or {@code null} or empty if none.
+     * @param  name    the name part of the identifier to append.
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder appendIdentifier(final String schema, final String identifier) {
+    public final SQLBuilder appendIdentifier(final String schema, final String name) {
+        return appendIdentifier(null, schema, name, true);
+    }
+
+    /**
+     * Appends an identifier for an element in the given schema and catalog.
+     * The schema is quoted only if {@link #quoteSchema} is {@code true}.
+     * The name part is quoted only if {@code quoteName} is {@code true}.
+     * Unquoted names are useful when the name is for built-in functions,
+     * which often use the lower/upper case convention of the database.
+     *
+     * @param  catalog    the catalog, or {@code null} or empty if none.
+     * @param  schema     the schema, or {@code null} or empty if none.
+     * @param  name       the name part of the identifier to append.
+     * @param  quoteName  whether to quote the name part.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder appendIdentifier(final String catalog, final String schema, final String name, final boolean quoteName) {
+        if (catalog != null && !catalog.isEmpty()) {
+            appendIdentifier(catalog);
+            buffer.append('.');
+            if (schema == null || schema.isEmpty()) {
+                buffer.append(quote).append(quote).append('.');
+            }
+        }
         if (schema != null && !schema.isEmpty()) {
             if (quoteSchema) {
                 appendIdentifier(schema);
@@ -188,26 +213,12 @@ public class SQLBuilder extends Syntax {
             }
             buffer.append('.');
         }
-        return appendIdentifier(identifier);
-    }
-
-    /**
-     * Appends an identifier for an element in the given schema and catalog.
-     *
-     * @param  catalog     the catalog, or {@code null} or empty if none.
-     * @param  schema      the schema, or {@code null} or empty if none.
-     * @param  identifier  the identifier to append.
-     * @return this builder, for method call chaining.
-     */
-    public final SQLBuilder appendIdentifier(final String catalog, final String schema, final String identifier) {
-        if (catalog != null && !catalog.isEmpty()) {
-            appendIdentifier(catalog);
-            buffer.append('.');
-            if (schema == null) {
-                buffer.append(quote).append(quote).append('.');
-            }
+        if (quoteName) {
+            return appendIdentifier(name);
+        } else {
+            buffer.append(name);
+            return this;
         }
-        return appendIdentifier(schema, identifier);
     }
 
     /**

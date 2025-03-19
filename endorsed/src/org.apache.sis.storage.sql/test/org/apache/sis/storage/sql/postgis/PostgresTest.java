@@ -30,6 +30,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Method;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.identification.Identification;
@@ -46,7 +48,9 @@ import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.storage.sql.SimpleFeatureStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.sql.feature.BinaryEncoding;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.referencing.CommonCRS;
@@ -129,8 +133,8 @@ public final class PostgresTest extends TestCase {
             database.executeSQL(List.of(resource("SpatialFeatures.sql")));
             final var connector = new StorageConnector(database.source);
             connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.JTS);
-            final ResourceDefinition table = ResourceDefinition.table(null, SQLStoreTest.SCHEMA, "SpatialData");
-            try (SimpleFeatureStore store = new SimpleFeatureStore(new SQLStoreProvider(), connector, table)) {
+            final var table = ResourceDefinition.table(null, SQLStoreTest.SCHEMA, "SpatialData");
+            try (var store = new SimpleFeatureStore(new SQLStoreProvider(), connector, table)) {
                 validate(store.getMetadata());
                 /*
                  * Invoke the private `model()` method. We have to use reflection because the class
@@ -151,12 +155,9 @@ public final class PostgresTest extends TestCase {
                  * Tests through public API.
                  */
                 final FeatureSet resource = store.findResource("SpatialData");
-                try (Stream<Feature> features = resource.features(false)) {
-                    features.forEach(PostgresTest::validate);
-                }
-                final Envelope envelope = resource.getEnvelope().get();
-                assertEquals(envelope.getMinimum(0), -72, 1);
-                assertEquals(envelope.getMaximum(1),  43, 1);
+                testAllFeatures(resource);
+                testFilteredFeatures(resource, false);
+                testFilteredFeatures(resource, true);
             }
         }
     }
@@ -183,7 +184,7 @@ public final class PostgresTest extends TestCase {
      * @throws Exception if an error occurred while testing the database.
      */
     private static void testGeometryGetter(final ExtendedInfo info, final Connection connection) throws Exception {
-        final GeometryGetterTest test = new GeometryGetterTest();
+        final var test = new GeometryGetterTest();
         test.testFromDatabase(connection, info, BinaryEncoding.HEXADECIMAL);
     }
 
@@ -193,8 +194,8 @@ public final class PostgresTest extends TestCase {
     private static void testRasterReader(final TestRaster test, final ExtendedInfo info, final Connection connection)
             throws Exception
     {
-        final BinaryEncoding encoding = BinaryEncoding.HEXADECIMAL;
-        final RasterReader reader = new RasterReader(info);
+        final var encoding = BinaryEncoding.HEXADECIMAL;
+        final var reader = new RasterReader(info);
         try (PreparedStatement stmt = connection.prepareStatement("SELECT image FROM features.\"SpatialData\" WHERE filename=?")) {
             stmt.setString(1, test.filename);
             final ResultSet r = stmt.executeQuery();
@@ -203,6 +204,62 @@ public final class PostgresTest extends TestCase {
             final var input = new ChannelDataInput(test.filename, channel, ByteBuffer.allocate(50), false);
             RasterReaderTest.compareReadResult(test, reader, input);
             assertFalse(r.next());
+        }
+    }
+
+    /**
+     * Tests iterating over all features without filters.
+     * Opportunistically verifies also the bounding boxes of all features.
+     *
+     * @param  resource  the set of all features.
+     * @throws DataStoreException if an error occurred while fetching the envelope of feature instances.
+     */
+    private static void testAllFeatures(final FeatureSet resource) throws DataStoreException {
+        final Envelope envelope = resource.getEnvelope().get();
+        assertEquals(-72, envelope.getMinimum(0), 1);
+        assertEquals( 43, envelope.getMaximum(1), 1);
+        try (Stream<Feature> features = resource.features(false)) {
+            features.forEach(PostgresTest::validate);
+        }
+        try (Stream<Feature> features = resource.features(false)) {
+            assertEquals(8, features.count());
+        }
+    }
+
+    /**
+     * Tests iterating over features with a filter applied, with our without coordinate operation.
+     * The filter is {@code ST_Intersects(geometry, literal)} where the literal is a polygon.
+     * The coordinate operation is simply an axis swapping.
+     *
+     * @param  resource   the set of all features.
+     * @param  transform  whether to apply a coordinate operation.
+     * @throws Exception if an error occurred while fetching the envelope of feature instances.
+     */
+    private static void testFilteredFeatures(final FeatureSet resource, final boolean transform) throws Exception {
+        final Coordinate[] coordinates = {
+            new Coordinate(-72, 42),
+            new Coordinate(-71, 42),
+            new Coordinate(-71, 43),
+            new Coordinate(-72, 43),
+            new Coordinate(-72, 42)
+        };
+        if (transform) {
+            for (Coordinate c : coordinates) {
+                double swp = c.x;
+                c.x = c.y;
+                c.y = swp;
+            }
+        }
+        final Geometry geom = new GeometryFactory().createPolygon(coordinates);
+        if (transform) {
+            JTS.setCoordinateReferenceSystem(geom, CommonCRS.WGS84.geographic());
+        } else {
+            geom.setSRID(4326);
+        }
+        final var factory = DefaultFilterFactory.forFeatures();
+        final var filter = factory.intersects(factory.property("geom4326"), factory.literal(geom));
+        try (Stream<Feature> features = resource.features(false).filter(filter)) {
+            assertEquals(4, features.count());
         }
     }
 
@@ -222,8 +279,15 @@ public final class PostgresTest extends TestCase {
                 assertSame(CommonCRS.WGS84.normalizedGeographic(), raster.getCoordinateReferenceSystem());
                 return;
             }
+            case "point-nocrs": {
+                var p = (Point) geometry;
+                assertEquals(3, p.getX());
+                assertEquals(4, p.getY());
+                geomSRID = 0;
+                break;
+            }
             case "point-prj": {
-                final Point p = (Point) geometry;
+                var p = (Point) geometry;
                 assertEquals(2, p.getX());
                 assertEquals(3, p.getY());
                 geomSRID = 3395;
@@ -239,9 +303,13 @@ public final class PostgresTest extends TestCase {
         try {
             final CoordinateReferenceSystem expected = GeometryGetterTest.getExpectedCRS(geomSRID);
             final CoordinateReferenceSystem actual = JTS.getCoordinateReferenceSystem(geometry);
-            assertNotNull(actual);
-            if (expected != null) {
-                assertEquals(expected, actual);
+            if (geomSRID == 0) {
+                assertNull(actual);
+            } else {
+                assertNotNull(actual);
+                if (expected != null) {
+                    assertEquals(expected, actual);
+                }
             }
         } catch (FactoryException e) {
             throw new AssertionError(e);

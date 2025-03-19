@@ -79,7 +79,7 @@ public final class JTSTest extends TestCase {
          */
         geometry.setUserData(null);
         geometry.setSRID(4326);
-        assertEquals(CommonCRS.WGS84.geographic(), JTS.getCoordinateReferenceSystem(geometry));
+        assertEquals(CommonCRS.WGS84.normalizedGeographic(), JTS.getCoordinateReferenceSystem(geometry));
     }
 
     /**

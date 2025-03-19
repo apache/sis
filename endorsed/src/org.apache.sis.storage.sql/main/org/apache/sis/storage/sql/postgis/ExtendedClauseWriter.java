@@ -26,6 +26,11 @@ import org.opengis.filter.SpatialOperatorName;
  * Converter from filters/expressions to the {@code WHERE} part of SQL statement
  * with PostGIS-specific syntax where useful.
  *
+ * This class adds the search by bounding box using the {@code &&} operator.
+ * Note that contrarily to standard operators such as {@code ST_Intersects},
+ * the {@code &&} operator does not verify the <abbr>CRS</abbr>.
+ * No error message is raised is case of mismatched CRS.
+ *
  * @author  Alexis Manin (Geomatys)
  */
 final class ExtendedClauseWriter extends SelectionClauseWriter {

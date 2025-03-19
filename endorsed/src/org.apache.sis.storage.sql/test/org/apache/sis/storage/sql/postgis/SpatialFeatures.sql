@@ -11,6 +11,7 @@ SET search_path TO public;
 CREATE TABLE features."SpatialData" (
     "filename" VARCHAR(20) NOT NULL,
     "geometry" GEOMETRY,
+    "geom4326" GEOMETRY(Geometry, 4326),
     "image"    RASTER,
 
     CONSTRAINT "PK_SpatialData" PRIMARY KEY ("filename")
@@ -32,6 +33,7 @@ INSERT INTO features."SpatialData" ("filename", "image") VALUES
 -- Geometries with arbitrary coordinate values.
 --
 INSERT INTO features."SpatialData" ("filename", "geometry") VALUES
+  ('point-nocrs', ST_GeomFromText('POINT(3 4)')),
   ('point-prj',   ST_GeomFromText('POINT(2 3)', 3395)),
   ('linestring',  ST_GeomFromText('LINESTRING(-71.160281 42.258729,-71.160837 42.259113,-71.161144 42.25932)', 4326)),
   ('polygon-prj', ST_GeomFromText('POLYGON((0 0,0 1,1 1,1 0,0 0))', 3395)),
@@ -58,6 +60,12 @@ INSERT INTO features."SpatialData" ("filename", "geometry") VALUES
    ||   '-71.1031880899493 42.3152774590236)),'
    || '((-71.1043632495873 42.3151131085460,-71.1043583974082 42.3151211109857,-71.1043443253471 42.315067601583,'
    ||   '-71.1043850704575 42.3150793250568,-71.1043632495873 42.315113108546)))', 4326));
+
+
+--
+-- A column where all geometries are in the same CRS.
+--
+UPDATE features."SpatialData" SET geom4326 = geometry WHERE filename NOT LIKE '%-prj';
 
 
 --

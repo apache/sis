@@ -41,7 +41,11 @@ public class Syntax {
 
     /**
      * Whether the schema name should be written between quotes. If {@code false},
-     * we will let the database engine uses its default lower case / upper case policy.
+     * Apache SIS lets the database engine uses its default lower case / upper case policy.
+     * This flag is usually {@code true} when the schema was specified by the user or has
+     * been discovered from database metadata. This flag is {@code false} when the schema
+     * has been created by an Apache SIS script, which intentionally uses unquoted schema
+     * for integration with database conventions.
      *
      * @see SQLBuilder#appendIdentifier(String, String)
      */

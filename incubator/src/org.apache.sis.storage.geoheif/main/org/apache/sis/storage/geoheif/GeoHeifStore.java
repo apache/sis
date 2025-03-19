@@ -318,7 +318,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * Logs a warning emitted (usually indirectly) by {@link #components()}.
      */
     final void warning(final LogRecord record) {
-        record.setSourceClassName(GeoHeifStore.class.getSimpleName());
+        record.setSourceClassName(GeoHeifStore.class.getCanonicalName());
         record.setSourceMethodName("components");
         listeners.warning(record);
     }
