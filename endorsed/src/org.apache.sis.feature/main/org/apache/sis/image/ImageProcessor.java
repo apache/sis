@@ -34,6 +34,9 @@ import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRenderedImage;
+import java.util.ArrayList;
+import java.util.function.DoubleToIntFunction;
+import java.util.function.Predicate;
 import javax.measure.Quantity;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -1543,32 +1546,55 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Generates area polygons at the specified ranges computed from data provided by the given image.
+     * Generates area polygons by grouping samples matching given predicate computed from data provided by the given image.
      * Polygons will be computed for every bands in the given image.
-     * For each band, the result is given as a {@code Map} where keys are the specified {@code ranges}
-     * and values are the polygons at the associated range.
-     * If there are no polygons for a given level, there will be no corresponding entry in the map.
-     * The provided {@code ranges} must not overlap each other.
+     * For each band, the result is given as a {@code List} if polygon matching the predicate.
      *
      * @param  data       image providing source values.
-     * @param  ranges    value ranges for which to compute polygones. An array should be provided for each band.
-     *                    If there is more bands than {@code ranges.length}, the last array is reused for
-     *                    all remaining bands.
+     * @param  predicates  predicate to indicate if a value is to be included in the shape
      * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
      *                    Integer source coordinates are located at pixel centers.
-     * @return the polygons for specified ranges in each band. The {@code List} size is the number of bands.
-     *         For each band, the {@code Map} size is equal or less than {@code ranges[band].length}.
-     *         Map keys are the specified ranges, excluding those for which there are no polygons.
+     * @return the polygons of samples matching the predicate. The {@code List} size is the number of bands.
+     *         List values are the polygons as a Java2D {@link Shape}.
+     * @throws ImagingOpException if an error occurred during calculation.
+     */
+    public List<List<Shape>> areas(final RenderedImage data, Predicate<Double>[] predicates, final MathTransform gridToCRS) throws TransformException {
+        final DoubleToIntFunction[] array = new DoubleToIntFunction[predicates.length];
+        for (int i = 0; i < predicates.length; i++) {
+            final Predicate<Double> predicate = predicates[i];
+            array[i] = (double value) -> predicate.test(value) ? 1 : 0;
+        }
+        final List<Map<Integer, List<Shape>>> result = areas(data, array, gridToCRS);
+        final List<List<Shape>> results = new ArrayList<>();
+        for (Map<Integer, List<Shape>> map : result) {
+            List<Shape> lst = map.get(1);
+            if (lst == null) lst = new ArrayList<>();
+            results.add(lst);
+        }
+        return results;
+    }
+    
+    /**
+     * Generates area polygons by grouping samples in the same classification computed from data provided by the given image.
+     * Polygons will be computed for every bands in the given image.
+     * For each band, the result is given as a {@code Map} where keys are the classifiers returned values.
+     *
+     * @param  data       image providing source values.
+     * @param  classifiers generate a classification key for a sample values, those values are used as key in the returned map
+     * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
+     *                    Integer source coordinates are located at pixel centers.
+     * @return the polygons for specified classification keys in each band. The {@code List} size is the number of bands.
+     *         Map keys are the returned keys from the classifiers.
      *         Map values are the polygons as a Java2D {@link Shape}.
      * @throws ImagingOpException if an error occurred during calculation.
      */
-    public List<Map<NumberRange,List<Shape>>> areas(final RenderedImage data, NumberRange[][] ranges, final MathTransform gridToCRS) throws TransformException {
-        final Polygonize polygonizer = new Polygonize(data, ranges);
-        final List<Map<NumberRange, List<Shape>>> result = polygonizer.polygones();
+    public List<Map<Integer,List<Shape>>> areas(final RenderedImage data, DoubleToIntFunction[] classifiers, final MathTransform gridToCRS) throws TransformException {
+        final Polygonize polygonizer = new Polygonize(data, classifiers);
+        final List<Map<Integer, List<Shape>>> result = polygonizer.polygones();
         
         if (gridToCRS != null && !gridToCRS.isIdentity()) {
             final MathTransform2D trs2d = MathTransforms.bidimensional(gridToCRS);
-            for (Map<NumberRange, List<Shape>> m : result) {
+            for (Map<Integer, List<Shape>> m : result) {
                 for (List<Shape> lst : m.values()) {
                     for (int i = 0, n = lst.size(); i < n; i++) {
                         lst.set(i, trs2d.createTransformedShape(lst.get(i)));

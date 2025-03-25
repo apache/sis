@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.sis.measure.NumberRange;
+import java.util.function.DoubleToIntFunction;
 import org.apache.sis.image.PixelIterator;
 import org.opengis.coverage.grid.SequenceType;
 
@@ -40,7 +40,7 @@ public final class Polygonize {
     private static final int CURRENT_LINE = 1;
 
     //last line cache boundary
-    private final List<Map<NumberRange, List<Shape>>> polygons = new ArrayList<>();
+    private final List<Map<Integer, List<Shape>>> polygons = new ArrayList<>();
 
     //buffer[band][LAST_LINE] holds last line buffer
     //buffer[band][CURRENT_LINE] holds current line buffer
@@ -50,7 +50,7 @@ public final class Polygonize {
     private Block[] blocks;
 
     private final RenderedImage image;
-    private final NumberRange[][] ranges;
+    private final DoubleToIntFunction[] classifiers;
     
     /**
      *
@@ -58,31 +58,24 @@ public final class Polygonize {
      * @param ranges data value ranges
      * @param band coverage band to process
      */
-    public Polygonize(RenderedImage image, NumberRange[][] ranges){
+    public Polygonize(RenderedImage image, DoubleToIntFunction[] classifiers){
         this.image = image;
-        this.ranges = ranges;
+        this.classifiers = classifiers;
     }
     
-    public List<Map<NumberRange, List<Shape>>> polygones() {
+    public List<Map<Integer, List<Shape>>> polygones() {
 
         final PixelIterator iter = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).create(image);
         final int nbBand = iter.getNumBands();
         blocks = new Block[nbBand];
         
-        final NumberRange NaNRange = new NaNRange();
+        final DoubleToIntFunction[] classifiers = new DoubleToIntFunction[nbBand];
         for (int band = 0; band < nbBand; band++) {            
-            final Map<NumberRange, List<Shape>> bandState = new HashMap<>();            
-            //add a range for Nan values.            
-            bandState.put(NaNRange, new ArrayList<>());
-            polygons.add(bandState);
-
-            for (final NumberRange range : ranges[Math.min(band, ranges.length-1)]) {
-                bandState.put(range, new ArrayList<>());
-            }
-            
+            final Map<Integer, List<Shape>> bandState = new HashMap<>();
+            polygons.add(bandState);            
             blocks[band] = new Block();
+            classifiers[band] = this.classifiers[Math.max(this.classifiers.length-1, band)];
         }
-        
         
         /*
          This algorithm create polygons which follow the contour of each pixel.
@@ -102,7 +95,7 @@ public final class Polygonize {
                 gridPosition.x = x;
                 pixel = iter.getPixel(pixel);
                 for (int band = 0; band < nbBand; band++) {
-                    append(polygons.get(band), buffers[band], blocks[band], gridPosition, pixel[band]);
+                    append(classifiers[band], polygons.get(band), buffers[band], blocks[band], gridPosition, pixel[band]);
                 }
                 iter.next();
             }
@@ -130,58 +123,51 @@ public final class Polygonize {
                         new Point2D.Double(i+1, gridPosition.y)
                         );
                 if (poly != null) {
-                    polygons.get(band).get(buffers[band][LAST_LINE][i].range).add(poly);
+                    final int classe = buffers[band][LAST_LINE][i].classe;
+                    final Map<Integer, List<Shape>> map = polygons.get(band);
+                    List<Shape> lst = map.get(classe);
+                    if (lst == null) {
+                        lst = new ArrayList<>();
+                        map.put(classe, lst);
+                    }
+                    lst.add(poly);
                 }
             }
         }
         
         //avoid memory use
         buffers = null;
-        final List<Map<NumberRange, List<Shape>>> copy = new ArrayList<>(polygons);
-        //remove the NaNRange
-        for (Map m : copy) {
-            m.remove(NaNRange);
-        }
+        final List<Map<Integer, List<Shape>>> copy = new ArrayList<>(polygons);
         polygons.clear();        
         return copy;
     }
 
-    private static void append(Map<NumberRange, List<Shape>> results, final Boundary[][] buffers, final Block block, final Point point, Number value) {
+    private static void append(DoubleToIntFunction classifier, Map<Integer, List<Shape>> results, final Boundary[][] buffers, final Block block, final Point point, Number value) {
 
-        //special case for NaN or null
-        final NumberRange valueRange;
-        if (value == null || Double.isNaN(value.doubleValue())) {
-            valueRange = new NaNRange();
-        } else {
-            valueRange = results.keySet().stream()
-                    .filter(range -> range.containsAny(value))
-                    .findAny()
-                    .orElseThrow(() -> new IllegalArgumentException("Value not in any range :" + value));
-        }
-
-        if (valueRange.equals(block.range)) {
-            //last pixel was in the same range
+        final int classe = classifier.applyAsInt(value.doubleValue());
+        if (classe == block.classe) {
+            //last pixel was in the same class
             block.endX = point.x;
             return;
-        } else if (block.range != null) {
+        } else if (block.classe != -1) {
             //last pixel was in a different range, save it's geometry
             constructBlock(results, block, buffers);
         }
 
         //start a pixel serie
-        block.range = valueRange;
+        block.classe = classe;
         block.startX = point.x;
         block.endX = point.x;
         block.y = point.y;
     }
 
-    private static void constructBlock(Map<NumberRange, List<Shape>> results, final Block block, final Boundary[][] buffers) {
+    private static void constructBlock(Map<Integer, List<Shape>> results, final Block block, final Boundary[][] buffers) {
 
         //System.err.println("BLOCK ["+block.startX+","+block.endX+"]");
 
         if(block.y == 0) {
             //first line, the buffer is empty, must fill it
-            final Boundary boundary = new Boundary(block.range);
+            final Boundary boundary = new Boundary(block.classe);
             boundary.start(block.startX, block.endX+1, block.y);
 
             for(int i=block.startX; i<=block.endX; i++) {
@@ -196,7 +182,7 @@ public final class Polygonize {
                 final int[] candidateExtent = findExtent(buffers, i);
 
                 //do not treat same blockes here
-                if (candidate.range != block.range) {
+                if (candidate.classe != block.classe) {
                     //System.err.println("A different block extent : "+ candidateExtent[0] + " " + candidateExtent[1]);
                     //System.err.println("before :" + candidate.toString());
 
@@ -206,13 +192,27 @@ public final class Polygonize {
                                 new Point2D.Double(candidateExtent[0], block.y),
                                 new Point2D.Double(candidateExtent[1]+1, block.y)
                                 );
-                        if(poly != null) results.get(candidate.range).add(poly);
+                        if (poly != null) {
+                            List<Shape> lst = results.get(candidate.classe);
+                            if (lst == null) {
+                                lst = new ArrayList<>();
+                                results.put(candidate.classe, lst);
+                            }
+                            lst.add(poly);
+                        }
                     } else {
                         final Shape poly = candidate.link(
                                 new Point2D.Double( (block.startX<candidateExtent[0]) ? candidateExtent[0]: block.startX, block.y),
                                 new Point2D.Double( (block.endX>candidateExtent[1]) ? candidateExtent[1]+1: block.endX+1, block.y)
                                 );
-                        if (poly != null) results.get(candidate.range).add(poly);
+                        if (poly != null) {
+                            List<Shape> lst = results.get(candidate.classe);
+                            if (lst == null) {
+                                lst = new ArrayList<>();
+                                results.put(candidate.classe, lst);
+                            }
+                            lst.add(poly);
+                        }
                     }
 
                     //System.err.println("after :" + candidate.toString());
@@ -232,9 +232,7 @@ public final class Polygonize {
                 final int[] candidateExtent = findExtent(buffers, i);
 
                 //do not treat different blocks here
-                if (candidate.range == block.range) {
-                    //System.err.println("A firnet block extent : "+ candidateExtent[0] + " " + candidateExtent[1]);
-//                    //System.err.println("before :" + candidate.toString());
+                if (candidate.classe == block.classe) {
 
                     if (currentBoundary == null) {
                         //set the current boundary, will expend this one
@@ -250,7 +248,6 @@ public final class Polygonize {
                             );
 
                         replaceInLastLigne(buffers, candidate, currentBoundary);
-                        //System.out.println("Merging : " + currentBoundary.toString());
                     }
 
                     if (candidateExtent[0] < firstAnchor) {
@@ -262,14 +259,10 @@ public final class Polygonize {
                 i = candidateExtent[1]+1;
             }
 
-            if (currentBoundary != null) {
-                //System.err.println("before :" + currentBoundary.toString());
-            }
-
             if (currentBoundary == null) {
                 //no previous friendly boundary to link with
                 //make a new one
-                currentBoundary = new Boundary(block.range);
+                currentBoundary = new Boundary(block.classe);
                 currentBoundary.start(block.startX, block.endX+1, block.y);
             } else {
                 if (firstAnchor < block.startX) {
@@ -278,7 +271,6 @@ public final class Polygonize {
                 }
 
                 //add the coordinates
-                //System.err.println("> first anchor : " +firstAnchor + " lastAnchor : " +lastAnchor);
                 if (firstAnchor == block.startX) {
                     currentBoundary.add(
                         new Point2D.Double(firstAnchor, block.y),
@@ -302,17 +294,14 @@ public final class Polygonize {
                             new Point2D.Double(block.endX+1, block.y+1)
                             );
                     } else {
-                        //System.err.println("0 add :" + currentBoundary.toString());
                         currentBoundary.add(
                             new Point2D.Double(lastAnchor, block.y),
                             new Point2D.Double(block.endX+1, block.y)
                             );
-                        //System.err.println("1 add:" + currentBoundary.toString());
                         currentBoundary.add(
                             new Point2D.Double(block.endX+1, block.y),
                             new Point2D.Double(block.endX+1, block.y+1)
                             );
-                        //System.err.println("after add:" + currentBoundary.toString());
                     }
                 } else {
                     currentBoundary.addFloating(
@@ -320,12 +309,7 @@ public final class Polygonize {
                             new Point2D.Double(block.endX+1, block.y+1)
                             );
                 }
-
-                //System.err.println(currentBoundary.toString());
-
             }
-
-            //System.err.println("after :" + currentBoundary.toString());
 
             //fill in the current line -----------------------------------------
 
@@ -367,18 +351,6 @@ public final class Polygonize {
         }
 
         return extent;
-    }
-
-    private static class NaNRange extends NumberRange{
-
-        public NaNRange() {
-            super(Double.class, 0d, true, 0d, true);
-        }
-
-        @Override
-        public boolean contains(final Comparable number) throws IllegalArgumentException {
-            return Double.isNaN(((Number) number).doubleValue());
-        }
     }
 
 }
