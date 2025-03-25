@@ -56,8 +56,10 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.system.Modules;
 import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.image.processing.polygon.Polygonize;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+import org.opengis.referencing.operation.MathTransform2D;
 
 
 /**
@@ -1540,6 +1542,43 @@ public class ImageProcessor implements Cloneable {
         }
     }
 
+    /**
+     * Generates area polygons at the specified ranges computed from data provided by the given image.
+     * Polygons will be computed for every bands in the given image.
+     * For each band, the result is given as a {@code Map} where keys are the specified {@code ranges}
+     * and values are the polygons at the associated range.
+     * If there are no polygons for a given level, there will be no corresponding entry in the map.
+     * The provided {@code ranges} must not overlap each other.
+     *
+     * @param  data       image providing source values.
+     * @param  ranges    value ranges for which to compute polygones. An array should be provided for each band.
+     *                    If there is more bands than {@code ranges.length}, the last array is reused for
+     *                    all remaining bands.
+     * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
+     *                    Integer source coordinates are located at pixel centers.
+     * @return the polygons for specified ranges in each band. The {@code List} size is the number of bands.
+     *         For each band, the {@code Map} size is equal or less than {@code ranges[band].length}.
+     *         Map keys are the specified ranges, excluding those for which there are no polygons.
+     *         Map values are the polygons as a Java2D {@link Shape}.
+     * @throws ImagingOpException if an error occurred during calculation.
+     */
+    public List<Map<NumberRange,List<Shape>>> areas(final RenderedImage data, NumberRange[][] ranges, final MathTransform gridToCRS) throws TransformException {
+        final Polygonize polygonizer = new Polygonize(data, ranges);
+        final List<Map<NumberRange, List<Shape>>> result = polygonizer.polygones();
+        
+        if (gridToCRS != null && !gridToCRS.isIdentity()) {
+            final MathTransform2D trs2d = MathTransforms.bidimensional(gridToCRS);
+            for (Map<NumberRange, List<Shape>> m : result) {
+                for (List<Shape> lst : m.values()) {
+                    for (int i = 0, n = lst.size(); i < n; i++) {
+                        lst.set(i, trs2d.createTransformedShape(lst.get(i)));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
     /**
      * Returns {@code true} if the given object is an image processor
      * of the same class with the same configuration.
