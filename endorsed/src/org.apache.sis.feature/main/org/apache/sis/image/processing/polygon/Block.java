@@ -16,8 +16,6 @@
  */
 package org.apache.sis.image.processing.polygon;
 
-import org.apache.sis.measure.NumberRange;
-
 /**
  * Define a group of pixels with the same range.
  *
@@ -25,14 +23,14 @@ import org.apache.sis.measure.NumberRange;
  */
 final class Block {
 
-    public NumberRange range;
+    public int classe;
     public int startX;
     public int endX;
     public int y;
     public Boundary boundary;
 
     public void reset(){
-        range = null;
+        classe = -1;
         startX = -1;
         endX = -1;
         y = -1;

@@ -40,10 +40,10 @@ final class Boundary {
 
     //in construction geometries
     private final LinkedList<LinkedList<Point2D.Double>> floatings = new LinkedList<LinkedList<Point2D.Double>>();
-    final NumberRange range;
+    final int classe;
 
-    public Boundary(final NumberRange range){
-        this.range = range;
+    public Boundary(final int classe){
+        this.classe = classe;
     }
 
     public void start(final int firstX, final int secondX, final int y){
@@ -329,7 +329,7 @@ final class Boundary {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Boundary : ");
-        sb.append(range.toString());
+        sb.append(classe);
 
         for(LinkedList<Point2D.Double> coords : floatings){
             sb.append("  \t{");
