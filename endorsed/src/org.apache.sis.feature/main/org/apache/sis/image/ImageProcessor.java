@@ -34,6 +34,9 @@ import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRenderedImage;
+import java.util.ArrayList;
+import java.util.function.DoublePredicate;
+import java.util.function.DoubleToIntFunction;
 import javax.measure.Quantity;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -56,8 +59,10 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.system.Modules;
 import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.image.processing.polygon.Polygonize;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+import org.opengis.referencing.operation.MathTransform2D;
 
 
 /**
@@ -1540,6 +1545,66 @@ public class ImageProcessor implements Cloneable {
         }
     }
 
+    /**
+     * Generates area polygons by grouping samples matching given predicate computed from data provided by the given image.
+     * Polygons will be computed for every bands in the given image.
+     * For each band, the result is given as a {@code List} if polygon matching the predicate.
+     *
+     * @param  data       image providing source values.
+     * @param  predicates  predicate to indicate if a value is to be included in the shape
+     * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
+     *                    Integer source coordinates are located at pixel centers.
+     * @return the polygons of samples matching the predicate. The {@code List} size is the number of bands.
+     *         List values are the polygons as a Java2D {@link Shape}.
+     * @throws ImagingOpException if an error occurred during calculation.
+     */
+    public List<List<Shape>> areas(final RenderedImage data, DoublePredicate[] predicates, final MathTransform gridToCRS) throws TransformException {
+        final DoubleToIntFunction[] array = new DoubleToIntFunction[predicates.length];
+        for (int i = 0; i < predicates.length; i++) {
+            final DoublePredicate predicate = predicates[i];
+            array[i] = (double value) -> predicate.test(value) ? 1 : 0;
+        }
+        final List<Map<Integer, List<Shape>>> result = areas(data, array, gridToCRS);
+        final List<List<Shape>> results = new ArrayList<>();
+        for (Map<Integer, List<Shape>> map : result) {
+            List<Shape> lst = map.get(1);
+            if (lst == null) lst = new ArrayList<>();
+            results.add(lst);
+        }
+        return results;
+    }
+    
+    /**
+     * Generates area polygons by grouping samples in the same classification computed from data provided by the given image.
+     * Polygons will be computed for every bands in the given image.
+     * For each band, the result is given as a {@code Map} where keys are the classifiers returned values.
+     *
+     * @param  data       image providing source values.
+     * @param  classifiers generate a classification key for a sample values, those values are used as key in the returned map
+     * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
+     *                    Integer source coordinates are located at pixel centers.
+     * @return the polygons for specified classification keys in each band. The {@code List} size is the number of bands.
+     *         Map keys are the returned keys from the classifiers.
+     *         Map values are the polygons as a Java2D {@link Shape}.
+     * @throws ImagingOpException if an error occurred during calculation.
+     */
+    public List<Map<Integer,List<Shape>>> areas(final RenderedImage data, DoubleToIntFunction[] classifiers, final MathTransform gridToCRS) throws TransformException {
+        final Polygonize polygonizer = new Polygonize(data, classifiers);
+        final List<Map<Integer, List<Shape>>> result = polygonizer.polygones();
+        
+        if (gridToCRS != null && !gridToCRS.isIdentity()) {
+            final MathTransform2D trs2d = MathTransforms.bidimensional(gridToCRS);
+            for (Map<Integer, List<Shape>> m : result) {
+                for (List<Shape> lst : m.values()) {
+                    for (int i = 0, n = lst.size(); i < n; i++) {
+                        lst.set(i, trs2d.createTransformedShape(lst.get(i)));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
     /**
      * Returns {@code true} if the given object is an image processor
      * of the same class with the same configuration.
