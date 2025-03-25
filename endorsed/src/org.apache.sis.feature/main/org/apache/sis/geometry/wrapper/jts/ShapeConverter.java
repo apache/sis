@@ -22,9 +22,12 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
+import java.util.Collections;
+import java.util.Comparator;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.apache.sis.referencing.privy.AbstractShape;
+import org.locationtech.jts.geom.util.GeometryFixer;
 
 
 /**
@@ -274,17 +277,28 @@ abstract class ShapeConverter {
             case POINT:      return factory.createMultiPoint        (GeometryFactory.toPointArray     (geometries));
             case LINESTRING: return factory.createMultiLineString   (GeometryFactory.toLineStringArray(geometries));
             case POLYGON: {
+                /*
+                 * Java2D shapes and JTS geometries differ in their way to fill interior.
+                 * Java2D fills the resulting contour based on visual winding rules.
+                 * JTS has a system where outer shell and holes are clearly separated.
+                 * We would need to draw contours as Java2D for computing JTS equivalent,
+                 * but it would require a lot of work. In the meantime, the SymDifference
+                 * operation is what behave the most like EVEN_ODD or NON_ZERO winding rules.
+                */
+                
+                //sort by area, bigger geometries are the outter rings
+                Collections.sort(geometries, (Geometry o1, Geometry o2) -> java.lang.Double.compare(o2.getArea(), o1.getArea()));
                 Geometry result = geometries.get(0);
                 for (int i=1; i<count; i++) {
-                    /*
-                     * Java2D shapes and JTS geometries differ in their way to fill interior.
-                     * Java2D fills the resulting contour based on visual winding rules.
-                     * JTS has a system where outer shell and holes are clearly separated.
-                     * We would need to draw contours as Java2D for computing JTS equivalent,
-                     * but it would require a lot of work. In the meantime, the SymDifference
-                     * operation is what behave the most like EVEN_ODD or NON_ZERO winding rules.
-                    */
-                    result = result.symDifference(geometries.get(i));
+                    Geometry other = geometries.get(i);
+                    if (result.intersects(other)) {
+                        //ring is a hole
+                        result = result.symDifference(other);
+                    } else {
+                        //ring is a separate polygon
+                        result = result.union(other);
+                    }
+                    
                 }
                 return result;
             }
@@ -299,7 +313,7 @@ abstract class ShapeConverter {
      */
     private void flush(final boolean isRing) {
         if (length != 0) {
-            final Geometry geometry;
+            Geometry geometry;
             if (length == DIMENSION) {
                 geometry = factory.createPoint(toSequence(false));
                 geometryType |= POINT;
@@ -311,6 +325,15 @@ abstract class ShapeConverter {
                      */
                     geometry = factory.createPolygon(toSequence(true));
                     geometryType |= POLYGON;
+                    
+                    /*
+                    Expensive operation but java2d is very tolerant to incoherent paths.
+                    We need to fix those otherwise we might have errors when aggregating
+                    holes in polygons.
+                    */
+                    if (!geometry.isValid()) {
+                        geometry = GeometryFixer.fix(geometry);
+                    }
                 } else {
                     geometry = factory.createLineString(toSequence(false));
                     geometryType |= LINESTRING;

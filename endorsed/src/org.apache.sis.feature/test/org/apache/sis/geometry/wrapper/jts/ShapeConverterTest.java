@@ -26,6 +26,9 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -171,16 +174,21 @@ public final class ShapeConverterTest extends TestCase {
         }
         final Geometry geometry = ShapeConverter.create(factory, shape, 0.1);
         assertInstanceOf(MultiPolygon.class, geometry);
-        final MultiPolygon mp = (MultiPolygon) geometry;
+        final MultiPolygon mp = (MultiPolygon) geometry;        
         /*
          * The "Labi" text contaons 4 characters but `i` is split in two ploygons,
          * for a total of 5 polygons. Two letters ("a" and "b") are polyogns whith
          * hole inside them.
          */
         assertEquals(5, mp.getNumGeometries());
+        // sort on X
+        final List<Geometry> parts = new ArrayList<>(5);
+        for (int i=0; i<5; i++) parts.add(mp.getGeometryN(i));
+        parts.sort((Geometry o1, Geometry o2) -> Double.compare(o1.getEnvelopeInternal().getMinX(), o2.getEnvelopeInternal().getMinX()));
+        
         for (int i=0; i<5; i++) {
             final String message = "Glyph #" + i;
-            final Geometry glyph = mp.getGeometryN(i);
+            final Geometry glyph = parts.get(i);
             assertInstanceOf(Polygon.class, glyph, message);
             assertEquals((i == 1 || i == 2) ? 1 : 0,       // `a` and `b` should contain a hole.
                     ((Polygon) glyph).getNumInteriorRing(), message);
