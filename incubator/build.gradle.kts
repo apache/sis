@@ -171,6 +171,18 @@ publishing {
                 description = "CQL parser."
             }
         }
+        create<MavenPublication>("geometry") {
+            var module = "org.apache.sis.geometry"
+            groupId    = "org.apache.sis.core"
+            artifactId = "sis-geometry"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS Geometry"
+                description = "Geometry API."
+            }
+        }
         create<MavenPublication>("storage.shapefile") {
             var module = "org.apache.sis.storage.shapefile"
             groupId    = "org.apache.sis.storage"
