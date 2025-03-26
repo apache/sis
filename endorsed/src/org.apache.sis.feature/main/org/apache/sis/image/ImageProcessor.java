@@ -35,8 +35,8 @@ import java.awt.image.ImagingOpException;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRenderedImage;
 import java.util.ArrayList;
+import java.util.function.DoublePredicate;
 import java.util.function.DoubleToIntFunction;
-import java.util.function.Predicate;
 import javax.measure.Quantity;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -1558,10 +1558,10 @@ public class ImageProcessor implements Cloneable {
      *         List values are the polygons as a Java2D {@link Shape}.
      * @throws ImagingOpException if an error occurred during calculation.
      */
-    public List<List<Shape>> areas(final RenderedImage data, Predicate<Double>[] predicates, final MathTransform gridToCRS) throws TransformException {
+    public List<List<Shape>> areas(final RenderedImage data, DoublePredicate[] predicates, final MathTransform gridToCRS) throws TransformException {
         final DoubleToIntFunction[] array = new DoubleToIntFunction[predicates.length];
         for (int i = 0; i < predicates.length; i++) {
-            final Predicate<Double> predicate = predicates[i];
+            final DoublePredicate predicate = predicates[i];
             array[i] = (double value) -> predicate.test(value) ? 1 : 0;
         }
         final List<Map<Integer, List<Shape>>> result = areas(data, array, gridToCRS);
