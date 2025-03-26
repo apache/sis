@@ -20,9 +20,12 @@ import java.util.Map;
 import java.util.stream.IntStream;
 import java.awt.Shape;
 import java.awt.Rectangle;
+import java.awt.geom.PathIterator;
 import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.util.List;
+import java.util.function.DoublePredicate;
 import org.opengis.referencing.operation.MathTransform;
 
 // Test dependencies
@@ -31,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.image.processing.isoline.IsolinesTest;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**
@@ -107,6 +111,51 @@ public final class ImageProcessorTest extends TestCase {
             final Map<Double,Shape> r = getSingleton(processor.isolines(image, new double[][] {{0.5}}, null));
             assertEquals(0.5, getSingleton(r.keySet()));
             IsolinesTest.verifyIsolineFromMultiCells(getSingleton(r.values()));
+        } while ((parallel = !parallel) == true);
+    }
+    
+    /**
+     * Tests {@link ImageProcessor#areas(RenderedImage, DoublePredicate[], MathTransform) }.
+     */
+    @Test
+    public void testAreas() throws TransformException {
+        final BufferedImage image = new BufferedImage(3, 3, BufferedImage.TYPE_BYTE_BINARY);
+        image.getRaster().setSample(1, 1, 0, 1);
+        boolean parallel = false;
+        do {
+            processor.setExecutionMode(parallel ? ImageProcessor.Mode.SEQUENTIAL : ImageProcessor.Mode.PARALLEL);
+            final DoublePredicate predicate = (double v) -> v == 1.0;
+            final List<Shape> list = getSingleton(processor.areas(image, new DoublePredicate[]{predicate}, null));
+            assertEquals(1, list.size());
+            final Shape shape = list.get(0);
+            
+            /*
+                     1      4
+               (1,2) +------+ (2,2)
+                     |      |
+                     |      |
+               (1,1) +------+ (2,1)
+                     2      3            
+            */
+            
+            final PathIterator pathIterator = shape.getPathIterator(null);
+            final double[] coords = new double[2];
+            assertEquals(PathIterator.SEG_MOVETO, pathIterator.currentSegment(coords));
+            assertArrayEquals(new double[]{1,2}, coords);
+            pathIterator.next();
+            assertEquals(PathIterator.SEG_LINETO, pathIterator.currentSegment(coords));
+            assertArrayEquals(new double[]{1,1}, coords);
+            pathIterator.next();
+            assertEquals(PathIterator.SEG_LINETO, pathIterator.currentSegment(coords));
+            assertArrayEquals(new double[]{2,1}, coords);
+            pathIterator.next();
+            assertEquals(PathIterator.SEG_LINETO, pathIterator.currentSegment(coords));
+            assertArrayEquals(new double[]{2,2}, coords);
+            pathIterator.next();
+            assertEquals(PathIterator.SEG_CLOSE, pathIterator.currentSegment(coords));
+            pathIterator.next();
+            assertTrue(pathIterator.isDone());
+            
         } while ((parallel = !parallel) == true);
     }
 }
