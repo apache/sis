@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -57,6 +58,7 @@ import org.opengis.filter.SortProperty;
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class FeatureQueryTest extends TestCase {
     /**
      * An arbitrary number of features, all of the same type.
@@ -171,6 +173,15 @@ public final class FeatureQueryTest extends TestCase {
     }
 
     /**
+     * Verifies that the XPath set contains all the given elements.
+     *
+     * @param expected the expected XPaths.
+     */
+    private void assertXPathsEqual(final String... expected) {
+        assertSetEquals(Arrays.asList(expected), query.getXPaths());
+    }
+
+    /**
      * Verifies the effect of {@link FeatureQuery#setLimit(long)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
@@ -179,6 +190,7 @@ public final class FeatureQueryTest extends TestCase {
     public void testLimit() throws DataStoreException {
         createFeaturesWithAssociation();
         query.setLimit(2);
+        assertXPathsEqual();
         verifyQueryResult(0, 1);
     }
 
@@ -191,6 +203,7 @@ public final class FeatureQueryTest extends TestCase {
     public void testOffset() throws DataStoreException {
         createFeaturesWithAssociation();
         query.setOffset(2);
+        assertXPathsEqual();
         verifyQueryResult(2, 3, 4);
     }
 
@@ -205,6 +218,7 @@ public final class FeatureQueryTest extends TestCase {
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setSortBy(ff.sort(ff.property("value1", Integer.class), SortOrder.ASCENDING),
                         ff.sort(ff.property("value2", Integer.class), SortOrder.DESCENDING));
+        assertXPathsEqual();
         verifyQueryResult(3, 1, 2, 0, 4);
     }
 
@@ -219,6 +233,7 @@ public final class FeatureQueryTest extends TestCase {
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setSelection(ff.equal(ff.property("value1", Integer.class),
                                     ff.literal(2), true, MatchAction.ALL));
+        assertXPathsEqual("value1");
         verifyQueryResult(1, 2);
     }
 
@@ -233,6 +248,7 @@ public final class FeatureQueryTest extends TestCase {
         createFeaturesWithAssociation();
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setSelection(ff.equal(ff.property("dependency/value3"), ff.literal(18)));
+        assertXPathsEqual("dependency/value3");
         verifyQueryResult(3);
     }
 
@@ -248,6 +264,7 @@ public final class FeatureQueryTest extends TestCase {
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
                             new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), "renamed1"),
                             new FeatureQuery.NamedExpression(ff.literal("a literal"), "computed"));
+        assertXPathsEqual("value1");
 
         // Check result type.
         final Feature instance = executeAndGetFirst();
@@ -279,6 +296,7 @@ public final class FeatureQueryTest extends TestCase {
     public void testProjectionByNames() throws DataStoreException {
         createFeaturesWithAssociation();
         query.setProjection("value2");
+        assertXPathsEqual("value2");
         final Feature instance = executeAndGetFirst();
         final PropertyType p = TestUtilities.getSingleton(instance.getType().getProperties(true));
         assertEquals("value2", p.getName().toString());
@@ -298,6 +316,7 @@ public final class FeatureQueryTest extends TestCase {
         query.setProjection(
                 ff.add(ff.property("value1", Number.class), ff.literal(1)),
                 ff.add(ff.property("value2", Number.class), ff.literal(1)));
+        assertXPathsEqual("value1", "value2");
         final FeatureSet subset = featureSet.subset(query);
         final FeatureType type = subset.getType();
         final Iterator<? extends PropertyType> properties = type.getProperties(true).iterator();
@@ -322,6 +341,7 @@ public final class FeatureQueryTest extends TestCase {
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1"),  (String) null),
                             new FeatureQuery.NamedExpression(ff.property("/*/unknown"), "unexpected"));
+        assertXPathsEqual("value1", "/*/unknown");
 
         // Check result type.
         final Feature instance = executeAndGetFirst();
@@ -352,6 +372,7 @@ public final class FeatureQueryTest extends TestCase {
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1"),  (String) null),
                             new FeatureQuery.NamedExpression(ff.property("dependency/value3"), "value3"));
+        assertXPathsEqual("value1", "dependency/value3");
         query.setOffset(2);
         final Feature instance = executeAndGetFirst();
         assertEquals( 2, instance.getPropertyValue("value1"));
@@ -368,6 +389,7 @@ public final class FeatureQueryTest extends TestCase {
     public void testProjectionOfLink() throws DataStoreException {
         createFeatureWithIdentifier();
         query.setProjection(AttributeConvention.IDENTIFIER);
+        assertXPathsEqual(AttributeConvention.IDENTIFIER);
         final Feature instance = executeAndGetFirst();
         assertEquals("id-0", instance.getPropertyValue(AttributeConvention.IDENTIFIER));
     }
@@ -392,6 +414,7 @@ public final class FeatureQueryTest extends TestCase {
                 new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
                 virtualProjection(ff.property("value1", Integer.class), "renamed1"),
                 virtualProjection(ff.literal("a literal"), "computed"));
+        assertXPathsEqual("value1");
 
         // Check result type.
         final Feature instance = executeAndGetFirst();
@@ -434,6 +457,7 @@ public final class FeatureQueryTest extends TestCase {
         final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
         query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
                             virtualProjection(ff.property("valueMissing", Integer.class), "renamed1"));
+        assertXPathsEqual("value1", "valueMissing");
 
         var exception = assertThrows(DataStoreContentException.class, this::executeAndGetFirst);
         assertMessageContains(exception);

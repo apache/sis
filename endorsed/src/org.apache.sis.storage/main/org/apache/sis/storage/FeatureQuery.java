@@ -36,6 +36,7 @@ import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.feature.privy.FeatureExpression;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
+import org.apache.sis.filter.privy.ListingPropertyVisitor;
 import org.apache.sis.filter.privy.SortByComparator;
 import org.apache.sis.filter.privy.XPath;
 import org.apache.sis.storage.internal.Resources;
@@ -672,6 +673,29 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             return expression.getFunctionName().toString();
         }
         return CharSequences.shortSentence(text, 40).toString();
+    }
+
+    /**
+     * Returns all XPaths used, directly or indirectly, by this query.
+     * The XPath values are extracted from all {@link ValueReference} expressions found in the
+     * {@linkplain #getSelection() selection} and in the {@linkplain #getProjection() projection}.
+     * The {@linkplain NamedExpression#alias aliases} are ignored.
+     *
+     * <p>The elements in the returned set are in no particular order.
+     * The set may be empty but never null.</p>
+     *
+     * @return all XPaths used, directly or indirectly, by this query.
+     *
+     * @since 1.5
+     */
+    public Set<String> getXPaths() {
+        Set<String> xpaths = ListingPropertyVisitor.xpaths(selection, null);
+        if (projection != null) {
+            for (NamedExpression e : projection) {
+                xpaths = ListingPropertyVisitor.xpaths(e.expression, xpaths);
+            }
+        }
+        return xpaths;
     }
 
     /**
