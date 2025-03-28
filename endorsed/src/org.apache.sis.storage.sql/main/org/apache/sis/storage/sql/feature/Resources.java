@@ -64,6 +64,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short CanNotAnalyzeFully = 17;
 
         /**
+         * Error while building the SQL query. Fallback partially on pure Java implementation.
+         */
+        public static final short CanNotBuildSQL = 19;
+
+        /**
          * Cannot fetch a Coordinate Reference System (CRS) for SRID code {0}.
          */
         public static final short CanNotFetchCRS_1 = 8;

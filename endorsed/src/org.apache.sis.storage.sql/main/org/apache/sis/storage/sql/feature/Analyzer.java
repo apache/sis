@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Locale;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
@@ -427,9 +426,7 @@ public final class Analyzer {
             table.setDeferredSearchTables(this, featureTables);
         }
         if (featureNotSupported != null) {
-            LogRecord record = resources().getLogRecord(Level.WARNING, Resources.Keys.CanNotAnalyzeFully);
-            record.setThrown(featureNotSupported);
-            database.log(record);
+            database.warning(Resources.Keys.CanNotAnalyzeFully, featureNotSupported);
         }
         for (final ResourceInternationalString warning : warnings) {
             database.log(warning.toLogRecord(Level.WARNING));

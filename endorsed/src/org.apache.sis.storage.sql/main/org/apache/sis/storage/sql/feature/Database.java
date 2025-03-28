@@ -24,6 +24,7 @@ import java.util.WeakHashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.Array;
@@ -273,6 +274,10 @@ public class Database<G> extends Syntax  {
             throws SQLException
     {
         super(metadata, true);
+        this.source        = source;
+        this.geomLibrary   = geomLibrary;
+        this.contentLocale = contentLocale;
+        this.listeners     = listeners;      // Need to be set before code below.
         /*
          * Get information about whether byte are unsigned.
          * According JDBC specification, the rows shall be ordered by DATA_TYPE.
@@ -298,14 +303,9 @@ public class Database<G> extends Syntax  {
             cause = e;
         }
         if (cause != null || wasNull) {
-            listeners.warning(Resources.forLocale(listeners.getLocale())
-                                       .getString(Resources.Keys.AssumeUnsigned), cause);
+            warning(Resources.Keys.AssumeUnsigned, cause);
         }
-        this.source        = source;
         this.isByteSigned  = !unsigned;
-        this.geomLibrary   = geomLibrary;
-        this.contentLocale = contentLocale;
-        this.listeners     = listeners;
         this.cacheOfCRS    = new Cache<>(7, 2, false);
         this.cacheOfSRID   = new WeakHashMap<>();
         this.tablesByNames = new FeatureNaming<>();
@@ -843,6 +843,18 @@ public class Database<G> extends Syntax  {
      */
     public InfoStatements createInfoStatements(final Connection connection) {
         return new InfoStatements(this, connection);
+    }
+
+    /**
+     * Logs a warning with a localized message and an optional cause.
+     *
+     * @param resourceKey  one of {@code Resources.Keys} constants.
+     * @param cause        the cause, or {@code null} if none.
+     */
+    final void warning(final short resourceKey, final Exception cause) {
+        LogRecord record = Resources.forLocale(listeners.getLocale()).getLogRecord(Level.WARNING, resourceKey);
+        record.setThrown(cause);
+        log(record);
     }
 
     /**

@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
+import org.apache.sis.storage.base.FeatureProjection;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -103,6 +104,25 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
     private final FeatureIterator[] dependencies;
 
     /**
+     * Additional properties to compute from the main properties, or {@code null} if none.
+     * This is usually {@code null}. It may be non-null if the user specified a query with
+     * operations other than {@code ValueReference} or {@code Literal}.
+     *
+     * <h4>Completion</h4>
+     * Usually, the expressions are executed on a source feature instance and the results
+     * are copied in a target feature instance. However, if {@link #completion} is true,
+     * then the source and target features are the same instance. The completion mode is
+     * used when the target feature have all information needed for computing the query
+     * expressions, so that the projection is only a completion.
+     */
+    private final FeatureProjection projection;
+
+    /**
+     * Whether the {@linkplain #projection} should be applied on the same
+     */
+    private final boolean completion;
+
+    /**
      * Creates a new iterator over features.
      *
      * @param table       the source table.
@@ -112,6 +132,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
      * @param sort        the {@code ORDER BY} clauses, or {@code null} if none.
      * @param offset      number of rows to skip in underlying SQL query, or ≤ 0 for none.
      * @param count       maximum number of rows to return, or ≤ 0 for no limit.
+     * @param projection  additional properties to compute, or {@code null} if none.
      */
     FeatureIterator(final Table           table,
                     final Connection      connection,
@@ -119,7 +140,8 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
                     final SelectionClause selection,
                     final SortBy<? super Feature> sort,
                     final long offset,
-                    final long count)
+                    final long count,
+                    final FeatureProjection projection)
             throws Exception
     {
         adapter = table.adapter(connection);
@@ -162,9 +184,11 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
         } else {
             estimatedSize = 0;              // Cannot estimate the size if there is filtering conditions.
         }
-        result = connection.createStatement().executeQuery(sql);
-        dependencies = new FeatureIterator[adapter.dependencies.length];
-        statement = null;
+        this.result       = connection.createStatement().executeQuery(sql);
+        this.dependencies = new FeatureIterator[adapter.dependencies.length];
+        this.completion   = projection != null && projection.featureType == table.featureType;
+        this.projection   = projection;
+        this.statement    = null;
     }
 
     /**
@@ -185,6 +209,8 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
         this.adapter  = adapter;
         statement     = connection.prepareStatement(adapter.sql);
         dependencies  = new FeatureIterator[adapter.dependencies.length];
+        completion    = false;
+        projection    = null;
         estimatedSize = 0;
     }
 
@@ -260,7 +286,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
      */
     private boolean fetch(final Consumer<? super Feature> action, final boolean all) throws Exception {
         while (result.next()) {
-            final Feature feature = adapter.createFeature(spatialInformation, result);
+            Feature feature = adapter.createFeature(spatialInformation, result);
             for (int i=0; i < dependencies.length; i++) {
                 WeakValueHashMap<?,Object> instances = null;
                 Object key = null, value = null;
@@ -293,6 +319,19 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
                     if (previous != null) value = previous;
                 }
                 feature.setPropertyValue(adapter.associationNames[i], value);
+            }
+            /*
+             * At this point, we have done everything we could do using SQL statements.
+             * Those statements were derived (among others) from expressions that have
+             * been recognized as `ValueReference` instances. If the user specified more
+             * complex expressions, we need to handle them in Java code.
+             */
+            if (projection != null) {
+                if (completion) {
+                    projection.applySelf(feature);
+                } else {
+                    feature = projection.apply(feature);
+                }
             }
             action.accept(feature);
             if (!all) return true;

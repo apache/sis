@@ -16,21 +16,13 @@
  */
 package org.apache.sis.feature.privy;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.Static;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.PropertyType;
 
 
 /**
@@ -61,38 +53,9 @@ public final class FeatureUtilities extends Static {
      * @return description of the parameters group.
      */
     public static ParameterDescriptorGroup parameters(final String name, final ParameterDescriptor<?>... parameters) {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(ParameterDescriptorGroup.NAME_KEY, name);
         properties.put(Identifier.AUTHORITY_KEY, Citations.SIS);
         return new DefaultParameterDescriptorGroup(properties, 1, 1);
-    }
-
-    /**
-     * Gets the name of all given properties. If any property is null or has a null name,
-     * then the corresponding entry in the returned array will be null.
-     *
-     * @param  properties  the properties for which to get the names, or {@code null}.
-     * @return the name of all given properties, or {@code null} if the given list was null.
-     */
-    public static String[] getNames(final Collection<? extends PropertyType> properties) {
-        if (properties == null) {
-            return null;
-        }
-        final String[] names = new String[properties.size()];
-        final Iterator<? extends PropertyType> it = properties.iterator();
-        for (int i=0; i < names.length; i++) {
-            final PropertyType property = it.next();
-            if (property != null) {
-                final GenericName name = property.getName();
-                if (name != null) {
-                    names[i] = name.toString();
-                }
-            }
-        }
-        // Should not have any element left, unless collection size changed during iteration.
-        if (it.hasNext()) {
-            throw new ConcurrentModificationException();
-        }
-        return names;
     }
 }

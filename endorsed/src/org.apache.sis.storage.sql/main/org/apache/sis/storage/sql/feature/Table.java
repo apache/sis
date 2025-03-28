@@ -17,6 +17,8 @@
 package org.apache.sis.storage.sql.feature;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.sql.Connection;
@@ -29,20 +31,25 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.storage.base.FeatureProjection;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.pending.jdk.JDK19;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.filter.Expression;
+import org.opengis.filter.InvalidFilterValueException;
 
 
 /**
@@ -186,25 +193,94 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * Creates a new table as a projection (subset of columns) of the given table.
+     * The columns to retain, potentially under different names, are specified in {@code projection}.
+     * The projection may also contain complex expressions that cannot be handled by this constructor.
+     * Such expressions are stored in the {@code unhandled} map.
      *
-     * @todo This constructor is not yet used because it is an unfinished work.
-     *       We need to invent some mechanism for using a subset of the columns.
-     *       A starting point is {@link org.apache.sis.storage.FeatureQuery#expectedType(FeatureType)}.
+     * @param  table        the source table.
+     * @param  projection   description of the columns to keep.
+     * @param  reusedNames  an initially empty set where to store the names of attributes that are not renamed.
+     * @param  unhandled    an initially empty map where to add expressions that are not handled by the new table.
+     * @throws InvalidFilterValueException if there is an error in the declaration of property values.
      */
-    Table(final Table parent) {
-        super(parent.listeners, false);
-        database = parent.database;
-        query    = parent.query;
-        name     = parent.name;
-
-        // TODO: filter the columns.
-        primaryKey   = parent.primaryKey;
-        attributes   = parent.attributes;
-        importedKeys = parent.importedKeys;
-        exportedKeys = parent.exportedKeys;
-        featureType  = parent.featureType;
-        hasGeometry  = parent.hasGeometry;
-        hasRaster    = parent.hasRaster;
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    Table(final Table source,
+          final FeatureProjection projection,
+          final Set<String> reusedNames,
+          final Map<String, Expression<? super Feature, ?>> unhandled)
+    {
+        super(source.listeners, false);
+        database    = source.database;
+        query       = source.query;
+        name        = source.name;
+        featureType = projection.featureType;
+        /*
+         * Temporary values the fields, before assignment to final fields.
+         * The final number of attributes and foreigner keys may be smaller.
+         */
+        final var attributes   = new Column  [source.attributes  .length];
+        final var importedKeys = new Relation[source.importedKeys.length];
+        final var exportedKeys = new Relation[source.exportedKeys.length];
+        int attributesCount    = 0;
+        int importedKeysCount  = 0;
+        int exportedKeysCount  = 0;
+        boolean hasGeometry    = false;
+        /*
+         * Take all columns that we can put in the `WHERE` clause of the SQL statement.
+         * The columns that we cannot take will be declared in the `unhandled` bit set.
+         */
+        final List<String> storedProperties = projection.getStoredPropertyNames();
+        final int count = storedProperties.size();
+        for (int i=0; i<count; i++) {
+            final String xpath = projection.getSourcePropertyName(i, false);
+            if (xpath == null) {
+                unhandled.put(storedProperties.get(i), projection.getExpression(i));
+                continue;
+            }
+            final Column column = source.getColumn(xpath);
+            if (column != null) {
+                hasGeometry |= column.getGeometryType().isPresent();
+                final String name = storedProperties.get(i);
+                final Column renamed = column.rename(name);
+                attributes[attributesCount++] = renamed;
+                if (renamed == column) {
+                    reusedNames.add(name);
+                }
+                continue;
+            }
+            Relation relation = source.getRelation(xpath, false);
+            if (relation != null) {
+                importedKeys[importedKeysCount++] = relation;
+                continue;
+            }
+            relation = source.getRelation(xpath, false);
+            if (relation != null) {
+                exportedKeys[exportedKeysCount++] = relation;
+                continue;
+            }
+            throw new InvalidFilterValueException(Errors.forLocale(listeners.getLocale())
+                    .getString(Errors.Keys.PropertyNotFound_2, source.featureType.getName(), xpath));
+        }
+        /*
+         * Save the columns and foreigner keys that this table handles.
+         * Take the primary key only if we have all the needed columns
+         * and those columns have the same names as in the source table.
+         */
+        this.hasGeometry  = hasGeometry;
+        this.hasRaster    = source.hasRaster;   // Not yet accurately determined.
+        this.attributes   = ArraysExt.resize(attributes,   attributesCount);
+        this.importedKeys = ArraysExt.resize(importedKeys, importedKeysCount);
+        this.exportedKeys = ArraysExt.resize(exportedKeys, exportedKeysCount);
+        if (source.primaryKey != null) {
+            for (String column : source.primaryKey.getColumns()) {
+                final int i = storedProperties.indexOf(column);
+                if (i < 0 || !column.equals(projection.getSourcePropertyName(i, true))) {
+                    primaryKey = null;
+                    return;
+                }
+            }
+        }
+        this.primaryKey = source.primaryKey;
     }
 
     /**
@@ -229,7 +305,7 @@ final class Table extends AbstractFeatureSet {
                      * have been set to association names. If `ClassCastException` occurs here, it is a bug
                      * in our object constructions.
                      */
-                    final var association = (FeatureAssociationRole) featureType.getProperty(relation.propertyName);
+                    final var association = (FeatureAssociationRole) featureType.getProperty(relation.getPropertyName());
                     final Table table = tables.get(association.getValueType().getName());
                     if (table == null) {
                         throw new InternalDataStoreException(association.toString());
@@ -278,7 +354,7 @@ final class Table extends AbstractFeatureSet {
     final void appendTo(TreeTable.Node parent) {
         parent = Relation.newChild(parent, featureType.getName().toString());
         for (final Column attribute : attributes) {
-            TableReference.newChild(parent, attribute.propertyName);
+            TableReference.newChild(parent, attribute.getPropertyName());
         }
         appendAll(parent, importedKeys, " → ");
         appendAll(parent, exportedKeys, " ← ");
@@ -367,7 +443,7 @@ final class Table extends AbstractFeatureSet {
             if (m == null) {
                 m = JDK19.newHashMap(attributes.length);
                 for (final Column c : attributes) {
-                    String label = c.propertyName;
+                    String label = c.getPropertyName();
                     m.put(label, c);
                     final int s = label.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
                     if (s >= 0) {
@@ -378,6 +454,30 @@ final class Table extends AbstractFeatureSet {
             }
         }
         return m.get(xpath);
+    }
+
+    /**
+     * Returns the relation from an attribute name specified as XPath.
+     * See {@link #getColumn(String)} for a note on the wat that {@code xpath} is interpreted.
+     *
+     * @param  xpath    the XPath (currently only attribute name).
+     * @param  exports  {@code true} for searching in exported keys, or {@code false} for searching in imported keys.
+     * @return relation for the given XPath, or {@code null} if the specified attribute is not found.
+     */
+    private Relation getRelation(final String xpath, final boolean exports) {
+        boolean tip = false;
+        do {    // Execute 1 or 2 times: check tips only if no exact match.
+            for (final Relation c : (exports ? exportedKeys : importedKeys)) {
+                String label = c.getPropertyName();
+                if (tip) {
+                    label = label.substring(label.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR) + 1);
+                }
+                if (label.equals(xpath)) {
+                    return c;
+                }
+            }
+        } while ((tip = !tip) == true);
+        return null;
     }
 
     /**
