@@ -477,7 +477,7 @@ public class ImageProcessor implements Cloneable {
      */
     public synchronized void setPositionalAccuracyHints(final Quantity<?>... hints) {
         if (hints != null) {
-            final Quantity<?>[] copy = new Quantity<?>[hints.length];
+            final var copy = new Quantity<?>[hints.length];
             int n = 0;
             for (final Quantity<?> hint : hints) {
                 if (hint != null) copy[n++] = hint;
@@ -1551,7 +1551,7 @@ public class ImageProcessor implements Cloneable {
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final ImageProcessor other = (ImageProcessor) object;
+            final var other = (ImageProcessor) object;
             final Mode          executionMode;
             final ErrorHandler  errorHandler;
             final Interpolation interpolation;

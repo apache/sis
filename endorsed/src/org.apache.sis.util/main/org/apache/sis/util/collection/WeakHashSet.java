@@ -285,6 +285,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *         }
      *         // Do the comparison
      *     }
+     *     }
      *
      * @param  <T>      the type of the element to get.
      * @param  element  the element to get or to add in the set if not already presents. Can be {@code null}.
