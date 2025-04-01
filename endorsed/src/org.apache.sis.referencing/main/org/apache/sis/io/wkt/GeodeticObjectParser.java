@@ -18,7 +18,6 @@ package org.apache.sis.io.wkt;
 
 import java.net.URI;
 import java.util.Map;
-import java.util.List;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -740,7 +739,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         CoordinateSystemAxis[] axes = null;
         CoordinateSystemAxis axis = parseAxis(type == null ? MANDATORY : OPTIONAL, parent, type, defaultUnit);
         if (axis != null) {
-            final List<CoordinateSystemAxis> list = new ArrayList<>(dimension + 2);
+            final var list = new ArrayList<CoordinateSystemAxis>(dimension + 2);
             do {
                 list.add(axis);
                 axis = parseAxis(list.size() < dimension ? MANDATORY : OPTIONAL, parent, type, defaultUnit);
@@ -889,7 +888,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          */
         final String name;
         {   // For keeping the `buffer` variable local to this block.
-            final StringBuilder buffer = new StringBuilder();
+            final var buffer = new StringBuilder();
             if (type != null && !type.isEmpty()) {
                 final int c = type.codePointAt(0);
                 buffer.appendCodePoint(Character.toUpperCase(c))
@@ -1186,7 +1185,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (element == null) {
             return null;
         }
-        final double[] values = new double[ToWGS84.length];
+        final var values = new double[ToWGS84.length];
         for (int i=0; i<values.length;) {
             values[i] = element.pullDouble(ToWGS84[i]);
             if ((++i % 3) == 0 && element.isEmpty()) {
@@ -1194,7 +1193,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         element.close(ignoredElements);
-        final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+        final var info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
         info.setValues(values);
         return info;
     }
@@ -2159,6 +2158,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, isWKT1, csUnit, geoCRS.getDatum());
             final Map<String,?> properties = parseMetadataAndClose(element, name, conversion);
             if (cs instanceof CartesianCS) {
+                /*
+                 * TODO: if the CartesianCS is three-dimensional, we need to ensure that the base CRS is also
+                 * three-dimensional. We could do that by parsing the CS before to invoke `parseGeodeticCRS`.
+                 */
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 return crsFactory.createProjectedCRS(properties, (GeographicCRS) geoCRS, conversion, (CartesianCS) cs);
             }
@@ -2193,7 +2196,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String  name = element.pullString("name");
         CoordinateReferenceSystem crs;
-        final List<CoordinateReferenceSystem> components = new ArrayList<>(4);
+        final var components = new ArrayList<CoordinateReferenceSystem>(4);
         while ((crs = parseCoordinateReferenceSystem(element, components.size() < 2)) != null) {
             components.add(crs);
         }
@@ -2237,8 +2240,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * We have to guess some reasonable one with arbitrary units. We try to construct the one which
          * contains as few information as possible, in order to avoid providing wrong information.
          */
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[toBase.getSourceDimensions()];
-        final StringBuilder buffer = new StringBuilder(name).append(" axis ");
+        final var axes = new CoordinateSystemAxis[toBase.getSourceDimensions()];
+        final var buffer = new StringBuilder(name).append(" axis ");
         final int start = buffer.length();
         final CSFactory csFactory = factories.getCSFactory();
         try {
@@ -2252,7 +2255,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
             final Map<String,Object> axisName = singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes));
-            final CoordinateSystem derivedCS = new AbstractCS(axisName, axes);
+            final var derivedCS = new AbstractCS(axisName, axes);
             /*
              * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
              * This coordinate system cannot be easily constructed from the information provided by

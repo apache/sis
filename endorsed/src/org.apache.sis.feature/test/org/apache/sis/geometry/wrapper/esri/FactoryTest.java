@@ -82,7 +82,7 @@ public final class FactoryTest extends GeometriesTestCase {
     @Override
     public void testCreatePolyline() {
         super.testCreatePolyline();
-        final Polyline poly = (Polyline) geometry;
+        final var poly = (Polyline) geometry;
         assertEquals(2, poly.getPathCount());
     }
 
@@ -93,7 +93,7 @@ public final class FactoryTest extends GeometriesTestCase {
     @Override
     public void testMergePolylines() {
         super.testMergePolylines();
-        final Polyline poly = (Polyline) geometry;
+        final var poly = (Polyline) geometry;
         assertEquals(3, poly.getPathCount());
     }
 
@@ -105,7 +105,7 @@ public final class FactoryTest extends GeometriesTestCase {
     @Override
     protected void assertWktEquals(String expected, final String actual) {
         assertTrue(actual.startsWith("MULTI"));
-        final StringBuilder b = new StringBuilder(expected.length() + 7).append("MULTI").append(expected);
+        final var b = new StringBuilder(expected.length() + 7).append("MULTI").append(expected);
         StringBuilders.replace(b, "(", "((");
         StringBuilders.replace(b, ")", "))");
         expected = b.toString();
@@ -121,6 +121,6 @@ public final class FactoryTest extends GeometriesTestCase {
         final GeometryWrapper ogw = other.castOrWrap(other.createPoint(5, 6));
         assertNotNull(other.getGeometry(ogw));
         var e = assertThrows(ClassCastException.class, () -> factory.getGeometry(ogw));
-        assertMessageContains(e, "ESRI", "JAVA2D");
+        assertMessageContains(e, "ESRI", "Java2D");
     }
 }

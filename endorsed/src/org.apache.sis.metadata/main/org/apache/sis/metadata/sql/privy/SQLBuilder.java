@@ -18,6 +18,11 @@ package org.apache.sis.metadata.sql.privy;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQueries;
 import org.apache.sis.util.CharSequences;
 
 
@@ -57,7 +62,7 @@ public class SQLBuilder extends Syntax {
     /**
      * Creates a new {@code SQLBuilder} initialized from the given database metadata.
      *
-     * @param  metadata     the database metadata.
+     * @param  metadata     the database metadata, or {@code null} if unavailable.
      * @param  quoteSchema  whether the schema name should be written between quotes.
      * @throws SQLException if an error occurred while fetching the database metadata.
      */
@@ -154,27 +159,52 @@ public class SQLBuilder extends Syntax {
     /**
      * Appends an identifier between quote characters.
      *
-     * @param  identifier  the identifier to append.
+     * @param  name  the identifier to append.
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder appendIdentifier(final String identifier) {
-        buffer.append(quote).append(identifier).append(quote);
+    public final SQLBuilder appendIdentifier(final String name) {
+        buffer.append(quote).append(name).append(quote);
         return this;
     }
 
     /**
      * Appends an identifier for an element in the given schema.
+     * The following rules apply:
      * <ul>
      *   <li>The given schema will be written only if non-null.</li>
-     *   <li>The given schema will be quoted only if {@code quoteSchema} is {@code true}.</li>
-     *   <li>The given identifier is always quoted.</li>
+     *   <li>The given schema will be quoted only if {@link #quoteSchema} is {@code true}.</li>
+     *   <li>The given name is always quoted.</li>
      * </ul>
      *
-     * @param  schema      the schema, or {@code null} or empty if none.
-     * @param  identifier  the identifier to append.
+     * @param  schema  the schema, or {@code null} or empty if none.
+     * @param  name    the name part of the identifier to append.
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder appendIdentifier(final String schema, final String identifier) {
+    public final SQLBuilder appendIdentifier(final String schema, final String name) {
+        return appendIdentifier(null, schema, name, true);
+    }
+
+    /**
+     * Appends an identifier for an element in the given schema and catalog.
+     * The schema is quoted only if {@link #quoteSchema} is {@code true}.
+     * The name part is quoted only if {@code quoteName} is {@code true}.
+     * Unquoted names are useful when the name is for built-in functions,
+     * which often use the lower/upper case convention of the database.
+     *
+     * @param  catalog    the catalog, or {@code null} or empty if none.
+     * @param  schema     the schema, or {@code null} or empty if none.
+     * @param  name       the name part of the identifier to append.
+     * @param  quoteName  whether to quote the name part.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder appendIdentifier(final String catalog, final String schema, final String name, final boolean quoteName) {
+        if (catalog != null && !catalog.isEmpty()) {
+            appendIdentifier(catalog);
+            buffer.append('.');
+            if (schema == null || schema.isEmpty()) {
+                buffer.append(quote).append(quote).append('.');
+            }
+        }
         if (schema != null && !schema.isEmpty()) {
             if (quoteSchema) {
                 appendIdentifier(schema);
@@ -183,26 +213,12 @@ public class SQLBuilder extends Syntax {
             }
             buffer.append('.');
         }
-        return appendIdentifier(identifier);
-    }
-
-    /**
-     * Appends an identifier for an element in the given schema and catalog.
-     *
-     * @param  catalog     the catalog, or {@code null} or empty if none.
-     * @param  schema      the schema, or {@code null} or empty if none.
-     * @param  identifier  the identifier to append.
-     * @return this builder, for method call chaining.
-     */
-    public final SQLBuilder appendIdentifier(final String catalog, final String schema, final String identifier) {
-        if (catalog != null && !catalog.isEmpty()) {
-            appendIdentifier(catalog);
-            buffer.append('.');
-            if (schema == null) {
-                buffer.append(quote).append(quote).append('.');
-            }
+        if (quoteName) {
+            return appendIdentifier(name);
+        } else {
+            buffer.append(name);
+            return this;
         }
-        return appendIdentifier(schema, identifier);
     }
 
     /**
@@ -241,6 +257,20 @@ public class SQLBuilder extends Syntax {
      * Appends a value in a {@code SELECT} or {@code INSERT} statement.
      * If the given value is a character string, then it is written between quotes.
      *
+     * <h4>Date and time</h4>
+     * The standard SQL date format for inserting or setting dates is {@code 'YYYY-MM-DD'}.
+     * This format is accepted by various SQL databases, including PostgreSQL and MySQL.
+     * The time format is {@code 'HH:MM:SS'}, optionally followed by a time zone offset
+     * in the {@code '+HH:MM} format. If the temporal object provides both a date and a time,
+     * these components are separated by a space instead of the ISO 8601 {@code 'T'} character.
+     * Example of a date/time with time zone: {@code '2025-03-12 14:30:00+01:00'}.
+     *
+     * <h4>When to use</h4>
+     * {@link java.sql.PreparedStatement} should be used instead of this method,
+     * for letting the <abbr>JDBC</abbr> driver performs appropriate conversion.
+     * This method is sometime useful for building a {@code WHERE} clause,
+     * when the number and type of conditions are not fixed in advance.
+     *
      * @param  value  the value to append, or {@code null}.
      * @return this builder, for method call chaining.
      */
@@ -249,6 +279,28 @@ public class SQLBuilder extends Syntax {
             buffer.append(value);
         } else if (value instanceof Boolean) {
             buffer.append((Boolean) value ? "TRUE" : "FALSE");
+        } else if (value instanceof TemporalAccessor) {
+            final var t = (TemporalAccessor) value;
+            final LocalDate date = t.query(TemporalQueries.localDate());
+            final LocalTime time = t.query(TemporalQueries.localTime());
+            if (time == null && date == null) {
+                return appendValue(value.toString());
+            }
+            buffer.append('\'');
+            if (date != null) {
+                buffer.append(date);        // `toString()` defined as "uuuu-MM-dd" ('u' is year).
+                if (time != null) {
+                    buffer.append(' ');
+                }
+            }
+            if (time != null) {
+                buffer.append(time);        // `toString()` defined as "HH:mm[:ss]" optionally with fractions.
+                final ZoneOffset zone = t.query(TemporalQueries.offset());
+                if (zone != null) {
+                    buffer.append(zone);    // `toString()` defined as "Z" or "±hh:mm" optionally with seconds.
+                }
+            }
+            buffer.append('\'');
         } else {
             return appendValue((value != null) ? value.toString() : (String) null);
         }
@@ -258,6 +310,8 @@ public class SQLBuilder extends Syntax {
     /**
      * Appends a string as an escaped {@code LIKE} argument.
      * This method does not put any {@code '} character, and does not accept null argument.
+     * If the database does not have predefined wildcard characters, then the query result
+     * may contain false positives.
      *
      * <p>This method does not double the simple quotes of the given string on intent, because
      * it may be used in a {@code PreparedStatement}. If the simple quotes need to be doubled,
@@ -265,14 +319,20 @@ public class SQLBuilder extends Syntax {
      *
      * @param  value  the value to append.
      * @return this builder, for method call chaining.
+     *
+     * @see #escapeWildcards(String)
+     * @see #canEscapeWildcards()
      */
     public final SQLBuilder appendWildcardEscaped(final String value) {
         final int start = buffer.length();
         buffer.append(value);
-        for (int i = buffer.length(); --i >= start;) {
-            final char c = buffer.charAt(i);
-            if (c == '_' || c == '%') {
-                buffer.insert(i, escape);
+        if (canEscapeWildcards()) {
+            final char escapeChar = escape.charAt(0);
+            for (int i = buffer.length(); --i >= start;) {
+                final char c = buffer.charAt(i);
+                if (c == '_' || c == '%' || (c == escapeChar && value.startsWith(escape, i))) {
+                    buffer.insert(i, escape);
+                }
             }
         }
         return this;

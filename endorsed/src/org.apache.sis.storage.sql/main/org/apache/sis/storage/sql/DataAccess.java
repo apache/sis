@@ -90,6 +90,8 @@ public class DataAccess implements AutoCloseable {
     /**
      * Helper methods for fetching information such as coordinate reference systems.
      * Created when first needed.
+     *
+     * @see #spatialInformation()
      */
     private InfoStatements spatialInformation;
 

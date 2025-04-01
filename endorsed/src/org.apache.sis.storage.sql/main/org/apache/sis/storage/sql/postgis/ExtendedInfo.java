@@ -20,6 +20,7 @@ import java.util.Map;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import org.apache.sis.storage.sql.feature.Analyzer;
 import org.apache.sis.storage.sql.feature.Column;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.TableReference;
@@ -37,13 +38,17 @@ final class ExtendedInfo extends InfoStatements {
     /**
      * A statement for fetching geometric information for a specific column.
      * This statement is used for objects of type "Geography", which is a data type specific to PostGIS.
+     * May be {@code null} if not yet prepared or if the table does not exist.
+     * This field is valid if {@link #isAnalysisPrepared} is {@code true}.
      */
     private PreparedStatement geographyColumns;
 
     /**
      * A statement for fetching raster information for a specific column.
+     * May be {@code null} if not yet prepared or if the table does not exist.
+     * This field is valid if {@link #isAnalysisPrepared} is {@code true}.
      */
-    protected PreparedStatement rasterColumns;
+    private PreparedStatement rasterColumns;
 
     /**
      * The object for reading a raster, or {@code null} if not yet created.
@@ -61,19 +66,17 @@ final class ExtendedInfo extends InfoStatements {
     /**
      * Gets all geometry columns for the given table and sets the geometry information on the corresponding columns.
      *
-     * @param  source   the table for which to get all geometry columns.
-     * @param  columns  all columns for the specified table. Keys are column names.
+     * @param  analyzer  the opaque temporary object used for analyzing the database schema.
+     * @param  source    the table for which to get all geometry columns.
+     * @param  columns   all columns for the specified table. Keys are column names.
      */
     @Override
-    public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
-        if (geometryColumns == null) {
-            geometryColumns = prepareIntrospectionStatement("geometry_columns", false, "f_geometry_column", "type");
-        }
-        if (geographyColumns == null) {
-            geographyColumns = prepareIntrospectionStatement("geography_columns", false, "f_geography_column", "type");
-        }
-        if (rasterColumns == null) {
-            rasterColumns = prepareIntrospectionStatement("raster_columns", true, "r_raster_column", "");
+    public void completeIntrospection(final Analyzer analyzer, final TableReference source, final Map<String,Column> columns) throws Exception {
+        if (!isAnalysisPrepared) {
+            isAnalysisPrepared = true;
+            geometryColumns  = prepareIntrospectionStatement(analyzer, "geometry_columns",  false, "f_geometry_column",  "type");
+            geographyColumns = prepareIntrospectionStatement(analyzer, "geography_columns", false, "f_geography_column", "type");
+            rasterColumns    = prepareIntrospectionStatement(analyzer, "raster_columns",    true,  "r_raster_column",    "");
         }
         configureSpatialColumns(geometryColumns,  source, columns, GeometryTypeEncoding.TEXTUAL);
         configureSpatialColumns(geographyColumns, source, columns, GeometryTypeEncoding.TEXTUAL);
@@ -94,10 +97,15 @@ final class ExtendedInfo extends InfoStatements {
      * Closes all prepared statements. This method does <strong>not</strong> close the connection.
      */
     @Override
+    @SuppressWarnings("ConvertToTryWithResources")
     public void close() throws SQLException {
         if (geographyColumns != null) {
             geographyColumns.close();
             geographyColumns = null;
+        }
+        if (rasterColumns != null) {
+            rasterColumns.close();
+            rasterColumns = null;
         }
         super.close();
     }

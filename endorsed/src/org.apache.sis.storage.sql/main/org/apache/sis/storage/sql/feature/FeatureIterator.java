@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.sql.feature;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -26,7 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
-import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.storage.base.FeatureProjection;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -79,6 +78,10 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
 
     /**
      * Estimated number of remaining rows, or ≤ 0 if unknown.
+     * Zero is considered unknown (instead of only negative values)
+     * because some databases return 0 when they cannot count.
+     *
+     * @see Table#countRows(DatabaseMetaData, boolean, boolean)
      */
     private final long estimatedSize;
 
@@ -101,27 +104,57 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
     private final FeatureIterator[] dependencies;
 
     /**
+     * Additional properties to compute from the main properties, or {@code null} if none.
+     * This is usually {@code null}. It may be non-null if the user specified a query with
+     * operations other than {@code ValueReference} or {@code Literal}.
+     *
+     * <h4>Completion</h4>
+     * Usually, the expressions are executed on a source feature instance and the results
+     * are copied in a target feature instance. However, if {@link #completion} is true,
+     * then the source and target features are the same instance. The completion mode is
+     * used when the target feature have all information needed for computing the query
+     * expressions, so that the projection is only a completion.
+     */
+    private final FeatureProjection projection;
+
+    /**
+     * Whether the {@linkplain #projection} should be applied on the same
+     */
+    private final boolean completion;
+
+    /**
      * Creates a new iterator over features.
      *
      * @param table       the source table.
      * @param connection  connection to the database, used for creating the statement.
      * @param distinct    whether the set should contain distinct feature instances.
-     * @param filter      condition to append, not including the {@code WHERE} keyword.
+     * @param selection   condition to append, not including the {@code WHERE} keyword.
      * @param sort        the {@code ORDER BY} clauses, or {@code null} if none.
      * @param offset      number of rows to skip in underlying SQL query, or ≤ 0 for none.
      * @param count       maximum number of rows to return, or ≤ 0 for no limit.
+     * @param projection  additional properties to compute, or {@code null} if none.
      */
-    FeatureIterator(final Table table, final Connection connection,
-             final boolean distinct, final String filter, final SortBy<? super Feature> sort,
-             final long offset, final long count)
-            throws SQLException, InternalDataStoreException
+    FeatureIterator(final Table           table,
+                    final Connection      connection,
+                    final boolean         distinct,
+                    final SelectionClause selection,
+                    final SortBy<? super Feature> sort,
+                    final long offset,
+                    final long count,
+                    final FeatureProjection projection)
+            throws Exception
     {
         adapter = table.adapter(connection);
-        spatialInformation = table.database.getSpatialSchema().isPresent()
-                ? table.database.createInfoStatements(connection) : null;
-        String sql = adapter.sql;
+        String sql = adapter.sql;   // Will be completed below with `WHERE` clause if needed.
+
+        if (table.database.getSpatialSchema().isPresent()) {
+            spatialInformation = table.database.createInfoStatements(connection);
+        } else {
+            spatialInformation = null;
+        }
+        final String filter = (selection != null) ? selection.query(connection, spatialInformation) : null;
         if (distinct || filter != null || sort != null || offset > 0 || count > 0) {
-            final SQLBuilder builder = new SQLBuilder(table.database).append(sql);
+            final var builder = new SQLBuilder(table.database).append(sql);
             if (distinct) {
                 builder.insertDistinctAfterSelect();
             }
@@ -141,14 +174,21 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
             }
             sql = builder.appendFetchPage(offset, count).toString();
         }
-        result = connection.createStatement().executeQuery(sql);
-        dependencies = new FeatureIterator[adapter.dependencies.length];
-        statement = null;
+        /*
+         * Create the statement for the SQL query. The call to `createStatement()` should be at the end,
+         * after the call to `countRows(…)`, because some JDBC drivers close the statement when we ask
+         * for metadata (probably a bug, but not all JDBC drivers are mature).
+         */
         if (filter == null) {
             estimatedSize = Math.min(table.countRows(connection.getMetaData(), distinct, true), offset + count) - offset;
         } else {
             estimatedSize = 0;              // Cannot estimate the size if there is filtering conditions.
         }
+        this.result       = connection.createStatement().executeQuery(sql);
+        this.dependencies = new FeatureIterator[adapter.dependencies.length];
+        this.completion   = projection != null && projection.featureType == table.featureType;
+        this.projection   = projection;
+        this.statement    = null;
     }
 
     /**
@@ -169,6 +209,8 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
         this.adapter  = adapter;
         statement     = connection.prepareStatement(adapter.sql);
         dependencies  = new FeatureIterator[adapter.dependencies.length];
+        completion    = false;
+        projection    = null;
         estimatedSize = 0;
     }
 
@@ -244,7 +286,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
      */
     private boolean fetch(final Consumer<? super Feature> action, final boolean all) throws Exception {
         while (result.next()) {
-            final Feature feature = adapter.createFeature(spatialInformation, result);
+            Feature feature = adapter.createFeature(spatialInformation, result);
             for (int i=0; i < dependencies.length; i++) {
                 WeakValueHashMap<?,Object> instances = null;
                 Object key = null, value = null;
@@ -278,6 +320,19 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
                 }
                 feature.setPropertyValue(adapter.associationNames[i], value);
             }
+            /*
+             * At this point, we have done everything we could do using SQL statements.
+             * Those statements were derived (among others) from expressions that have
+             * been recognized as `ValueReference` instances. If the user specified more
+             * complex expressions, we need to handle them in Java code.
+             */
+            if (projection != null) {
+                if (completion) {
+                    projection.applySelf(feature);
+                } else {
+                    feature = projection.apply(feature);
+                }
+            }
             action.accept(feature);
             if (!all) return true;
         }
@@ -293,7 +348,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
      * @return the feature as a singleton {@code Feature} or as a {@code Collection<Feature>}.
      */
     private Object fetchReferenced(final Feature owner) throws Exception {
-        final List<Feature> features = new ArrayList<>();
+        final var features = new ArrayList<Feature>();
         try (ResultSet r = statement.executeQuery()) {
             result = r;
             fetch(features::add, true);

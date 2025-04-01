@@ -51,25 +51,31 @@ import org.apache.sis.util.resources.Errors;
  * @see ResultSet#getMetaData()
  * @see DatabaseMetaData#getColumns(String, String, String, String)
  */
-public final class Column {
+public final class Column implements Cloneable {
     /**
-     * Name of the column.
+     * Name of the column as declared in the table.
      *
      * @see Reflection#COLUMN_NAME
+     * @see ResultSetMetaData#getColumnName(int)
      */
     public final String name;
 
     /**
-     * Title to use for displays. This is the name specified by the {@code AS} keyword in a {@code SELECT} clause.
-     * This is never null but may be identical to {@link #name} if no label was specified.
+     * Name of the column as declared in with a {@code AS} clause in the <abbr>SQL</abbr> statement.
+     * This is never null but may be identical to {@link #name} if no {@code AS} clause was specified.
+     *
+     * @see ResultSetMetaData#getColumnLabel(int)
      */
     public final String label;
 
     /**
      * Name to use for feature property. This is the same as {@link #label} unless there is a name collision.
      * In that case the property name is modified for avoiding the collision.
+     *
+     * @see #getPropertyName()
+     * @see #setPropertyName(AttributeTypeBuilder)
      */
-    String propertyName;
+    private String propertyName;
 
     /**
      * Type of values as one of the constants enumerated in {@link Types} class.
@@ -234,6 +240,42 @@ public final class Column {
     }
 
     /**
+     * Returns a column identical to this column except for the property name.
+     * This method does not modify this column, but may return {@code this} if
+     * there is no name change to apply.
+     *
+     * @param  property  the new property name.
+     * @return a column with the given property name (may be {@code this}).
+     */
+    final Column rename(final String property) {
+        if (property.equals(propertyName)) {
+            return this;
+        }
+        final Column c = clone();
+        c.propertyName = property;
+        return c;
+    }
+
+    /**
+     * Returns the name to use for feature property.
+     * This is often, but not necessarily, the column {@linkplain #name}.
+     *
+     * @return the name of the feature property where to store the value.
+     */
+    public final String getPropertyName() {
+        return propertyName;
+    }
+
+    /**
+     * Sets the property name.
+     *
+     * @param attribute the builder which is creating the attribute for this column.
+     */
+    final void setPropertyName(final AttributeTypeBuilder<?> attribute) {
+        propertyName = attribute.getName().toString();
+    }
+
+    /**
      * If this column is a geometry column, returns the type of the geometry objects.
      * Otherwise returns empty (including the case where this is a raster column).
      * Note that if this column is a geometry column but the geometry type was not defined,
@@ -299,5 +341,20 @@ public final class Column {
         return Strings.toString(getClass(),
                 "name", name, "propertyName", propertyName, "type", type, "typeName", typeName,
                 "geometryType", geometryType, "precision", precision, "isNullable", isNullable);
+    }
+
+    /**
+     * Returns a shallow clone of this column.
+     * Used by this {@code Column} implementation only and should not be invoked directly.
+     *
+     * @see #rename(String)
+     */
+    @Override
+    protected final Column clone() {
+        try {
+            return (Column) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 }

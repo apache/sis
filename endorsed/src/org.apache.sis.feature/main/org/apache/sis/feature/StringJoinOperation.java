@@ -34,7 +34,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.feature.privy.AttributeConvention;
-import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.resources.Errors;
 
@@ -78,7 +77,7 @@ final class StringJoinOperation extends AbstractOperation {
     /**
      * The parameter descriptor for the "String join" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("StringJoin");
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = parameters("StringJoin");
 
     /**
      * A pseudo-converter returning the identifier of a feature. This pseudo-converter is used in place

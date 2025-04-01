@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.function.Function;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.filter.privy.FunctionNames;
 import org.apache.sis.filter.privy.Visitor;
 
@@ -57,7 +56,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
     /**
      * The parameter descriptor for the "Expression" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup PARAMETERS = FeatureUtilities.parameters("Expression");
+    private static final ParameterDescriptorGroup PARAMETERS = parameters("Expression");
 
     /**
      * The expression to which to delegate the execution of this operation.

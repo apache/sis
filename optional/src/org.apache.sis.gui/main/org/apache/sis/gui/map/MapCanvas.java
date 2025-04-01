@@ -131,7 +131,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 public abstract class MapCanvas extends PlanarCanvas {
@@ -200,7 +200,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * The data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
-     * We differ this recomputation until all parameters are known.
+     * We differ this computation until all parameters are known.
      *
      * @see #setObjectiveBounds(Envelope)
      * @see #invalidObjectiveToDisplay
@@ -1195,7 +1195,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                     return;
                 }
                 invalidObjectiveToDisplay = false;
-                final GridExtent extent = new GridExtent(null,
+                final var extent = new GridExtent(null,
                         new long[] {Math.round(target.getMinX()), Math.round(target.getMinY())},
                         new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())}, false);
                 /*

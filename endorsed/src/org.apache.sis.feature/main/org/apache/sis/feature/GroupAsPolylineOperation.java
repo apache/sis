@@ -23,7 +23,6 @@ import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.privy.AttributeConvention;
-import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
@@ -55,7 +54,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
     /**
      * The parameter descriptor for the "Group polylines" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("GroupAsPolyline");
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = parameters("GroupAsPolyline");
 
     /**
      * Name of the property to follow in order to get the geometries to add to a polyline.

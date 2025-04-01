@@ -30,6 +30,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
@@ -124,28 +126,32 @@ public final class JTS extends Static {
             if (userData instanceof CoordinateReferenceSystem) {
                 return (CoordinateReferenceSystem) userData;
             } else if (userData instanceof Map<?,?>) {
-                final Map<?,?> map = (Map<?,?>) userData;
+                final var map = (Map<?,?>) userData;
                 final Object value = map.get(CRS_KEY);
                 if (value instanceof CoordinateReferenceSystem) {
                     return (CoordinateReferenceSystem) value;
                 }
             }
             /*
-             * Fallback on SRID with the assumption that they are EPSG codes.
+             * Fallback on SRID with the assumption that they are EPSG codes except for axis order which
+             * is (longitude, latitude). This is the order used in popular spatial databases and is also
+             * the order frequently used by other libraries that use JTS.
              *
              * TODO: This is not necessarily EPSG code. We need a plugin mechanism for specifying the authority.
              * It may be for example the "spatial_ref_sys" table of a spatial database.
              */
             final int srid = source.getSRID();
             if (srid > 0) {
-                return CRS.forCode(Constants.EPSG + ':' + srid);
+                CoordinateReferenceSystem crs = CRS.forCode(Constants.EPSG + ':' + srid);
+                crs = AbstractCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
+                return crs;
             }
         }
         return null;
     }
 
     /**
-     * Sets the Coordinate Reference System (CRS) in the specified geometry. This method overwrite any previous
+     * Sets the Coordinate Reference System (CRS) in the specified geometry. This method overwrites any previous
      * user data; it should be invoked only when the geometry is known to not store any other information.
      * In current Apache SIS usage, this method is invoked only for newly created geometries.
      *
@@ -155,7 +161,7 @@ public final class JTS extends Static {
      * @param  target  the geometry where to store coordinate reference system information.
      * @param  crs     the CRS to store, or {@code null}.
      */
-    static void setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem crs) {
+    public static void setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem crs) {
         target.setUserData(crs);
         int epsg = 0;
         final Identifier id = IdentifiedObjects.getIdentifier(crs, Citations.EPSG);
@@ -207,7 +213,7 @@ public final class JTS extends Static {
             bbox = new DefaultGeographicBoundingBox();
             try {
                 final Envelope e = areaOfInterest.getEnvelopeInternal();
-                final GeneralEnvelope env = new GeneralEnvelope(sourceCRS);     // May be 3- or 4-dimensional.
+                final var env = new GeneralEnvelope(sourceCRS);     // May be 3- or 4-dimensional.
                 env.setRange(0, e.getMinX(), e.getMaxX());
                 env.setRange(1, e.getMinY(), e.getMaxY());
                 bbox.setBounds(env);
@@ -296,7 +302,7 @@ public final class JTS extends Static {
      */
     public static Geometry transform(Geometry geometry, final MathTransform transform) throws TransformException {
         if (geometry != null && transform != null && !transform.isIdentity()) {
-            final GeometryCoordinateTransform gct = new GeometryCoordinateTransform(transform, geometry.getFactory());
+            final var gct = new GeometryCoordinateTransform(transform, geometry.getFactory());
             geometry = gct.transform(geometry);
         }
         return geometry;

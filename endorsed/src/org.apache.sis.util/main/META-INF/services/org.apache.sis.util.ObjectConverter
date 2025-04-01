@@ -10,6 +10,15 @@ org.apache.sis.converter.StringConverter$Float
 org.apache.sis.converter.StringConverter$Double
 org.apache.sis.converter.StringConverter$BigInteger
 org.apache.sis.converter.StringConverter$BigDecimal
+org.apache.sis.converter.StringConverter$Instant
+org.apache.sis.converter.StringConverter$ZonedDateTime
+org.apache.sis.converter.StringConverter$OffsetDateTime
+org.apache.sis.converter.StringConverter$LocalDateTime
+org.apache.sis.converter.StringConverter$LocalDate
+org.apache.sis.converter.StringConverter$LocalTime
+org.apache.sis.converter.StringConverter$Year
+org.apache.sis.converter.StringConverter$YearMonth
+org.apache.sis.converter.StringConverter$MonthDay
 org.apache.sis.converter.StringConverter$Boolean
 org.apache.sis.converter.StringConverter$Locale
 org.apache.sis.converter.StringConverter$Charset
@@ -37,6 +46,8 @@ org.apache.sis.converter.PathConverter$URI_URL
 org.apache.sis.converter.DateConverter$Long
 org.apache.sis.converter.DateConverter$SQL
 org.apache.sis.converter.DateConverter$Timestamp
+org.apache.sis.converter.DateConverter$Instant
+org.apache.sis.converter.InstantConverter$Date
 org.apache.sis.converter.CollectionConverter$List
 org.apache.sis.converter.CollectionConverter$Set
 org.apache.sis.converter.FractionConverter

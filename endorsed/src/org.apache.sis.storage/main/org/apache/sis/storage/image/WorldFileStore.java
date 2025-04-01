@@ -232,27 +232,11 @@ public class WorldFileStore extends PRJDataStore {
     /**
      * Creates a new store from the given file, URL or stream.
      *
-     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  format  information about the storage (URL, stream, <i>etc</i>) and the reader/writer to use.
      * @throws DataStoreException if an error occurred while opening the stream.
      * @throws IOException if an error occurred while creating the image reader instance.
      */
-    public WorldFileStore(final WorldFileStoreProvider provider, final StorageConnector connector)
-            throws DataStoreException, IOException
-    {
-        this(new FormatFinder(provider, connector), true);
-    }
-
-    /**
-     * Creates a new store from the given file, URL or stream.
-     *
-     * @param  format    information about the storage (URL, stream, <i>etc</i>) and the reader/writer to use.
-     * @param  readOnly  {@code true} if the store should be open in read-only mode, ignoring {@code format}.
-     *                   This is a workaround while waiting for JEP 447: Statements before super(…).
-     * @throws DataStoreException if an error occurred while opening the stream.
-     * @throws IOException if an error occurred while creating the image reader instance.
-     */
-    WorldFileStore(final FormatFinder format, final boolean readOnly) throws DataStoreException, IOException {
+    WorldFileStore(final FormatFinder format) throws DataStoreException, IOException {
         super(format.provider, format.connector);
         listeners.useReadOnlyEvents();
         identifiers = new HashMap<>();
@@ -260,16 +244,13 @@ public class WorldFileStore extends PRJDataStore {
         if (format.storage instanceof Closeable) {
             toClose = (Closeable) format.storage;
         }
-        if (readOnly || !format.openAsWriter) {
+        if (!format.openAsWriter) {
             reader = format.getOrCreateReader();
             if (reader == null) {
                 throw new UnsupportedStorageException(super.getLocale(), WorldFileStoreProvider.NAME,
                             format.storage, format.connector.getOption(OptionKey.OPEN_OPTIONS));
             }
             configureReader();
-            if (readOnly) {
-                format.close();
-            }
             /*
              * Do not invoke any method that may cause the image reader to start reading the stream,
              * because the `WritableStore` subclass will want to save the initial stream position.
@@ -523,7 +504,7 @@ loop:   for (int convention=0;; convention++) {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
-            final MetadataBuilder builder = new MetadataBuilder();
+            final var builder = new MetadataBuilder();
             String format = reader().getFormatName();
             for (final String key : KNOWN_FORMATS) {
                 if (key.equalsIgnoreCase(format)) {
@@ -533,7 +514,7 @@ loop:   for (int convention=0;; convention++) {
                     break;
                 }
             }
-            builder.addFormatName(format);                          // Does nothing if `format` is null.
+            builder.addFormatName(format);      // Does nothing if `format` is null.
             builder.addFormatReaderSIS(WorldFileStoreProvider.NAME);
             builder.addResourceScope(ScopeCode.COVERAGE, null);
             builder.addSpatialRepresentation(null, getGridGeometry(MAIN_IMAGE), true);
@@ -815,7 +796,7 @@ loop:   for (int convention=0;; convention++) {
         final ImageReader codec = reader;
         if (codec != null) codec.abort();
         synchronized (this) {
-            final Closeable  stream = toClose;
+            final Closeable stream = toClose;
             reader       = null;
             toClose      = null;
             metadata     = null;

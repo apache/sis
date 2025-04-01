@@ -91,7 +91,6 @@ import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.privy.Merger;
 import org.apache.sis.temporal.TimeMethods;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.storage.AbstractResource;
@@ -1359,6 +1358,24 @@ public class MetadataBuilder {
     }
 
     /**
+     * Adds a mode in which the resource is represented.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/presentationForm}</li>
+     * </ul>
+     *
+     * @param  form  mode in which the resource is represented, or {@code null} if none.
+     *
+     * @see #addSpatialRepresentation(SpatialRepresentationType)
+     */
+    public final void addPresentationForm(final PresentationForm form) {
+        if (form != null) {
+            citation().getPresentationForms().add(form);
+        }
+    }
+
+    /**
      * Adds a brief narrative summary of the resource(s).
      * If a summary already exists, the new one will be appended after a new line.
      * Storage location is:
@@ -1412,10 +1429,13 @@ public class MetadataBuilder {
      * </ul>
      *
      * @param  details  other details, or {@code null} for no-operation.
+     *
+     * @see #addFormatCitationDetails(CharSequence)
      */
     public final void addOtherCitationDetails(final CharSequence details) {
         final InternationalString i18n = trim(details);
         if (i18n != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final DefaultCitation citation = citation();
             citation.setOtherCitationDetails(append(citation.getOtherCitationDetails(), i18n));
         }
@@ -1900,6 +1920,8 @@ public class MetadataBuilder {
      * </ul>
      *
      * @param  type  method used to spatially represent geographic information, or {@code null} for no-operation.
+     *
+     * @see #addPresentationForm(PresentationForm)
      */
     public final void addSpatialRepresentation(final SpatialRepresentationType type) {
         if (type != null) {
@@ -2021,7 +2043,7 @@ public class MetadataBuilder {
                 final double distance = unit.getConverterToAny(targetUnit).convert(resolution[i]);
                 if (setter == null) {
                     addTemporalResolution(distance);
-                } else if (Double.isFinite(distance)) {
+                } else if (distance > 0 && distance != Double.POSITIVE_INFINITY) {
                     var r = new DefaultResolution();
                     setter.accept(r, shared(distance));
                     addIfNotPresent(identification().getSpatialResolutions(), r);
@@ -2062,7 +2084,7 @@ public class MetadataBuilder {
      * @param  duration  the resolution in days, or {@code NaN} for no-operation.
      */
     public final void addTemporalResolution(final double duration) {
-        if (Double.isFinite(duration)) {
+        if (duration > 0 && duration != Double.POSITIVE_INFINITY) {
             addIfNotPresent(identification().getTemporalResolutions(),
                     Duration.ofNanos(Math.round(duration * Constants.NANOSECONDS_PER_DAY)));
         }
@@ -2263,7 +2285,7 @@ public class MetadataBuilder {
 
     /**
      * Sets the degree of detail in the given dimension.
-     * This method does nothing if the given resolution if NaN or infinite.
+     * This method does nothing if the given resolution is NaN or infinite.
      * Storage location is:
      *
      * <ul>
@@ -2275,7 +2297,7 @@ public class MetadataBuilder {
      * @param  unit        the resolution unit, of {@code null} if unknown.
      */
     public final void setAxisResolution(final int dimension, double resolution, final Unit<?> unit) {
-        if (Double.isFinite(resolution)) {
+        if (resolution > 0 && resolution != Double.POSITIVE_INFINITY) {
             /*
              * Value should be a Quantity<?>. Since GeoAPI does not yet allow that,
              * we convert to metres for now. Future version should store the value
@@ -3043,7 +3065,7 @@ public class MetadataBuilder {
      * used as an alternative name of the current formaT. Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/[alternate]Title}</li>
      * </ul>
      *
      * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
@@ -3055,6 +3077,16 @@ public class MetadataBuilder {
      * @see #addCompression(CharSequence)
      */
     public final void addFormatName(final CharSequence value) {
+        addFormatName(value, true);
+    }
+
+    /**
+     * Adds a name to the resource format, optionally doing nothing if a name is already present.
+     *
+     * @param  value  the format name, or {@code null} for no-operation.
+     * @param  more   {@code false} for doing nothing if a name is already present.
+     */
+    private void addFormatName(final CharSequence value, final boolean more) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
             @SuppressWarnings("LocalVariableHidesMemberVariable")
@@ -3062,7 +3094,7 @@ public class MetadataBuilder {
             DefaultCitation c = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
             if (c == null) {
                 c = new DefaultCitation(i18n);
-            } else {
+            } else if (more) {
                 addIfNotPresent(c.getAlternateTitles(), i18n);
             }
             format.setFormatSpecificationCitation(c);
@@ -3105,49 +3137,64 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a note about which reader is used. This method should not be invoked before
-     * the {@linkplain #addFormatName format name} has been set. Storage location is:
+     * Adds other information about the format. Apache SIS currently uses this
+     * location for specifying which software was used for reading the data.
+     * Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/identifier}</li>
      *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/otherCitationDetails}</li>
      * </ul>
      *
+     * @param  details  other details about the format, or {@code null} for no-operation.
+     *
+     * @see #addOtherCitationDetails(CharSequence)
+     */
+    public final void addFormatCitationDetails(final CharSequence details) {
+        final InternationalString i18n = trim(details);
+        if (i18n != null) {
+            final DefaultCitation c = getFormatCitation();
+            c.setOtherCitationDetails(append(c.getOtherCitationDetails(), i18n));
+        }
+    }
+
+    /**
+     * Adds a note about which reader is used. Apache SIS currently stores this information as other format
+     * citation details, but this location may change in a SIS future version if we find a better location.
+     * Storage location is as below, wrapped in a "Read by {0} version {1}" text:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/otherCitationDetails}</li>
+     * </ul>
+     *
+     * This method should not be invoked before the {@linkplain #addFormatName format name} has been set.
      * If this method is used together with {@link #setPredefinedFormat setPredefinedFormat(…)},
      * then the predefined format should be set <strong>before</strong> this method.
      *
-     * @param driver   library-specific way to identify the format (mandatory).
+     * <h4>Usage</h4>
+     * This method is invoked for various libraries such as GDAL, UCAR NetCDF and Apache SIS.
+     * For the specific case of Apache SIS, {@link #addFormatReaderSIS(String)} is a shortcut.
+     *
+     * @param driver   driver name to be wrapped in a "Read by {0} version {1}" text, or {@code null} for no-operation.
      * @param version  the library version, or {@code null} if unknown.
      */
-    public final void addFormatReader(final Identifier driver, final Version version) {
-        CharSequence title = null;
-        Citation authority = driver.getAuthority();
-        if (authority != null) {
-            title = authority.getTitle();
-            if (title != null) {
-                for (CharSequence t : authority.getAlternateTitles()) {
-                    if (t.length() < title.length()) {
-                        title = t;      // Alternate titles are often abbreviations.
-                    }
-                }
-            }
+    public final void addFormatReader(final CharSequence driver, final Version version) {
+        if (driver != null) {
+            addFormatCitationDetails(Resources.formatInternational(Resources.Keys.ReadBy_2, driver,
+                    (version != null) ? version : Vocabulary.formatInternational(Vocabulary.Keys.Unspecified)));
         }
-        final DefaultCitation c = getFormatCitation();
-        c.setOtherCitationDetails(
-                Resources.formatInternational(Resources.Keys.ReadBy_2, (title != null) ? title : driver.getCodeSpace(),
-                        (version != null) ? version : Vocabulary.formatInternational(Vocabulary.Keys.Unspecified)));
     }
 
     /**
      * Adds a note saying that Apache <abbr>SIS</abbr> has been used for decoding the format.
-     * This method should not be invoked before the {@linkplain #addFormatName format name} has been set.
+     * The argument should be the short name (identifier) of the {@code DataStoreProvider}.
+     * It is currently used only as a fallback when the {@linkplain #addFormatName format name}
+     * has not been set.
      *
-     * @param  name  the format name, or {@code null} if unspecified.
+     * @param  provider  the provider name, or {@code null} if unknown.
      */
-    public void addFormatReaderSIS(final String name) {
-        if (name != null) {
-            addFormatReader(new ImmutableIdentifier(Citations.SIS, Constants.SIS, name), Version.SIS);
-        }
+    public void addFormatReaderSIS(final String provider) {
+        addFormatName(provider, false);
+        addFormatReader(Citations.SIS.getTitle(), Version.SIS);
     }
 
     /**

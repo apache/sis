@@ -28,7 +28,7 @@ import org.opengis.metadata.acquisition.GeometryType;
  * All those libraries are optional.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see OptionKey#GEOMETRY_LIBRARY
  * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
@@ -52,7 +52,7 @@ public enum GeometryLibrary {
      * Note that contrarily to JTS and ESRI libraries,
      * a point does not extend any root geometry class in Java2D.
      */
-    JAVA2D,
+    JAVA2D("Java2D"),
 
     /**
      * The ESRI geometry API library. This library can be used for spatial vector data processing.
@@ -70,7 +70,7 @@ public enum GeometryLibrary {
      *
      * @see <a href="https://github.com/Esri/geometry-api-java/wiki">API wiki page</a>
      */
-    ESRI,
+    ESRI("ESRI"),
 
     /**
      * The Java Topology Suite (JTS) library. This open source library provides an object model
@@ -90,7 +90,7 @@ public enum GeometryLibrary {
      *
      * @since 1.0
      */
-    JTS,
+    JTS("JTS"),
 
     /**
      * The GeoAPI geometry interfaces.
@@ -111,5 +111,32 @@ public enum GeometryLibrary {
      *
      * @since 1.4
      */
-    GEOAPI
+    GEOAPI("GeoAPI");
+
+    /**
+     * Human-readable name of this library.
+     */
+    private final String name;
+
+    /**
+     * Creates a new enumeration value.
+     *
+     * @param  name  human-readable name of this library.
+     */
+    private GeometryLibrary(final String name) {
+        this.name = name;
+    }
+
+    /**
+     * Returns the name of this geometry library in a way suitable to user interfaces.
+     * This is the same as {@link #name()} but sometime with different cases.
+     * For example, {@link #JAVA2D} is shown as {@code "Java2D"}.
+     *
+     * @return human-readable name of this library.
+     *
+     * @since 1.5
+     */
+    public String toString() {
+        return name;
+    }
 }

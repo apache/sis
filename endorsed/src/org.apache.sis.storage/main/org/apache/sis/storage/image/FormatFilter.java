@@ -74,7 +74,7 @@ enum FormatFilter {
     /**
      * Types of image inputs that are accepted by {@link StorageConnector}. An input type is accepted if
      * it is equal to one of those types. We do not use {@link Class#isAssignableFrom(Class)} because if
-     * an image reader requests a sub-type, we can probably not provide it ourselves.
+     * an image reader requests a sub-type, we can probably not create instances of that class ourselves.
      */
     private static final Class<?>[] VALID_INPUTS = {
         ImageInputStream.class, DataInput.class, InputStream.class, File.class, Path.class, URL.class, URI.class
@@ -83,7 +83,7 @@ enum FormatFilter {
     /**
      * Types of image outputs that are accepted by {@link StorageConnector}. An output type is accepted
      * if it is equal to one of those types. We do not use {@link Class#isAssignableFrom(Class)} because
-     * if an image reader requests a sub-type, we can probably not provide it ourselves.
+     * an image writer requests a sub-type, we can probably not create instances of that class ourselves.
      */
     private static final Class<?>[] VALID_OUTPUTS = {
         // `ImageOutputStream` intentionally excluded because not handled by `StorageConnector`.

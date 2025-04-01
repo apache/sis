@@ -31,7 +31,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.feature.privy.AttributeConvention;
-import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -81,7 +80,7 @@ final class EnvelopeOperation extends AbstractOperation {
     /**
      * The parameter descriptor for the "Envelope" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("Envelope");
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = parameters("Envelope");
 
     /**
      * The names of all properties containing a geometry object.

@@ -107,7 +107,7 @@ class WritableStore extends WorldFileStore {
      * @throws IOException if an error occurred while creating the image reader instance.
      */
     WritableStore(final FormatFinder format) throws DataStoreException, IOException {
-        super(format, false);
+        super(format);
         if (getCurrentReader() != null) {
             numImages = -1;
         } else {

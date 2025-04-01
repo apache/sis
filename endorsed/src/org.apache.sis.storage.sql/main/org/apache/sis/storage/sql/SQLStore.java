@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.sql;
 
+import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Collection;
@@ -30,7 +31,6 @@ import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -56,6 +56,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.Version;
 
 
 /**
@@ -83,11 +84,9 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * @see #getMetadata()
      */
     private static final String[] TITLE_GETTERS = {
-            "getDescription",           // PostgreSQL, SQL Server
+            "getApplicationName",       // PostgreSQL
             "getDataSourceName",        // Derby
-            "getDatabaseName",          // Derby, PostgreSQL, SQL Server, SQLite
-            "getUrl",                   // PostgreSQL, SQLite
-            "getURL"                    // SQL Server
+            "getDatabaseName"           // Derby, PostgreSQL, SQL Server, SQLite
     };
 
     /**
@@ -99,6 +98,18 @@ public abstract class SQLStore extends DataStore implements Aggregate {
     private static final String[] IDENTIFIER_GETTERS = {
             "getDatabaseName",
             "getDataSourceName"
+    };
+
+    /**
+     * Names of possible public getter methods for fetching additional citation details.
+     * Elements are sorted in preference order. The return value shall be a {@link String}.
+     * On PostgreSQL, the return value is a hard-coded string such as
+     * "Non-Pooling DataSource from PostgreSQL JDBC Driver 42.7.3"
+     *
+     * @see #getIdentifier()
+     */
+    private static final String[] DETAILS_GETTERS = {
+            "getDescription"            // PostgreSQL, SQL Server
     };
 
     /**
@@ -407,24 +418,38 @@ public abstract class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the version of the database software, together with versions of extensions if any.
+     * For example, in the case of a database on PostgreSQL, this map may contain two entries:
+     * the first one with the "PostgreSQL" key, optionally followed by an entry with the "PostGIS" key.
+     *
+     * @return version of the database software as the first entry, followed by versions of extensions if any.
+     * @throws DataStoreException if an error occurred while fetching the metadata.
+     *
+     * @since 1.5
+     */
+    public Map<String, Version> getDatabaseSoftwareVersions() throws DataStoreException {
+        return model().getDatabaseSoftwareVersions();
+    }
+
+    /**
      * Returns information about the dataset as a whole. The returned metadata object can contain information
      * such as the list of feature types.
      *
      * @return information about the dataset.
-     * @throws DataStoreException if an error occurred while reading the data.
+     * @throws DataStoreException if an error occurred while fetching the metadata.
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             final var builder = new MetadataBuilder();
-            builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
+            builder.addIdentifier(identifier, MetadataBuilder.Scope.RESOURCE);
+            getDataSourceProperty(TITLE_GETTERS).ifPresent(builder::addTitle);
+            getDataSourceProperty(DETAILS_GETTERS).ifPresent(builder::addOtherCitationDetails);
             try (Connection c = source.getConnection()) {
                 model(c).metadata(c.getMetaData(), builder);
             } catch (Exception e) {
                 throw cannotExecute(e);
             }
-            getDataSourceProperty(TITLE_GETTERS).ifPresent(builder::addTitle);
-            builder.addIdentifier(identifier, MetadataBuilder.Scope.ALL);
             metadata = builder.buildAndFreeze();
         }
         return metadata;

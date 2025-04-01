@@ -14,15 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.sql.feature;
+
 
 /**
- * Widgets for showing a map in a JavaFX application.
- * {@link org.apache.sis.gui.map.MapCanvas} is the base class for painting a map using arbitrary
- * JavaFX nodes such as {@link javafx.scene.image.ImageView} or {@link javafx.scene.canvas.Canvas}.
- * {@link org.apache.sis.gui.map.MapCanvasAWT} is a specialization for painting the map using Java2D.
+ * The encoding to use for reading or writing geometries from a {@code ResultSet}, in preference order.
+ * In theory, the use of a binary format should be more efficient. But some <abbr>JDBC</abbr> drivers
+ * have issues with extracting bytes from geometry columns. It also happens sometime that, surprisingly
+ * the use of <abbr>WKT</abbr> appear to be faster than <abbr>WKB</abbr> with some databases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
- * @since   1.1
  */
-package org.apache.sis.gui.map;
+public enum GeometryEncoding {
+    /**
+     * Use Well-Known Binary (<abbr>WKB</abbr>) format.
+     * Includes the Geopackage geometry encoding extension, which is identified by the "GP" prefix.
+     */
+    WKB,
+
+    /**
+     * Use Well-Known Text (<abbr>WKT</abbr>) format.
+     */
+    WKT
+}

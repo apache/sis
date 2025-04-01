@@ -176,7 +176,7 @@ public class MultiResolutionCoverageLoader {
          * Build the arrays of resolutions from finest to coarsest.
          * The `base` array is cloned then updated to become the base of next level.
          */
-        final double[][] resolutions = new double[numLevels][];
+        final var resolutions = new double[numLevels][];
         resolutions[0] = base;
         for (int j=1; j<numLevels; j++) {
             resolutions[j] = base = base.clone();

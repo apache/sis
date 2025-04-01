@@ -98,7 +98,7 @@ final class ExtentEstimator {
     GeneralEnvelope estimate(final Statement statement, final boolean recall) throws SQLException {
         query(statement);
         if (envelope == null && !recall) {
-            builder.append("ANALYZE ").appendIdentifier(table.catalog, table.schema, table.table);
+            builder.append("ANALYZE ").appendIdentifier(table.catalog, table.schema, table.table, true);
             final String sql = builder.toString();
             builder.clear();
             statement.execute(sql);

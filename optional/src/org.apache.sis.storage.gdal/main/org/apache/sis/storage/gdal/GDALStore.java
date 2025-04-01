@@ -38,7 +38,6 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.AbstractResource;
@@ -361,8 +360,7 @@ public class GDALStore extends DataStore implements Aggregate {
             builder.addFormatName(driver.getName());
             String id = driver.getIdentifier();
             if (id != null) {
-                builder.addFormatReader(new ImmutableIdentifier(Citations.GDAL, Constants.GDAL, id),
-                                        getProvider().getVersion().orElse(null));
+                builder.addFormatReader(Citations.GDAL.getTitle(), getProvider().getVersion().orElse(null));
             }
         }
     }

@@ -173,7 +173,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
             final LogRecord record = Messages.forLocale(null).getLogRecord(Level.FINEST,
                     Messages.Keys.ChangedContainerCapacity_2, oldTable.length, table.length);
             record.setSourceMethodName(callerMethod);
-            record.setSourceClassName(entryType.getEnclosingClass().getName());
+            record.setSourceClassName(entryType.getEnclosingClass().getCanonicalName());
             record.setLoggerName(LOGGER.getName());
             LOGGER.log(record);
         }

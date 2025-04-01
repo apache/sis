@@ -50,7 +50,6 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.MetadataBuilder;
@@ -216,7 +215,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         } catch (MetadataStoreException e) {
             provider = null;
         }
-        builder.addFormatReader(new ImmutableIdentifier(provider, "UCAR", Constants.NETCDF), getVersion());
+        builder.addFormatReader((provider != null) ? provider.getTitle() : Constants.NETCDF, getVersion());
     }
 
     /**

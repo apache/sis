@@ -16,14 +16,15 @@
  */
 package org.apache.sis.storage.sql.feature;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.WeakHashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.Array;
@@ -33,6 +34,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
+import java.util.Collections;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
@@ -42,7 +44,6 @@ import org.apache.sis.metadata.sql.privy.Syntax;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -55,9 +56,13 @@ import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.resources.Vocabulary;
+import org.opengis.metadata.citation.PresentationForm;
 
 
 /**
@@ -75,7 +80,7 @@ import org.apache.sis.util.privy.UnmodifiableArrayList;
  * specialized methods or have non-standard behavior for some data types.</p>
  *
  * <h2>Specializations</h2>
- * Subclasses may be defined for some database engines. Methods that can be overridden are:
+ * Subclasses may be defined for some specific database drivers. Methods that can be overridden are:
  * <ul>
  *   <li>{@link #getPossibleSpatialSchemas(Map)}    for enumerating the spatial schema conventions that may be used.</li>
  *   <li>{@link #getMapping(Column)}                for adding column types to recognize.</li>
@@ -107,6 +112,16 @@ public class Database<G> extends Syntax  {
      * Provider of (pooled) connections to the database.
      */
     protected final DataSource source;
+
+    /**
+     * Version of the database software, together with versions of extensions if any.
+     * For example, in the case of a PostGIS database, this map should contain two entries:
+     * one with the "PostgreSQL" key and one with the "PostGIS" key, preferably in that order.
+     * This map is for information purpose only and should be completed by subclass constructors.
+     *
+     * @see #getDatabaseSoftwareVersions()
+     */
+    protected final Map<String, Version> softwareVersions;
 
     /**
      * The factory to use for creating geometric objects.
@@ -164,6 +179,13 @@ public class Database<G> extends Syntax  {
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      */
     private boolean hasRaster;
+
+    /**
+     * A flag for remembering that {@link SQLFeatureNotSupportedException} has already been reported
+     * during a count of the number of features. Used for avoiding to pollute the logs with the same
+     * warning repeated many times.
+     */
+    volatile boolean cannotCount;
 
     /**
      * Catalog and schema of the {@code "GEOMETRY_COLUMNS"} and {@code "SPATIAL_REF_SYS"} tables,
@@ -252,6 +274,10 @@ public class Database<G> extends Syntax  {
             throws SQLException
     {
         super(metadata, true);
+        this.source        = source;
+        this.geomLibrary   = geomLibrary;
+        this.contentLocale = contentLocale;
+        this.listeners     = listeners;      // Need to be set before code below.
         /*
          * Get information about whether byte are unsigned.
          * According JDBC specification, the rows shall be ordered by DATA_TYPE.
@@ -277,14 +303,9 @@ public class Database<G> extends Syntax  {
             cause = e;
         }
         if (cause != null || wasNull) {
-            listeners.warning(Resources.forLocale(listeners.getLocale())
-                                       .getString(Resources.Keys.AssumeUnsigned), cause);
+            warning(Resources.Keys.AssumeUnsigned, cause);
         }
-        this.source        = source;
         this.isByteSigned  = !unsigned;
-        this.geomLibrary   = geomLibrary;
-        this.contentLocale = contentLocale;
-        this.listeners     = listeners;
         this.cacheOfCRS    = new Cache<>(7, 2, false);
         this.cacheOfSRID   = new WeakHashMap<>();
         this.tablesByNames = new FeatureNaming<>();
@@ -293,26 +314,48 @@ public class Database<G> extends Syntax  {
         supportsJavaTime   = dialect.supportsJavaTime();
         crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
         transactionLocks   = dialect.supportsConcurrency() ? null : locks;
+        softwareVersions   = new LinkedHashMap<>(4);
+        final String product = Strings.trimOrNull(metadata.getDatabaseProductName());
+        final String version = Strings.trimOrNull(metadata.getDatabaseProductVersion());
+        if (product != null || version != null) {
+            softwareVersions.put(product, version != null ? new Version(version) : null);
+        }
+    }
+
+    /**
+     * Returns the version of the database software, together with versions of extensions if any.
+     * For example, in the case of a database on PostgreSQL, this map may contain two entries:
+     * the first one with the "PostgreSQL" key, optionally followed by an entry with the "PostGIS" key.
+     *
+     * @return version of the database software as the first entry, followed by versions of extensions if any.
+     */
+    public final Map<String, Version> getDatabaseSoftwareVersions() {
+        return Collections.unmodifiableMap(softwareVersions);
     }
 
     /**
      * Detects automatically which spatial schema is in use. Detects also the catalog name and schema name.
      * This method is invoked exactly once after construction and before the analysis of feature tables.
+     * Various fields such as {@link #spatialSchema} are initialized by this method.
      *
      * @param  metadata    metadata to use for verifying which tables are present.
      * @param  tableTypes  the "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
-     * @return names of the standard tables defined by the spatial schema.
+     * @return names of tables to ignore when searching for feature tables, together with whether the table exists.
      */
-    final Set<String> detectSpatialSchema(final DatabaseMetaData metadata, final String[] tableTypes) throws SQLException {
+    final Map<String,Boolean> detectSpatialSchema(final DatabaseMetaData metadata, final String[] tableTypes)
+            throws SQLException
+    {
         /*
-         * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
-         * Note that the standard specified those names in upper-case letters, which is also
-         * the default case specified by the SQL standard. However, some databases use lower
-         * cases instead.
+         * The keys of `ignoredTables` are the tables defined by ISO 19125 / OGC Simple feature access part 2.
+         * Note that the standard specifies those names in upper-case letters, which is also the default case
+         * specified by the SQL standard. However, some databases use lower cases instead.
          */
         String crsTable = null;
         final var ignoredTables = new HashMap<String,Boolean>(8);
-        for (SpatialSchema convention : getPossibleSpatialSchemas(ignoredTables)) {
+        final boolean isSearchReliable = canEscapeWildcards();
+        final SpatialSchema[] candidates = getPossibleSpatialSchemas(ignoredTables);
+        for (int i=0; i<candidates.length; i++) {
+            final SpatialSchema convention = candidates[i];
             String geomTable;
             crsTable  = convention.crsTable;
             geomTable = convention.geometryColumns;
@@ -323,8 +366,8 @@ public class Database<G> extends Syntax  {
                 crsTable  = crsTable .toUpperCase(Locale.US).intern();
                 geomTable = geomTable.toUpperCase(Locale.US).intern();
             }
-            ignoredTables.put(crsTable,  Boolean.TRUE);
-            ignoredTables.put(geomTable, Boolean.TRUE);
+            ignoredTables.put(crsTable,  null);  // `null` means that we have not yet checked if the table exists.
+            ignoredTables.put(geomTable, null);
             /*
              * Check if the database contains at least one "ignored" tables associated to `Boolean.TRUE`.
              * If many tables are found, ensure that the catalog and schema names are the same. If this
@@ -335,15 +378,22 @@ public class Database<G> extends Syntax  {
             boolean consistent = true;
             String catalog = null, schema = null;
             for (final Map.Entry<String,Boolean> entry : ignoredTables.entrySet()) {
-                if (entry.getValue()) {
-                    String table = SQLUtilities.escape(entry.getKey(), escape);
-                    try (ResultSet reflect = metadata.getTables(null, null, table, tableTypes)) {
+                // Unconditionally check table existence during the first iteration.
+                if (i == 0 || entry.getValue() == null) {
+                    boolean exists = false;
+                    final String table = entry.getKey();
+                    try (ResultSet reflect = metadata.getTables(null, null, escapeWildcards(table), tableTypes)) {
                         while (reflect.next()) {
-                            consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
-                            consistent &= consistent(schema,  schema  = reflect.getString(Reflection.TABLE_SCHEM));
-                            found = true;
+                            // Double-check of the table name because not all software can escape wildcards.
+                            if (isSearchReliable || table.equals(reflect.getString(Reflection.TABLE_NAME))) {
+                                consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
+                                consistent &= consistent(schema,  schema  = reflect.getString(Reflection.TABLE_SCHEM));
+                                found |= !Boolean.FALSE.equals(entry.getValue());  // Accept `true` and `null` values.
+                                exists = true;
+                            }
                         }
                     }
+                    entry.setValue(exists);
                 }
             }
             if (found) {
@@ -363,22 +413,26 @@ public class Database<G> extends Syntax  {
          * The preference order will be defined by the `CRSEncoding` enumeration order.
          */
         if (spatialSchema != null) {
-            final String schema = SQLUtilities.escape(schemaOfSpatialTables, escape);
-            final String table  = SQLUtilities.escape(crsTable, escape);
             for (Map.Entry<CRSEncoding, String> entry : spatialSchema.crsDefinitionColumn.entrySet()) {
                 String column = entry.getValue();
                 if (metadata.storesLowerCaseIdentifiers()) {
                     column = column.toLowerCase(Locale.US);
                 }
-                column = SQLUtilities.escape(column, escape);
-                try (ResultSet reflect = metadata.getColumns(catalogOfSpatialTables, schema, table, column)) {
-                    if (reflect.next()) {
-                        crsEncodings.add(entry.getKey());
+                try (ResultSet reflect = metadata.getColumns(catalogOfSpatialTables,    // No escape for this argument.
+                                             escapeWildcards(schemaOfSpatialTables),
+                                             escapeWildcards(crsTable),
+                                             escapeWildcards(column)))
+                {
+                    while (reflect.next()) {
+                        if (isSearchReliable || filterMetadata(reflect, schemaOfSpatialTables, crsTable, column)) {
+                            crsEncodings.add(entry.getKey());
+                            break;
+                        }
                     }
                 }
             }
         }
-        return ignoredTables.keySet();
+        return ignoredTables;
     }
 
     /**
@@ -446,6 +500,8 @@ public class Database<G> extends Syntax  {
      * @throws SQLException if an error occurred while fetching table information.
      */
     public final void metadata(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
+        builder.addPresentationForm(PresentationForm.TABLE_DIGITAL);
+        builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
         if (hasGeometry) {
             builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
         }
@@ -455,6 +511,24 @@ public class Database<G> extends Syntax  {
         for (final Table table : tables) {
             builder.addFeatureType(table.featureType, table.countRows(metadata, false, false));
         }
+        builder.addFormatName((spatialSchema != null) ? spatialSchema.name : "SQL database");
+        CharSequence description = null;
+        for (Map.Entry<String, Version> entry : softwareVersions.entrySet()) {
+            CharSequence software = entry.getKey();
+            if (software == null) software = "?";
+            Version version = entry.getValue();
+            if (version != null) {
+                software = Vocabulary.formatInternational(Vocabulary.Keys.Version_2, software, version);
+            }
+            if (description == null) {
+                description = software;
+            } else {
+                description = Vocabulary.formatInternational(Vocabulary.Keys.With_2, description, software);
+                // Above assumes that there is no more than two entries.
+            }
+        }
+        builder.addFormatCitationDetails(description);
+        builder.addFormatReaderSIS("SQL");      // Value of SQLStoreProvider.NAME.
     }
 
     /**
@@ -501,6 +575,22 @@ public class Database<G> extends Syntax  {
     }
 
     /**
+     * Double-checks whether the metadata about a table or a column are for the item that we requested.
+     * We perform this double check because some database drivers have no predefined escape characters
+     * for wildcards. If any {@code String} argument is {@code null} or empty, it will be ignored.
+     *
+     * <p>Note that the catalog is not verified because the {@code catalog} argument in
+     * {@link DatabaseMetaData} is not a pattern.</p>
+     */
+    static boolean filterMetadata(ResultSet reflect, String schema, String table, String column)
+            throws SQLException
+    {
+        return (Strings.isNullOrEmpty(schema)  ||  schema.equals(reflect.getString(Reflection.TABLE_SCHEM))) &&
+               (Strings.isNullOrEmpty(table)   ||   table.equals(reflect.getString(Reflection.TABLE_NAME)))  &&
+               (Strings.isNullOrEmpty(column)  ||  column.equals(reflect.getString(Reflection.COLUMN_NAME)));
+    }
+
+    /**
      * Returns an identification of the table and column naming conventions.
      * This is absent if the database is not spatial.
      *
@@ -540,6 +630,9 @@ public class Database<G> extends Syntax  {
      *
      * @param  columnDefinition  information about the column to extract values from and expose through Java API.
      * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping,
+     *
+     * @see #getBinaryEncoding(Column)
+     * @see #getGeometryEncoding(Column)
      */
     protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
         /*
@@ -550,7 +643,7 @@ public class Database<G> extends Syntax  {
         final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
         return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS().orElse(null),
-                                    getBinaryEncoding(columnDefinition));
+                                    getBinaryEncoding(columnDefinition), getGeometryEncoding(columnDefinition));
     }
 
     /**
@@ -646,13 +739,29 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns an identifier of the way binary data are encoded by the JDBC driver.
+     * Returns an identifier of the way binary data are encoded by the <abbr>JDBC</abbr> driver.
+     * The default implementation returns {@link BinaryEncoding#RAW}.
      *
      * @param  columnDefinition  information about the column to extract binary values from.
      * @return how the binary data are returned by the JDBC driver.
+     *
+     * @see #forGeometry(Column)
      */
     protected BinaryEncoding getBinaryEncoding(final Column columnDefinition) {
         return BinaryEncoding.RAW;
+    }
+
+    /**
+     * Returns an identifier of the way geometries should be read and written.
+     * The default implementation returns {@link GeometryEncoding#WKB}.
+     *
+     * @param  columnDefinition  information about the column to extract geometry values from.
+     * @return how the geometry should be read or written (as text or as binary).
+     *
+     * @see #forGeometry(Column)
+     */
+    protected GeometryEncoding getGeometryEncoding(final Column columnDefinition) {
+        return GeometryEncoding.WKB;
     }
 
     /**
@@ -688,12 +797,12 @@ public class Database<G> extends Syntax  {
      * <p>The values in the map tells whether the table can be used as a sentinel value for determining
      * that the {@link SpatialSchema} enumeration value can be accepted.</p>
      *
-     * @param  tables  where to add names of tables that describe the spatial schema.
+     * @param  ignoredTables  where to add names of tables to ignore, together with whether they are sentinel tables.
      * @return the spatial schema conventions that may be supported by this database.
      *
      * @see #getSpatialSchema()
      */
-    protected SpatialSchema[] getPossibleSpatialSchemas(Map<String,Boolean> tables) {
+    protected SpatialSchema[] getPossibleSpatialSchemas(Map<String,Boolean> ignoredTables) {
         return SpatialSchema.values();
     }
 
@@ -734,6 +843,18 @@ public class Database<G> extends Syntax  {
      */
     public InfoStatements createInfoStatements(final Connection connection) {
         return new InfoStatements(this, connection);
+    }
+
+    /**
+     * Logs a warning with a localized message and an optional cause.
+     *
+     * @param resourceKey  one of {@code Resources.Keys} constants.
+     * @param cause        the cause, or {@code null} if none.
+     */
+    final void warning(final short resourceKey, final Exception cause) {
+        LogRecord record = Resources.forLocale(listeners.getLocale()).getLogRecord(Level.WARNING, resourceKey);
+        record.setThrown(cause);
+        log(record);
     }
 
     /**

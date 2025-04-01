@@ -16,6 +16,9 @@
  */
 package org.apache.sis.storage.sql.feature;
 
+import java.util.Set;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Comparator;
 import java.util.Spliterator;
@@ -29,16 +32,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
+import org.apache.sis.filter.privy.ListingPropertyVisitor;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
 import org.apache.sis.filter.privy.SortByComparator;
+import org.apache.sis.filter.privy.WarningEvent;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.FeatureProjection;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
+import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.SortBy;
 
@@ -61,6 +68,14 @@ final class FeatureStream extends DeferredStream<Feature> {
      * The table which is the source of features.
      */
     private final Table table;
+
+    /**
+     * The columns that the user wants to keep, or {@code null} for all columns.
+     * The word "projection" in this context is in the <abbr>SQL</abbr> database sense.
+     *
+     * @see #map(Function)
+     */
+    private FeatureProjection projection;
 
     /**
      * The visitor to use for converting filters/expressions to SQL statements.
@@ -177,17 +192,22 @@ final class FeatureStream extends DeferredStream<Feature> {
          * if we have a "F₀ AND F₁ AND F₂" chain, it is possible to have some Fₙ as SQL statements and
          * other Fₙ executed in Java code.
          */
-        final Optimization optimization = new Optimization();
-        optimization.setFeatureType(table.featureType);
         Stream<Feature> stream = this;
-        for (final Filter<? super Feature> filter : optimization.applyAndDecompose((Filter<? super Feature>) predicate)) {
-            if (filter == Filter.include()) continue;
-            if (filter == Filter.exclude()) return empty();
-            if (!selection.tryAppend(filterToSQL, filter)) {
-                // Delegate to Java code all filters that we cannot translate to SQL statement.
-                stream = super.filter(filter);
-                hasPredicates = true;
+        try {
+            WarningEvent.LISTENER.set(selection);
+            final var optimization = new Optimization();
+            optimization.setFeatureType(table.featureType);
+            for (final var filter : optimization.applyAndDecompose((Filter<? super Feature>) predicate)) {
+                if (filter == Filter.include()) continue;
+                if (filter == Filter.exclude()) return empty();
+                if (!selection.tryAppend(filterToSQL, filter)) {
+                    // Delegate to Java code all filters that we cannot translate to SQL statement.
+                    stream = super.filter(filter);
+                    hasPredicates = true;
+                }
             }
+        } finally {
+            WarningEvent.LISTENER.remove();
         }
         return stream;
     }
@@ -289,7 +309,12 @@ final class FeatureStream extends DeferredStream<Feature> {
      * be optimized.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public <R> Stream<R> map(final Function<? super Feature, ? extends R> mapper) {
+        if (projection == null && mapper instanceof FeatureProjection) {
+            projection = (FeatureProjection) mapper;
+            return (Stream) this;
+        }
         return new PaginedStream<>(super.map(mapper), this);
     }
 
@@ -311,7 +336,7 @@ final class FeatureStream extends DeferredStream<Feature> {
          * Build the full SQL statement here, without using `FeatureAdapter.sql`,
          * because we do not need to follow foreigner keys.
          */
-        final SQLBuilder sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT).append("COUNT(");
+        final var sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT).append("COUNT(");
         if (distinct) {
             String separator = "DISTINCT ";
             for (final Column attribute : table.attributes) {
@@ -323,12 +348,15 @@ final class FeatureStream extends DeferredStream<Feature> {
             sql.appendIdentifier(table.attributes[0].label);
         }
         table.appendFromClause(sql.append(')'));
-        if (selection != null && !selection.isEmpty()) {
-            sql.append(" WHERE ").append(selection.toString());
-        }
         lock(table.database.transactionLocks);
         try (Connection connection = getConnection()) {
             makeReadOnly(connection);
+            if (selection != null) {
+                final String filter = selection.query(connection, null);
+                if (filter != null) {
+                    sql.append(" WHERE ").append(filter);
+                }
+            }
             try (Statement st = connection.createStatement();
                  ResultSet rs = st.executeQuery(sql.toString()))
             {
@@ -337,7 +365,7 @@ final class FeatureStream extends DeferredStream<Feature> {
                     if (!rs.wasNull()) return n;
                 }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw cannotExecute(e);
         } finally {
             unlock();
@@ -394,15 +422,40 @@ final class FeatureStream extends DeferredStream<Feature> {
      */
     @Override
     protected Spliterator<Feature> createSourceIterator() throws Exception {
-        final String filter = (selection != null && !selection.isEmpty()) ? selection.toString() : null;
-        selection = null;             // Let the garbage collector do its work.
-
-        lock(table.database.transactionLocks);
+        Table projected = table;
+        FeatureProjection completion = null;
+        if (projection != null) {
+            final var unhandled = new LinkedHashMap<String, Expression<? super Feature, ?>>();
+            final var reusedNames = new HashSet<String>();
+            projected = new Table(projected, projection, reusedNames, unhandled);
+            if (!unhandled.isEmpty()) {
+                /*
+                 * Some properties may not be handled by the projection. Check if the projected feature contains
+                 * enough information for computing missing properties without the need for the original feature.
+                 */
+                Set<String> references = null;
+                for (var expression : unhandled.values()) {
+                    references = ListingPropertyVisitor.xpaths(expression, references);
+                }
+                if (references == null || reusedNames.containsAll(references)) {
+                    completion = new FeatureProjection(projected.featureType, unhandled);
+                } else {
+                    /*
+                     * Cannot use `projected` because some expressions need properties
+                     * available only in the original features.
+                     */
+                    projected = table;
+                    completion = projection;
+                }
+            }
+        }
+        lock(projected.database.transactionLocks);
         final Connection connection = getConnection();
         setCloseHandler(connection);  // Executed only if `FeatureIterator` creation fails, discarded later otherwise.
         makeReadOnly(connection);
-        final FeatureIterator features = new FeatureIterator(table, connection, distinct, filter, sort, offset, count);
+        final var features = new FeatureIterator(projected, connection, distinct, selection, sort, offset, count, completion);
         setCloseHandler(features);
+        selection = null;             // Let the garbage collector do its work.
         return features;
     }
 

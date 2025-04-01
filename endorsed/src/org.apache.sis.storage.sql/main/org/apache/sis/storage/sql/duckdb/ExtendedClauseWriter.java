@@ -14,24 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.sql.postgis;
+package org.apache.sis.storage.sql.duckdb;
 
 import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.SpatialOperatorName;
 
 
 /**
- * Converter from filters/expressions to the {@code WHERE} part of SQL statement
- * with PostGIS-specific syntax where useful.
+ * Converter from filters/expressions to the {@code WHERE} part of SQL statement.
+ * This class adds support for {@code BBOX} as a synonymous of {@code ST_Intersects}.
  *
- * This class adds the search by bounding box using the {@code &&} operator.
- * Note that contrarily to standard operators such as {@code ST_Intersects},
- * the {@code &&} operator does not verify the <abbr>CRS</abbr>.
- * No error message is raised is case of mismatched CRS.
- *
- * @author  Alexis Manin (Geomatys)
+ * @author Guilhem Legal (Geomatys)
  */
 final class ExtendedClauseWriter extends SelectionClauseWriter {
     /**
@@ -44,9 +37,7 @@ final class ExtendedClauseWriter extends SelectionClauseWriter {
      */
     private ExtendedClauseWriter() {
         super(DEFAULT);
-        setFilterHandler(SpatialOperatorName.BBOX, (f,sql) -> {
-            writeBinaryOperator(sql, f, " && ");
-        });
+        setFilterHandler(SpatialOperatorName.BBOX, getFilterHandler(SpatialOperatorName.INTERSECTS));
     }
 
     /**

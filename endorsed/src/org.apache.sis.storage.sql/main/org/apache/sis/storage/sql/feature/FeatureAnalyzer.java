@@ -219,7 +219,7 @@ abstract class FeatureAnalyzer {
         AttributeTypeBuilder<?> attribute = null;
         final boolean created = (isPrimaryKey || dependencies == null);
         if (created) {
-            final ValueGetter<?> getter = analyzer.setValueGetter(column);
+            final ValueGetter<?> getter = analyzer.setValueGetterOf(column);
             attribute = column.createAttribute(feature);
             /*
              * Some columns have special purposes: components of primary keys will be used for creating
@@ -261,7 +261,7 @@ abstract class FeatureAnalyzer {
                      * do not know which column describes better the association (often there is none).
                      * In such case we use the foreigner key name as a fallback.
                      */
-                    dependency.setPropertyName(column.propertyName, count++);
+                    dependency.setPropertyName(column.getPropertyName(), count++);
                     final AssociationRoleBuilder association;
                     if (table != null) {
                         dependency.setSearchTable(analyzer, table, table.primaryKey, Relation.Direction.IMPORT);
@@ -269,7 +269,7 @@ abstract class FeatureAnalyzer {
                     } else {
                         association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
                     }
-                    association.setName(dependency.propertyName);
+                    association.setName(dependency.getPropertyName());
                     if (column.isNullable) {
                         association.setMinimumOccurs(0);
                     }
@@ -280,8 +280,8 @@ abstract class FeatureAnalyzer {
                      * column should rarely be used directly.
                      */
                     if (attribute != null) {
-                        attribute.setName(analyzer.nameFactory.createGenericName(null, "pk", column.propertyName));
-                        column.propertyName = attribute.getName().toString();
+                        attribute.setName(analyzer.nameFactory.createGenericName(null, "pk", column.getPropertyName()));
+                        column.setPropertyName(attribute);
                         attribute = null;
                     }
                 }
@@ -322,7 +322,7 @@ abstract class FeatureAnalyzer {
                 while (feature.isNameUsed(propertyName)) {
                     propertyName = base + '-' + ++count;
                 }
-                dependency.propertyName = propertyName;
+                dependency.setPropertyName(propertyName);
                 final Table table = analyzer.table(dependency, typeName, id);
                 final AssociationRoleBuilder association;
                 if (table != null) {

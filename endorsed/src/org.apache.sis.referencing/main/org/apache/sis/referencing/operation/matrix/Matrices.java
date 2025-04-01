@@ -75,7 +75,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.parameter.TensorParameters
  *
@@ -892,6 +892,46 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Forces the matrix to have at least one non-zero coefficient in every row, assuming an affine transform.
+     * The last column (the translation terms) and the last row (the [0 0 … 1] terms) are ignored.
+     * If a row contains only zero values (ignoring the translation term),
+     * then this method sets one element of that row to the given {@code defaultValue}.
+     * That modification occurs in the first free column, i.e. a column having no non-zero value.
+     * If no such free column is found, then this method stops the operation and returns {@code false}.
+     *
+     * @param  matrix        the matrix in which to force non-zero scale factors. Will be modified in-place.
+     * @param  defaultValue  the scale factor to assign to rows that do not have a non-zero scale factor.
+     * @return {@code true} on success (including when this method does nothing), or
+     *         {@code false} if this method cannot complete the operation.
+     *
+     * @since 1.5
+     */
+    public static boolean forceNonZeroScales(final Matrix matrix, final double defaultValue) {
+        final int numCol = matrix.getNumCol() - 1;
+        final int numRow = matrix.getNumRow() - 1;
+        int freeColumn = 0;
+okay:   for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                if (matrix.getElement(j, i) != 0) {
+                    continue okay;
+                }
+            }
+search:     while (freeColumn < numCol) {
+                for (int i=0; i<numRow; i++) {
+                    if (matrix.getElement(i, freeColumn) != 0) {
+                        freeColumn++;
+                        continue search;
+                    }
+                }
+                matrix.setElement(j, freeColumn++, defaultValue);
+                continue okay;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Returns {@code true} if the given matrix is likely to use extended precision.
      * A value of {@code true} is not a guarantee that the matrix uses extended precision,
      * but a value of {@code false} is a guarantee that it does not.
@@ -1000,7 +1040,7 @@ public final class Matrices extends Static {
         if (numRow == numCol) {
             return Solver.inverse(matrix);
         }
-        final NonSquareMatrix result = new NonSquareMatrix(numRow, numCol, false);
+        final var result = new NonSquareMatrix(numRow, numCol, false);
         result.setMatrix(matrix);
         return result.inverse();
     }
@@ -1221,13 +1261,13 @@ public final class Matrices extends Static {
     public static String toString(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
-        final String[]  elements            = new String [numCol * numRow];     // String representation of matrix values.
-        final boolean[] noFractionDigits    = new boolean[numCol * numRow];     // Whether to remove the trailing ".0" for a given number.
-        final boolean[] hasDecimalSeparator = new boolean[numCol];              // Whether the column has at least one number where fraction digits are shown.
-        final byte[] maximumFractionDigits  = new byte   [numCol];              // The greatest number of fraction digits found in a column.
-        final byte[] maximumPaddingZeros    = new byte   [numCol * numRow];     // Maximal number of zeros that we can append before to exceed the IEEE 754 accuracy.
-        final byte[] widthBeforeFraction    = new byte   [numCol];              // Number of characters before the fraction digits: spacing + ('-') + integerDigits + '.'
-        final byte[] columnWidth            = new byte   [numCol];              // Total column width.
+        final var elements              = new String [numCol * numRow];     // String representation of matrix values.
+        final var noFractionDigits      = new boolean[numCol * numRow];     // Whether to remove the trailing ".0" for a given number.
+        final var hasDecimalSeparator   = new boolean[numCol];              // Whether the column has at least one number where fraction digits are shown.
+        final var maximumFractionDigits = new byte   [numCol];              // The greatest number of fraction digits found in a column.
+        final var maximumPaddingZeros   = new byte   [numCol * numRow];     // Maximal number of zeros that we can append before to exceed the IEEE 754 accuracy.
+        final var widthBeforeFraction   = new byte   [numCol];              // Number of characters before the fraction digits: spacing + ('-') + integerDigits + '.'
+        final var columnWidth           = new byte   [numCol];              // Total column width.
         int totalWidth = 1;
         /*
          * Create now the string representation of all matrix elements and measure the width
@@ -1290,9 +1330,9 @@ public final class Matrices extends Static {
          * Now append the formatted elements with the appropriate number of spaces before each value,
          * and trailling zeros after each value except ±0, ±1, NaN and infinities.
          */
-        final String   lineSeparator = System.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final CharSequence whiteLine = CharSequences.spaces(totalWidth);
-        final StringBuilder   buffer = new StringBuilder((totalWidth + 2 + lineSeparator.length()) * (numRow + 2));
+        final var buffer = new StringBuilder((totalWidth + 2 + lineSeparator.length()) * (numRow + 2));
         buffer.append('┌').append(whiteLine).append('┐').append(lineSeparator);
         int flatIndex = 0;
         for (int j=0; j<numRow; j++) {

@@ -54,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class Relation extends TableReference {
+final class Relation extends TableReference implements Cloneable {
     /**
      * An empty array used when there are no relations.
      */
@@ -154,8 +154,11 @@ final class Relation extends TableReference {
     /**
      * The name of the feature property where the association to {@link #searchTable} table will be stored.
      * If the foreigner key uses exactly one column, then this is the name of that column.
+     *
+     * @see #getPropertyName()
+     * @see #setPropertyName(String)
      */
-    String propertyName;
+    private String propertyName;
 
     /**
      * Whether the {@link #columns} map include all primary key columns. This field is set to {@code false}
@@ -248,6 +251,23 @@ final class Relation extends TableReference {
     }
 
     /**
+     * Returns a relation identical to this relation except for the property name.
+     * This method does not modify this relation, but may return {@code this} if
+     * there is no name change to apply.
+     *
+     * @param  property  the new property name.
+     * @return a relation with the given property name (may be {@code this}).
+     */
+    final Relation rename(final String property) {
+        if (property.equals(propertyName)) {
+            return this;
+        }
+        final Relation c = clone();
+        c.propertyName = property;
+        return c;
+    }
+
+    /**
      * Invoked after construction for setting the name of the feature property of the enclosing table where to
      * store association to the feature instances read from the {@linkplain #getSearchTable() search table}.
      * If the foreigner key use exactly one column, we can use the name of that column. Otherwise we don't know
@@ -263,6 +283,15 @@ final class Relation extends TableReference {
         if (propertyName == null) {
             propertyName = (count == 0) ? column : column + '-' + count;
         }
+    }
+
+    /**
+     * Sets the property name. This method should be invoked during {@linkplain FeatureAnalyzer analysis time} only.
+     *
+     * @param  name  the new property name.
+     */
+    final void setPropertyName(final String name) {
+        propertyName = name;
     }
 
     /**
@@ -470,5 +499,20 @@ final class Relation extends TableReference {
     @Override
     public String toString() {
         return toString(this, (n) -> appendTo(n, " — "));
+    }
+
+    /**
+     * Returns a shallow clone of this relation.
+     * Used by this {@code Relation} implementation only and should not be invoked directly.
+     *
+     * @see #rename(String)
+     */
+    @Override
+    protected final Relation clone() {
+        try {
+            return (Relation) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 }

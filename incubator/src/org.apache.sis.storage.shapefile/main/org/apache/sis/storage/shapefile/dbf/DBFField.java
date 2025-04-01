@@ -159,7 +159,16 @@ public final class DBFField {
             case TYPE_TIMESTAMP : valueClass = Object.class;  reader = this::readTimeStamp;     writer = this::writeTimeStamp; break;
             case TYPE_LONG :      valueClass = Object.class;  reader = this::readLong;          writer = this::writeLong; break;
             case TYPE_INC :       valueClass = Object.class;  reader = this::readAutoIncrement; writer = this::writeAutoIncrement; break;
-            case TYPE_FLOAT :     valueClass = Object.class;  reader = this::readFloat;         writer = this::writeFloat; break;
+            case TYPE_FLOAT :     {
+                valueClass = Double.class;
+                reader = this::readNumber;
+                writer = this::writeNumber;
+                format = NumberFormat.getNumberInstance(Locale.US);
+                format.setGroupingUsed(false);
+                format.setMaximumFractionDigits(fieldDecimals);
+                format.setMinimumFractionDigits(fieldDecimals);
+                break;
+            }
             case TYPE_DOUBLE :    valueClass = Object.class;  reader = this::readDouble;        writer = this::writeDouble; break;
             case TYPE_OLE :       valueClass = Object.class;  reader = this::readOLE;           writer = this::writeOLE; break;
             default: throw new IllegalArgumentException("Unknown field type " + fieldType);

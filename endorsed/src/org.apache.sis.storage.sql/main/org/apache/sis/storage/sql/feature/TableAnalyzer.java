@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.SQLFeatureNotSupportedException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.sql.privy.Reflection;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.util.privy.Strings;
 
 
@@ -48,6 +48,13 @@ final class TableAnalyzer extends FeatureAnalyzer {
     private final String tableEsc, schemaEsc;
 
     /**
+     * Whether the filtering by schema name and table name is reliable.
+     * This is usually true, but may be false with incomplete drivers
+     * that do not declare search escape characters.
+     */
+    private final boolean isSearchReliable;
+
+    /**
      * Creates an analyzer for the table of the given name.
      * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
      * The catalog and schema parts are optional and can be null, but the table is mandatory.
@@ -57,15 +64,21 @@ final class TableAnalyzer extends FeatureAnalyzer {
      *                       the table that "contains" this table. Otherwise {@code null}.
      * @throws SQLException if an error occurred while fetching information from the database.
      */
+    @SuppressWarnings("StringEquality")
     TableAnalyzer(final Analyzer analyzer, final TableReference id, final TableReference dependencyOf) throws SQLException {
         super(analyzer, id);
         this.dependencyOf = dependencyOf;
-        this.tableEsc     = escape(id.table);
-        this.schemaEsc    = escape(id.schema);
+        this.tableEsc     = analyzer.database.escapeWildcards(id.table);
+        this.schemaEsc    = analyzer.database.escapeWildcards(id.schema);
+        isSearchReliable  = analyzer.database.canEscapeWildcards()
+                || (tableEsc == id.table && schemaEsc == id.schema);    // Identity checks are okay.
+
         try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(id.catalog, id.schema, id.table)) {
             while (reflect.next()) {
                 primaryKey.add(analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME));
             }
+        } catch (SQLFeatureNotSupportedException e) {
+            analyzer.unavailableMetadata(e);
         }
         /*
          * Note: when a table contains no primary keys, we could still look for index columns
@@ -76,18 +89,12 @@ final class TableAnalyzer extends FeatureAnalyzer {
     }
 
     /**
-     * Returns the given pattern with {@code '_'} and {@code '%'} characters escaped by the database-specific
-     * escape characters. This method should be invoked for escaping the values of all {@link DatabaseMetaData}
-     * method arguments with a name ending by {@code "Pattern"}. Note that not all arguments are pattern; please
-     * checks carefully {@link DatabaseMetaData} javadoc for each method.
-     *
-     * <h4>Example</h4>
-     * If a method expects an argument named {@code tableNamePattern},
-     * then that argument value should be escaped. But if the argument name is only {@code tableName},
-     * then the value should not be escaped.
+     * Double-checks whether the metadata about a table are for the item that we requested.
+     * We perform this double check because some database drivers have no predefined escape
+     * characters for wildcards.
      */
-    private String escape(final String pattern) {
-        return SQLUtilities.escape(pattern, analyzer.escape);
+    private boolean filterMetadata(final ResultSet reflect) throws SQLException {
+        return isSearchReliable || Database.filterMetadata(reflect, id.schema, id.table, null);
     }
 
     /**
@@ -129,6 +136,14 @@ final class TableAnalyzer extends FeatureAnalyzer {
                 }
                 relations.add(relation);
             } while (!reflect.isClosed());
+        } catch (SQLFeatureNotSupportedException e) {
+            /*
+             * Some database implementations cannot not provide information about foreigner keys.
+             * We consider this limitation as non-fatal. The users will still see the table that,
+             * only their dependencies will not be visible. Instead, the foreigner key will appear
+             * as an ordinary attribute value.
+             */
+            analyzer.unavailableMetadata(e);
         }
         final int size = relations.size();
         return (size != 0) ? relations.toArray(new Relation[size]) : Relation.EMPTY;
@@ -155,15 +170,17 @@ final class TableAnalyzer extends FeatureAnalyzer {
         final String quote = analyzer.metadata.getIdentifierQuoteString();
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
-                final var column = new Column(analyzer, reflect, quote);
-                if (columns.put(column.name, column) != null) {
-                    throw duplicatedColumn(column);
+                if (filterMetadata(reflect)) {
+                    final var column = new Column(analyzer, reflect, quote);
+                    if (columns.put(column.name, column) != null) {
+                        throw duplicatedColumn(column);
+                    }
                 }
             }
         }
         final InfoStatements spatialInformation = analyzer.spatialInformation;
         if (spatialInformation != null) {
-            spatialInformation.completeIntrospection(id, columns);
+            spatialInformation.completeIntrospection(analyzer, id, columns);
         }
         /*
          * Analyze the type of each column, which may be geometric as a consequence of above call.
@@ -185,9 +202,11 @@ final class TableAnalyzer extends FeatureAnalyzer {
         if (id instanceof Relation) {
             try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
                 while (reflect.next()) {
-                    final String remarks = Strings.trimOrNull(analyzer.getUniqueString(reflect, Reflection.REMARKS));
-                    if (remarks != null) {
-                        return remarks;
+                    if (filterMetadata(reflect)) {
+                        String remarks = Strings.trimOrNull(analyzer.getUniqueString(reflect, Reflection.REMARKS));
+                        if (remarks != null) {
+                            return remarks;
+                        }
                     }
                 }
             }
