@@ -59,6 +59,16 @@ public class Resources extends IndexedResourceBundle {
         public static final short AssumeUnsigned = 16;
 
         /**
+         * Cannot analyze fully the database schema because of incomplete metadata.
+         */
+        public static final short CanNotAnalyzeFully = 17;
+
+        /**
+         * Error while building the SQL query. Fallback partially on pure Java implementation.
+         */
+        public static final short CanNotBuildSQL = 19;
+
+        /**
          * Cannot fetch a Coordinate Reference System (CRS) for SRID code {0}.
          */
         public static final short CanNotFetchCRS_1 = 8;
@@ -87,6 +97,11 @@ public class Resources extends IndexedResourceBundle {
          * “{0}” is not a valid qualified name for a table.
          */
         public static final short IllegalQualifiedName_1 = 3;
+
+        /**
+         * The literal of function “{0}” is not compatible with the reference system of property “{1}”.
+         */
+        public static final short IncompatibleLiteralCRS_2 = 18;
 
         /**
          * Unexpected error while analyzing the database schema.

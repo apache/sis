@@ -65,7 +65,7 @@ public final class GeometryGetterTest extends TestCase {
     @SuppressWarnings("unchecked")
     private GeometryGetter<?,?> createReader(final GeometryLibrary library, final BinaryEncoding encoding) {
         GF = Geometries.factory(library);
-        return new GeometryGetter<>(GF, (Class) GF.rootClass, HardCodedCRS.WGS84, encoding);
+        return new GeometryGetter<>(GF, (Class) GF.rootClass, HardCodedCRS.WGS84, encoding, GeometryEncoding.WKB);
     }
 
     /**
@@ -162,6 +162,7 @@ public final class GeometryGetterTest extends TestCase {
     public static CoordinateReferenceSystem getExpectedCRS(final int srid) throws FactoryException {
         final String code;
         switch (srid) {
+            case 0:    return null;
             case 3395: code = "EPSG:3395"; break;
             case 4326: return CommonCRS.WGS84.normalizedGeographic();
             default:   throw new AssertionError(srid);

@@ -58,7 +58,7 @@ public final class InternalOptionKey<T> extends OptionKey<T> {
     /**
      * The lock to use in a data store when those locks are optional. For example, data stores on
      * <abbr>SQL</abbr> databases should not need locks because <abbr>ACID</abbr>-compliant databases
-     * should support thread-safe transactions. However, some database products do not provide the
+     * should support thread-safe transactions. However, some database drivers do not provide the
      * expected thread-safety, in which case Apache <abbr>SIS</abbr> may need to do locking itself.
      */
     public static final InternalOptionKey<ReadWriteLock> LOCKS =

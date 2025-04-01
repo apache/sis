@@ -38,7 +38,7 @@ final class MultiImageStore extends WorldFileStore implements Aggregate {
      * @throws IOException if an error occurred while creating the image reader instance.
      */
     MultiImageStore(final FormatFinder format) throws DataStoreException, IOException {
-        super(format, false);
+        super(format);
     }
 
     /**

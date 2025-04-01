@@ -69,7 +69,7 @@ final class MultiResolutionImageLoader extends MultiResolutionCoverageLoader {
                 cached = CACHE.get(resource);
             }
             if (cached == null) {
-                final MultiResolutionImageLoader loader = new MultiResolutionImageLoader(resource);
+                final var loader = new MultiResolutionImageLoader(resource);
                 synchronized (CACHE) {
                     cached = CACHE.putIfAbsent(resource, loader);
                 }

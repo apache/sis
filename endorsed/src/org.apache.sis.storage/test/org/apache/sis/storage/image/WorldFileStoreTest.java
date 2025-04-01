@@ -69,7 +69,7 @@ public final class WorldFileStoreTest extends TestCase {
      */
     @Test
     public void testProbeContent() throws DataStoreException {
-        final WorldFileStoreProvider provider = new WorldFileStoreProvider();
+        final var provider = new WorldFileStoreProvider();
         final ProbeResult result = provider.probeContent(testData());
         assertTrue(result.isSupported());
         assertEquals("image/png", result.getMimeType());
@@ -82,7 +82,7 @@ public final class WorldFileStoreTest extends TestCase {
      */
     @Test
     public void testMetadata() throws DataStoreException {
-        final WorldFileStoreProvider provider = new WorldFileStoreProvider();
+        final var provider = new WorldFileStoreProvider();
         try (WorldFileStore store = provider.open(testData())) {
             /*
              * Opportunistic check of store type. Should be read-only,
@@ -102,8 +102,7 @@ public final class WorldFileStoreTest extends TestCase {
             final Metadata metadata = store.getMetadata();
             final DataIdentification id = (DataIdentification) getSingleton(metadata.getIdentificationInfo());
             assertEquals("WGS 84", getSingleton(metadata.getReferenceSystemInfo()).getName().getCode());
-            final GeographicBoundingBox bbox = (GeographicBoundingBox)
-                    getSingleton(getSingleton(id.getExtents()).getGeographicElements());
+            final var bbox = (GeographicBoundingBox) getSingleton(getSingleton(id.getExtents()).getGeographicElements());
             assertEquals( -90, bbox.getSouthBoundLatitude());
             assertEquals( +90, bbox.getNorthBoundLatitude());
             assertEquals(-180, bbox.getWestBoundLongitude());
@@ -126,7 +125,7 @@ public final class WorldFileStoreTest extends TestCase {
      */
     @Test
     public void testReadWrite(@TempDir final Path directory) throws DataStoreException, IOException {
-        final WorldFileStoreProvider provider = new WorldFileStoreProvider(false);
+        final var provider = new WorldFileStoreProvider(false);
         try (WorldFileStore source = provider.open(testData())) {
             assertFalse(source instanceof WritableStore);
             final GridCoverageResource resource = getSingleton(source.components());
@@ -136,13 +135,13 @@ public final class WorldFileStoreTest extends TestCase {
              * Write the resource in a new file using a different format.
              */
             final Path targetPath = directory.resolve("copy.jpg");
-            final StorageConnector connector = new StorageConnector(targetPath);
+            final var connector = new StorageConnector(targetPath);
             connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
                 StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE
             });
             try (WritableStore target = (WritableStore) provider.open(connector)) {
                 assertEquals(0, target.isMultiImages());
-                final WritableResource copy = (WritableResource) target.add(resource);
+                final var copy = (WritableResource) target.add(resource);
                 assertEquals(1, target.isMultiImages());
                 assertNotSame(resource, copy);
                 assertEquals (resource.getGridGeometry(),     copy.getGridGeometry());

@@ -72,6 +72,11 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   <li>Finding a SRID from a Coordinate Reference System (CRS).</li>
  * </ul>
  *
+ * Some statements are used only during the {@linkplain Analyzer analysis} of the database schema.
+ * This is the case of the search for geometry information. Other statements are used every times
+ * that a query is executed. This is the case of the statements for fetching the CRS.
+ *
+ * <h2>Thread safety</h2>
  * This class is <strong>not</strong> thread-safe. Each instance should be used in a single thread.
  * Instances are created by {@link Database#createInfoStatements(Connection)}.
  *
@@ -108,8 +113,17 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * A statement for fetching geometric information for a specific column.
+     * May be {@code null} if not yet prepared or if the table does not exist.
+     * This field is valid if {@link #isAnalysisPrepared} is {@code true}.
      */
     protected PreparedStatement geometryColumns;
+
+    /**
+     * Whether the statements for schema analysis have been prepared.
+     * Includes {@link #geometryColumns}, but not fetching the CRS.
+     * A statement may still be null if the table has not been found.
+     */
+    protected boolean isAnalysisPrepared;
 
     /**
      * The statement for fetching CRS Well-Known Text (WKT) from a SRID code.
@@ -178,18 +192,23 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * Prepares the statement for fetching information about all geometry or raster columns in a specified table.
-     * This method is for {@link #completeIntrospection(TableReference, Map)} implementations.
+     * This method is for {@link #completeIntrospection(Analyzer, TableReference, Map)} implementations.
      *
-     * @param  table               name of the geometry table. Standard value is {@code "GEOMETRY_COLUMNS"}.
-     * @param  raster              whether the statement is for raster table instead of geometry table.
-     * @param  geomColNameColumn   column of geometry column name, or {@code null} for the standard value.
-     * @param  geomTypeColumn      column of geometry type, or {@code null} for the standard value, or "" for none.
-     * @return the prepared statement for querying the geometry table.
+     * @param  analyzer           the opaque temporary object used for analyzing the database schema.
+     * @param  table              name of the geometry table. Standard value is {@code "GEOMETRY_COLUMNS"}.
+     * @param  raster             whether the statement is for raster table instead of geometry table.
+     * @param  geomColNameColumn  column of geometry column name, or {@code null} for the standard value.
+     * @param  geomTypeColumn     column of geometry type, or {@code null} for the standard value, or "" for none.
+     * @return the prepared statement for querying the geometry table, or {@code null} if the table does not exist.
      * @throws SQLException if the statement cannot be created.
      */
-    protected final PreparedStatement prepareIntrospectionStatement(final String table, final boolean raster,
+    protected final PreparedStatement prepareIntrospectionStatement(
+            final Analyzer analyzer, final String table, final boolean raster,
             String geomColNameColumn, String geomTypeColumn) throws SQLException
     {
+        if (analyzer.skipInfoTable(table)) {
+            return null;
+        }
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
         final var sql = new SQLBuilder(database).append(SQLBuilder.SELECT);
         if (geomColNameColumn == null) {
@@ -203,38 +222,70 @@ public class InfoStatements implements Localized, AutoCloseable {
             sql.append(", ").append(geomTypeColumn);
         }
         appendFrom(sql, table);
-        if (database.supportsCatalogs) appendColumn(sql, raster, schema.geomCatalogColumn).append("=? AND ");
-        if (database.supportsSchemas)  appendColumn(sql, raster, schema.geomSchemaColumn) .append("=? AND ");
+        /*
+         * In principle, all tables should be unambiguously specified with their catalog and schema name.
+         * However, some JDBC drivers do not provide this information in some circumstances such as materialized views.
+         * Therefore, we use the `LIKE` operator instead of `=` for making possible to disable the filtering by schema.
+         */
+        if (database.supportsCatalogs) appendColumn(sql, raster, schema.geomCatalogColumn).append(" LIKE ? AND ");
+        if (database.supportsSchemas)  appendColumn(sql, raster, schema.geomSchemaColumn) .append(" LIKE ? AND ");
         appendColumn(sql, raster, schema.geomTableColumn).append("=?");
         return connection.prepareStatement(sql.toString());
     }
 
     /**
-     * Gets all geometry and raster columns for the given table and sets information on the corresponding columns.
-     * Column instances in the {@code columns} map are modified in-place (the map itself is not modified).
-     * This method should be invoked before the {@link Column#valueGetter} field is set.
+     * Sets the parameter value for a table catalog or schema. Those parameters use the {@code LIKE} statement
+     * in order to ignore the catalog or schema when it is not specified. A catalog or schema is not specified
+     * if the string is null or empty. The latter case may happen with some drivers with, for example,
+     * materialized views.
      *
-     * @param  source   the table for which to get all geometry columns.
-     * @param  columns  all columns for the specified table. Keys are column names.
+     * @param  columnQuery  the query where to set the parameter.
+     * @param  p            index of the parameter to set.
+     * @param  source       catalog or schema name to set, or null or empty if unknown.
+     * @throws SQLException if an error occurred while setting the parameter value.
+     */
+    private void setCatalogOrSchema(final PreparedStatement columnQuery, final int p, String source) throws SQLException {
+        if (source == null || source.isEmpty()) {
+            source = "%";
+        } else {
+            source = database.escapeWildcards(source);
+        }
+        columnQuery.setString(p, source);
+    }
+
+    /**
+     * Gets all geometry and raster columns for the given table and sets information on the corresponding columns.
+     * Column instances in the {@code columns} map are modified in-place (the map content is not directly modified).
+     * This method should be invoked at least once before the {@link Column#valueGetter} field is set.
+     * It is invoked again for each table or query to analyze.
+     *
+     * @param  analyzer  the opaque temporary object used for analyzing the database schema.
+     * @param  source    the table for which to get all geometry columns.
+     * @param  columns   all columns for the specified table. Keys are column names.
      * @throws DataStoreContentException if a logical error occurred in processing data.
      * @throws ParseException if the WKT cannot be parsed.
      * @throws SQLException if a SQL error occurred.
      */
-    public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
+    public void completeIntrospection(final Analyzer analyzer, final TableReference source, final Map<String,Column> columns)
+            throws Exception
+    {
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-        if (geometryColumns == null) {
-            geometryColumns = prepareIntrospectionStatement(schema.geometryColumns, false, null, null);
+        if (!isAnalysisPrepared) {
+            isAnalysisPrepared = true;
+            geometryColumns = prepareIntrospectionStatement(analyzer, schema.geometryColumns, false, null, null);
         }
         configureSpatialColumns(geometryColumns, source, columns, schema.typeEncoding);
     }
 
     /**
-     * Implementation of {@link #completeIntrospection(TableReference, Map)} for geometries,
-     * as a separated methods for allowing sub-classes to override above-cited method.
-     * May also be used for non-geometric columns such as rasters, in which case the
-     * {@code typeValueKind} argument shall be {@code null}.
+     * Sets information about the specified columns of the given table using the given query.
+     * This method is the implementation of {@link #completeIntrospection(Analyzer, TableReference, Map)},
+     * provided as a separated methods for allowing sub-classes to override the above-cited public method.
+     * This method is used for both geometric and non-geometric columns such as rasters, in which case the
+     * {@code typeValueKind} argument shall be {@code null}. The given {@code columnQuery} argument is the
+     * value returned by {@link #prepareIntrospectionStatement(Analyzer, String, boolean, String, String)}.
      *
-     * @param  columnQuery    a statement prepared by {@link #prepareIntrospectionStatement(String, boolean, String, String)}.
+     * @param  columnQuery    the statement for fetching information, or {@code null} if none.
      * @param  source         the table for which to get all geometry columns.
      * @param  columns        all columns for the specified table. Keys are column names.
      * @param  typeValueKind  {@code NUMERIC}, {@code TEXTUAL} or {@code null} if none.
@@ -250,9 +301,12 @@ public class InfoStatements implements Localized, AutoCloseable {
     protected final void configureSpatialColumns(final PreparedStatement columnQuery, final TableReference source,
             final Map<String,Column> columns, final GeometryTypeEncoding typeValueKind) throws Exception
     {
+        if (columnQuery == null) {
+            return;
+        }
         int p = 0;
-        if (database.supportsCatalogs) columnQuery.setString(++p, source.catalog);
-        if (database.supportsSchemas)  columnQuery.setString(++p, source.schema);
+        if (database.supportsCatalogs) setCatalogOrSchema(columnQuery, ++p, source.catalog);
+        if (database.supportsSchemas)  setCatalogOrSchema(columnQuery, ++p, source.schema);
         columnQuery.setString(++p, source.table);
         try (ResultSet result = columnQuery.executeQuery()) {
             while (result.next()) {
@@ -435,7 +489,7 @@ public class InfoStatements implements Localized, AutoCloseable {
     private void log(final String method, final LogRecord warning) {
         if (warning != null) {
             warning.setLoggerName(Modules.SQL);
-            warning.setSourceClassName(getClass().getName());
+            warning.setSourceClassName(getClass().getCanonicalName());
             warning.setSourceMethodName(method);
             database.listeners.warning(warning);
         }
@@ -468,7 +522,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * responsible for holding a lock. It may be a read lock or write lock depending
      * on the {@link Connection#isReadOnly()} value.
      *
-     * @param  crs     the CRS for which to find a SRID, or {@code null}.
+     * @param  crs  the CRS for which to find a SRID, or {@code null}.
      * @return SRID for the given CRS, or 0 if the given CRS was null.
      * @throws Exception if an SQL error, parsing error or other error occurred.
      */

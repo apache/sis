@@ -27,29 +27,21 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.FeatureOperations;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.privy.AttributeConvention;
-import org.apache.sis.feature.privy.FeatureExpression;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
+import org.apache.sis.filter.privy.ListingPropertyVisitor;
 import org.apache.sis.filter.privy.SortByComparator;
-import org.apache.sis.filter.privy.XPath;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
@@ -82,7 +74,7 @@ import org.apache.sis.pending.geoapi.filter.SortProperty;
  * @version 1.5
  * @since   1.1
  */
-public class FeatureQuery extends Query implements Cloneable, Serializable {
+public class FeatureQuery extends Query implements Cloneable, Emptiable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -105,7 +97,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     private NamedExpression[] projection;
 
     /**
-     * The filter for trimming feature instances.
+     * The filter for trimming feature instances, or {@code null} if none.
      * In a database, "feature instances" are table rows.
      * Subset of rows is called <dfn>selection</dfn> in relational database terminology.
      *
@@ -136,7 +128,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     private long limit;
 
     /**
-     * The expressions to use for sorting the feature instances.
+     * The expressions to use for sorting the feature instances, or {@code null} if none.
      *
      * @see #getSortBy()
      * @see #setSortBy(SortBy)
@@ -145,7 +137,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     private SortBy<AbstractFeature> sortBy;
 
     /**
-     * Hint used by resources to optimize returned features.
+     * Hint used by resources to optimize returned features, or {@code null} for full resolution.
      * Different stores make use of vector tiles of different scales.
      * A {@code null} value means to query data at their full resolution.
      *
@@ -163,18 +155,52 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     }
 
     /**
+     * Creates a new query initialized to the same values than the given query.
+     * This is an alternative to the {@link #clone()} method when the caller
+     * wants to change the implementation class.
+     *
+     * @param  other  the other query from which to copy the configuration.
+     *
+     * @see #clone()
+     *
+     * @since 1.5
+     */
+    public FeatureQuery(final FeatureQuery other) {
+        projection       = other.projection;
+        selection        = other.selection;
+        skip             = other.skip;
+        limit            = other.limit;
+        sortBy           = other.sortBy;
+        linearResolution = other.linearResolution;
+    }
+
+    /**
+     * Returns {@code true} if this query do not specify any filtering.
+     *
+     * @return if this query performs no filtering.
+     *
+     * @since 1.5
+     */
+    @Override
+    public boolean isEmpty() {
+        return (projection == null) && (selection == null) && (skip == 0) && (limit < 0) && (sortBy == null)
+                && (linearResolution == null);
+    }
+
+    /**
      * Sets the properties to retrieve by their names. This convenience method wraps the
      * given names in {@link ValueReference} expressions without alias and delegates to
      * {@link #setProjection(NamedExpression...)}.
      *
      * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
-     * @throws IllegalArgumentException if a property is duplicated.
+     * @throws IllegalArgumentException if the given array is empty of if a property is duplicated.
      */
     @Override
     public void setProjection(final String... properties) {
         NamedExpression[] wrappers = null;
         if (properties != null) {
-            final DefaultFilterFactory<AbstractFeature,?,?> ff = DefaultFilterFactory.forFeatures();
+            ArgumentChecks.ensureNonEmpty("properties", properties);
+            final var ff = DefaultFilterFactory.forFeatures();
             wrappers = new NamedExpression[properties.length];
             for (int i=0; i<wrappers.length; i++) {
                 final String p = properties[i];
@@ -191,12 +217,14 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * delegates to {@link #setProjection(NamedExpression...)}.
      *
      * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
-     * @throws IllegalArgumentException if a property is duplicated.
+     * @throws IllegalArgumentException if the given array is empty of if a property is duplicated.
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public final void setProjection(final Expression<? super AbstractFeature, ?>... properties) {
         NamedExpression[] wrappers = null;
         if (properties != null) {
+            ArgumentChecks.ensureNonEmpty("properties", properties);
             wrappers = new NamedExpression[properties.length];
             for (int i=0; i<wrappers.length; i++) {
                 final Expression<? super AbstractFeature, ?> e = properties[i];
@@ -223,7 +251,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         if (properties != null) {
             ArgumentChecks.ensureNonEmpty("properties", properties);
             properties = properties.clone();
-            final Map<Object,Integer> uniques = JDK19.newLinkedHashMap(properties.length);
+            final var uniques = JDK19.<Object,Integer>newLinkedHashMap(properties.length);
             for (int i=0; i<properties.length; i++) {
                 final NamedExpression c = properties[i];
                 ArgumentChecks.ensureNonNullElement("properties", i, c);
@@ -249,25 +277,6 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      */
     public NamedExpression[] getProjection() {
         return (projection != null) ? projection.clone() : null;
-    }
-
-    /**
-     * Returns the properties to be stored in the target feature.
-     */
-    final NamedExpression[] getStoredProjection() {
-        final NamedExpression[] stored = getProjection();
-        if (stored != null) {
-            int count = 0;
-            for (final NamedExpression p : stored) {
-                if (p.type == ProjectionType.STORED) {
-                    stored[count++] = p;
-                }
-            }
-            if (count != 0) {
-                return ArraysExt.resize(stored, count);
-            }
-        }
-        return null;
     }
 
     /**
@@ -622,7 +631,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                 return true;
             }
             if (obj != null && getClass() == obj.getClass()) {
-                final NamedExpression other = (NamedExpression) obj;
+                final var other = (NamedExpression) obj;
                 return expression.equals(other.expression) && Objects.equals(alias, other.alias) && type == other.type;
             }
             return false;
@@ -635,7 +644,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          */
         @Override
         public String toString() {
-            final StringBuilder buffer = new StringBuilder("SELECT ");
+            final var buffer = new StringBuilder("SELECT ");
             appendTo(buffer);
             return buffer.toString();
         }
@@ -678,6 +687,29 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     }
 
     /**
+     * Returns all XPaths used, directly or indirectly, by this query.
+     * The XPath values are extracted from all {@link ValueReference} expressions found in the
+     * {@linkplain #getSelection() selection} and in the {@linkplain #getProjection() projection}.
+     * The {@linkplain NamedExpression#alias aliases} are ignored.
+     *
+     * <p>The elements in the returned set are in no particular order.
+     * The set may be empty but never null.</p>
+     *
+     * @return all XPaths used, directly or indirectly, by this query.
+     *
+     * @since 1.5
+     */
+    public Set<String> getXPaths() {
+        Set<String> xpaths = ListingPropertyVisitor.xpaths(selection, null);
+        if (projection != null) {
+            for (NamedExpression e : projection) {
+                xpaths = ListingPropertyVisitor.xpaths(e.expression, xpaths);
+            }
+        }
+        return xpaths;
+    }
+
+    /**
      * Applies this query on the given feature set.
      * This method is invoked by the default implementation of {@link FeatureSet#subset(Query)}.
      * The default implementation executes the query using the default {@link java.util.stream.Stream} methods.
@@ -698,125 +730,40 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @since 1.2
      */
     protected FeatureSet execute(final FeatureSet source) throws DataStoreException {
-        Objects.requireNonNull(source);
-        final FeatureQuery query = clone();
-        if (query.selection != null) {
-            final Optimization optimization = new Optimization();
-            optimization.setFeatureType(source.getType());
-            query.selection = optimization.apply(query.selection);
+        if (isEmpty()) {
+            return source;
         }
+        final FeatureQuery query = clone();
+        query.optimize(source);
         return new FeatureSubset(source, query);
     }
 
     /**
-     * Returns the type of values evaluated by this query when executed on features of the given type.
-     * If some expressions have no name, default names are computed as below:
+     * Optimizes this query before execution. This method is invoked by {@link #execute(FeatureSet)}
+     * on a {@linkplain #clone() clone} of the user-provided query. The default implementations tries
+     * to optimize the {@linkplain #getSelection() selection} filter using {@link Optimization}.
+     * Subclasses can override for modifying the optimization algorithm.
      *
-     * <ul>
-     *   <li>If the expression is an instance of {@link ValueReference}, the name of the
-     *       property referenced by the {@linkplain ValueReference#getXPath() XPath}.</li>
-     *   <li>Otherwise the localized string "Unnamed #1" with increasing numbers.</li>
-     * </ul>
+     * @param  source  the set of features given to the {@code execute(FeatureSet)} method.
+     * @throws DataStoreException if an error occurred during the optimization of this query.
      *
-     * @param  valueType  the type of features to be evaluated by the expressions in this query.
-     * @return type resulting from expressions evaluation (never null).
-     * @throws IllegalArgumentException if this method can operate only on some feature types
-     *         and the given type is not one of them.
-     * @throws IllegalArgumentException if this method cannot determine the result type of an expression
-     *         in this query. It may be because that expression is backed by an unsupported implementation.
+     * @since 1.5
      */
-    final DefaultFeatureType expectedType(final DefaultFeatureType valueType) {
-        if (projection == null) {
-            return valueType;           // All columns included: result is of the same type.
+    protected void optimize(final FeatureSet source) throws DataStoreException {
+        if (selection != null) {
+            final var optimization = new Optimization();
+            optimization.setFeatureType(source.getType());
+            selection = optimization.apply(selection);
         }
-        int unnamedNumber = 0;          // Sequential number for unnamed expressions.
-        Set<String> names = null;       // Names already used, for avoiding collisions.
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(valueType.getName());
-        for (int column = 0; column < projection.length; column++) {
-            final NamedExpression item = projection[column];
-            /*
-             * For each property, get the expected type (mandatory) and its name (optional).
-             * A default name will be computed if no alias was explicitly given by the user.
-             */
-            final Expression<? super AbstractFeature,?> expression = item.expression;
-            final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(expression);
-            final PropertyTypeBuilder resultType;
-            if (fex == null || (resultType = fex.expectedType(valueType, ftb)) == null) {
-                throw new IllegalArgumentException(Resources.format(Resources.Keys.InvalidExpression_2,
-                            expression.getFunctionName().toInternationalString(), column));
-            }
-            GenericName name = item.alias;
-            if (name == null) {
-                /*
-                 * Build a list of aliases declared by the user, for making sure that we do not collide with them.
-                 * No check for `GenericName` collision here because it was already verified by `setProjection(…)`.
-                 * We may have collision of their `String` representations however, which is okay.
-                 */
-                if (names == null) {
-                    names = JDK19.newHashSet(projection.length);
-                    for (final NamedExpression p : projection) {
-                        if (p.alias != null) {
-                            names.add(p.alias.toString());
-                        }
-                    }
-                }
-                /*
-                 * If the expression is a `ValueReference`, the `PropertyType` instance can be taken directly
-                 * from the source feature (the Apache SIS implementation does just that). If the name is set,
-                 * then we assume that it is correct. Otherwise we take the tip of the XPath.
-                 */
-                String tip = null;
-                if (expression instanceof ValueReference<?,?>) {
-                    tip = XPath.toPropertyName(((ValueReference<?,?>) expression).getXPath());
-                    /*
-                     * Take the existing `GenericName` instance from the property. It should be equivalent to
-                     * creating a name from the tip, except that it may be a `ScopedName` instead of `LocalName`.
-                     * We do not take `resultType.getName()` because the latter is different if the property
-                     * is itself a link to another property (in which case `resultType` is the final target).
-                     */
-                    name = valueType.getProperty(tip).getName();
-                    if (name == null || !names.add(name.toString())) {
-                        name = null;
-                        if (tip.isEmpty() || names.contains(tip)) {
-                            tip = null;
-                        }
-                    }
-                }
-                /*
-                 * If we still have no name at this point, create a name like "Unnamed #1".
-                 * Note that despite the use of `Vocabulary` resources, the name will be unlocalized
-                 * (for easier programmatic use) because `GenericName` implementation is designed for
-                 * providing localized names only if explicitly requested.
-                 */
-                if (name == null) {
-                    CharSequence text = tip;
-                    if (text == null) do {
-                        text = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed_1, ++unnamedNumber);
-                    } while (!names.add(text.toString()));
-                    name = Names.createLocalName(null, null, text);
-                }
-            }
-            /*
-             * If the attribute that we just added should be virtual, replace the attribute by an operation.
-             */
-            if (item.type == ProjectionType.COMPUTING && resultType instanceof AttributeTypeBuilder<?>) {
-                final var ab = (AttributeTypeBuilder<?>) resultType;
-                final DefaultAttributeType<?> storedType = ab.build();
-                if (ftb.properties().remove(resultType)) {
-                    final var properties = Map.of(AbstractOperation.NAME_KEY, name);
-                    ftb.addProperty(FeatureOperations.expression(properties, expression, storedType));
-                }
-            } else {
-                resultType.setName(name);
-            }
-        }
-        return ftb.build();
     }
 
     /**
      * Returns a clone of this query.
      *
      * @return a clone of this query.
+     *
+     * @see #FeatureQuery(FeatureQuery)
+     * @see #optimize(FeatureSet)
      */
     @Override
     public FeatureQuery clone() {
@@ -855,7 +802,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             return true;
         }
         if (obj != null && getClass() == obj.getClass()) {
-            final FeatureQuery other = (FeatureQuery) obj;
+            final var other = (FeatureQuery) obj;
             return skip  == other.skip &&
                    limit == other.limit &&
                    Objects.equals(selection,        other.selection) &&
@@ -874,7 +821,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      */
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(80);
+        final var sb = new StringBuilder(80);
         sb.append("SELECT ");
         if (projection != null) {
             for (int i=0; i<projection.length; i++) {

@@ -28,7 +28,6 @@ import java.time.LocalDate;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -70,6 +69,7 @@ import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.privy.FunctionNames;
+import org.apache.sis.filter.privy.ListingPropertyVisitor;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
@@ -558,10 +558,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 boolean simpleSelection = true; //true if there are no alias and all expressions are ValueReference
                 Set<String> properties = null;
                 if (projection != null) {
-                    properties = new HashSet<>();
-                    if (selection!=null) ListingPropertyVisitor.VISITOR.visit((Filter) selection, properties);
+                    properties = ListingPropertyVisitor.xpaths(selection, properties);
                     for (FeatureQuery.NamedExpression ne : projection) {
-                        ListingPropertyVisitor.VISITOR.visit((Expression) ne.expression, properties);
+                        properties = ListingPropertyVisitor.xpaths(ne.expression, properties);
                         simpleSelection &= (ne.alias == null);
                         simpleSelection &= (ne.expression.getFunctionName().tip().toString().equals(FunctionNames.ValueReference));
                     }

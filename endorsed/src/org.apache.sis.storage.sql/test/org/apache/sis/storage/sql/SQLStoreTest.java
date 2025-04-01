@@ -172,9 +172,9 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * Creates a {@link SQLStore} instance with the specified table as a resource, then tests some queries.
      */
     private void testTableQuery(final StorageConnector connector, final ResourceDefinition table) throws Exception {
-        try (SimpleFeatureStore store = new SimpleFeatureStore(new SQLStoreProvider(), connector, table)) {
+        try (var store = new SimpleFeatureStore(new SQLStoreProvider(), connector, table)) {
             verifyFeatureTypes(store);
-            final Map<String,Integer> countryCount = new HashMap<>();
+            final var countryCount = new HashMap<String,Integer>();
             try (Stream<AbstractFeature> features = store.findResource("Cities").features(false)) {
                 features.forEach((f) -> verifyContent(f, countryCount));
             }
@@ -285,7 +285,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
          */
         assertEquals(c.countryName, getIndirectPropertyValue(feature, "country", "native_name"));
         if (isCanada) {
-            final AbstractFeature f = (AbstractFeature) feature.getPropertyValue("country");
+            final var f = (AbstractFeature) feature.getPropertyValue("country");
             if (canada == null) {
                 canada = f;
             } else {
@@ -420,8 +420,8 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     private void verifyWhereOnLink(SimpleFeatureStore dataset) throws Exception {
         final String   desiredProperty = "native_name";
         final String[] expectedValues  = {"Canada"};
-        final FeatureSet   countries   = dataset.findResource("Countries");
-        final FeatureQuery query       = new FeatureQuery();
+        final FeatureSet countries     = dataset.findResource("Countries");
+        final var query = new FeatureQuery();
         query.setSelection(FF.equal(FF.property("sis:identifier"), FF.literal("CAN")));
         final String executionMode;
         final Object[] names;
@@ -448,8 +448,8 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      */
     private void verifyStreamOperations(final FeatureSet cities) throws DataStoreException {
         try (Stream<AbstractFeature> features = cities.features(false)) {
-            final AtomicInteger peekCount = new AtomicInteger();
-            final AtomicInteger mapCount  = new AtomicInteger();
+            final var peekCount = new AtomicInteger();
+            final var mapCount  = new AtomicInteger();
             final long actualPopulations = features.peek(f -> peekCount.incrementAndGet())
                     .peek(f -> peekCount.incrementAndGet())
                     .map (f -> {mapCount.incrementAndGet(); return f;})
@@ -483,7 +483,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
                 "SELECT * FROM " + SCHEMA + ".\"Cities\" WHERE \"population\" >= 1000000")))
         {
             final FeatureSet cities = store.findResource("LargeCities");
-            final Map<String,Integer> countryCount = new HashMap<>();
+            final var countryCount = new HashMap<String,Integer>();
             try (Stream<AbstractFeature> features = cities.features(false)) {
                 features.forEach((f) -> verifyContent(f, countryCount));
             }
@@ -506,7 +506,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
             /*
              * Add a filter for parks in France.
              */
-            final FeatureQuery query = new FeatureQuery();
+            final var query = new FeatureQuery();
             query.setSelection(FF.equal(FF.property("country"), FF.literal("FRA")));
             query.setProjection(FF.property("native_name"));
             final FeatureSet frenchParks = parks.subset(query);
@@ -541,7 +541,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         {
             final FeatureSet parks = store.findResource("MyQuery");
             final DefaultFeatureType type = parks.getType();
-            final DefaultAttributeType<?> property = (DefaultAttributeType<?>) TestUtilities.getSingleton(type.getProperties(true));
+            final var property = (DefaultAttributeType<?>) TestUtilities.getSingleton(type.getProperties(true));
             assertEquals("title", property.getName().toString(), "Property name should be label defined in query");
             assertEquals(String.class, property.getValueClass(), "Attribute should be a string");
             assertEquals(0, property.getMinimumOccurs(), "Column should be nullable.");
@@ -576,7 +576,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      */
     private void verifyDistinctQuery(final StorageConnector connector) throws Exception {
         final Object[] expected;
-        try (SimpleFeatureStore store = new SimpleFeatureStore(null, connector, ResourceDefinition.query("Countries",
+        try (var store = new SimpleFeatureStore(null, connector, ResourceDefinition.query("Countries",
                 "SELECT \"country\" FROM " + SCHEMA + ".\"Parks\" ORDER BY \"country\"")))
         {
             final FeatureSet countries = store.findResource("Countries");

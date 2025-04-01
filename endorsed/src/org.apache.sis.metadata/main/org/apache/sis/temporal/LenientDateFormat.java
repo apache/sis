@@ -73,13 +73,15 @@ public final class LenientDateFormat extends DateFormat {
     /**
      * The thread-safe instance to use for reading and formatting dates.
      * Only the year is mandatory, all other fields are optional at parsing time.
-     * However, all fields are written, including milliseconds at formatting time.
+     * However, all fields are written, including milliseconds at formatting time,
+     * unless that field is not available at all (which is not he same as available
+     * with value zero).
      *
      * @see #parseInstantUTC(CharSequence, int, int)
      */
     public static final DateTimeFormatter FORMAT = new DateTimeFormatterBuilder()
             .parseLenient()                    // For allowing fields with one digit instead of two.
-            .parseCaseInsensitive()            .appendValue(ChronoField.YEAR, 4, 5, SignStyle.NORMAL)    // Proleptic year (use negative number if needed).
+            .parseCaseInsensitive()            .appendValue(ChronoField.YEAR, 4, 10, SignStyle.NORMAL)   // Proleptic year (use negative number if needed).
             .optionalStart().appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR,    2)
             .optionalStart().appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH,     2)
             .optionalStart().appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY,      2)

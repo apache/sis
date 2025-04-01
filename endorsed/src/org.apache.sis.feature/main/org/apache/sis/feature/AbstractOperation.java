@@ -26,10 +26,13 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Classes;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 
 
 /**
@@ -314,5 +317,20 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
      */
     private static String name(final Identifier id) {
         return (id != null) ? id.getCode() : null;
+    }
+
+    /**
+     * Creates a parameter descriptor in the Apache SIS namespace. This convenience method shall not
+     * be in public <abbr>API</abbr>, because users should define operations in their own namespace.
+     *
+     * @param  name        the parameter group name, typically the same as operation name.
+     * @param  parameters  the parameters, or an empty array if none.
+     * @return description of the parameters group.
+     */
+    static ParameterDescriptorGroup parameters(final String name, final ParameterDescriptor<?>... parameters) {
+        final var properties = new HashMap<String,Object>(4);
+        properties.put(ParameterDescriptorGroup.NAME_KEY, name);
+        properties.put(Identifier.AUTHORITY_KEY, Citations.SIS);
+        return new DefaultParameterDescriptorGroup(properties, 1, 1);
     }
 }

@@ -19,7 +19,7 @@ package org.apache.sis.storage;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.feature.privy.FeatureUtilities;
+import org.apache.sis.storage.base.FeatureProjection;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.internal.Resources;
@@ -27,7 +27,6 @@ import org.apache.sis.storage.internal.Resources;
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.filter.Expression;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.pending.geoapi.filter.SortBy;
 
@@ -53,6 +52,12 @@ final class FeatureSubset extends AbstractFeatureSet {
     private final FeatureQuery query;
 
     /**
+     * A function applying projections (with "projected" in the <abbr>SQL</abbr> database sense) of features.
+     * This is computed together with {@link #resultType}. May stay {@code null} if there is no projection.
+     */
+    private FeatureProjection projection;
+
+    /**
      * The type of features in this set. May or may not be the same as {@link #source}.
      * This is computed when first needed.
      */
@@ -74,7 +79,7 @@ final class FeatureSubset extends AbstractFeatureSet {
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
-        final MetadataBuilder builder = new MetadataBuilder();
+        final var builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
         builder.addLineage(Resources.formatInternational(Resources.Keys.UnfilteredData));
         builder.addProcessDescription(Resources.formatInternational(Resources.Keys.SubsetQuery_1, StoreUtilities.getLabel(source)));
@@ -90,7 +95,8 @@ final class FeatureSubset extends AbstractFeatureSet {
         if (resultType == null) {
             final DefaultFeatureType type = source.getType();
             try {
-                resultType = query.expectedType(type);
+                projection = FeatureProjection.create(type, query.getProjection());
+                resultType = (projection != null) ? projection.featureType : type;
             } catch (IllegalArgumentException e) {
                 throw new DataStoreContentException(Resources.forLocale(listeners.getLocale())
                         .getString(Resources.Keys.CanNotDeriveTypeFromFeature_1, type.getName()), e);
@@ -134,25 +140,14 @@ final class FeatureSubset extends AbstractFeatureSet {
             stream = stream.limit(limit.getAsLong());
         }
         /*
-         * Transform feature instances.
-         * Note: "projection" here is in relational database sense, not map projection.
+         * Transform feature instances, usually for keeping only a subset of the properties.
+         * Note: "projection" here is in relational database sense (SQL), not map projection.
+         * This operation should be last, because the filter applied above may need properties
+         * that are excluded by this projection.
          */
-        final FeatureQuery.NamedExpression[] projection = query.getStoredProjection();
+        getType();      // Force the computation of `projection` if not already done.
         if (projection != null) {
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            final Expression<? super AbstractFeature,?>[] expressions = new Expression[projection.length];
-            for (int i=0; i<expressions.length; i++) {
-                expressions[i] = projection[i].expression;
-            }
-            final DefaultFeatureType type = getType();
-            final String[] names = FeatureUtilities.getNames(type.getProperties(false));
-            stream = stream.map(t -> {
-                final AbstractFeature f = type.newInstance();
-                for (int i=0; i < expressions.length; i++) {
-                    f.setPropertyValue(names[i], expressions[i].apply(t));
-                }
-                return f;
-            });
+            stream = stream.map(projection);
         }
         return stream;
     }

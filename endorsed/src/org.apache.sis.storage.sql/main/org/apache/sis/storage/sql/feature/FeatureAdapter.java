@@ -198,13 +198,13 @@ final class FeatureAdapter {
                 if (dependency.excluded) continue;
                 if (dependency != noFollow) {
                     dependency.startFollowing(following);                   // Safety against never-ending recursion.
-                    associationNames   [count] = dependency.propertyName;
+                    associationNames   [count] = dependency.getPropertyName();
                     foreignerKeyIndices[count] = getColumnIndices(sql, dependency, columnIndices);
                     dependencies       [count] = new FeatureAdapter(dependency.getSearchTable(), metadata, following, noFollow);
                     dependency.endFollowing(following);
                     count++;
                 } else {
-                    deferredAssociation = dependency.propertyName;
+                    deferredAssociation = dependency.getPropertyName();
                 }
             }
             importCount = count;
@@ -219,7 +219,7 @@ final class FeatureAdapter {
                 dependency.startFollowing(following);                   // Safety against never-ending recursion.
                 final Table foreigner  = dependency.getSearchTable();
                 final Relation inverse = foreigner.getInverseOf(dependency, table.name);
-                associationNames   [count] = dependency.propertyName;
+                associationNames   [count] = dependency.getPropertyName();
                 foreignerKeyIndices[count] = getColumnIndices(sql, dependency, columnIndices);
                 dependencies       [count] = new FeatureAdapter(foreigner, metadata, following, inverse);
                 dependency.endFollowing(following);
@@ -327,7 +327,7 @@ final class FeatureAdapter {
             final Column column = attributes[i];
             final Object value = column.valueGetter.getValue(stmts, result, i+1);
             if (value != null) {
-                feature.setPropertyValue(column.propertyName, value);
+                feature.setPropertyValue(column.getPropertyName(), value);
             }
         }
         return feature;

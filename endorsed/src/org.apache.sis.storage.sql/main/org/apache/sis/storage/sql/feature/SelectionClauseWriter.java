@@ -17,7 +17,6 @@
 package org.apache.sis.storage.sql.feature;
 
 import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -149,7 +148,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
      * @return a writer with unsupported functions removed.
      */
     final SelectionClauseWriter removeUnsupportedFunctions(final Database<?> database) {
-        final Map<String,SpatialOperatorName> unsupported = new HashMap<>();
+        final var unsupported = new HashMap<String, SpatialOperatorName>();
         try (Connection c = database.source.getConnection()) {
             final DatabaseMetaData metadata = c.getMetaData();
             /*
@@ -172,9 +171,10 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
              * Remove from above map all functions that are supported by the database.
              * This list is potentially large so we do not put those items in a map.
              */
-            final String pattern = (lowerCase ? "st_%" : "ST\\_%").replace("\\", metadata.getSearchStringEscape());
+            final String prefix = database.escapeWildcards(lowerCase ? "st_" : "ST_");
             try (ResultSet r = metadata.getFunctions(database.catalogOfSpatialTables,
-                                                     database.schemaOfSpatialTables, pattern))
+                    database.dialect.toCompatibleMetadataPattern(database.schemaOfSpatialTables, 1),
+                    database.dialect.toCompatibleMetadataPattern(prefix + '%', 2)))
             {
                 while (r.next()) {
                     unsupported.remove(r.getString("FUNCTION_NAME"));
@@ -230,7 +230,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
     @SuppressWarnings("unchecked")
     final boolean write(final SelectionClause sql, final Filter<? super AbstractFeature> filter) {
         visit((Filter<AbstractFeature>) filter, sql);
-        return sql.isInvalid;
+        return sql.isInvalid();
     }
 
     /**
@@ -242,7 +242,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
      */
     private boolean write(final SelectionClause sql, final Expression<AbstractFeature, ?> expression) {
         visit(expression, sql);
-        return sql.isInvalid;
+        return sql.isInvalid();
     }
 
     /**
@@ -386,7 +386,8 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
     /**
      * Appends a function name with an arbitrary number of parameters (potentially zero).
      * This method stops immediately if a parameter cannot be expressed in SQL, leaving
-     * the trailing part of the SQL in an invalid state.
+     * the trailing part of the SQL in an invalid state. Callers should check if this is
+     * the case by invoking {@link SelectionClause#isInvalid()} after this method call.
      */
     private final class Function implements BiConsumer<Filter<AbstractFeature>, SelectionClause> {
         /** Name the function. */
@@ -397,10 +398,27 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
             this.name = name;
         }
 
-        /** Writes the function as an SQL statement. */
+        /**
+         * Writes the function as an SQL statement. The function is usually spatial (with geometry operands),
+         * but not necessarily. If the given {@code filter} contains geometry operands specified as literal,
+         * {@link org.apache.sis.filter.Optimization} should have already transformed the literals to the CRS
+         * of the geometry column when those CRS are known. Therefore, it should not be needed to perform any
+         * geometry transformation in this method.
+         */
         @Override public void accept(final Filter<AbstractFeature> filter, final SelectionClause sql) {
-            sql.append(name);
-            writeParameters(sql, filter.getExpressions(), ", ", false);
+            sql.appendSpatialFunction(name);
+            final List<Expression<AbstractFeature, ?>> expressions = filter.getExpressions();
+            if (SelectionClause.REPLACE_UNSPECIFIED_CRS) {
+                for (Expression<AbstractFeature,?> exp : expressions) {
+                    if (exp instanceof ValueReference<?,?>) {
+                        if (sql.acceptColumnCRS((ValueReference<AbstractFeature,?>) exp)) {
+                            break;
+                        }
+                    }
+                }
+            }
+            writeParameters(sql, expressions, ", ", false);
+            sql.clearColumnCRS();
         }
     }
 }

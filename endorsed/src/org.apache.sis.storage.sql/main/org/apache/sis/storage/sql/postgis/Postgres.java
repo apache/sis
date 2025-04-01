@@ -56,15 +56,6 @@ import org.apache.sis.util.Version;
  */
 public final class Postgres<G> extends Database<G> {
     /**
-     * Version of PostGIS extension, or {@code null} if PostGIS has not been found.
-     * Not to be confused with the version of PostgreSQL server, which is given by
-     * another class provided in the PostgreSQL JDBC driver.
-     *
-     * @see org.postgresql.core.ServerVersion
-     */
-    private final Version postgisVersion;
-
-    /**
      * Creates a new session for a PostGIS database.
      *
      * @param  source         provider of (pooled) connections to the database.
@@ -82,19 +73,20 @@ public final class Postgres<G> extends Database<G> {
             throws SQLException
     {
         super(source, metadata, dialect, geomLibrary, contentLocale, listeners, locks);
-        Version version = null;
         try (Statement st = metadata.getConnection().createStatement();
              ResultSet result = st.executeQuery("SELECT public.PostGIS_version();"))
         {
             while (result.next()) {
-                version = parseVersion(result.getString(1));
-                if (version != null) break;
+                final Version version = parseVersion(result.getString(1));
+                if (version != null) {
+                    softwareVersions.put("PostGIS", version);
+                    break;
+                }
             }
         } catch (SQLException e) {
-            log(Resources.forLocale(null).getLogRecord(Level.CONFIG,
+            log(Resources.forLocale(listeners.getLocale()).getLogRecord(Level.CONFIG,
                 Resources.Keys.SpatialExtensionNotFound_1, "PostGIS"));
         }
-        postgisVersion = version;
     }
 
     /**
@@ -197,7 +189,7 @@ public final class Postgres<G> extends Database<G> {
      * <p>The values in the map tells whether the table can be used as a sentinel value for
      * determining that the {@link SpatialSchema} enumeration value can be accepted.</p>
      *
-     * @param  tables  where to add names of tables that describe the spatial schema.
+     * @param  ignoredTables  where to add names of tables to ignore, together with whether they are sentinel tables.
      * @return the spatial schema convention supported by this database.
      */
     @Override

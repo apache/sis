@@ -19,6 +19,7 @@ package org.apache.sis.metadata.sql.privy;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.privy.Constants;
 
 
@@ -83,7 +84,40 @@ public enum Dialect {
      *
      * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
      */
-    SQLITE("sqlite", 0);
+    SQLITE("sqlite", 0),
+
+    /**
+     * The database uses DuckDB syntax. This is subset of SQL. DuckDB is not designed for transactional
+     * applications, but rather for analytical processing. It runs on the local machine without server.
+     *
+     * <h4>Spatial extension</h4>
+     * The following <abbr>SQL</abbr> statement needs to be executed at least once when DuckDB
+     * is used for the first time. It can be executed with a {@link java.sql.Statement}.
+     *
+     * {@snippet lang="sql" :
+     *     INSTALL spatial
+     *     }
+     *
+     * Then, the following <abbr>SQL</abbr> statement should be executed on every new connection.
+     * Actually, in our tests, it appears sometime necessary, sometime not.
+     *
+     * {@snippet lang="sql" :
+     *     LOAD spatial
+     *     }
+     *
+     * @see <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>
+     */
+    DUCKDB("duckdb", 0) {
+        @Override
+        @Workaround(library = "DuckDB", version = "1.2.1")
+        public String toCompatibleMetadataPattern(String pattern, final int argument) {
+            switch (argument) {
+                case 1: if (pattern == null) pattern = "%"; break;
+                case 2: pattern = pattern.replace("\\", ""); break;
+            }
+            return pattern;
+        }
+    };
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -157,6 +191,22 @@ public enum Dialect {
      */
     public final boolean supportsConcurrency() {
         return (flags & Supports.CONCURRENCY) != 0;
+    }
+
+    /**
+     * Converts the pattern to something that can be used for requesting metadata.
+     * This is a workaround for a DuckDB bug and may be removed in a future version.
+     *
+     * @param  pattern   the schema pattern to apply.
+     * @param  argument  1 for the {@code schemaPattern}, 2 for {@code functionNamePattern}.
+     * @return the schema pattern to use.
+     *
+     * @see DatabaseMetaData#getFunctions(String, String, String)
+     * @see <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>
+     */
+    @Workaround(library = "DuckDB", version = "1.2.1")
+    public String toCompatibleMetadataPattern(String pattern, int argument) {
+        return pattern;
     }
 
     /**

@@ -211,6 +211,12 @@ public final class AttributeConvention extends Static {
     public static final String MAXIMAL_LENGTH = "sis:maximalLength";
 
     /**
+     * Prefix to insert before sequential number for name disambiguation.
+     * This is used when attribute name collisions are detected in a file.
+     */
+    public static final String DISAMBIGUATION_SEQUENTIAL_NUMBER_PREFIX = " #";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private AttributeConvention() {

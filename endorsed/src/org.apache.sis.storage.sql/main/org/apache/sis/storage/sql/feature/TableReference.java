@@ -151,7 +151,7 @@ public class TableReference {
      * if the output device uses a monospaced font and supports Unicode.
      */
     static String toString(final Object owner, final Consumer<TreeTable.Node> appender) {
-        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME);
+        final var table = new DefaultTreeTable(TableColumn.NAME);
         final TreeTable.Node root = table.getRoot();
         root.setValue(TableColumn.NAME, owner.getClass().getSimpleName());
         appender.accept(root);

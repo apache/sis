@@ -341,7 +341,7 @@ final class MetadataReader extends MetadataBuilder {
      * @throws  NumberFormatException if the given value cannot be parsed.
      */
     private Double parseDouble(final String value) throws NumberFormatException {
-        return shared(Double.valueOf(value));
+        return shared(Double.parseDouble(value));
     }
 
     /**
@@ -911,16 +911,16 @@ final class MetadataReader extends MetadataBuilder {
          * Set information about all non-null bands. The bands are categorized in three groups:
          * PANCHROMATIC, REFLECTIVE and THERMAL.
          */
-        final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
+        final var content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
         if (content != null) {
-            final EnumMap<BandGroupName,DefaultAttributeGroup> groups = new EnumMap<>(BandGroupName.class);
+            final var groups = new EnumMap<BandGroupName,DefaultAttributeGroup>(BandGroupName.class);
             for (final EnumMap.Entry<BandName,Band> entry : bands.entrySet()) {
-                final DefaultAttributeGroup group = groups.computeIfAbsent(entry.getKey().group, (k) -> {
-                    DefaultAttributeGroup g = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
-                    content.getAttributeGroups().add(g);
-                    return g;
+                final DefaultAttributeGroup g = groups.computeIfAbsent(entry.getKey().group, (k) -> {
+                    var ag = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
+                    content.getAttributeGroups().add(ag);
+                    return ag;
                 });
-                group.getAttributes().add(entry.getValue().sampleDimension);
+                g.getAttributes().add(entry.getValue().sampleDimension);
             }
         }
         result.transitionTo(DefaultMetadata.State.FINAL);

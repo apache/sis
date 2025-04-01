@@ -246,7 +246,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
                 try {
                     return original.toValueType(target);
                 } catch (RuntimeException bis) {
-                    final ClassCastException c = new ClassCastException(Errors.format(
+                    final var c = new ClassCastException(Errors.format(
                             Errors.Keys.CanNotConvertValue_2, getFunctionName(), target));
                     c.initCause(e);
                     c.addSuppressed(bis);

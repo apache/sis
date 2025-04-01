@@ -72,6 +72,13 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     private final BinaryEncoding encoding;
 
     /**
+     * Whether to use binary (<abbr>WKB</abbr>) or textual (<abbr>WKT</abbr>).
+     * In theory, the binary format should be more efficient.
+     * But this is not always well supported.
+     */
+    private final GeometryEncoding format;
+
+    /**
      * Creates a new reader. The same instance can be reused for parsing an arbitrary
      * number of geometries sharing the same default CRS.
      *
@@ -79,14 +86,17 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
      * @param  geometryClass    the type of geometry to be returned by this {@code ValueGetter}.
      * @param  defaultCRS       the CRS to use if none can be mapped from the SRID, or {@code null} if none.
      * @param  encoding         the way binary data are encoded in the geometry column.
+     * @param  format           whether to use <abbr>WKB</abbr> or <abbr>WKT</abbr>.
      */
     GeometryGetter(final Geometries<G> geometryFactory, final Class<V> geometryClass,
-            final CoordinateReferenceSystem defaultCRS, final BinaryEncoding encoding)
+            final CoordinateReferenceSystem defaultCRS, final BinaryEncoding encoding,
+            final GeometryEncoding format)
     {
         super(geometryClass);
         this.geometryFactory = geometryFactory;
         this.defaultCRS      = defaultCRS;
         this.encoding        = encoding;
+        this.format          = format;
     }
 
     /**
@@ -105,45 +115,64 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
      */
     @Override
     public V getValue(final InfoStatements stmts, final ResultSet source, final int columnIndex) throws Exception {
-        final byte[] wkb = encoding.getBytes(source, columnIndex);
-        if (wkb == null) return null;
-        final ByteBuffer buffer = ByteBuffer.wrap(wkb);
-        /*
-         * The bytes should describe a geometry encoded in Well Known Binary (WKB) format,
-         * but this implementation accepts also the Geopackage geometry encoding:
-         *
-         *     https://www.geopackage.org/spec140/index.html#gpb_spec
-         *
-         * This is still a geometry in WKB format, but preceded by a header of at least two 32-bits integers.
-         */
-        int gpkgSrid = 0;       // ≤0 means "no CRS" as of `stmts.fetchCRS(int)` contract.
-        if (wkb.length > 2*Integer.BYTES && wkb[0] == 'G' && wkb[1] == 'P') {
-            final int version = Byte.toUnsignedInt(wkb[2]);     // 8-bit unsigned integer, 0 = version 1
-            if (version != 0) {
-                throw new DataStoreContentException(Errors.forLocale(stmts.getLocale())
-                        .getString(Errors.Keys.UnsupportedFormatVersion_2, "Geopackage", version));
+        final GeometryWrapper geom;
+        int gpkgSrid = 0;           // A value ≤ 0 means "no CRS" as of `stmts.fetchCRS(int)` contract.
+        switch (format) {
+            default: {
+                return null;
             }
-            final int     flags        = wkb[3];
-            final boolean bigEndian    = (flags & 0b000001) == 0;
-            final int     envelopeType = (flags & 0b001110) >> 1;
-        //  final boolean isEmpty      = (flags & 0b010000) != 0;
-        //  final boolean extendedType = (flags & 0b100000) != 0;
-            buffer.order(bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-            gpkgSrid = buffer.getInt(Integer.BYTES);
-            // Skip header and envelope.
-            final int offset;
-            switch (envelopeType) {
-                case 0: offset = 2*Integer.BYTES;                  break;   // No envelope.
-                case 1: offset = 2*Integer.BYTES + 4*Double.BYTES; break;   // 2D envelope.
-                case 2:                                                     // 3D envelope with Z.
-                case 3: offset = 2*Integer.BYTES + 6*Double.BYTES; break;   // 3D envelope with M.
-                case 4: offset = 2*Integer.BYTES + 8*Double.BYTES; break;   // 4D envelope.
-                default: throw new DataStoreContentException(Errors.forLocale(stmts.getLocale())
-                            .getString(Errors.Keys.UnexpectedValueInElement_2, "envelope contents indicator"));
+            case WKT: {
+                final String wkt = source.getString(columnIndex);
+                if (wkt == null) return null;
+                geom = geometryFactory.parseWKT(wkt);
+                break;
             }
-            buffer.position(offset).order(ByteOrder.BIG_ENDIAN);
+            case WKB: {
+                final byte[] wkb = encoding.getBytes(source, columnIndex);
+                if (wkb == null) return null;
+                final ByteBuffer buffer = ByteBuffer.wrap(wkb);
+                /*
+                 * The bytes should describe a geometry encoded in Well Known Binary (WKB) format,
+                 * but this implementation accepts also the Geopackage geometry encoding:
+                 *
+                 *     https://www.geopackage.org/spec140/index.html#gpb_spec
+                 *
+                 * This is still a geometry in WKB format, but preceded by a header of at least two 32-bits integers.
+                 */
+                if (wkb.length > 2*Integer.BYTES && wkb[0] == 'G' && wkb[1] == 'P') {
+                    final int version = Byte.toUnsignedInt(wkb[2]);     // 8-bit unsigned integer, 0 = version 1
+                    if (version != 0) {
+                        throw new DataStoreContentException(Errors.forLocale(stmts.getLocale())
+                                .getString(Errors.Keys.UnsupportedFormatVersion_2, "Geopackage", version));
+                    }
+                    final int     flags        = wkb[3];
+                    final boolean bigEndian    = (flags & 0b000001) == 0;
+                    final int     envelopeType = (flags & 0b001110) >> 1;
+                //  final boolean isEmpty      = (flags & 0b010000) != 0;
+                //  final boolean extendedType = (flags & 0b100000) != 0;
+                    buffer.order(bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+                    gpkgSrid = buffer.getInt(Integer.BYTES);
+                    // Skip header and envelope.
+                    final int offset;
+                    switch (envelopeType) {
+                        case 0: offset = 2*Integer.BYTES;                  break;   // No envelope.
+                        case 1: offset = 2*Integer.BYTES + 4*Double.BYTES; break;   // 2D envelope.
+                        case 2:                                                     // 3D envelope with Z.
+                        case 3: offset = 2*Integer.BYTES + 6*Double.BYTES; break;   // 3D envelope with M.
+                        case 4: offset = 2*Integer.BYTES + 8*Double.BYTES; break;   // 4D envelope.
+                        default: throw new DataStoreContentException(Errors.forLocale(stmts.getLocale())
+                                    .getString(Errors.Keys.UnexpectedValueInElement_2, "envelope contents indicator"));
+                    }
+                    buffer.position(offset).order(ByteOrder.BIG_ENDIAN);
+                }
+                geom = geometryFactory.parseWKB(buffer);
+                break;
+            }
         }
-        final GeometryWrapper geom = geometryFactory.parseWKB(buffer);
+        /*
+         * Set the CRS. This is often a constant value defined for the whole column.
+         * But some formats allow to specify a SRID individually on the geometry.
+         */
         CoordinateReferenceSystem crs = defaultCRS;
         if (stmts != null) {
             crs = stmts.fetchCRS(geom.getSRID().orElse(gpkgSrid));

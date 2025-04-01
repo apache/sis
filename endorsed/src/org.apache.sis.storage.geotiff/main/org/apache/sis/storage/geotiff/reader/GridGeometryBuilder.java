@@ -25,6 +25,7 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
@@ -76,6 +77,14 @@ import org.apache.sis.math.Vector;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class GridGeometryBuilder extends GeoKeysLoader {
+    /**
+     * Default scale factory to apply if a row in the model transformation contains only zero values.
+     * The matrix in a GeoTIFF file is always of size 4×4 even if the <abbr>CRS</abbr> is two-dimensional.
+     * In the latter case, the matrix row for the third dimension has only zero values. That row should be
+     * discarded when building the final {@link GridGeometry}, but there is sometime inconsistency between
+     * the number of <abbr>CRS</abbr> dimensions and which matrix rows have been assigned non-zero values.
+     */
+    private static final double DEFAULT_SCALE_FACTOR = 1;
 
     //  ╔════════════════════════════════════════════════════════════════════════════════╗
     //  ║                                                                                ║
@@ -300,7 +309,9 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
         try {
             MathTransform gridToCRS = null;
             if (affine != null) {
-                gridToCRS = factory.createAffineTransform(Matrices.resizeAffine(affine, ++n, n));
+                final Matrix m = Matrices.resizeAffine(affine, ++n, n);
+                Matrices.forceNonZeroScales(m, DEFAULT_SCALE_FACTOR);
+                gridToCRS = factory.createAffineTransform(m);
             } else if (modelTiePoints != null) {
                 pixelIsPoint = true;
                 gridToCRS = Localization.nonLinear(modelTiePoints);

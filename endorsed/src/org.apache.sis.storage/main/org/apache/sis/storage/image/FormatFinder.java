@@ -19,25 +19,21 @@ package org.apache.sis.storage.image;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriter;
-import javax.imageio.IIOException;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
-import javax.imageio.stream.FileImageOutputStream;
 import java.awt.image.RenderedImage;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.util.Workaround;
 
 
 /**
@@ -128,6 +124,8 @@ final class FormatFinder implements AutoCloseable {
     {
         this.provider  = provider;
         this.connector = connector;
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Object storage = connector.getStorage();
         if (storage instanceof ImageReader) {
             reader  = (ImageReader) storage;
@@ -141,7 +139,7 @@ final class FormatFinder implements AutoCloseable {
         this.storage = storage;
         this.suffix  = IOUtilities.extension(storage);
         final var filter = connector.getOption(InternalOptionKey.PREFERRED_PROVIDERS);
-        preferredFormat = filter instanceof DataStoreFilter ? ((DataStoreFilter) filter).preferred : null;
+        preferredFormat = (filter instanceof DataStoreFilter) ? ((DataStoreFilter) filter).preferred : null;
         /*
          * Detect if the image can be opened in read/write mode.
          * If not, it will be opened in read-only mode.
@@ -171,11 +169,14 @@ final class FormatFinder implements AutoCloseable {
 
     /**
      * Returns the name of the format.
+     * This method may open the file for determining its format.
+     * It may result in the creation of a new, initially empty, file.
      *
      * @return name of the format, or {@code null} if unknown.
      */
     final String[] getFormatName() throws DataStoreException, IOException {
         if (openAsWriter) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final ImageWriter writer = getOrCreateWriter(null);
             if (writer != null) {
                 final ImageWriterSpi spi = writer.getOriginatingProvider();
@@ -184,6 +185,7 @@ final class FormatFinder implements AutoCloseable {
                 }
             }
         } else {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final ImageReader reader = getOrCreateReader();
             if (reader != null) {
                 final ImageReaderSpi spi = reader.getOriginatingProvider();
@@ -196,7 +198,7 @@ final class FormatFinder implements AutoCloseable {
     }
 
     /**
-     * Returns the user-specified reader or searches for a reader that claim to be able to read the storage input.
+     * Returns the user-specified reader or searches for a reader that claims to be able to read the storage input.
      * This method tries first the readers associated to the file suffix. If no reader is found, then this method
      * tries all other readers.
      *
@@ -205,7 +207,7 @@ final class FormatFinder implements AutoCloseable {
     final ImageReader getOrCreateReader() throws DataStoreException, IOException {
         if (!readerLookupDone) {
             readerLookupDone = true;
-            final Map<ImageReaderSpi,Boolean> deferred = new LinkedHashMap<>();
+            final var deferred = new LinkedHashMap<ImageReaderSpi,Boolean>();
             if (preferredFormat != null) {
                 reader = FormatFilter.NAME.createReader(preferredFormat, this, deferred);
             }
@@ -223,23 +225,21 @@ final class FormatFinder implements AutoCloseable {
                     ImageInputStream stream = null;
                     for (final Map.Entry<ImageReaderSpi,Boolean> entry : deferred.entrySet()) {
                         if (entry.getValue()) {
-                            if (stream == null) try {
+                            if (stream == null) {
                                 if (isWritable) {
                                     // ImageOutputStream is both read and write.
-                                    stream = ImageIO.createImageOutputStream(storage);
+                                    stream = connector.getStorageAs(ImageOutputStream.class);
                                 }
                                 if (stream == null) {
-                                    stream = ImageIO.createImageInputStream(storage);
+                                    stream = connector.getStorageAs(ImageInputStream.class);
                                     if (stream == null) break;
                                 }
-                            } catch (IIOException e) {
-                                throw unwrap(e);
                             }
                             final ImageReaderSpi p = entry.getKey();
                             if (p.canDecodeInput(stream)) {
                                 reader = p.createReaderInstance();
                                 reader.setInput(stream);
-                                keepOpen = storage;
+                                keepOpen = stream;
                                 break;
                             }
                         }
@@ -259,7 +259,7 @@ final class FormatFinder implements AutoCloseable {
     final ImageWriter getOrCreateWriter(final RenderedImage image) throws DataStoreException, IOException {
         if (!writerLookupDone) {
             writerLookupDone = true;
-            final Map<ImageWriterSpi,Boolean> deferred = new LinkedHashMap<>();
+            final var deferred = new LinkedHashMap<ImageWriterSpi,Boolean>();
             if (preferredFormat != null) {
                 writer = FormatFilter.NAME.createWriter(preferredFormat, this, image, deferred);
             }
@@ -273,20 +273,13 @@ final class FormatFinder implements AutoCloseable {
                     for (final Map.Entry<ImageWriterSpi,Boolean> entry : deferred.entrySet()) {
                         if (entry.getValue()) {
                             if (stream == null) {
-                                final File file = connector.getStorageAs(File.class);
-                                if (file != null) {
-                                    stream = new FileImageOutputStream(file);
-                                } else try {
-                                    stream = ImageIO.createImageOutputStream(storage);
-                                    if (stream == null) break;
-                                } catch (IIOException e) {
-                                    throw unwrap(e);
-                                }
+                                stream = connector.getStorageAs(ImageOutputStream.class);
+                                if (stream == null) break;
                             }
                             final ImageWriterSpi p = entry.getKey();
                             writer = p.createWriterInstance();
                             writer.setOutput(stream);
-                            keepOpen = storage;
+                            keepOpen = stream;
                             break;
                         }
                     }
@@ -297,30 +290,8 @@ final class FormatFinder implements AutoCloseable {
     }
 
     /**
-     * Returns the cause of given exception if it exists, or the exception itself otherwise.
-     * This method is invoked in the {@code catch} block of a {@code try} block invoking
-     * {@link ImageIO#createImageInputStream(Object)} or
-     * {@link ImageIO#createImageOutputStream(Object)}.
-     *
-     * <h4>Rational</h4>
-     * As of Java 18, above-cited methods systematically catch all {@link IOException}s and wrap
-     * them in an {@link IIOException} with <q>Cannot create cache file!</q> error message.
-     * This is conform to Image I/O specification but misleading if the stream provider throws an
-     * {@link IOException} for another reason. Even when the failure is really caused by a problem
-     * with cache file, we want to propagate the original exception to user because its message
-     * may tell that there is no space left on device or no write permission.
-     *
-     * @see org.apache.sis.storage.StorageConnector#unwrap(IIOException)
-     */
-    @Workaround(library = "JDK", version = "18")
-    private static IOException unwrap(final IIOException e) {
-        final Throwable cause = e.getCause();
-        return (cause instanceof IOException) ? (IOException) cause : e;
-    }
-
-    /**
-     * Closes all unused resources. Keep open only the find of objects needed by the image reader or writer.
-     * This method must be invoked after by {@link WorldFileStore} construction.
+     * Closes all unused resources, keeping open only the object needed by the image reader or writer.
+     * This method should be invoked after {@link WorldFileStore} construction in a {@code try} block.
      */
     @Override
     public final void close() throws DataStoreException {

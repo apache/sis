@@ -30,7 +30,6 @@ import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.privy.AttributeConvention;
-import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.util.privy.Strings;
 
 
@@ -101,7 +100,7 @@ abstract class FieldAccessor<V> {
     final void rename(final Map<String,Integer> names, final Integer value) {
         final String base = name;
         int counter = 0;
-        do name = base + FeatureUtilities.DISAMBIGUATION_SEQUENTIAL_NUMBER_PREFIX + (++counter);
+        do name = base + AttributeConvention.DISAMBIGUATION_SEQUENTIAL_NUMBER_PREFIX + (++counter);
         while (names.putIfAbsent(name, value) != null);
     }
 

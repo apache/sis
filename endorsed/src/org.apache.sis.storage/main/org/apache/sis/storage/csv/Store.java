@@ -622,7 +622,7 @@ final class Store extends URIDataStore implements FeatureSet {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            final MetadataBuilder builder = new MetadataBuilder();
+            final var builder = new MetadataBuilder();
             final String format = (timeEncoding != null) && hasTrajectories ? StoreProvider.MOVING : StoreProvider.NAME;
             builder.setPredefinedFormat(format, listeners, true);
             builder.addFormatReaderSIS(format);

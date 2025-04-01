@@ -154,12 +154,12 @@ final class QueryAnalyzer extends FeatureAnalyzer {
     @Override
     Column[] createAttributes() throws Exception {
         /*
-         * Identify geometry columns. Must be done before the calls to `setValueGetter(column)`.
+         * Identify geometry columns. Must be done before the calls to `Analyzer.setValueGetterOf(column)`.
          */
         final InfoStatements spatialInformation = analyzer.spatialInformation;
         if (spatialInformation != null) {
             for (final Map.Entry<TableReference, Map<String,Column>> entry : columnsPerTable.entrySet()) {
-                spatialInformation.completeIntrospection(entry.getKey(), entry.getValue());
+                spatialInformation.completeIntrospection(analyzer, entry.getKey(), entry.getValue());
             }
         }
         /*

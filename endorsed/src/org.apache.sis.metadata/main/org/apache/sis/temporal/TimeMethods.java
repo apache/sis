@@ -197,7 +197,11 @@ public class TimeMethods<T> implements Serializable {
          * only as parameter type (no collection), it is okay to use it that way.
          */
         final TimeMethods<? super T> tc = findSpecialized(type);
-        if (tc != null) {
+        /*
+         * The implementation of `TimeMethods.before/equals/after` methods delegate to this method in the
+         * most generic case. In such cases, this block must be excluded for avoiding a never-ending loop.
+         */
+        if (tc != null && !tc.isDynamic()) {
             /*
              * Found one of the special cases listed in `INTERFACES` or `FINAL_TYPE`.
              * If the other type is compatible, the comparison is executed directly.

@@ -35,11 +35,22 @@ public final class SQLUtilitiesTest extends TestCase {
     }
 
     /**
+     * Tests {@link SQLUtilities#escape(String, String)}.
+     */
+    @Test
+    public void testEscape() {
+        assertEquals("foo",             SQLUtilities.escape("foo",          "\\"));
+        assertEquals("foo\\_biz\\%bar", SQLUtilities.escape("foo_biz%bar",  "\\"));
+        assertEquals("foo\\\\bar",      SQLUtilities.escape("foo\\bar",     "\\"));
+        assertEquals("foo#!#!bar#not",  SQLUtilities.escape("foo#!bar#not", "#!"));
+    }
+
+    /**
      * Tests {@link SQLUtilities#toLikePattern(String, int, int, boolean, boolean, StringBuilder)}.
      */
     @Test
     public void testToLikePattern() {
-        final StringBuilder buffer = new StringBuilder(30);
+        final var buffer = new StringBuilder(30);
         assertEquals("WGS84",                       toLikePattern(buffer, "WGS84"));
         assertEquals("WGS%84",                      toLikePattern(buffer, "WGS 84"));
         assertEquals("A%text%with%random%symbols%", toLikePattern(buffer, "A text !* with_random:/symbols;+"));

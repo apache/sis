@@ -570,7 +570,7 @@ final class GridMapping {
         if (warnings != null) {
             final var record = new LogRecord(Level.WARNING, warnings.toString());
             record.setLoggerName(Modules.NETCDF);
-            record.setSourceClassName(Variable.class.getCanonicalName());
+            record.setSourceClassName(Variable.class.getName());
             record.setSourceMethodName("getGridGeometry");
             mapping.decoder.listeners.warning(record);
         }

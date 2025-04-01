@@ -21,7 +21,6 @@ import java.util.Map;
 import java.io.IOException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -40,7 +39,7 @@ final class LinkOperation extends AbstractOperation {
     /**
      * The parameter descriptor for the "Link" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup PARAMETERS = FeatureUtilities.parameters("Link");
+    private static final ParameterDescriptorGroup PARAMETERS = parameters("Link");
 
     /**
      * The type of the result.

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.io.Serializable;
+import java.util.function.Consumer;
 import org.opengis.util.CodeList;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -31,6 +32,7 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.privy.FeatureExpression;
+import org.apache.sis.filter.privy.WarningEvent;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.iso.Names;
@@ -142,7 +144,7 @@ public abstract class Node implements Serializable {
      *
      * @return the name of this function.
      */
-    private Object getDisplayName() {
+    public final Object getDisplayName() {
         if (this instanceof Expression<?,?>) {
             return ((Expression<?,?>) this).getFunctionName();
         } else if (this instanceof Filter<?>) {
@@ -179,11 +181,12 @@ public abstract class Node implements Serializable {
             final Geometries<G> library, final Expression<R,?> expression)
     {
         if (expression instanceof GeometryConverter<?,?>) {
-            if (library.equals(((GeometryConverter<?,?>) expression).library)) {
+            final Geometries<?> other = ((GeometryConverter<?,?>) expression).library;
+            if (library.equals(other)) {
                 return (GeometryConverter<R,G>) expression;
-            } else {
-                throw new IllegalArgumentException();        // TODO: provide a message.
             }
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.MixedGeometryImplementation_2, library.library, other.library));
         }
         return new GeometryConverter<>(library, expression);
     }
@@ -387,11 +390,16 @@ public abstract class Node implements Serializable {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
     protected final void warning(final Exception e, final boolean recoverable) {
-        final String method = (this instanceof Predicate) ? "test" : "apply";
-        if (recoverable) {
-            Logging.recoverableException(LOGGER, getClass(), method, e);
+        final Consumer<WarningEvent> listener = WarningEvent.LISTENER.get();
+        if (listener != null) {
+            listener.accept(new WarningEvent(this, e));
         } else {
-            Logging.unexpectedException(LOGGER, getClass(), method, e);
+            final String method = (this instanceof Predicate) ? "test" : "apply";
+            if (recoverable) {
+                Logging.recoverableException(LOGGER, getClass(), method, e);
+            } else {
+                Logging.unexpectedException(LOGGER, getClass(), method, e);
+            }
         }
     }
 }

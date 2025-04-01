@@ -64,6 +64,7 @@ public final class RasterReaderTest extends TestCase {
      * Reads the file for the given test enumeration and compares with the expected raster.
      * The given reader and input are used for reading the raster. The input will be closed.
      */
+    @SuppressWarnings("ConvertToTryWithResources")  // Because testing on a byte array, closing is not very important.
     static void compareReadResult(final TestRaster test, final RasterReader reader, final ChannelDataInput input) throws Exception {
         final GridCoverage coverage = reader.readAsCoverage(input);
         input.channel.close();
@@ -77,8 +78,8 @@ public final class RasterReaderTest extends TestCase {
      */
     static void compareReadResult(final TestRaster test, final GridCoverage coverage) {
         final RenderedImage image = coverage.render(null);
-        final DataBufferUShort expected = (DataBufferUShort) test.createRaster().getDataBuffer();
-        final DataBufferUShort actual   = (DataBufferUShort) image.getTile(0, 0).getDataBuffer();
+        final var expected = (DataBufferUShort) test.createRaster().getDataBuffer();
+        final var actual   = (DataBufferUShort) image.getTile(0, 0).getDataBuffer();
         assertTrue(Arrays.deepEquals(expected.getBankData(), actual.getBankData()));
     }
 }
