@@ -219,7 +219,7 @@ public class TimeMethods<T> implements Serializable {
                 }
                 return p.test(self, other);
             }
-        } else if (self instanceof Comparable<?> && type.isInstance(other)) {
+        } else if (self instanceof Comparable<?> && self.getClass().isInstance(other)) {
             /*
              * The type of the first operand is not a special case, but the second operand is compatible
              * for a call to the generic `compareTo(…)` method. This case does not happen often, because
