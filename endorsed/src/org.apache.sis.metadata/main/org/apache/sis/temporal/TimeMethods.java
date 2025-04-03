@@ -18,7 +18,9 @@ package org.apache.sis.temporal;
 
 import java.util.Map;
 import java.util.Date;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.time.Instant;
 import java.time.Year;
@@ -27,6 +29,8 @@ import java.time.MonthDay;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.LocalTime;
 import java.time.OffsetTime;
 import java.time.OffsetDateTime;
@@ -97,6 +101,23 @@ public class TimeMethods<T> implements Serializable {
     public final transient Supplier<T> now;
 
     /**
+     * Function to execute for getting another temporal object with the given timezone, or {@code null} if none.
+     * If the temporal object already has a timezone, then this function returns an object at the same instant.
+     * The returned object may be of a different class than the object given in input, especially if a timezone
+     * is added to a local time. If the temporal object is only a date with no time, this field is {@code null}.
+     * If the function supports only {@link ZoneOffset} and not the more generic {@link ZoneId} class, then the
+     * function returns {@code null}.
+     *
+     * @see #withZone(Object, ZoneId, boolean)
+     */
+    public final transient BiFunction<T, ZoneId, Temporal> withZone;
+
+    /**
+     * Whether the temporal object have a time zone, explicitly or implicitly.
+     */
+    private final boolean hasZone;
+
+    /**
      * Creates a new set of operators. This method is for subclasses only.
      * For getting a {@code TimeMethods} instance, see {@link #find(Class)}.
      */
@@ -104,13 +125,17 @@ public class TimeMethods<T> implements Serializable {
             final BiPredicate<T,T> isBefore,
             final BiPredicate<T,T> isAfter,
             final BiPredicate<T,T> isEqual,
-            final Supplier<T> now)
+            final Supplier<T> now,
+            final BiFunction<T, ZoneId, Temporal> withZone,
+            final boolean hasZone)
     {
         this.type     = type;
         this.isBefore = isBefore;
         this.isAfter  = isAfter;
         this.isEqual  = isEqual;
         this.now      = now;
+        this.withZone = withZone;
+        this.hasZone  = hasZone;
     }
 
     /**
@@ -324,7 +349,7 @@ public class TimeMethods<T> implements Serializable {
                         (self, other) -> ((Comparable) self).compareTo(other) < 0,
                         (self, other) -> ((Comparable) self).compareTo(other) > 0,
                         (self, other) -> ((Comparable) self).compareTo(other) == 0,
-                        null);
+                        null, null, false);
             } else {
                 throw new DateTimeException(Errors.format(Errors.Keys.CannotCompareInstanceOf_2, type, type));
             }
@@ -345,7 +370,7 @@ public class TimeMethods<T> implements Serializable {
                 (self, other) -> compare(BEFORE, type, self, other),
                 (self, other) -> compare(AFTER,  type, self, other),
                 (self, other) -> compare(EQUAL,  type, self, other),
-                null)
+                null, null, false)
         {
             @Override public boolean isDynamic() {
                 return true;
@@ -368,13 +393,55 @@ public class TimeMethods<T> implements Serializable {
     }
 
     /**
-     * Returns the current time as a temporal object.
+     * Returns the current time as a temporal object. This is the value returned by {@link #now},
+     * except for the following types which are not {@link Temporal}: {@link Date}, {@link MonthDay}
      *
-     * @return the current time.
-     * @throws ClassCastException if the {@linkplain #type} is {@link Date} or {@link MonthDay}.
+     * @return the current time. Never {@code null}, but may be an instance of a class different than {@linkplain #type}.
      */
     public final Temporal now() {
-        return (now != null) ? (Temporal) now.get() : ZonedDateTime.now();
+        if (now != null) {
+            final T time = now.get();
+            if (time instanceof Temporal) {
+                return (Temporal) time;
+            } else if (time instanceof Date) {
+                return ((Date) time).toInstant();
+            } else if (time instanceof MonthDay) {
+                return LocalDate.now();
+            }
+        }
+        return ZonedDateTime.now();
+    }
+
+    /**
+     * Returns the given temporal object with the given timezone.
+     * This method handles the following scenarios:
+     *
+     * <ul class="verbose">
+     *   <li>
+     *     If the given temporal object already has a timezone, then an object with the specified timezone is returned.
+     *     It may be of the same class or a different class, depending on whether the timezone is a {@link ZoneOffset}.
+     *   </li><li>
+     *     If the given temporal object is a local time and if {@code allowAdd} is {@code true}, then a different class
+     *     of object with the given timezone is returned. Otherwise, an empty value is returned.
+     *   </li><li>
+     *     If the given temporal object is a {@link LocalDate} or {@link MonthDay} or any other class of object
+     *     for which a timezone cannot be added, then this method returns an empty value.
+     *   </li>
+     * </ul>
+     *
+     * @param  time      the temporal object to return with the specified timezone, or {@code null} if none.
+     * @param  timezone  the desired timezone. Cannot be {@code null}.
+     * @param  allowAdd
+     * @return a temporal object with the specified timezone, if it was possible to apply a timezone.
+     */
+    public static <T> Optional<Temporal> withZone(final T time, final ZoneId timezone, final boolean allowAdd) {
+        if (time != null) {
+            final TimeMethods<? super T> methods = find(Classes.getClass(time));
+            if ((methods.hasZone | allowAdd) && methods.withZone != null) {
+                return Optional.ofNullable(methods.withZone.apply(time, timezone));
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -383,10 +450,10 @@ public class TimeMethods<T> implements Serializable {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})            // For `Chrono*` interfaces, because they are parameterized.
     private static final TimeMethods<?>[] INTERFACES = {
-        new TimeMethods<>(ChronoZonedDateTime.class, ChronoZonedDateTime::isBefore, ChronoZonedDateTime::isAfter, ChronoZonedDateTime::isEqual, ZonedDateTime::now),
-        new TimeMethods<>(ChronoLocalDateTime.class, ChronoLocalDateTime::isBefore, ChronoLocalDateTime::isAfter, ChronoLocalDateTime::isEqual, LocalDateTime::now),
-        new TimeMethods<>(    ChronoLocalDate.class,     ChronoLocalDate::isBefore,     ChronoLocalDate::isAfter,     ChronoLocalDate::isEqual,     LocalDate::now),
-        new TimeMethods<>(               Date.class,                Date::  before,                Date::  after,                Date::equals,           Date::new)
+        new TimeMethods<>(ChronoZonedDateTime.class, ChronoZonedDateTime::isBefore, ChronoZonedDateTime::isAfter, ChronoZonedDateTime::isEqual, ZonedDateTime::now, ChronoZonedDateTime::withZoneSameInstant, true),
+        new TimeMethods<>(ChronoLocalDateTime.class, ChronoLocalDateTime::isBefore, ChronoLocalDateTime::isAfter, ChronoLocalDateTime::isEqual, LocalDateTime::now, ChronoLocalDateTime::atZone, false),
+        new TimeMethods<>(    ChronoLocalDate.class,     ChronoLocalDate::isBefore,     ChronoLocalDate::isAfter,     ChronoLocalDate::isEqual,     LocalDate::now, null, false),
+        new TimeMethods<>(               Date.class,                Date::  before,                Date::  after,                Date::equals,           Date::new, TimeMethods::atZone, true)
     };
 
     /*
@@ -396,8 +463,9 @@ public class TimeMethods<T> implements Serializable {
 
     /**
      * Operators for all supported temporal types for which there is no need to check for subclasses.
-     * Those classes are usually final, except when wanting to intentionally ignore all subclasses.
-     * Those types should be tested before {@link #INTERFACES} because this check is quick.
+     * Those classes should be final because they are compared by equality instead of "instance of".
+     * The two last entries are not final, but we really want to ignore all their subtypes.
+     * All those types should be tested before {@link #INTERFACES} because this check is quick.
      *
      * <h4>Implementation note</h4>
      * {@link Year}, {@link YearMonth}, {@link MonthDay}, {@link LocalTime} and {@link Instant}
@@ -406,16 +474,16 @@ public class TimeMethods<T> implements Serializable {
      * the code working on generic {@link Comparable} needs to check for special cases again.
      */
     private static final Map<Class<?>, TimeMethods<?>> FINAL_TYPES = Map.ofEntries(
-        entry(new TimeMethods<>(OffsetDateTime.class, OffsetDateTime::isBefore, OffsetDateTime::isAfter, OffsetDateTime::isEqual, OffsetDateTime::now)),
-        entry(new TimeMethods<>( ZonedDateTime.class,  ZonedDateTime::isBefore,  ZonedDateTime::isAfter,  ZonedDateTime::isEqual,  ZonedDateTime::now)),
-        entry(new TimeMethods<>( LocalDateTime.class,  LocalDateTime::isBefore,  LocalDateTime::isAfter,  LocalDateTime::isEqual,  LocalDateTime::now)),
-        entry(new TimeMethods<>(     LocalDate.class,      LocalDate::isBefore,      LocalDate::isAfter,      LocalDate::isEqual,      LocalDate::now)),
-        entry(new TimeMethods<>(    OffsetTime.class,     OffsetTime::isBefore,     OffsetTime::isAfter,     OffsetTime::isEqual,     OffsetTime::now)),
-        entry(new TimeMethods<>(     LocalTime.class,      LocalTime::isBefore,      LocalTime::isAfter,      LocalTime::equals,       LocalTime::now)),
-        entry(new TimeMethods<>(          Year.class,           Year::isBefore,           Year::isAfter,           Year::equals,            Year::now)),
-        entry(new TimeMethods<>(     YearMonth.class,      YearMonth::isBefore,      YearMonth::isAfter,      YearMonth::equals,       YearMonth::now)),
-        entry(new TimeMethods<>(      MonthDay.class,       MonthDay::isBefore,       MonthDay::isAfter,       MonthDay::equals,        MonthDay::now)),
-        entry(new TimeMethods<>(       Instant.class,        Instant::isBefore,        Instant::isAfter,        Instant::equals,         Instant::now)),
+        entry(new TimeMethods<>(OffsetDateTime.class, OffsetDateTime::isBefore, OffsetDateTime::isAfter, OffsetDateTime::isEqual, OffsetDateTime::now, TimeMethods::withZoneSameInstant, true)),
+        entry(new TimeMethods<>( ZonedDateTime.class,  ZonedDateTime::isBefore,  ZonedDateTime::isAfter,  ZonedDateTime::isEqual,  ZonedDateTime::now, ZonedDateTime::withZoneSameInstant, true)),
+        entry(new TimeMethods<>( LocalDateTime.class,  LocalDateTime::isBefore,  LocalDateTime::isAfter,  LocalDateTime::isEqual,  LocalDateTime::now, LocalDateTime::atZone, false)),
+        entry(new TimeMethods<>(     LocalDate.class,      LocalDate::isBefore,      LocalDate::isAfter,      LocalDate::isEqual,      LocalDate::now, null, false)),
+        entry(new TimeMethods<>(    OffsetTime.class,     OffsetTime::isBefore,     OffsetTime::isAfter,     OffsetTime::isEqual,     OffsetTime::now, TimeMethods::withOffsetSameInstant, true)),
+        entry(new TimeMethods<>(     LocalTime.class,      LocalTime::isBefore,      LocalTime::isAfter,      LocalTime::equals,       LocalTime::now, TimeMethods::atOffset, false)),
+        entry(new TimeMethods<>(          Year.class,           Year::isBefore,           Year::isAfter,           Year::equals,            Year::now, null, false)),
+        entry(new TimeMethods<>(     YearMonth.class,      YearMonth::isBefore,      YearMonth::isAfter,      YearMonth::equals,       YearMonth::now, null, false)),
+        entry(new TimeMethods<>(      MonthDay.class,       MonthDay::isBefore,       MonthDay::isAfter,       MonthDay::equals,        MonthDay::now, null, false)),
+        entry(new TimeMethods<>(       Instant.class,        Instant::isBefore,        Instant::isAfter,        Instant::equals,         Instant::now, Instant::atZone, true)),
         entry(fallback(Temporal.class)),    // Frequently declared type. Intentionally no "instance of" checks.
         entry(fallback(Object.class)));     // Not a final class, but to be used when the declared type is Object.
 
@@ -425,6 +493,52 @@ public class TimeMethods<T> implements Serializable {
      */
     private static Map.Entry<Class<?>, TimeMethods<?>> entry(final TimeMethods<?> op) {
         return Map.entry(op.type, op);
+    }
+
+    /**
+     * Returns the given date at a specific time zone.
+     */
+    private static Temporal atZone(final Date date, final ZoneId timezone) {
+        final Instant time = date.toInstant();
+        if (timezone instanceof ZoneOffset) {
+            return time.atOffset((ZoneOffset) timezone);
+        } else {
+            return time.atZone(timezone);
+        }
+    }
+
+    /**
+     * Returns a temporal object with the specified timezone, keeping the same class if possible.
+     * This method may change the class of the temporal object.
+     */
+    private static Temporal withZoneSameInstant(final OffsetDateTime time, final ZoneId timezone) {
+        if (timezone instanceof ZoneOffset) {
+            return time.withOffsetSameInstant((ZoneOffset) timezone);
+        } else {
+            return time.atZoneSameInstant(timezone);
+        }
+    }
+
+    /**
+     * Returns a temporal object with the specified timezone, or {@code null} if not possible.
+     */
+    private static Temporal withOffsetSameInstant(final OffsetTime time, final ZoneId timezone) {
+        if (timezone instanceof ZoneOffset) {
+            return time.withOffsetSameInstant((ZoneOffset) timezone);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a temporal object with the specified timezone, or {@code null} if not possible.
+     */
+    private static Temporal atOffset(final LocalTime time, final ZoneId timezone) {
+        if (timezone instanceof ZoneOffset) {
+            return time.atOffset((ZoneOffset) timezone);
+        } else {
+            return null;
+        }
     }
 
     /**

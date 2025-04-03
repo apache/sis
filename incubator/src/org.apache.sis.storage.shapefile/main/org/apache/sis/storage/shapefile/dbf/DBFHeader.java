@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 
@@ -94,7 +95,7 @@ public final class DBFHeader {
      * @param charset field text encoding
      * @throws IOException if an error occured while parsing header
      */
-    public void read(ChannelDataInput channel, Charset charset) throws IOException {
+    public void read(ChannelDataInput channel, Charset charset, ZoneId timezone) throws IOException {
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         if (channel.readByte()!= 0x03) {
             throw new IOException("Unvalid database III magic");
@@ -110,7 +111,7 @@ public final class DBFHeader {
         fields     = new DBFField[(headerSize - FIELD_SIZE - 1) / FIELD_SIZE];
 
         for (int i = 0; i < fields.length; i++) {
-            fields[i] = DBFField.read(channel, charset);
+            fields[i] = DBFField.read(channel, charset, timezone);
         }
         if (channel.readByte()!= FIELD_DESCRIPTOR_TERMINATOR) {
             throw new IOException("Unvalid database III field descriptor terminator");
