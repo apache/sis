@@ -18,6 +18,7 @@ package org.apache.sis.cql;
 
 import java.time.Instant;
 import java.text.ParseException;
+import java.time.LocalDate;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
@@ -94,11 +95,19 @@ public final class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     @Disabled("Unsupported temporal field: Year")
-    public void testDate() throws CQLException, ParseException{
+    public void testDateTime() throws CQLException, ParseException{
         final Expression<Feature,?> exp = FF.literal(Instant.parse("2012-03-21T05:42:36Z"));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("2012-03-21T05:42:36Z", cql);
+    }
+
+    @Test
+    public void testDate() throws CQLException, ParseException{
+        final Expression<Feature,?> exp = FF.literal(LocalDate.parse("2012-03-21"));
+        final String cql = CQL.write(exp);
+        assertNotNull(cql);
+        assertEquals("2012-03-21", cql);
     }
 
 

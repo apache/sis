@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.Duration;
 import java.time.Period;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import org.locationtech.jts.geom.Coordinate;
@@ -155,7 +156,7 @@ public final class ExpressionReadingTest extends CQLTestCase {
     }
 
     @Test
-    public void testDate() throws CQLException, ParseException{
+    public void testDatetime() throws CQLException, ParseException{
         //dates are expected to be formated in ISO 8601 : yyyy-MM-dd'T'HH:mm:ss'Z'
         final String cql = "2012-03-21T05:42:36Z";
         final Object obj = CQL.parseExpression(cql);
@@ -165,6 +166,18 @@ public final class ExpressionReadingTest extends CQLTestCase {
         assertTrue(value instanceof TemporalAccessor);
         TemporalAccessor acc = (TemporalAccessor) value;
         assertEquals(Instant.parse("2012-03-21T05:42:36Z"), Instant.from(acc));
+    }
+
+    @Test
+    public void testDate() throws CQLException, ParseException{
+        final String cql = "2012-03-21";
+        final Object obj = CQL.parseExpression(cql);
+        assertTrue(obj instanceof Literal);
+        final Literal expression = (Literal) obj;
+        Object value = expression.getValue();
+        assertTrue(value instanceof TemporalAccessor);
+        TemporalAccessor acc = (TemporalAccessor) value;
+        assertEquals(LocalDate.parse("2012-03-21"), LocalDate.from(acc));
     }
 
     @Test
