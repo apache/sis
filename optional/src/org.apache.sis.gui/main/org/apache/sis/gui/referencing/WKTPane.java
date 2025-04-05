@@ -18,6 +18,7 @@ package org.apache.sis.gui.referencing;
 
 import java.util.EnumMap;
 import java.util.Locale;
+import java.time.ZoneId;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -83,7 +84,7 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
         for (final Convention c : sc) {
             conventionTexts.put(c, toString(c, vocabulary));
         }
-        format = new WKTFormat(locale, null);
+        format = new WKTFormat(locale, (ZoneId) null);
         format.setConvention(Convention.WKT2_SIMPLIFIED);
         convention = new ChoiceBox<>(FXCollections.observableArrayList(sc));
         convention.setConverter(this);

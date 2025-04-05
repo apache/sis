@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml;
 
+import java.time.ZoneId;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Optional;
@@ -80,16 +81,24 @@ public abstract class MarshalContext implements Localized {
      *
      * <h4>Handling of <code>null</code> timezone</h4>
      * A {@code null} value means that the timezone is unspecified. Callers are encouraged
-     * to use the UTC timezone as the default value, but some flexibility is allowed.
+     * to use the <abbr>UTC</abbr> timezone as the default value, but some flexibility is allowed.
      *
-     * <div class="warning"><b>Upcoming API change — Java time API</b>:
-     * return type may be changed to {@link java.time.ZoneId} in a future version.
-     * This change may be applied in synchronization with GeoAPI 4.0.
-     * </div>
+     * @return the timezone for the <abbr>XML</abbr> fragment being (un)marshalled, or {@code null} if unspecified.
+     *
+     * @since 1.5
+     */
+    public abstract ZoneId getZoneId();
+
+    /**
+     * Returns the legacy timezone to use for (un)marshalling, or {@code null} if none was explicitly specified.
+     * This is he value returned by {@link #getZoneId()} converted to the legacy Java object.
      *
      * @return the timezone for the XML fragment being (un)marshalled, or {@code null} if unspecified.
      */
-    public abstract TimeZone getTimeZone();
+    public TimeZone getTimeZone() {
+        ZoneId timezone = getZoneId();
+        return (timezone != null) ? TimeZone.getTimeZone(timezone) : null;
+    }
 
     /**
      * Returns the schema version of the XML document being (un)marshalled.

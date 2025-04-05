@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -306,7 +307,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @since 1.5
      */
     public WKTFormat() {
-        this(null, null);
+        this(null, (TimeZone) null);
     }
 
     /**
@@ -321,6 +322,19 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @see #getLocale()
      * @see #getTimeZone()
+     *
+     * @since 1.5
+     */
+    public WKTFormat(final Locale locale, final ZoneId timezone) {
+        this(locale, (timezone != null) ? TimeZone.getTimeZone(timezone) : null);
+    }
+
+    /**
+     * Creates a format for the given locale and legacy timezone.
+     * See {@link #WKTFormat(Locale, ZoneId)} for the description.
+     *
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone for dates in the WKT temporal elements, or {@code null} for UTC.
      */
     public WKTFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);

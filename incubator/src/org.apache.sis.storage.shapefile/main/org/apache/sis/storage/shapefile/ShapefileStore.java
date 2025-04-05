@@ -174,8 +174,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
     public ShapefileStore(StorageConnector cnx) throws IllegalArgumentException, DataStoreException {
         this.shpPath = cnx.getStorageAs(Path.class);
         this.userDefinedCharSet = cnx.getOption(OptionKey.ENCODING);
-        var tz = cnx.getOption(OptionKey.TIMEZONE);
-        this.timezone = (tz != null) ? tz.toZoneId() : null;
+        this.timezone = cnx.getOption(OptionKey.TIMEZONE);
         this.files = new ShpFiles(shpPath);
     }
 

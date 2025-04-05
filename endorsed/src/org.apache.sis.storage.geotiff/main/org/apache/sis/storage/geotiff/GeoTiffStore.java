@@ -23,6 +23,7 @@ import java.util.TimeZone;
 import java.util.Optional;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -124,7 +125,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     /**
      * The timezone for the date and time parsing, or {@code null} for the default.
      */
-    private final TimeZone timezone;
+    private final ZoneId timezone;
 
     /**
      * The object to use for parsing and formatting dates. Created when first needed.
@@ -508,7 +509,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         if (dateFormat == null) {
             dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US);
             if (timezone != null) {
-                dateFormat.setTimeZone(timezone);
+                dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
             }
         }
         return dateFormat;
