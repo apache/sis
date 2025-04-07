@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.time.ZoneId;
 import java.io.BufferedWriter;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -106,7 +106,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
      * User-specified timezone for dates, or {@code null} for UTC.
      * Subclasses may replace this value by a value read from the data file.
      */
-    protected TimeZone timezone;
+    protected ZoneId timezone;
 
     /**
      * Creates a new data store. This constructor does not open the file,

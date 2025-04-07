@@ -43,6 +43,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.StoreResource;
+import static org.apache.sis.storage.modifier.CoverageModifier.BandSource;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.coverage.privy.RangeArgument;
 import org.apache.sis.image.privy.ImageUtilities;
@@ -132,6 +133,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
      * @throws DataStoreException if this resource is not valid anymore.
      */
     final WorldFileStore store() throws DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final WorldFileStore store = this.store;
         if (store != null) {
             return store;
@@ -162,6 +164,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
      */
     @Override
     public final Optional<GenericName> getIdentifier() throws DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final WorldFileStore store = store();
         synchronized (store) {
             if (identifier == null) {
@@ -183,7 +186,8 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                 if (store.suffix != null) {
                     filename = IOUtilities.filenameWithoutExtension(filename);
                 }
-                identifier = Names.createLocalName(filename, null, id).toFullyQualifiedName();
+                GenericName name = Names.createLocalName(filename, null, id).toFullyQualifiedName();
+                identifier = store.customizer.customize(store.source(imageIndex), name);
             }
             return Optional.of(identifier);
         }
@@ -209,6 +213,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final List<SampleDimension> getSampleDimensions() throws DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final WorldFileStore store = store();
         synchronized (store) {
             if (sampleDimensions == null) try {
@@ -218,11 +223,6 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                 final SampleDimension.Builder b = new SampleDimension.Builder();
                 final short[] names = ImageUtilities.bandNames(type.getColorModel(), type.getSampleModel());
                 for (int i=0; i<bands.length; i++) {
-                    /*
-                     * TODO: we could consider a mechanism similar to org.apache.sis.storage.geotiff.spi.SchemaModifier
-                     * if there is a need to customize the sample dimensions. `SchemaModifier` could become a shared
-                     * public interface.
-                     */
                     final InternationalString name;
                     final short k;
                     if (i < names.length && (k = names[i]) != 0) {
@@ -230,7 +230,8 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                     } else {
                         name = Vocabulary.formatInternational(Vocabulary.Keys.Band_1, i+1);
                     }
-                    bands[i] = b.setName(name).build();
+                    var source = new BandSource(store, imageIndex, i, bands.length, null);
+                    bands[i] = store.customizer.customize(source, b.setName(name));
                     b.clear();
                 }
                 sampleDimensions = UnmodifiableArrayList.wrap(bands);
@@ -252,6 +253,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
     @Override
     public final GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
         final boolean isFullCoverage = (domain == null && ranges == null);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final WorldFileStore store = store();
         try {
             synchronized (store) {

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.function.Supplier;
@@ -563,7 +562,7 @@ final class GridMapping {
      * The WKT is presumed to use the GDAL flavor of WKT 1, and warnings are redirected to decoder listeners.
      */
     private CoordinateReferenceSystem createFromWKT(final String wkt) throws ParseException {
-        final var f = new WKTFormat(Decoder.DATA_LOCALE, TimeZone.getTimeZone(mapping.decoder.getTimeZone()));
+        final var f = new WKTFormat(Decoder.DATA_LOCALE, mapping.decoder.getTimeZone());
         f.setConvention(org.apache.sis.io.wkt.Convention.WKT1_COMMON_UNITS);
         final var parsed = (CoordinateReferenceSystem) f.parseObject(wkt);
         final Warnings warnings = f.getWarnings();

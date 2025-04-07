@@ -64,7 +64,7 @@ public class DBFIOTest {
         final String path = "/org/apache/sis/storage/shapefile/point.dbf";
         final ChannelDataInput cdi = openRead(path);
 
-        try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8, null)) {
+        try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8, null, null)) {
             final DBFHeader header = reader.getHeader();
             assertEquals(123, header.lastUpdate.getYear()-1900);
             assertEquals(10, header.lastUpdate.getMonthValue());
@@ -135,7 +135,7 @@ public class DBFIOTest {
         final ChannelDataOutput cdo = openWrite(tempFile);
 
         try {
-            try (DBFReader reader = new DBFReader(cdi, StandardCharsets.US_ASCII, null);
+            try (DBFReader reader = new DBFReader(cdi, StandardCharsets.US_ASCII, null, null);
                  DBFWriter writer = new DBFWriter(cdo)) {
 
                 writer.writeHeader(reader.getHeader());
@@ -163,7 +163,7 @@ public class DBFIOTest {
         final String path = "/org/apache/sis/storage/shapefile/point.dbf";
         final ChannelDataInput cdi = openRead(path);
 
-        try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8, new int[]{1,3})) {
+        try (DBFReader reader = new DBFReader(cdi, StandardCharsets.UTF_8, null, new int[] {1,3})) {
             final DBFHeader header = reader.getHeader();
 
             final Object[] record1 = reader.next();

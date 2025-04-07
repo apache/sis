@@ -104,9 +104,10 @@ abstract class DataCube extends TiledGridResource implements StoreResource {
      * to {@linkplain ImageFileDirectory#setOverviewIdentifier initialize overviews}.</p>
      *
      * @return a persistent identifier unique within the data store.
+     * @throws DataStoreException if an error occurred while computing an identifier.
      */
     @Override
-    public abstract Optional<GenericName> getIdentifier();
+    public abstract Optional<GenericName> getIdentifier() throws DataStoreException;
 
     /**
      * Gets the paths to files used by this resource, or an empty value if unknown.

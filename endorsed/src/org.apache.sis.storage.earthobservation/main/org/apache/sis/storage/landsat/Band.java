@@ -26,8 +26,9 @@ import org.opengis.metadata.content.CoverageContentType;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.geotiff.GeoTiffStore;
-import org.apache.sis.storage.geotiff.spi.SchemaModifier;
+import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.base.GridResourceWrapper;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -46,7 +47,7 @@ import static org.apache.sis.util.privy.CollectionsExt.first;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class Band extends GridResourceWrapper implements SchemaModifier {
+final class Band extends GridResourceWrapper implements CoverageModifier {
     /**
      * The data store that contains this band.
      * Also the object on which to perform synchronization locks.
@@ -117,7 +118,7 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
             file = Path.of(filename);
         }
         final StorageConnector connector = new StorageConnector(file);
-        connector.setOption(SchemaModifier.OPTION_KEY, this);
+        connector.setOption(DataOptionKey.COVERAGE_MODIFIER, this);
         return new GeoTiffStore(parent, parent.getProvider(), connector, true).components().get(0);
     }
 
@@ -134,7 +135,7 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
      * Returns whether the given source is for the main image.
      */
     private static boolean isMain(final Source source) {
-        return source.getImageIndex().orElse(-1) == 0;
+        return source.getCoverageIndex().orElse(-1) == 0;
     }
 
     /**

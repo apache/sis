@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Locale;
 import java.text.ParseException;
+import java.time.ZoneId;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -429,7 +430,7 @@ public final class WKTFormatTest extends EPSGDependentTestCase {
         final var pm = new DefaultPrimeMeridian(
                 Map.of(DefaultPrimeMeridian.NAME_KEY, "Invalid “$name” here"),
                 -10, Units.DEGREE);
-        format = new WKTFormat(Locale.US, null);
+        format = new WKTFormat(Locale.US, (ZoneId) null);
         final String   wkt      = format.format(pm);
         final Warnings warnings = format.getWarnings();
         assertNotNull(warnings, "warnings");

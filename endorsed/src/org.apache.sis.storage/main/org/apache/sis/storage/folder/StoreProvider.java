@@ -18,8 +18,8 @@ package org.apache.sis.storage.folder;
 
 import java.util.EnumSet;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.logging.Logger;
+import java.time.ZoneId;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -87,7 +87,7 @@ public final class StoreProvider extends DataStoreProvider {
     /**
      * Description of the parameter for timezone of dates in the data store.
      */
-    private static final ParameterDescriptor<TimeZone> TIMEZONE;
+    private static final ParameterDescriptor<ZoneId> TIMEZONE;
 
     /**
      * Description of the parameter for character encoding used by the data store.
@@ -110,7 +110,7 @@ public final class StoreProvider extends DataStoreProvider {
         final InternationalString remark = Resources.formatInternational(Resources.Keys.UsedOnlyIfNotEncoded);
         ENCODING   = annotate(builder, URIDataStoreProvider.ENCODING, remark);
         LOCALE     = builder.addName("locale"  ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocale  )).setRemarks(remark).create(Locale.class,   null);
-        TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(TimeZone.class, null);
+        TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(ZoneId.class, null);
         FORMAT     = builder.addName("format"  ).setDescription(Resources.formatInternational(Resources.Keys.DirectoryContentFormatName)).create(String.class, null);
         location   = new ParameterBuilder(URIDataStoreProvider.LOCATION_PARAM).create(Path.class, null);
         PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT, URIDataStoreProvider.CREATE_PARAM);

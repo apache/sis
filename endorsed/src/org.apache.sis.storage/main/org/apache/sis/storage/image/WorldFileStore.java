@@ -49,6 +49,7 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.AuxiliaryContent;
@@ -230,6 +231,11 @@ public class WorldFileStore extends PRJDataStore {
     final Map<String,Boolean> identifiers;
 
     /**
+     * The user-specified method for customizing the band definitions. Never {@code null}.
+     */
+    final CoverageModifier customizer;
+
+    /**
      * Creates a new store from the given file, URL or stream.
      *
      * @param  format  information about the storage (URL, stream, <i>etc</i>) and the reader/writer to use.
@@ -240,7 +246,8 @@ public class WorldFileStore extends PRJDataStore {
         super(format.provider, format.connector);
         listeners.useReadOnlyEvents();
         identifiers = new HashMap<>();
-        suffix = format.suffix;
+        customizer  = CoverageModifier.getOrDefault(format.connector);
+        suffix      = format.suffix;
         if (format.storage instanceof Closeable) {
             toClose = (Closeable) format.storage;
         }
@@ -439,6 +446,16 @@ loop:   for (int convention=0;; convention++) {
     }
 
     /**
+     * Returns the source to report in a call to a {@link #customizer} method.
+     *
+     * @param  index image index.
+     * @return the source to declare.
+     */
+    final CoverageModifier.Source source(final int index) {
+        return new CoverageModifier.Source(this, index, null);
+    }
+
+    /**
      * Gets the grid geometry for image at the given index.
      * This method should be invoked only once per image, and the result cached.
      *
@@ -454,12 +471,12 @@ loop:   for (int convention=0;; convention++) {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ImageReader reader = reader();
         if (gridGeometry == null) {
-            final AffineTransform2D gridToCRS;
-            width     = reader.getWidth (MAIN_IMAGE);
-            height    = reader.getHeight(MAIN_IMAGE);
-            gridToCRS = readWorldFile();
+            width  = reader.getWidth (MAIN_IMAGE);
+            height = reader.getHeight(MAIN_IMAGE);
+            final var extent = new GridExtent(width, height);
+            final AffineTransform2D gridToCRS = readWorldFile();
             readPRJ(WorldFileStore.class, "getGridGeometry");
-            gridGeometry = new GridGeometry(new GridExtent(width, height), CELL_ANCHOR, gridToCRS, crs);
+            gridGeometry = customizer.customize(source(index), new GridGeometry(extent, CELL_ANCHOR, gridToCRS, crs));
         }
         if (index != MAIN_IMAGE) {
             final int w = reader.getWidth (index);
@@ -524,7 +541,7 @@ loop:   for (int convention=0;; convention++) {
             mergeAuxiliaryMetadata(WorldFileStore.class, builder);
             builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             builder.setISOStandards(false);
-            metadata = builder.buildAndFreeze();
+            metadata = customizer.customize(new CoverageModifier.Source(this), builder.build());
         } catch (URISyntaxException | IOException e) {
             throw new DataStoreException(e);
         }

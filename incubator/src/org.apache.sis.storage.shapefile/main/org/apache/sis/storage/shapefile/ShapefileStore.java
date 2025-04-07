@@ -24,7 +24,12 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,6 +108,7 @@ import org.apache.sis.storage.shapefile.shp.ShapeType;
 import org.apache.sis.storage.shapefile.shp.ShapeWriter;
 import org.apache.sis.storage.shapefile.shx.IndexWriter;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -133,6 +139,8 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
     private final Path shpPath;
     private final ShpFiles files;
     private final Charset userDefinedCharSet;
+    private final ZoneId timezone;
+
     /**
      * Internal class to inherit AbstractFeatureSet.
      */
@@ -151,6 +159,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
     public ShapefileStore(Path path) {
         this.shpPath = path;
         this.userDefinedCharSet = null;
+        this.timezone = null;
         this.files = new ShpFiles(shpPath);
     }
 
@@ -164,6 +173,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
     public ShapefileStore(StorageConnector cnx) throws IllegalArgumentException, DataStoreException {
         this.shpPath = cnx.getStorageAs(Path.class);
         this.userDefinedCharSet = cnx.getOption(OptionKey.ENCODING);
+        this.timezone = cnx.getOption(OptionKey.TIMEZONE);
         this.files = new ShpFiles(shpPath);
     }
 
@@ -363,7 +373,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 //read dbf for attributes
                 final Path dbfFile = files.getDbf(false);
                 if (dbfFile != null) {
-                    try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset, null)) {
+                    try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset, timezone, null)) {
                         final DBFHeader header = reader.getHeader();
                         this.dbfHeader = header;
                         boolean hasId = false;
@@ -439,7 +449,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             final DBFReader dbfreader;
             try {
                 shpreader = readShp ? new ShapeReader(ShpFiles.openReadChannel(files.shpFile), filter) : null;
-                dbfreader = (dbfPropertiesIndex.length > 0) ? new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset, dbfPropertiesIndex) : null;
+                dbfreader = (dbfPropertiesIndex.length > 0) ? new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset, timezone, dbfPropertiesIndex) : null;
             } catch (IOException ex) {
                 throw new DataStoreException("Faild to open shp and dbf files.", ex);
             }
@@ -641,6 +651,17 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 throw new DataStoreException("Update type is possible only when files do not exist. It can be used to create a new shapefile but not to update one.");
             }
 
+            final Class<?>[] supportedDateTypes;    // All types other than the one at index 0 will lost information.
+            if (timezone == null) {
+                supportedDateTypes = new Class<?>[] {
+                    LocalDate.class, LocalDateTime.class
+                };
+            } else {
+                supportedDateTypes = new Class<?>[] {
+                    LocalDate.class, LocalDateTime.class, OffsetDateTime.class, ZonedDateTime.class, Instant.class
+                };
+            }
+
             lock.writeLock().lock();
             try {
                 final ShapeHeader shpHeader = new ShapeHeader();
@@ -682,21 +703,24 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             }
 
                         } else if (String.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_CHAR, 0, length, 0, charset));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, DBFField.TYPE_CHAR, 0, length, 0, charset, null));
                         } else if (Byte.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 4, 0, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, DBFField.TYPE_NUMBER, 0, 4, 0, null, null));
                         } else if (Short.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 6, 0, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, DBFField.TYPE_NUMBER, 0, 6, 0, null, null));
                         } else if (Integer.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 9, 0, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, DBFField.TYPE_NUMBER, 0, 9, 0, null, null));
                         } else if (Long.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 19, 0, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, DBFField.TYPE_NUMBER, 0, 19, 0, null, null));
                         } else if (Float.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 11, 6, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, DBFField.TYPE_NUMBER, 0, 11, 6, null, null));
                         } else if (Double.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_NUMBER, 0, 33, 18, null));
-                        } else if (LocalDate.class.isAssignableFrom(valueClass)) {
-                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, (char) DBFField.TYPE_DATE, 0, 20, 0, null));
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, DBFField.TYPE_NUMBER, 0, 33, 18, null, null));
+                        } else if (Classes.isAssignableToAny(valueClass, supportedDateTypes)) {
+                            dbfHeader.fields = ArraysExt.append(dbfHeader.fields, new DBFField(attName, DBFField.TYPE_DATE, 0, 20, 0, null, timezone));
+                            if (!(LocalDate.class.isAssignableFrom(valueClass))) {  // TODO: use `index != 0` instead.
+                                LOGGER.log(Level.WARNING, "Shapefile writing, field {0} will lost the time component of the date", pt.getName());
+                            }
                         } else {
                             LOGGER.log(Level.WARNING, "Shapefile writing, field {0} is not supported", pt.getName());
                         }
@@ -1123,7 +1147,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 try (ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(files.shpFile), null)) {
                     shpHeader = new ShapeHeader(reader.getHeader());
                 }
-                try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(files.dbfFile), charset, null)) {
+                try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(files.dbfFile), charset, timezone, null)) {
                     dbfHeader = new DBFHeader(reader.getHeader());
                 }
 

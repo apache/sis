@@ -41,7 +41,7 @@ final class Snippets {
         //open a channel
         StorageConnector cnx = new StorageConnector(Paths.get("/path/to/file.dbf"));
         ChannelDataInput channel = cnx.getStorageAs(ChannelDataInput.class);
-        try (DBFReader reader = new DBFReader(channel, StandardCharsets.UTF_8, null)) {
+        try (var reader = new DBFReader(channel, StandardCharsets.UTF_8, null, null)) {
 
             //print the DBase fields
             DBFHeader header = reader.getHeader();
@@ -78,9 +78,9 @@ final class Snippets {
         DBFHeader header = new DBFHeader();
         header.lastUpdate = LocalDate.now();
         header.fields = new DBFField[] {
-          new DBFField("id", DBFField.TYPE_NUMBER, 0, 8, 0, charset),
-          new DBFField("desc", DBFField.TYPE_CHAR, 0, 255, 0, charset),
-          new DBFField("value", DBFField.TYPE_NUMBER, 0, 11, 6, charset)
+            new DBFField("id", DBFField.TYPE_NUMBER, 0, 8, 0, charset, null),
+            new DBFField("desc", DBFField.TYPE_CHAR, 0, 255, 0, charset, null),
+            new DBFField("value", DBFField.TYPE_NUMBER, 0, 11, 6, charset, null)
         };
 
         //write records

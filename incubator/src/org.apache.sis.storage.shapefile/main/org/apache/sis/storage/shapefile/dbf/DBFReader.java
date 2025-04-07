@@ -18,6 +18,7 @@ package org.apache.sis.storage.shapefile.dbf;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.time.ZoneId;
 import org.apache.sis.io.stream.ChannelDataInput;
 
 
@@ -50,10 +51,10 @@ public final class DBFReader implements AutoCloseable {
      * @param fieldsToRead fields index in the header to decode, other fields will be skipped. must be in increment order.
      * @throws IOException if a decoding error occurs on the header
      */
-    public DBFReader(ChannelDataInput channel, Charset charset, int[] fieldsToRead) throws IOException {
+    public DBFReader(ChannelDataInput channel, Charset charset, ZoneId timezone, int[] fieldsToRead) throws IOException {
         this.channel = channel;
         this.header = new DBFHeader();
-        this.header.read(channel, charset);
+        this.header.read(channel, charset, timezone);
         this.fieldsToRead = fieldsToRead;
     }
 

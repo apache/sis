@@ -16,8 +16,10 @@
  */
 
 /**
- * Extensions to GeoTIFF reader.
+ * A plugin mechanism for modifying some aspects of the resources read by data stores.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-package org.apache.sis.storage.geotiff.spi;
+package org.apache.sis.storage.modifier;

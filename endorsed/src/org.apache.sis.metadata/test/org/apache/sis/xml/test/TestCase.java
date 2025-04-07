@@ -19,8 +19,8 @@ package org.apache.sis.xml.test;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.logging.Logger;
+import java.time.ZoneId;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -186,7 +186,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      */
     protected final void createContext(final boolean marshal, final Locale locale, final String timezone) throws JAXBException {
         context = new Context(marshal ? Context.MARSHALLING : 0, getMarshallerPool(), locale,
-                (timezone != null) ? TimeZone.getTimeZone(timezone) : null, null, null, null, null, null, null, null);
+                (timezone != null) ? ZoneId.of(timezone) : null, null, null, null, null, null, null, null);
     }
 
     /**

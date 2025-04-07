@@ -20,11 +20,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.ConcurrentModificationException;
-import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.function.UnaryOperator;
 import java.util.logging.Filter;
+import java.time.ZoneId;
+import java.time.DateTimeException;
 import javax.xml.validation.Schema;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.JAXBException;
@@ -97,7 +98,7 @@ abstract class Pooled {
      * The timezone, or {@code null} if unspecified.
      * Can be set by the {@link XML#TIMEZONE} property.
      */
-    private TimeZone timezone;
+    private ZoneId timezone;
 
     /**
      * The base URL of ISO 19115-3 (or other standards) schemas. It shall be an unmodifiable
@@ -310,7 +311,19 @@ abstract class Pooled {
                     return;
                 }
                 case XML.TIMEZONE: {
-                    timezone = (value instanceof CharSequence) ? TimeZone.getTimeZone(value.toString()) : (TimeZone) value;
+                    if (value instanceof CharSequence) {
+                        String id = value.toString();
+                        try {
+                            timezone = ZoneId.of(id);
+                        } catch (DateTimeException e) {
+                            timezone = TimeZone.getTimeZone(id).toZoneId();
+                            if (timezone.getId().equals("GMT")) {
+                                throw e;
+                            }
+                        }
+                    } else {
+                        timezone = (value instanceof TimeZone) ? ((TimeZone) value).toZoneId() : (ZoneId) value;
+                    }
                     return;
                 }
                 case XML.SCHEMAS: {
@@ -390,7 +403,7 @@ abstract class Pooled {
                     return;
                 }
             }
-        } catch (ClassCastException | IllformedLocaleException e) {
+        } catch (RuntimeException e) {
             throw new PropertyException(Errors.format(
                     Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()), e);
         }

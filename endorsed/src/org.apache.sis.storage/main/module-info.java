@@ -46,6 +46,7 @@ module org.apache.sis.storage {
     exports org.apache.sis.storage.event;
     exports org.apache.sis.storage.tiling;
     exports org.apache.sis.storage.aggregate;
+    exports org.apache.sis.storage.modifier;
 
     exports org.apache.sis.storage.base to
             org.apache.sis.storage.xml,

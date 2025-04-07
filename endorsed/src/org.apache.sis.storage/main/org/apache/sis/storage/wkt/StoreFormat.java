@@ -17,8 +17,8 @@
 package org.apache.sis.storage.wkt;
 
 import java.text.ParseException;
+import java.time.ZoneId;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.geometry.Geometry;
@@ -67,7 +67,7 @@ public final class StoreFormat extends WKTFormat {
      * @param  library    the geometry library, or {@code null} for the default.
      * @param  listeners  where to send warnings.
      */
-    public StoreFormat(final Locale locale, final TimeZone timezone,
+    public StoreFormat(final Locale locale, final ZoneId timezone,
                        final GeometryLibrary library, final StoreListeners listeners)
     {
         super(locale, timezone);

@@ -197,7 +197,7 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
                 }
             } catch (DateTimeException e) {
                 throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()));
+                        Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()), e);
             }
         }
         return false;
@@ -236,7 +236,7 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
                     return operation.evaluate(left, right);
                 } catch (DateTimeException e) {
                     throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()));
+                            Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()), e);
                 }
             }
             return false;
@@ -276,7 +276,7 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
                     return operation.evaluate(left, right);
                 } catch (DateTimeException e) {
                     throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()));
+                            Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()), e);
                 }
             }
             return false;

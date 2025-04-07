@@ -24,6 +24,7 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.feature.FoliationRepresentation;
+import org.apache.sis.storage.modifier.CoverageModifier;
 
 
 /**
@@ -78,6 +79,14 @@ public final class DataOptionKey<T> extends OptionKey<T> {
      */
     public static final OptionKey<StoreListeners> PARENT_LISTENERS =
             new DataOptionKey<>("PARENT_LISTENERS", StoreListeners.class);
+
+    /**
+     * Callback methods invoked for modifying some aspects of the grid coverages created by resources.
+     *
+     * @since 1.5
+     */
+    public static final OptionKey<CoverageModifier> COVERAGE_MODIFIER =
+            new DataOptionKey<>("COVERAGE_MODIFIER", CoverageModifier.class);
 
     /**
      * Creates a new key of the given name.

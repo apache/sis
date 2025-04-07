@@ -86,6 +86,7 @@ module org.apache.sis.metadata {
             org.apache.sis.storage.xml,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
+            org.apache.sis.storage.shapefile,   // In the "incubator" sub-project.
             org.apache.sis.cql;                 // In the "incubator" sub-project.
 
     exports org.apache.sis.metadata.privy to
