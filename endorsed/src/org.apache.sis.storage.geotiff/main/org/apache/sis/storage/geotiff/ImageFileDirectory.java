@@ -48,7 +48,7 @@ import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.geotiff.reader.Type;
 import org.apache.sis.storage.geotiff.reader.GridGeometryBuilder;
 import org.apache.sis.storage.geotiff.reader.ImageMetadataBuilder;
-import org.apache.sis.storage.geotiff.spi.SchemaModifier;
+import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -481,7 +481,7 @@ final class ImageFileDirectory extends DataCube {
      * @see #getMetadata()
      */
     @Override
-    public Optional<GenericName> getIdentifier() {
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (identifier == null) {
                 if (isReducedResolution()) {
@@ -490,9 +490,11 @@ final class ImageFileDirectory extends DataCube {
                 }
                 GenericName name = reader.store.createLocalName(String.valueOf(index + 1));
                 name = name.toFullyQualifiedName();     // Because "1" alone is not very informative.
-                final var source = new SchemaModifier.Source(reader.store, index, getDataType());
+                final var source = new CoverageModifier.Source(reader.store, index, getDataType());
                 identifier = reader.store.customizer.customize(source, name);
-                if (identifier == null) identifier = name;
+                if (identifier == null) {
+                    identifier = name;
+                }
             }
             return Optional.of(identifier);
         }
@@ -1377,11 +1379,8 @@ final class ImageFileDirectory extends DataCube {
             return super.createMetadata();
         }
         this.metadata = null;       // Clear now in case an exception happens.
-        final SchemaModifier.Source source;
-        if (isReducedResolution()) {
-            source = null;          // Note: the `index` value is invalid in this case.
-        } else {
-            source = new SchemaModifier.Source(reader.store, index, getDataType());
+        final CoverageModifier.Source source = source();
+        if (source != null) {
             if (metadata.getTitle() == null) {
                 // Note: `GeoTiffStore.getMetadata()` relies on this value not being a `String`.
                 metadata.addTitle(Vocabulary.formatInternational(Vocabulary.Keys.Image_1, index + 1));
@@ -1434,11 +1433,7 @@ final class ImageFileDirectory extends DataCube {
          */
         metadata.finish(reader.store, listeners);
         final DefaultMetadata md = metadata.build();
-        if (source != null) {
-            final Metadata c = reader.store.customizer.customize(source, md);
-            if (c != null) return c;
-        }
-        return md;
+        return (source != null) ? reader.store.customizer.customize(source, md) : md;
     }
 
     /**
@@ -1469,6 +1464,14 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
+     * Returns the source to declare when invoking a {@link CoverageModifier} method.
+     * This method returns {@code null} if the {@link #index} value would be invalid.
+     */
+    private CoverageModifier.Source source() {
+        return isReducedResolution() ? null : new CoverageModifier.Source(reader.store, index, getDataType());
+    }
+
+    /**
      * Returns an object containing the image size, the CRS and the conversion from pixel indices to CRS coordinates.
      * The grid geometry has 2 or 3 dimensions, depending on whether the CRS declares a vertical axis or not.
      *
@@ -1479,19 +1482,22 @@ final class ImageFileDirectory extends DataCube {
      * @see #getTileSize()
      */
     @Override
-    public GridGeometry getGridGeometry() throws DataStoreContentException {
+    public GridGeometry getGridGeometry() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            if (gridGeometry == null) {
+            GridGeometry domain = gridGeometry;
+            if (domain == null) {
                 if (referencing != null) try {
-                    gridGeometry = referencing.build(reader.store.listeners(), imageWidth, imageHeight);
+                    domain = referencing.build(reader.store.listeners(), imageWidth, imageHeight);
                 } catch (FactoryException e) {
                     throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
                 } else {
                     // Fallback if the TIFF file has no GeoKeys.
-                    gridGeometry = new GridGeometry(getExtent(), null, null);
+                    domain = new GridGeometry(getExtent(), null, null);
                 }
+                final CoverageModifier.Source source = source();
+                gridGeometry = (source != null) ? reader.store.customizer.customize(source, domain) : domain;
             }
-            return gridGeometry;
+            return domain;
         }
     }
 
@@ -1507,9 +1513,9 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Information about which band is subject to modification. This information is given to
-     * {@link SchemaModifier} for allowing users to modify name, metadata or sample dimensions.
+     * {@link CoverageModifier} for allowing users to modify name, metadata or sample dimensions.
      */
-    private final class Source extends SchemaModifier.BandSource {
+    private final class Source extends CoverageModifier.BandSource {
         /** Creates a new source for the specified band. */
         Source(final int bandIndex, final DataType dataType) {
             super(reader.store, index, bandIndex, samplesPerPixel, dataType);
@@ -1537,7 +1543,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
+    public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (sampleDimensions == null) {
                 /*
