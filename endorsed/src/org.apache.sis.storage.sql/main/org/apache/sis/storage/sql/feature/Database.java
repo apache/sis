@@ -24,6 +24,7 @@ import java.util.WeakHashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -34,12 +35,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
-import java.util.Collections;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.sql.privy.Syntax;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
@@ -62,7 +63,6 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
-import org.opengis.metadata.citation.PresentationForm;
 
 
 /**

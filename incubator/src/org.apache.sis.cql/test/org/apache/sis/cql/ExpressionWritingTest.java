@@ -17,8 +17,8 @@
 package org.apache.sis.cql;
 
 import java.time.Instant;
-import java.text.ParseException;
 import java.time.LocalDate;
+import java.text.ParseException;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;

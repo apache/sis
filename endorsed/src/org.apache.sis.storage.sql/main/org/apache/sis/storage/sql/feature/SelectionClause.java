@@ -25,7 +25,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.function.Consumer;
 import java.sql.Connection;
-import org.opengis.util.CodeList;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -41,6 +40,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.CodeList;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.ValueReference;
