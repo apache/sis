@@ -53,6 +53,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
@@ -80,7 +81,6 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.measure.Longitude;
 import org.apache.sis.pending.jdk.JDK15;
 
 
