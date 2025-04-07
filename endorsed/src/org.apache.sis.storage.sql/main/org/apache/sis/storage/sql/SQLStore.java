@@ -52,11 +52,11 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.util.Version;
 
 
 /**

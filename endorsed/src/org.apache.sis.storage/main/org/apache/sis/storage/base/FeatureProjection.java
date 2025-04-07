@@ -23,6 +23,7 @@ import java.util.ConcurrentModificationException;
 import java.util.function.UnaryOperator;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
@@ -40,7 +41,6 @@ import org.apache.sis.util.resources.Vocabulary;
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 

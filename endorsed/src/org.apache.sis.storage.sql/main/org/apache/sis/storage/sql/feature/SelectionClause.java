@@ -40,8 +40,8 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 
 // Specific to the main branch:
-import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.filter.Filter;
+import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
