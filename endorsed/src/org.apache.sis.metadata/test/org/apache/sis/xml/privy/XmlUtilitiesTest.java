@@ -79,7 +79,7 @@ public final class XmlUtilitiesTest extends TestCase {
      */
     @Test
     public void testTemporalToXML() throws DatatypeConfigurationException, JAXBException {
-        createContext(false, Locale.JAPAN, "JST");
+        createContext(false, Locale.JAPAN, "Asia/Tokyo");
         XMLGregorianCalendar calendar;
         Temporal t;
 

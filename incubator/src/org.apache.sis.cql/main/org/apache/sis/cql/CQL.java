@@ -283,8 +283,8 @@ public final class CQL {
                 case NAME:  return ff.property(tree.getText());
                 case INT:   return ff.literal(Integer.valueOf(tree.getText()));
                 case FLOAT: return ff.literal(Double.valueOf(tree.getText()));
-                case DATE: {
-                    TemporalAccessor ta = LenientDateFormat.FORMAT.parse(tree.getText());
+                case DATE, DATETIME: {
+                    TemporalAccessor ta = LenientDateFormat.parseBest(tree.getText());
                     return ff.literal(ta);
                     // TODO: return ff.literal(TemporalObjects.getTimeInMillis(tree.getText()));
                 }

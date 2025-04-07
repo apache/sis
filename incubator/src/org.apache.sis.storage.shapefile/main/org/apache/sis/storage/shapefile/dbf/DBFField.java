@@ -21,9 +21,15 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalQueries;
 import java.util.Locale;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
+import org.apache.sis.temporal.TimeMethods;
 
 
 /**
@@ -121,6 +127,8 @@ public final class DBFField {
     //used by decimal format only;
     private NumberFormat format;
 
+    private final ZoneId timezone;
+
     /**
      * Field constructor.
      *
@@ -131,13 +139,14 @@ public final class DBFField {
      * @param fieldDecimals number of decimals for floating points
      * @param charset String base field encoding, can be null, default is ISO_LATIN1
      */
-    public DBFField(String fieldName, char fieldType, int fieldAddress, int fieldLength, int fieldDecimals, Charset charset) {
+    public DBFField(String fieldName, char fieldType, int fieldAddress, int fieldLength, int fieldDecimals, Charset charset, ZoneId timezone) {
         this.fieldName = fieldName;
         this.fieldType = fieldType;
         this.fieldAddress = fieldAddress;
         this.fieldLength = fieldLength;
         this.fieldDecimals = fieldDecimals;
         this.charset = charset == null ? StandardCharsets.ISO_8859_1 : charset;
+        this.timezone = timezone;
 
         switch (Character.toUpperCase(fieldType)) {
             case TYPE_BINARY : valueClass = Long.class;      reader = this::readBinary; writer = this::writeBinary; break;
@@ -183,7 +192,7 @@ public final class DBFField {
      * @return dbf field description
      * @throws IOException if an error occured while parsing field
      */
-    public static DBFField read(ChannelDataInput channel, Charset charset) throws IOException {
+    public static DBFField read(ChannelDataInput channel, Charset charset, ZoneId timezone) throws IOException {
         byte[] n = channel.readBytes(11);
         int nameSize = 0;
         for (int i = 0; i < n.length && n[i] != 0; i++,nameSize++);
@@ -193,7 +202,7 @@ public final class DBFField {
         final int fieldLength    = channel.readUnsignedByte();
         final int fieldDecimals = channel.readUnsignedByte();
         channel.seek(channel.getStreamPosition() + 14);
-        return new DBFField(fieldName, fieldType, fieldAddress, fieldLength, fieldDecimals, charset);
+        return new DBFField(fieldName, fieldType, fieldAddress, fieldLength, fieldDecimals, charset, timezone);
     }
 
     /**
@@ -249,7 +258,12 @@ public final class DBFField {
         final int year = Integer.parseUnsignedInt(str,0,4,10);
         final int month = Integer.parseUnsignedInt(str,4,6,10);
         final int day = Integer.parseUnsignedInt(str,6,8,10);
-        return LocalDate.of(year, month, day);
+        final var date = LocalDate.of(year, month, day);
+        if (timezone != null) {
+            // Arbitrarily set the hours to the middle of the day.
+            return ZonedDateTime.of(date, LocalTime.NOON, timezone);
+        }
+        return date;
     }
 
     private Object readNumber(ChannelDataInput channel) throws IOException {
@@ -361,7 +375,14 @@ public final class DBFField {
     }
 
     private void writeDate(ChannelDataOutput channel, Object value) throws IOException {
-        final LocalDate date = (LocalDate) value;
+        Temporal temporal = (Temporal) value;
+        if (timezone != null) {
+            temporal = TimeMethods.withZone(temporal, timezone, false).orElse(temporal);
+        }
+        final LocalDate date = temporal.query(TemporalQueries.localDate());
+        if (date == null) {
+            throw new IllegalArgumentException("Not a supported temporal object: " + value);
+        }
         final StringBuilder sb = new StringBuilder();
         String year = Integer.toString(date.getYear());
         String month = Integer.toString(date.getMonthValue());

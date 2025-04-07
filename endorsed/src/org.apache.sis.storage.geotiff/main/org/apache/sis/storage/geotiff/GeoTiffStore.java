@@ -23,6 +23,7 @@ import java.util.TimeZone;
 import java.util.Optional;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -58,11 +59,10 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.storage.geotiff.spi.SchemaModifier;
+import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -124,7 +124,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     /**
      * The timezone for the date and time parsing, or {@code null} for the default.
      */
-    private final TimeZone timezone;
+    private final ZoneId timezone;
 
     /**
      * The object to use for parsing and formatting dates. Created when first needed.
@@ -207,7 +207,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     /**
      * The user-specified method for customizing the band definitions. Never {@code null}.
      */
-    final SchemaModifier customizer;
+    final CoverageModifier customizer;
 
     /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
@@ -253,10 +253,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         super(parent, provider, connector, hidden);
         this.hidden = hidden;
         nameFactory = DefaultNameFactory.provider();
-
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION_KEY);
-        this.customizer = (customizer != null) ? customizer : SchemaModifier.DEFAULT;
+        customizer  = CoverageModifier.getOrDefault(connector);
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
@@ -283,8 +280,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     /**
      * Returns the namespace to use in component identifiers, or {@code null} if none.
      * This method must be invoked inside a block synchronized on {@code this}.
+     *
+     * @throws DataStoreException if an error occurred while computing an identifier.
      */
-    private NameSpace namespace() {
+    private NameSpace namespace() throws DataStoreException {
         assert Thread.holdsLock(this);
         if (!isNamespaceSet && (reader != null || writer != null)) {
             GenericName name = null;
@@ -297,7 +296,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 filename = IOUtilities.filenameWithoutExtension(filename);
                 name = nameFactory.createLocalName(null, filename);
             }
-            name = customizer.customize(new SchemaModifier.Source(this), name);
+            name = customizer.customize(new CoverageModifier.Source(this), name);
             if (name != null) {
                 namespace = nameFactory.createNameSpace(name, null);
             }
@@ -312,8 +311,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @param  tip  the tip of the name to create.
      * @return a name in the scope of this store.
+     * @throws DataStoreException if an error occurred while computing an identifier.
      */
-    final GenericName createLocalName(final String tip) {
+    final GenericName createLocalName(final String tip) throws DataStoreException {
         return nameFactory.createLocalName(namespace(), tip);
     }
 
@@ -447,10 +447,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 }
             });
             builder.setISOStandards(true);
-            final DefaultMetadata md = builder.build();
-            metadata = customizer.customize(new SchemaModifier.Source(this), md);
-            if (metadata == null) metadata = md;
-            md.transitionTo(DefaultMetadata.State.FINAL);
+            metadata = customizer.customize(new CoverageModifier.Source(this), builder.build());
         }
         return metadata;
     }
@@ -508,7 +505,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         if (dateFormat == null) {
             dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US);
             if (timezone != null) {
-                dateFormat.setTimeZone(timezone);
+                dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
             }
         }
         return dateFormat;
@@ -690,8 +687,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @return the index of the Geotiff image matching the requested resource.
      *         There is no verification that the returned index is valid.
      * @throws IllegalNameException if the argument use an invalid namespace or if the tip is not an integer.
+     * @throws DataStoreException if an exception occurred while computing an identifier.
      */
-    private int parseImageIndex(String sequence) throws IllegalNameException {
+    private int parseImageIndex(String sequence) throws DataStoreException {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final NameSpace namespace = namespace();
         final String separator = DefaultNameSpace.getSeparator(namespace, false);

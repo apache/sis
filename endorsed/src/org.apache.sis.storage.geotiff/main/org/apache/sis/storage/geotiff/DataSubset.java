@@ -31,23 +31,25 @@ import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.toIntExact;
 import org.opengis.util.GenericName;
-import org.apache.sis.image.DataType;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.io.stream.Region;
-import org.apache.sis.io.stream.HyperRectangleReader;
-import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.base.TiledGridCoverage;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.privy.TilePlaceholder;
 import org.apache.sis.image.privy.ImageUtilities;
 import org.apache.sis.image.privy.RasterFactory;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.base.TiledGridCoverage;
+import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.reader.ReversedBitsChannel;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.stream.Region;
+import org.apache.sis.io.stream.HyperRectangleReader;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.math.Vector;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
@@ -190,12 +192,21 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     @Override
     protected final GenericName getIdentifier() {
-        /*
-         * Should never be empty (see `DataCube.getIdentifier()` contract).
-         * Nevertheless use a fallback if the identifier is empty, because
-         * this method is invoked for formatting error messages.
-         */
-        return source.getIdentifier().orElseGet(() -> source.reader.store.createLocalName("overview"));
+        try {
+            GenericName name = source.getIdentifier().orElse(null);
+            if (name == null) {
+                /*
+                 * Should never happen (see `DataCube.getIdentifier()` contract).
+                 * Nevertheless use a fallback if the identifier is empty,
+                 * because this method is invoked for error messages.
+                 */
+                name = source.reader.store.createLocalName("overview");
+            }
+            return name;
+        } catch (DataStoreException e) {
+            source.listeners().warning(e);
+            return Names.createLocalName(null, null, Vocabulary.formatInternational(Vocabulary.Keys.Unnamed));
+        }
     }
 
     /**

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.IdentityHashMap;
-import java.util.function.Supplier;
 import java.io.IOException;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
@@ -125,12 +124,12 @@ final class ImageResource extends TiledGridResource implements StoreResource {
      * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
      * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
      */
-    ImageResource(final CoverageBuilder builder, Image[] tiles, final Supplier<Image> image) throws DataStoreException {
+    ImageResource(final CoverageBuilder builder, Image[] tiles, final Image.Supplier image) throws DataStoreException {
         super(builder.store);
         this.store       = builder.store;
         identifier       = builder.name();
-        gridGeometry     = builder.gridGeometry();
         sampleDimensions = builder.sampleDimensions();
+        gridGeometry     = builder.gridGeometry();      // Should be after `sampleDimensions()`.
         if (tiles == null) {
             // Shall be after the call to `sampleDimensions()`.
             tiles = new Image[] {

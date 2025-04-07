@@ -108,7 +108,7 @@ final class AboutCommand extends CommandRunner {
                 /*
                  * Provide information about the local SIS installation.
                  */
-                configuration = About.configuration(sections, locale, timezone).toString();
+                configuration = About.configuration(sections, locale, getTimeZone()).toString();
             } else {
                 /*
                  * Provide information about a remote SIS installation. Those information are accessible
@@ -128,7 +128,7 @@ final class AboutCommand extends CommandRunner {
                     try (JMXConnector jmxc = JMXConnectorFactory.connect(url)) {
                         final MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
                         final SupervisorMBean bean = JMX.newMBeanProxy(mbsc, new ObjectName(Supervisor.NAME), SupervisorMBean.class);
-                        table = bean.configuration(sections, locale, timezone);
+                        table = bean.configuration(sections, locale, getTimeZone());
                         warnings = bean.warnings(locale);
                     }
                 } catch (IOException e) {

@@ -17,10 +17,10 @@
 package org.apache.sis.storage.xml.stream;
 
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Filter;
+import java.time.ZoneId;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +77,7 @@ public abstract class StaxDataStore extends URIDataStore {
      *
      * @see OptionKey#TIMEZONE
      */
-    protected final TimeZone timezone;
+    protected final ZoneId timezone;
 
     /**
      * The character encoding of the file content, or {@code null} if unspecified.

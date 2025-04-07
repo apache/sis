@@ -19,8 +19,8 @@ package org.apache.sis.setup;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Objects;
+import java.time.ZoneId;
 import java.nio.ByteBuffer;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
@@ -93,18 +93,13 @@ public class OptionKey<T> implements Serializable {
     /**
      * The timezone to use when parsing or formatting dates and times without explicit timezone.
      * If this option is not provided, then the default value is format specific.
-     * That default is often, but not necessarily, the {@linkplain TimeZone#getDefault() platform default}.
-     *
-     * <div class="warning"><b>Upcoming API change — Java time API</b>:
-     * the type may be changed to {@link java.time.ZoneId} in a future version.
-     * This change may be applied in synchronization with GeoAPI 4.0.
-     * </div>
+     * That default is often, but not necessarily, the {@linkplain ZoneId#systemDefault() platform default}.
      *
      * @see org.apache.sis.xml.XML#TIMEZONE
      *
      * @since 0.8
      */
-    public static final OptionKey<TimeZone> TIMEZONE = new OptionKey<>("TIMEZONE", TimeZone.class);
+    public static final OptionKey<ZoneId> TIMEZONE = new OptionKey<>("TIMEZONE", ZoneId.class);
 
     /**
      * The character encoding of document content.

@@ -43,6 +43,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.isobmff.Root;
 import org.apache.sis.storage.isobmff.Reader;
@@ -125,6 +126,11 @@ public class GeoHeifStore extends DataStore implements Aggregate {
     private Resource[] content;
 
     /**
+     * The user-specified method for customizing the grid geometry and band definitions. Never {@code null}.
+     */
+    final CoverageModifier customizer;
+
+    /**
      * Creates a new GeoHEIF store from the given file, URL or stream object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
@@ -138,6 +144,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
         location    = connector.getStorageAs(URI.class);
         path        = connector.getStorageAs(Path.class);
         input       = connector.commit(ChannelImageInputStream.class, GeoHeifStoreProvider.NAME);
+        customizer  = CoverageModifier.getOrDefault(connector);
         nameFactory = DefaultNameFactory.provider();
         if (location != null) {
             String filename = IOUtilities.filenameWithoutExtension(input.filename);
@@ -249,7 +256,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
             builder.addFormatReaderSIS(GeoHeifStoreProvider.NAME);
             builder.addResourceScope(ScopeCode.COVERAGE, null);
             getIdentifier().ifPresent((id) -> builder.addIdentifier(id, MetadataBuilder.Scope.ALL));
-            metadata = builder.buildAndFreeze();
+            metadata = customizer.customize(new CoverageModifier.Source(this), builder.build());
         }
         return metadata;
     }

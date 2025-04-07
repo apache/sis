@@ -426,7 +426,7 @@ public class GDALStore extends DataStore implements Aggregate {
      */
     final WKTFormat wktFormat() {
         if (wktFormat == null) {
-            wktFormat = new WKTFormat(null, null);
+            wktFormat = new WKTFormat();
             wktFormat.setConvention(Convention.WKT1_COMMON_UNITS);
         }
         return wktFormat;

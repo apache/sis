@@ -33,7 +33,4 @@ module org.apache.sis.storage.geotiff {
         with org.apache.sis.storage.geotiff.GeoTiffStoreProvider;
 
     exports org.apache.sis.storage.geotiff;
-
-    exports org.apache.sis.storage.geotiff.spi to
-            org.apache.sis.storage.earthobservation;
 }

@@ -17,11 +17,11 @@
 package org.apache.sis.xml.bind;
 
 import java.net.URI;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -152,7 +152,7 @@ public final class Context extends MarshalContext {
      * The timezone, or {@code null} if unspecified.
      * In the latter case, an implementation-default (typically UTC) timezone is used.
      */
-    private final TimeZone timezone;
+    private final ZoneId timezone;
 
     /**
      * The base URL of ISO 19115-3 (or other standards) schemas.
@@ -287,7 +287,7 @@ public final class Context extends MarshalContext {
     public Context(int                       bitMasks,
                    final MarshallerPool      pool,
                    final Locale              locale,
-                   final TimeZone            timezone,
+                   final ZoneId              timezone,
                    final Map<String,String>  schemas,
                    final Version             versionGML,
                    final Version             versionMetadata,
@@ -389,7 +389,7 @@ public final class Context extends MarshalContext {
      * @return the timezone in the context of current (un)marshalling process.
      */
     @Override
-    public final TimeZone getTimeZone() {
+    public final ZoneId getZoneId() {
         return timezone;
     }
 

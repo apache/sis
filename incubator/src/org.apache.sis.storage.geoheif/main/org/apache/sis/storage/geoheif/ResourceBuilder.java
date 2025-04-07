@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.awt.image.RasterFormatException;
@@ -88,7 +87,7 @@ final class ResourceBuilder {
     private final Map<Integer, ItemProperties.ForID> properties;
 
     /**
-     * Information about all resources.
+     * Information about all resources, in the order the were found in the file.
      * Keys are resource identifiers, or 0 for the {@linkplain #primaryItem}.
      * Keys are {@link ItemInfoEntry#itemID} values of the associated map value.
      * Each list should contain only one item, but this class nevertheless accept many.
@@ -321,9 +320,10 @@ final class ResourceBuilder {
                 warning("The \"{0}\" resource is protected.", name);
                 continue;
             }
+            final int imageIndex = (addTo != null ? addTo : resources).size();
             final ItemProperties.ForID itemProperties = properties.remove(itemID);
             final CoverageBuilder coverage = builders.computeIfAbsent(itemProperties,
-                    (p) -> new CoverageBuilder(store, p, duplicatedBoxes));
+                    (p) -> new CoverageBuilder(store, imageIndex, p, duplicatedBoxes));
             if (coverage.reportUnknownBoxes(name)) {
                 // Warning already logged by `reportUnknownBoxes(…)`.
                 continue;
@@ -336,7 +336,7 @@ final class ResourceBuilder {
                 firstBuilder = coverage;
             }
             final ByteReader locator;
-            final Supplier<Image> image;
+            final Image.Supplier image;
             switch (entry.itemType) {
                 default: {
                     warning("Unsupported type " + Box.formatFourCC(entry.itemType) + " for the \"{0}\" resource.", name);

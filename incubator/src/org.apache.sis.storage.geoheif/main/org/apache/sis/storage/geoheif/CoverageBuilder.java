@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.function.Supplier;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.awt.Dimension;
@@ -46,8 +45,8 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.base.ItemInfoEntry;
 import org.apache.sis.storage.isobmff.base.ItemProperties;
@@ -84,6 +83,12 @@ final class CoverageBuilder implements Emptiable {
      * The data store which is creating a grid coverage.
      */
     final GeoHeifStore store;
+
+    /**
+     * An index of the image to build, for information purpose only.
+     * This is given to {@link CoverageModifier.Source} constructor.
+     */
+    private final int imageIndex;
 
     /**
      * Name or identifier of the resource. This is taken from {@link ItemInfoEntry#itemName}
@@ -198,11 +203,13 @@ final class CoverageBuilder implements Emptiable {
      * Creates a new builder with the given properties.
      *
      * @param  store            the data store which is creating a grid coverage.
+     * @param  imageIndex       an index of the image, for information purpose only.
      * @param  properties       source of coverage properties for this coverage item.
      * @param  duplicatedBoxes  names of boxes that were duplicated. Used for logging a warning only once per type of box.
      */
-    CoverageBuilder(final GeoHeifStore store, final ItemProperties.ForID properties, final Set<String> duplicatedBoxes) {
+    CoverageBuilder(final GeoHeifStore store, final int imageIndex, final ItemProperties.ForID properties, final Set<String> duplicatedBoxes) {
         this.store = store;
+        this.imageIndex = imageIndex;
         unknownBoxes = new LinkedHashMap<>();
         if (properties == null) {
             return;
@@ -355,7 +362,7 @@ final class CoverageBuilder implements Emptiable {
      * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
      * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
      */
-    final ImageResource build(final String name, final Supplier<Image> image) throws DataStoreException {
+    final ImageResource build(final String name, final Image.Supplier image) throws DataStoreException {
         this.name = name;
         return new ImageResource(this, null, image);
     }
@@ -477,8 +484,9 @@ final class CoverageBuilder implements Emptiable {
      *
      * @return the sample model (never {@code null}).
      * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
+     * @throws DataStoreException if an error occurred in {@link CoverageModifier}.
      */
-    public final SampleModel sampleModel() {
+    public final SampleModel sampleModel() throws DataStoreException {
         if (sampleModel == null) {
             sampleDimensions(false);
             if (sampleModel == null) {
@@ -496,8 +504,9 @@ final class CoverageBuilder implements Emptiable {
      *
      * @param  full  {@code true} for creating all objects, or {@code false} for creating only the sample model.
      * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
+     * @throws DataStoreException if an error occurred in {@link CoverageModifier}.
      */
-    private void sampleDimensions(final boolean full) {
+    private void sampleDimensions(final boolean full) throws DataStoreException {
         final int nc = (model          == null) ? 0 : model.components.length;
         final int nt = (componentTypes == null) ? 0 : componentTypes.length;
         final int ns = (bitsPerChannel == null) ? 0 : bitsPerChannel.length;
@@ -559,7 +568,8 @@ final class CoverageBuilder implements Emptiable {
                 } else {
                     sb.setName(band);
                 }
-                metadata().addNewBand(sd[band] = sb.build());
+                var source = new CoverageModifier.BandSource(store, imageIndex, band, numBands, dataType);
+                metadata().addNewBand(sd[band] = store.customizer.customize(source, sb));
                 sb.clear();
             }
             if (bitDepth == 0) {
@@ -648,8 +658,9 @@ final class CoverageBuilder implements Emptiable {
      *
      * @return the sample dimensions for all bands.
      * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
+     * @throws DataStoreException if an error occurred in {@link CoverageModifier}.
      */
-    public final List<SampleDimension> sampleDimensions() {
+    public final List<SampleDimension> sampleDimensions() throws DataStoreException {
         if (sampleDimensions == null) {
             sampleDimensions(true);
         }
@@ -658,16 +669,16 @@ final class CoverageBuilder implements Emptiable {
 
     /**
      * Creates the grid geometry and opportunistically prepares metadata related to it.
-     * This method should be invoked exactly once. It may be invoked not at all
-     * when this object is used for building a tile instead of an image.
+     * This method should be invoked exactly once, preferably after {@link #sampleDimensions()}.
+     * It may be invoked not at all when this object is used for building a tile instead of an image.
      *
      * @todo Need to add information from the {@code ExtraDimensionProperty} box.
      *       These information include name, minimum, maximum and resolution.
      *
      * @return the grid geometry.
-     * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
+     * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
      */
-    public final GridGeometry gridGeometry() throws DataStoreContentException {
+    public final GridGeometry gridGeometry() throws DataStoreException {
         final var extent = new GridExtent(width, height);
         MathTransform gridToCRS = null;
         if (affine != null) {
@@ -682,6 +693,7 @@ final class CoverageBuilder implements Emptiable {
         if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
             metadata.addExtent(gridGeometry.getEnvelope(), store.listeners());
         }
-        return gridGeometry;
+        var source = new CoverageModifier.Source(store, imageIndex, dataType);
+        return store.customizer.customize(source, gridGeometry);
     }
 }

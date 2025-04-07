@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -91,13 +92,13 @@ abstract class CommandRunner {
 
     /**
      * The locale specified by the {@code "--timezone"} option, or null if no timezone was specified.
-     * The null value may be interpreted as the {{@linkplain TimeZone#getDefault() default timezone}
+     * The null value may be interpreted as the {{@linkplain ZoneId#systemDefault() default timezone}
      * or as UTC, depending on the context. For example, WKT parsing and formatting use UTC unless
      * specified otherwise.
      *
      * @see #getTimeZone()
      */
-    protected final TimeZone timezone;
+    protected final ZoneId timezone;
 
     /**
      * The encoding specified by the {@code "--encoding"} option. If no such option was provided,
@@ -225,7 +226,7 @@ abstract class CommandRunner {
             locale = (s != null) ? Locales.parse(s) : Locale.getDefault(Locale.Category.DISPLAY);
 
             value = s = getOptionAsString(option = Option.TIMEZONE);
-            timezone = (s != null) ? TimeZone.getTimeZone(s) : null;
+            timezone = (s != null) ? ZoneId.of(s) : null;
 
             value = s = getOptionAsString(option = Option.ENCODING);
             explicitEncoding = (s != null);
@@ -267,7 +268,7 @@ abstract class CommandRunner {
      * but the {@linkplain TimeZone#getDefault() default timezone} is preferred instead.
      */
     protected final TimeZone getTimeZone() {
-        return (timezone != null) ? timezone : TimeZone.getDefault();
+        return (timezone != null) ? TimeZone.getTimeZone(timezone) : TimeZone.getDefault();
     }
 
     /**

@@ -66,7 +66,7 @@ final class UncompressedImage extends Image {
      * @param  name     a name that identifies this image, for debugging purpose.
      * @throws RasterFormatException if the sample model cannot be created.
      */
-    UncompressedImage(final CoverageBuilder builder, final ByteReader locator, final String name) {
+    UncompressedImage(final CoverageBuilder builder, final ByteReader locator, final String name) throws DataStoreException {
         super(builder, locator, name);
         sampleModel = builder.sampleModel();
         dataType    = builder.dataType();     // Shall be after `sampleModel()`.

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import java.time.ZoneId;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -85,10 +86,10 @@ public final class CommandRunnerTest extends TestCase {
      */
     @Test
     public void testTimeZone() throws InvalidOptionException {
-        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--timezone", "JST");
+        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--timezone", "Asia/Tokyo");
         assertEquals(Option.TIMEZONE, getSingleton(c.options.keySet()));
-        assertEquals(TimeZone.getTimeZone("JST"), c.timezone, "timezone");
-        assertEquals(TimeUnit.HOURS.toMillis(9), c.timezone.getRawOffset(), "rawoffset");
+        assertEquals(TimeZone.getTimeZone("Asia/Tokyo"), c.getTimeZone(), "timezone");
+        assertEquals(TimeUnit.HOURS.toMillis(9), c.getTimeZone().getRawOffset(), "rawoffset");
         assertTrue(c.files.isEmpty(), "files.isEmpty()");
     }
 
@@ -113,12 +114,12 @@ public final class CommandRunnerTest extends TestCase {
     @Test
     public void testOptionMix() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST,
-                "--brief", "--locale", "ja", "--verbose", "--timezone", "JST");
+                "--brief", "--locale", "ja", "--verbose", "--timezone", "Asia/Tokyo");
         assertEquals(EnumSet.of(Option.BRIEF, Option.LOCALE, Option.VERBOSE, Option.TIMEZONE), c.options.keySet(), "options");
 
         // Test specific values.
         assertSame(Locale.JAPANESE, c.locale, "locale");
-        assertEquals(TimeZone.getTimeZone("JST"), c.timezone, "timezone");
+        assertEquals(ZoneId.of("Asia/Tokyo"), c.timezone, "timezone");
         assertTrue(c.files.isEmpty(), "files.isEmpty()");
     }
 

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml;
 
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -125,8 +126,8 @@ public final class XML extends Static {
 
     /**
      * Specifies the timezone to use for marshalling dates and times.
-     * The value for this property shall be an instance of {@link TimeZone}
-     * or a {@link CharSequence} recognized by {@link TimeZone#getTimeZone(String)}.
+     * The value for this property shall be an instance of {@link ZoneId}, {@link TimeZone}, or a
+     * {@link CharSequence} recognized by {@link ZoneId#of(String)} or {@link TimeZone#getTimeZone(String)}.
      *
      * <h4>Default behavior</h4>
      * If this property is never set, then (un)marshalling will use the
