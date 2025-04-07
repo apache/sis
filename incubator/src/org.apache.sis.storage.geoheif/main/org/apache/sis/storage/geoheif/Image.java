@@ -76,6 +76,14 @@ abstract class Image {
     }
 
     /**
+     * A supplier of image, used for deferred computation.
+     */
+    @FunctionalInterface
+    interface Supplier {
+        Image get() throws DataStoreException;
+    }
+
+    /**
      * Returns the sample model and color model of this image.
      * For uncompressed image, this information is not available and this method always throws an exception.
      * For some other profiles such as JPEG, the sample and color models are encoded in this image payload.
