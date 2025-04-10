@@ -67,6 +67,18 @@ final class Supports {
     static final int CONCURRENCY = 32;
 
     /**
+     * Whether the JDBC driver supports catalog or correctly reports that there is no catalog.
+     * This flag should be {@code false} when the JDBC driver returns a non-null catalog name
+     * (for example, the database name) but doesn't accept the use of that catalog in SQL.
+     */
+    static final int CATALOG = 64;
+
+    /**
+     * Whether the spatial extension supports <abbr>SRID</abbr> in {@code ST_*} functions.
+     */
+    static final int SRID = 128;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Supports() {

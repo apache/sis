@@ -399,8 +399,10 @@ public class Database<G> extends Syntax  {
             if (found) {
                 spatialSchema = convention;
                 if (consistent) {
-                    catalogOfSpatialTables = catalog;
-                    schemaOfSpatialTables  = schema;
+                    if (dialect.supportsCatalog()) {
+                        catalogOfSpatialTables = catalog;
+                    }
+                    schemaOfSpatialTables = schema;
                 }
                 break;
             }

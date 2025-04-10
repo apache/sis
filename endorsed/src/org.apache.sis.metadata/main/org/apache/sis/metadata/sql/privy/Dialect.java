@@ -39,7 +39,9 @@ public enum Dialect {
     ANSI(null, Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
              | Supports.JAVA_TIME
              | Supports.READ_ONLY_UPDATE
-             | Supports.CONCURRENCY),
+             | Supports.CONCURRENCY
+             | Supports.CATALOG
+             | Supports.SRID),
 
     /**
      * The database uses Derby syntax. This is ANSI, with some constraints that PostgreSQL does not have
@@ -50,7 +52,8 @@ public enum Dialect {
      */
     DERBY("derby", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                  | Supports.READ_ONLY_UPDATE
-                 | Supports.CONCURRENCY),
+                 | Supports.CONCURRENCY
+                 | Supports.CATALOG),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
@@ -59,7 +62,8 @@ public enum Dialect {
     HSQL("hsqldb", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                  | Supports.JAVA_TIME
                  | Supports.READ_ONLY_UPDATE
-                 | Supports.CONCURRENCY),
+                 | Supports.CONCURRENCY
+                 | Supports.CATALOG),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
@@ -69,7 +73,9 @@ public enum Dialect {
                            | Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                            | Supports.JAVA_TIME
                            | Supports.READ_ONLY_UPDATE
-                           | Supports.CONCURRENCY),
+                           | Supports.CONCURRENCY
+                           | Supports.CATALOG
+                           | Supports.SRID),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
@@ -77,14 +83,16 @@ public enum Dialect {
     ORACLE("oracle", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                    | Supports.JAVA_TIME
                    | Supports.READ_ONLY_UPDATE
-                   | Supports.CONCURRENCY),
+                   | Supports.CONCURRENCY
+                   | Supports.CATALOG
+                   | Supports.SRID),
 
     /**
      * The database uses SQLite syntax. This is ANSI, but with several limitations.
      *
      * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
      */
-    SQLITE("sqlite", 0),
+    SQLITE("sqlite", Supports.SRID),
 
     /**
      * The database uses DuckDB syntax. This is subset of SQL. DuckDB is not designed for transactional
@@ -191,6 +199,22 @@ public enum Dialect {
      */
     public final boolean supportsConcurrency() {
         return (flags & Supports.CONCURRENCY) != 0;
+    }
+
+    /**
+     * Whether the JDBC driver supports catalog or correctly reports that there is no catalog.
+     * This flag should be {@code false} when the JDBC driver returns a non-null catalog name
+     * (for example, the database name) but doesn't accept the use of that catalog in SQL.
+     */
+    public final boolean supportsCatalog() {
+        return (flags & Supports.CATALOG) != 0;
+    }
+
+    /**
+     * Whether the spatial extension supports <abbr>SRID</abbr> in {@code ST_*} functions.
+     */
+    public final boolean supportsSRID() {
+        return (flags & Supports.SRID) != 0;
     }
 
     /**
