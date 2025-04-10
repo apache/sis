@@ -18,7 +18,8 @@ package org.apache.sis.storage.isobmff.base;
 
 import java.io.IOException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.storage.isobmff.ByteReader;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.Box;
 
@@ -34,7 +35,7 @@ import org.apache.sis.storage.isobmff.Box;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-public class ItemData extends Box implements ByteReader {
+public class ItemData extends Box implements ByteRanges.Reader {
     /**
      * Numerical representation of the {@code "idat"} box type.
      */
@@ -56,7 +57,8 @@ public class ItemData extends Box implements ByteReader {
     public final long payloadOffset;
 
     /**
-     * Number of bytes to read.
+     * Number of bytes to read, or -1 for reading until the end of file.
+     * Note that -1 is also the maximal unsigned value.
      */
     @Interpretation(Type.UNSIGNED)
     public final long size;
@@ -70,23 +72,29 @@ public class ItemData extends Box implements ByteReader {
      */
     public ItemData(final Reader reader) throws IOException {
         payloadOffset = reader.input.getStreamPosition();
-        size = reader.endOfCurrentBox() - payloadOffset;
+        size = reader.endOfCurrentBox().orElse(payloadOffset - 1) - payloadOffset;
     }
 
     /**
      * Converts an offset relative to the data of this item to an offset relative to the origin of the input stream.
-     * This method updates the {@link FileRegion#offset} value in-place by adding the stream position of the first
-     * byte of the data stored in this item.
+     * This method adds the stream position of the first byte of the data stored in this item.
      *
-     * @param  request  the input stream, offset and length of the region to read. Modified in-place by this method.
+     * @param  offset  offset of the first byte to read relative to the data stored in this item.
+     * @param  length  maximum number of bytes to read, starting at the offset, or a negative value for reading all.
+     * @param  addTo   where to add the range of bytes to read as offsets relatives to the beginning of the file.
      * @throws ArithmeticException if an integer overflow occurred.
      */
     @Override
-    public void resolve(final FileRegion request) {
-        ArgumentChecks.ensureBetween("offset", 0, size - Math.max(0, request.length), request.offset);
-        if (request.length > size || request.length < 0) {
-            request.length = size;
+    public void resolve(long offset, long length, ByteRanges addTo) throws DataStoreException {
+        if (size >= 0) {
+            ArgumentChecks.ensureBetween("offset", 0, size - Math.max(0, length), offset);
+            if (length > size || length < 0) {
+                length = size;
+            }
+        } else if (length < 0) {
+            throw new DataStoreException("Stream of unknown length.");
         }
-        request.offset = Math.addExact(payloadOffset, request.offset);
+        offset = Math.addExact(payloadOffset, offset);
+        addTo.addRange(offset, Math.addExact(offset, length));
     }
 }
