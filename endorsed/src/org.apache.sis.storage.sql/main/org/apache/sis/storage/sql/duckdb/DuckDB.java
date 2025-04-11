@@ -33,7 +33,7 @@ import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
 /**
  * Information about a connection to a DuckDB database.
  * This class specializes some of the functions for converting DuckDB spatial extension objects to Java objects.
- * See the package Javadoc for recommendation about how to connect to a DuckDB database.
+ * See the package Javadoc for version requirement and recommendation about how to connect to a DuckDB database.
  *
  * @param  <G>  the type of geometry objects. Depends on the backing implementation (ESRI, JTS, Java2D…).
  *

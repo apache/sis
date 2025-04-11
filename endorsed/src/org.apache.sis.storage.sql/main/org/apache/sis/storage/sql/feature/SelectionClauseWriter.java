@@ -174,8 +174,8 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
              */
             final String prefix = database.escapeWildcards(lowerCase ? "st_" : "ST_");
             try (ResultSet r = metadata.getFunctions(database.catalogOfSpatialTables,
-                    database.dialect.toCompatibleMetadataPattern(database.schemaOfSpatialTables, 1),
-                    database.dialect.toCompatibleMetadataPattern(prefix + '%', 2)))
+                                                     database.schemaOfSpatialTables,
+                                                     prefix + '%'))
             {
                 while (r.next()) {
                     unsupported.remove(r.getString("FUNCTION_NAME"));

@@ -19,7 +19,6 @@ package org.apache.sis.metadata.sql.privy;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.privy.Constants;
 
 
@@ -113,19 +112,11 @@ public enum Dialect {
      *     LOAD spatial
      *     }
      *
-     * @see <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>
+     * <h4>Requirements</h4>
+     * Apache SIS requires DuckDB 1.2.2.0 or later. This is needed for the correction of
+     * <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>.
      */
-    DUCKDB("duckdb", 0) {
-        @Override
-        @Workaround(library = "DuckDB", version = "1.2.1")
-        public String toCompatibleMetadataPattern(String pattern, final int argument) {
-            switch (argument) {
-                case 1: if (pattern == null) pattern = "%"; break;
-                case 2: pattern = pattern.replace("\\", ""); break;
-            }
-            return pattern;
-        }
-    };
+    DUCKDB("duckdb", 0);
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -215,22 +206,6 @@ public enum Dialect {
      */
     public final boolean supportsSRID() {
         return (flags & Supports.SRID) != 0;
-    }
-
-    /**
-     * Converts the pattern to something that can be used for requesting metadata.
-     * This is a workaround for a DuckDB bug and may be removed in a future version.
-     *
-     * @param  pattern   the schema pattern to apply.
-     * @param  argument  1 for the {@code schemaPattern}, 2 for {@code functionNamePattern}.
-     * @return the schema pattern to use.
-     *
-     * @see DatabaseMetaData#getFunctions(String, String, String)
-     * @see <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>
-     */
-    @Workaround(library = "DuckDB", version = "1.2.1")
-    public String toCompatibleMetadataPattern(String pattern, int argument) {
-        return pattern;
     }
 
     /**
