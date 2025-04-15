@@ -155,9 +155,12 @@ final class QueryAnalyzer extends FeatureAnalyzer {
     Column[] createAttributes() throws Exception {
         /*
          * Identify geometry columns. Must be done before the calls to `Analyzer.setValueGetterOf(column)`.
+         * If the database does not have a "geometry columns" table, parse field type names as a fallback.
          */
+        boolean fallback = true;
         final InfoStatements spatialInformation = analyzer.spatialInformation;
         if (spatialInformation != null) {
+            fallback = columnsPerTable.isEmpty();
             for (final Map.Entry<TableReference, Map<String,Column>> entry : columnsPerTable.entrySet()) {
                 spatialInformation.completeIntrospection(analyzer, entry.getKey(), entry.getValue());
             }
@@ -167,6 +170,9 @@ final class QueryAnalyzer extends FeatureAnalyzer {
          */
         final var attributes = new ArrayList<Column>();
         for (final Column column : columns) {
+            if (fallback) {
+                column.tryMakeSpatial(analyzer.database);
+            }
             if (createAttribute(column)) {
                 attributes.add(column);
             }

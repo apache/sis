@@ -27,7 +27,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.geometry.wrapper.GeometryType;
-import org.apache.sis.util.Localized;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
@@ -115,6 +114,13 @@ public final class Column implements Cloneable {
      * @see #getGeometryType()
      */
     private GeometryType geometryType;
+
+    /**
+     * Whether the geometries are encoded in <abbr>WKT</abbr> rather than <abbr>WKB</abbr>.
+     *
+     * @see #getGeometryEncoding()
+     */
+    private boolean geometryAsText;
 
     /**
      * If this column is a geometry or raster column, the Coordinate Reference System (CRS). Otherwise {@code null}.
@@ -218,11 +224,11 @@ public final class Column implements Cloneable {
      * It can also be invoked during the inspection of {@code "GEOGRAPHY_COLUMNS"} or {@code "RASTER_COLUMNS"}
      * tables, which are PostGIS extensions. In the raster case, the geometry {@code type} argument shall be null.
      *
-     * @param  caller  provider of the locale for error message, if any.
-     * @param  type    the type of values in the column, or {@code null} if not geometric.
-     * @param  crs     the Coordinate Reference System (CRS), or {@code null} if unknown.
+     * @param  database  the database for which to analyze the tables.
+     * @param  type      the type of values in the column, or {@code null} if not geometric.
+     * @param  crs       the Coordinate Reference System (CRS), or {@code null} if unknown.
      */
-    final void makeSpatial(final Localized caller, final GeometryType type, final CoordinateReferenceSystem crs)
+    final void makeSpatial(final Database<?> database, final GeometryType type, final CoordinateReferenceSystem crs)
             throws DataStoreContentException
     {
         final String property;
@@ -233,10 +239,26 @@ public final class Column implements Cloneable {
         } else {
             geometryType = type;
             defaultCRS = crs;
+            geometryAsText = (database.getGeometryEncoding(this) == GeometryEncoding.WKT);
             return;
         }
-        throw new DataStoreContentException(Errors.forLocale(caller.getLocale())
+        throw new DataStoreContentException(Errors.forLocale(database.listeners.getLocale())
                         .getString(Errors.Keys.ValueAlreadyDefined_1, property));
+    }
+
+    /**
+     * Tries to parses the geometry type from the field type.
+     * This is used as a fallback when no geometry column is found or can be used.
+     *
+     * @param  database  the database for which to analyze the tables.
+     */
+    final void tryMakeSpatial(final Database<?> database) {
+        try {
+            geometryType = GeometryType.forName(typeName);
+            geometryAsText = (database.getGeometryEncoding(this) == GeometryEncoding.WKT);
+        } catch (IllegalArgumentException e) {
+            // Ignore.
+        }
     }
 
     /**
@@ -285,6 +307,15 @@ public final class Column implements Cloneable {
      */
     public final Optional<GeometryType> getGeometryType() {
         return Optional.ofNullable(geometryType);
+    }
+
+    /**
+     * Returns whether the geometries are encoded in <abbr>WKT</abbr> rather than <abbr>WKB</abbr>.
+     *
+     * @return the encoding used for geometries.
+     */
+    public final GeometryEncoding getGeometryEncoding() {
+        return geometryAsText ? GeometryEncoding.WKT : GeometryEncoding.WKB;
     }
 
     /**

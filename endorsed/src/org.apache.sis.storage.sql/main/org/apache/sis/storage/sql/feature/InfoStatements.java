@@ -320,7 +320,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                             type = GeometryType.GEOMETRY;
                         }
                     }
-                    target.makeSpatial(this, type, crs);
+                    target.makeSpatial(database, type, crs);
                 }
             }
         }
