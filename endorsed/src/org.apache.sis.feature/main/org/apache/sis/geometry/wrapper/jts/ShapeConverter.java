@@ -27,6 +27,15 @@ import java.util.Comparator;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.apache.sis.referencing.privy.AbstractShape;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.util.GeometryFixer;
 
 
@@ -268,43 +277,164 @@ abstract class ShapeConverter {
         }
         flush(false);
         final int count = geometries.size();
+        
+        Geometry result;
         if (count == 1) {
-            return geometries.get(0);
-        }
-        switch (geometryType) {
-            case 0:          return factory.createEmpty(DIMENSION);
-            default:         return factory.createGeometryCollection(GeometryFactory.toGeometryArray  (geometries));
-            case POINT:      return factory.createMultiPoint        (GeometryFactory.toPointArray     (geometries));
-            case LINESTRING: return factory.createMultiLineString   (GeometryFactory.toLineStringArray(geometries));
-            case POLYGON: {
-                /*
-                 * Java2D shapes and JTS geometries differ in their way to fill interior.
-                 * Java2D fills the resulting contour based on visual winding rules.
-                 * JTS has a system where outer shell and holes are clearly separated.
-                 * We would need to draw contours as Java2D for computing JTS equivalent,
-                 * but it would require a lot of work. In the meantime, the SymDifference
-                 * operation is what behave the most like EVEN_ODD or NON_ZERO winding rules.
-                */
-                
-                //sort by area, bigger geometries are the outter rings
-                Collections.sort(geometries, (Geometry o1, Geometry o2) -> java.lang.Double.compare(o2.getArea(), o1.getArea()));
-                Geometry result = geometries.get(0);
-                for (int i=1; i<count; i++) {
-                    Geometry other = geometries.get(i);
-                    if (result.intersects(other)) {
-                        //ring is a hole
-                        result = result.symDifference(other);
-                    } else {
-                        //ring is a separate polygon
-                        result = result.union(other);
+            result = geometries.get(0);
+        } else {
+            switch (geometryType) {
+                case 0:
+                    result = factory.createEmpty(DIMENSION);
+                    break;
+                default:
+                    result = factory.createGeometryCollection(GeometryFactory.toGeometryArray  (geometries));
+                    break;
+                case POINT:
+                    result = factory.createMultiPoint        (GeometryFactory.toPointArray     (geometries));
+                    break;
+                case LINESTRING: 
+                    result = factory.createMultiLineString   (GeometryFactory.toLineStringArray(geometries));
+                    break;
+                case POLYGON:
+                    /*
+                     * Java2D shapes and JTS geometries differ in their way to fill interior.
+                     * Java2D fills the resulting contour based on visual winding rules.
+                     * JTS has a system where outer shell and holes are clearly separated.
+                     * We would need to draw contours as Java2D for computing JTS equivalent,
+                     * but it would require a lot of work. In the meantime, the SymDifference
+                     * operation is what behave the most like EVEN_ODD or NON_ZERO winding rules.
+                    */
+
+                    //sort by area, bigger geometries are the outter rings
+                    Collections.sort(geometries, (Geometry o1, Geometry o2) -> java.lang.Double.compare(o2.getArea(), o1.getArea()));
+                    result = geometries.get(0);
+                    for (int i=1; i<count; i++) {
+                        Geometry other = geometries.get(i);
+                        if (result.intersects(other)) {
+                            //ring is a hole
+                            result = result.symDifference(other);
+                        } else {
+                            //ring is a separate polygon
+                            result = result.union(other);
+                        }
                     }
-                    
-                }
-                return result;
+                    break;                
             }
+        }
+        
+        return enforce2D(result);
+    }
+    
+    /**
+     * JTS has the bad habit of expending the dimension of CoordinateSequence
+     * from 2D to 3D adding NaN Z values.
+     * Since we do not want any Z ordinates, we have to check and fix those.
+     * 
+     * @param geometry to fix
+     */
+    private <T extends Geometry> T enforce2D(T geometry) {
+        if (geometry instanceof Point) {
+            final Point pt = (Point) geometry;
+            final CoordinateSequence cs = pt.getCoordinateSequence();
+            final CoordinateSequence cs2d = enforce2D(cs);
+            return (T) (cs2d != cs ? factory.createPoint(cs2d) : geometry);
+        } else if (geometry instanceof LinearRing) {
+            final LinearRing ls = (LinearRing) geometry;
+            final CoordinateSequence cs = ls.getCoordinateSequence();
+            final CoordinateSequence cs2d = enforce2D(cs);
+            return (T) (cs2d != cs ? factory.createLinearRing(cs2d) : geometry);
+        } else if (geometry instanceof LineString) {
+            final LineString ls = (LineString) geometry;
+            final CoordinateSequence cs = ls.getCoordinateSequence();
+            final CoordinateSequence cs2d = enforce2D(cs);
+            return (T) (cs2d != cs ? factory.createLineString(cs2d) : geometry);
+        } else if (geometry instanceof MultiLineString) {
+            final MultiLineString ml = (MultiLineString) geometry;
+            boolean changed = false;
+            final LineString[] news = new LineString[ml.getNumGeometries()];
+            for (int i = 0; i < news.length; i++) {
+                news[i] = (LineString) ml.getGeometryN(i);
+                LineString cp = enforce2D(news[i]);
+                if (cp != news[i]) {
+                    news[i] = cp;
+                    changed = true;
+                }
+            }
+            return (T) (changed ? factory.createMultiLineString(news) : geometry);
+        } else if (geometry instanceof Polygon) {
+            final Polygon pl = (Polygon) geometry;
+            boolean changed = false;
+            final LinearRing exterior = pl.getExteriorRing();
+            final LinearRing copy = enforce2D(exterior);
+            if (exterior != copy) {
+                changed = true;
+            }
+            
+            final LinearRing[] news = new LinearRing[pl.getNumInteriorRing()];
+            for (int i = 0; i < news.length; i++) {
+                news[i] = pl.getInteriorRingN(i);
+                LinearRing cp = enforce2D(news[i]);
+                if (cp != news[i]) {
+                    news[i] = cp;
+                    changed = true;
+                }
+            }
+            return (T) (changed ? factory.createPolygon(copy, news) : geometry);
+        } else if (geometry instanceof MultiPoint) {
+            final MultiPoint ml = (MultiPoint) geometry;
+            boolean changed = false;
+            final Point[] news = new Point[ml.getNumGeometries()];
+            for (int i = 0; i < news.length; i++) {
+                news[i] = (Point) ml.getGeometryN(i);
+                Point cp = enforce2D(news[i]);
+                if (cp != news[i]) {
+                    news[i] = cp;
+                    changed = true;
+                }
+            }
+            return (T) (changed ? factory.createMultiPoint(news) : geometry);
+        } else if (geometry instanceof MultiPolygon) {
+            final MultiPolygon ml = (MultiPolygon) geometry;
+            boolean changed = false;
+            final Polygon[] news = new Polygon[ml.getNumGeometries()];
+            for (int i = 0; i < news.length; i++) {
+                news[i] = (Polygon) ml.getGeometryN(i);
+                Polygon cp = enforce2D(news[i]);
+                if (cp != news[i]) {
+                    news[i] = cp;
+                    changed = true;
+                }
+            }
+            return (T) (changed ? factory.createMultiPolygon(news) : geometry);
+        } else if (geometry instanceof GeometryCollection) {
+            final GeometryCollection ml = (GeometryCollection) geometry;
+            boolean changed = false;
+            final Geometry[] news = new Geometry[ml.getNumGeometries()];
+            for (int i = 0; i < news.length; i++) {
+                news[i] = ml.getGeometryN(i);
+                Geometry cp = enforce2D(news[i]);
+                if (cp != news[i]) {
+                    news[i] = cp;
+                    changed = true;
+                }
+            }
+            return (T) (changed ? factory.createGeometryCollection(news) : geometry);
+        } else {
+            throw new UnsupportedOperationException("Unexpected JTS geometry type " + geometry.getGeometryType());
         }
     }
 
+    private CoordinateSequence enforce2D(CoordinateSequence cs) {
+        if (cs.getDimension() == 2) return cs;
+        final int size = cs.size();
+        final CoordinateSequence copy = factory.getCoordinateSequenceFactory().create(size, 2);
+        for (int i = 0; i < size; i++) {
+            copy.setOrdinate(i, 0, cs.getX(i));
+            copy.setOrdinate(i, 1, cs.getY(i));
+        }
+        return copy;
+    }
+    
     /**
      * Copies current coordinates in a new JTS geometry,
      * then resets {@link #length} to 0 in preparation for the next geometry.
