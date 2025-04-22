@@ -171,7 +171,7 @@ final class QueryAnalyzer extends FeatureAnalyzer {
         final var attributes = new ArrayList<Column>();
         for (final Column column : columns) {
             if (fallback) {
-                column.tryMakeSpatial(analyzer.database);
+                column.tryMakeSpatial(analyzer);
             }
             if (createAttribute(column)) {
                 attributes.add(column);

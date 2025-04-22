@@ -187,9 +187,9 @@ final class TableAnalyzer extends FeatureAnalyzer {
          */
         final var attributes = new ArrayList<Column>();
         for (final Column column : columns.values()) {
-            if (spatialInformation == null) {
+            if (spatialInformation == null || spatialInformation.geometryColumns == null) {
                 // Fallback for databases without "geometry columns" table.
-                column.tryMakeSpatial(analyzer.database);
+                column.tryMakeSpatial(analyzer);
             }
             if (createAttribute(column)) {
                 attributes.add(column);

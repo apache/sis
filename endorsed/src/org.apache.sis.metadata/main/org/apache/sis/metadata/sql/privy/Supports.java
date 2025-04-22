@@ -16,6 +16,8 @@
  */
 package org.apache.sis.metadata.sql.privy;
 
+import org.apache.sis.util.Workaround;
+
 
 /**
  * Enumeration of features that may be supported by a database.
@@ -71,6 +73,7 @@ final class Supports {
      * This flag should be {@code false} when the JDBC driver returns a non-null catalog name
      * (for example, the database name) but doesn't accept the use of that catalog in SQL.
      */
+    @Workaround(library = "DuckDB", version = "1.2.2.0")
     static final int CATALOG = 64;
 
     /**

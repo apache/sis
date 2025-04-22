@@ -319,7 +319,7 @@ public class Database<G> extends Syntax  {
         this.cacheOfCRS    = new Cache<>(7, 2, false);
         this.cacheOfSRID   = new WeakHashMap<>();
         this.tablesByNames = new FeatureNaming<>();
-        supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
+        supportsCatalogs   = dialect.supportsCatalog() && metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
         supportsJavaTime   = dialect.supportsJavaTime();
         crsEncodings       = EnumSet.noneOf(CRSEncoding.class);

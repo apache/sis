@@ -18,6 +18,7 @@ package org.apache.sis.metadata.sql.privy;
 
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.Constants;
 
@@ -197,6 +198,7 @@ public enum Dialect {
      * This flag should be {@code false} when the JDBC driver returns a non-null catalog name
      * (for example, the database name) but doesn't accept the use of that catalog in SQL.
      */
+    @Workaround(library = "DuckDB", version = "1.2.2.0")
     public final boolean supportsCatalog() {
         return (flags & Supports.CATALOG) != 0;
     }

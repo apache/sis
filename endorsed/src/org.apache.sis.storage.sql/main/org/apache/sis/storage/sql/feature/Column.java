@@ -22,6 +22,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.SQLDataException;
+import java.util.Map;
 import java.util.Optional;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.sql.privy.Reflection;
@@ -250,14 +251,20 @@ public final class Column implements Cloneable {
      * Tries to parses the geometry type from the field type.
      * This is used as a fallback when no geometry column is found or can be used.
      *
-     * @param  database  the database for which to analyze the tables.
+     * @param  analyzer  the object used for analyzing the database schema.
+     * @throws Exception if an error occurred while fetching the <abbr>CRS</abbr>.
      */
-    final void tryMakeSpatial(final Database<?> database) {
+    final void tryMakeSpatial(final Analyzer analyzer) throws Exception {
         try {
             geometryType = GeometryType.forName(typeName);
-            geometryAsText = (database.getGeometryEncoding(this) == GeometryEncoding.WKT);
+            geometryAsText = (analyzer.database.getGeometryEncoding(this) == GeometryEncoding.WKT);
+            final InfoStatements spatialInformation = analyzer.spatialInformation;
+            if (spatialInformation != null) {
+                spatialInformation.completeIntrospection(analyzer, null, Map.of());
+                defaultCRS = spatialInformation.guessCRS(name);
+            }
         } catch (IllegalArgumentException e) {
-            // Ignore.
+            // The `typeName` value is not the name of a geometry type. Ignore.
         }
     }
 
