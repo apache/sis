@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.tiling;
 
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Optional;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -108,4 +110,26 @@ public interface Tile {
      * @throws DataStoreException if an error occurred while reading the content.
      */
     Resource getResource() throws DataStoreException;
+
+    /**
+     * Returns the tile content as a {@link Path} instance.
+     * Tiles are usually small chunks of raw data which are forwarded to a displaying
+     * device or processing unit.
+     * Unlike the {@linkplain #getResource()} method this method
+     * should return the unprocessed data quickly.
+     *
+     * <p>Default implementation fallback on the  {@linkplain #getResource()} method
+     * and returns the first path from the  {@linkplain #getFileSet()} method</p>
+     *
+     * @return tile content or empty
+     * @throws DataStoreException if an error occurred while returning the content.
+     */
+    default Optional<Path> getContentPath() throws DataStoreException {
+        final Resource resource = getResource();
+        final Optional<Resource.FileSet> opt = resource.getFileSet();
+        if (opt.isEmpty()) return Optional.empty();
+        final Collection<Path> paths = opt.get().getPaths();
+        if (paths.isEmpty()) return Optional.empty();
+        return Optional.of(paths.iterator().next());
+    }
 }
