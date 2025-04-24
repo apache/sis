@@ -378,7 +378,13 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * Tries to guess the <abbr>CRS</abbr> for the specified column in an unknown table.
-     * This is used for queries when the <abbr>JDBC</abbr> driver is incomplete.
+     * This is invoked (indirectly) by {@link QueryAnalyzer} when the <abbr>JDBC</abbr>
+     * driver is an incomplete implementation.
+     *
+     * <h4>Algorithm</h4>
+     * This method lists the <abbr>CRS</abbr> of all columns of the given name,
+     * regardless the table, schema or catalog containing a column of that name.
+     * If the <abbr>CRS</abbr> is equivalent in all cases, then it is returned.
      *
      * @param  column  name of the column in unknown table.
      * @return the <abbr>CRS</abbr>, or {@code null} if none or ambiguous.
