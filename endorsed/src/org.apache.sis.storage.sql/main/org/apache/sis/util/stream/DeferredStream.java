@@ -120,18 +120,12 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
         try {
             return createSourceIterator();
         } catch (Exception cause) {
-            final BackingStoreException ex;
-            if (cause instanceof BackingStoreException) {
-                ex = (BackingStoreException) cause;
-            } else {
-                ex = new BackingStoreException(cause.getMessage(), Exceptions.unwrap(cause));
-            }
+            throw cannotExecute(cause);
             /*
              * The close handler will be invoked later assuming that the user created the stream in a
              * `try ... finally` block. We could invoke the close handler here as a safety, but we do
              * not do that in order to have more predictable and consistent behavior.
              */
-            throw ex;
         }
     }
 
@@ -207,6 +201,8 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
         final Exception unwrap = Exceptions.unwrap(cause);
         if (unwrap instanceof RuntimeException) {
             return (RuntimeException) unwrap;
+        } else if (cause instanceof RuntimeException) {
+            return (RuntimeException) cause;
         } else {
             return new BackingStoreException(cause.toString(), unwrap);
         }

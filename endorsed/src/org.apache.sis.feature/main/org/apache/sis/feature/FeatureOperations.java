@@ -58,48 +58,39 @@ import org.opengis.filter.Expression;
  *     <th>Map key</th>
  *     <th>Value type</th>
  *     <th>Returned by</th>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
  *     <td>{@link GenericName} or {@link String}</td>
  *     <td>{@link AbstractOperation#getName() Operation.getName()} (mandatory)</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDefinition() Operation.getDefinition()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDesignation() Operation.getDesignation()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDescription() Operation.getDescription()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"result.name"</td>
  *     <td>{@link GenericName} or {@link String}</td>
  *     <td>{@link AbstractAttribute#getName() Attribute.getName()} on the {@linkplain AbstractOperation#getResult() result}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"result.definition"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link DefaultAttributeType#getDefinition() Attribute.getDefinition()} on the {@linkplain AbstractOperation#getResult() result}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"result.designation"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link DefaultAttributeType#getDesignation() Attribute.getDesignation()} on the {@linkplain AbstractOperation#getResult() result}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"result.description"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link DefaultAttributeType#getDescription() Attribute.getDescription()} on the {@linkplain AbstractOperation#getResult() result}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
  *     <td>{@link java.util.Locale}</td>
  *     <td>(none)</td>

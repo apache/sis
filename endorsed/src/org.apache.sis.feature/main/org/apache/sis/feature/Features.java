@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
@@ -49,7 +50,7 @@ import org.opengis.feature.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.5
  */
 public final class Features extends Static {
@@ -299,6 +300,28 @@ public final class Features extends Static {
             return Optional.of(((LinkOperation) property).referentName);
         }
         return Optional.empty();
+    }
+
+    /**
+     * If the given property is a link or a compound key, returns the name of the referenced properties.
+     * This method is similar to {@link #getLinkTarget(PropertyType)}, except that it recognizes also
+     * the operations created by {@link FeatureOperations#compound FeatureOperations.compound(…)}.
+     *
+     * @param  property  the property to test, or {@code null} if none.
+     * @return the referenced property names if {@code property} is a link or a compound key,
+     *         or an empty list otherwise.
+     *
+     * @see FeatureOperations#compound(Map, String, String, String, PropertyType...)
+     *
+     * @since 1.5
+     */
+    public static List<String> getLinkTargets(final PropertyType property) {
+        return getLinkTarget(property).map(List::of).orElseGet(() -> {
+            if (property instanceof StringJoinOperation) {
+                return ((StringJoinOperation) property).getAttributeNames();
+            }
+            return List.of();
+        });
     }
 
     /**

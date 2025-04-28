@@ -253,7 +253,7 @@ final class Table extends AbstractFeatureSet {
                 importedKeys[importedKeysCount++] = relation;
                 continue;
             }
-            relation = source.getRelation(xpath, false);
+            relation = source.getRelation(xpath, true);
             if (relation != null) {
                 exportedKeys[exportedKeysCount++] = relation;
                 continue;
