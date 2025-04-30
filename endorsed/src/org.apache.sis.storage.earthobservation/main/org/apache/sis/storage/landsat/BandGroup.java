@@ -16,11 +16,14 @@
  */
 package org.apache.sis.storage.landsat;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.Resource;
@@ -131,6 +134,18 @@ final class BandGroup extends AbstractResource implements Aggregate, StoreResour
     @Override
     public Collection<Resource> components() {
         return UnmodifiableArrayList.wrap(components);
+    }
+
+    /**
+     * Returns the paths to the files containing each band.
+     */
+    @Override
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        final Set<Path> paths = new HashSet<>();
+        for (Band b : components) {
+            b.getFileSet().map(FileSet::getPaths).ifPresent(paths::addAll);
+        }
+        return Optional.of(new FileSet(paths));
     }
 
     /**

@@ -28,7 +28,10 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashSet;
+import java.util.Set;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
@@ -296,6 +299,20 @@ public class LandsatStore extends DataStore implements Aggregate {
         if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
             super.addListener(eventType, listener);
         }
+    }
+
+    /**
+     * Returns the list of band files and the *_MTL.txt file.
+     */
+    @Override
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        components(); //force loading bands
+        final Set<Path> paths = new HashSet<>();
+        paths.add(Paths.get(location));
+        for (BandGroup b : components) {
+            b.getFileSet().map(FileSet::getPaths).ifPresent(paths::addAll);
+        }
+        return Optional.of(new FileSet(paths));
     }
 
     /**
