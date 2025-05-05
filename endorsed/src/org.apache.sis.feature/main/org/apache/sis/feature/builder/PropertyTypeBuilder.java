@@ -18,6 +18,7 @@ package org.apache.sis.feature.builder;
 
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.feature.internal.Resources;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
@@ -41,7 +42,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  * @since   0.8
  */
 public abstract class PropertyTypeBuilder extends TypeBuilder {
@@ -80,7 +81,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
         owner         = builder.owner;
         minimumOccurs = builder.minimumOccurs;
         maximumOccurs = builder.maximumOccurs;
-        // Do not copy the 'property' reference since the 'valueClass' is different.
+        // Do not copy the `property` reference since the `valueClass` is different.
     }
 
     /**
@@ -312,8 +313,33 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     @Override
     public void remove() {
         if (owner != null) {
-            owner.replace(this, null);
+            owner.replace(this, null, true);
             dispose();
         }
+    }
+
+    /**
+     * Removes this property and moves the given replacement to the location previously occupied by this property.
+     * The replacement must have been built by the same {@link FeatureTypeBuilder} than this property.
+     * If the replacement is {@code null}, then this method is equivalent to {@link #remove()}.
+     *
+     * @param  replacement  the property to move to the location of this property, or {@code null} if none.
+     * @throws IllegalArgumentException if the replacement has not been built by the same {@link FeatureTypeBuilder}
+     *         than this property.
+     *
+     * @since 1.5
+     */
+    public void replaceBy(final PropertyTypeBuilder replacement) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final FeatureTypeBuilder owner = owner();
+        if (replacement != null) {
+            if (replacement.owner() != owner) {
+                throw new IllegalArgumentException(resources().getString(Resources.Keys.MismatchedParentFeature));
+            }
+            owner.replace(replacement, null, false);
+        }
+        owner.replace(this, replacement, true);
+        dispose();
+        remove();   // For subclasses that override this method.
     }
 }
