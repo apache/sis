@@ -27,13 +27,11 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.feature.privy.FeatureExpression;
+import org.apache.sis.feature.privy.FeatureProjectionBuilder;
 import org.apache.sis.filter.internal.Node;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.math.FunctionProperty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.FeatureType;
 import org.opengis.feature.AttributeType;
 import org.opengis.filter.Expression;
 
@@ -151,14 +149,15 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         }
 
         /**
-         * Provides the type of values returned by {@link #apply(Object)}
-         * wrapped in an {@link AttributeType} named "Literal".
+         * Provides the type of values returned by {@link #apply(Object)}.
+         * The returned item wraps an {@link AttributeType} named "Literal".
+         * The attribute type is determined by the class of the {@linkplain #value}.
          *
          * @param  addTo  where to add the type of properties evaluated by the given expression.
-         * @return builder of the added property.
+         * @return handler for the added property.
          */
         @Override
-        public PropertyTypeBuilder expectedType(FeatureType ignored, final FeatureTypeBuilder addTo) {
+        public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
             final Class<?> valueType = getValueClass();
             AttributeType<?> propertyType;
             synchronized (TYPES) {
@@ -171,7 +170,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
                     }
                 }
             }
-            return addTo.addProperty(propertyType);
+            return addTo.addSourceProperty(propertyType, true);
         }
 
         /**

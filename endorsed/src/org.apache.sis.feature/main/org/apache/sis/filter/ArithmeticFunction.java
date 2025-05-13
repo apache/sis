@@ -19,9 +19,8 @@ package org.apache.sis.filter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.opengis.util.ScopedName;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.privy.FeatureExpression;
+import org.apache.sis.feature.privy.FeatureProjectionBuilder;
 import org.apache.sis.filter.privy.FunctionNames;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
@@ -29,7 +28,6 @@ import org.apache.sis.math.Fraction;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureType;
 import org.opengis.filter.Expression;
 
 
@@ -88,8 +86,8 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
      * on the {@code ArithmeticFunction} subclass and is given by {@link #expectedType()}.
      */
     @Override
-    public final PropertyTypeBuilder expectedType(FeatureType ignored, FeatureTypeBuilder addTo) {
-        return addTo.addProperty(expectedType());
+    public final FeatureProjectionBuilder.Item expectedType(FeatureProjectionBuilder addTo) {
+        return addTo.addSourceProperty(expectedType(), false);
     }
 
     /**

@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
 import org.apache.sis.feature.Features;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.feature.privy.FeatureProjectionBuilder;
 import org.apache.sis.math.FunctionProperty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -38,8 +37,8 @@ import org.opengis.filter.ValueReference;
 
 /**
  * Expression whose value is computed by retrieving the value indicated by the provided path.
- * This is used for value reference given by XPath such as "a/b/c". The last element of the path
- * (the tip) is evaluated by a {@link PropertyValue}.
+ * This is used for value reference given by a limited form of XPath such as {@code "a/b/c"}.
+ * The last element of the path (the tip) is evaluated by a {@link PropertyValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -202,15 +201,16 @@ walk:   if (specifiedType != null) try {
     }
 
     /**
-     * Provides the expected type of values produced by this expression when a feature of the given type is evaluated.
+     * Provides the expected type of values produced by this expression. This method delegates to
+     * {@link #accessor} after setting the source feature type to the tip of {@code "a/b/c"} path.
      *
-     * @param  valueType  the type of features to be evaluated by the given expression.
-     * @param  addTo      where to add the type of properties evaluated by the given expression.
+     * @param  addTo  where to add the type of properties evaluated by this expression.
      * @return builder of the added property, or {@code null} if this method cannot add a property.
-     * @throws IllegalArgumentException if this method cannot determine the property type for the given feature type.
+     * @throws PropertyNotFoundException if the property was not found in {@code addTo.source()}.
      */
     @Override
-    public PropertyTypeBuilder expectedType(FeatureType valueType, final FeatureTypeBuilder addTo) {
+    public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
+        FeatureType valueType = addTo.source();
         for (final String p : path) {
             final PropertyType type;
             try {
@@ -218,7 +218,7 @@ walk:   if (specifiedType != null) try {
             } catch (PropertyNotFoundException e) {
                 if (accessor.isVirtual) {
                     // The association does not exist but may be defined on a yet unknown child type.
-                    return accessor.expectedType(addTo);
+                    return accessor.defaultType(addTo);
                 }
                 throw e;
             }
@@ -227,7 +227,7 @@ walk:   if (specifiedType != null) try {
             }
             valueType = ((FeatureAssociationRole) type).getValueType();
         }
-        return accessor.expectedType(valueType, addTo);
+        return addTo.using(valueType, accessor);
     }
 
     /**

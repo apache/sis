@@ -23,9 +23,7 @@ import org.apache.sis.feature.Features;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.feature.privy.FeatureProjectionBuilder;
 import org.apache.sis.filter.privy.XPath;
 import org.apache.sis.util.resources.Errors;
 
@@ -34,8 +32,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
-import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.ValueReference;
 
@@ -68,8 +64,8 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
 
     /**
      * Whether the property to fetch is considered virtual (a property that may be defined only in sub-types).
-     * If {@code true}, then {@link #expectedType(FeatureType, FeatureTypeBuilder)} will not throw an exception
-     * if the property is not found.
+     * If {@code true}, then {@link #expectedType(FeatureProjectionBuilder)} will not throw an exception when
+     * the property is not found.
      */
     protected final boolean isVirtual;
 
@@ -172,11 +168,15 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
     }
 
     /**
-     * Returns the default value of {@link #expectedType(FeatureType, FeatureTypeBuilder)}
-     * when it cannot be inferred by the analysis of the given {@code FeatureType}.
+     * Returns the value of {@code expectedType(…)} to return as a fallback when
+     * that value cannot be inferred by the analysis of the source feature type.
+     * It happens when {@link #isVirtual} is {@code true} and the property to add may be
+     * defined in a feature sub-type not known at {@code expectedType(…)} invocation time.
+     *
+     * @see #expectedType(FeatureProjectionBuilder)
      */
-    final PropertyTypeBuilder expectedType(final FeatureTypeBuilder addTo) {
-        return addTo.addAttribute(getValueClass()).setName(name).setMinimumOccurs(0);
+    final FeatureProjectionBuilder.Item defaultType(final FeatureProjectionBuilder addTo) {
+        return addTo.addOptionalAttribute(name, getValueClass());
     }
 
     /**
@@ -349,53 +349,48 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
         }
 
         /**
-         * Provides the expected type of values produced by this expression
-         * when a feature of the given type is evaluated.
+         * Provides the expected type of values produced by this expression.
+         * If the converted {@linkplain #type} is a generalization of the attribute type,
+         * the original attribute type is kept unchanged because {@link #apply(Feature)}
+         * does not convert those values.
+         *
+         * @throws UnconvertibleObjectException if the property default value cannot be converted to {@link #type}.
          */
         @Override
-        public final PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
-            final PropertyTypeBuilder p = super.expectedType(valueType, addTo);
-            if (p instanceof AttributeTypeBuilder<?>) {
-                final AttributeTypeBuilder<?> a = (AttributeTypeBuilder<?>) p;
-                if (!type.isAssignableFrom(a.getValueClass())) {
-                    return a.setValueClass(type);
-                }
-            }
-            return p;
+        public final FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
+            FeatureProjectionBuilder.Item item = super.expectedType(addTo);
+            item.replaceValueClass((c) -> type.isAssignableFrom(c) ? c : type);
+            return item;
         }
     }
 
     /**
      * Provides the expected type of values produced by this expression when a feature of the given type is evaluated.
+     * The source feature type is specified indirectly by {@link FeatureProjectionBuilder#source()}.
      *
-     * @param  valueType  the type of features to be evaluated by the given expression.
-     * @param  addTo      where to add the type of properties evaluated by the given expression.
+     * <h4>Handling of operations</h4>
+     * Properties that are operations are replaced by attributes where the operation result will be stored.
+     * An exception to this rule is the links such as {@code "sis:identifier"} and {@code "sis:geometry"},
+     * in which case the link operation is kept. It may force {@code FeatureProjectionBuilder} to add also
+     * the dependencies (targets) of the link.
+     *
+     * @param  addTo  where to add the type of properties evaluated by this expression.
      * @return builder of the added property, or {@code null} if this method cannot add a property.
-     * @throws IllegalArgumentException if this method cannot determine the property type for the given feature type.
+     * @throws PropertyNotFoundException if the property was not found in {@code addTo.source()}.
      */
     @Override
-    public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
+    public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
         PropertyType type;
         try {
-            type = valueType.getProperty(name);
+            type = addTo.source().getProperty(name);
         } catch (PropertyNotFoundException e) {
             if (isVirtual) {
-                // The property does not exist but may be defined on a yet unknown child type.
-                return expectedType(addTo);
+                // The property does not exist but may be defined in a yet unknown child type.
+                return defaultType(addTo);
             }
             throw e;
         }
-        while (type instanceof Operation) {
-            final IdentifiedType result = ((Operation) type).getResult();
-            if (result != type && result instanceof PropertyType) {
-                type = (PropertyType) result;
-            } else if (result instanceof FeatureType) {
-                return addTo.addAssociation((FeatureType) result).setName(name);
-            } else {
-                return null;
-            }
-        }
-        return addTo.addProperty(type);
+        return addTo.addSourceProperty(type, true);
     }
 
 

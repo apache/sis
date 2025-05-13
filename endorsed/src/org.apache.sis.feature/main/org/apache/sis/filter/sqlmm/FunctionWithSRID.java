@@ -24,14 +24,11 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.feature.privy.FeatureProjectionBuilder;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.FeatureType;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
 import org.opengis.filter.InvalidFilterValueException;
@@ -213,20 +210,15 @@ search: if (crs instanceof CoordinateReferenceSystem) {
     }
 
     /**
-     * Provides the type of values produced by this expression when a feature of the given type is evaluated.
+     * Provides the type of values produced by this expression.
+     * This is the value computed by the parent class except for the <abbr>SRID</abbr>.
      *
-     * @param  valueType  the type of features on which to apply this expression.
-     * @param  addTo      where to add the type of properties evaluated by this expression.
-     * @return builder of type resulting from expression evaluation (never null).
-     * @throws IllegalArgumentException if the given feature type does not contain the expected properties.
+     * @param  addTo  where to add the type of properties evaluated by this expression.
+     * @return handler of type resulting from expression evaluation (never null).
      */
     @Override
-    public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
-        final PropertyTypeBuilder pt = super.expectedType(valueType, addTo);
-        if (pt instanceof AttributeTypeBuilder<?>) {
-            // We must unconditionally override the CRS set by parent class.
-            ((AttributeTypeBuilder<?>) pt).setCRS(literalCRS ? targetCRS : null);
-        }
-        return pt;
+    public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
+        // We must unconditionally overwrite the CRS set by the parent class.
+        return super.expectedType(addTo).setCRS(literalCRS ? targetCRS : null);
     }
 }

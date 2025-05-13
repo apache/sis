@@ -51,6 +51,7 @@ module org.apache.sis.feature {
     exports org.apache.sis.feature.privy to
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
+            org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,            // In the "optional" sub-project.
