@@ -929,7 +929,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          */
         public Path getShx(boolean create) {
             if (create && shxFile == null) {
-                return shpFile.resolveSibling(baseName + "." + (baseUpper ? "SHX" : "shx"));
+                return shpFile.resolveSibling(baseName + '.' + (baseUpper ? "SHX" : "shx"));
             }
             return shxFile;
         }
@@ -940,7 +940,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          */
         public Path getDbf(boolean create) {
             if (create && dbfFile == null) {
-                return shpFile.resolveSibling(baseName + "." + (baseUpper ? "DBF" : "dbf"));
+                return shpFile.resolveSibling(baseName + '.' + (baseUpper ? "DBF" : "dbf"));
             }
             return dbfFile;
         }
@@ -951,7 +951,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          */
         public Path getPrj(boolean create) {
             if (create && prjFile == null) {
-                return shpFile.resolveSibling(baseName + "." + (baseUpper ? "PRJ" : "prj"));
+                return shpFile.resolveSibling(baseName + '.' + (baseUpper ? "PRJ" : "prj"));
             }
             return prjFile;
         }
@@ -962,7 +962,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          */
         public Path getCpg(boolean create) {
             if (create && cpgFile == null) {
-                return shpFile.resolveSibling(baseName + "." + (baseUpper ? "CPG" : "cpg"));
+                return shpFile.resolveSibling(baseName + '.' + (baseUpper ? "CPG" : "cpg"));
             }
             return cpgFile;
         }
@@ -1007,9 +1007,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         }
 
         private Path findSibling(String extension) {
-            Path candidate = shpFile.resolveSibling(baseName + "." + extension);
+            Path candidate = shpFile.resolveSibling(baseName + '.' + extension);
             if (java.nio.file.Files.isRegularFile(candidate)) return candidate;
-            candidate = shpFile.resolveSibling(baseName + "." + extension.toUpperCase());
+            candidate = shpFile.resolveSibling(baseName + '.' + extension.toUpperCase());
             if (java.nio.file.Files.isRegularFile(candidate)) return candidate;
             return null;
         }

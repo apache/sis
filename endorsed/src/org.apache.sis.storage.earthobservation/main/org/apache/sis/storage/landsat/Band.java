@@ -226,9 +226,9 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
     public Optional<FileSet> getFileSet() throws DataStoreException {
         return Optional.of(new FileSet(getDataPath()));
     }
-    
+
     /**
-     * Resolve Path to image file. 
+     * Resolves path to image file.
      */
     private Path getDataPath() {
         if (parent.directory != null) {
