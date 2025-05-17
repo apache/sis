@@ -200,6 +200,6 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
             }
             throw new InvalidFilterValueException(Resources.format(Resources.Keys.NotAGeometryAtFirstExpression));
         }
-        return addTo.addComputedAttribute(getFunctionName(), getValueClass());
+        return addTo.addComputedProperty(addTo.addAttribute(getValueClass()).setName(getFunctionName()), false);
     }
 }

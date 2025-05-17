@@ -176,7 +176,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
      * @see #expectedType(FeatureProjectionBuilder)
      */
     final FeatureProjectionBuilder.Item defaultType(final FeatureProjectionBuilder addTo) {
-        return addTo.addOptionalAttribute(name, getValueClass());
+        return addTo.addComputedProperty(addTo.addAttribute(getValueClass()).setMinimumOccurs(0).setName(name), true);
     }
 
     /**

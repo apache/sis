@@ -22,7 +22,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.internal.Node;
-import org.opengis.util.GenericName;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -88,8 +87,7 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
      * <ul>
      *   <li>{@link FeatureProjectionBuilder#source()} for the source of the {@link PropertyType} in next point.</li>
      *   <li>{@link FeatureProjectionBuilder#addSourceProperty(PropertyType, boolean)}</li>
-     *   <li>{@link FeatureProjectionBuilder#addOptionalAttribute(String, Class)}</li>
-     *   <li>{@link FeatureProjectionBuilder#addComputedAttribute(GenericName, Class)}</li>
+     *   <li>{@link FeatureProjectionBuilder#addComputedProperty(PropertyTypeBuilder, boolean)}</li>
      * </ul>
      *
      * Inherited methods such as {@link FeatureProjectionBuilder#addAttribute(Class)} can also be invoked,
