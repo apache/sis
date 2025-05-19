@@ -24,6 +24,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.util.GeometryFixer;
 import org.apache.sis.referencing.privy.AbstractShape;
 
 
@@ -35,12 +36,7 @@ import org.apache.sis.referencing.privy.AbstractShape;
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class ShapeConverter {
-    /**
-     * Number of dimensions of geometries built by this class.
-     */
-    private static final int DIMENSION = Factory.BIDIMENSIONAL;
-
+abstract class ShapeConverter extends ConverterTo2D {
     /**
      * Initial number of coordinate values that the buffer can hold.
      * The buffer capacity will be expanded as needed.
@@ -60,12 +56,6 @@ abstract class ShapeConverter {
      * The above masks tell if the geometry can be built as a multi-line strings or multi-points.
      */
     private final List<Geometry> geometries;
-
-    /**
-     * The JTS factory for creating geometry. May be user-specified.
-     * Note that the {@link org.locationtech.jts.geom.CoordinateSequenceFactory} is ignored;
-     */
-    private final GeometryFactory factory;
 
     /**
      * Iterator over the coordinates of the Java2D shape to convert to a JTS geometry.
@@ -91,9 +81,9 @@ abstract class ShapeConverter {
      * @param  isFloat   whether to store coordinates as {@code float} instead of {@code double}.
      */
     ShapeConverter(final GeometryFactory factory, final PathIterator iterator, final boolean isFloat) {
+        super(factory, isFloat);
         this.iterator   = iterator;
         this.geometries = new ArrayList<>();
-        this.factory    = (factory != null) ? factory : Factory.INSTANCE.factory(isFloat);
     }
 
     /**
@@ -236,7 +226,8 @@ abstract class ShapeConverter {
 
     /**
      * Iterates over all coordinates given by the {@link #iterator} and stores them in a JTS geometry.
-     * The path shall contain only straight lines; curves are not supported.
+     * The path shall contain only straight lines. Curves are not supported.
+     * The geometry will be constrained to two-dimensional coordinate tuples.
      */
     private Geometry build() {
         while (!iterator.isDone()) {
@@ -266,29 +257,35 @@ abstract class ShapeConverter {
         flush(false);
         final int count = geometries.size();
         if (count == 1) {
-            return geometries.get(0);
+            return anyTo2D(geometries.get(0));
         }
         switch (geometryType) {
-            case 0:          return factory.createEmpty(DIMENSION);
-            default:         return factory.createGeometryCollection(GeometryFactory.toGeometryArray  (geometries));
-            case POINT:      return factory.createMultiPoint        (GeometryFactory.toPointArray     (geometries));
-            case LINESTRING: return factory.createMultiLineString   (GeometryFactory.toLineStringArray(geometries));
-            case POLYGON: {
-                Geometry result = geometries.get(0);
-                for (int i=1; i<count; i++) {
-                    /*
-                     * Java2D shapes and JTS geometries differ in their way to fill interior.
-                     * Java2D fills the resulting contour based on visual winding rules.
-                     * JTS has a system where outer shell and holes are clearly separated.
-                     * We would need to draw contours as Java2D for computing JTS equivalent,
-                     * but it would require a lot of work. In the meantime, the SymDifference
-                     * operation is what behave the most like EVEN_ODD or NON_ZERO winding rules.
-                    */
-                    result = result.symDifference(geometries.get(i));
-                }
-                return result;
+            case 0:          return factory.createEmpty(DIMENSION);  // No need for `enforce2D(…)` since the geometry is empty.
+            default:         return collect2D(factory.createGeometryCollection(GeometryFactory.toGeometryArray  (geometries)));
+            case POINT:      return enforce2D(factory.createMultiPoint        (GeometryFactory.toPointArray     (geometries)));
+            case LINESTRING: return enforce2D(factory.createMultiLineString   (GeometryFactory.toLineStringArray(geometries)));
+            case POLYGON:    break;
+        }
+        /*
+         * Java2D shapes and JTS geometries differ in their way to fill interior.
+         * Java2D fills the resulting contour based on visual winding rules.
+         * JTS has a system where outer shell and holes are clearly separated.
+         * We would need to draw contours as Java2D for computing JTS equivalent,
+         * but it would require a lot of work. In the meantime, the SymDifference
+         * operation is what behave the most like EVEN_ODD or NON_ZERO winding rules.
+         */
+        // Sort by area, bigger geometries are the outter rings.
+        geometries.sort((Geometry o1, Geometry o2) -> java.lang.Double.compare(o2.getArea(), o1.getArea()));
+        Geometry result = geometries.get(0);
+        for (int i=1; i<count; i++) {
+            Geometry other = geometries.get(i);
+            if (result.intersects(other)) {
+                result = result.symDifference(other);   // Ring is a hole.
+            } else {
+                result = result.union(other);           // Ring is a separate polygon.
             }
         }
+        return anyTo2D(result);
     }
 
     /**
@@ -299,7 +296,7 @@ abstract class ShapeConverter {
      */
     private void flush(final boolean isRing) {
         if (length != 0) {
-            final Geometry geometry;
+            Geometry geometry;
             if (length == DIMENSION) {
                 geometry = factory.createPoint(toSequence(false));
                 geometryType |= POINT;
@@ -311,6 +308,14 @@ abstract class ShapeConverter {
                      */
                     geometry = factory.createPolygon(toSequence(true));
                     geometryType |= POLYGON;
+                    /*
+                     * The following operation is expensive, but must be done because Java2D
+                     * is more tolerant than JTS regarding incoherent paths. We need to fix
+                     * those otherwise we might have errors when aggregating holes in polygons.
+                     */
+                    if (!geometry.isValid()) {
+                        geometry = GeometryFixer.fix(geometry);
+                    }
                 } else {
                     geometry = factory.createLineString(toSequence(false));
                     geometryType |= LINESTRING;
