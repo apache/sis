@@ -1221,6 +1221,8 @@ loop:   while (hasRemaining()) {
      *
      * @param  lower  position (inclusive) of the first byte to be requested.
      * @param  upper  position (exclusive) of the last byte to be requested.
+     *
+     * @see #useRangeOfInterest()
      */
     public final void rangeOfInterest(long lower, long upper) {
         if (channel instanceof ByteRangeChannel) {
@@ -1228,6 +1230,19 @@ loop:   while (hasRemaining()) {
             upper = toSeekableByteChannelPosition(upper);
             ((ByteRangeChannel) channel).rangeOfInterest(lower, upper);
         }
+    }
+
+    /**
+     * Returns whether calls to {@code rangeOfInterest(…)} has any effect.
+     * This method is useful when {@code rangeOfInterest(…)} is invoked in a loop.
+     * If this method returns {@code false}, then the loop can be omitted completly.
+     *
+     * @return whether calls to {@code rangeOfInterest(…)} has any effect.
+     *
+     * @see #rangeOfInterest(long, long)
+     */
+    public final boolean useRangeOfInterest() {
+        return (channel instanceof ByteRangeChannel);
     }
 
     /**

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
+import java.util.List;
 import java.io.IOException;
 import java.io.Serializable;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -35,6 +36,7 @@ import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -129,6 +131,9 @@ final class StringJoinOperation extends AbstractOperation {
     /**
      * The name of the properties (attributes of operations producing attributes)
      * from which to get the values to concatenate.
+     *
+     * @see #getAttributeNames()
+     * @see #getDependencies()
      */
     private final String[] attributeNames;
 
@@ -287,6 +292,15 @@ final class StringJoinOperation extends AbstractOperation {
             dependencies = CollectionsExt.immutableSet(true, attributeNames);
         }
         return dependencies;
+    }
+
+    /**
+     * Returns the name of the properties from which to get the values to concatenate.
+     * This is the same information as {@link #getDependencies()}, only in a different
+     * kind of collection.
+     */
+    final List<String> getAttributeNames() {
+        return UnmodifiableArrayList.wrap(attributeNames);
     }
 
     /**

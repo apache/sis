@@ -115,13 +115,7 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
      */
     @Override
     protected GridCoverageResource createSource() throws DataStoreException {
-        final Path file;
-        if (parent.directory != null) {
-            file = parent.directory.resolve(filename);
-        } else {
-            file = Path.of(filename);
-        }
-        final StorageConnector connector = new StorageConnector(file);
+        final StorageConnector connector = new StorageConnector(getDataPath());
         connector.setOption(DataOptionKey.COVERAGE_MODIFIER, this);
         return new GeoTiffStore(parent, parent.getProvider(), connector, true).components().get(0);
     }
@@ -223,5 +217,24 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
     @Override
     public boolean isElectromagneticMeasurement(final Source source) {
         return isMain(source) && band.wavelength != 0;
+    }
+
+    /**
+     * Returns the path to the file containing this band.
+     */
+    @Override
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        return Optional.of(new FileSet(getDataPath()));
+    }
+
+    /**
+     * Resolves path to image file.
+     */
+    private Path getDataPath() {
+        if (parent.directory != null) {
+            return parent.directory.resolve(filename);
+        } else {
+            return Path.of(filename);
+        }
     }
 }

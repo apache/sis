@@ -19,6 +19,7 @@ package org.apache.sis.storage.sql.feature;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.BitSet;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.sql.Connection;
@@ -28,10 +29,12 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.filter.privy.XPath;
+import org.apache.sis.filter.InvalidXPathException;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.storage.base.FeatureProjection;
+import org.apache.sis.feature.privy.FeatureProjection;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.pending.jdk.JDK19;
@@ -48,7 +51,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.filter.Expression;
 import org.opengis.filter.InvalidFilterValueException;
 
 
@@ -77,6 +79,13 @@ final class Table extends AbstractFeatureSet {
      * The structure of this table represented as a feature. Each feature attribute is a table column,
      * except synthetic attributes like "sis:identifier". The feature may also contain associations
      * inferred from foreigner keys that are not immediately apparent in the table.
+     *
+     * <h4>Relationship with {@code FeatureSet.getType()}</h4>
+     * When this {@code Table} has been created by inspection of the database metadata, this feature type
+     * is the value shown to users. But when this {@code Table} has been created from a query, this value
+     * is not directly shown to user because it may contain additional properties for the dependencies of
+     * operations. In the latter case, this table is hidden behind {@link FeatureIterator} and the type
+     * seen by user is provided by {@link org.apache.sis.storage.FeatureSubset#resultType}.
      *
      * @see #getType()
      */
@@ -136,7 +145,7 @@ final class Table extends AbstractFeatureSet {
     final boolean hasRaster;
 
     /**
-     * Map from attribute name to columns. This is built from {@link #columns} array when first needed.
+     * Map from attribute name to columns. This is built from the {@link #attributes} array when first needed.
      *
      * @see #getColumn(String)
      */
@@ -195,27 +204,27 @@ final class Table extends AbstractFeatureSet {
      * Creates a new table as a projection (subset of columns) of the given table.
      * The columns to retain, potentially under different names, are specified in {@code projection}.
      * The projection may also contain complex expressions that cannot be handled by this constructor.
-     * Such expressions are stored in the {@code unhandled} map.
+     * Such expressions have their indexes stored in the {@code unhandled} set.
      *
-     * @param  table        the source table.
+     * @param  source       the source table.
      * @param  projection   description of the columns to keep.
      * @param  reusedNames  an initially empty set where to store the names of attributes that are not renamed.
-     * @param  unhandled    an initially empty map where to add expressions that are not handled by the new table.
+     * @param  unhandled    where to set the bits for indexes of expressions that are not handled by the new table.
      * @throws InvalidFilterValueException if there is an error in the declaration of property values.
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     Table(final Table source,
           final FeatureProjection projection,
           final Set<String> reusedNames,
-          final Map<String, Expression<? super Feature, ?>> unhandled)
+          final BitSet unhandled)
     {
         super(source.listeners, false);
         database    = source.database;
         query       = source.query;
         name        = source.name;
-        featureType = projection.featureType;
+        featureType = projection.typeWithDependencies;
         /*
-         * Temporary values the fields, before assignment to final fields.
+         * Temporary values of fields, before assignment to final fields.
          * The final number of attributes and foreigner keys may be smaller.
          */
         final var attributes   = new Column  [source.attributes  .length];
@@ -229,12 +238,12 @@ final class Table extends AbstractFeatureSet {
          * Take all columns that we can put in the `WHERE` clause of the SQL statement.
          * The columns that we cannot take will be declared in the `unhandled` bit set.
          */
-        final List<String> storedProperties = projection.getStoredPropertyNames();
+        final List<String> storedProperties = projection.propertiesToCopy();
         final int count = storedProperties.size();
         for (int i=0; i<count; i++) {
-            final String xpath = projection.getSourcePropertyName(i, false);
+            final String xpath = projection.xpath(i).orElse(null);
             if (xpath == null) {
-                unhandled.put(storedProperties.get(i), projection.getExpression(i));
+                unhandled.set(i);
                 continue;
             }
             final Column column = source.getColumn(xpath);
@@ -253,7 +262,7 @@ final class Table extends AbstractFeatureSet {
                 importedKeys[importedKeysCount++] = relation;
                 continue;
             }
-            relation = source.getRelation(xpath, false);
+            relation = source.getRelation(xpath, true);
             if (relation != null) {
                 exportedKeys[exportedKeysCount++] = relation;
                 continue;
@@ -274,7 +283,7 @@ final class Table extends AbstractFeatureSet {
         if (source.primaryKey != null) {
             for (String column : source.primaryKey.getColumns()) {
                 final int i = storedProperties.indexOf(column);
-                if (i < 0 || !column.equals(projection.getSourcePropertyName(i, true))) {
+                if (i < 0 || !column.equals(projection.xpath(i).orElse(null))) {
                     primaryKey = null;
                     return;
                 }
@@ -386,6 +395,8 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * Returns the feature type inferred from the database structure analysis.
+     * Note that this type may not be the type shown to user if this table is
+     * created behind a {@link org.apache.sis.storage.FeatureSubset}.
      */
     @Override
     public final FeatureType getType() {
@@ -435,6 +446,7 @@ final class Table extends AbstractFeatureSet {
      *
      * @param  xpath  the XPath (currently only attribute name).
      * @return column for the given XPath, or {@code null} if the specified attribute is not found.
+     * @throws InvalidXPathException if the given XPath is not supported.
      */
     final Column getColumn(final String xpath) {
         Map<String,Column> m;
@@ -453,18 +465,20 @@ final class Table extends AbstractFeatureSet {
                 attributeToColumns = m;
             }
         }
-        return m.get(xpath);
+        return m.get(XPath.toPropertyName(xpath));      // XPaths other than tips are not yet supported.
     }
 
     /**
      * Returns the relation from an attribute name specified as XPath.
-     * See {@link #getColumn(String)} for a note on the wat that {@code xpath} is interpreted.
+     * See {@link #getColumn(String)} for a note on the way that {@code xpath} is interpreted.
      *
      * @param  xpath    the XPath (currently only attribute name).
      * @param  exports  {@code true} for searching in exported keys, or {@code false} for searching in imported keys.
      * @return relation for the given XPath, or {@code null} if the specified attribute is not found.
+     * @throws InvalidXPathException if the given XPath is not supported.
      */
-    private Relation getRelation(final String xpath, final boolean exports) {
+    private Relation getRelation(String xpath, final boolean exports) {
+        xpath = XPath.toPropertyName(xpath);    // XPaths other than tips are not yet supported.
         boolean tip = false;
         do {    // Execute 1 or 2 times: check tips only if no exact match.
             for (final Relation c : (exports ? exportedKeys : importedKeys)) {

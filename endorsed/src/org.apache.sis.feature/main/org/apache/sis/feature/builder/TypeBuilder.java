@@ -186,7 +186,7 @@ public abstract class TypeBuilder implements Localized {
     /**
      * Returns the name of the {@code IdentifiedType} to create, or {@code null} if undefined.
      * This method returns the value built from the last call to a {@code setName(…)} method,
-     * or a default name or {@code null} if no name has been explicitly specified.
+     * or a default name, or {@code null} if no name has been explicitly specified.
      *
      * @return the name of the {@code IdentifiedType} to create (may be a default name or {@code null}).
      *

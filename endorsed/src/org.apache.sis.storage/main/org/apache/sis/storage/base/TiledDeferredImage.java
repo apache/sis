@@ -97,6 +97,7 @@ final class TiledDeferredImage extends BatchComputedImage {
      *
      * @param  tiles  range of tile indices for which to load tiles.
      * @return loaded tiles for the given indices, in row-major fashion.
+     * @throws Exception if an error occurred while loading a tile.
      */
     @Override
     protected Raster[] computeTiles(final Rectangle tiles) throws Exception {

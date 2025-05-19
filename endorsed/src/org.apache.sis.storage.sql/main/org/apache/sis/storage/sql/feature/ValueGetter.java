@@ -472,7 +472,7 @@ public class ValueGetter<T> {
     }
 
     /**
-     * Converts the given SQL array to a Java array and free the SQL array.
+     * Converts the given SQL array to a Java array and frees the SQL array.
      * The returned array may be a primitive array or an array of objects.
      *
      * @param  stmts  information about the statement being executed, or {@code null} if none.

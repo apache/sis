@@ -48,6 +48,8 @@ public enum GeometryTypeEncoding {
     /**
      * Decodes the geometry type encoded in the specified column of the given result set.
      * If there is no type information, then this method returns {@code null}.
+     *
+     * @throws IllegalArgumentException if the type cannot be decoded.
      */
     GeometryType parse(final ResultSet result, final int columnIndex) throws SQLException {
         final int code = result.getInt(columnIndex);

@@ -57,6 +57,7 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
+import org.apache.sis.util.Workaround;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -115,34 +116,68 @@ public class InfoStatements implements Localized, AutoCloseable {
      * A statement for fetching geometric information for a specific column.
      * May be {@code null} if not yet prepared or if the table does not exist.
      * This field is valid if {@link #isAnalysisPrepared} is {@code true}.
+     *
+     * @see #isAnalysisPrepared
+     * @see #completeIntrospection(Analyzer, TableReference, Map)
      */
     protected PreparedStatement geometryColumns;
 
     /**
      * Whether the statements for schema analysis have been prepared.
-     * Includes {@link #geometryColumns}, but not fetching the CRS.
-     * A statement may still be null if the table has not been found.
+     * This flag tells whether the statements for the following information are valid even if {@code null}:
+     *
+     * <ul>
+     *   <li>{@linkplain #geometryColumns Geometry columns}</li>
+     *   <li>Geography columns (specific to PostGIS)</li>
+     *   <li>Raster columns (specific to PostGIS)</li>
+     * </ul>
+     *
+     * This flag does not apply to the statements working on the {@code SPATIAL_REF_SYS} table,
+     * which is assumed to always exist.
      */
     protected boolean isAnalysisPrepared;
 
     /**
-     * The statement for fetching CRS Well-Known Text (WKT) from a SRID code.
+     * The statement for fetching a SRID from a geometry column table when the column's table is unknown.
+     * This is a workaround for <abbr>JDBC</abbr> drivers that do not provide this information.
+     * It is created only if requested.
      *
+     * @see #guessCRS(String)
+     */
+    @Workaround(library = "DuckDB", version = "1.2.2.0")
+    private PreparedStatement sridForUnknownTable;
+
+    /**
+     * The statement for fetching a SRID from a CRS and its set of authority codes.
+     * Created when first needed.
+     *
+     * @see #findOrAddCRS(CoordinateReferenceSystem)
+     */
+    private PreparedStatement sridFromCRS;
+
+    /**
+     * The statement for fetching CRS Well-Known Text (<abbr>WKT</abbr>) from a <abbr>SRID</abbr> code.
+     * Created when first needed.
+     *
+     * @see #parseCRS(int)
      * @see <a href="http://postgis.refractions.net/documentation/manual-1.3/ch04.html#id2571265">PostGIS documentation</a>
      */
     private PreparedStatement wktFromSrid;
 
     /**
-     * The statement for fetching a SRID from a CRS and its set of authority codes.
-     */
-    private PreparedStatement sridFromCRS;
-
-    /**
-     * The object to use for parsing or formatting Well-Known Text (WKT), created when first needed.
+     * The object to use for parsing or formatting Well-Known Text (<abbr>WKT</abbr>).
+     * Created when first needed.
      *
      * @see #wktFormat()
      */
     private WKTFormat wktFormat;
+
+    /**
+     * Whether an error occurred while reading the geometry type.
+     * In such case, the type default to {@link GeometryType#GEOMETRY}.
+     * This flag is used for reporting the warning only once.
+     */
+    private boolean cannotReadGeometryType;
 
     /**
      * Creates an initially empty {@code CachedStatements} which will use
@@ -194,6 +229,11 @@ public class InfoStatements implements Localized, AutoCloseable {
      * Prepares the statement for fetching information about all geometry or raster columns in a specified table.
      * This method is for {@link #completeIntrospection(Analyzer, TableReference, Map)} implementations.
      *
+     * <h4>PostGIS special case</h4>
+     * By default, the {@code geomColNameColumn} and {@code geomTypeColumn} argument values are fetched from the
+     * {@link SpatialSchema}. However, PostGIS uses a non-standard {@code geomTypeColumn} value. It also has many
+     * "geometry columns"-like tables. This is handled by overriding {@code completeIntrospection(…)}.
+     *
      * @param  analyzer           the opaque temporary object used for analyzing the database schema.
      * @param  table              name of the geometry table. Standard value is {@code "GEOMETRY_COLUMNS"}.
      * @param  raster             whether the statement is for raster table instead of geometry table.
@@ -214,7 +254,7 @@ public class InfoStatements implements Localized, AutoCloseable {
         if (geomColNameColumn == null) {
             geomColNameColumn = schema.geomColNameColumn;
         }
-        appendColumn(sql, raster, geomColNameColumn).append(", ").append(schema.crsIdentifierColumn).append(' ');
+        appendColumn(sql, raster, geomColNameColumn).append(", ").append(schema.crsIdentifierColumn);
         if (geomTypeColumn == null) {
             geomTypeColumn = schema.geomTypeColumn;
         }
@@ -259,8 +299,11 @@ public class InfoStatements implements Localized, AutoCloseable {
      * This method should be invoked at least once before the {@link Column#valueGetter} field is set.
      * It is invoked again for each table or query to analyze.
      *
+     * <p>This method may be invoked with a null {@code source} and empty {@code columns}
+     * for ensuring that {@link #geometryColumns} is initialized but without executing it.</p>
+     *
      * @param  analyzer  the opaque temporary object used for analyzing the database schema.
-     * @param  source    the table for which to get all geometry columns.
+     * @param  source    the table for which to get all geometry columns. May be null if {@code columns} is empty.
      * @param  columns   all columns for the specified table. Keys are column names.
      * @throws DataStoreContentException if a logical error occurred in processing data.
      * @throws ParseException if the WKT cannot be parsed.
@@ -273,6 +316,7 @@ public class InfoStatements implements Localized, AutoCloseable {
         if (!isAnalysisPrepared) {
             isAnalysisPrepared = true;
             geometryColumns = prepareIntrospectionStatement(analyzer, schema.geometryColumns, false, null, null);
+            // The `geometryColumns` field may still be null.
         }
         configureSpatialColumns(geometryColumns, source, columns, schema.typeEncoding);
     }
@@ -286,7 +330,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * value returned by {@link #prepareIntrospectionStatement(Analyzer, String, boolean, String, String)}.
      *
      * @param  columnQuery    the statement for fetching information, or {@code null} if none.
-     * @param  source         the table for which to get all geometry columns.
+     * @param  source         the table for which to get all geometry columns. May be null if {@code columns} is empty.
      * @param  columns        all columns for the specified table. Keys are column names.
      * @param  typeValueKind  {@code NUMERIC}, {@code TEXTUAL} or {@code null} if none.
      * @throws DataStoreContentException if a logical error occurred in processing data.
@@ -301,7 +345,7 @@ public class InfoStatements implements Localized, AutoCloseable {
     protected final void configureSpatialColumns(final PreparedStatement columnQuery, final TableReference source,
             final Map<String,Column> columns, final GeometryTypeEncoding typeValueKind) throws Exception
     {
-        if (columnQuery == null) {
+        if (columnQuery == null || columns.isEmpty()) {
             return;
         }
         int p = 0;
@@ -312,18 +356,72 @@ public class InfoStatements implements Localized, AutoCloseable {
             while (result.next()) {
                 final Column target = columns.get(result.getString(1));
                 if (target != null) {
-                    final CoordinateReferenceSystem crs = fetchCRS(result.getInt(2));
                     GeometryType type = null;
                     if (typeValueKind != null) {
-                        type = typeValueKind.parse(result, 3);
+                        try {
+                            type = typeValueKind.parse(result, 3);
+                        } catch (IllegalArgumentException e) {
+                            if (!cannotReadGeometryType) {
+                                cannotReadGeometryType = true;
+                                database.warning(Resources.Keys.CanNotAnalyzeFully, e);
+                            }
+                        }
                         if (type == null) {
                             type = GeometryType.GEOMETRY;
                         }
                     }
-                    target.makeSpatial(this, type, crs);
+                    target.makeSpatial(database, type, fetchCRS(result.getInt(2)));
                 }
             }
         }
+    }
+
+    /**
+     * Tries to guess the <abbr>CRS</abbr> for the specified column in an unknown table.
+     * This is invoked (indirectly) by {@link QueryAnalyzer} when the <abbr>JDBC</abbr>
+     * driver is an incomplete implementation.
+     *
+     * <h4>Algorithm</h4>
+     * This method lists the <abbr>CRS</abbr> of all columns of the given name,
+     * regardless the table, schema or catalog containing a column of that name.
+     * If the <abbr>CRS</abbr> is equivalent in all cases, then it is returned.
+     *
+     * @param  column  name of the column in unknown table.
+     * @return the <abbr>CRS</abbr>, or {@code null} if none or ambiguous.
+     * @throws Exception if an error occurred while fetching the <abbr>CRS</abbr>.
+     */
+    @Workaround(library = "DuckDB", version = "1.2.2.0")
+    final CoordinateReferenceSystem guessCRS(final String column) throws Exception {
+        if (sridForUnknownTable == null) {
+            if (geometryColumns == null) {
+                return null;
+            }
+            final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
+            final var sql = new SQLBuilder(database)
+                    .append(SQLBuilder.SELECT).append("DISTINCT ")
+                    .appendIdentifier(schema.crsIdentifierColumn)
+                    .append(" FROM ").appendIdentifier(schema.geometryColumns)
+                    .append(" WHERE ").appendIdentifier(schema.geomColNameColumn).append("=?");
+            sridForUnknownTable = connection.prepareStatement(sql.toString());
+        }
+        sridForUnknownTable.setString(1, column);
+        CoordinateReferenceSystem first = null;
+        try (ResultSet result = sridForUnknownTable.executeQuery()) {
+            while (result.next()) {
+                final int srid = result.getInt(1);
+                if (!result.wasNull()) {
+                    CoordinateReferenceSystem crs = fetchCRS(srid);
+                    if (crs != null) {
+                        if (first == null) {
+                            first = crs;
+                        } else if (!Utilities.equalsIgnoreMetadata(first, crs)) {
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+        return first;
     }
 
     /**

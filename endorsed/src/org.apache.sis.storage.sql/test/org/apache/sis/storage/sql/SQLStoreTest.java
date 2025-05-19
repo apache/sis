@@ -19,6 +19,7 @@ package org.apache.sis.storage.sql;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -191,6 +192,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
             verifySimpleQueryWithLimit(store);
             verifySimpleWhere(store);
             verifyWhereOnLink(store);
+            verifyLinkInProjection(store);
             verifyStreamOperations(store.findResource("Cities"));
         }
         canada = null;
@@ -391,7 +393,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @param  dataset  the store on which to query the features.
      * @throws DataStoreException if an error occurred during query execution.
      */
-    private void verifySimpleWhere(SimpleFeatureStore dataset) throws Exception {
+    private void verifySimpleWhere(final SimpleFeatureStore dataset) throws Exception {
         /*
          * Property that we are going to request and expected result.
          */
@@ -421,7 +423,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @param  dataset  the store on which to query the features.
      * @throws DataStoreException if an error occurred during query execution.
      */
-    private void verifyWhereOnLink(SimpleFeatureStore dataset) throws Exception {
+    private void verifyWhereOnLink(final SimpleFeatureStore dataset) throws Exception {
         final String   desiredProperty = "native_name";
         final String[] expectedValues  = {"Canada"};
         final FeatureSet countries     = dataset.findResource("Countries");
@@ -441,6 +443,30 @@ public final class SQLStoreTest extends TestOnAllDatabases {
          * then the "predicates" value would be "Java" instead of "SQL".
          */
         assertEquals("FeatureStream[table=“Countries”, predicates=“SQL”]", executionMode);
+    }
+
+    /**
+     * Requests a new set of features with a subset containing the "sis:identifier" property.
+     * The difficulty is that no column named "sis:column" exists. The property is a link to
+     * the "code" attribute, which is intentionally omitted in the projection (in SQL sense)
+     * in order to test the capability to follow dependencies.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifyLinkInProjection(final SimpleFeatureStore dataset) throws Exception {
+        final var query = new FeatureQuery();
+        query.setProjection("sis:identifier", "native_name");
+        final FeatureSet countries = dataset.findResource("Countries").subset(query);
+        List<Object> names;
+        try (Stream<Feature> features = countries.features(false)) {
+            names = features.map(f -> f.getPropertyValue("sis:identifier")).toList();
+        }
+        assertSetEquals(List.of("CAN", "FRA", "JPN"), names);
+        try (Stream<Feature> features = countries.features(false)) {
+            names = features.map(f -> f.getPropertyValue("native_name")).toList();
+        }
+        assertSetEquals(List.of("Canada", "France", "日本"), names);
     }
 
     /**

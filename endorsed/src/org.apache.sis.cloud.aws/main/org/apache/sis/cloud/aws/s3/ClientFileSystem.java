@@ -234,7 +234,7 @@ final class ClientFileSystem extends FileSystem {
      * Returns a filter that matches {@link KeyPath} string representation against a given pattern.
      *
      * @param  syntaxAndPattern  filtering criteria of the {@code syntax:pattern}.
-     * @return a {@kink KeyPath} matcher for the given pattern.
+     * @return a {@link KeyPath} matcher for the given pattern.
      * @throws PatternSyntaxException if the pattern is invalid.
      * @throws UnsupportedOperationException if the pattern syntax is not known to this implementation.
      */

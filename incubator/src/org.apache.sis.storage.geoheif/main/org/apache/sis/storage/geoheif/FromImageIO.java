@@ -17,7 +17,6 @@
 package org.apache.sis.storage.geoheif;
 
 import java.io.IOException;
-import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
@@ -25,11 +24,12 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.storage.UnsupportedEncodingException;
-import org.apache.sis.storage.isobmff.ByteReader;
+import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -60,7 +60,7 @@ final class FromImageIO extends Image {
      * @param  name      a name that identifies this image, for debugging purpose.
      * @throws RasterFormatException if the sample model cannot be created.
      */
-    FromImageIO(final CoverageBuilder builder, final ByteReader locator, final ImageReaderSpi provider, final String name) {
+    FromImageIO(final CoverageBuilder builder, final ByteRanges.Reader locator, final ImageReaderSpi provider, final String name) {
         super(builder, locator, name);
         this.provider = provider;
     }
@@ -86,22 +86,21 @@ final class FromImageIO extends Image {
     }
 
     /**
-     * Sets the input of the given reader to an input stream positioned to the beginning of the image.
+     * Sets the input of the given reader to an input stream positioned at the beginning of the image.
      *
-     * @param  store   the store that opened the <abbr>HEIF</abbr> file.
      * @param  reader  the image reader for which to set the input.
+     * @param  input   the input from which to read bytes.
+     * @param  ranges  the ranges of bytes to read.
      * @throws DataStoreException if the input cannot be set because of its type.
      * @throws IOException if an I/O error occurred while setting the input.
      */
-    private void setReaderInput(final GeoHeifStore store, final ImageReader reader) throws DataStoreException, IOException {
-        final var request = new ByteReader.FileRegion();
-        request.input  = store.ensureOpen();
-        request.length = -1;
-        locator.resolve(request);
-        request.input.seek(request.offset);
-        request.input.buffer.order(byteOrder);
+    private void setReaderInput(final ImageReader reader, final ChannelDataInput input, final ByteRanges ranges)
+            throws DataStoreException, IOException
+    {
+        input.seek(ranges.offset());
+        input.buffer.order(byteOrder);
         try {
-            reader.setInput(request.input, true, true);
+            reader.setInput(input, true, true);
         } catch (IllegalArgumentException e) {
             throw new IllegalOpenParameterException("Not an image input stream.", e);
         }
@@ -119,7 +118,9 @@ final class FromImageIO extends Image {
     @Override
     protected ImageTypeSpecifier getImageType(final GeoHeifStore store) throws DataStoreException, IOException {
         final ImageReader reader = provider.createReaderInstance();
-        setReaderInput(store, reader);
+        final var ranges = new ByteRanges();
+        locator.resolve(0, -1, ranges);
+        setReaderInput(reader, ranges.viewAsConsecutiveBytes(store.ensureOpen()), ranges);
         final var it = reader.getImageTypes(IMAGE_INDEX);
         ImageTypeSpecifier specifier;
         if (it.hasNext()) {
@@ -139,26 +140,26 @@ final class FromImageIO extends Image {
     }
 
     /**
-     * Reads a single tile.
+     * Computes the range of bytes that will be needed for reading a single tile of this image.
      *
-     * @param  store    the data store reading a tile.
-     * @param  tileX    0-based column index of the tile to read, starting from image left.
-     * @param  tileY    0-based column index of the tile to read, starting from image top.
-     * @param  context  contains the target raster or the image reader to use.
-     * @return tile filled with the pixel values read by this method.
+     * @param  context  where to store the ranges of bytes.
+     * @throws DataStoreException if an error occurred while computing the range of bytes.
      */
     @Override
-    protected Raster readTile(final GeoHeifStore store, final long tileX, final long tileY,
-            final ImageResource.Coverage.ReadContext context) throws IOException, DataStoreException
-    {
-        final ImageReader reader = context.getReader(provider);
-        setReaderInput(store, reader);
-        final BufferedImage image;
-        try {
-            image = reader.readTile(IMAGE_INDEX, Math.toIntExact(tileX), Math.toIntExact(tileY));
-        } finally {
-            reader.setInput(null);
-        }
-        return image.getRaster();
+    protected Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
+        locator.resolve(0, -1, context);
+        return (final ChannelDataInput input) -> {
+            final ImageReader reader = context.getReader(provider);
+            setReaderInput(reader, input, context);
+            final BufferedImage image;
+            try {
+                image = reader.readTile(IMAGE_INDEX,
+                        Math.toIntExact(context.subTileX),
+                        Math.toIntExact(context.subTileY));
+            } finally {
+                reader.setInput(null);
+            }
+            return image.getRaster();
+        };
     }
 }

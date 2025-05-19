@@ -64,7 +64,7 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.5
  *
  * @param <V>  the class of attribute values.
  *
@@ -294,11 +294,11 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         if (type == valueClass) {
             return (AttributeTypeBuilder<N>) this;
         }
-        final AttributeTypeBuilder<N> newb = new AttributeTypeBuilder<>(this, type);
+        final var newb = new AttributeTypeBuilder<N>(this, type);
         for (final CharacteristicTypeBuilder<?> c : characteristics) {
             c.owner(newb);
         }
-        owner.replace(this, newb);
+        owner.replace(this, newb, true);
         dispose();
         return newb;
     }
@@ -343,7 +343,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         final V[] values = (V[]) Array.newInstance(valueClass, c.size());
         int index = 0;
         for (final Object value : c) {
-            values[index++] = (V) value;        // ArrayStoreException if 'value' is not the expected type.
+            values[index++] = (V) value;        // ArrayStoreException if `value` is not the expected type.
         }
         return values;
     }
@@ -589,14 +589,14 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
                             next = AttributeRole.IDENTIFIER_COMPONENT;
                             break;
                         }
-                        index++;        // Fall through for testing the case for next 'index' value.
+                        index++;        // Fall through for testing the case for next `index` value.
                     }
                     case 1: {
                         if (owner().defaultGeometry == AttributeTypeBuilder.this) {
                             next = AttributeRole.DEFAULT_GEOMETRY;
                             break;
                         }
-                        index++;        // Fall through for testing the case for next 'index' value.
+                        index++;        // Fall through for testing the case for next `index` value.
                     }
                     default: {
                         return false;
@@ -718,7 +718,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     public void remove() {
         if (isIdentifier) {
             isIdentifier = false;
-            owner().identifierCount--;      // Owner should never be null since we set 'isIdentifier' to false.
+            owner().identifierCount--;      // Owner should never be null since we set `isIdentifier` to false.
         }
         super.remove();
     }

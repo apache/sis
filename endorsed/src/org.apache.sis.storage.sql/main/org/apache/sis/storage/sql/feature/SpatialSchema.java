@@ -59,8 +59,8 @@ public enum SpatialSchema {
             GeometryTypeEncoding.TEXTUAL),          // How geometry types are encoded in the above-cited type column.
 
     /**
-     * Table and column names as specified by ISO-13249 SQL/MM. This is the same thing as {@link #SIMPLE_FEATURE}
-     * with only different names. The table definition for CRS is:
+     * Table and column names as specified by ISO-13249 SQL/MM. This is similar to {@link #SIMPLE_FEATURE}
+     * with different names and no {@code GEOMETRY_TYPE} column. The table definition for CRS is:
      *
      * {@snippet lang="sql" :
      * CREATE TABLE ST_SPATIAL_REFERENCE_SYSTEMS(
@@ -104,6 +104,11 @@ public enum SpatialSchema {
      *   AUTH_SRID INTEGER,
      *   SRTEXT CHARACTER VARYING(2048))
      * }
+     *
+     * <h4>PostGIS special case</h4>
+     * PostGIS uses these table and column names (in lower cases), except the {@code GEOMETRY_TYPE} column
+     * which is named only {@code TYPE} in PostGIS. There is no enumeration value for PostGIS special case.
+     * Instead, it is handled by {@code InfoStatements.completeIntrospection(…)} method overriding.
      */
     SIMPLE_FEATURE(
             "ISO 19125 / OGC Simple feature",       // Human-readable name of this spaial schema.

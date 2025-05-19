@@ -24,7 +24,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 import org.apache.sis.storage.isobmff.VectorReader;
-import org.apache.sis.storage.isobmff.ByteReader;
+import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.TreeNode;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
@@ -89,7 +89,7 @@ public final class ItemLocation extends FullBox {
         }
         items = new Item[count];
         for (int i=0; i<count; i++) {
-            items[i] = new Item(input, version, sizes);
+            items[i] = new Item(reader, input, version, sizes);
         }
     }
 
@@ -98,7 +98,7 @@ public final class ItemLocation extends FullBox {
      * An extent is a continuous subset of the bytes of the resource. The full resource is formed by the
      * concatenation of the extents in the order specified in this {@code Item} object.
      */
-    public static final class Item extends TreeNode implements ByteReader {
+    public static final class Item extends TreeNode implements ByteRanges.Reader {
         /**
          * Identifier of this item, as an unsigned integer.
          */
@@ -180,13 +180,16 @@ public final class ItemLocation extends FullBox {
         /**
          * Decodes a single item.
          *
+         * @param  reader   the reader from which to read the payload.
          * @param  input    the input stream from which to read the item.
          * @param  version  version of the enclosing {@link ItemLocation}.
          * @param  sizes    sizes of (offset, length, base, index) in that order on 4 bits each.
          * @throws IOException if an error occurred while reading the payload.
          * @throws DataStoreContentException if the <abbr>HEIF</abbr> file is malformed.
          */
-        Item(final ChannelDataInput input, final int version, int sizes) throws IOException, DataStoreContentException {
+        Item(final Reader reader, final ChannelDataInput input, final int version, int sizes)
+                throws IOException, DataStoreContentException
+        {
             itemID = (version < 2) ? input.readUnsignedShort() : input.readInt();
             constructionMethod = (version == 0) ? 0 : (byte) (input.readShort() & 0x0F);
             dataReferenceIndex = input.readShort();
@@ -200,9 +203,18 @@ public final class ItemLocation extends FullBox {
                 if (offsetReader != null) offsetReader.read(input, i);
                 if (lengthReader != null) lengthReader.read(input, i);
             }
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            Vector extentLength;
             itemReferenceIndex = result( indexReader);
             extentOffset       = result(offsetReader);
             extentLength       = result(lengthReader);
+            if (extentLength == null) {
+                final var endOfCurrentBox = reader.endOfCurrentBox();
+                if (endOfCurrentBox.isPresent()) {
+                    extentLength = Vector.create(new long[] {endOfCurrentBox.getAsLong() - baseOffset}, true);
+                }
+            }
+            this.extentLength = extentLength;
         }
 
         /**
@@ -224,57 +236,61 @@ public final class ItemLocation extends FullBox {
         }
 
         /**
-         * Converts an offset relative to the data of this item to an offset relative to the origin of the input stream.
-         * This method updates the {@link FileRegion#offset} value in-place. It may also replace {@link FileRegion#input}
-         * if the bytes to read are spread in different regions of the item.
+         * Converts an offset relative to the data of this item to offsets relative to the origin of the input stream.
          *
-         * @param  request  the input stream, offset and length of the region to read. Modified in-place by this method.
+         * @param  offset  offset of the first byte to read relative to the data stored in this item.
+         * @param  length  maximum number of bytes to read, starting at the offset, or a negative value for reading all.
+         * @param  addTo   where to add the range of bytes to read as offsets relatives to the beginning of the file.
          * @throws UnsupportedEncodingException if this item uses an unsupported construction method.
          * @throws DataStoreContentException if the <abbr>HEIF</abbr> file is malformed.
          * @throws ArithmeticException if an integer overflow occurred.
          */
         @Override
-        public void resolve(final FileRegion request) throws DataStoreException {
+        public void resolve(long offset, long length, ByteRanges addTo) throws DataStoreException {
             switch (constructionMethod) {
-                default: throw new DataStoreContentException("Unexpected construction method.");
+                default: {
+                    throw new DataStoreContentException("Unexpected construction method.");
+                }
                 case IDAT_OFFSET:
-                case ITEM_OFFSET: throw new UnsupportedEncodingException("Not supported yet");
+                case ITEM_OFFSET: {
+                    throw new UnsupportedEncodingException("Not supported yet");
+                }
                 case FILE_OFFSET: {
                     if (dataReferenceIndex != 0) {
                         throw new UnsupportedEncodingException("Not supported yet");
                     }
-                    long start = 0;
-                    if (extentLength != null) {
-                        final int n = extentLength.size();
-                        for (int i=0; i<n; i++) {
-                            long available = extentLength.longValue(i);
-                            if (request.offset >= available) {
-                                request.offset -= available;
-                                continue;           // Extent is before requested data.
-                            }
-                            available -= request.offset;
-                            if (request.length > available && i < n-1) {
-                                /*
-                                 * There is at least two extents to read. Create a channel
-                                 * which will read each extent as if they were consecutive.
-                                 * TODO: assign a temporary instance to `request.input`.
-                                 */
-                                throw new UnsupportedEncodingException("Not supported yet");
-                            }
-                            if (extentOffset != null && i < extentOffset.size()) {
-                                start = extentOffset.longValue(i);
-                            }
-                            if (request.length > available || request.length < 0) {
-                                request.length = available;
-                            }
-                            break;
+                    final int offsetCount = (extentOffset != null) ? extentOffset.size() : 0;
+                    final int lengthCount = (extentLength != null) ? extentLength.size() : 0;
+                    final int n = Math.max(1, Math.min(offsetCount, lengthCount));
+                    for (int i=0; i<n; i++) {
+                        long available;
+                        if (i < lengthCount) {
+                            available = extentLength.longValue(i);
+                        } else if (length >= 0) {
+                            available = length;
+                        } else {
+                            throw new DataStoreException("Stream of unknown length.");
                         }
+                        if (available < offset) {
+                            offset -= available;    // Make offset relative to the next extent.
+                            continue;               // Skip all extents before the first byte.
+                        }
+                        long position = Math.addExact(baseOffset, offset);
+                        if (i < offsetCount) {
+                            position = Math.addExact(position, extentOffset.longValue(i));
+                        }
+                        offset = 0;                 // Next extents will start from the first byte.
+                        if (length >= 0) {
+                            if (length < available) {
+                                available = length;
+                                length = 0;
+                            } else {
+                                length -= available;
+                            }
+                        }
+                        addTo.addRange(position, Math.addExact(position, available));
+                        if (length == 0) break;     // Short circuit if not reading everything.
                     }
-                    /*
-                     * All the bytes to read are in a single extent. We can
-                     * use the existing channel directly, without wrapping.
-                     */
-                    request.offset = Math.addExact(request.offset, Math.addExact(baseOffset, start));
                 }
             }
         }

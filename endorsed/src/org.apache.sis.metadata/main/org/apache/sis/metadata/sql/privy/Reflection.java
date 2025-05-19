@@ -41,6 +41,8 @@ public final class Reflection {
      * The {@value} key for getting a catalog name. This column appears in all reflection
      * operations (listing schemas, tables, columns, constraints, <i>etc.</i>) used by SIS.
      * The value in that column may be null.
+     *
+     * @see Dialect#supportsCatalog()
      */
     public static final String TABLE_CAT = "TABLE_CAT";
 

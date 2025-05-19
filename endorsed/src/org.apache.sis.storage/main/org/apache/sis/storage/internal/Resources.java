@@ -65,6 +65,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short AuxiliaryFileTooLarge_1 = 71;
 
         /**
+         * Connection to “{0}” failed with HTTP error code {1}.
+         */
+        public static final short CanNotConnectHTTP_2 = 85;
+
+        /**
          * Cannot create resources based on the content of “{0}” directory.
          */
         public static final short CanNotCreateFolderStore_1 = 43;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.landsat;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
@@ -91,6 +92,11 @@ public class LandsatStore extends DataStore implements Aggregate {
     private Reader source;
 
     /**
+     * The file from which {@link #source} has been read, or {@code null} if unknown.
+     */
+    private final Path sourceFile;
+
+    /**
      * The root directory where this file is located, or {@code null} if unknown.
      */
     final Path directory;
@@ -135,11 +141,13 @@ public class LandsatStore extends DataStore implements Aggregate {
         location  = connector.getStorageAs(URI.class);
         source    = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
+        Path file = null;
         if (path != null) {
             if (source != null) {
+                file = path;
                 path = path.getParent();        // If the source has been opened, then the path is a file.
             } else try {
-                final Path file = LandsatStoreProvider.getMetadataFile(path);
+                file = LandsatStoreProvider.getMetadataFile(path);
                 if (file != null) {
                     final Charset encoding = connector.getOption(OptionKey.ENCODING);
                     if (encoding != null) {
@@ -152,7 +160,8 @@ public class LandsatStore extends DataStore implements Aggregate {
                 throw new DataStoreException(e);
             }
         }
-        directory = path;
+        sourceFile = file;
+        directory  = path;
         if (source == null) {
             throw new UnsupportedStorageException(super.getLocale(), LandsatStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
@@ -296,6 +305,20 @@ public class LandsatStore extends DataStore implements Aggregate {
         if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
             super.addListener(eventType, listener);
         }
+    }
+
+    /**
+     * Returns the list of band files and the {@code *_MTL.txt} file.
+     */
+    @Override
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        final var paths = new LinkedHashSet<Path>();    // Order matter, as `sourceFile` should be first.
+        paths.add(sourceFile);                          // May be null (all nulls are removed at the end).
+        for (Aggregate b : components()) {
+            b.getFileSet().map(FileSet::getPaths).ifPresent(paths::addAll);
+        }
+        paths.remove(null);
+        return Optional.of(new FileSet(paths));
     }
 
     /**

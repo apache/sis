@@ -54,6 +54,10 @@
  *     }
  * }
  *
+ * <h2>Requirements</h2>
+ * Apache SIS requires DuckDB 1.2.2.0 or later. This is needed for the correction of
+ * <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>.
+ *
  * @author Guilhem Legal (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */

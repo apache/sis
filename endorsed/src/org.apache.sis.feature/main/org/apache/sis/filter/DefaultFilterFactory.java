@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.ServiceLoader;
+import java.util.Optional;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -136,6 +137,30 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      */
     public static FilterFactory<Feature, Object, Object> forFeatures() {
         return Features.DEFAULT;
+    }
+
+    /**
+     * Returns a factory operating on resource instances of the given class.
+     * The current implementation recognizes the following classes:
+     *
+     * <ul>
+     *   <li>{@link Feature}: delegate to {@link #forFeatures()}.</li>
+     * </ul>
+     *
+     * More classes may be added in future versions.
+     *
+     * @param  <R>   compile-time value of the {@code type} argument.
+     * @param  type  type of resources that the factory shall accept.
+     * @return factory operating on resource instances of the given class.
+     * @since 1.5
+     */
+    @SuppressWarnings("unchecked")
+    public static <R> Optional<FilterFactory<R, Object, Object>> forResources(final Class<R> type) {
+        if (type.equals(Feature.class)) {
+            return Optional.of((FilterFactory<R, Object, Object>) forFeatures());
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**

@@ -158,10 +158,12 @@ public final class Postgres<G> extends Database<G> {
     /**
      * Returns an identifier of the way binary data are encoded by the JDBC driver.
      * Data stored as PostgreSQL {@code BYTEA} type are encoded in hexadecimal.
+     * Geometry type are handled as binary because of the insertion of the SQL
+     * function {@code ST_AsBinary(column)}.
      */
     @Override
     protected BinaryEncoding getBinaryEncoding(final Column columnDefinition) {
-        if (columnDefinition.type == Types.BLOB) {
+        if (columnDefinition.type == Types.BLOB || columnDefinition.getGeometryType().isPresent()) {
             return super.getBinaryEncoding(columnDefinition);
         } else {
             return BinaryEncoding.HEXADECIMAL;

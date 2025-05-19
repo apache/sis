@@ -183,6 +183,16 @@ final class TableAnalyzer extends FeatureAnalyzer {
             spatialInformation.completeIntrospection(analyzer, id, columns);
         }
         /*
+         * If the database has no "geometry columns" table, tries to infer the geometry type
+         * from the `Column.typeName`. Note that this loop cannot resolve the CRS because of
+         * the absence of geometry columns.
+         */
+        if (spatialInformation == null || spatialInformation.geometryColumns == null) {
+            for (final Column column : columns.values()) {
+                column.tryMakeSpatial(analyzer);
+            }
+        }
+        /*
          * Analyze the type of each column, which may be geometric as a consequence of above call.
          */
         final var attributes = new ArrayList<Column>();

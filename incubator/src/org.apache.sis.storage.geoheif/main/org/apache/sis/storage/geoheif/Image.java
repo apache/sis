@@ -24,7 +24,7 @@ import javax.imageio.ImageTypeSpecifier;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.isobmff.ByteReader;
+import org.apache.sis.storage.isobmff.ByteRanges;
 
 
 /**
@@ -51,7 +51,7 @@ abstract class Image {
      * The provider of bytes to read from the <abbr>ISOBMFF</abbr> box.
      * The bytes are read from the {@link ChannelDataInput} at a position specified by the box.
      */
-    protected final ByteReader locator;
+    protected final ByteRanges.Reader locator;
 
     /**
      * The byte order to use for reading the sample values of the image.
@@ -66,7 +66,7 @@ abstract class Image {
      * @param  name     a name that identifies this image, for debugging purpose.
      * @throws RasterFormatException if the sample model cannot be created.
      */
-    protected Image(final CoverageBuilder builder, final ByteReader locator, final String name) {
+    protected Image(final CoverageBuilder builder, final ByteRanges.Reader locator, final String name) {
         this.locator = locator;
         this.name    = name;
         byteOrder    = builder.byteOrder();
@@ -99,16 +99,37 @@ abstract class Image {
     }
 
     /**
-     * Reads a single tile.
+     * Computes the range of bytes that will be needed for reading a single tile of this image.
+     * There will be usually a single range of bytes per tile, but this method allows the bytes
+     * to be spread over more than one extent.
      *
-     * @param  store    the data store reading a tile.
-     * @param  tileX    0-based column index of the tile to read, starting from image left.
-     * @param  tileY    0-based column index of the tile to read, starting from image top.
-     * @param  context  contains the target raster or the image reader to use.
-     * @return tile filled with the pixel values read by this method.
+     * <p>This method does not read the bytes immediately.
+     * Instead, it returns a function which will be executed later for finishing the read operation.</p>
+     *
+     * @param  context  where to store the ranges of bytes.
+     * @return the function to invoke later for reading the tile.
+     * @throws DataStoreException if an error occurred while computing the range of bytes.
      */
-    protected abstract Raster readTile(final GeoHeifStore store, final long tileX, final long tileY,
-            final ImageResource.Coverage.ReadContext context) throws IOException, DataStoreException;
+    protected abstract Reader computeByteRanges(ImageResource.Coverage.ReadContext context) throws DataStoreException;
+
+    /**
+     * Reads a single tile from a sequence of bytes.
+     * Instances are prepared and returned by {@link #computeByteRanges computeByteRanges(…)}.
+     */
+    @FunctionalInterface
+    protected interface Reader {
+        /**
+         * Reads a single tile from a sequence of bytes in the given input.
+         * The implementation is responsible for setting the stream position before to start reading bytes.
+         * The given {@code input} will view all bytes after the initial position as if they were stored in
+         * one single large extent.
+         * Implementations should ignore the fact that the sequence of bytes may be spread in many extents.
+         *
+         * @param  input  a view of the byte sequences as if they were stored in one single large extent.
+         * @return tile filled with the pixel values read by this method.
+         */
+        Raster readTile(ChannelDataInput input) throws Exception;
+    }
 
     /**
      * Returns the name of this image, for debugging purposes.

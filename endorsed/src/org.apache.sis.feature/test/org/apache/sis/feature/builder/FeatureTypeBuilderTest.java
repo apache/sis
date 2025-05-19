@@ -260,6 +260,35 @@ public final class FeatureTypeBuilderTest extends TestCase {
     }
 
     /**
+     * Tests {@link PropertyTypeBuilder#replaceBy(PropertyTypeBuilder)}.
+     */
+    @Test
+    public void testReplace() {
+        final var builder = new FeatureTypeBuilder();
+        assertSame(builder, builder.setName("City"));
+        final AttributeTypeBuilder<?> toReplace, replacement;
+        /* unmodified */ builder.addAttribute(String.class).setName("name");
+        toReplace      = builder.addAttribute(String.class).setName("someKey");
+        /* unmodified */ builder.addAttribute(Integer.class).setName("population");
+        replacement    = builder.addAttribute(Integer.class).setName("someId");
+
+        var it = builder.build().getProperties(true).iterator();
+        assertPropertyEquals("name",       String.class,  it.next());
+        assertPropertyEquals("someKey",    String.class,  it.next());
+        assertPropertyEquals("population", Integer.class, it.next());
+        assertPropertyEquals("someId",     Integer.class, it.next());
+        assertFalse(it.hasNext());
+
+        toReplace.replaceBy(replacement);
+        assertMessageContains(assertThrows(IllegalStateException.class, () -> toReplace.setName("Foo")));
+        it = builder.build().getProperties(true).iterator();
+        assertPropertyEquals("name",       String.class,  it.next());
+        assertPropertyEquals("someId",     Integer.class, it.next());
+        assertPropertyEquals("population", Integer.class, it.next());
+        assertFalse(it.hasNext());
+    }
+
+    /**
      * Tests creation of a builder from an existing feature type.
      * This method also acts as a test of {@code FeatureTypeBuilder} getter methods.
      */
