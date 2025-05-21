@@ -16,11 +16,13 @@
  */
 package org.apache.sis.storage.geoheif;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
-import java.util.IdentityHashMap;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import java.awt.image.ColorModel;
@@ -41,6 +43,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.base.TiledGridCoverage;
 import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.isobmff.ByteRanges;
+import org.apache.sis.io.stream.ChannelDataInput;
 
 
 /**
@@ -109,18 +113,19 @@ final class ImageResource extends TiledGridResource implements StoreResource {
     private final ColorModel colorModel;
 
     /**
-     * The images that constitute the tiles of this grid. Shall contain at least 1 element.
+     * Information about the images that constitute the tiles of this grid. Shall contain at least 1 element.
+     * The {@link Image} elements contain only metadata such as position in the file, not actual pixel values.
      * All tiles shall have the same size.
      */
     private final Image[] tiles;
 
     /**
      * Creates a new grid coverage resource for an image.
-     * Exactly one of {@code tiles} and {@code reader} argument shall be non-null.
+     * Exactly one of {@code tiles} and {@code image} arguments shall be non-null.
      *
      * @param  builder  helper class for building the grid geometry and sample dimensions.
      * @param  tiles    the images that constitute the tiles, or {@code null} if {@code reader} is provided.
-     * @param  image    the single tile for the wole image, or {@code null} if {@code tiles} is provided.
+     * @param  image    the single tile for the whole image, or {@code null} if {@code tiles} is provided.
      * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
      * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
      */
@@ -299,19 +304,36 @@ final class ImageResource extends TiledGridResource implements StoreResource {
          * @return tiles decoded from the enclosing resource.
          */
         @Override
-        protected Raster[] readTiles(final TileIterator iterator) throws IOException, DataStoreException {
-            final Raster[] result = new Raster[iterator.tileCountInQuery];
-            try (final var context = new ReadContext(iterator)) {
-                synchronized (getSynchronizationLock()) {
+        protected Raster[] readTiles(final TileIterator iterator) throws Exception {
+            final var result = new Raster[iterator.tileCountInQuery];
+            final var requests = new ReadContext[result.length];
+            int count = 0;
+            synchronized (getSynchronizationLock()) {
+                try (final var context = new ReadContext(iterator)) {
                     do {
-                        Raster tile = iterator.getCachedTile();
-                        if (tile == null) {
-                            long[] tileCoord = iterator.getTileCoordinatesInResource();
-                            tile = readTile(tileCoord[0], tileCoord[1], context);
-                            tile = iterator.cache(iterator.moveRaster(tile));
+                        Raster raster = iterator.getCachedTile();
+                        if (raster != null) {
+                            result[iterator.getTileIndexInResultArray()] = raster;
+                        } else {
+                            requests[count++] = new ReadContext(context, ImageResource.this);
                         }
-                        result[iterator.getTileIndexInResultArray()] = tile;
                     } while (iterator.next());
+                    /*
+                     * For any tile that was not in the cache, read them in the order they appear in the file.
+                     * The ranges of bytes of all tiles should be declared before to start the reading process,
+                     * for giving a chance to emit a single "HTTP range" request. Then, for each tile, `input`
+                     * may be replaced by a view hiding the fact that byte may be spread in more than one extent.
+                     */
+                    Arrays.sort(requests, 0, count);
+                    final ChannelDataInput input = store.ensureOpen();
+                    if (input.useRangeOfInterest()) {
+                        for (int i=0; i<count; i++) {
+                            requests[i].notify(input);  // Implementation should take care of merging the ranges.
+                        }
+                    }
+                    for (int i=0; i<count; i++) {
+                        requests[i].readTile(input, result);        // Implementation may create an `input` view.
+                    }
                 }
             }
             return result;
@@ -321,17 +343,27 @@ final class ImageResource extends TiledGridResource implements StoreResource {
          * Context about a {@code readTile(…)} operation. Contains the tile to create, or
          * the image reader to use in the case of read operations delegated to Image I/O.
          */
-        static final class ReadContext implements AutoCloseable {
+        static final class ReadContext extends ByteRanges implements AutoCloseable {
             /**
              * Iterator over the tiles to read.
              */
             private final AOI iterator;
 
             /**
-             * The image reader created for reading the tiles,
-             * or {@code null} if image readers are not used.
+             * The image readers created for reading the tiles.
              */
-            private Map<ImageReaderSpi, ImageReader> readers;
+            private final Map<ImageReaderSpi, ImageReader> readers;
+
+            /**
+             * The function to execute for reading the image as a tile.
+             */
+            private final Image.Reader reader;
+
+            /**
+             * 0-based index (column and row) of the tile to read inside the image to read.
+             * This is a tile inside the {@linkplain #tile}, i.e. a second level of tiling.
+             */
+            final long subTileX, subTileY;
 
             /**
              * Creates a new read context.
@@ -340,6 +372,42 @@ final class ImageResource extends TiledGridResource implements StoreResource {
              */
             private ReadContext(final AOI iterator) {
                 this.iterator = iterator;
+                this.readers  = new HashMap<>();
+                this.reader   = null;
+                this.subTileX = 0;
+                this.subTileY = 0;
+            }
+
+            /**
+             * Creates a context which is a snapshot of the given context at the current iterator position.
+             *
+             * @param  parent  the parent from which to create a snapshot.
+             * @param  tileX   0-based column index of the tile to read, starting from image left.
+             * @param  tileY   0-based row index of the tile to read, starting from image top.
+             */
+            private ReadContext(final ReadContext parent, final ImageResource owner) throws DataStoreException {
+                this.iterator = new Snapshot(parent.iterator);
+                this.readers  = parent.readers;
+                final long[] tileCoord = iterator.getTileCoordinatesInResource();
+                final Image tile = owner.getTile(tileCoord[0], tileCoord[1]);
+                subTileX = tileCoord[0] % tile.numXTiles;
+                subTileY = tileCoord[1] % tile.numYTiles;
+                reader   = tile.computeByteRanges(this);
+            }
+
+            /**
+             * Reads the tile and store the result in the given array.
+             * The given input is the stream over the <abbr>HEIF</abbr> file
+             * (not yet the view showing all bytes as if they were stored in a single extent).
+             *
+             * @param  input   the input from which to read bytes.
+             * @param  result  where to store the result.
+             */
+            final void readTile(ChannelDataInput input, final Raster[] result) throws Exception {
+                input = viewAsConsecutiveBytes(input);
+                Raster raster = reader.readTile(input);
+                raster = iterator.cache(iterator.moveRaster(raster));
+                result[iterator.getTileIndexInResultArray()] = raster;
             }
 
             /**
@@ -363,15 +431,17 @@ final class ImageResource extends TiledGridResource implements StoreResource {
              * @throws IOException if an error occurred while creating the image reader.
              */
             public ImageReader getReader(final ImageReaderSpi spi) throws IOException {
-                if (readers == null) {
-                    readers = new IdentityHashMap<>();
+                try {
+                    return readers.computeIfAbsent(spi, (factory) -> {
+                        try {
+                            return factory.createReaderInstance();
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    });
+                } catch (UncheckedIOException e) {
+                    throw e.getCause();
                 }
-                ImageReader reader = readers.get(spi);
-                if (reader == null) {
-                    reader = spi.createReaderInstance();
-                    readers.put(spi, reader);
-                }
-                return reader;
             }
 
             /**
@@ -380,30 +450,24 @@ final class ImageResource extends TiledGridResource implements StoreResource {
              */
             @Override
             public void close() {
-                if (readers != null) {
-                    readers.values().forEach(ImageReader::dispose);
-                }
+                readers.values().forEach(ImageReader::dispose);
             }
         }
     }
 
     /**
-     * Reads a single tile.
+     * Returns information (not pixel values) about the tile at the given tile coordinates.
+     * The tile coordinates are in the tile matrix including the sub-divisions in each tile.
+     * This method returns the image which contains the requested tile.
      *
-     * @param  tileX    0-based column index of the tile to read, starting from image left.
-     * @param  tileY    0-based column index of the tile to read, starting from image top.
-     * @param  context  contains the target raster or the image reader to use.
-     * @return tile filled with the pixel values read by this method.
+     * @param  tileX  0-based column index of the tile to read, starting from image left.
+     * @param  tileY  0-based row index of the tile to read, starting from image top.
+     * @return information about the tile at the specified tile coordinates.
      */
-    private Raster readTile(long tileX, long tileY, final Coverage.ReadContext context)
-            throws IOException, DataStoreException
-    {
-        Image tile = tiles[0];
-        final long tx = tileX / tile.numXTiles;
-        final long ty = tileY / tile.numYTiles;
-        tile = tiles[Math.toIntExact(addExact(tx, multiplyExact(ty, tileMatrixRowStride)))];
-        tileX %= tile.numXTiles;
-        tileY %= tile.numYTiles;
-        return tile.readTile(store, tileX, tileY, context);
+    final Image getTile(long tileX, long tileY) {
+        Image template = tiles[0];      // First tile taken as a template for all tiles.
+        tileX /= template.numXTiles;
+        tileY /= template.numYTiles;
+        return tiles[Math.toIntExact(addExact(tileX, multiplyExact(tileY, tileMatrixRowStride)))];
     }
 }

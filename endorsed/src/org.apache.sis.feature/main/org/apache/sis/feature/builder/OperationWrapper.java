@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature.builder;
 
+import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
 
@@ -58,22 +59,33 @@ final class OperationWrapper extends PropertyTypeBuilder {
     /**
      * Do not allow a change of multiplicity.
      */
-    @Override public PropertyTypeBuilder setMinimumOccurs(int occurs) {if (occurs == 1) return this; throw readOnly();}
-    @Override public PropertyTypeBuilder setMaximumOccurs(int occurs) {if (occurs == 1) return this; throw readOnly();}
+    @Override public PropertyTypeBuilder setMinimumOccurs(int occurs) {return readOnly(1, occurs);}
+    @Override public PropertyTypeBuilder setMaximumOccurs(int occurs) {return readOnly(1, occurs);}
 
     /**
      * Do not allow modifications.
      */
-    @Override public PropertyTypeBuilder setName       (GenericName name)         {throw readOnly();}
-    @Override public PropertyTypeBuilder setDefinition (CharSequence definition)  {throw readOnly();}
-    @Override public PropertyTypeBuilder setDesignation(CharSequence designation) {throw readOnly();}
-    @Override public PropertyTypeBuilder setDescription(CharSequence description) {throw readOnly();}
-    @Override public PropertyTypeBuilder setDeprecated (boolean deprecated)       {throw readOnly();}
+    @Override public PropertyTypeBuilder setName       (GenericName name)         {return readOnly(str(getName()),   str(name));}
+    @Override public PropertyTypeBuilder setDefinition (CharSequence definition)  {return readOnly(getDefinition(),  definition);}
+    @Override public PropertyTypeBuilder setDesignation(CharSequence designation) {return readOnly(getDesignation(), designation);}
+    @Override public PropertyTypeBuilder setDescription(CharSequence description) {return readOnly(getDescription(), description);}
+    @Override public PropertyTypeBuilder setDeprecated (boolean deprecated)       {return readOnly(isDeprecated(),   deprecated);}
 
     /**
-     * Returns the exception to be thrown for read-only wrapper.
+     * Returns the string representation of the given name, or {@code null} if the name is null.
+     * This is used for relaxing the comparison of names before to throw an exception.
      */
-    private UnsupportedOperationException readOnly() {
+    private static String str(final GenericName name) {
+        return (name != null) ? name.toString() : null;
+    }
+
+    /**
+     * Throws {@link UnsupportedOperationException} if the given value is different than the expected value.
+     */
+    private OperationWrapper readOnly(final Object expected, final Object actual) {
+        if (Objects.equals(expected, actual)) {
+            return this;
+        }
         throw new UnsupportedOperationException(errors().getString(Errors.Keys.UnmodifiableObject_1, PropertyTypeBuilder.class));
     }
 }

@@ -19,7 +19,9 @@ package org.apache.sis.storage;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Function;
 import java.io.Serializable;
@@ -29,6 +31,9 @@ import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.privy.FeatureExpression;
+import org.apache.sis.feature.privy.FeatureProjection;
+import org.apache.sis.feature.privy.FeatureProjectionBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.privy.ListingPropertyVisitor;
@@ -43,6 +48,7 @@ import org.apache.sis.util.iso.Names;
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractAttribute;
+import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.Literal;
@@ -388,6 +394,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
     @SafeVarargs
     @SuppressWarnings("varargs")
     final void setSortBy(final SortProperty<AbstractFeature>... properties) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         SortBy<AbstractFeature> sortBy = null;
         if (properties != null) {
             sortBy = SortByComparator.create(properties);
@@ -530,7 +537,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      *
      * Columns can be given to the {@link FeatureQuery#setProjection(NamedExpression[])} method.
      *
-     * @version 1.4
+     * @version 1.5
      * @since   1.1
      */
     public static class NamedExpression implements Serializable {
@@ -607,6 +614,25 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
             this.expression = Objects.requireNonNull(expression);
             this.type       = Objects.requireNonNull(type);
             this.alias      = alias;
+        }
+
+        /**
+         * Adds this named expression as a property into the given builder.
+         *
+         * @param  builder  the builder where to add the property.
+         * @return whether the property has been successfully added.
+         */
+        final boolean addTo(final FeatureProjectionBuilder builder) {
+            final FeatureExpression<? super AbstractFeature, ?> fex = FeatureExpression.castOrCopy(expression);
+            if (fex != null) {
+                final FeatureProjectionBuilder.Item item = fex.expectedType(builder);
+                if (item != null) {
+                    item.setName(alias);    // Need to be invoked aven if the alias is null.
+                    item.setValueGetter(expression, type == ProjectionType.STORED);
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**
@@ -707,6 +733,36 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
             }
         }
         return xpaths;
+    }
+
+    /**
+     * Creates the projection (in <abbr>SQL</abbr> sense) of the given feature type.
+     * If some expressions have no name, default names are computed as below:
+     *
+     * <ul>
+     *   <li>If the expression is an instance of {@link ValueReference}, the name of the
+     *       property referenced by the {@linkplain ValueReference#getXPath() XPath}.</li>
+     *   <li>Otherwise the localized string "Unnamed #1" with increasing numbers.</li>
+     * </ul>
+     *
+     * @param sourceType  the feature type to project.
+     * @param locale      locale for error messages, or {@code null} for the default locale.
+     */
+    final Optional<FeatureProjection> project(final DefaultFeatureType sourceType, final Locale locale) {
+        if (projection == null) {
+            return Optional.empty();
+        }
+        final var builder = new FeatureProjectionBuilder(sourceType, locale);
+        for (int column = 0; column < projection.length; column++) {
+            final NamedExpression item = projection[column];
+            if (!item.addTo(builder)) {
+                final var name = item.expression.getFunctionName().toInternationalString();
+                throw new IllegalArgumentException(Resources.forLocale(locale)
+                            .getString(Resources.Keys.InvalidExpression_2, column, name));
+            }
+        }
+        builder.setName(sourceType.getName());
+        return builder.project();
     }
 
     /**

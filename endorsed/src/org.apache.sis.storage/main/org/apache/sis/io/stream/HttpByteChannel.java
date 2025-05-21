@@ -23,8 +23,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.nio.file.AccessDeniedException;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import org.apache.sis.storage.internal.Resources;
 
 
 /**
@@ -113,6 +116,17 @@ final class HttpByteChannel extends FileCacheByteChannel {
         } catch (InterruptedException e) {
             throw new IOException(e);
         }
+        switch (response.statusCode()) {
+            default:  throw new IOException(cannotConnect(response));
+            case 204: // No Content
+            case 404: throw new FileNotFoundException(cannotConnect(response));
+            case 451: // Unavailable For Legal Reasons
+            case 401: // Unauthorized
+            case 403: throw new AccessDeniedException(cannotConnect(response));
+            case 203: // Non-Authoritative Information
+            case 200: break;    // OK
+            case 206: break;    // Partial content
+        }
         final InputStream stream  = response.body();
         final HttpHeaders headers = response.headers();
         range = headers.firstValue("Content-Range").orElse(null);
@@ -127,6 +141,13 @@ final class HttpByteChannel extends FileCacheByteChannel {
         } catch (IllegalArgumentException e) {
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Returns an error message for an HTTP connection that failed.
+     */
+    private String cannotConnect(final HttpResponse<?> response) {
+        return Resources.format(Resources.Keys.CanNotConnectHTTP_2, filename, response.statusCode());
     }
 
     /**

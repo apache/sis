@@ -27,6 +27,8 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
+import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.filter.privy.XPath;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Specific to the main branch:
@@ -53,48 +55,39 @@ import org.apache.sis.filter.Expression;
  *     <th>Map key</th>
  *     <th>Value type</th>
  *     <th>Returned by</th>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
  *     <td>{@link GenericName} or {@link String}</td>
  *     <td>{@link AbstractOperation#getName() Operation.getName()} (mandatory)</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDefinition() Operation.getDefinition()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDesignation() Operation.getDesignation()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDescription() Operation.getDescription()}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"result.name"</td>
  *     <td>{@link GenericName} or {@link String}</td>
  *     <td>{@link AbstractAttribute#getName() Attribute.getName()} on the {@linkplain AbstractOperation#getResult() result}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"result.definition"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link DefaultAttributeType#getDefinition() Attribute.getDefinition()} on the {@linkplain AbstractOperation#getResult() result}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"result.designation"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link DefaultAttributeType#getDesignation() Attribute.getDesignation()} on the {@linkplain AbstractOperation#getResult() result}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>"result.description"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link DefaultAttributeType#getDescription() Attribute.getDescription()} on the {@linkplain AbstractOperation#getResult() result}</td>
- *   </tr>
- *   <tr>
+ *   </tr><tr>
  *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
  *     <td>{@link java.util.Locale}</td>
  *     <td>(none)</td>
@@ -107,7 +100,7 @@ import org.apache.sis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.7
  */
 public final class FeatureOperations extends Static {
@@ -158,7 +151,7 @@ public final class FeatureOperations extends Static {
      * @param  referent        the referenced attribute or feature association.
      * @return an operation which is an alias for the {@code referent} property.
      *
-     * @see Features#getLinkTarget(PropertyType)
+     * @see Features#getLinkTarget(AbstractIdentifiedType)
      */
     public static AbstractOperation link(final Map<String,?> identification, final AbstractIdentifiedType referent) {
         ArgumentChecks.ensureNonNull("referent", referent);
@@ -322,7 +315,7 @@ public final class FeatureOperations extends Static {
      * @param  <V>             the type of values computed by the expression and assigned to the feature property.
      * @param  identification  the name of the operation, together with optional information.
      * @param  expression      the expression to evaluate on feature instances.
-     * @param  resultType      type of values computed by the expression and assigned to the feature property.
+     * @param  resultType      type of values computed by the expression.
      * @return a feature operation which computes its values using the given expression.
      *
      * @since 1.4
@@ -350,7 +343,7 @@ public final class FeatureOperations extends Static {
      * @param  <V>             the type of values computed by the expression and assigned to the feature property.
      * @param  identification  the name of the operation, together with optional information.
      * @param  expression      the expression to evaluate on feature instances.
-     * @param  resultType      type of values computed by the expression and assigned to the feature property.
+     * @param  resultType      type of values computed by the expression.
      * @return a feature operation which computes its values using the given expression.
      * @throws ClassCastException if the result type is not a target type supported by the expression.
      *
@@ -361,5 +354,45 @@ public final class FeatureOperations extends Static {
                                            final DefaultAttributeType<V> resultType)
     {
         return function(identification, expression.toValueType(resultType.getValueClass()), resultType);
+    }
+
+    /**
+     * Returns an expression for fetching the values of properties identified by the given type.
+     * The returned expression will be the first of the following choices which is applicable:
+     *
+     * <ul>
+     *   <li>If the property is an expression built by {@link #expression expression(…)}, then the
+     *       expression given to that method, or a derivative of that expression, is returned.</li>
+     *   <li>If the property {@linkplain Features#getLinkTarget is a link},
+     *       then a {@code ValueReference} fetching the link target is returned.</li>
+     *   <li>Otherwise, a {@linkplain DefaultFilterFactory.Features#property value reference}
+     *       is created for the name of the given property.</li>
+     * </ul>
+     *
+     * @param  property  the property for which to get an expression.
+     * @return an expression for fetching the values of the property identified by the given type.
+     * @since 1.5
+     */
+    public static Expression<? super AbstractFeature, ?> expressionOf(final AbstractIdentifiedType property) {
+        // Test final class first because it is fast.
+        if (property instanceof ExpressionOperation<?>) {
+            final Function<? super AbstractFeature, ?> expression = ((ExpressionOperation<?>) property).expression;
+            if (expression instanceof Expression<?,?>) {
+                return (Expression<? super AbstractFeature, ?>) expression;
+            }
+        }
+        String name;
+        final Class<?> type;
+        if (property instanceof DefaultAttributeType<?>) {
+            type = ((DefaultAttributeType<?>) property).getValueClass();
+            name = null;
+        } else {
+            type = Object.class;
+            name = Features.getLinkTarget(property).orElse(null);
+        }
+        if (name == null) {
+            name = property.getName().toString();
+        }
+        return DefaultFilterFactory.forFeatures().property(XPath.fromPropertyName(name), type);
     }
 }

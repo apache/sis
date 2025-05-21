@@ -24,17 +24,14 @@ import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.privy.FeatureExpression;
+import org.apache.sis.feature.privy.FeatureProjectionBuilder;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Names;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;
-import org.apache.sis.feature.DefaultFeatureType;
 
 
 /**
@@ -170,7 +167,7 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
     }
 
     /**
-     * Provides the type of values produced by this expression when a feature of the given type is evaluated.
+     * Provides the type of values produced by this expression.
      * There are two cases:
      *
      * <ul class="verbose">
@@ -180,33 +177,28 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      *   <li>Otherwise an attribute is created with the return value specified by the operation.</li>
      * </ul>
      *
-     * @param  valueType  the type of features on which to apply this expression.
-     * @param  addTo      where to add the type of properties evaluated by this expression.
+     * @param  addTo  where to add the type of properties evaluated by this expression.
      * @return builder of type resulting from expression evaluation (never null).
-     * @throws IllegalArgumentException if the given feature type does not contain the expected properties,
+     * @throws IllegalArgumentException if the source feature type does not contain the expected properties,
      *         or if this method cannot determine the result type of the expression.
      *         It may be because that expression is backed by an unsupported implementation.
      */
     @Override
-    public PropertyTypeBuilder expectedType(final DefaultFeatureType valueType, final FeatureTypeBuilder addTo) {
-        AttributeTypeBuilder<?> att;
-cases:  if (operation.isGeometryInOut()) {
+    public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
+        if (operation.isGeometryInOut()) {
             final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(getParameters().get(0));
             if (fex != null) {
-                final PropertyTypeBuilder type = fex.expectedType(valueType, addTo);
-                if (type instanceof AttributeTypeBuilder<?>) {
-                    att = (AttributeTypeBuilder<?>) type;
-                    final Geometries<?> library = Geometries.factory(att.getValueClass());
-                    if (library != null) {
-                        att = att.setValueClass(operation.getReturnType(library));
-                        break cases;
-                    }
+                final FeatureProjectionBuilder.Item item = fex.expectedType(addTo);
+                final boolean success = item.replaceValueClass((c) -> {
+                    final Geometries<?> library = Geometries.factory(c);
+                    return (library == null) ? null : operation.getReturnType(library);
+                });
+                if (success) {
+                    return item;
                 }
             }
             throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAGeometryAtFirstExpression));
-        } else {
-            att = addTo.addAttribute(getValueClass());
         }
-        return att.setName(getFunctionName());
+        return addTo.addComputedProperty(addTo.addAttribute(getValueClass()).setName(getFunctionName()), false);
     }
 }

@@ -36,7 +36,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.isobmff.Box;
-import org.apache.sis.storage.isobmff.ByteReader;
+import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.Root;
 import org.apache.sis.storage.isobmff.base.EntityToGroup;
 import org.apache.sis.storage.isobmff.base.GroupList;
@@ -257,7 +257,7 @@ final class ResourceBuilder {
      * @return the item for locating the identified data, or {@code null} if none.
      * @throws DataStoreContentException if there is two ore more items for the same identifier.
      */
-    private ByteReader getLocationByIdentifier(final int itemID) throws DataStoreContentException {
+    private ByteRanges.Reader getLocationByIdentifier(final int itemID) throws DataStoreContentException {
         final Object item = itemLocations.get(itemID);
         if (item == null) {
             return data;    // May be null.
@@ -335,7 +335,7 @@ final class ResourceBuilder {
             if (firstBuilder == null) {
                 firstBuilder = coverage;
             }
-            final ByteReader locator;
+            final ByteRanges.Reader locator;
             final Image.Supplier image;
             switch (entry.itemType) {
                 default: {

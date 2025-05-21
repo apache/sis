@@ -149,6 +149,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
      */
     final SelectionClauseWriter removeUnsupportedFunctions(final Database<?> database) {
         final var unsupported = new HashMap<String, SpatialOperatorName>();
+        final var accessors = GeometryEncoding.initial();
         try (Connection c = database.source.getConnection()) {
             final DatabaseMetaData metadata = c.getMetaData();
             /*
@@ -173,11 +174,13 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
              */
             final String prefix = database.escapeWildcards(lowerCase ? "st_" : "ST_");
             try (ResultSet r = metadata.getFunctions(database.catalogOfSpatialTables,
-                    database.dialect.toCompatibleMetadataPattern(database.schemaOfSpatialTables, 1),
-                    database.dialect.toCompatibleMetadataPattern(prefix + '%', 2)))
+                                                     database.schemaOfSpatialTables,
+                                                     prefix + '%'))
             {
                 while (r.next()) {
-                    unsupported.remove(r.getString("FUNCTION_NAME"));
+                    final String function = r.getString("FUNCTION_NAME");
+                    GeometryEncoding.checkSupport(accessors, function);
+                    unsupported.remove(function);
                 }
             }
         } catch (SQLException e) {
@@ -187,6 +190,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
              */
             database.listeners.warning(e);
         }
+        database.setGeometryEncodingFunctions(accessors);
         /*
          * Remaining functions are unsupported functions.
          */

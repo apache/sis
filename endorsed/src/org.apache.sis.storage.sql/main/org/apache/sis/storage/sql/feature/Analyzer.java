@@ -237,8 +237,11 @@ public final class Analyzer {
                     if (ignoredTables.containsKey(table)) {
                         continue;
                     }
-                    declared.add(new TableReference(
-                            getUniqueString(reflect, Reflection.TABLE_CAT),
+                    String catalog = null;
+                    if (database.dialect.supportsCatalog()) {
+                        catalog = getUniqueString(reflect, Reflection.TABLE_CAT);
+                    }
+                    declared.add(new TableReference(catalog,
                             getUniqueString(reflect, Reflection.TABLE_SCHEM), table,
                             getUniqueString(reflect, Reflection.REMARKS)));
                 }

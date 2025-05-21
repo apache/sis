@@ -316,6 +316,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short MismatchedImageSize_3 = 44;
 
         /**
+         * The two properties are not members of the same feature.
+         */
+        public static final short MismatchedParentFeature = 92;
+
+        /**
          * Mismatched type for “{0}” property.
          */
         public static final short MismatchedPropertyType_1 = 45;

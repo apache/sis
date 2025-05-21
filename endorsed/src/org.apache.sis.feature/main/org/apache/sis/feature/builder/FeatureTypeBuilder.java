@@ -1024,11 +1024,15 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Replaces the given builder instance by a new instance, or delete the old instance.
      * This builder should contain exactly one instance of the given {@code old} builder.
+     * The {@code metadata} argument should generally be {@code true}, except when this
+     * method is invoked for removing a property only temporarily, e.g. before to move
+     * it to another location.
      *
      * @param old          the instance to replace.
      * @param replacement  the replacement, or {@code null} for deleting the old instance.
+     * @param metadata     whether to update metadata such as {@link #defaultGeometry}.
      */
-    final void replace(final PropertyTypeBuilder old, final PropertyTypeBuilder replacement) {
+    final void replace(final PropertyTypeBuilder old, final PropertyTypeBuilder replacement, final boolean metadata) {
         final int index = properties.lastIndexOf(old);
         if (index < 0 || (replacement != null ? properties.set(index, replacement) : properties.remove(index)) != old) {
             /*
@@ -1037,8 +1041,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
              */
             throw new CorruptedObjectException();
         }
-        if (old == defaultGeometry) {
-            defaultGeometry = (AttributeTypeBuilder<?>) replacement;
+        if (metadata && old == defaultGeometry) {
+            defaultGeometry = (replacement instanceof AttributeTypeBuilder<?>) ? (AttributeTypeBuilder<?>) replacement : null;
         }
         clearCache();
     }

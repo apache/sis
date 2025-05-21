@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.OptionalLong;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.net.URI;
@@ -253,7 +254,10 @@ public final class Reader implements Cloneable {
      * @throws IOException if an error occurred while reading the integers.
      */
     public final int[] readRemainingInts() throws IOException {
-        int n = Math.toIntExact((endOfCurrentBox() - input.getStreamPosition()) / Integer.BYTES);
+        if (endOfCurrentBox < 0) {
+            throw new IOException("Stream of unknown length.");
+        }
+        int n = Math.toIntExact((endOfCurrentBox - input.getStreamPosition()) / Integer.BYTES);
         return (n != 0) ? input.readInts(n) : ArraysExt.EMPTY_INT;
     }
 
@@ -309,13 +313,9 @@ public final class Reader implements Cloneable {
      * Returns the stream position after the last byte of the current box.
      *
      * @return stream position after the last byte of the current box.
-     * @throws IOException if the box size is unknown.
      */
-    public final long endOfCurrentBox() throws IOException {
-        if (endOfCurrentBox >= 0) {
-           return endOfCurrentBox;
-        }
-        throw new IOException("Stream of unknown length.");
+    public final OptionalLong endOfCurrentBox() {
+        return (endOfCurrentBox >= 0) ? OptionalLong.of(endOfCurrentBox) : OptionalLong.empty();
     }
 
     /**

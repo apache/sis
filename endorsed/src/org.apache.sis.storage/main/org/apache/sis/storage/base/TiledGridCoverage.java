@@ -19,7 +19,6 @@ package org.apache.sis.storage.base;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
-import java.io.IOException;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
@@ -43,7 +42,6 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.image.privy.DeferredProperty;
 import org.apache.sis.image.privy.TiledImage;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.collection.WeakValueHashMap;
@@ -1329,17 +1327,22 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * corner of the image in the {@link TiledGridResource}).
      *
      * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
-     * shall start at the given {@code iterator.offsetAOI} values.
+     * shall start at the values given by {@link TileIterator#getTileOrigin(int)}.
+     * Each tile in the returned array shall be stored at the index given by
+     * {@link TileIterator#getTileIndexInResultArray()}.
      *
      * <p>This method must be thread-safe. It is implementer responsibility to ensure synchronization,
      * for example using {@link TiledGridResource#getSynchronizationLock()}.</p>
      *
      * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
      * @return tiles decoded from the {@link TiledGridResource}.
-     * @throws IOException if an I/O error occurred.
-     * @throws DataStoreException if a logical error occurred.
-     * @throws RuntimeException if the Java2D image cannot be created for another reason
-     *         (too many exception types to list them all).
+     * @throws Exception if the tile cannot be created. There is too many possible exceptions for listing all types,
+     *         but the main ones are {@link java.io.IOException} for I/O errors and various {@link RuntimeException}
+     *         subtypes for Java2D errors.
+     *
+     * @see TileIterator#createRaster()
+     * @see TileIterator#getTileOrigin(int)
+     * @see TileIterator#getTileIndexInResultArray()
      */
-    protected abstract Raster[] readTiles(TileIterator iterator) throws IOException, DataStoreException;
+    protected abstract Raster[] readTiles(TileIterator iterator) throws Exception;
 }

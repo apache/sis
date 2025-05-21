@@ -16,9 +16,8 @@
  */
 package org.apache.sis.storage.sql.feature;
 
-import java.util.Set;
+import java.util.BitSet;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Comparator;
 import java.util.Spliterator;
@@ -32,7 +31,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.filter.privy.ListingPropertyVisitor;
 import org.apache.sis.filter.privy.SortByComparator;
 import org.apache.sis.filter.privy.WarningEvent;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
@@ -41,11 +39,10 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.FeatureProjection;
+import org.apache.sis.feature.privy.FeatureProjection;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Filter;
-import org.apache.sis.filter.Expression;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.filter.SortBy;
 
@@ -122,8 +119,10 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
     private long offset;
 
     /**
-     * Maximum number of rows to return, or 0 for no limit. Note that 0 is a valid value for the limit,
-     * but when this value is reached the {@link #empty()} stream should be immediately returned.
+     * Maximum number of rows to return, or 0 for no limit. Note: the use of 0 for "no limit" is unusual
+     * (a more usual value is -1) because 0 could be valid value for the limit. However, the methods in
+     * this class should return {@link #empty()} eagerly when they detect that the stream will be empty.
+     * Therefore, we should not have instances of {@code FeatureStream} with a limit which is really zero.
      *
      * @see #limit(long)
      */
@@ -425,28 +424,17 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
         Table projected = table;
         FeatureProjection completion = null;
         if (projection != null) {
-            final var unhandled = new LinkedHashMap<String, Expression<? super AbstractFeature, ?>>();
+            final var unhandled   = new BitSet();
             final var reusedNames = new HashSet<String>();
             projected = new Table(projected, projection, reusedNames, unhandled);
-            if (!unhandled.isEmpty()) {
+            completion = projection.afterPreprocessing(unhandled.stream().toArray());
+            if (completion != null && !reusedNames.containsAll(completion.dependencies())) {
                 /*
-                 * Some properties may not be handled by the projection. Check if the projected feature contains
-                 * enough information for computing missing properties without the need for the original feature.
+                 * Cannot use `projected` because some expressions need properties available only
+                 * in the source features. Request full feature instances from the original table.
                  */
-                Set<String> references = null;
-                for (var expression : unhandled.values()) {
-                    references = ListingPropertyVisitor.xpaths(expression, references);
-                }
-                if (references == null || reusedNames.containsAll(references)) {
-                    completion = new FeatureProjection(projected.featureType, unhandled);
-                } else {
-                    /*
-                     * Cannot use `projected` because some expressions need properties
-                     * available only in the original features.
-                     */
-                    projected = table;
-                    completion = projection;
-                }
+                projected  = table;
+                completion = projection;
             }
         }
         lock(projected.database.transactionLocks);

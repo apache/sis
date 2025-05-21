@@ -225,18 +225,19 @@ public final class SelectionClause extends SQLBuilder implements Consumer<Warnin
             }
             bounds = e;
         }
+        final Database<?> db = table.database;
         if (wrapper == null) {
-            wrapper = table.database.geomLibrary.toGeometry2D(bounds, WraparoundMethod.SPLIT);
+            wrapper = db.geomLibrary.toGeometry2D(bounds, WraparoundMethod.SPLIT);
         }
         final String wkt = wrapper.formatWKT(0.05 * span);      // Arbitrary flateness factor.
         /*
          * Format a spatial function for building the geometry from the Well-Known Text.
-         * The CRS, if available, while be specified as a SRID if the spatial support has
+         * The CRS, if available, will be specified as a SRID if the spatial support has
          * been recognized (otherwise we cannot map the CRS to the database-dependent SRID).
          */
         appendSpatialFunction("ST_GeomFromText");
         append('(').appendValue(wkt);
-        if (table.database.getSpatialSchema().isPresent()) {
+        if (db.dialect.supportsSRID() && db.getSpatialSchema().isPresent()) {
             CoordinateReferenceSystem crs = wrapper.getCoordinateReferenceSystem();
             if (REPLACE_UNSPECIFIED_CRS && columnCRS != null) {
                 if (crs == null) {
@@ -283,7 +284,8 @@ public final class SelectionClause extends SQLBuilder implements Consumer<Warnin
      * @param  name  name of the spatial function to append.
      */
     final void appendSpatialFunction(final String name) {
-        appendIdentifier(table.database.catalogOfSpatialTables, table.database.schemaOfSpatialTables, name, false);
+        final Database<?> db = table.database;
+        appendIdentifier(db.catalogOfSpatialTables, db.schemaOfSpatialTables, name, false);
     }
 
     /**

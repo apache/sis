@@ -16,10 +16,8 @@
  */
 package org.apache.sis.storage.geoheif;
 
-import java.io.IOException;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
-import java.awt.image.Raster;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -27,10 +25,11 @@ import java.awt.image.RasterFormatException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.privy.ImageUtilities;
 import org.apache.sis.image.privy.RasterFactory;
+import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.Region;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.isobmff.ByteReader;
+import org.apache.sis.storage.isobmff.ByteRanges;
 
 
 /**
@@ -66,25 +65,22 @@ final class UncompressedImage extends Image {
      * @param  name     a name that identifies this image, for debugging purpose.
      * @throws RasterFormatException if the sample model cannot be created.
      */
-    UncompressedImage(final CoverageBuilder builder, final ByteReader locator, final String name) throws DataStoreException {
+    UncompressedImage(final CoverageBuilder builder, final ByteRanges.Reader locator, final String name)
+            throws DataStoreException
+    {
         super(builder, locator, name);
         sampleModel = builder.sampleModel();
         dataType    = builder.dataType();     // Shall be after `sampleModel()`.
     }
 
     /**
-     * Reads a single tile. The default implementation assumes an uncompressed tile.
+     * Computes the range of bytes that will be needed for reading a single tile of this image.
      *
-     * @param  store    the data store reading a tile.
-     * @param  tileX    0-based column index of the tile to read, starting from image left.
-     * @param  tileY    0-based column index of the tile to read, starting from image top.
-     * @param  context  contains the target raster or the image reader to use.
-     * @return tile filled with the pixel values read by this method.
+     * @param  context  where to store the ranges of bytes.
+     * @throws DataStoreException if an error occurred while computing the range of bytes.
      */
     @Override
-    protected Raster readTile(final GeoHeifStore store, final long tileX, final long tileY,
-            final ImageResource.Coverage.ReadContext context) throws IOException, DataStoreException
-    {
+    protected Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
         final long[] sourceSize = {
             // Note: the following ignores `MultiPixelPackedSampleModel`, but that model does not seem used by HEIF.
             sampleModel.getWidth() * (long) sampleModel.getNumDataElements(),
@@ -99,30 +95,29 @@ final class UncompressedImage extends Image {
         final int  dataSize  = dataType.bytes();
         final long tileSize  = multiplyExact(region.length, dataSize);
         final long skipBytes = region.getStartByteOffset(dataSize);
-        final var  request   = new ByteReader.FileRegion();
-        request.input  = store.ensureOpen();
-        request.offset = multiplyExact(addExact(multiplyExact(tileY, numXTiles), tileX), tileSize);
-        request.length = tileSize;
-        request.skip(skipBytes);
-        locator.resolve(request);
-        /*
-         * Now read all banks and store the values in the image buffer.
-         * If there is many banks (`InterleavingMode.COMPONENT`), these
-         * banks are assumed consecutive.
-         */
-        request.input.buffer.order(byteOrder);
-        final var hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(dataType), request.input);
-        hr.setOrigin(request.offset - skipBytes);
-        final WritableRaster raster = context.createRaster();
-        final DataBuffer data = raster.getDataBuffer();
-        final int numBanks = data.getNumBanks();
-        for (int b=0; b<numBanks; b++) {
-            if (b != 0) {
-                hr.setOrigin(addExact(hr.getOrigin(), tileSize));
+        final long tileIndex = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
+        final long offset    = addExact(multiplyExact(tileIndex, tileSize), skipBytes);
+        locator.resolve(offset, tileSize - skipBytes, context);
+        return (final ChannelDataInput input) -> {
+            /*
+             * Now read all banks and store the values in the image buffer.
+             * If there is many banks (`InterleavingMode.COMPONENT`), these
+             * banks are assumed consecutive.
+             */
+            input.buffer.order(byteOrder);
+            final var hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(dataType), input);
+            hr.setOrigin(context.offset() - skipBytes);
+            final WritableRaster raster = context.createRaster();
+            final DataBuffer data = raster.getDataBuffer();
+            final int numBanks = data.getNumBanks();
+            for (int b=0; b<numBanks; b++) {
+                if (b != 0) {
+                    hr.setOrigin(addExact(hr.getOrigin(), tileSize));
+                }
+                hr.setDestination(RasterFactory.wrapAsBuffer(data, b));
+                hr.readAsBuffer(region, 0);
             }
-            hr.setDestination(RasterFactory.wrapAsBuffer(data, b));
-            hr.readAsBuffer(region, 0);
-        }
-        return raster;
+            return raster;
+        };
     }
 }

@@ -19,7 +19,7 @@ package org.apache.sis.storage;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.storage.base.FeatureProjection;
+import org.apache.sis.feature.privy.FeatureProjection;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.internal.Resources;
@@ -95,8 +95,8 @@ final class FeatureSubset extends AbstractFeatureSet {
         if (resultType == null) {
             final DefaultFeatureType type = source.getType();
             try {
-                projection = FeatureProjection.create(type, query.getProjection());
-                resultType = (projection != null) ? projection.featureType : type;
+                projection = query.project(type, listeners.getLocale()).orElse(null);
+                resultType = (projection != null) ? projection.typeRequested : type;
             } catch (IllegalArgumentException e) {
                 throw new DataStoreContentException(Resources.forLocale(listeners.getLocale())
                         .getString(Resources.Keys.CanNotDeriveTypeFromFeature_1, type.getName()), e);

@@ -18,8 +18,8 @@ package org.apache.sis.metadata.sql.privy;
 
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.Constants;
 
 
@@ -39,7 +39,9 @@ public enum Dialect {
     ANSI(null, Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
              | Supports.JAVA_TIME
              | Supports.READ_ONLY_UPDATE
-             | Supports.CONCURRENCY),
+             | Supports.CONCURRENCY
+             | Supports.CATALOG
+             | Supports.SRID),
 
     /**
      * The database uses Derby syntax. This is ANSI, with some constraints that PostgreSQL does not have
@@ -50,7 +52,8 @@ public enum Dialect {
      */
     DERBY("derby", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                  | Supports.READ_ONLY_UPDATE
-                 | Supports.CONCURRENCY),
+                 | Supports.CONCURRENCY
+                 | Supports.CATALOG),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
@@ -59,7 +62,8 @@ public enum Dialect {
     HSQL("hsqldb", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                  | Supports.JAVA_TIME
                  | Supports.READ_ONLY_UPDATE
-                 | Supports.CONCURRENCY),
+                 | Supports.CONCURRENCY
+                 | Supports.CATALOG),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
@@ -69,7 +73,9 @@ public enum Dialect {
                            | Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                            | Supports.JAVA_TIME
                            | Supports.READ_ONLY_UPDATE
-                           | Supports.CONCURRENCY),
+                           | Supports.CONCURRENCY
+                           | Supports.CATALOG
+                           | Supports.SRID),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
@@ -77,14 +83,16 @@ public enum Dialect {
     ORACLE("oracle", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                    | Supports.JAVA_TIME
                    | Supports.READ_ONLY_UPDATE
-                   | Supports.CONCURRENCY),
+                   | Supports.CONCURRENCY
+                   | Supports.CATALOG
+                   | Supports.SRID),
 
     /**
      * The database uses SQLite syntax. This is ANSI, but with several limitations.
      *
      * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
      */
-    SQLITE("sqlite", 0),
+    SQLITE("sqlite", Supports.SRID),
 
     /**
      * The database uses DuckDB syntax. This is subset of SQL. DuckDB is not designed for transactional
@@ -105,19 +113,11 @@ public enum Dialect {
      *     LOAD spatial
      *     }
      *
-     * @see <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>
+     * <h4>Requirements</h4>
+     * Apache SIS requires DuckDB 1.2.2.0 or later. This is needed for the correction of
+     * <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>.
      */
-    DUCKDB("duckdb", 0) {
-        @Override
-        @Workaround(library = "DuckDB", version = "1.2.1")
-        public String toCompatibleMetadataPattern(String pattern, final int argument) {
-            switch (argument) {
-                case 1: if (pattern == null) pattern = "%"; break;
-                case 2: pattern = pattern.replace("\\", ""); break;
-            }
-            return pattern;
-        }
-    };
+    DUCKDB("duckdb", 0);
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -194,19 +194,20 @@ public enum Dialect {
     }
 
     /**
-     * Converts the pattern to something that can be used for requesting metadata.
-     * This is a workaround for a DuckDB bug and may be removed in a future version.
-     *
-     * @param  pattern   the schema pattern to apply.
-     * @param  argument  1 for the {@code schemaPattern}, 2 for {@code functionNamePattern}.
-     * @return the schema pattern to use.
-     *
-     * @see DatabaseMetaData#getFunctions(String, String, String)
-     * @see <a href="https://github.com/duckdb/duckdb-java/issues/165">DuckDB-Java issue #165</a>
+     * Whether the JDBC driver supports catalog or correctly reports that there is no catalog.
+     * This flag should be {@code false} when the JDBC driver returns a non-null catalog name
+     * (for example, the database name) but doesn't accept the use of that catalog in SQL.
      */
-    @Workaround(library = "DuckDB", version = "1.2.1")
-    public String toCompatibleMetadataPattern(String pattern, int argument) {
-        return pattern;
+    @Workaround(library = "DuckDB", version = "1.2.2.0")
+    public final boolean supportsCatalog() {
+        return (flags & Supports.CATALOG) != 0;
+    }
+
+    /**
+     * Whether the spatial extension supports <abbr>SRID</abbr> in {@code ST_*} functions.
+     */
+    public final boolean supportsSRID() {
+        return (flags & Supports.SRID) != 0;
     }
 
     /**

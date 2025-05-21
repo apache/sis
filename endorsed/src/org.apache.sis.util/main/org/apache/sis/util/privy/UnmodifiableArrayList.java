@@ -58,6 +58,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @param <E>  the type of elements in the list.
  */
+@SuppressWarnings("EqualsAndHashcode")
 public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, CheckedContainer<E>, Serializable {
     /**
      * For compatibility with different versions.
@@ -421,7 +422,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
             if (!(object instanceof UnmodifiableArrayList<?>)) {
                 return super.equals(object);
             }
-            final UnmodifiableArrayList<?> that = (UnmodifiableArrayList<?>) object;
+            final var that = (UnmodifiableArrayList<?>) object;
             int size  = this.size();
             if (size != that.size()) {
                 return false;

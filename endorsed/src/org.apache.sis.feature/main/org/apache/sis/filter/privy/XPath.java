@@ -23,6 +23,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import static org.apache.sis.util.CharSequences.*;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.filter.InvalidXPathException;
 
 
 /**
@@ -214,6 +215,7 @@ public final class XPath {
     /**
      * Rewrites a property name as an XPath.
      * The path components are assumed already parsed (no braced URI literals).
+     * If the tip contain path separator ({@code '/'}), the path will be escaped in a {@code Q{…}} form.
      *
      * @param  prefix  a prefix, or {@code null} if none.
      * @param  path    components of the XPath before the tip, or {@code null} if none.
@@ -234,18 +236,30 @@ public final class XPath {
     }
 
     /**
+     * Returns a XPath for the given property name. In the usual case where the given name
+     * does not use reserved characters, that name is returned as-is.
+     *
+     * @param  name  the property name.
+     * @return the given name as an XPath.
+     */
+    public static String fromPropertyName(final String name) {
+        // TODO: do we need to escape '{' and '}'?
+        return toString(null, null, name);
+    }
+
+    /**
      * Rewrites the XPath in a form accepted by feature properties.
      * This is the tip, without {@code "Q{namespace}"} escaping.
      *
      * @param  xpath  the XPath to convert to a property name.
      * @return the XPath as a property name without escape syntax for qualified URIs.
-     * @throws IllegalArgumentException if the given XPath contains a path instead of only a tip.
+     * @throws InvalidXPathException if the given XPath contains a path instead of only a tip.
      */
     public static String toPropertyName(final String xpath) {
         final var x = new XPath(xpath);
         if (x.path == null) {
             return x.tip;
         }
-        throw new IllegalArgumentException(Resources.format(Resources.Keys.PropertyNameCannotBeXPath_1, xpath));
+        throw new InvalidXPathException(Resources.format(Resources.Keys.PropertyNameCannotBeXPath_1, xpath));
     }
 }

@@ -170,7 +170,11 @@ final class FeatureAdapter {
          */
         final var sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT);
         for (final Column column : attributes) {
-            appendColumn(sql, column.label, columnIndices);
+            String function = null;
+            if (column.getGeometryType().isPresent()) {
+                function = table.database.getGeometryEncodingFunction(column);
+            }
+            appendColumn(sql, table.database, function, column.label, columnIndices);
         }
         /*
          * Collect information about associations in local arrays before to assign
@@ -270,15 +274,23 @@ final class FeatureAdapter {
      * An exception is thrown if the column has already been added (should never happen).
      *
      * @param  sql            the SQL statement where to add column identifiers after the {@code SELECT} clause.
+     * @param  database       the database. May be {@code null} if {@code function} is null.
+     * @param  function       a function for which the column is an argument, or {@code null} if none.
      * @param  column         name of the column to add.
      * @param  columnIndices  map where to add the mapping from column name to 1-based column index.
      */
-    private static int appendColumn(final SQLBuilder sql, final String column,
-            final Map<String,Integer> columnIndices) throws InternalDataStoreException
+    private static int appendColumn(final SQLBuilder sql, final Database<?> database, final String function,
+            final String column, final Map<String,Integer> columnIndices) throws InternalDataStoreException
     {
         int columnCount = columnIndices.size();
         if (columnCount != 0) sql.append(", ");
+        if (function != null) {
+            sql.appendIdentifier(database.catalogOfSpatialTables, database.schemaOfSpatialTables, function, false).append('(');
+        }
         sql.appendIdentifier(column);
+        if (function != null) {
+            sql.append(')');
+        }
         if (columnIndices.put(column, ++columnCount) == null) return columnCount;
         throw new InternalDataStoreException(Resources.format(Resources.Keys.DuplicatedColumn_1, column));
     }
@@ -301,7 +313,7 @@ final class FeatureAdapter {
         final int[] indices = new int[columns.size()];
         for (final String column : columns) {
             final Integer pos = columnIndices.get(column);
-            indices[i++] = (pos != null) ? pos : appendColumn(sql, column, columnIndices);
+            indices[i++] = (pos != null) ? pos : appendColumn(sql, null, null, column, columnIndices);
         }
         return indices;
     }

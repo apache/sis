@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry.wrapper.jts;
 
+import java.util.Arrays;
 import java.awt.Shape;
 import java.awt.Graphics2D;
 import java.awt.Font;
@@ -90,7 +91,7 @@ public final class ShapeConverterTest extends TestCase {
      */
     @Test
     public void testPoint() {
-        final GeneralPath shape = new GeneralPath();
+        final var shape = new GeneralPath();
         shape.moveTo(10, 20);
         assertCoordinatesEqual(shape, Point.class,
                 new Coordinate(10, 20));
@@ -101,7 +102,7 @@ public final class ShapeConverterTest extends TestCase {
      */
     @Test
     public void testLine() {
-        final Line2D shape = new Line2D.Double(1, 2, 3, 4);
+        final var shape = new Line2D.Double(1, 2, 3, 4);
         assertCoordinatesEqual(shape, LineString.class,
                 new Coordinate(1, 2),
                 new Coordinate(3, 4));
@@ -112,7 +113,7 @@ public final class ShapeConverterTest extends TestCase {
      */
     @Test
     public void testRectangle() {
-        final Rectangle2D shape = new Rectangle2D.Double(1, 2, 10, 20);
+        final var shape = new Rectangle2D.Double(1, 2, 10, 20);
         assertCoordinatesEqual(shape, Polygon.class,
                 new Coordinate( 1,  2),
                 new Coordinate(11,  2),
@@ -126,14 +127,13 @@ public final class ShapeConverterTest extends TestCase {
      */
     @Test
     public void testRectangleWithHole() {
-        final Rectangle2D contour = new Rectangle2D.Double(1, 2, 10, 20);
-        final Rectangle2D hole    = new Rectangle2D.Double(5, 6,  2,  3);
-        final Area shape = new Area(contour);
+        final var contour = new Rectangle2D.Double(1, 2, 10, 20);
+        final var hole    = new Rectangle2D.Double(5, 6,  2,  3);
+        final var shape   = new Area(contour);
         shape.subtract(new Area(hole));
 
         final Geometry geometry = ShapeConverter.create(factory, shape, 0.0001);
-        assertInstanceOf(Polygon.class, geometry);
-        final Polygon polygon = (Polygon) geometry;
+        final Polygon polygon = assertInstanceOf(Polygon.class, geometry);
         assertEquals(1, polygon.getNumInteriorRing());
 
         assertCoordinatesEqual(polygon.getExteriorRing(), LinearRing.class,
@@ -155,7 +155,7 @@ public final class ShapeConverterTest extends TestCase {
      * Tests {@link ShapeConverter} with the shape of an arbitrary text.
      * We use that as an easy way to create relatively complex shapes.
      * The arbitrary text is "Labi": 4 letters, 5 polygons (because "i" is made
-     * of 2 detached polygons),* with 2 polygons ("a" and "b") having a hole.
+     * of 2 detached polygons), with 2 polygons ("a" and "b") having a hole.
      */
     @Test
     public void testText() {
@@ -170,20 +170,24 @@ public final class ShapeConverterTest extends TestCase {
             handler.dispose();
         }
         final Geometry geometry = ShapeConverter.create(factory, shape, 0.1);
-        assertInstanceOf(MultiPolygon.class, geometry);
-        final MultiPolygon mp = (MultiPolygon) geometry;
+        final MultiPolygon mp = assertInstanceOf(MultiPolygon.class, geometry);
         /*
-         * The "Labi" text contaons 4 characters but `i` is split in two ploygons,
+         * The "Labi" text contains 4 characters but `i` is split in two ploygons,
          * for a total of 5 polygons. Two letters ("a" and "b") are polyogns whith
-         * hole inside them.
+         * a hole inside them.
          */
         assertEquals(5, mp.getNumGeometries());
-        for (int i=0; i<5; i++) {
+        final var parts = new Geometry[mp.getNumGeometries()];
+        Arrays.setAll(parts, mp::getGeometryN);
+        Arrays.sort(parts, (Geometry o1, Geometry o2) ->                // Sort on X
+                Double.compare(o1.getEnvelopeInternal().getMinX(),
+                               o2.getEnvelopeInternal().getMinX()));
+
+        for (int i=0; i < parts.length; i++) {
             final String message = "Glyph #" + i;
-            final Geometry glyph = mp.getGeometryN(i);
-            assertInstanceOf(Polygon.class, glyph, message);
-            assertEquals((i == 1 || i == 2) ? 1 : 0,       // `a` and `b` should contain a hole.
-                    ((Polygon) glyph).getNumInteriorRing(), message);
+            final Geometry glyph = parts[i];
+            final Polygon polygon = assertInstanceOf(Polygon.class, glyph, message);
+            assertEquals((i == 1 || i == 2) ? 1 : 0, polygon.getNumInteriorRing(), message);  // Expect a hole in `a` and `b`.
         }
         /*
          * Compare the bounding boxes.

@@ -23,15 +23,10 @@ import org.opengis.util.ScopedName;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.privy.FeatureExpression;
+import org.apache.sis.feature.privy.FeatureProjectionBuilder;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
-
-// Specific to the main branch:
-import org.apache.sis.feature.DefaultFeatureType;
 
 
 /**
@@ -165,20 +160,20 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     }
 
     /**
-     * Provides the type of values produced by this expression when a feature of the given type is evaluated.
+     * Provides the type of values produced by this expression.
      * May return {@code null} if the type cannot be determined.
+     *
+     * @throws UnconvertibleObjectException if the property default value cannot be converted to the expected type.
      */
     @Override
-    public PropertyTypeBuilder expectedType(final DefaultFeatureType valueType, final FeatureTypeBuilder addTo) {
+    public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
         final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(expression);
         if (fex == null) {
             return null;
         }
-        final PropertyTypeBuilder p = fex.expectedType(valueType, addTo);
-        if (p instanceof AttributeTypeBuilder<?>) {
-            return ((AttributeTypeBuilder<?>) p).setValueClass(getValueClass());
-        }
-        return p;
+        final FeatureProjectionBuilder.Item item = fex.expectedType(addTo);
+        item.replaceValueClass((c) -> getValueClass());
+        return item;
     }
 
     /**

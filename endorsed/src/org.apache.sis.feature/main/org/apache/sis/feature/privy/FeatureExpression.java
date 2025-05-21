@@ -18,23 +18,20 @@ package org.apache.sis.feature.privy;
 
 import java.util.Set;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.filter.internal.Node;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;
-import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
 /**
- * OGC expressions or other functions operating on feature instances.
- * This interface adds an additional method, {@link #expectedType(FeatureType, FeatureTypeBuilder)},
+ * <abbr>OGC</abbr> expressions or other functions operating on feature instances.
+ * This interface adds an additional method, {@link #expectedType expectedType(…)},
  * for fetching in advance the expected type of expression results.
  *
  * <p>This is an experimental interface which may be removed in any future version.</p>
@@ -72,56 +69,72 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
     }
 
     /**
-     * Provides the expected type of values produced by this expression when a feature of the given
-     * type is evaluated. The resulting type shall describe a "static" property, i.e. it can be a
-     * {@link org.apache.sis.feature.DefaultAttributeType} or a {@link org.apache.sis.feature.DefaultAssociationRole}
-     * but not an {@link org.apache.sis.feature.AbstractOperation}.
+     * Provides the expected type of values produced by this expression when a feature of a given type is evaluated.
+     * Except for the special case of links (described below), the resulting type shall describe a "static" property,
+     * <i>i.e.</i> the type should be an {@code AttributeType} or a {@code FeatureAssociationRole}
+     * but not an {@code Operation}. The value of the static property will be set to the result of
+     * evaluating the expression when instances of the {@code FeatureType} will be created.
+     * This evaluation will be performed by {@link FeatureProjection#apply(AbstractFeature)}.
      *
-     * <p>If this method returns an instance of {@link AttributeTypeBuilder}, then its parameterized
-     * type should be the same {@code <V>} than this {@code FeatureExpression}.</p>
+     * <h4>Implementation guideline</h4>
+     * Implementations should declare the property by invoking some of the following methods:
      *
-     * @param  valueType  the type of features to be evaluated by the given expression.
-     * @param  addTo      where to add the type of properties evaluated by this expression.
-     * @return builder of the added property, or {@code null} if this method cannot add a property.
-     * @throws IllegalArgumentException if this method can operate only on some feature types
-     *         and the given type is not one of them.
+     * <ul>
+     *   <li>{@link FeatureProjectionBuilder#source()} for the source of the {@link PropertyType} in next point.</li>
+     *   <li>{@link FeatureProjectionBuilder#addSourceProperty(AbstractIdentifiedType, boolean)}</li>
+     *   <li>{@link FeatureProjectionBuilder#addComputedProperty(PropertyTypeBuilder, boolean)}</li>
+     * </ul>
+     *
+     * Inherited methods such as {@link FeatureProjectionBuilder#addAttribute(Class)} can also be invoked,
+     * but callers will be responsible for providing the value of the properties added by those methods.
+     * These values will not be provided by {@link FeatureProjection#apply(AbstractFeature)}.
+     *
+     * <h4>Operations</h4>
+     * If the property is a link to another property, such as {@code "sis:identifier"} or {@code "sis:geometry"},
+     * then adding this property may require the addition of dependencies. These dependencies will be detected by
+     * {@link FeatureProjectionBuilder}, which may generate an intermediate {@code FeatureType}.
+     *
+     * @param  addTo  where to add the type of the property evaluated by this expression.
+     * @return handler of the added property, or {@code null} if the property cannot be added.
+     * @throws IllegalArgumentException if this expression is invalid for the requested operation.
+     * @throws IllegalArgumentException if the property was not found in {@code addTo.source()}.
+     * @throws UnconvertibleObjectException if the property default value cannot be converted to the expected type.
      */
-    PropertyTypeBuilder expectedType(DefaultFeatureType valueType, FeatureTypeBuilder addTo);
+    FeatureProjectionBuilder.Item expectedType(FeatureProjectionBuilder addTo);
 
     /**
      * Tries to cast or convert the given expression to a {@link FeatureExpression}.
-     * If the given expression cannot be casted, then this method creates a copy
-     * provided that the expression is one of the following type:
+     * If the given expression cannot be cast, then this method creates a copy
+     * if the expression is one of the following types:
      *
      * <ol>
      *   <li>{@link Literal}.</li>
-     *   <li>{@link ValueReference}, assuming that the expression expects feature instances.</li>
+     *   <li>{@link ValueReference} if the given expression accepts feature instances.</li>
      * </ol>
      *
-     * Otherwise this method returns {@code null}.
+     * Otherwise, this method returns {@code null}.
      * It is caller's responsibility to verify if this method returns {@code null} and to throw an exception in such case.
-     * We leave that responsibility to the caller because (s)he may be able to provide better error messages.
+     * We leave that responsibility to the callers because they may be able to provide better error messages.
      *
-     * <h4>Note on type safety</h4>
-     * This method does not use parameterized types because of the assumption on {@link ValueReference}.
-     * As of Apache SIS 1.3, we have no way to check if {@code <R>} is for feature instances.
-     *
+     * @param  <R>        the type of resources used as inputs.
      * @param  candidate  the expression to cast or copy. Can be null.
-     * @return the given expression as a feature expression, or {@code null} if it cannot be casted or converted.
+     * @return the given expression as a feature expression, or {@code null} if it cannot be cast or converted.
      */
-    public static FeatureExpression<?,?> castOrCopy(final Expression<?,?> candidate) {
+    public static <R> FeatureExpression<? super R, ?> castOrCopy(final Expression<R,?> candidate) {
         if (candidate instanceof FeatureExpression<?,?>) {
-            return (FeatureExpression<?,?>) candidate;
+            return (FeatureExpression<R,?>) candidate;
         }
-        final Expression<?,?> copy;
+        final Expression<? super R, ?> copy;
         if (candidate instanceof Literal<?,?>) {
-            copy = Optimization.literal(((Literal<?,?>) candidate).getValue());
+            copy = Optimization.literal(((Literal<R,?>) candidate).getValue());
         } else if (candidate instanceof ValueReference<?,?>) {
-            final String xpath = ((ValueReference<?,?>) candidate).getXPath();
-            copy = DefaultFilterFactory.forFeatures().property(xpath);
+            final String xpath = ((ValueReference<R,?>) candidate).getXPath();
+            copy = DefaultFilterFactory.forResources(candidate.getResourceClass())
+                    .map((factory) -> factory.property(xpath)).orElse(null);
         } else {
             return null;
         }
-        return (FeatureExpression<?,?>) copy;
+        // We do not expect a `ClassCastException` here because `copy` should be a SIS implementation.
+        return (FeatureExpression<? super R, ?>) copy;
     }
 }

@@ -57,7 +57,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
      * The expression to which to delegate the execution of this operation.
      */
     @SuppressWarnings("serial")                         // Not statically typed as serializable.
-    private final Function<? super AbstractFeature, ? extends V> expression;
+    final Function<? super AbstractFeature, ? extends V> expression;
 
     /**
      * The type of result of evaluating the expression.

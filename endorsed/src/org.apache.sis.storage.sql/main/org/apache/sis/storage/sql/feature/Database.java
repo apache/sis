@@ -19,6 +19,7 @@ package org.apache.sis.storage.sql.feature;
 import java.util.Map;
 import java.util.List;
 import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 import java.util.LinkedHashMap;
@@ -128,6 +129,15 @@ public class Database<G> extends Syntax  {
      * For example, the geometry implementations may be ESRI, JTS or Java2D objects.
      */
     final Geometries<G> geomLibrary;
+
+    /**
+     * The functions to use for fetching a geometry from a column. Initialized (indirectly) the first time
+     * that {@link #getFilterToSupportedSQL()} is invoked and should not be modified after that point.
+     *
+     * @see #setGeometryEncodingFunctions(String[][])
+     * @see #getGeometryEncodingFunction(Column)
+     */
+    private final EnumMap<GeometryEncoding, String> geometryReaders;
 
     /**
      * Whether {@link Types#TINYINT} is a signed integer. Both conventions (-128 … 127 range and 0 … 255 range)
@@ -309,10 +319,11 @@ public class Database<G> extends Syntax  {
         this.cacheOfCRS    = new Cache<>(7, 2, false);
         this.cacheOfSRID   = new WeakHashMap<>();
         this.tablesByNames = new FeatureNaming<>();
-        supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
+        supportsCatalogs   = dialect.supportsCatalog() && metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
         supportsJavaTime   = dialect.supportsJavaTime();
         crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
+        geometryReaders    = new EnumMap<>(GeometryEncoding.class);
         transactionLocks   = dialect.supportsConcurrency() ? null : locks;
         softwareVersions   = new LinkedHashMap<>(4);
         final String product = Strings.trimOrNull(metadata.getDatabaseProductName());
@@ -399,8 +410,10 @@ public class Database<G> extends Syntax  {
             if (found) {
                 spatialSchema = convention;
                 if (consistent) {
-                    catalogOfSpatialTables = catalog;
-                    schemaOfSpatialTables  = schema;
+                    if (dialect.supportsCatalog()) {
+                        catalogOfSpatialTables = catalog;
+                    }
+                    schemaOfSpatialTables = schema;
                 }
                 break;
             }
@@ -433,6 +446,14 @@ public class Database<G> extends Syntax  {
             }
         }
         return ignoredTables;
+    }
+
+    /**
+     * Helper method for checking if catalog or schema names are consistent.
+     * If an previous (old) name existed, the new name should be the same.
+     */
+    private static boolean consistent(final String oldName, final String newName) {
+        return (oldName == null) || oldName.equals(newName);
     }
 
     /**
@@ -484,11 +505,15 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Helper method for checking if catalog or schema names are consistent.
-     * If an previous (old) name existed, the new name should be the same.
+     * Sets the preferred functions for fetching or storing geometries.
+     * This method is invoked indirectly by {@link #analyze analyze(…)}.
+     *
+     * @param  accessors  the array created by {@link GeometryEncoding#initial()}.
+     *
+     * @see #getGeometryEncodingFunction(Column)
      */
-    private static boolean consistent(final String oldName, final String newName) {
-        return (oldName == null) || oldName.equals(newName);
+    final void setGeometryEncodingFunctions(final String[][] accessors) {
+        GeometryEncoding.store(accessors, geometryReaders);
     }
 
     /**
@@ -643,7 +668,7 @@ public class Database<G> extends Syntax  {
         final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
         return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS().orElse(null),
-                                    getBinaryEncoding(columnDefinition), getGeometryEncoding(columnDefinition));
+                                    getBinaryEncoding(columnDefinition), columnDefinition.getGeometryEncoding());
     }
 
     /**
@@ -826,12 +851,27 @@ public class Database<G> extends Syntax  {
     /**
      * Returns the converter from filters/expressions to the {@code WHERE} part of SQL statement
      * without the functions that are unsupported by the database software.
+     *
+     * A side effect of this method is to initialize {@link #geometryReaders}.
      */
     final synchronized SelectionClauseWriter getFilterToSupportedSQL() {
         if (filterToSQL == null) {
             filterToSQL = getFilterToSQL().removeUnsupportedFunctions(this);
         }
         return filterToSQL;
+    }
+
+    /**
+     * Returns the function to use fo reading or writing a geometry in the database.
+     *
+     * @todo Add a parameter for specifying whether this is for a read or write operation.
+     *
+     * @param  column  the column of the geometry to read or write.
+     * @return the function to use, or {@code null} if none.
+     */
+    final String getGeometryEncodingFunction(final Column column) {
+        getFilterToSupportedSQL();      // Force initialization of `geometryReaders` if not already done.
+        return geometryReaders.get(column.getGeometryEncoding());
     }
 
     /**
