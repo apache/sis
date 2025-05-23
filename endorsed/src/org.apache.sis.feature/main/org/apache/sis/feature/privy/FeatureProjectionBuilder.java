@@ -299,7 +299,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
             return null;
         }
         assert properties().contains(builder) : builder;
-        assert requested.stream().noneMatch((item) ->item.builder() == builder) : builder;
+        assert requested.stream().noneMatch((item) -> item.builder == builder) : builder;
         final var item = new Item(named ? builder.getName() : null, builder);
         requested.add(item);
         return item;

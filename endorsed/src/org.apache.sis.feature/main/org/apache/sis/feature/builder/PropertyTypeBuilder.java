@@ -297,6 +297,19 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     public abstract PropertyType build() throws IllegalStateException;
 
     /**
+     * Builds the final property type to use in {@code FeatureType}.
+     * This method is invoked by {@link FeatureTypeBuilder#build()}.
+     * Subclasses can assume that the {@linkplain FeatureTypeBuilder#properties property} list is complete
+     * and use that information for refreshing some information such as the targets of the links.
+     *
+     * @return the property type.
+     * @throws IllegalStateException if the builder contains inconsistent information.
+     */
+    PropertyType buildForFeature() throws IllegalStateException {
+        return build();
+    }
+
+    /**
      * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
      */
     final void dispose() {
