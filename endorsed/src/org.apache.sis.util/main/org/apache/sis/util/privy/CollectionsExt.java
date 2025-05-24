@@ -303,7 +303,7 @@ public final class CollectionsExt extends Static {
         final Class<?> valueType = value.getClass();
         if (valueType.isArray()) {
             if (type.isAssignableFrom(valueType)) {
-                final Set<E> set = new LinkedHashSet<>(Arrays.asList((E[]) value));
+                final var set = new LinkedHashSet<E>(Arrays.asList((E[]) value));
                 set.remove(null);
                 return set.toArray(emptyArray);
             }
@@ -725,15 +725,15 @@ public final class CollectionsExt extends Static {
             }
         }
         if (value instanceof Iterable<?>) {
-            final List<Object> list = new ArrayList<>();
+            final var list = new ArrayList<Object>();
             for (final Object element : (Iterable<?>) value) {
                 list.add(element);
             }
             return list;
         }
         if (value instanceof Iterator<?>) {
-            final Iterator<?> it = (Iterator<?>) value;
-            final List<Object> list = new ArrayList<>();
+            final var it = (Iterator<?>) value;
+            final var list = new ArrayList<Object>();
             while (it.hasNext()) {
                 list.add(it.next());
             }

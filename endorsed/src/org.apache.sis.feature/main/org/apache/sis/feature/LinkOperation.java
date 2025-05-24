@@ -26,6 +26,7 @@ import org.apache.sis.util.resources.Errors;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 
@@ -101,6 +102,21 @@ final class LinkOperation extends AbstractOperation {
     @Override
     public Set<String> getDependencies() {
         return Set.of(referentName);
+    }
+
+    /**
+     * Returns the same operation but using different properties as inputs.
+     *
+     * @param  dependencies  the new properties to use as operation inputs.
+     * @return the new operation, or {@code this} if unchanged.
+     */
+    @Override
+    public Operation updateDependencies(final Map<String, PropertyType> dependencies) {
+        final PropertyType target = dependencies.get(referentName);
+        if (target == null || target.equals(result)) {
+            return this;
+        }
+        return FeatureOperations.POOL.unique(new LinkOperation(inherit(), target));
     }
 
     /**

@@ -27,6 +27,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
@@ -99,6 +100,18 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
     public static final String DEPRECATED_KEY = "deprecated";
 
     /**
+     * Optional key which can be given to the constructor for inheriting values from an existing identified type.
+     * If a value exists, then any property that is not defined by one of the above-cited keys will inherit its
+     * value from the given {@link IdentifiedType}.
+     *
+     * <p>This property is useful when creating a new property derived from an existing property.
+     * An example of such derivation is {@link AbstractOperation#updateDependencies(Map)}.</p>
+     *
+     * @since 1.5
+     */
+    public static final String INHERIT_FROM_KEY = "inheritFrom";
+
+    /**
      * The name of this type.
      *
      * @see #getName()
@@ -146,7 +159,8 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
 
     /**
      * Constructs a type from the given properties. Keys are strings from the table below.
-     * The map given in argument shall contain an entry at least for the {@value #NAME_KEY}.
+     * The map given in argument shall contain an entry at least for the {@value #NAME_KEY} key,
+     * unless a fallback is specified with the {@value #INHERIT_FROM_KEY} key.
      * Other entries listed in the table below are optional.
      *
      * <table class="sis">
@@ -155,32 +169,31 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      *     <th>Map key</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #NAME_KEY}</td>
      *     <td>{@link GenericName} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #DEFINITION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #DESIGNATION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #DESCRIPTION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value #DEPRECATED_KEY}</td>
      *     <td>{@link Boolean}</td>
      *     <td>{@link #isDeprecated()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
+     *     <td>{@value #INHERIT_FROM_KEY}</td>
+     *     <td>{@link IdentifiedType}</td>
+     *     <td>(various)</td>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
      *     <td>{@link Locale}</td>
      *     <td>(none)</td>
@@ -202,11 +215,13 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      */
     @SuppressWarnings("this-escape")
     protected AbstractIdentifiedType(final Map<String,?> identification) throws IllegalArgumentException {
-        // Implicit null value check.
-        Object value = identification.get(NAME_KEY);
+        final IdentifiedType inheritFrom = Containers.property(identification, INHERIT_FROM_KEY, IdentifiedType.class);
+        Object value = identification.get(NAME_KEY);    // Implicit null value check.
         if (value == null) {
-            throw new IllegalArgumentException(Errors.forProperties(identification)
-                    .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
+            if (inheritFrom == null || (name = inheritFrom.getName()) == null) {
+                throw new IllegalArgumentException(Errors.forProperties(identification)
+                        .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
+            }
         } else if (value instanceof String) {
             name = createName(DefaultNameFactory.provider(), (String) value);
         } else if (value instanceof GenericName) {
@@ -214,17 +229,40 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
         } else {
             throw illegalPropertyType(identification, NAME_KEY, value);
         }
-        definition  = Types.toInternationalString(identification, DEFINITION_KEY);
-        designation = Types.toInternationalString(identification, DESIGNATION_KEY);
-        description = Types.toInternationalString(identification, DESCRIPTION_KEY);
+        definition  = toInternationalString(identification, DEFINITION_KEY,  inheritFrom);
+        designation = toInternationalString(identification, DESIGNATION_KEY, inheritFrom);
+        description = toInternationalString(identification, DESCRIPTION_KEY, inheritFrom);
         value = identification.get(DEPRECATED_KEY);
         if (value == null) {
-            deprecated = false;
+            deprecated = (inheritFrom instanceof Deprecable) ? ((Deprecable) inheritFrom).isDeprecated() : false;
         } else if (value instanceof Boolean) {
             deprecated = (Boolean) value;
         } else {
             throw illegalPropertyType(identification, DEPRECATED_KEY, value);
         }
+    }
+
+    /**
+     * Returns an international string for the values in the given properties map, or {@code null} if none.
+     *
+     * @param  identification  the map from which to get the string values for an international string.
+     * @param  prefix          the prefix of keys to use for creating the international string.
+     * @param  inheritFrom     the type from which to inherit a value if none is specified in the map, or {@code null}.
+     * @return the international string, or {@code null} if the given map is null or does not contain values
+     *         associated to keys starting with the given prefix.
+     */
+    private static InternationalString toInternationalString(
+            final Map<String,?> identification, final String prefix, final IdentifiedType inheritFrom)
+    {
+        InternationalString i18n = Types.toInternationalString(identification, prefix);
+        if (i18n == null && inheritFrom != null) {
+            switch (prefix) {
+                case DEFINITION_KEY:  i18n = inheritFrom.getDefinition(); break;
+                case DESIGNATION_KEY: i18n = inheritFrom.getDesignation().orElse(null); break;
+                case DESCRIPTION_KEY: i18n = inheritFrom.getDescription().orElse(null); break;
+            }
+        }
+        return i18n;
     }
 
     /**
@@ -235,6 +273,14 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
     {
         return new IllegalArgumentException(Errors.forProperties(identification).getString(
                 Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
+    }
+
+    /**
+     * Convenience method for subclasses that create new types derived from this type.
+     * The purpose is more to improve readability than to save a few byte codes.
+     */
+    final Map<String,?> inherit() {
+        return Map.of(INHERIT_FROM_KEY, this);
     }
 
     /**
@@ -367,7 +413,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
     @Override
     public boolean equals(final Object obj) {
         if (obj != null && getClass() == obj.getClass()) {
-            final AbstractIdentifiedType that = (AbstractIdentifiedType) obj;
+            final var that = (AbstractIdentifiedType) obj;
             return Objects.equals(name,        that.name) &&
                    Objects.equals(definition,  that.definition) &&
                    Objects.equals(designation, that.designation) &&
@@ -396,7 +442,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
             }
             key = Errors.Keys.EmptyProperty_1;
         }
-        final StringBuilder b = new StringBuilder(40).append("Type[“").append(container.getName()).append("”].")
+        final var b = new StringBuilder(40).append("Type[“").append(container.getName()).append("”].")
                 .append(argument).append('[').append(index).append("].name");
         throw new IllegalArgumentException(Errors.format(key, b.toString()));
     }

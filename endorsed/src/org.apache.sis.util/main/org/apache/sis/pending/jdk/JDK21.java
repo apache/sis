@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
 
 
@@ -40,8 +41,8 @@ public final class JDK21 {
      * Placeholder for {@code SequencedCollection.getFirst()}.
      *
      * @param  <E>        type of elements in the collection.
-     * @param  sequenced  the sequenced collection for which to get elements in reverse order.
-     * @return elements of the given collection in reverse order.
+     * @param  sequenced  the sequenced collection for which from which to get an element.
+     * @return the requested element.
      */
     public static <E> E getFirst(final List<E> sequenced) {
         try {
@@ -55,8 +56,8 @@ public final class JDK21 {
      * Placeholder for {@code SequencedCollection.getLast()}.
      *
      * @param  <E>        type of elements in the collection.
-     * @param  sequenced  the sequenced collection for which to get elements in reverse order.
-     * @return elements of the given collection in reverse order.
+     * @param  sequenced  the sequenced collection for which from which to get an element.
+     * @return the requested element.
      */
     public static <E> E getLast(final List<E> sequenced) {
         try {
@@ -64,6 +65,21 @@ public final class JDK21 {
         } catch (IndexOutOfBoundsException e) {
             throw new NoSuchElementException();
         }
+    }
+
+    /**
+     * Placeholder for {@code SequencedMap.putFirst(K, V)}.
+     *
+     * @param  <K>        type of keys in the map.
+     * @param  <V>        type of values in the map.
+     * @param  sequenced  the sequenced map for which to put an element first.
+     */
+    public static <K,V> void putFirst(final LinkedHashMap<K,V> sequenced, final K key, final V value) {
+        @SuppressWarnings("unchecked")
+        final var copy = (LinkedHashMap<K,V>) sequenced.clone();
+        sequenced.clear();
+        sequenced.put(key, value);
+        sequenced.putAll(copy);
     }
 
     /**

@@ -16,15 +16,14 @@
  */
 package org.apache.sis.feature.builder;
 
+import java.util.HashMap;
 import java.util.Objects;
 import org.opengis.util.GenericName;
-import org.apache.sis.feature.Features;
-import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.PropertyType;
-import org.opengis.feature.Operation;
 
 
 /**
@@ -61,35 +60,37 @@ final class OperationWrapper extends PropertyTypeBuilder {
 
     /**
      * Returns the operation or an updated version of the operation.
-     * Updated versions are created only for some kinds of operation, described below.
+     * Updated versions are created for some kinds of operation, described below.
      * Otherwise, this method returns the same value as {@link #build()}.
      *
-     * <h4>Links</h4>
+     * <h4>Updated operations</h4>
      * If the operation is a link to another property of the feature to build, the result type
      * of the original operation is replaced by the target of the link in the feature to build.
      * Even if the attribute name is the same, sometime the value class or some characteristics
-     * are different.
+     * are different. Similar updates may also be applied to other kinds of operation.
      *
      * @throws IllegalStateException if the builder contains inconsistent information.
      */
     @Override
     final PropertyType buildForFeature() {
         final FeatureTypeBuilder owner = owner();
-        try {
-            return Features.getLinkTarget(operation).<PropertyType>map((name) -> {
-                final PropertyTypeBuilder target = owner.getProperty(name);
-                if (target != null) {
-                    final PropertyType result = target.build();
-                    if (!result.equals(((Operation) operation).getResult())) {
-                        initialize(operation);
-                        return FeatureOperations.link(identification(), result);
-                    }
+        if (operation instanceof AbstractOperation) {
+            final var op = (AbstractOperation) operation;
+            final var dependencies = new HashMap<String, PropertyType>();
+            for (final String name : op.getDependencies()) {
+                final PropertyTypeBuilder target;
+                try {
+                    target = owner.getProperty(name);
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
-                return null;
-            }).orElse(operation);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+                if (target != null) {
+                    dependencies.put(name, target.build());
+                }
+            }
+            return op.updateDependencies(dependencies);
         }
+        return operation;
     }
 
     /**

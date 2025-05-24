@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Objects;
-import java.util.Optional;
-import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -37,22 +35,25 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.pending.jdk.JDK21;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureInstantiationException;
 import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 
 
 /**
  * An operation computing the envelope that encompass all geometries found in a list of attributes.
- * Geometries can be in different coordinate reference systems; they will be transformed to the first
- * non-null CRS in the following choices:
+ * Geometries can be in different coordinate reference systems. They will be transformed to the first
+ * non-null <abbr>CRS</abbr> in the following choices:
  *
  * <ol>
  *   <li>the CRS specified at construction time,</li>
@@ -75,7 +76,7 @@ final class EnvelopeOperation extends AbstractOperation {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8034615858550405350L;
+    private static final long serialVersionUID = 2435142477482749321L;
 
     /**
      * The parameter descriptor for the "Envelope" operation, which does not take any parameter.
@@ -83,7 +84,10 @@ final class EnvelopeOperation extends AbstractOperation {
     private static final ParameterDescriptorGroup EMPTY_PARAMS = parameters("Envelope");
 
     /**
-     * The names of all properties containing a geometry object.
+     * The names of all properties containing a geometry object. The attributes are the in order specified by the user,
+     * except the default geometry (if any) which is always first. Note that the name of the default geometry in this
+     * array is usually <em>not</em> {@value AttributeConvention#GEOMETRY}, because this class replaces links by their
+     * targets for avoiding to process the same geometries twice.
      */
     private final String[] attributeNames;
 
@@ -95,6 +99,12 @@ final class EnvelopeOperation extends AbstractOperation {
      */
     @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     final CoordinateReferenceSystem targetCRS;
+
+    /**
+     * Whether {@link #targetCRS} has been explicitly specified by the user.
+     * If {@code false}, then the <abbr>CRS</abbr> has been inherited from the geometries.
+     */
+    private final boolean explicitCRS;
 
     /**
      * The coordinate conversions or transformations from the CRS used by the geometries to the CRS requested
@@ -117,8 +127,11 @@ final class EnvelopeOperation extends AbstractOperation {
 
     /**
      * The property names as an unmodifiable set, created when first needed.
+     * This is simply {@link #attributeNames} copied in a unmodifiable set.
+     *
+     * @see #getDependencies()
      */
-    private transient Set<String> dependencies;
+    private transient volatile Set<String> dependencies;
 
     /**
      * The type of the result returned by the envelope operation.
@@ -128,77 +141,114 @@ final class EnvelopeOperation extends AbstractOperation {
 
     /**
      * Creates a new operation computing the envelope of features of the given type.
+     * The {@link #targetCRS} is set to the first non-null <abbr>CRS</abbr> in the following choices:
+     *
+     * <ol>
+     *   <li>the <abbr>CRS</abbr> specified to this constructor,</li>
+     *   <li>the <abbr>CRS</abbr> of the default geometry, or</li>
+     *   <li>the <abbr>CRS</abbr> of the first non-empty geometry.</li>
+     * </ol>
+     *
+     * <h4>Inheritance</h4>
+     * If {@code inheritFrom} is non-null, then the {@code geometryAttributes} array must have the same length
+     * as {@code inheritFrom.attributeNames} with elements in the same order. Any null element in the given
+     * array will be replaced by the corresponding value of {@code inheritFrom}.
      *
      * @param identification      the name and other information to be given to this operation.
      * @param targetCRS           the coordinate reference system of envelopes to computes, or {@code null}.
      * @param geometryAttributes  the operation or attribute type from which to get geometry values.
+     * @param inheritFrom         the existing operation from which to inherit attributes, or {@code null}.
      */
-    EnvelopeOperation(final Map<String,?> identification, CoordinateReferenceSystem targetCRS,
-            final PropertyType[] geometryAttributes) throws FactoryException
+    EnvelopeOperation(final Map<String,?> identification,
+                      CoordinateReferenceSystem targetCRS,
+                      final PropertyType[] geometryAttributes,
+                      final EnvelopeOperation inheritFrom)
+            throws FactoryException
     {
         super(identification);
-        String defaultGeometry = null;
+        explicitCRS = (targetCRS != null);      // Whether the CRS was specified by the user or inferred automatically.
+        boolean characterizedByCRS = false;     // Whether "sis:crs" characteristics exist, possibly with null values.
+        String defaultGeometry = null;          // Attribute name of the target of the "sis:geometry" property.
+        boolean defaultIsFirst = true;          // Whether the default geometry is the first entry in the `names` map.
         /*
-         * Get all property names without duplicated values. If a property is a link to an attribute,
-         * then the key will be the name of the referenced attribute instead of the operation name.
-         * The intent is to avoid querying the same geometry twice if the attribute is also specified
-         * explicitly in the array of properties.
-         *
-         * The map values will be the default Coordinate Reference System, or null if none.
+         * Get all property names without duplicated values, including the targets of links.
+         * The map values will be the default Coordinate Reference Systems, or null if none.
          */
-        boolean characterizedByCRS = false;
-        final Map<String,CoordinateReferenceSystem> names = new LinkedHashMap<>(4);
-        for (final IdentifiedType property : geometryAttributes) {
-            final Optional<AttributeType<?>> at = Features.toAttribute(property);
-            if (at.isPresent() && Geometries.isKnownType(at.get().getValueClass())) {
-                final GenericName name = property.getName();
-                final String attributeName = (property instanceof LinkOperation)
-                                             ? ((LinkOperation) property).referentName : name.toString();
-                final boolean isDefault = AttributeConvention.GEOMETRY_PROPERTY.equals(name);
-                if (isDefault) {
-                    defaultGeometry = attributeName;
-                }
-                CoordinateReferenceSystem attributeCRS = null;
+        final var names = new LinkedHashMap<String, CoordinateReferenceSystem>(4);
+        for (int i=0; i < geometryAttributes.length; i++) {
+            final String propertyName;          // Name of `geometryAttributes[i]`, possibly inherited.
+            final String attributeName;         // Name of the property after following the link.
+            CoordinateReferenceSystem attributeCRS = null;
+            final PropertyType property = geometryAttributes[i];
+            if (property == null && inheritFrom != null) {
                 /*
-                 * Set `characterizedByCRS` to true if we find at least one attribute which may have the
-                 * "CRS" characteristic. Note that we cannot rely on `attributeCRS` being non-null
+                 * When this constructor is invoked by `updateDependencies(Map)`, a null property means to inherit
+                 * the property at the same index from the previous operation. The caller is responsible to ensure
+                 * that the indexes match.
+                 */
+                propertyName = attributeName = inheritFrom.attributeNames[i];
+                if (inheritFrom.attributeToCRS != null) {
+                    final CoordinateOperation op = inheritFrom.attributeToCRS[i];
+                    if (op != null) {
+                        attributeCRS = op.getSourceCRS();
+                        characterizedByCRS = true;
+                    }
+                }
+            } else {
+                final AttributeType<?> at = Features.toAttribute(property).orElse(null);
+                if (at == null || !Geometries.isKnownType(at.getValueClass())) {
+                    continue;   // Not a geometry property. Ignore as per method contract.
+                }
+                /*
+                 * If a property is a link to an attribute, then the key will be the name of the referenced
+                 * attribute instead of the operation name. This is for avoiding to query the same geometry
+                 * twice when the attribute is also specified explicitly in the array of properties.
+                 */
+                propertyName  = property.getName().toString();
+                attributeName = Features.getLinkTarget(property).orElse(propertyName);
+                /*
+                 * Set `characterizedByCRS` to `true` if we find at least one attribute which have the
+                 * "sis:crs" characteristic. Note that we cannot rely on `attributeCRS` being non-null
                  * because an attribute may be characterized by a CRS without providing default CRS.
                  */
-                final AttributeType<?> ct = at.get().characteristics().get(AttributeConvention.CRS);
+                final AttributeType<?> ct = at.characteristics().get(AttributeConvention.CRS);
                 if (ct != null && CoordinateReferenceSystem.class.isAssignableFrom(ct.getValueClass())) {
-                    attributeCRS = (CoordinateReferenceSystem) ct.getDefaultValue();              // May still null.
-                    if (targetCRS == null && isDefault) {
-                        targetCRS = attributeCRS;
-                    }
+                    attributeCRS = (CoordinateReferenceSystem) ct.getDefaultValue();    // May still be null.
                     characterizedByCRS = true;
                 }
-                names.putIfAbsent(attributeName, attributeCRS);
             }
+            /*
+             * If the user did not specified a CRS explicitly, take the CRS of the default geometry.
+             * If there is no default geometry, the CRS of the first geometry will be taken in next loop.
+             */
+            if (AttributeConvention.GEOMETRY.equals(propertyName)) {
+                defaultGeometry = attributeName;
+                defaultIsFirst = names.isEmpty();
+                if (targetCRS == null) {
+                    targetCRS = attributeCRS;
+                }
+            }
+            names.putIfAbsent(attributeName, attributeCRS);
         }
         /*
          * Copy the names in an array with the default geometry first. If possible, find the coordinate operations
-         * now in order to avoid the potentially costly call to CRS.findOperation(…) for each feature on which this
-         * EnvelopeOperation will be applied.
+         * now in order to avoid the potentially costly calls to `CRS.findOperation(…)` for each feature on which
+         * this `EnvelopeOperation` will be applied.
          */
-        names.remove(null);                                                                     // Paranoiac safety.
+        if (!defaultIsFirst) {
+            JDK21.putFirst(names, defaultGeometry, names.remove(defaultGeometry));
+        }
+        names.remove(null);    // Paranoiac safety.
         attributeNames = new String[names.size()];
         attributeToCRS = characterizedByCRS ? new CoordinateOperation[attributeNames.length] : null;
-        int n = (defaultGeometry == null) ? 0 : 1;
-        for (final Map.Entry<String,CoordinateReferenceSystem> entry : names.entrySet()) {
-            final int i;
-            final String name = entry.getKey();
-            if (name.equals(defaultGeometry)) {
-                defaultGeometry = null;
-                i = 0;
-            } else {
-                i = n++;
-            }
-            attributeNames[i] = name;
+        int i = 0;
+        for (final Map.Entry<String, CoordinateReferenceSystem> entry : names.entrySet()) {
+            attributeNames[i] = entry.getKey();
             if (characterizedByCRS) {
                 final CoordinateReferenceSystem value = entry.getValue();
                 if (value != null) {
                     if (targetCRS == null) {
-                        targetCRS = value;                  // Fallback if default geometry has no CRS.
+                        targetCRS = value;      // Fallback if the default geometry has no CRS.
                     }
                     /*
                      * The following operation is often identity. We do not filter identity operations
@@ -209,6 +259,7 @@ final class EnvelopeOperation extends AbstractOperation {
                     attributeToCRS[i] = CRS.findOperation(value, targetCRS, null);
                 }
             }
+            i++;
         }
         resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<>(
                 resultIdentification(identification), Envelope.class, 1, 1, null));
@@ -242,11 +293,37 @@ final class EnvelopeOperation extends AbstractOperation {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public synchronized Set<String> getDependencies() {
-        if (dependencies == null) {
-            dependencies = CollectionsExt.immutableSet(true, attributeNames);
+    public Set<String> getDependencies() {
+        Set<String> cached = dependencies;
+        if (cached == null) {
+            // Not really a problem if computed twice concurrently.
+            dependencies = cached = CollectionsExt.immutableSet(true, attributeNames);
         }
-        return dependencies;
+        return cached;
+    }
+
+    /**
+     * Returns the same operation but using different properties as inputs.
+     *
+     * @param  dependencies  the new properties to use as operation inputs.
+     * @return the new operation, or {@code this} if unchanged.
+     */
+    @Override
+    public Operation updateDependencies(final Map<String, PropertyType> dependencies) {
+        boolean foundAny = false;
+        final var geometryAttributes = new PropertyType[attributeNames.length];
+        for (int i=0; i < geometryAttributes.length; i++) {
+            foundAny |= (geometryAttributes[i] = dependencies.get(attributeNames[i])) != null;
+        }
+        if (foundAny) try {
+            var op = new EnvelopeOperation(inherit(), explicitCRS ? targetCRS : null, geometryAttributes, this);
+            if (!equals(op)) {
+                return FeatureOperations.POOL.unique(op);
+            }
+        } catch (FactoryException e) {
+            throw new FeatureInstantiationException(e.getMessage(), e);
+        }
+        return this;
     }
 
     /**
@@ -335,7 +412,7 @@ final class EnvelopeOperation extends AbstractOperation {
                          * a CRS characteristic is associated to a particular feature, setting `op` to null
                          * will cause a new coordinate operation to be searched.
                          */
-                        final Attribute<?> at = ((Attribute<?>) feature.getProperty(attributeNames[i]))
+                        final var at = ((Attribute<?>) feature.getProperty(attributeNames[i]))
                                 .characteristics().get(AttributeConvention.CRS);
                         final Object geomCRS;
                         if (at != null && (geomCRS = at.getValue()) != null) {
@@ -413,10 +490,11 @@ final class EnvelopeOperation extends AbstractOperation {
     public boolean equals(final Object obj) {
         if (super.equals(obj)) {
             // `this.result` is compared (indirectly) by the super class.
-            final EnvelopeOperation that = (EnvelopeOperation) obj;
+            final var that = (EnvelopeOperation) obj;
             return Arrays.equals(attributeNames, that.attributeNames) &&
                    Arrays.equals(attributeToCRS, that.attributeToCRS) &&
-                   Objects.equals(targetCRS,     that.targetCRS);
+                   Objects.equals(targetCRS,     that.targetCRS) &&
+                   explicitCRS == that.explicitCRS;
         }
         return false;
     }
