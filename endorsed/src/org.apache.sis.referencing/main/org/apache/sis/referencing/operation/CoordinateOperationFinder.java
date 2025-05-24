@@ -258,7 +258,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             throw new FactoryException(resources().getString(Resources.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
         }
         /*
-         * If the user did not specified an area of interest, use the domain of validity of the CRS.
+         * If the user did not specify an area of interest, use the domain of validity of the CRS.
          */
         GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(areaOfInterest);
         if (bbox == null) {

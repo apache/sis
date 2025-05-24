@@ -218,7 +218,7 @@ final class EnvelopeOperation extends AbstractOperation {
                 }
             }
             /*
-             * If the user did not specified a CRS explicitly, take the CRS of the default geometry.
+             * If the user did not specify a CRS explicitly, take the CRS of the default geometry.
              * If there is no default geometry, the CRS of the first geometry will be taken in next loop.
              */
             if (AttributeConvention.GEOMETRY.equals(propertyName)) {

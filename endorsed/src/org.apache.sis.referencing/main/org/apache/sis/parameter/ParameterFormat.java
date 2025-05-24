@@ -899,7 +899,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         }
         /*
          * Writes the table. The header will contain one column for each codespace in the order declared
-         * by the user. If the user did not specified any codespace, or if we had to write codespace not
+         * by the user. If the user did not specify any codespace, or if we had to write codespace not
          * on the user list, then those codespaces will be written in the order we found them.
          */
         final boolean hasColors = (colors != null);

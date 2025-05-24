@@ -232,7 +232,7 @@ public final class XML extends Static {
 
     /**
      * Specifies whether the unmarshalling process should accept any metadata or GML supported version
-     * if the user did not specified an explicit version. The value can be a {@link Boolean} instance,
+     * if the user did not specify an explicit version. The value can be a {@link Boolean} instance,
      * or {@code "true"} or {@code "false"} as a {@link String}. If this value is not specified, then
      * the default is {@code true} for all {@code XML.unmarshal} methods and {@code false} otherwise.
      *

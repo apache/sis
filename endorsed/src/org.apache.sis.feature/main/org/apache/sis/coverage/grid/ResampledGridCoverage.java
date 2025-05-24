@@ -204,7 +204,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             return this;
         }
         /*
-         * If the transform is linear and the user did not specified explicitly a desired transform or grid extent
+         * If the transform is linear and the user did not specify explicitly a desired transform or grid extent
          * (i.e. user specified only a target CRS), keep same image with a different `gridToCRS` transform instead
          * than doing a resampling. The intent is to avoid creating a new image if user apparently doesn't care.
          */
