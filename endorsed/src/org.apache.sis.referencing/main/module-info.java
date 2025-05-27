@@ -178,6 +178,7 @@ module org.apache.sis.referencing {
     exports org.apache.sis.referencing.privy to
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
+            org.apache.sis.geometry,                        // In the "incubator" sub-project.
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,

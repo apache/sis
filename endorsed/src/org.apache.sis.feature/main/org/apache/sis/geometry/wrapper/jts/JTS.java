@@ -19,6 +19,7 @@ package org.apache.sis.geometry.wrapper.jts;
 import java.util.Map;
 import java.util.Objects;
 import java.awt.Shape;
+import java.util.function.Predicate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -40,6 +41,12 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.geometry.wrapper.Geometries.LOGGER;
+import org.locationtech.jts.algorithm.Orientation;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateSequences;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 
 
 /**
@@ -332,4 +339,92 @@ public final class JTS extends Static {
     public static Geometry fromAWT(final GeometryFactory factory, final Shape shape, final double flatness) {
         return ShapeConverter.create(factory, Objects.requireNonNull(shape), flatness);
     }
+    
+    
+    /**
+     * Create a geometry from given geometry. Will ensure that
+     * shells are in the requested winding and holes are in reverse-winding.
+     * Handles only Polygon, MultiPolygon and LinearRing Geometry type.
+     * Other geometry types are returned unchanged.
+     *
+     * @param g The Geometry to make CW.
+     * @param clockwise true for exterior ring clockwise, false for counter-clockwise
+     * @return The "nice" Polygon.
+     */
+    public static <T extends Geometry> T ensureWinding(final T g, boolean clockwise) {
+
+        Predicate<CoordinateSequence> evaluator = Orientation::isCCW;
+        if (clockwise) evaluator = evaluator.negate();
+
+        if (g instanceof MultiPolygon || g instanceof Polygon) {
+            final GeometryFactory gf = g.getFactory();
+            boolean isMultiPolygon = false;
+            int nbPolygon = 1;
+
+            if (g instanceof MultiPolygon) {
+                nbPolygon = g.getNumGeometries();
+                isMultiPolygon = true;
+            }
+            final Polygon[] ps = new Polygon[nbPolygon];
+            for (int i = 0; i < nbPolygon; i++) {
+                final Polygon p;
+                if (isMultiPolygon) {
+                    p = (Polygon) g.getGeometryN(i);
+                } else {
+                    p = (Polygon) g;
+                }
+                final LinearRing[] holes = new LinearRing[p.getNumInteriorRing()];
+                LinearRing outer = p.getExteriorRing();
+                if (!evaluator.test(outer.getCoordinateSequence())) {
+                    outer = reverseRing(p.getExteriorRing());
+                }
+
+                for (int t = 0, tt = p.getNumInteriorRing(); t < tt; t++) {
+                    holes[t] = p.getInteriorRingN(t);
+                    if (evaluator.test(holes[t].getCoordinateSequence())) {
+                        holes[t] = reverseRing(holes[t]);
+                    }
+                }
+                ps[i] = gf.createPolygon(outer, holes);
+            }
+
+            Geometry reversed;
+            if (isMultiPolygon) {
+                reversed = gf.createMultiPolygon(ps);
+            } else {
+                reversed = ps[0];
+            }
+            reversed.setSRID(g.getSRID());
+            reversed.setUserData(g.getUserData());
+            return (T) reversed;
+
+        } else if (g instanceof LinearRing) {
+            LinearRing lr = (LinearRing) g;
+            if (!evaluator.test(lr.getCoordinateSequence())) {
+               lr = reverseRing(lr);
+            }
+            return (T) lr;
+
+        } else {
+            return g;
+        }
+    }
+    
+    /**
+     * Does what it says, reverses the order of the Coordinates in the ring.
+     *
+     * @param lr The ring to reverse.
+     * @return A new ring with the reversed Coordinates.
+     */
+    private static LinearRing reverseRing(final LinearRing lr) {
+        final GeometryFactory gf = lr.getFactory();
+        final CoordinateSequence cs = lr.getCoordinateSequence().copy();
+        CoordinateSequences.reverse(cs);
+
+        final LinearRing reversed = gf.createLinearRing(cs);
+        reversed.setSRID(reversed.getSRID());
+        reversed.setUserData(lr.getUserData());
+        return reversed;
+    }
+
 }
