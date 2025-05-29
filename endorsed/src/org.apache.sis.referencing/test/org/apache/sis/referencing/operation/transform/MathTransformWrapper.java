@@ -37,10 +37,10 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * that a given transform implements the {@link MathTransform2D} or {@link LinearTransform} interface,
  * in order to disable optimization paths in some tests.
  *
- * <strong>Do not implement {@link MathTransform2D} in this base class</strong>.
+ * <p><strong>Do not implement {@link MathTransform2D} in this base class</strong>.
  * This wrapper is sometimes used for hiding the fact that a transform implements
  * the {@code MathTransform2D} interface, typically for testing a different code
- * path in a JUnit test.
+ * path in a JUnit test.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

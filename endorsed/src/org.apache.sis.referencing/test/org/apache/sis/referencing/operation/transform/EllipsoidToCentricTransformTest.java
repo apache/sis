@@ -44,11 +44,13 @@ import org.opengis.test.ToleranceModifier;
 
 
 /**
- * Tests {@link EllipsoidToCentricTransform}.
+ * Tests {@link EllipsoidToCentricTransform} from geographic to geocentric coordinates.
+ * When a test provides hard-coded expected results, those results are in Cartesian coordinates.
+ * See {@link #targetType} for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class EllipsoidToCentricTransformTest extends MathTransformTestCase {
+public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     /**
      * A JUnit extension for listening to log events.
      */
@@ -56,31 +58,69 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
     public final LoggingWatcher loggings;
 
     /**
+     * Whether the {@code EllipsoidToCentricTransform} should target Cartesian or spherical coordinates.
+     * The default value is {@code CARTESIAN}. Note that even if this field is set to {@cide SPHERICAL},
+     * the {@link #transform} target may still be Cartesian with a calculation done in two steps:
+     * geographic to spherical, then {@link SphericalToCartesian}.
+     */
+    protected EllipsoidToCentricTransform.TargetType targetType;
+
+    /**
+     * Whether to add a spherical to Cartesian conversion after the {@linkplain #transform transform} to test.
+     * It should be true only if {@link #targetType} is {@code SPHERICAL}.
+     */
+    protected boolean addSphericalToCartesian;
+
+    /**
      * Creates a new test case.
      */
     public EllipsoidToCentricTransformTest() {
         loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
+        targetType = EllipsoidToCentricTransform.TargetType.CARTESIAN;
     }
 
     /**
      * Convenience method for creating an instance from an ellipsoid.
+     * The target coordinate system is usually Cartesian. If {@link #targetType} is {@code SPHERICAL},
+     * a {@link SphericalToCartesian} step is added as an opaque {@code MathTransform} for preventing
+     * Apache <abbr>SIS</abbr> to optimize the concatenation result.
+     *
+     * @param  ellipsoid   the semi-major and semi-minor axis lengths with their unit of measurement.
+     * @param  withHeight  whether source geographic coordinates include an ellipsoidal height.
+     * @throws FactoryException if an error occurred while creating a transform.
      */
-    private void createGeodeticConversion(final Ellipsoid ellipsoid, boolean is3D) throws FactoryException {
+    protected void createGeodeticConversion(final Ellipsoid ellipsoid, final boolean withHeight) throws FactoryException {
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
-        transform = EllipsoidToCentricTransform.createGeodeticConversion(factory, ellipsoid, is3D);
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(
+                factory,
+                ellipsoid.getSemiMajorAxis(),
+                ellipsoid.getSemiMinorAxis(),
+                ellipsoid.getAxisUnit(),
+                withHeight,
+                targetType);
         /*
-         * If the ellipsoid is a sphere, then EllipsoidToCentricTransform.createGeodeticConversion(…) created a
-         * SphericalToCartesian instance instead of an EllipsoidToCentricTransform instance.  Create manually
-         * the EllipsoidToCentricTransform here and wrap the two transform in a comparator for making sure that
+         * If the ellipsoid is a sphere, then `EllipsoidToCentricTransform.createGeodeticConversion(…)` created a
+         * `SphericalToCartesian` instance instead of an `EllipsoidToCentricTransform` instance. Create manually
+         * the `EllipsoidToCentricTransform` here and wrap the two transforms in a comparator for making sure that
          * the two implementations are consistent.
          */
-        if (ellipsoid.isSphere()) {
-            EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(
+        if (ellipsoid.isSphere() && targetType == EllipsoidToCentricTransform.TargetType.CARTESIAN) {
+            var tr = new EllipsoidToCentricTransform(
                     ellipsoid.getSemiMajorAxis(),
                     ellipsoid.getSemiMinorAxis(),
-                    ellipsoid.getAxisUnit(), is3D,
-                    EllipsoidToCentricTransform.TargetType.CARTESIAN);
+                    ellipsoid.getAxisUnit(),
+                    withHeight,
+                    targetType);
             transform = new TransformResultComparator(transform, tr.context.completeTransform(factory, tr), 1E-2);
+        }
+        /*
+         * If the transform is from geographic to spherical coordinates, add a spherical to Cartesian step.
+         * Note that each step works in degrees, not in radians. The use of `MathTransformWrapper` prevent
+         * the "radians to degrees to radians" conversions to be optimized, which is intentional for test.
+         */
+        if (addSphericalToCartesian) {
+            var tr = new MathTransformWrapper(SphericalToCartesian.INSTANCE.completeTransform(factory));
+            transform = ConcatenatedTransform.create(transform, tr, factory);
         }
     }
 
@@ -156,8 +196,9 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
      */
     @Test
     public void testHighEccentricity() throws FactoryException, TransformException, FactoryException {
-        transform = EllipsoidToCentricTransform.createGeodeticConversion(DefaultMathTransformFactory.provider(),
-                6000000, 4000000, Units.METRE, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(
+                DefaultMathTransformFactory.provider(),
+                6000000, 4000000, Units.METRE, true, targetType);
 
         final double delta = toRadians(100.0 / 60) / 1852;
         derivativeDeltas  = new double[] {delta, delta, 100};
@@ -170,20 +211,23 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
     /**
      * Executes the derivative test using the given ellipsoid.
      *
-     * @param  ellipsoid  the ellipsoid to use for the test.
-     * @param  hasHeight  {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
-     *                    or {@code false} if they are only 2-D.
+     * @param  ellipsoid   the ellipsoid to use for the test.
+     * @param  withHeight  whether geographic coordinates include an ellipsoidal height (i.e. are 3-D).
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
      */
-    private void testDerivative(final Ellipsoid ellipsoid, final boolean hasHeight) throws FactoryException, TransformException {
-        createGeodeticConversion(ellipsoid, hasHeight);
-        DirectPosition point = hasHeight ? new GeneralDirectPosition(-10, 40, 200) : new DirectPosition2D(-10, 40);
+    private void testDerivative(final Ellipsoid ellipsoid, final boolean withHeight) throws FactoryException, TransformException {
+        createGeodeticConversion(ellipsoid, withHeight);
+        DirectPosition point = withHeight ? new GeneralDirectPosition(-10, 40, 200) : new DirectPosition2D(-10, 40);
         /*
          * Derivative of the direct transform.
          */
         tolerance = 1E-2;
-        derivativeDeltas = new double[] {toRadians(1.0 / 60) / 1852};           // Approximately one metre.
+        derivativeDeltas = new double[] {
+            toRadians(1.0 / 60) / 1852,             // Approximately one metre.
+            toRadians(1.0 / 60) / 1852,
+            1
+        };
         verifyDerivative(point.getCoordinates());
         /*
          * Derivative of the inverse transform.
@@ -191,7 +235,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         point = transform.transform(point, null);
         transform = transform.inverse();
         tolerance = 1E-8;
-        derivativeDeltas = new double[] {1};                                    // Approximately one metre.
+        derivativeDeltas = new double[] {1,1,1};    // Approximately one metre.
         verifyDerivative(point.getCoordinates());
         loggings.assertNoUnexpectedLog();
     }

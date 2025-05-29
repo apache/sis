@@ -17,6 +17,9 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
+import java.io.Serializable;
+import java.io.InvalidClassException;
+import java.io.ObjectStreamException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
@@ -250,5 +253,33 @@ concat: if (info.isLinear(-linearTransformPosition, true)) {
             }
         }
         super.tryConcatenate(info);
+    }
+
+    /**
+     * The object to use as a proxy during serialization.
+     * For avoiding complain about the lack of default constructor in the super class.
+     */
+    static final class Proxy implements Serializable {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -2177879597869330855L;
+
+        /** The type of transform to reconstitute at deserialization. */
+        private final Class<? extends CoordinateSystemTransform> type;
+
+        /** Creates a new proxy. */
+        Proxy(final Class<? extends CoordinateSystemTransform> type) {
+            this.type = type;
+        }
+
+        /**
+         * Returns the singleton instance on deserialization.
+         */
+        private Object readResolve() throws ObjectStreamException {
+            if (type == CartesianToSpherical.class) return CartesianToSpherical.INSTANCE;
+            if (type == SphericalToCartesian.class) return SphericalToCartesian.INSTANCE;
+            if (type ==     PolarToCartesian.class) return     PolarToCartesian.INSTANCE;
+            if (type ==     CartesianToPolar.class) return     CartesianToPolar.INSTANCE;
+            throw new InvalidClassException(type.getCanonicalName(), type.toString());
+        }
     }
 }

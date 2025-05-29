@@ -67,10 +67,10 @@ final class PolarToCartesian extends CoordinateSystemTransform implements Serial
     static final PolarToCartesian INSTANCE = new PolarToCartesian();
 
     /**
-     * Returns the singleton instance on deserialization.
+     * Returns the proxy to serialize instead of this class.
      */
-    private Object readResolve() throws ObjectStreamException {
-        return INSTANCE;
+    private Object writeReplace() throws ObjectStreamException {
+        return new Proxy(PolarToCartesian.class);
     }
 
     /**

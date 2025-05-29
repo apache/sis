@@ -65,10 +65,10 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
     static final SphericalToCartesian INSTANCE = new SphericalToCartesian();
 
     /**
-     * Returns the singleton instance on deserialization.
+     * Returns the proxy to serialize instead of this class.
      */
-    private Object readResolve() throws ObjectStreamException {
-        return INSTANCE;
+    private Object writeReplace() throws ObjectStreamException {
+        return new Proxy(SphericalToCartesian.class);
     }
 
     /**

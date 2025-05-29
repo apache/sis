@@ -152,8 +152,8 @@ public abstract class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Returns the value to use from the {@link #λDimension} or {@link zDimension} for the
-     * given comparison mode, or -1 if none.
+     * Returns the value to use from the {@link #λDimension} or {@link #zDimension}
+     * for the given comparison mode, or -1 if none.
      */
     @SuppressWarnings("fallthrough")
     private static int forComparison(final int[] config, final CalculationType mode) {
