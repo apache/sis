@@ -378,7 +378,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoid (radians domain) to centric”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
-                "    Parameter[“target”, “CARTESIAN”],\n" +
+                "    Parameter[“csType”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
@@ -391,7 +391,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
                 "    Parameter[“elt_2_3”, 1.8335353697517302E-5]],\n" +
                 "  Param_MT[“Centric to ellipsoid (radians domain)”,\n" +
                 "    Parameter[“eccentricity”, 0.08199188997902956],\n" +
-                "    Parameter[“target”, “CARTESIAN”],\n" +
+                "    Parameter[“csType”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +

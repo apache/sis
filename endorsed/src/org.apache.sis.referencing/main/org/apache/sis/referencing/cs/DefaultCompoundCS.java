@@ -103,6 +103,7 @@ public class DefaultCompoundCS extends AbstractCS {
     public DefaultCompoundCS(final Map<String,?> properties, CoordinateSystem... components) {
         super(properties, getAxes(components = clone(components)));
         this.components = UnmodifiableArrayList.wrap(components);
+        // TODO: replace by List.of(components) after RFE #4093999.
     }
 
     /**
@@ -112,6 +113,7 @@ public class DefaultCompoundCS extends AbstractCS {
     private DefaultCompoundCS(final DefaultCompoundCS original, final CoordinateSystem[] components) {
         super(original, null, getAxes(components));
         this.components = UnmodifiableArrayList.wrap(components);
+        // TODO: replace by List.of(components) after RFE #4093999.
     }
 
     /**
@@ -134,6 +136,7 @@ public class DefaultCompoundCS extends AbstractCS {
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
         super(Map.of(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
         this.components = UnmodifiableArrayList.wrap(components);
+        // TODO: replace by List.of(components) after RFE #4093999.
     }
 
     /**
@@ -156,7 +159,7 @@ public class DefaultCompoundCS extends AbstractCS {
         for (int i=0; i<components.length; i++) {
             count += components[i].getDimension();
         }
-        final CoordinateSystemAxis[] axis = new CoordinateSystemAxis[count];
+        final var axis = new CoordinateSystemAxis[count];
         count = 0;
         for (final CoordinateSystem c : components) {
             final int dim = c.getDimension();
@@ -191,7 +194,7 @@ public class DefaultCompoundCS extends AbstractCS {
             if (cs == null) {
                 cs = this;
                 boolean changed = false;
-                final CoordinateSystem[] newComponents = new CoordinateSystem[components.size()];
+                final var newComponents = new CoordinateSystem[components.size()];
                 for (int i=0; i<newComponents.length; i++) {
                     CoordinateSystem component = components.get(i);
                     AbstractCS m = castOrCopy(component);

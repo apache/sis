@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
-import java.util.ArrayList;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,7 +32,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
 import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
@@ -107,19 +105,6 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
     }
 
     /**
-     * Adds the components of the given coordinate system in the specified list.
-     * This method may invoke itself recursively if there is nested compound CS.
-     * The returned list is always a copy and can be safely modified.
-     */
-    private static void getComponents(final CoordinateSystem cs, final List<CoordinateSystem> addTo) {
-        if (cs instanceof DefaultCompoundCS) {
-            addTo.addAll(((DefaultCompoundCS) cs).getComponents());
-        } else {
-            addTo.add(cs);
-        }
-    }
-
-    /**
      * Creates the change of coordinate system.
      *
      * @todo Handle the case where coordinate system components are not in the same order.
@@ -134,31 +119,19 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
                     Errors.Keys.MissingValueForProperty_1,
                     (source == null) ? "source" : "target"));
         }
-        if (ellipsoid != null) {
+        final List<CoordinateSystem> sources = CoordinateSystems.getSingleComponents(source);
+        final List<CoordinateSystem> targets = CoordinateSystems.getSingleComponents(target);
+        final int count = sources.size();
+        if (ellipsoid != null && (count | targets.size()) == 1) {
             final boolean isEllipsoidalSource = (source instanceof EllipsoidalCS);
             if (isEllipsoidalSource != (target instanceof EllipsoidalCS)) {
-                /*
-                 * For now we support only conversion between EllipsoidalCS and CartesianCS.
-                 * But future Apache SIS versions could add support for conversions between
-                 * EllipsoidalCS and SphericalCS or other coordinate systems.
-                 */
-                if ((isEllipsoidalSource ? target : source) instanceof CartesianCS) {
-                    final var context = factory.builder(isEllipsoidalSource ? GeographicToGeocentric.NAME
-                                                                            : GeocentricToGeographic.NAME);
-                    if (isEllipsoidalSource) {
-                        context.setSourceAxes(source, ellipsoid);
-                        context.setTargetAxes(target, null);
-                    } else {
-                        context.setSourceAxes(source, null);
-                        context.setTargetAxes(target, ellipsoid);
-                    }
-                    return context.create();
-                }
+                final var context = factory.builder(isEllipsoidalSource ? GeographicToGeocentric.NAME
+                                                                        : GeocentricToGeographic.NAME);
+                context.setSourceAxes(source, isEllipsoidalSource? ellipsoid : null);
+                context.setTargetAxes(target, isEllipsoidalSource ? null : ellipsoid);
+                return context.create();
             }
         }
-        final var sources = new ArrayList<CoordinateSystem>(3); getComponents(source, sources);
-        final var targets = new ArrayList<CoordinateSystem>(3); getComponents(target, targets);
-        final int count   = sources.size();
         /*
          * Current implementation expects the same number of components, in the same order
          * and with the same number of dimensions in each component. A future version will

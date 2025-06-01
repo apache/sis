@@ -130,7 +130,7 @@ final class MathTransformContext extends ParameterizedTransformBuilder {
             MatrixSIS cm = MatrixSIS.castOrCopy(matrix);
             if (CartesianCS.class.isAssignableFrom(userCS)) {
                 rotation = Math.toRadians(rotation);
-                final Matrix4 rot = new Matrix4();
+                final var rot = new Matrix4();
                 rot.m00 =   rot.m11 = Math.cos(rotation);
                 rot.m01 = -(rot.m10 = Math.sin(rotation));
                 if (inverse) {

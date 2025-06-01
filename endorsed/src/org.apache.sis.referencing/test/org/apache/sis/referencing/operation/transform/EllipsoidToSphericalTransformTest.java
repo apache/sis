@@ -126,7 +126,7 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoid (radians domain) to centric”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
-                "    Parameter[“target”, “SPHERICAL”],\n" +
+                "    Parameter[“csType”, “SPHERICAL”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +

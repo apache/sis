@@ -153,8 +153,8 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * @throws NullPointerException if the {@link #elements} array is null.
      */
     private boolean isValid() {
-        final int numRow = this.numRow;
-        final int numCol = this.numCol;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final int numRow = this.numRow, numCol = this.numCol;       // Protection against accidental changes.
         final int length = elements.length;
         int i = numRow * numCol;                // Cannot overflow.
         if ((numRow |  numCol) < 0 || (length != i) ||
@@ -320,8 +320,8 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * @param  square  {@code true} if the matrix must be square, or {@code false} for allowing non-square matrices.
      */
     final boolean isAffine(final boolean square) {
-        final int numRow = this.numRow;                     // Protection against accidental changes.
-        final int numCol = this.numCol;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final int numRow = this.numRow, numCol = this.numCol;       // Protection against accidental changes.
         if (numRow == numCol || !square) {
             int i = numRow * numCol;
             if (Arithmetic.isOne(elements[--i])) {
@@ -342,8 +342,8 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      */
     @Override
     public final boolean isIdentity() {
-        final int numRow = this.numRow;             // Protection against accidental changes.
-        final int numCol = this.numCol;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final int numRow = this.numRow, numCol = this.numCol;       // Protection against accidental changes.
         if (numRow != numCol) {
             return false;
         }
@@ -370,8 +370,8 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      */
     @Override
     public void transpose() {
-        final int numRow = this.numRow;                                 // Protection against accidental changes.
-        final int numCol = this.numCol;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final int numRow = this.numRow, numCol = this.numCol;       // Protection against accidental changes.
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<j; i++) {
                 final int lo = j*numCol + i;
@@ -386,8 +386,8 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * The matrix sizes much match - this is not verified unless assertions are enabled.
      */
     final void setToProduct(final Matrix A, final Matrix B) {
-        final int numRow = this.numRow;         // Protection against accidental changes.
-        final int numCol = this.numCol;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final int numRow = this.numRow, numCol = this.numCol;       // Protection against accidental changes.
         final int nc = A.getNumCol();
         assert B.getNumRow() == nc;
         assert numRow == A.getNumRow() && numCol == B.getNumCol();
@@ -435,7 +435,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     @Override
     public final boolean equals(final Object object) {
         if (object instanceof GeneralMatrix) {
-            final GeneralMatrix that = (GeneralMatrix) object;
+            final var that = (GeneralMatrix) object;
             return numRow == that.numRow &&
                    numCol == that.numCol &&
                    Arrays.equals(elements, that.elements);

@@ -40,7 +40,7 @@ import org.apache.sis.measure.Units;
  *
  * <h2>Default values to verify</h2>
  * This class assumes the following default values.
- * Subclasses should verify if those default values are suitable from them:
+ * Subclasses should verify if those default values are suitable for them:
  *
  * <ul>
  *   <li>{@link #getOperationType()} defaults to {@link org.opengis.referencing.operation.Transformation}.</li>

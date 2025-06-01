@@ -69,8 +69,16 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     private final Class<? extends SingleOperation> operationType;
 
     /**
-     * The base interface of the coordinate system of source/target coordinates.
-     * This is used for resolving some ambiguities at WKT parsing time.
+     * The base interface of the coordinate system of source coordinates.
+     * This is used for resolving some ambiguities at <abbr>WKT</abbr> parsing time.
+     *
+     * <h4>Deprecation</h4>
+     * This field is not formally annotated as deprecated, but should be considered as such.
+     * The coordinate system type can be specified by the {@code context} argument given in
+     * calls to the {@code create(…)} method. In particular, {@link GeographicToGeocentric}
+     * accepts Cartesian and spherical coordinate systems. In such cases, this field should
+     * be set to the type expected in Well-Known Text (<abbr>WKT</abbr>) definitions.
+     * This is not necessarily the only type accepted by this operation method.
      */
     public final Class<? extends CoordinateSystem> sourceCSType, targetCSType;
 

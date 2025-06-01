@@ -405,7 +405,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoid (radians domain) to centric”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
-                "    Parameter[“target”, “CARTESIAN”],\n" +
+                "    Parameter[“csType”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
@@ -425,7 +425,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Centric to ellipsoid (radians domain)”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
-                "    Parameter[“target”, “CARTESIAN”],\n" +
+                "    Parameter[“csType”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
