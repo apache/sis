@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Map;
 import java.util.Iterator;
 import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
@@ -24,18 +25,16 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.system.Loggers;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 
@@ -51,12 +50,6 @@ import org.opengis.test.ToleranceModifier;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
 public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
-    /**
-     * A JUnit extension for listening to log events.
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings;
-
     /**
      * Whether the {@code EllipsoidToCentricTransform} should target Cartesian or spherical coordinates.
      * The default value is {@code CARTESIAN}. Note that even if this field is set to {@cide SPHERICAL},
@@ -75,7 +68,6 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      * Creates a new test case.
      */
     public EllipsoidToCentricTransformTest() {
-        loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
         targetType = EllipsoidToCentricTransform.TargetType.CARTESIAN;
     }
 
@@ -89,15 +81,9 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      * @param  withHeight  whether source geographic coordinates include an ellipsoidal height.
      * @throws FactoryException if an error occurred while creating a transform.
      */
-    protected void createGeodeticConversion(final Ellipsoid ellipsoid, final boolean withHeight) throws FactoryException {
+    final void createGeodeticConversion(final Ellipsoid ellipsoid, final boolean withHeight) throws FactoryException {
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
-        transform = EllipsoidToCentricTransform.createGeodeticConversion(
-                factory,
-                ellipsoid.getSemiMajorAxis(),
-                ellipsoid.getSemiMinorAxis(),
-                ellipsoid.getAxisUnit(),
-                withHeight,
-                targetType);
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(factory, ellipsoid, withHeight, targetType);
         /*
          * If the ellipsoid is a sphere, then `EllipsoidToCentricTransform.createGeodeticConversion(…)` created a
          * `SphericalToCartesian` instance instead of an `EllipsoidToCentricTransform` instance. Create manually
@@ -105,12 +91,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
          * the two implementations are consistent.
          */
         if (ellipsoid.isSphere() && targetType == EllipsoidToCentricTransform.TargetType.CARTESIAN) {
-            var tr = new EllipsoidToCentricTransform(
-                    ellipsoid.getSemiMajorAxis(),
-                    ellipsoid.getSemiMinorAxis(),
-                    ellipsoid.getAxisUnit(),
-                    withHeight,
-                    targetType);
+            var tr = new EllipsoidToCentricTransform(ellipsoid, withHeight, targetType);
             transform = new TransformResultComparator(transform, tr.context.completeTransform(factory, tr), 1E-2);
         }
         /*
@@ -134,7 +115,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testGeographicToGeocentric() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), true);
         isInverseTransformSupported = false;    // Geocentric to geographic is not the purpose of this test.
         validate();
 
@@ -143,7 +124,6 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
         tolerance = GeocentricTranslationTest.precision(2);         // Half the precision of target sample point
         verifyTransform(GeocentricTranslationTest.samplePoint(1),   // 53°48'33.820"N, 02°07'46.380"E, 73.00 metres
                         GeocentricTranslationTest.samplePoint(2));  // 3771793.968,  140253.342,  5124304.349 metres
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -155,7 +135,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testGeocentricToGeographic() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), true);
         transform = transform.inverse();
         isInverseTransformSupported = false;    // Geographic to geocentric is not the purpose of this test.
         validate();
@@ -166,7 +146,6 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
         zDimension = new int[] {2};                                 // Dimension of h where to apply zTolerance
         verifyTransform(GeocentricTranslationTest.samplePoint(2),   // X = 3771793.968,  Y = 140253.342,  Z = 5124304.349 metres
                         GeocentricTranslationTest.samplePoint(1));  // 53°48'33.820"N, 02°07'46.380"E, 73.00 metres
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -181,9 +160,8 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
         derivativeDeltas  = new double[] {delta, delta, 100};       // (Δλ, Δφ, Δh)
         tolerance         = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.PROJECTION;
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), true);
         verifyInDomain(CoordinateDomain.GEOGRAPHIC, 306954540);
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -196,16 +174,15 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testHighEccentricity() throws FactoryException, TransformException, FactoryException {
-        transform = EllipsoidToCentricTransform.createGeodeticConversion(
-                DefaultMathTransformFactory.provider(),
-                6000000, 4000000, Units.METRE, true, targetType);
+        final var factory   = DefaultMathTransformFactory.provider();
+        final var ellipsoid = DefaultEllipsoid.createEllipsoid(Map.of("name", "source"), 6000000, 4000000, Units.METRE);
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(factory, ellipsoid, true, targetType);
 
         final double delta = toRadians(100.0 / 60) / 1852;
         derivativeDeltas  = new double[] {delta, delta, 100};
         tolerance         = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.PROJECTION;
         verifyInverse(40, 30, 10000);
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -237,7 +214,6 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
         tolerance = 1E-8;
         derivativeDeltas = new double[] {1,1,1};    // Approximately one metre.
         verifyDerivative(point.getCoordinates());
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -248,10 +224,8 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testDerivativeOnSphere() throws FactoryException, TransformException {
-        testDerivative(CommonCRS.SPHERE.ellipsoid(), true);
-        testDerivative(CommonCRS.SPHERE.ellipsoid(), false);
-        loggings.skipNextLogIfContains("EPSG:4047");            // No longer supported by EPSG.
-        loggings.assertNoUnexpectedLog();
+        testDerivative(HardCodedDatum.SPHERE.getEllipsoid(), true);
+        testDerivative(HardCodedDatum.SPHERE.getEllipsoid(), false);
     }
 
     /**
@@ -262,14 +236,13 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testDerivative() throws FactoryException, TransformException {
-        testDerivative(CommonCRS.WGS84.ellipsoid(), true);
-        testDerivative(CommonCRS.WGS84.ellipsoid(), false);
-        loggings.assertNoUnexpectedLog();
+        testDerivative(HardCodedDatum.WGS84.getEllipsoid(), true);
+        testDerivative(HardCodedDatum.WGS84.getEllipsoid(), false);
     }
 
     /**
      * Tests serialization. This method performs the same test as {@link #testGeographicToGeocentric()}
-     * and {@link #testGeocentricToGeographic()}, but on the deserialized instance. This allow us to verify
+     * and {@link #testGeocentricToGeographic()}, but on the deserialized instance as a way to verify
      * that transient fields have been correctly restored.
      *
      * @throws FactoryException if an error occurred while creating a transform.
@@ -277,7 +250,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testSerialization() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), true);
         transform = assertSerializedEquals(transform);
         /*
          * Below is basically a copy-and-paste of testGeographicToGeocentric(), but
@@ -288,7 +261,6 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
         tolerance = GeocentricTranslationTest.precision(2);
         verifyTransform(GeocentricTranslationTest.samplePoint(1),
                         GeocentricTranslationTest.samplePoint(2));
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -333,7 +305,6 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
         assertInstanceOf(LinearTransform.class, step = it.next());
         assertEquals(2, step.getSourceDimensions());
         assertEquals(2, step.getTargetDimensions());
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -345,7 +316,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testWKT3D() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), true);
         assertWktEquals("PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
                         "  PARAMETER[“semi_major”, 6378137.0],\n" +
                         "  PARAMETER[“semi_minor”, 6356752.314245179]]");
@@ -354,8 +325,6 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
         assertWktEquals("PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
                         "  PARAMETER[“semi_major”, 6378137.0],\n" +
                         "  PARAMETER[“semi_minor”, 6356752.314245179]]");
-
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -367,7 +336,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testWKT2D() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), false);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), false);
         assertWktEquals("CONCAT_MT[\n" +
                         "  INVERSE_MT[PARAM_MT[“Geographic3D to 2D conversion”]],\n" +
                         "  PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
@@ -380,8 +349,6 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
                         "    PARAMETER[“semi_major”, 6378137.0],\n" +
                         "    PARAMETER[“semi_minor”, 6356752.314245179]],\n" +
                         "  PARAM_MT[“Geographic3D to 2D conversion”]]");
-
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -394,7 +361,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testInternalWKT() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), true);
         assertInternalWktEquals(
                 "Concat_MT[\n" +
                 "  Param_MT[“Affine”,\n" +
@@ -404,7 +371,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
                 "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoid (radians domain) to centric”,\n" +
-                "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“eccentricity”, 0.0818191908426215],\n" +
                 "    Parameter[“csType”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
@@ -424,7 +391,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
                 "    Parameter[“elt_1_1”, 1.567855942887398E-7],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Centric to ellipsoid (radians domain)”,\n" +
-                "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“eccentricity”, 0.0818191908426215],\n" +
                 "    Parameter[“csType”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
@@ -433,7 +400,5 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
                 "    Parameter[“elt_0_0”, 57.29577951308232],\n" +
                 "    Parameter[“elt_1_1”, 57.29577951308232],\n" +
                 "    Parameter[“elt_2_2”, 6378137.0]]]");
-
-        loggings.assertNoUnexpectedLog();
     }
 }

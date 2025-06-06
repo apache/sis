@@ -24,28 +24,30 @@ import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
+import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Conversion;
-import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -233,6 +235,26 @@ public abstract class MapProjection extends AbstractProvider {
                         descriptor.getName(), min, max, value));
             }
         }
+    }
+
+    /**
+     * Creates an ellipsoid from the given parameter values.
+     * The axis lengths are read from the parameters identified by {@link #SEMI_MAJOR} and {@link #SEMI_MINOR}.
+     * An arbitrary ellipsoid name is used. The returned ellipsoid should be used only for the time needed for
+     * building the math transform (because the returned ellipsoid lacks metadata).
+     *
+     * @param  values   the parameters from which to get the axis lengths and unit.
+     * @param  context  the context of parameter values, or {@code null} if none.
+     * @return a temporary ellipsoid to use for creating the math transform.
+     * @throws ClassCastException if the unit of measurement of an axis length parameter is not linear.
+     */
+    public static Ellipsoid getEllipsoid(final Parameters values, final Context context) {
+        if (context instanceof DefaultMathTransformFactory.Context) {
+            // TODO: move getSourceEllipsoid() in `Context` interface with `Optional` return value.
+            Ellipsoid c = ((DefaultMathTransformFactory.Context) context).getSourceEllipsoid();
+            if (c != null) return c;
+        }
+        return getEllipsoid("source", values, SEMI_MAJOR, SEMI_MINOR);
     }
 
     /**

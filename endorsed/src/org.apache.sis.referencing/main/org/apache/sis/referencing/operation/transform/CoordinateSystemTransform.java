@@ -212,8 +212,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     protected final void tryConcatenate(final Joiner info) throws FactoryException {
         // Do nothing if there is no linear transform for angular values.
 concat: if (info.isLinear(-linearTransformPosition, true)) {
-            final var linear = ExtendedPrecisionMatrix.castOrWrap(MathTransforms.getMatrix(
-                                    info.getTransform(linearTransformPosition).orElse(null)));
+            final var linear = ExtendedPrecisionMatrix.castOrWrap(info.getMatrix(linearTransformPosition).orElse(null));
             if (linear != null) {
                 final int n = linear.getNumRow();
                 if (n == linear.getNumCol()) {

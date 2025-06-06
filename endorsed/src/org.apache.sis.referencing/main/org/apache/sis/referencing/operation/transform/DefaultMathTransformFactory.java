@@ -758,9 +758,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * Returns the parameter values used for the math transform creation,
          * including the parameters completed by the factory.
-         * This is the union of {@link #parameters()} with {@link #getContextualParameters()}.
+         * This is the union of {@link #parameters} with {@link #getContextualParameters()}.
          * The completed parameters may only have additional parameters compared to the user-supplied parameters.
-         * {@linkplain #parameters() Parameter} values that were explicitly set by the user are not overwritten.
+         * Parameter values that were explicitly set by the user are not overwritten.
          *
          * <p>After this method has been invoked, the {@link #setSourceAxes setSourceAxes(…)}
          * and {@link #setTargetAxes setTargetAxes(…)} methods can no longer be invoked.</p>

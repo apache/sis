@@ -19,12 +19,13 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
+import javax.measure.UnitConverter;
 import javax.measure.quantity.Length;
 import org.opengis.referencing.datum.Ellipsoid;
 
 
 /**
- * A ellipsoid which is spherical.
+ * An ellipsoid which is spherical.
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -90,5 +91,17 @@ final class Sphere extends DefaultEllipsoid {
     @Override
     public double flatteningDifference(final Ellipsoid other) {
         return 1 / other.getInverseFlattening();
+    }
+
+    /**
+     * Returns a sphere of the same size as this ellipsoid but using the specified unit of measurement.
+     */
+    @Override
+    public DefaultEllipsoid convertTo(final Unit<Length> target) {
+        final UnitConverter c = getAxisUnit().getConverterTo(target);
+        if (c.isIdentity()) {
+            return this;
+        }
+        return new Sphere(properties(target), c.convert(getSemiMajorAxis()), isIvfDefinitive(), target);
     }
 }

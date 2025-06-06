@@ -54,7 +54,7 @@ public final class Geographic3Dto2DTest extends TestCase {
      */
     @Test
     public void testCreateMathTransform() throws FactoryException, NoninvertibleTransformException {
-        final Geographic3Dto2D provider = new Geographic3Dto2D();
+        final var provider = new Geographic3Dto2D();
         final MathTransform mt = provider.createMathTransform(null, null);
         assertSame(mt, provider.createMathTransform(null, null), "Expected cached instance.");
         /*
@@ -68,6 +68,7 @@ public final class Geographic3Dto2DTest extends TestCase {
                     0, 1, 0, 0,
                     0, 0, 0, 1
                 }), linear.getMatrix(), STRICT, "Expected a Geographic 3D to 2D conversion.");
+
         assertMatrixEquals(Matrices.create(4, 3, new double[] {
                     1, 0, 0,
                     0, 1, 0,
@@ -81,7 +82,7 @@ public final class Geographic3Dto2DTest extends TestCase {
      */
     @Test
     public void testVariantFor() {
-        final Geographic3Dto2D provider = new Geographic3Dto2D();
+        final var provider = new Geographic3Dto2D();
         assertSame  (provider,               provider.variantFor(dummy(3, 2)));
         assertEquals(Geographic2Dto3D.class, provider.variantFor(dummy(2, 3)).getClass());
     }

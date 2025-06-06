@@ -18,6 +18,7 @@ package org.apache.sis.parameter;
 
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.util.OptionalCandidate;
 
 
 /**
@@ -35,6 +36,7 @@ public interface Parameterized {
      *
      * @return the parameter descriptors for this object, or {@code null}.
      */
+    @OptionalCandidate
     ParameterDescriptorGroup getParameterDescriptors();
 
     /**
@@ -49,5 +51,6 @@ public interface Parameterized {
      *
      * @return the parameter values for this object, or {@code null} if unknown.
      */
+    @OptionalCandidate
     ParameterValueGroup getParameterValues();
 }

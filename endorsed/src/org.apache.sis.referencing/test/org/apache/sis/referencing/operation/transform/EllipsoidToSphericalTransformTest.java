@@ -16,10 +16,13 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 
 
 /**
@@ -27,7 +30,7 @@ import org.junit.jupiter.api.Test;
  * The expected results of all tests are still in Cartesian geocentric coordinates.
  * See {@link #targetType} for more information.
  *
- * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  */
 public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricTransformTest {
     /**
@@ -36,6 +39,61 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
     public EllipsoidToSphericalTransformTest() {
         targetType = EllipsoidToCentricTransform.TargetType.SPHERICAL;
         addSphericalToCartesian = true;
+    }
+
+    /**
+     * Creates a spherical cases of the transformation.
+     */
+    private void createSpherical(final boolean withHeight) throws FactoryException {
+        final double delta = toRadians(100.0 / 60) / 1852;          // Approximately 100 metres
+        derivativeDeltas = new double[] {delta, delta};             // (Δλ, Δφ)
+        tolerance = 1E-8;
+        addSphericalToCartesian = false;
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), withHeight);
+    }
+
+    /**
+     * Tests some conversions with three-dimensional input coordinates.
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     * @throws TransformException if conversion of the sample point failed.
+     */
+    @Test
+    public void testTransform3D() throws FactoryException, TransformException {
+        createSpherical(true);
+        verifyTransform(new double[] {10,   0,     0}, new double[] {10,   0,                 6378137});
+        verifyTransform(new double[] {10,   0, 10000}, new double[] {10,   0,                 6388137});
+        verifyTransform(new double[] {10,  90,     0}, new double[] {10,  90,                 6356752.314245179});
+        verifyTransform(new double[] {10,  90, 20000}, new double[] {10,  90,                 6376752.314245178});
+        verifyTransform(new double[] {10, -90,     0}, new double[] {10, -90,                 6356752.314245179});
+        verifyTransform(new double[] {10, -90, 10000}, new double[] {10, -90,                 6366752.314245179});
+        verifyTransform(new double[] {10,  32,     0}, new double[] {10,  31.827305280575516, 6372168.063359014});
+        verifyTransform(new double[] {10,  32, 20000}, new double[] {10,  31.82784561198946,  6392167.972795855});
+        verifyConsistency(new float[] {
+            15,  0,  10000,
+            20, 90,  20000,
+            30, 32, -10000
+        });
+    }
+
+    /**
+     * Tests some conversions with two-dimensional input coordinates.
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     * @throws TransformException if conversion of the sample point failed.
+     */
+    @Test
+    public void testTransform2D() throws FactoryException, TransformException {
+        createSpherical(false);
+        verifyTransform(new double[] {10,   0}, new double[] {10,   0,                 6378137});
+        verifyTransform(new double[] {10,  90}, new double[] {10,  90,                 6356752.314245179});
+        verifyTransform(new double[] {10, -90}, new double[] {10, -90,                 6356752.314245179});
+        verifyTransform(new double[] {10,  32}, new double[] {10,  31.827305280575516, 6372168.063359014});
+        verifyConsistency(new float[] {
+            15,  0,
+            20, 90,
+            30, 32
+        });
     }
 
     /**
@@ -65,7 +123,7 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
     @Test
     @Override
     public void testWKT3D() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), true);
         assertWktEquals("CONCAT_MT[\n" +
                         "  PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
                         "    PARAMETER[“semi_major”, 6378137.0],\n" +
@@ -78,8 +136,6 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
                         "  PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
                         "    PARAMETER[“semi_major”, 6378137.0],\n" +
                         "    PARAMETER[“semi_minor”, 6356752.314245179]]]");
-
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -89,7 +145,7 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
     @Test
     @Override
     public void testWKT2D() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), false);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), false);
         assertWktEquals("CONCAT_MT[\n" +
                         "  INVERSE_MT[PARAM_MT[“Geographic3D to 2D conversion”]],\n" +
                         "  PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
@@ -104,8 +160,6 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
                         "    PARAMETER[“semi_major”, 6378137.0],\n" +
                         "    PARAMETER[“semi_minor”, 6356752.314245179]],\n" +
                         "  PARAM_MT[“Geographic3D to 2D conversion”]]");
-
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -116,7 +170,7 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
     @Test
     @Override
     public void testInternalWKT() throws FactoryException, TransformException {
-        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid(), true);
         assertInternalWktEquals(
                 "Concat_MT[\n" +
                 "  Param_MT[“Affine”,\n" +
@@ -125,7 +179,7 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
                 "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoid (radians domain) to centric”,\n" +
-                "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“eccentricity”, 0.0818191908426215],\n" +
                 "    Parameter[“csType”, “SPHERICAL”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
@@ -140,7 +194,5 @@ public final class EllipsoidToSphericalTransformTest extends EllipsoidToCentricT
                 "      Parameter[“elt_0_0”, 0.017453292519943295],\n" +
                 "      Parameter[“elt_1_1”, 0.017453292519943295]],\n" +
                 "    Param_MT[“Spherical to Cartesian”]]]");
-
-        loggings.assertNoUnexpectedLog();
     }
 }

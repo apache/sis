@@ -540,7 +540,7 @@ public class TransformSeparator {
             return IdentityTransform.create(dimensions.length);
         }
         if (step instanceof ConcatenatedTransform) {
-            final ConcatenatedTransform ctr = (ConcatenatedTransform) step;
+            final var ctr = (ConcatenatedTransform) step;
             final MathTransform step1 = filterSourceDimensions(ctr.transform1, dimensions);
             final MathTransform step2 = filterSourceDimensions(ctr.transform2, targetDimensions);
             return factory.createConcatenatedTransform(step1, step2);
@@ -551,7 +551,7 @@ public class TransformSeparator {
          * through sub-transform, then invoke this method recursively for the sub-transform dimensions.
          */
         if (step instanceof PassThroughTransform) {
-            final PassThroughTransform passThrough = (PassThroughTransform) step;
+            final var passThrough = (PassThroughTransform) step;
             final int numSubSrc = passThrough.subTransform.getSourceDimensions();
             final int numNewDim = passThrough.subTransform.getTargetDimensions() - numSubSrc;
             final int subLower  = passThrough.firstAffectedCoordinate;
@@ -714,7 +714,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
         int removeAt = 0;
         int numRemoved = 0;
         if (step instanceof PassThroughTransform) {
-            final PassThroughTransform passThrough = (PassThroughTransform) step;
+            final var passThrough = (PassThroughTransform) step;
             final int subLower  = passThrough.firstAffectedCoordinate;
             final int numSubTgt = passThrough.subTransform.getTargetDimensions();
             if (!containsAny(dimensions, subLower, subLower + numSubTgt)) {

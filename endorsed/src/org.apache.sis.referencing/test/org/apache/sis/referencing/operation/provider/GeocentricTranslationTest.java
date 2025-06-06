@@ -169,7 +169,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
             final double tX, final double tY, final double tZ)
             throws FactoryException, NoninvertibleTransformException
     {
-        final Matrix4 translation = new Matrix4();
+        final var translation = new Matrix4();
         translation.m03 = tX;
         translation.m13 = tY;
         translation.m23 = tZ;
@@ -377,7 +377,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
                 "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoid (radians domain) to centric”,\n" +
-                "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“eccentricity”, 0.08181919084262244],\n" +
                 "    Parameter[“csType”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
@@ -390,7 +390,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
                 "    Parameter[“elt_2_2”, 0.9999606483644456],\n" +
                 "    Parameter[“elt_2_3”, 1.8335353697517302E-5]],\n" +
                 "  Param_MT[“Centric to ellipsoid (radians domain)”,\n" +
-                "    Parameter[“eccentricity”, 0.08199188997902956],\n" +
+                "    Parameter[“eccentricity”, 0.08199188997902906],\n" +
                 "    Parameter[“csType”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +

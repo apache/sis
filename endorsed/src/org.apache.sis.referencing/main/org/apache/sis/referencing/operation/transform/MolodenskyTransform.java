@@ -203,6 +203,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
      *   <li>optionally heights above the ellipsoid, in same units as the source ellipsoid axes.</li>
      * </ol>
      *
+     * <h4>Unit conversions</h4>
      * For converting geographic coordinates in degrees, {@code MolodenskyTransform} instances
      * need to be concatenated with the following affine transforms:
      *

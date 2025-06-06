@@ -17,10 +17,7 @@
 package org.apache.sis.referencing.operation.provider;
 
 import java.util.OptionalInt;
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CartesianCS;
@@ -32,7 +29,6 @@ import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -130,8 +126,6 @@ public final class GeographicToGeocentric extends AbstractProvider {
             throws FactoryException
     {
         final Parameters values = Parameters.castOrWrap(context.getCompletedParameters());
-        final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
-        final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
         final EllipsoidToCentricTransform.TargetType type;
         if (geocentric == CoordinateSystem.class) {
             type = EllipsoidToCentricTransform.TargetType.CARTESIAN;    // Default value.
@@ -141,7 +135,7 @@ public final class GeographicToGeocentric extends AbstractProvider {
             throw new InvalidGeodeticParameterException(
                     Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes), e);
         }
-        return EllipsoidToCentricTransform.createGeodeticConversion(context.getFactory(), semiMajor.doubleValue(),
-                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, dimension.orElse(3) >= 3, type);
+        return EllipsoidToCentricTransform.createGeodeticConversion(context.getFactory(),
+                MapProjection.getEllipsoid(values, context), dimension.orElse(3) >= 3, type);
     }
 }

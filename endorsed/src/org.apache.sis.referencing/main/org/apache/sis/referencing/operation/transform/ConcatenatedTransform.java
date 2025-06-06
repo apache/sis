@@ -261,7 +261,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
              * where `AbstractLinearTransform.inverse()` would have throw an exception. Even with square matrices,
              * computing the inverse transform now may avoid some rounding errors.
              */
-            final AbstractLinearTransform impl = (AbstractLinearTransform) concatenated;
+            final var impl = (AbstractLinearTransform) concatenated;
             if (impl.inverse == null) try {
                 final MathTransform inverse = multiply(tr2.inverse(), tr1.inverse(), factory);
                 if (inverse != null) {
@@ -397,7 +397,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * @see MathTransforms#getSteps(MathTransform)
      */
     public final List<MathTransform> getSteps() {
-        final List<MathTransform> transforms = new ArrayList<>(5);
+        final var transforms = new ArrayList<MathTransform>(5);
         getSteps(transforms);
         return transforms;
     }
@@ -410,9 +410,11 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *
      * <p>This method is used only for producing human-readable parameter values.
      * It is not used for coordinate operations or construction of operation chains.</p>
+     *
+     * @return the pseudo-steps as instances of {@link MathTransform}, {@link Matrix} or {@link FormattableObject}.
      */
     private List<Object> getPseudoSteps() {
-        final List<Object> transforms = new ArrayList<>();
+        final var transforms = new ArrayList<Object>();
         getSteps(transforms);
         /*
          * Pre-process the transforms before to format. Some steps may be merged, or new
@@ -433,7 +435,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * consecutively.
          */
         Matrix after = null;
-        for (int i=transforms.size(); --i >= 0;) {
+        for (int i = transforms.size(); --i >= 0;) {
             final Object step = transforms.get(i);
             if (step instanceof Matrix) {
                 if (after != null) {
@@ -455,7 +457,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         }
         /*
          * Special case for datum shifts. Need to be done only after we processed
-         * 'beforeFormat(…)' for all objects and concatenated the affine transforms.
+         * `beforeFormat(…)` for all objects and concatenated the affine transforms.
          */
         GeocentricAffine.asDatumShift(transforms);
         return transforms;
@@ -507,18 +509,18 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             for (final Object candidate : transforms) {
                 /*
                  * Search for non-linear parameters only, ignoring affine transforms and the matrices
-                 * computed by ContextualParameters. Note that the 'transforms' list is guaranteed to
+                 * computed by ContextualParameters. Note that the `transforms` list is guaranteed to
                  * contains at least one non-linear parameter, otherwise we would not have created a
-                 * ConcatenatedTransform instance.
+                 * `ConcatenatedTransform` instance.
                  */
-                if (!(candidate instanceof Matrix) && !(candidate instanceof LinearTransform)) {
+                if (!(candidate instanceof Matrix || MathTransforms.isLinear(candidate))) {
                     if ((param == null) && (candidate instanceof Parameterized)) {
                         param = (Parameterized) candidate;
                     } else {
                         /*
                          * Found more than one group of non-linear parameters, or found an object
                          * that do not declare its parameters.  In the latter case, conservatively
-                         * returns 'null' because we do not know what the real parameters are.
+                         * returns `null` because we do not know what the real parameters are.
                          */
                         return null;
                     }
@@ -877,7 +879,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     static void setInverse(final MathTransform tr, final MathTransform inverse) {
         if (tr instanceof ConcatenatedTransform) {
-            assert ((ConcatenatedTransform) tr).inverse == null;
+            assert OnewayLinearTransform.isNullOrDelegate(((ConcatenatedTransform) tr).inverse, inverse);
             ((ConcatenatedTransform) tr).inverse = inverse;
         }
     }
@@ -981,7 +983,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * transform steps anyway.
          */
         if (object instanceof ConcatenatedTransform) {
-            final ConcatenatedTransform that = (ConcatenatedTransform) object;
+            final var that = (ConcatenatedTransform) object;
             return Utilities.deepEquals(this.getSteps(), that.getSteps(), mode);
         }
         return false;

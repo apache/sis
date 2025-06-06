@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Objects;
@@ -118,7 +117,7 @@ import static org.apache.sis.referencing.privy.WKTUtilities.LOGGER;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see AbstractMathTransform#getContextualParameters()
  *
@@ -184,9 +183,9 @@ public class ContextualParameters extends Parameters implements Serializable {
     private final ParameterDescriptorGroup descriptor;
 
     /**
-     * The affine transform to be applied before (<i>normalize</i>) and after (<i>denormalize</i>)
-     * the kernel operation. On {@code ContextualParameters} construction, those affines are initially identity
-     * transforms, to be modified in-place by callers of {@link #getMatrix(MatrixRole)} or related methods.
+     * The affine transforms to be applied before (<i>normalize</i>) and after (<i>denormalize</i>) the non-linear
+     * transform described by this group of parameters. Those matrices are initialized to identity at construction
+     * time, then modified in-place by callers of {@link #getMatrix(MatrixRole)} or related methods.
      * After the {@link #completeTransform(MathTransformFactory, MathTransform)} method has been invoked,
      * those matrices are typically (but not necessarily) replaced by the {@link LinearTransform} instances itself.
      *
@@ -254,6 +253,27 @@ public class ContextualParameters extends Parameters implements Serializable {
         this.normalize   = Matrices.create(++srcDim, srcDim, ExtendedPrecisionMatrix.CREATE_IDENTITY);
         this.denormalize = Matrices.create(++tgtDim, tgtDim, ExtendedPrecisionMatrix.CREATE_IDENTITY);
         this.values      = new ParameterValue<?>[descriptor.descriptors().size()];
+    }
+
+    /**
+     * Creates a new group with the same parameters as the given source but with a different number of dimensions.
+     * The new group will be frozen if the given group is frozen.
+     *
+     * @param  source  the parameters to copy.
+     * @param  srcDim  number of source dimensions plus 1.
+     * @param  tgtDim  number of target dimensions plus 1.
+     *
+     * @see #redimension(int, int)
+     */
+    private ContextualParameters(final ContextualParameters source, final int srcDim, final int tgtDim) {
+        descriptor  = source.descriptor;
+        normalize   = Matrices.resizeAffine(source.normalize,   srcDim, srcDim);
+        denormalize = Matrices.resizeAffine(source.denormalize, tgtDim, tgtDim);
+        values      = source.values;
+        isFrozen    = source.isFrozen;
+        if (!isFrozen) {
+            values = values.clone();
+        }
     }
 
     /**
@@ -457,7 +477,7 @@ public class ContextualParameters extends Parameters implements Serializable {
             offset = DoubleDouble.of(-λ0, true).multiply(toRadians);
         }
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final MatrixSIS normalize = (MatrixSIS) this.normalize;         // Must be the same instance, not a copy.
+        final var normalize = (MatrixSIS) this.normalize;       // Must be the same instance, not a copy.
         normalize.convertBefore(0, toRadians, offset);
         normalize.convertBefore(1, toRadians, null);
         return normalize;
@@ -550,7 +570,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Some WKT parsers other than SIS may also require the parameter values to be listed in that specific
          * order. We proceed by first copying all parameters in a temporary HashMap:
          */
-        final Map<ParameterDescriptor<?>, ParameterValue<?>> parameters = new IdentityHashMap<>(values.length);
+        final var parameters = new IdentityHashMap<ParameterDescriptor<?>, ParameterValue<?>>(values.length);
         for (ParameterValue<?> p : values) {
             if (p == null) {
                 break;                      // The first null value in the array indicates the end of sequence.
@@ -578,6 +598,7 @@ public class ContextualParameters extends Parameters implements Serializable {
              * our algorithm (or a concurrent change in the `descriptor.descriptors()` list, which would
              * be a contract violation). See above `assert`.
              */
+            @SuppressWarnings("element-type-mismatch")
             final ParameterValue<?> p = parameters.get(it.next());
             if (p != null) {
                 values[i++] = p;
@@ -687,6 +708,43 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
+     * Returns the same parameters but for an operation having the specified number of dimensions.
+     * The returned instance has a normalization matrix set to a square matrix of size {@code srcDim}+1,
+     * and a denormalization matrix set to a square matrix of size {@code tgtDim}+1.
+     * See {@link Matrices#resizeAffine(Matrix, int, int) Matrices.resizeAffine(…)}
+     * for details about which matrix values are copied.
+     *
+     * <p>If this group of parameters is unmodifiable, then the returned group is also unmodifiable.
+     * If the specified dimensions result in no change, then this method returns {@code this}.</p>
+     *
+     * <h4>Purpose</h4>
+     * This method is mostly for deriving a two-dimensional variant of a three-dimensional operation
+     * by dropping the last dimensions. The {@link #completeTransform completeTransform(…)} method of
+     * the returned instance should be invoked with a kernel transform having compatible dimensions.
+     *
+     * @param  srcDim  new number of source dimensions.
+     * @param  tgtDim  new number of target dimensions.
+     * @return parameters for an operation having the given number of dimensions, or {@code this} if there is no change.
+     * @throws IllegalArgumentException if a dimension is zero or negative.
+     *
+     * @see Matrices#resizeAffine(Matrix, int, int)
+     *
+     * @since 1.5
+     */
+    public synchronized ContextualParameters redimension(int srcDim, int tgtDim) {
+        ArgumentChecks.ensureStrictlyPositive("srcDim", srcDim++);
+        ArgumentChecks.ensureStrictlyPositive("tgtDim", tgtDim++);
+        if (srcDim == normalize.getNumCol() && tgtDim == denormalize.getNumRow()) {
+            return this;
+        }
+        final var r = new ContextualParameters(this, srcDim, tgtDim);
+        if (inverse != null) {
+            r.inverse = new ContextualParameters(inverse, tgtDim, srcDim);
+        }
+        return r;
+    }
+
+    /**
      * Returns a modifiable clone of this parameter value group.
      *
      * @return a clone of this parameter value group.
@@ -709,7 +767,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Now proceed to the clone of this ContextualParameters instance.
          * We do not clone inverseFoo fields since they shall be null for modifiable instances.
          */
-        final ContextualParameters clone = (ContextualParameters) super.clone();
+        final var clone = (ContextualParameters) super.clone();
         clone.values      = param;
         clone.normalize   = normalize.clone();
         clone.denormalize = denormalize.clone();
@@ -734,7 +792,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     @Override
     public synchronized boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final ContextualParameters that = (ContextualParameters) object;
+            final var that = (ContextualParameters) object;
             return Objects.equals(descriptor,  that.descriptor)  &&
                    Objects.equals(normalize,   that.normalize)   &&
                    Objects.equals(denormalize, that.denormalize) &&
@@ -843,8 +901,8 @@ public class ContextualParameters extends Parameters implements Serializable {
         final boolean hasAfter  = (after  != null);
         /*
          * We assume that the "before" affine contains the normalize operation to be applied
-         * before the projection. However, it may contains more than just this normalization,
-         * because it may have been concatenated with any user-defined transform (for example
+         * before the projection. However, it may contain more than just this normalization,
+         * because it may have been concatenated with any user-defined transform (for example,
          * in order to apply a change of axis order). We need to separate the "user-defined"
          * step from the "normalize" step.
          */

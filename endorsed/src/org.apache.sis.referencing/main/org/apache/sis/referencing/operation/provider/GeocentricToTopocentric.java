@@ -22,9 +22,9 @@ import static java.lang.Math.toRadians;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
@@ -35,7 +35,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -162,10 +161,7 @@ public final class GeocentricToTopocentric extends AbstractProvider {
             throws FactoryException, TransformException
     {
         final Parameters values = Parameters.castOrWrap(context.getCompletedParameters());
-        final ParameterValue<?> ap = values.parameter(Constants.SEMI_MAJOR);
-        final Unit<Length> unit = ap.getUnit().asType(Length.class);
-        final double a = ap.doubleValue();
-        final double b = values.parameter(Constants.SEMI_MINOR).doubleValue(unit);
+        final Ellipsoid ellipsoid = MapProjection.getEllipsoid(values, context);
         final double x, y, z, λ, φ;
         final MathTransform toGeocentric;
         final MathTransformFactory factory = context.getFactory();
@@ -175,7 +171,7 @@ public final class GeocentricToTopocentric extends AbstractProvider {
              * to geocentric coordinates in linear units (usually metres).
              */
             toGeocentric = EllipsoidToCentricTransform.createGeodeticConversion(factory,
-                    a, b, unit, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
+                    ellipsoid, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
 
             final double[] origin = new double[] {
                 values.doubleValue(GeographicToTopocentric.ORIGIN_X),
@@ -194,9 +190,11 @@ public final class GeocentricToTopocentric extends AbstractProvider {
              * geocentric coordinates as fractions of semi-major axis length.
              * This conversion is used only in this block and is not kept.
              */
-            toGeocentric = new EllipsoidToCentricTransform(
-                    a, b, unit, false, EllipsoidToCentricTransform.TargetType.CARTESIAN);
+            toGeocentric = new EllipsoidToCentricTransform(ellipsoid, false,
+                            EllipsoidToCentricTransform.TargetType.CARTESIAN);
 
+            final Unit<Length> unit = ellipsoid.getAxisUnit();
+            final double a = ellipsoid.getSemiMajorAxis();
             final double[] origin = new double[] {
                 (x = values.doubleValue(ORIGIN_X, unit)) / a,
                 (y = values.doubleValue(ORIGIN_Y, unit)) / a,
