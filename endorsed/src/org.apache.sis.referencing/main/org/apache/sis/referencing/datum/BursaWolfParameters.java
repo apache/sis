@@ -645,7 +645,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     @Override
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final BursaWolfParameters that = (BursaWolfParameters) object;
+            final var that = (BursaWolfParameters) object;
             return Arrays.equals(this.getValues(),      that.getValues()) &&
                   Objects.equals(this.targetDatum,      that.targetDatum) &&
                   Objects.equals(this.domainOfValidity, that.domainOfValidity);

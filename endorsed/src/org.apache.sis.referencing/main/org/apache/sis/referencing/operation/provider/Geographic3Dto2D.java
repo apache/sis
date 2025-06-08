@@ -41,6 +41,7 @@ import org.apache.sis.io.wkt.Formatter;
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @see Geographic2Dto3D
+ * @see Spherical3Dto2D
  */
 @XmlTransient
 public final class Geographic3Dto2D extends AbstractProvider {
@@ -50,10 +51,15 @@ public final class Geographic3Dto2D extends AbstractProvider {
     private static final long serialVersionUID = -9103595336196565505L;
 
     /**
+     * The <abbr>EPSG</abbr> name used for this operation method.
+     */
+    public static final String NAME = "Geographic3D to 2D conversion";
+
+    /**
      * The group of all parameters expected by this coordinate operation (in this case, none).
      */
     public static final ParameterDescriptorGroup PARAMETERS = builder()
-            .addIdentifier("9659").addName("Geographic3D to 2D conversion").createGroup();
+            .addIdentifier("9659").addName(NAME).createGroup();
 
     /**
      * The canonical instance of this operation method.
@@ -122,13 +128,14 @@ public final class Geographic3Dto2D extends AbstractProvider {
     public MathTransform createMathTransform(final Context context) throws FactoryException {
         return createMathTransform(context,
                 context.getSourceDimensions().orElse(3),
-                context.getTargetDimensions().orElse(2));
+                context.getTargetDimensions().orElse(2),
+                Geographic2Dto3D.DEFAULT_HEIGHT);
     }
 
     /**
      * Implementation of {@link #createMathTransform(Context)} shared by {@link Geographic2Dto3D}.
      */
-    static MathTransform createMathTransform(final Context context, int sourceDimensions, int targetDimensions)
+    static MathTransform createMathTransform(final Context context, int sourceDimensions, int targetDimensions, final double height)
             throws FactoryException
     {
         final boolean inverse = (sourceDimensions > targetDimensions);
@@ -138,13 +145,13 @@ public final class Geographic3Dto2D extends AbstractProvider {
             targetDimensions = swap;
         }
         final MatrixSIS m = Matrices.createDiagonal(targetDimensions + 1, sourceDimensions + 1);
-        m.setElement(sourceDimensions, sourceDimensions, 0);    // Here is the height value that we want.
-        m.setElement(targetDimensions, sourceDimensions, 1);    // Most be last in case the matrix is square.
+        m.setElement(sourceDimensions, sourceDimensions, height);
+        m.setElement(targetDimensions, sourceDimensions, 1);    // Must be last in case the matrix is square.
         MathTransform tr = context.getFactory().createAffineTransform(m);
         if (inverse) try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);                          // Should never happen.
+            throw new FactoryException(e);                      // Should never happen.
         }
         return tr;
     }

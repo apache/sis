@@ -45,6 +45,7 @@ public final class GeocentricTranslation3D extends GeocentricAffineBetweenGeogra
                 .addName("Geocentric translations (geog3D domain)")
                 .createGroupWithSameParameters(GeocentricTranslation2D.PARAMETERS);
     }
+
     /**
      * The canonical instance of this operation method.
      *

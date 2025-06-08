@@ -29,6 +29,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.SingleOperation;
@@ -47,6 +48,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
+import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
@@ -663,7 +665,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      */
     @Test
     public void testSphericalToProjection() throws ParseException, FactoryException, TransformException {
-        final CoordinateReferenceSystem sourceCRS = parse(
+        final DefaultGeocentricCRS sourceCRS = assertInstanceOf(DefaultGeocentricCRS.class, parse(
                 "GEODCRS[\"Mars (2015) / Ocentric\",\n" +
                 "  DATUM[\"Mars (2015)\",\n" +
                 "    ELLIPSOID[\"Mars (2015)\", 3396190, 169.8944472236118,\n" +
@@ -677,9 +679,9 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "    AXIS[\"planetocentric longitude (V)\", east,\n" +
                 "      ANGLEUNIT[\"degree\", 0.0174532925199433]],\n" +
                 "  ID[\"IAU\", 49902, 2015],\n" +
-                "  REMARK[\"Source of IAU Coordinate systems: doi:10.1007/s10569-017-9805-5\"]]");
+                "  REMARK[\"Source of IAU Coordinate systems: doi:10.1007/s10569-017-9805-5\"]]"));
 
-        final CoordinateReferenceSystem targetCRS = parse(
+        final ProjectedCRS targetCRS = assertInstanceOf(ProjectedCRS.class, parse(
                 "PROJCRS[\"Mars (2015) / Ocentric / Equirectangular, clon = 0\",\n" +
                 "  BASEGEODCRS[\"Mars (2015) / Ocentric\",\n" +
                 "    DATUM[\"Mars (2015)\",\n" +
@@ -696,11 +698,23 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "      LENGTHUNIT[\"metre\", 1]],\n" +
                 "    AXIS[\"Northing (N)\", north,\n" +
                 "      LENGTHUNIT[\"metre\", 1]],\n" +
-                "  ID[\"IAU\", 49912, 2015]]");
+                "  ID[\"IAU\", 49912, 2015]]"));
 
         final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
+        /*
+         * The result of coordinate operations below have have not been verified by an external source.
+         * We test "geographic to projected" before to test "spherical to projected" for verifying that
+         * the "spherical to geographic" conversion has been inserted.
+         */
+        tolerance = 1E-2;
+        transform = targetCRS.getConversionFromBase().getMathTransform();
+        verifyTransform(new double[] {40, 120}, new double[] {7112963.70, 2349260.02});
+
+        transform = operation.getMathTransform();
+        verifyTransform(new double[] {40, 120}, new double[] {7112963.70, 2368936.27});
+        validate();
     }
 
 

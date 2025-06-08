@@ -26,6 +26,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -39,6 +41,7 @@ import org.apache.sis.util.privy.Constants;
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @see Geographic3Dto2D
+ * @see Spherical2Dto3D
  */
 @XmlTransient
 public final class Geographic2Dto3D extends AbstractProvider {
@@ -46,6 +49,11 @@ public final class Geographic2Dto3D extends AbstractProvider {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -1198461394243672064L;
+
+    /**
+     * The name used by Apache <abbr>SIS</abbr> for this operation method.
+     */
+    public static final String NAME = "Geographic2D to 3D conversion";
 
     /**
      * The ellipsoidal height to set.
@@ -56,7 +64,12 @@ public final class Geographic2Dto3D extends AbstractProvider {
      *   <tr><td> SIS:     </td><td> height </td></tr>
      * </table>
      */
-    public static final ParameterDescriptor<Double> HEIGHT;
+    private static final ParameterDescriptor<Double> HEIGHT;
+
+    /**
+     * The default height value.
+     */
+    public static final double DEFAULT_HEIGHT = 0;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -64,8 +77,8 @@ public final class Geographic2Dto3D extends AbstractProvider {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.SIS, Constants.SIS);
-        HEIGHT = createShift(builder.addName("height"));
-        PARAMETERS = builder.addName("Geographic2D to 3D conversion").createGroup(HEIGHT);
+        HEIGHT = builder.addName("height").create(DEFAULT_HEIGHT, Units.METRE);
+        PARAMETERS = builder.addName(NAME).createGroup(HEIGHT);
     }
 
     /**
@@ -118,7 +131,8 @@ public final class Geographic2Dto3D extends AbstractProvider {
     }
 
     /**
-     * Returns the transform.
+     * Creates the transform adding a constant ellipsoidal height.
+     * The parameter value is unconditionally converted to metres.
      *
      * @param  context  the parameter values together with its context.
      * @return the math transform for the given parameter values.
@@ -126,8 +140,10 @@ public final class Geographic2Dto3D extends AbstractProvider {
      */
     @Override
     public MathTransform createMathTransform(final Context context) throws FactoryException {
+        final Parameters pg = Parameters.castOrWrap(context.getCompletedParameters());
         return Geographic3Dto2D.createMathTransform(context,
                 context.getSourceDimensions().orElse(2),
-                context.getTargetDimensions().orElse(3));
+                context.getTargetDimensions().orElse(3),
+                pg.doubleValue(HEIGHT));
     }
 }

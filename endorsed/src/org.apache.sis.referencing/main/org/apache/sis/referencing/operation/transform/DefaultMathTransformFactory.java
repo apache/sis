@@ -460,8 +460,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * <ol>
      *   <li>Inferring the {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"},
      *       {@code "src_semi_minor"}, {@code "tgt_semi_major"} or {@code "tgt_semi_minor"} parameter values
-     *       from the {@link Ellipsoid} associated to the source or target CRS, if these parameters are
-     *       not explicitly given and if they are relevant for the coordinate operation method.</li>
+     *       from the {@link Ellipsoid} associated to the source or target <abbr>CRS</abbr>, if these parameters
+     *       are not explicitly given and if they are relevant for the coordinate operation method.</li>
      *   <li>{@linkplain #createConcatenatedTransform Concatenating} the parameterized transform
      *       with any other transforms required for performing units changes and coordinates swapping.</li>
      * </ol>

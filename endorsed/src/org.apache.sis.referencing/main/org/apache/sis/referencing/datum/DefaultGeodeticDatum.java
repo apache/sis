@@ -413,7 +413,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      */
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent areaOfInterest) {
         ensureNonNull("targetDatum", targetDatum);
-        final ExtentSelector<BursaWolfParameters> selector = new ExtentSelector<>(areaOfInterest);
+        final var selector = new ExtentSelector<BursaWolfParameters>(areaOfInterest);
         BursaWolfParameters candidate = select(targetDatum, selector);
         if (candidate != null) {
             return createTransformation(candidate, areaOfInterest);

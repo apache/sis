@@ -46,12 +46,17 @@ public final class Spherical3Dto2D extends AbstractProvider {
     private static final long serialVersionUID = -6165087357029633662L;
 
     /**
+     * The name used by Apache <abbr>SIS</abbr> for this operation method.
+     */
+    public static final String NAME = "Spherical3D to 2D conversion";
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.SIS, Constants.SIS);
-        PARAMETERS = builder.addName("Spherical3D to 2D conversion").createGroupForMapProjection();
+        PARAMETERS = builder.addName(NAME).createGroupForMapProjection();
     }
 
     /**
