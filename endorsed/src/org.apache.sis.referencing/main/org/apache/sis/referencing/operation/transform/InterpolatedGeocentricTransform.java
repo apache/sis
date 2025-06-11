@@ -111,7 +111,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     static {
         final ParameterBuilder builder = new ParameterBuilder()
                 .setRequired(true).setCodeSpace(Citations.SIS, Constants.SIS);
-        final ParameterDescriptor<?>[] param = new ParameterDescriptor<?>[] {
+        final var param = new ParameterDescriptor<?>[] {
                 Molodensky.DIMENSION,
                 Molodensky.SRC_SEMI_MAJOR,
                 Molodensky.SRC_SEMI_MINOR,
@@ -247,13 +247,10 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
          * when the conversion to target units will apply.
          */
         if (inverse == null) {
-            ellipsoidToCentric = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, isSource3D,
+            ellipsoidToCentric = new EllipsoidToCentricTransform(source, isSource3D,
                     EllipsoidToCentricTransform.TargetType.CARTESIAN);
 
-            centricToEllipsoid = (AbstractMathTransform) new EllipsoidToCentricTransform(
-                    target.getSemiMajorAxis(),
-                    target.getSemiMinorAxis(),
-                    target.getAxisUnit(), isTarget3D,
+            centricToEllipsoid = (AbstractMathTransform) new EllipsoidToCentricTransform(target, isTarget3D,
                     EllipsoidToCentricTransform.TargetType.CARTESIAN).inverse();
         } else try {
             ellipsoidToCentric = (AbstractMathTransform) inverse.centricToEllipsoid.inverse();

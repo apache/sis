@@ -781,6 +781,9 @@ public final class Matrices extends Static {
      *       In other words, new dimensions are propagated unchanged.</li>
      * </ul>
      *
+     * If the given matrix already has the specified number of rows and columns,
+     * then it is returned directly (not copied).
+     *
      * @param  matrix  the matrix to resize. This matrix will never be changed.
      * @param  numRow  the new number of rows. This is equal to the desired number of target dimensions plus 1.
      * @param  numCol  the new number of columns. This is equal to the desired number of source dimensions plus 1.

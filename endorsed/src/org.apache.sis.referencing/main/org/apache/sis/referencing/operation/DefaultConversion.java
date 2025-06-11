@@ -237,7 +237,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS().orElse(null));
         if (transform == null) {
             /*
-             * If the user did not specified explicitly a MathTransform, we will need to create it from the parameters.
+             * If the user did not specify explicitly a MathTransform, we will need to create it from the parameters.
              * This case happens when creating a ProjectedCRS because the length of semi-major and semi-minor axes are
              * often missing at defining conversion creation time. Since this constructor knows those semi-axis lengths
              * thanks to the `sourceCRS` argument, we can complete the parameters.

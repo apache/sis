@@ -25,6 +25,7 @@ import org.apache.sis.system.Configuration;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import static org.apache.sis.math.MathFunctions.atanh;
 import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**
@@ -119,6 +120,25 @@ public final class Formulas extends Static {
     }
 
     /**
+     * Returns whether ellipsoidal formulas should be used for the given ellipsoid.
+     * This method checks if the ellipsoid is a sphere with an arbitrary tolerance threshold.
+     * If the semi-major or semi-minor axis length is NaN, this method returns {@code false}.
+     *
+     * @param  ellipsoid  the ellipsoid to test.
+     * @return whether ellipsoidal formulas should be used.
+     *
+     * @see Ellipsoid#isSphere()
+     */
+    public static boolean isEllipsoidal(final Ellipsoid ellipsoid) {
+        if (ellipsoid.isSphere()) {
+            return false;
+        }
+        final double semiMajor = ellipsoid.getSemiMajorAxis();
+        final double semiMinor = ellipsoid.getSemiMinorAxis();      // No need to check the unit of measurement.
+        return Math.abs(semiMajor - semiMinor) > semiMajor * (LINEAR_TOLERANCE / AUTHALIC_RADIUS);
+    }
+
+    /**
      * Returns the size of a planet described by the given ellipsoid compared to earth.
      * This method returns a ratio of given planet authalic radius compared to WGS84.
      * This can be used for adjusting {@link #LINEAR_TOLERANCE} and {@link #ANGULAR_TOLERANCE} to another planet.
@@ -187,11 +207,11 @@ public final class Formulas extends Static {
     }
 
     /**
-     * Returns the geocentric radius at the given latitude.
+     * Returns the geocentric radius at the given geodetic latitude.
      *
      * @param  ellipsoid  the ellipsoid for which to compute the radius.
-     * @param  φ          the latitude in radians where to compute the radius.
-     * @return radius at latitude φ.
+     * @param  φ          the geodetic latitude in radians where to compute the radius.
+     * @return radius at the geodetic latitude φ.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Geocentric_radius">Geocentric radius on Wikipedia</a>
      */

@@ -125,7 +125,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     }
 
     /**
-     * Returns a default name to use if the user did not specified a name. The first letter will be changed to
+     * Returns a default name to use if the user did not specify a name. The first letter will be changed to
      * lower case (unless the name looks like an acronym) for compliance with Java convention on property names.
      */
     @Override

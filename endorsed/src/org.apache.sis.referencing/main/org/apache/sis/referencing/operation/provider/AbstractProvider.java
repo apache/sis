@@ -16,25 +16,32 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
+import java.util.Map;
 import java.util.logging.Logger;
+import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import jakarta.xml.bind.annotation.XmlTransient;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.SingleOperation;
-import org.apache.sis.util.privy.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
 
@@ -69,8 +76,16 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     private final Class<? extends SingleOperation> operationType;
 
     /**
-     * The base interface of the coordinate system of source/target coordinates.
-     * This is used for resolving some ambiguities at WKT parsing time.
+     * The base interface of the coordinate system of source coordinates.
+     * This is used for resolving some ambiguities at <abbr>WKT</abbr> parsing time.
+     *
+     * <h4>Deprecation</h4>
+     * This field is not formally annotated as deprecated, but should be considered as such.
+     * The coordinate system type can be specified by the {@code context} argument given in
+     * calls to the {@code create(…)} method. In particular, {@link GeographicToGeocentric}
+     * accepts Cartesian and spherical coordinate systems. In such cases, this field should
+     * be set to the type expected in Well-Known Text (<abbr>WKT</abbr>) definitions.
+     * This is not necessarily the only type accepted by this operation method.
      */
     public final Class<? extends CoordinateSystem> sourceCSType, targetCSType;
 
@@ -206,6 +221,37 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      */
     static ParameterDescriptor<Double> createShift(final ParameterBuilder builder) {
         return builder.create(0.0, Units.METRE);
+    }
+
+    /**
+     * Creates an ellipsoid from the given parameter values.
+     * The axis lengths are read from the parameter values identified by {@code semiMajor} and {@code semiMinor}.
+     * An arbitrary ellipsoid name such as "source" or "target" is used. The returned ellipsoid should be used
+     * only for the time needed for building the math transform (because the returned ellipsoid lacks metadata).
+     *
+     * <p>Callers should try to get the ellipsoid from the {@link Context} before to invoke this method,
+     * because the original object contains more accurate information (e.g., whether inverse flattening
+     * is the defining parameter instead of semi-major axis length).</p>
+     *
+     * @param  name       the arbitrary name to use for the ellipsoid.
+     * @param  values     the parameters from which to get the axis lengths and unit.
+     * @param  semiMajor  the descriptor for fetching the semi-major axis length.
+     * @param  semiMinor  the descriptor for fetching the semi-minor axis length.
+     * @return a temporary ellipsoid to use for creating the math transform.
+     * @throws ClassCastException if the unit of measurement of an axis length parameter is not linear.
+     *
+     * @todo Get the ellipsoid from the {@link Context}.
+     */
+    static Ellipsoid getEllipsoid(final String name,
+                                  final Parameters values,
+                                  final ParameterDescriptor<Double> semiMajor,
+                                  final ParameterDescriptor<Double> semiMinor)
+    {
+        final ParameterValue<?> p = values.getOrCreate(semiMajor);
+        final Unit<Length> unit = p.getUnit().asType(Length.class);
+        final double a = p.doubleValue();
+        final double b = values.doubleValue(semiMinor, unit);
+        return DefaultEllipsoid.createEllipsoid(Map.of(NAME_KEY, name), a, b, unit);
     }
 
     /**

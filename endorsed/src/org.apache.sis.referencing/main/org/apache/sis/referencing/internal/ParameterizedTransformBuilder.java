@@ -37,11 +37,11 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.Constants;
@@ -52,12 +52,14 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
+import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
 import org.apache.sis.referencing.operation.provider.VerticalOffset;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.transform.EllipsoidToRadiusTransform;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
@@ -99,12 +101,12 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
     /**
      * Coordinate system of the source or target points.
      */
-    private CoordinateSystem sourceCS, targetCS;
+    protected CoordinateSystem sourceCS, targetCS;
 
     /**
      * The ellipsoid of the source or target ellipsoidal coordinate system, or {@code null} if it does not apply.
      */
-    private Ellipsoid sourceEllipsoid, targetEllipsoid;
+    protected Ellipsoid sourceEllipsoid, targetEllipsoid;
 
     /**
      * The parameters of the transform to create. This is initialized to default values.
@@ -117,7 +119,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
      * or {@link #getCompletedParameters()} will throw {@link IllegalStateException},
      * unless {@link #setParameters(ParameterValueGroup, boolean)} is invoked.</p>
      */
-    private ParameterValueGroup parameters;
+    protected ParameterValueGroup parameters;
 
     /**
      * Names of parameters which have been inferred from the context.
@@ -353,7 +355,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
 
     /**
      * Returns the parameter values to modify for defining the transform to create.
-     * Those parameters are initialized to default values, which are {@linkplain #getMethod() method} depend.
+     * Those parameters are initialized to default values, which are {@linkplain #getMethod() method} dependent.
      * User-supplied values should be set directly in the returned instance with codes like
      * <code>parameter(</code><var>name</var><code>).setValue(</code><var>value</var><code>)</code>.
      *
@@ -666,14 +668,19 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
 
     /**
      * Given a transform between normalized spaces,
-     * creates a transform taking in account axis directions, units of measurement and longitude rotation.
-     * This method {@linkplain #createConcatenatedTransform concatenates} the given parameterized transform
+     * creates a transform taking in account axis directions and units of measurement.
+     * This method {@linkplain #createConcatenatedTransform concatenates} the given normalized transform
      * with any other transform required for performing units changes and coordinates swapping.
      *
-     * <p>The given {@code parameterized} transform shall expect
+     * <h4>Design note</h4>
+     * The {@code normalized} transform is a black box receiving inputs in any <abbr>CS</abbr> and producing
+     * outputs in any <abbr>CS</abbr>, not necessarily of the same kind. For that reason, this method cannot
+     * use {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} between the normalized CS.
+     * This method have to trust that the callers know that the coordinate systems that they provided are correct
+     * for the work done by the transform. The given {@code normalized} transform shall expect
      * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates
      * and produce normalized output coordinates. See {@link org.apache.sis.referencing.cs.AxesConvention}
-     * for more information about what Apache SIS means by "normalized".</p>
+     * for more information about what Apache SIS means by "normalized".
      *
      * <h4>Example</h4>
      * The most typical examples of transforms with normalized inputs/outputs are normalized
@@ -695,16 +702,20 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
      * @see org.apache.sis.referencing.operation.DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)
      */
     public MathTransform swapAndScaleAxes(final MathTransform normalized) throws FactoryException {
-        ArgumentChecks.ensureNonNull("parameterized", normalized);
+        ArgumentChecks.ensureNonNull("normalized", normalized);
         /*
-         * Compute matrices for swapping axis and performing units conversion.
+         * Compute matrices for swapping axes and performing units conversion.
          * There is one matrix to apply before projection from (λ,φ) coordinates,
          * and one matrix to apply after projection on (easting,northing) coordinates.
          */
         final Matrix swap1 = getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final Matrix swap3 = getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         /*
-         * Prepare the concatenation of the matrices computed above and the projection.
+         * Prepare the concatenation of above `swap` matrices with the normalized transform.
+         * The chain of transforms built by this method will be:
+         *
+         *     step1  ⟶  step2 (normalized)  ⟶  step3
+         *
          * Note that at this stage, the dimensions between each step may not be compatible.
          * For example, the projection (step2) is usually two-dimensional while the source
          * coordinate system (step1) may be three-dimensional if it has a height.
@@ -713,77 +724,79 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
         MathTransform step3 = swap3 != null ? factory.createAffineTransform(swap3) : MathTransforms.identity(normalized.getTargetDimensions());
         MathTransform step2 = normalized;
         /*
-         * Special case for the way EPSG handles reversal of axis direction. For now the "Vertical Offset" (EPSG:9616)
-         * method is the only one for which we found a need for special case. But if more special cases are added in a
-         * future SIS version, then we should replace the static method by a non-static one defined in AbstractProvider.
+         * Special case for the way that EPSG handles reversal of axis direction.
+         * For now the "Vertical Offset" (EPSG:9616) method is the only known case.
+         * But if more special cases are added in a future SIS version, then we should
+         * replace the static method by a non-static one defined in `AbstractProvider`.
          */
         if (provider instanceof VerticalOffset) {
             step2 = VerticalOffset.postCreate(step2, swap3);
         }
         /*
-         * If the target coordinate system has a height, instruct the projection to pass the height unchanged from
-         * the base CRS to the target CRS. After this block, the dimensions of `step2` and `step3` should match.
+         * Add or remove the vertical coordinate of an ellipsoidal or spherical coordinate system.
+         * For an ellipsoidal CS, the vertical coordinate is the height and its default value is 0.
+         * For a spherical CS, the vertical coordinate is the radius and its value depends on the latitude.
+         * If there is more than one dimension to add or remove, the extra dimensions will be handled later.
          *
-         * The height is always the last dimension in a normalized EllipdoidalCS. We accept only a hard-coded list
-         * of dimensions because it is not `MathTransformFactory` job to build a transform chain in a generic way.
-         * We handle only the cases that are necessary because of the way some operation methods are provided.
-         * In particular Apache SIS provides only 2D map projections, so 3D projections have to be "generated"
-         * on the fly. That use case is:
-         *
-         *     - Source CRS: a GeographicCRS (regardless its number of dimension – it will be addressed in next block)
-         *     - Target CRS: a 3D ProjectedCRS
-         *     - Parameterized transform: a 2D map projection. We need the ellipsoidal height to passthrough.
-         *
-         * The reverse order (projected source CRS and geographic target CRS) is also accepted but should be uncommon.
+         * Note that the vertical coordinate is added only if needed by `step2`. If `step2` does not expect
+         * a vertical coordinate, then that coordinate is not added here. It will be added later with a NaN
+         * value for avoiding a false sense of information availability.
          */
-        final int resultDim = step3.getSourceDimensions();              // Final result (minus trivial changes).
-        final int kernelDim = step2.getTargetDimensions();              // Result of the core part of transform.
+        int sourceDim = step1.getTargetDimensions();      // Number of available dimensions.
+        int neededDim = step2.getSourceDimensions();      // Number of required dimensions.
+        int kernelDim = step2.getTargetDimensions();      // Result of the core part of transform.
+        int resultDim = step3.getSourceDimensions();      // Expected result after the kernel part.
+        if (sourceDim == 2 && neededDim > 2) {
+            MathTransform change = addOrRemoveVertical(sourceCS, sourceEllipsoid, targetEllipsoid, false);
+            if (change != null) {
+                step1 = factory.createConcatenatedTransform(step1, change);
+                sourceDim = step1.getTargetDimensions();
+            }
+        }
+        if (kernelDim == 3 && resultDim < 3) {
+            MathTransform change = addOrRemoveVertical(targetCS, targetEllipsoid, sourceEllipsoid, true);
+            if (change != null) {
+                step3 = factory.createConcatenatedTransform(change, step3);
+                resultDim = step3.getSourceDimensions();
+            }
+        }
+        /*
+         * Make the number of target dimensions of `step2` compatible with the number of source dimensions of `step3`.
+         * For example, SIS provides only 2D map projections, therefore 3D projections must be generated on the fly
+         * by adding a "pass-through" transform.
+         */
         final int numTrailingCoordinates = resultDim - kernelDim;
         if (numTrailingCoordinates != 0) {
-            ensureDimensionChangeAllowed(normalized, numTrailingCoordinates, resultDim);
+            ensureDimensionChangeAllowed(numTrailingCoordinates, resultDim, normalized);
             if (numTrailingCoordinates > 0) {
                 step2 = factory.createPassThroughTransform(0, step2, numTrailingCoordinates);
             } else {
-                var select = Matrices.createDimensionSelect(kernelDim, ArraysExt.range(0, resultDim));
-                step2 = factory.createConcatenatedTransform(step2, factory.createAffineTransform(select));
+                step2 = factory.createConcatenatedTransform(step2, addOrRemoveDimensions(kernelDim, resultDim));
             }
+            neededDim = step2.getSourceDimensions();
+            kernelDim = step2.getTargetDimensions();
         }
         /*
-         * If the source CS has a height but the target CS doesn't, drops the extra coordinates.
-         * Conversely if the source CS is missing a height, add a height with NaN values.
-         * After this block, the dimensions of `step1` and `step2` should match.
+         * Make the number of target dimensions of `step1` compatible with the number of source dimensions of `step2`.
+         * If dimensions must be added, their values will be NaN. Note that the vertical dimension (height or radius)
+         * has already been added with a non-NaN value before to reach this point if that value was required by `step2`.
+         */
+        if (sourceDim != neededDim) {
+            ensureDimensionChangeAllowed(neededDim - sourceDim, neededDim, normalized);
+            step1 = factory.createConcatenatedTransform(step1, addOrRemoveDimensions(sourceDim, neededDim));
+        }
+        if (kernelDim != resultDim) {
+            ensureDimensionChangeAllowed(resultDim - kernelDim, resultDim, normalized);
+            step3 = factory.createConcatenatedTransform(addOrRemoveDimensions(kernelDim, resultDim), step3);
+        }
+        /*
+         * Create the transform.
          *
-         * When adding an ellipsoidal height, there are two scenarios: the ellipsoidal height may be used by the
-         * parameterized operation, or it may be passed through (in which case the operation ignores the height).
-         * If the height is expected as operation input, set the height to 0. Otherwise (the pass through case),
-         * set the height to NaN. We do that way because the given `parameterized` transform may be a Molodensky
-         * transform or anything else that could use the height in its calculation. If we have to add a height as
-         * a pass through dimension, maybe the parameterized transform is a 2D Molodensky instead of a 3D Molodensky.
-         * The result of passing through the height is not the same as if a 3D Molodensky was used in the first place.
-         * A NaN value avoid to give a false sense of accuracy.
+         * Special case: if the parameterized transform was a map projection but the result, after simplification,
+         * is an affine transform (it can happen with the Equirectangular projection), wraps the affine transform
+         * for continuing to show "semi_major", "semi_minor", etc. parameters instead of "elt_0_0", "elt_0_1", etc.
          */
-        final int sourceDim = step1.getTargetDimensions();
-        final int targetDim = step2.getSourceDimensions();
-        int insertCount = targetDim - sourceDim;
-        if (insertCount != 0) {
-            ensureDimensionChangeAllowed(normalized, insertCount, targetDim);
-            final Matrix resize = Matrices.createZero(targetDim+1, sourceDim+1);
-            for (int j=0; j<targetDim; j++) {
-                resize.setElement(j, Math.min(j, sourceDim), (j < sourceDim) ? 1 :
-                        ((--insertCount >= numTrailingCoordinates) ? 0 : Double.NaN));        // See above note.
-            }
-            resize.setElement(targetDim, sourceDim, 1);     // Element in the lower-right corner.
-            step1 = factory.createConcatenatedTransform(step1, factory.createAffineTransform(resize));
-        }
         MathTransform mt = factory.createConcatenatedTransform(factory.createConcatenatedTransform(step1, step2), step3);
-        /*
-         * At this point we finished to create the transform.  But before to return it, verify if the
-         * parameterized transform given in argument had some custom parameters. This happen with the
-         * Equirectangular projection, which can be simplified as an AffineTransform while we want to
-         * continue to describe it with the "semi_major", "semi_minor", etc. parameters  instead of
-         * "elt_0_0", "elt_0_1", etc.  The following code just forwards those parameters to the newly
-         * created transform; it does not change the operation.
-         */
         if (normalized instanceof ParameterizedAffine && !(mt instanceof ParameterizedAffine)) {
             return ((ParameterizedAffine) normalized).newTransform(mt);
         }
@@ -791,26 +804,80 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
     }
 
     /**
-     * Checks whether {@link #swapAndScaleAxes(MathTransform)} should accept to adjust the number of
-     * transform dimensions. The current implementation accepts only addition or removal of ellipsoidal height,
-     * but future version may expand the list of accepted cases. The intent for this method is to catch errors
-     * caused by wrong coordinate systems associated to a parameterized transform, keeping in mind that it is
-     * not {@link DefaultMathTransformFactory} job to handle changes between arbitrary CRS (those changes are
-     * handled by {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory} instead).
+     * Adds or removes the ellipsoidal height or spherical radius dimension.
      *
-     * <h4>Implementation note</h4>
-     * The {@code parameterized} transform is a black box receiving inputs in any <abbr>CS</abbr> and
-     * producing outputs in any <abbr>CS</abbr>, not necessarily of the same kind. For that reason, we cannot use
-     * {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} between the normalized CS.
-     * We have to trust that the caller knows that the coordinate systems (s)he provided are correct for the work
-     * done by the transform.
+     * @param  cs         the coordinate system for which to add a dimension, or {@code null} if unknown.
+     * @param  ellipsoid  the ellipsoid to use, or {@code null} if unknown.
+     * @param  fallback   another ellipsoid that may be used if {@code ellipsoid} is null.
+     * @param  remove     {@code false} for adding the dimension, or {@code true} for removing the dimension.
+     * @return the transform to concatenate, or {@code null} if the coordinate system is not recognized.
+     * @throws FactoryException if an error occurred while creating the transform.
      *
-     * @param  parameterized  the parameterized transform, for producing an error message if needed.
-     * @param  change         number of dimensions to add (if positive) or remove (if negative).
-     * @param  resultDim      number of dimensions after the change.
+     * @see org.apache.sis.referencing.operation.transform.CoordinateSystemTransformBuilder#addOrRemoveVertical
      */
-    private void ensureDimensionChangeAllowed(final MathTransform parameterized,
-            final int change, final int resultDim) throws FactoryException
+    private MathTransform addOrRemoveVertical(final CoordinateSystem cs, Ellipsoid ellipsoid,
+            final Ellipsoid fallback, final boolean remove) throws FactoryException
+    {
+        if (ellipsoid == null) {
+            ellipsoid = fallback;
+        }
+        MathTransform tr;
+        if (cs instanceof EllipsoidalCS) {
+            Matrix resize = Matrices.createDiagonal(4, 3);  // Set the height to zero (not NaN).
+            resize.setElement(3, 2, 1);                     // Element in the lower-right corner.
+            resize.setElement(2, 2, Geographic2Dto3D.DEFAULT_HEIGHT);
+            tr = factory.createAffineTransform(resize);
+        } else if (ellipsoid != null && cs instanceof SphericalCS) {
+            tr = EllipsoidToRadiusTransform.createGeodeticConversion(factory, ellipsoid);
+        } else {
+            return null;
+        }
+        if (remove) try {
+            tr = tr.inverse();
+        } catch (NoninvertibleTransformException cause) {
+            throw new FactoryException(cause.getMessage(), cause);
+        }
+        return tr;
+    }
+
+    /**
+     * Adds or removes an arbitrary number of dimensions.
+     * Coordinate values of added dimensions will be NaN.
+     *
+     * @param  sourceDim  the current number of dimensions.
+     * @param  targetDim  the desired number of dimensions.
+     * @return the transform to concatenate.
+     * @throws FactoryException if the transform cannot be created.
+     */
+    private MathTransform addOrRemoveDimensions(final int sourceDim, final int targetDim) throws FactoryException {
+        final Matrix resize = Matrices.createDiagonal(targetDim+1, sourceDim+1);
+        if (sourceDim < targetDim) {
+            for (int j=sourceDim; j<targetDim; j++) {
+                resize.setElement(j, sourceDim, Double.NaN);
+            }
+        } else {
+            resize.setElement(targetDim, targetDim, 0);
+        }
+        resize.setElement(targetDim, sourceDim, 1);     // Element in the lower-right corner.
+        return factory.createAffineTransform(resize);
+    }
+
+    /**
+     * Checks whether {@link #swapAndScaleAxes(MathTransform)} should accept to adjust the number of dimensions.
+     * This method is for catching errors caused by wrong coordinate systems associated to a parameterized transform,
+     * keeping in mind that it is not {@link DefaultMathTransformFactory} job to handle changes between arbitrary CRS
+     * (those changes are handled by {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory}).
+     *
+     * <h4>Current rules</h4>
+     * The current implementation accepts only addition or removal of ellipsoidal height.
+     * Future Apache SIS versions may expand the list of accepted cases.
+     *
+     * @param  change      number of dimensions to add (if positive) or remove (if negative).
+     * @param  resultDim   number of dimensions after the change.
+     * @param  normalized  the parameterized transform, for producing an error message if needed.
+     */
+    private void ensureDimensionChangeAllowed(final int change, final int resultDim, final MathTransform normalized)
+            throws FactoryException
     {
         if (Math.abs(change) == 1 && resultDim >= 2 && resultDim <= 3) {
             if (sourceCS instanceof EllipsoidalCS || targetCS instanceof EllipsoidalCS) {
@@ -821,16 +888,16 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
          * Creates the error message for a transform that cannot be associated with given coordinate systems.
          */
         String name = null;
-        if (parameterized instanceof Parameterized) {
-            name = IdentifiedObjects.getDisplayName(((Parameterized) parameterized).getParameterDescriptors(), null);
+        if (normalized instanceof Parameterized) {
+            name = IdentifiedObjects.getDisplayName(((Parameterized) normalized).getParameterDescriptors(), null);
         }
         if (name == null) {
-            name = Classes.getShortClassName(parameterized);
+            name = Classes.getShortClassName(normalized);
         }
         final var b = new StringBuilder();
         getSourceDimensions().ifPresent((dim) -> b.append(dim).append("D → "));
-        b.append("tr(").append(parameterized.getSourceDimensions()).append("D → ")
-                       .append(parameterized.getTargetDimensions()).append("D)");
+        b.append("tr(").append(normalized.getSourceDimensions()).append("D → ")
+                       .append(normalized.getTargetDimensions()).append("D)");
         getTargetDimensions().ifPresent((dim) -> b.append(" → ").append(dim).append('D'));
         throw new InvalidGeodeticParameterException(Resources.format(Resources.Keys.CanNotAssociateToCS_2, name, b));
     }

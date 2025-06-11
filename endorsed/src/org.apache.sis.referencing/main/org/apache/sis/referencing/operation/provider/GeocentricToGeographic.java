@@ -61,7 +61,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
      */
     public GeocentricToGeographic() {
         super(Conversion.class, PARAMETERS,
-              CartesianCS.class,  false,
+              CartesianCS.class,  false,    // Type expected in WKT, but not the only type accepted by this operation.
               EllipsoidalCS.class, true,
               (byte) 3);
     }
@@ -75,7 +75,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
      */
     @Override
     public MathTransform createMathTransform(final Context context) throws FactoryException {
-        MathTransform tr = GeographicToGeocentric.create(context, context.getTargetDimensions());
+        MathTransform tr = GeographicToGeocentric.create(context, context.getTargetDimensions(), context.getSourceCSType());
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {

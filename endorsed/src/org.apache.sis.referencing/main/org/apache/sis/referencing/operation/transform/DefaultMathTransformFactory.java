@@ -472,8 +472,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * <ol>
      *   <li>Inferring the {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"},
      *       {@code "src_semi_minor"}, {@code "tgt_semi_major"} or {@code "tgt_semi_minor"} parameter values
-     *       from the {@link Ellipsoid} associated to the source or target CRS, if these parameters are
-     *       not explicitly given and if they are relevant for the coordinate operation method.</li>
+     *       from the {@link Ellipsoid} associated to the source or target <abbr>CRS</abbr>, if these parameters
+     *       are not explicitly given and if they are relevant for the coordinate operation method.</li>
      *   <li>{@linkplain #createConcatenatedTransform Concatenating} the parameterized transform
      *       with any other transforms required for performing units changes and coordinates swapping.</li>
      * </ol>
@@ -797,9 +797,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * Returns the parameter values used for the math transform creation,
          * including the parameters completed by the factory.
-         * This is the union of {@link #parameters()} with {@link #getContextualParameters()}.
+         * This is the union of {@link #parameters} with {@link #getContextualParameters()}.
          * The completed parameters may only have additional parameters compared to the user-supplied parameters.
-         * {@linkplain #parameters() Parameter} values that were explicitly set by the user are not overwritten.
+         * Parameter values that were explicitly set by the user are not overwritten.
          *
          * <p>After this method has been invoked, the {@link #setSourceAxes setSourceAxes(…)}
          * and {@link #setTargetAxes setTargetAxes(…)} methods can no longer be invoked.</p>

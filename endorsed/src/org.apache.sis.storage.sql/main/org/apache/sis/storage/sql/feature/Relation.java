@@ -224,7 +224,7 @@ final class Relation extends TableReference implements Cloneable {
                  Objects.equals(freeText, reflect.getString(Reflection.FK_NAME)));
         /*
          * In above conditions, the comparison of `FK_NAME` is actually the only mandatory check.
-         * The "catalog.schema.table" comparaison is a paranoiac check added as a safety in case
+         * The "catalog.schema.table" comparison is a paranoiac check added as a safety in case
          * the foreigner key is null or empty in some JDBC implementations.  Note that the table
          * name is not a sufficient condition, because we could have more than one foreigner key
          * referencing the same table.

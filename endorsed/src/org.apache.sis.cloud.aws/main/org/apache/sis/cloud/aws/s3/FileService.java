@@ -81,7 +81,7 @@ import org.apache.sis.util.collection.Containers;
 public class FileService extends FileSystemProvider {
     /**
      * An arbitrary string used as key in the {@link #fileSystems} map
-     * when the user did not specified explicitly an access key.
+     * when the user did not specify explicitly an access key.
      * In such case, the default mechanism documented in AWS SDK is used.
      * In preference order:
      *

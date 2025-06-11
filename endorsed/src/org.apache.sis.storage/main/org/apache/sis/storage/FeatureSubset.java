@@ -97,8 +97,8 @@ final class FeatureSubset extends AbstractFeatureSet {
             try {
                 projection = query.project(type, listeners.getLocale()).orElse(null);
                 resultType = (projection != null) ? projection.typeRequested : type;
-            } catch (IllegalArgumentException e) {
-                throw new DataStoreContentException(Resources.forLocale(listeners.getLocale())
+            } catch (RuntimeException e) {      // Too many exceptions for listing them all.
+                throw new UnsupportedQueryException(Resources.forLocale(listeners.getLocale())
                         .getString(Resources.Keys.CanNotDeriveTypeFromFeature_1, type.getName()), e);
             }
         }

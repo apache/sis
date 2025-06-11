@@ -32,8 +32,6 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Arithmetic;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.DoubleDouble;
-
-
 /*
  * We really want to use doubleToRawLongBits, not doubleToLongBits, because the
  * coverage module needs the raw bits for differentiating various NaN values.
@@ -218,6 +216,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
              *       } else { ... }
              */
             if (scale != 0) {
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final LinearTransform1D inverse;
                 if (DoubleDouble.DISABLED) {
                     inverse = create(1/scale, -offset/scale);
@@ -448,7 +447,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                 return Matrices.equals(getMatrix(), ((LinearTransform) object).getMatrix(), mode);
             }
         } else if (super.equals(object, mode)) {
-            final LinearTransform1D that = (LinearTransform1D) object;
+            final var that = (LinearTransform1D) object;
             return doubleToRawLongBits(scale)  == doubleToRawLongBits(that.scale)  &&
                    doubleToRawLongBits(offset) == doubleToRawLongBits(that.offset) &&
                    Objects.equals(scaleNumber,  that.scaleNumber) &&

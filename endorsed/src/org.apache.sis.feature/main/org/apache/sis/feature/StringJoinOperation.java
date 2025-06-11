@@ -151,8 +151,11 @@ final class StringJoinOperation extends AbstractOperation {
 
     /**
      * The property names as an unmodifiable set, created when first needed.
+     * This is simply {@link #attributeNames} copied in a unmodifiable set.
+     *
+     * @see #getDependencies()
      */
-    private transient Set<String> dependencies;
+    private transient volatile Set<String> dependencies;
 
     /**
      * The type of the result returned by the string concatenation operation.
@@ -180,6 +183,12 @@ final class StringJoinOperation extends AbstractOperation {
      * It is caller's responsibility to ensure that {@code delimiter} and {@code singleAttributes} are not null.
      * This private constructor does not verify that condition on the assumption that the public API did.
      *
+     * @param  identification    the name and other information to be given to this operation.
+     * @param  delimiter         the characters to use as delimiter between each single property value.
+     * @param  prefix            characters to use at the beginning of the concatenated string, or {@code null} if none.
+     * @param  suffix            characters to use at the end of the concatenated string, or {@code null} if none.
+     * @param  singleAttributes  identification of the single attributes (or operations producing attributes) to concatenate.
+     * @param  inheritFrom       existing operation from which to inherit null attributes, or {@code null} if none.
      * @throws UnconvertibleObjectException if at least one attributes is not convertible from a string.
      * @throws IllegalArgumentException if the operation failed for another reason.
      *
@@ -187,7 +196,8 @@ final class StringJoinOperation extends AbstractOperation {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})                                        // Generic array creation.
     StringJoinOperation(final Map<String,?> identification, final String delimiter,
-            final String prefix, final String suffix, final PropertyType[] singleAttributes)
+            final String prefix, final String suffix, final PropertyType[] singleAttributes,
+            final StringJoinOperation inheritFrom)
     {
         super(identification);
         attributeNames = new String[singleAttributes.length];
@@ -206,13 +216,19 @@ final class StringJoinOperation extends AbstractOperation {
              * combinations (e.g. operation producing an association).
              */
             IdentifiedType propertyType = singleAttributes[i];
-            ArgumentChecks.ensureNonNullElement("singleAttributes", i, propertyType);
+            if (inheritFrom == null) {
+                ArgumentChecks.ensureNonNullElement("singleAttributes", i, propertyType);
+            } else if (propertyType == null) {
+                attributeNames[i] = inheritFrom.attributeNames[i];
+                converters[i] = inheritFrom.converters[i];
+                continue;
+            }
             final GenericName name = propertyType.getName();
             int maximumOccurs = 0;                              // May be a bitwise combination; need only to know if > 1.
             PropertyNotFoundException cause = null;             // In case of failure to find "sis:identifier" property.
             final boolean isAssociation = (propertyType instanceof FeatureAssociationRole);
             if (isAssociation) {
-                final FeatureAssociationRole role = (FeatureAssociationRole) propertyType;
+                final var role = (FeatureAssociationRole) propertyType;
                 final FeatureType ft = role.getValueType();
                 maximumOccurs = role.getMaximumOccurs();
                 try {
@@ -253,8 +269,12 @@ final class StringJoinOperation extends AbstractOperation {
             }
             converters[i] = converter;
         }
-        resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<>(
-                resultIdentification(identification), String.class, 1, 1, null));
+        if (inheritFrom != null) {
+            resultType = inheritFrom.resultType;
+        } else {
+            resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<>(
+                    resultIdentification(identification), String.class, 1, 1, null));
+        }
         this.delimiter = delimiter;
         this.prefix = (prefix == null) ? "" : prefix;
         this.suffix = (suffix == null) ? "" : suffix;
@@ -283,24 +303,48 @@ final class StringJoinOperation extends AbstractOperation {
     }
 
     /**
-     * Returns the names of feature properties that this operation needs for performing its task.
-     */
-    @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public synchronized Set<String> getDependencies() {
-        if (dependencies == null) {
-            dependencies = CollectionsExt.immutableSet(true, attributeNames);
-        }
-        return dependencies;
-    }
-
-    /**
      * Returns the name of the properties from which to get the values to concatenate.
      * This is the same information as {@link #getDependencies()}, only in a different
      * kind of collection.
      */
     final List<String> getAttributeNames() {
         return UnmodifiableArrayList.wrap(attributeNames);
+    }
+
+    /**
+     * Returns the names of feature properties that this operation needs for performing its task.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Set<String> getDependencies() {
+        Set<String> cached = dependencies;
+        if (cached == null) {
+            // Not really a problem if computed twice concurrently.
+            dependencies = cached = CollectionsExt.immutableSet(true, attributeNames);
+        }
+        return cached;
+    }
+
+    /**
+     * Returns the same operation but using different properties as inputs.
+     *
+     * @param  dependencies  the new properties to use as operation inputs.
+     * @return the new operation, or {@code this} if unchanged.
+     */
+    @Override
+    public Operation updateDependencies(final Map<String, PropertyType> dependencies) {
+        boolean hasNonNull = false;
+        final var singleAttributes = new PropertyType[attributeNames.length];
+        for (int i=0; i < singleAttributes.length; i++) {
+            hasNonNull |= (singleAttributes[i] = dependencies.get(attributeNames[i])) != null;
+        }
+        if (hasNonNull) {
+            final var op = new StringJoinOperation(inherit(), delimiter, prefix, suffix, singleAttributes, this);
+            if (!(Arrays.equals(op.attributeNames, attributeNames) && Arrays.equals(op.converters, converters))) {
+                return FeatureOperations.POOL.unique(op);
+            }
+        }
+        return this;
     }
 
     /**
@@ -356,7 +400,7 @@ final class StringJoinOperation extends AbstractOperation {
          */
         @Override
         public String getValue() throws UnconvertibleObjectException {
-            final StringBuilder sb = new StringBuilder();
+            final var sb = new StringBuilder();
             String sep = prefix;
             String name  = null;
             Object value = null;
@@ -421,7 +465,7 @@ final class StringJoinOperation extends AbstractOperation {
              * read them (no need to store the substrings) but do not store them in the properties
              * before we succeeded to parse all values, so we have a "all or nothing" behavior.
              */
-            final Object[] values = new Object[attributeNames.length];
+            final var values = new Object[attributeNames.length];
             int lower = prefix.length();
             int upper = lower;
             int count = 0;
@@ -520,7 +564,7 @@ final class StringJoinOperation extends AbstractOperation {
     public boolean equals(final Object obj) {
         if (super.equals(obj)) {
             // 'this.result' is compared (indirectly) by the super class.
-            final StringJoinOperation that = (StringJoinOperation) obj;
+            final var that = (StringJoinOperation) obj;
             return Arrays.equals(this.attributeNames, that.attributeNames) &&
                    Arrays.equals(this.converters,     that.converters)     &&
                   Objects.equals(this.delimiter,      that.delimiter)      &&

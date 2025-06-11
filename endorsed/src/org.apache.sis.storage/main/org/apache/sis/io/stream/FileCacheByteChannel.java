@@ -406,6 +406,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel implements S
      * @param  end    position of the last byte to read with the returned stream (inclusive),
      *                or {@link Long#MAX_VALUE} for end of stream.
      * @return information about the input stream providing the bytes to read starting at the given start position.
+     *         May be {@code null} if this method detects that the {@code start} position is after the end of stream.
      * @throws IOException if the connection cannot be established.
      */
     protected abstract Connection openConnection(long start, long end) throws IOException;
@@ -415,7 +416,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel implements S
      * This method is invoked for example when this channel needs to skip an arbitrarily large number
      * of bytes because the {@linkplain #position(long) position changed}. The {@code connection}
      * argument is the value returned by a previous call to {@link #openConnection(long, long)}.
-     * The boolean return value tells what this method has done:
+     * The Boolean return value tells what this method has done:
      *
      * <ul class="verbose">
      *   <li>If this method returns {@code true}, then the input stream has been closed by this method and this
@@ -505,7 +506,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel implements S
      * the current position. If the gab between ranges is less than {@link #SKIP_THRESHOLD},
      * the ranges will be merged in a single request.
      *
-     * @return the opened connection (never {@code null}).
+     * @return the opened connection, or {@code null} if end of stream.
      * @throws IOException if the connection cannot be established.
      */
     private Connection openConnection() throws IOException {
@@ -514,7 +515,14 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel implements S
         long end;
         do {                    // Should be executed exactly 1 or 2 times.
             if (i >= size) {
-                end = (length > 0) ? length-1 : Long.MAX_VALUE;
+                if (length <= 0) {
+                    end = Long.MAX_VALUE;
+                } else {
+                    end = length - 1;
+                    if (position > end) {
+                        return null;
+                    }
+                }
                 break;
             }
             end = rangesOfInterest.getMaxLong(i) - 1;       // Inclusive
@@ -522,7 +530,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel implements S
         } while (end < position);
         /*
          * At this point we found the smallest "end of range" position.
-         * If the gab with next range is small enough, merge the ranges
+         * If the gap with next range is small enough, merge the ranges
          * in order to make a single connection request.
          */
         while (i < size) {
@@ -538,6 +546,9 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel implements S
          * Save the stream length if it is known.
          */
         final Connection c = openConnection(position, end);
+        if (c == null) {
+            return null;
+        }
         file.position(c.start);
         if (c.length >= 0) {
             length = c.length;
@@ -647,6 +658,9 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel implements S
          */
         if (c == null) {
             c = openConnection();
+            if (c == null) {
+                return -1;
+            }
             offset = position - c.start;
         }
         offset = skipInInput(offset);
@@ -877,7 +891,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel implements S
         }
 
         /**
-         * Invoked in a background thread after a delay for closing a possibly inactive connection.
+         * Invoked in a background thread after a delay for closing a possibly inactive connections.
          * If this method confirms that the connection has been inactive for a time longer than the timeout,
          * then the connection is closed. Otherwise a new task is scheduled for checking again later.
          */

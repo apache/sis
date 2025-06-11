@@ -19,15 +19,12 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import static java.lang.Math.*;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -36,39 +33,41 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.SphericalCS;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.privy.DirectPositionView;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
-import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
-import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
-import org.apache.sis.metadata.privy.ReferencingServices;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
+import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
+import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.metadata.iso.citation.Citations;
-import static org.apache.sis.referencing.operation.provider.MapProjection.SEMI_MAJOR;
-import static org.apache.sis.referencing.operation.provider.MapProjection.SEMI_MINOR;
 import static org.apache.sis.referencing.operation.provider.MapProjection.ECCENTRICITY;
 import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetweenGeographic.DIMENSION;
 
 
 /**
- * Transform from two- or three- dimensional ellipsoidal coordinates to (geo)centric coordinates.
+ * Transform from two- or three- dimensional ellipsoidal coordinates to geocentric or planetocentric coordinates.
  * This transform is usually (but not necessarily) part of a conversion from
- * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic} to Cartesian
+ * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic} to
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric} coordinates.
- * Each input coordinates is expected to contain:
+ * Each input coordinate tuple is expected to contain:
  * <ol>
  *   <li>longitude (λ) relative to the prime meridian (usually Greenwich),</li>
  *   <li>latitude (φ),</li>
@@ -82,6 +81,12 @@ import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetw
  *       <li>distance from Earth center on the X axis (toward the intersection of prime meridian and equator),</li>
  *       <li>distance from Earth center on the Y axis (toward the intersection of 90°E meridian and equator),</li>
  *       <li>distance from Earth center on the Z axis (toward North pole).</li>
+ *     </ol>
+ *   </li><li>In the spherical case:
+ *     <ol>
+ *       <li>spherical longitude (same as the geodetic longitude given in input),</li>
+ *       <li>spherical latitude (slightly different than the geodetic latitude),</li>
+ *       <li>distance from Earth center (radius).</li>
  *     </ol>
  *   </li>
  * </ul>
@@ -102,31 +107,89 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3352045463953828140L;
+    private static final long serialVersionUID = -4692632613706143460L;
 
     /**
-     * Whether the output coordinate system is Cartesian or Spherical.
+     * Index of the vertical dimension in source or target coordinates.
+     * This is the dimension of <var>h</var> in the geographic case and
+     * the dimension of <var>R</var> in the spherical case.
      *
-     * <p><b>TODO:</b> The spherical case is not yet implemented.
-     * We could also consider supporting the cylindrical case, but its usefulness is not obvious.
-     * See <a href="http://issues.apache.org/jira/browse/SIS-302">SIS-302</a>.</p>
+     * <p><b>Note for maintainers:</b> do not use this constant for every occurrences of the {@code 2} literal,
+     * but only in occurrences where the value 2 is really the dimension index of <var>h</var> or <var>R</var>.
+     * Do not use this constant for a <em>number</em> of dimensions equals to 2.</p>
+     */
+    private static final int VERTICAL_DIM = 2;
+
+    /**
+     * Number of target dimensions on which this transform operates.
+     * This is fixed to 3, contrarily to the source dimensions which may be 2 or 3 depending on {@link #withHeight}.
+     * This constant is also used for the <em>source</em> number of dimensions of the <em>inverse</em> transform.
+     */
+    private static final int NUM_CENTRIC_DIM = 3;
+
+    /**
+     * Whether the output coordinate system is Cartesian or spherical.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
+     * @version 1.5
      * @since   0.7
      */
     public enum TargetType {
         /**
-         * Indicates conversions from
-         * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal} to
-         * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} coordinate system.
+         * Indicates conversions from ellipsoidal to Cartesian coordinate system.
+         * Axis order is:
+         *
+         * <ul>
+         *   <li>Geocentric <var>X</var> (toward prime meridian)</li>
+         *   <li>Geocentric <var>Y</var> (toward 90° east)</li>
+         *   <li>Geocentric <var>Z</var> (toward north pole)</li>
+         * </ul>
+         *
+         * @see org.opengis.referencing.cs.EllipsoidalCS
+         * @see org.opengis.referencing.cs.CartesianCS
          */
-        CARTESIAN
+        CARTESIAN,
+
+        /**
+         * Indicates conversions from ellipsoidal to spherical coordinate system.
+         * Axis order is as below (note that this is <em>not</em> the convention
+         * used neither in physics (ISO 80000-2:2009) or in mathematics).
+         *
+         * <ul>
+         *   <li>Spherical longitude (θ), also noted Ω or λ.</li>
+         *   <li>Spherical latitude (Ω), also noted θ or φ′.</li>
+         *   <li>Spherical radius (R).</li>
+         * </ul>
+         *
+         * The spherical latitude is related to geodetic latitude φ by {@literal Ω(φ) = atan((1-ℯ²)⋅tan(φ))}.
+         *
+         * @see org.opengis.referencing.cs.EllipsoidalCS
+         * @see org.opengis.referencing.cs.SphericalCS
+         *
+         * @since 1.5
+         */
+        SPHERICAL;
+
+        /**
+         * Returns the enumeration value for the given type of coordinate system.
+         * The {@code cs} argument should be {@code CartesianCS.class}, {@code SphericalCS.class}
+         * or a subclass of those types.
+         *
+         * @param  csType  the coordinate system type.
+         * @return enumeration value associated to the given type.
+         * @throws IllegalArgumentException if the given {@code csType} is not one of the above-documented types.
+         * @since  1.5
+         */
+        public static TargetType of(final Class<? extends CoordinateSystem> csType) {
+            if (CartesianCS.class.isAssignableFrom(csType)) return CARTESIAN;
+            if (SphericalCS.class.isAssignableFrom(csType)) return SPHERICAL;
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, csType));
+        }
     }
 
     /**
      * Internal parameter descriptor, used only for debugging purpose.
-     * Created only when first needed.
+     * Created when first needed.
      *
      * @see #getParameterDescriptors()
      */
@@ -138,7 +201,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * by the use of an iterative method. The iterative method is not needed for a planet of Earth eccentricity,
      * but become useful for planets of higher eccentricity.
      *
-     * <p>Actually the need for iteration is not just a matter of eccentricity. It is also a matter of
+     * <p>Actually, the need for iteration is not just a matter of eccentricity. It is also a matter of
      * <var>h</var> values. But empirical tests suggest that with Earth's eccentricity (about 0.082),
      * the limit for <var>h</var> is quite high (close to 2000 km for a point at 30°N). This limit is
      * reduced to about 200 km for an eccentricity of 0.16. It may be possible to find a formula for
@@ -149,56 +212,60 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     private static final double ECCENTRICITY_THRESHOLD = 0.16;
 
     /**
-     * The square of eccentricity: ℯ² = (a²-b²)/a² where
-     * <var>a</var> is the <i>semi-major</i> axis length and
-     * <var>b</var> is the <i>semi-minor</i> axis length.
+     * The square of the eccentricity.
+     * This is defined as ℯ² = (a²-b²)/a² where
+     * <var>a</var> is the <dfn>semi-major</dfn> axis length and
+     * <var>b</var> is the <dfn>semi-minor</dfn> axis length.
      */
     protected final double eccentricitySquared;
 
     /**
-     * The b/a ratio where
+     * The <var>b</var>/<var>a</var> ratio where
      * <var>a</var> is the <i>semi-major</i> axis length and
      * <var>b</var> is the <i>semi-minor</i> axis length.
-     * Since the {@code EllipsoidToCentricTransform} class works on an ellipsoid where a = 1
+     * Since the {@code EllipsoidToCentricTransform} class works on an ellipsoid where <var>a</var> = 1
      * (because of the work performed by the normalization matrices), we just drop <var>a</var>
      * in the formulas - so this field could be written as just <var>b</var>.
      *
      * <p>This value is related to {@link #eccentricitySquared} and to the ε value used in EPSG guide
-     * by (assuming a=1):</p>
+     * by (assuming <var>a</var>=1):</p>
      * <ul>
      *   <li>ℯ² = 1 - b²</li>
      *   <li>ε = ℯ²/b²</li>
      * </ul>
-     *
-     * <p><strong>Consider this field as final!</strong>
-     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
-     * This field is recomputed from {@link #eccentricitySquared} on deserialization.</p>
      */
-    private transient double axisRatio;
+    private final double axisRatio;
 
     /**
      * Whether calculation of φ should use an iterative method after the first φ approximation.
      * The current implementation sets this field to {@code true} at construction time when the eccentricity value
-     * is greater than or equals to {@link #ECCENTRICITY_THRESHOLD}, but this policy may change in any future SIS
-     * version (for example we do not take the <var>h</var> values in account yet).
-     *
-     * <p><strong>Consider this field as final!</strong>
-     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
-     * This field is not serialized because its value may depend on the version of this
-     * {@code EllipsoidToCentricTransform} class.</p>
+     * is greater than or equals to {@link #ECCENTRICITY_THRESHOLD} or when <var>h</var> needs to be computed,
+     * but this policy may change in any future SIS version.
      */
-    private transient boolean useIterations;
+    private final boolean useIterations;
 
     /**
-     * {@code true} if ellipsoidal coordinates include an ellipsoidal height (i.e. are 3-D).
-     * If {@code false}, then the input coordinates are expected to be two-dimensional and
-     * the ellipsoidal height is assumed to be 0.
+     * Whether the ellipsoidal coordinate tuples include an ellipsoidal height (3D case).
+     * If {@code false}, then the input coordinate tuples are expected to be two-dimensional
+     * and the ellipsoidal height is assumed to be 0.
+     *
+     * @see #getSourceDimensions()
+     * @since 1.5
      */
-    final boolean withHeight;
+    protected final boolean withHeight;
+
+    /**
+     * Whether the target coordinate system is spherical rather than Cartesian.
+     * If {@code true}, then axes are <var>longitude</var> usually in radians,
+     * <var>latitude</var> in radians and <var>radius</var> in metres.
+     *
+     * @see #getTargetType()
+     */
+    final boolean toSphericalCS;
 
     /**
      * The parameters used for creating this conversion.
-     * They are used for formatting <i>Well Known Text</i> (WKT) and error messages.
+     * They are used for formatting <i>Well Known Text</i> (<abbr>WKT</abbr>) and error messages.
      *
      * @see #getContextualParameters()
      */
@@ -210,29 +277,67 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * <h4>Implementation note</h4>
      * Creation of this object is not deferred to the first call to the {@link #inverse()} method because this
      * object is lightweight and typically needed soon anyway (may be as soon as {@code ConcatenatedTransform}
-     * construction time). In addition this field is part of serialization form in order to preserve the
+     * construction time). In addition, this field is part of serialization form in order to preserve the
      * references graph.
      */
-    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
-    private final AbstractMathTransform inverse;
+    private final Inverse inverse;
 
     /**
-     * Creates a transform from angles in radians on ellipsoid having a semi-major axis length of 1.
-     * More specifically {@code EllipsoidToCentricTransform} instances expect input coordinates
-     * as below:
+     * Creates a transform with the same parameters as the given transform,
+     * but expecting two-dimensional inputs instead of three-dimensional.
+     */
+    private EllipsoidToCentricTransform(final EllipsoidToCentricTransform source) {
+        eccentricitySquared = source.eccentricitySquared;
+        axisRatio           = source.axisRatio;
+        useIterations       = source.useIterations;
+        toSphericalCS       = source.toSphericalCS;
+        context             = source.context.redimension(2, NUM_CENTRIC_DIM);
+        withHeight          = false;
+        inverse             = new Inverse();
+    }
+
+    /**
+     * Creates a transform from angles in radians on an ellipsoid having a semi-major axis length of 1.
+     *
+     * @param semiMajor   the semi-major axis length.
+     * @param semiMinor   the semi-minor axis length.
+     * @param unit        the unit of measurement for the semi-axes and the ellipsoidal height.
+     * @param withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
+     *                    (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @param csType      whether the target coordinate system shall be Cartesian or spherical.
+     *
+     * @deprecated Replaced by {@link #EllipsoidToCentricTransform(Ellipsoid, boolean, TargetType)}.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public EllipsoidToCentricTransform(final double semiMajor, final double semiMinor,
+            final Unit<Length> unit, final boolean withHeight, final TargetType csType)
+    {
+        this(DefaultEllipsoid.createEllipsoid(Map.of(Ellipsoid.NAME_KEY, "source"), semiMajor, semiMinor, unit), withHeight, csType);
+    }
+
+    /**
+     * Creates a transform from angles in radians on an ellipsoid having a semi-major axis length of 1.
+     * While a full ellipsoid is specified to this constructor, only the ratio of axis lengths is used.
+     * {@code EllipsoidToCentricTransform} instances expect input coordinate tuples as below:
      *
      * <ol>
-     *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
+     *   <li>longitudes in <strong>radians</strong> (unit constraint is relaxed in the spherical case),</li>
      *   <li>latitudes in <strong>radians</strong>,</li>
      *   <li>optionally heights above the ellipsoid, in units of an ellipsoid having a semi-major axis length of 1.</li>
      * </ol>
      *
-     * Output coordinates are as below, in units of an ellipsoid having a semi-major axis length of 1:
+     * Output coordinates depends on the {@linkplain #getTargetType() target type}.
+     * For a Cartesian coordinate system, the output are as below,
+     * in units of an ellipsoid having a semi-major axis length of 1:
      * <ol>
      *   <li>distance from Earth center on the X axis (toward the intersection of prime meridian and equator),</li>
      *   <li>distance from Earth center on the Y axis (toward the intersection of 90°E meridian and equator),</li>
      *   <li>distance from Earth center on the Z axis (toward North pole).</li>
      * </ol>
+     *
+     * For a spherical coordinate system, the output are spherical longitude, spherical latitude and radius with
+     * longitudes in any unit of measurement since they are copied verbatim without being used in calculations.
+     * It is okay to keep longitudes in degrees for avoiding rounding errors during conversions.
      *
      * <h4>Geographic to geocentric conversions</h4>
      * For converting geographic coordinates to geocentric coordinates, {@code EllipsoidToCentricTransform}
@@ -253,25 +358,26 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
      * completeTransform}(factory, this)}</code>.
      *
-     * @param semiMajor   the semi-major axis length.
-     * @param semiMinor   the semi-minor axis length.
-     * @param unit        the unit of measurement for the semi-axes and the ellipsoidal height.
+     * @param source      the ellipsoid of the geographic <abbr>CRS</abbr> of the coordinates to convert.
      * @param withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
      *                    (i.e. are 3-D), or {@code false} if they are only 2-D.
-     * @param target      whether the target coordinate shall be Cartesian or Spherical.
+     * @param csType      whether the target coordinate system shall be Cartesian or spherical.
      *
-     * @see #createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean, TargetType)
+     * @see #createGeodeticConversion(MathTransformFactory, Ellipsoid, boolean, TargetType)
+     *
+     * @since 1.5
      */
-    public EllipsoidToCentricTransform(final double semiMajor, final double semiMinor,
-            final Unit<Length> unit, final boolean withHeight, final TargetType target)
-    {
-        ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);
-        ArgumentChecks.ensureStrictlyPositive("semiMinor", semiMinor);
-        ArgumentChecks.ensureNonNull("target", target);
+    public EllipsoidToCentricTransform(final Ellipsoid source, final boolean withHeight, final TargetType csType) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("csType", csType);
+        toSphericalCS = (csType == TargetType.SPHERICAL);
+        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.castOrCopy(source);
+        final double semiMajor = ellipsoid.getSemiMajorAxis();
+        final double semiMinor = ellipsoid.getSemiMinorAxis();
         axisRatio = semiMinor / semiMajor;
-        eccentricitySquared = 1 - (axisRatio * axisRatio);
-        useIterations = (eccentricitySquared >= ECCENTRICITY_THRESHOLD * ECCENTRICITY_THRESHOLD);
+        eccentricitySquared = ellipsoid.getEccentricitySquared();
         this.withHeight = withHeight;
+        useIterations = withHeight || (eccentricitySquared >= ECCENTRICITY_THRESHOLD * ECCENTRICITY_THRESHOLD);
         /*
          * Copy parameters to the ContextualParameter. Those parameters are not used directly by
          * EllipsoidToCentricTransform, but we need to store them in case the user asks for them.
@@ -280,39 +386,62 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          * Instead, this transform should be thought as always operating in 3 dimensions with a "2D to 3D"
          * step prefixed if needed. The WKT is handled in a special way for inserting that step if needed.
          */
-        context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 3 : 2, 3);
-        context.getOrCreate(SEMI_MAJOR).setValue(semiMajor, unit);
-        context.getOrCreate(SEMI_MINOR).setValue(semiMinor, unit);
+        final Unit<Length> unit = ellipsoid.getAxisUnit();
+        context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 3 : 2, NUM_CENTRIC_DIM);
+        context.getOrCreate(MapProjection.SEMI_MAJOR).setValue(semiMajor, unit);
+        context.getOrCreate(MapProjection.SEMI_MINOR).setValue(semiMinor, unit);
         /*
          * Prepare two affine transforms to be executed before and after this EllipsoidToCentricTransform:
          *
          *   - A "normalization" transform for converting degrees to radians and normalizing the height,
          *   - A "denormalization" transform for scaling (X,Y,Z) to the semi-major axis length.
+         *
+         * In the spherical case, the above step are modified as below:
+         *
+         *   - Normalize only the latitude. Longitude does not need normalization as it will pass through.
+         *   - Denormalization needs to also convert radians to degrees.
          */
-        context.normalizeGeographicInputs(0);
-        final DoubleDouble a = DoubleDouble.of(semiMajor, true);
+        final MatrixSIS normalize;
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        for (int i=0; i<3; i++) {
+        if (toSphericalCS) {
+            normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+            normalize  .convertBefore(1, DoubleDouble.DEGREES_TO_RADIANS, null);
+            denormalize.convertAfter (1, DoubleDouble.RADIANS_TO_DEGREES, null);
+        } else {
+            normalize = context.normalizeGeographicInputs(0);
+        }
+        final DoubleDouble a = DoubleDouble.of(semiMajor, true);
+        if (withHeight) {
+            normalize.convertBefore(VERTICAL_DIM, a.inverse(), null);   // Divide ellipsoidal height by a.
+        }
+        for (int i = toSphericalCS ? VERTICAL_DIM : 0; i < 3; i++) {
             denormalize.convertAfter(i, a, null);
         }
-        if (withHeight) {
-            final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
-            normalize.convertBefore(2, a.inverse(), null);          // Divide ellipsoidal height by a.
-        }
-        inverse = new Inverse(this);
+        inverse = new Inverse();
     }
 
     /**
-     * Restores transient fields after deserialization.
+     * Creates a transform from geographic to geocentric coordinates.
      *
-     * @param  in  the input stream from which to deserialize the transform.
-     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException if the class serialized on the stream is not on the module path.
+     * @param  factory     the factory to use for creating and concatenating the affine transforms.
+     * @param  semiMajor   the semi-major axis length.
+     * @param  semiMinor   the semi-minor axis length.
+     * @param  unit        the unit of measurement for the semi-axes and the ellipsoidal height.
+     * @param  withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
+     *                     (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @param  csType      whether the target coordinate system shall be Cartesian or spherical.
+     * @return the conversion from geographic to geocentric coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     *
+     * @deprecated Replaced by {@link #createGeodeticConversion(MathTransformFactory, Ellipsoid, boolean, TargetType)}.
      */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        useIterations = (eccentricitySquared >= ECCENTRICITY_THRESHOLD * ECCENTRICITY_THRESHOLD);
-        axisRatio = sqrt(1 - eccentricitySquared);
+    @Deprecated(since="1.5", forRemoval=true)
+    public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
+            final double semiMajor, final double semiMinor, final Unit<Length> unit,
+            final boolean withHeight, final TargetType csType) throws FactoryException
+    {
+        var source = DefaultEllipsoid.createEllipsoid(Map.of(Ellipsoid.NAME_KEY, "source"), semiMajor, semiMinor, unit);
+        return createGeodeticConversion(factory, source, withHeight, csType);
     }
 
     /**
@@ -322,62 +451,65 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *
      * <p>Input coordinates are expected to contain:</p>
      * <ol>
-     *   <li>longitudes in <strong>degrees</strong> relative to the prime meridian (usually Greenwich),</li>
+     *   <li>longitudes in <strong>degrees</strong> (unit constraint is relaxed in the spherical case),</li>
      *   <li>latitudes in <strong>degrees</strong>,</li>
      *   <li>optionally heights above the ellipsoid, in units of the ellipsoid axis (usually metres).</li>
      * </ol>
      *
-     * Output coordinates are as below, in units of the ellipsoid axis (usually metres):
+     * Output coordinates depends on the {@linkplain #getTargetType() target type}.
+     * For a Cartesian coordinate system, the output coordinates are as below,
+     * in units of the ellipsoid axis (usually metres):
      * <ol>
      *   <li>distance from Earth center on the X axis (toward the intersection of prime meridian and equator),</li>
      *   <li>distance from Earth center on the Y axis (toward the intersection of 90°E meridian and equator),</li>
      *   <li>distance from Earth center on the Z axis (toward North pole).</li>
      * </ol>
      *
+     * For a spherical coordinate system, the output are spherical longitude, spherical latitude and radius with
+     * longitude in any unit of measurement since they are copied verbatim without being used in calculations.
+     *
      * @param  factory     the factory to use for creating and concatenating the affine transforms.
-     * @param  semiMajor   the semi-major axis length.
-     * @param  semiMinor   the semi-minor axis length.
-     * @param  unit        the unit of measurement for the semi-axes and the ellipsoidal height.
+     * @param  source      the ellipsoid of the geographic <abbr>CRS</abbr> of the coordinates to convert.
      * @param  withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
      *                     (i.e. are 3-D), or {@code false} if they are only 2-D.
-     * @param  target      whether the target coordinate shall be Cartesian or Spherical.
+     * @param  target      whether the target coordinate system shall be Cartesian or spherical.
      * @return the conversion from geographic to geocentric coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
+     *
+     * @since 1.5
      */
     public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
-            final double semiMajor, final double semiMinor, final Unit<Length> unit,
-            final boolean withHeight, final TargetType target) throws FactoryException
+            final Ellipsoid source, final boolean withHeight, final TargetType target) throws FactoryException
     {
-        if (Math.abs(semiMajor - semiMinor) <= semiMajor * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS)) {
-            /*
-             * If semi-major axis length is almost equal to semi-minor axis length, uses spherical equations instead.
-             * We need to add the sphere radius to the elevation before to perform spherical to Cartesian conversion.
-             */
-            final MatrixSIS translate = Matrices.createDiagonal(4, withHeight ? 4 : 3);
-            translate.setElement(2, withHeight ? 3 : 2, semiMajor);
-            if (!withHeight) {
-                translate.setElement(3, 2, 1);
-            }
-            final MathTransform tr = SphericalToCartesian.INSTANCE.completeTransform(factory);
-            return factory.createConcatenatedTransform(factory.createAffineTransform(translate), tr);
+        if (Formulas.isEllipsoidal(source)) {
+            var kernel = new EllipsoidToCentricTransform(source, withHeight, target);
+            return kernel.context.completeTransform(factory, kernel);
         }
-        EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, withHeight, target);
-        return tr.context.completeTransform(factory, tr);
+        /*
+         * If semi-major axis length is almost equal to semi-minor axis length, uses spherical equations instead.
+         * We need to add the sphere radius to the elevation before to perform spherical to Cartesian conversion.
+         */
+        final MatrixSIS m = Matrices.createDiagonal(NUM_CENTRIC_DIM+1, withHeight ? 4 : 3);
+        m.setElement(VERTICAL_DIM, withHeight ? 3 : 2, source.getSemiMajorAxis());
+        if (!withHeight) {
+            m.setElement(NUM_CENTRIC_DIM, 2, 1);
+        }
+        final MathTransform toSpherical = factory.createAffineTransform(m);
+        final MathTransform sphericalToTarget;
+        switch (target) {
+            case SPHERICAL: return toSpherical;
+            case CARTESIAN: sphericalToTarget = SphericalToCartesian.INSTANCE.completeTransform(factory); break;
+            default: throw new AssertionError(target);
+        }
+        return factory.createConcatenatedTransform(toSpherical, sphericalToTarget);
     }
 
     /**
      * Creates a transform from geographic to Cartesian geocentric coordinates (convenience method).
-     * This method is equivalent to the following:
-     *
-     * {@snippet lang="java" :
-     *     return createGeodeticConversion(factory,
-     *             ellipsoid.getSemiMajorAxis(),
-     *             ellipsoid.getSemiMinorAxis(),
-     *             ellipsoid.getAxisUnit(),
-     *             withHeight, TargetType.CARTESIAN);
-     *     }
-     *
-     * The target type is assumed Cartesian because this is the most frequently used target.
+     * This is a shortcut for the {@linkplain #createGeodeticConversion(MathTransformFactory, Ellipsoid,
+     * boolean, TargetType) above method} with a default parameter value or {@link TargetType#CARTESIAN}.
+     * The Cartesian coordinate system is the most usual target of the <q>Geographic/geocentric conversions</q>
+     * (EPSG:9602) operation and is the target assumed by Well Known Text (<abbr>WKT</abbr>).
      *
      * @param  factory     the factory to use for creating and concatenating the affine transforms.
      * @param  ellipsoid   the semi-major and semi-minor axis lengths with their unit of measurement.
@@ -389,18 +521,16 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
             final Ellipsoid ellipsoid, final boolean withHeight) throws FactoryException
     {
-        return createGeodeticConversion(factory, ellipsoid.getSemiMajorAxis(), ellipsoid.getSemiMinorAxis(),
-                ellipsoid.getAxisUnit(), withHeight, TargetType.CARTESIAN);
+        return createGeodeticConversion(factory, ellipsoid, withHeight, TargetType.CARTESIAN);
     }
 
     /**
      * Returns the parameters used for creating the complete conversion. Those parameters describe a sequence
      * of <i>normalize</i> → {@code this} → <i>denormalize</i> transforms, <strong>not</strong>
      * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
-     * Those parameters are used for formatting <i>Well Known Text</i> (WKT) and error messages.
+     * Those parameters are used for formatting <i>Well Known Text</i> (<abbr>WKT</abbr>) and error messages.
      *
-     * @return the parameter values for the sequence of
-     *         <i>normalize</i> → {@code this} → <i>denormalize</i> transforms.
+     * @return the parameter values for the <i>normalize</i> → {@code this} → <i>denormalize</i> chain of transforms.
      */
     @Override
     protected ContextualParameters getContextualParameters() {
@@ -409,13 +539,14 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Returns a copy of internal parameter values of this {@code EllipsoidToCentricTransform} transform.
-     * The returned group contains parameter values for the number of dimensions and the eccentricity.
+     * The returned group contains parameter values for the number of dimensions, the eccentricity and
+     * the target type (Cartesian or spherical).
      *
      * <h4>Usage note</h4>
      * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
      * since the isolation of non-linear parameters in this class is highly implementation dependent.
-     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.
+     * Most <abbr>GIS</abbr> applications will instead be interested in the
+     * {@linkplain #getContextualParameters() contextual parameters}.
      *
      * @return a copy of the internal parameter values for this transform.
      */
@@ -424,7 +555,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     public ParameterValueGroup getParameterValues() {
         final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
         pg.getOrCreate(ECCENTRICITY).setValue(sqrt(eccentricitySquared));
-        pg.parameter("target").setValue(getTargetType());
+        pg.parameter("csType").setValue(getTargetType());
         pg.getOrCreate(DIMENSION).setValue(getSourceDimensions());
         return pg;
     }
@@ -442,7 +573,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             if (DESCRIPTOR == null) {
                 final ParameterBuilder builder = new ParameterBuilder().setCodeSpace(Citations.SIS, Constants.SIS);
                 final ParameterDescriptor<TargetType> target = builder.setRequired(true)
-                        .addName("target").create(TargetType.class, TargetType.CARTESIAN);
+                        .addName("csType").create(TargetType.class, TargetType.CARTESIAN);
                 DESCRIPTOR = builder.addName("Ellipsoid (radians domain) to centric")
                         .createGroup(1, 1, ECCENTRICITY, target, DIMENSION);
             }
@@ -467,16 +598,16 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      */
     @Override
     public final int getTargetDimensions() {
-        return 3;
+        return NUM_CENTRIC_DIM;
     }
 
     /**
-     * Returns whether the target coordinate system is Cartesian or Spherical.
+     * Returns whether the target coordinate system is Cartesian or spherical.
      *
-     * @return whether the target coordinate system is Cartesian or Spherical.
+     * @return whether the target coordinate system is Cartesian or spherical.
      */
     public final TargetType getTargetType() {
-        return TargetType.CARTESIAN;
+        return toSphericalCS ? TargetType.SPHERICAL : TargetType.CARTESIAN;
     }
 
     /**
@@ -500,7 +631,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
         final double h;
         switch (dim) {
             default: throw mismatchedDimension("point", getSourceDimensions(), dim);
-            case 3:  wh = true;  h = point.getCoordinate(2); break;
+            case 3:  wh = true;  h = point.getCoordinate(VERTICAL_DIM); break;
             case 2:  wh = false; h = 0; break;
         }
         return transform(point.getCoordinate(0), point.getCoordinate(1), h, null, 0, true, wh);
@@ -520,7 +651,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws TransformException
     {
-        return transform(srcPts[srcOff], srcPts[srcOff+1], withHeight ? srcPts[srcOff+2] : 0,
+        return transform(srcPts[srcOff], srcPts[srcOff+1], withHeight ? srcPts[srcOff + VERTICAL_DIM] : 0,
                 dstPts, dstOff, derivate, withHeight);
     }
 
@@ -528,10 +659,10 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Implementation of {@link #transform(double[], int, double[], int, boolean)}
      * with possibility to override the {@link #withHeight} value.
      *
-     * @param  λ         longitude (radians).
+     * @param  λ         longitude (radians, except in the spherical case which keep degrees).
      * @param  φ         latitude (radians).
      * @param  h         height above the ellipsoid divided by the length of semi-major axis.
-     * @param  dstPts    the array into which the transformed coordinate is returned.
+     * @param  dstPts    the array into which the transformed coordinates are returned.
      *                   May be {@code null} if only the derivative matrix is desired.
      * @param  dstOff    the offset to the location of the transformed point that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
@@ -541,41 +672,72 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
                              final double[] dstPts, final int dstOff,
                              final boolean derivate, final boolean wh)
     {
-        final double cosλ = cos(λ);
-        final double sinλ = sin(λ);
-        final double cosφ = cos(φ);
-        final double sinφ = sin(φ);
-        final double ν2   = 1 / (1 - eccentricitySquared*(sinφ*sinφ));   // Square of ν (see below)
-        final double ν    = sqrt(ν2);                                    // Prime vertical radius of curvature at latitude φ
-        final double r    = ν + h;
-        final double νℯ   = ν * (1 - eccentricitySquared);
+        final double cosφ  = cos(φ);
+        final double sinφ  = sin(φ);
+        final double ν2    = 1 / (1 - eccentricitySquared*(sinφ*sinφ));  // Square of ν (see below)
+        final double ν     = sqrt(ν2);                                   // Prime vertical radius of curvature at latitude φ
+        final double νℯ    = ν * (1 - eccentricitySquared);
+        final double r     = ν + h;
+        final double rcosφ = r * cosφ;
+        final double Z     = (νℯ+h) * sinφ;
+        if (!toSphericalCS) {
+            final double cosλ = cos(λ);
+            final double sinλ = sin(λ);
+            if (dstPts != null) {
+                dstPts[dstOff  ] = rcosφ  * cosλ;       // X: Toward prime meridian
+                dstPts[dstOff+1] = rcosφ  * sinλ;       // Y: Toward 90° east
+                dstPts[dstOff+2] = Z;                   // Z: Toward north pole
+            }
+            if (!derivate) {
+                return null;
+            }
+            final double sdφ   = νℯ * ν2 + h;
+            final double dX_dh = cosφ * cosλ;
+            final double dY_dh = cosφ * sinλ;
+            final double dX_dλ = -r * dY_dh;
+            final double dY_dλ =  r * dX_dh;
+            final double dX_dφ = -sdφ * (sinφ * cosλ);
+            final double dY_dφ = -sdφ * (sinφ * sinλ);
+            final double dZ_dφ =  sdφ * cosφ;
+            if (wh) {
+                return new Matrix3(dX_dλ, dX_dφ, dX_dh,
+                                   dY_dλ, dY_dφ, dY_dh,
+                                       0, dZ_dφ, sinφ);
+            } else {
+                return Matrices.create(NUM_CENTRIC_DIM, 2, new double[] {
+                        dX_dλ, dX_dφ,
+                        dY_dλ, dY_dφ,
+                            0, dZ_dφ});
+            }
+        }
+        /*
+         * Case of spherical output coordinates.
+         * This case is less common than above Cartesian case.
+         */
+        final double R = hypot(Z, rcosφ);
         if (dstPts != null) {
-            final double rcosφ = r * cosφ;
-            dstPts[dstOff  ] = rcosφ  * cosλ;                            // X: Toward prime meridian
-            dstPts[dstOff+1] = rcosφ  * sinλ;                            // Y: Toward 90° east
-            dstPts[dstOff+2] = (νℯ+h) * sinφ;                            // Z: Toward north pole
+            dstPts[dstOff  ] = λ;                   // Longitude
+            dstPts[dstOff+1] = atan(Z / rcosφ);     // Latitude = atan((1-ℯ²)⋅tan(φ)) when h = 0.
+            dstPts[dstOff+2] = R;                   // Radius
         }
         if (!derivate) {
             return null;
         }
-        final double sdφ   = νℯ * ν2 + h;
-        final double dX_dh = cosφ * cosλ;
-        final double dY_dh = cosφ * sinλ;
-        final double dX_dλ = -r * dY_dh;
-        final double dY_dλ =  r * dX_dh;
-        final double dX_dφ = -sdφ * (sinφ * cosλ);
-        final double dY_dφ = -sdφ * (sinφ * sinλ);
-        final double dZ_dφ =  sdφ * cosφ;
-        if (wh) {
-            return new Matrix3(dX_dλ, dX_dφ, dX_dh,
-                               dY_dλ, dY_dφ, dY_dh,
-                                   0, dZ_dφ, sinφ);
-        } else {
-            return Matrices.create(3, 2, new double[] {
-                    dX_dλ, dX_dφ,
-                    dY_dλ, dY_dφ,
-                        0, dZ_dφ});
+        final MatrixSIS derivative = Matrices.createDiagonal(NUM_CENTRIC_DIM, wh ? 3 : 2);
+        final double R2 = R * R;    // May underflow.
+        if (R2 != 0) {
+            final double ℯ2ν2   = eccentricitySquared*ν2;
+            final double rsinφ  = r * sinφ;
+            final double Zsinφ  = Z * sinφ;
+            final double rcos2φ = rcosφ * cosφ;
+            derivative.setElement(1, 1, ((ℯ2ν2*sinφ*(νℯ*rsinφ - ν*Z) + (νℯ+h)*r)*(cosφ*cosφ) + Z*rsinφ) / R2);  // ∂Ω/∂φ
+            derivative.setElement(2, 1, ((ℯ2ν2*(νℯ*Zsinφ + ν*rcos2φ) - r*r)*sinφ + Z*(νℯ+h))*cosφ / R);         // ∂R/∂φ
+            if (wh) {
+                derivative.setElement(1, 2, cosφ*(rsinφ - Z) / R2);     // ∂Ω/∂h
+                derivative.setElement(2, 2, (Zsinφ + rcos2φ) / R);      // ∂R/∂h
+            }
         }
+        return derivative;
     }
 
     /**
@@ -594,13 +756,13 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
         int dstInc = 0;
         if (srcPts == dstPts) {
             final int dimSource = getSourceDimensions();
-            switch (IterationStrategy.suggest(srcOff, dimSource, dstOff, 3, numPts)) {
+            switch (IterationStrategy.suggest(srcOff, dimSource, dstOff, NUM_CENTRIC_DIM, numPts)) {
                 case ASCENDING: {
                     break;
                 }
                 case DESCENDING: {
                     srcOff += (numPts - 1) * dimSource;
-                    dstOff += (numPts - 1) * 3;         // Target dimension is fixed to 3.
+                    dstOff += (numPts - 1) * NUM_CENTRIC_DIM;
                     srcInc = -2 * dimSource;
                     dstInc = -6;
                     break;
@@ -619,16 +781,23 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             final double sinφ  = sin(φ);
             final double ν     = 1/sqrt(1 - eccentricitySquared * (sinφ*sinφ));    // Prime vertical radius of curvature at latitude φ
             final double rcosφ = (ν + h) * cos(φ);
-            dstPts[dstOff++]   = rcosφ * cos(λ);                                   // X: Toward prime meridian
-            dstPts[dstOff++]   = rcosφ * sin(λ);                                   // Y: Toward 90° east
-            dstPts[dstOff++]   = (ν * (1 - eccentricitySquared) + h) * sinφ;       // Z: Toward north pole
+            final double Z     = (h + ν * (1 - eccentricitySquared)) * sinφ;
+            if (toSphericalCS) {
+                dstPts[dstOff++] = λ;                           // Longitude
+                dstPts[dstOff++] = atan(Z / rcosφ);             // Latitude = atan((1-ℯ²)⋅tan(φ)) when h = 0.
+                dstPts[dstOff++] = hypot(Z, rcosφ);             // Radius
+            } else {
+                dstPts[dstOff++] = rcosφ * cos(λ);              // X: Toward prime meridian
+                dstPts[dstOff++] = rcosφ * sin(λ);              // Y: Toward 90° east
+                dstPts[dstOff++] = Z;                           // Z: Toward north pole
+            }
             srcOff += srcInc;
             dstOff += dstInc;
         }
     }
 
     /*
-     * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
+     * NOTE: we do not bother to override the methods expecting a `float` array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
      *       this EllipsoidToCentricTransform is at the beginning or the end of a transformation chain,
@@ -651,32 +820,43 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             throws TransformException
     {
         int srcInc = 0;
-        int dstInc = 0;
+        int dstInc = getSourceDimensions();
         if (srcPts == dstPts) {
-            final int dimTarget = getSourceDimensions();
-            switch (IterationStrategy.suggest(srcOff, 3, dstOff, dimTarget, numPts)) {
+            switch (IterationStrategy.suggest(srcOff, NUM_CENTRIC_DIM, dstOff, dstInc, numPts)) {
                 case ASCENDING: {
                     break;
                 }
                 case DESCENDING: {
-                    srcOff += (numPts - 1) * 3;             // Source dimension is fixed to 3.
-                    dstOff += (numPts - 1) * dimTarget;
-                    srcInc = -6;
-                    dstInc = -2 * dimTarget;
+                    srcOff += (numPts - 1) * NUM_CENTRIC_DIM;
+                    dstOff += (numPts - 1) * dstInc;
+                    srcInc = -2 * NUM_CENTRIC_DIM;
+                    dstInc = -dstInc;
                     break;
                 }
                 default: {
-                    dstPts = Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts*dimTarget);
+                    dstPts = Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts*dstInc);
                     dstOff = 0;
                     break;
                 }
             }
         }
-next:   while (--numPts >= 0) {
-            final double X = srcPts[srcOff++];
-            final double Y = srcPts[srcOff++];
-            final double Z = srcPts[srcOff++];
-            final double p = hypot(X, Y);
+        while (--numPts >= 0) {
+            final double p, λ, Z;
+            if (toSphericalCS) {
+                final double Ω, R;
+                λ = srcPts[srcOff++];       // Spherical longitude
+                Ω = srcPts[srcOff++];       // Spherical latitude
+                R = srcPts[srcOff++];       // Spherical radius
+                p = R * cos(Ω);             // Projection of radius in equatorial plane
+                Z = R * sin(Ω);             // Toward north pole
+            } else {
+                final double X, Y;
+                X = srcPts[srcOff++];       // Toward prime meridian
+                Y = srcPts[srcOff++];       // Toward 90° east
+                Z = srcPts[srcOff++];       // Toward north pole
+                p = hypot(X, Y);            // Projection of radius in equatorial plane
+                λ = atan2(Y, X);            // Spherical and geodetic longitude
+            }
             /*
              * EPSG guide gives  q = atan((Z⋅a) / (p⋅b))
              * where in this class  a = 1  because of the normalization matrix.
@@ -688,45 +868,38 @@ next:   while (--numPts >= 0) {
             final double tanq  = Z / (p*axisRatio);
             final double cos2q = 1/(1 + tanq*tanq);
             final double sin2q = 1 - cos2q;
-            double φ = atan((Z + copySign(eccentricitySquared * sin2q*sqrt(sin2q), tanq) / axisRatio) /
-                            (p -          eccentricitySquared * cos2q*sqrt(cos2q)));
+            double φ = atan((Z + copySign(eccentricitySquared * (sqrt(sin2q) * sin2q), tanq) / axisRatio) /
+                            (p -          eccentricitySquared * (sqrt(cos2q) * cos2q)));
             /*
-             * The above is an approximation of φ. Usually we are done with a good approximation for
-             * a planet of the eccentricity of Earth. Code below is the one that will be executed in
-             * the vast majority of cases.
+             * The above is an approximation of φ. Usually, we are done with a good approximation for a planet
+             * of the same as eccentricity than Earth. Code below will be executed in a minority of cases when
+             * the value of φ needs to be improved. It will also be executed if the value of h is requested,
+             * because in such case we also need the value of ν.
              */
-            if (!useIterations) {
-                dstPts[dstOff++] = atan2(Y, X);
-                dstPts[dstOff++] = φ;
-                if (withHeight) {
-                    final double sinφ = sin(φ);
-                    final double ν = 1/sqrt(1 - eccentricitySquared * (sinφ*sinφ));
-                    dstPts[dstOff++] = p/cos(φ) - ν;
-                }
-                srcOff += srcInc;
-                dstOff += dstInc;
-            } else {
-                /*
-                 * If this code is used on a planet with high eccentricity,
-                 * the φ value may need to be improved by an iterative method.
-                 */
-                for (int it = Formulas.MAXIMUM_ITERATIONS; it >= 0; it--) {
-                    final double sinφ = sin(φ);
-                    final double ν = 1/sqrt(1 - eccentricitySquared * (sinφ*sinφ));
-                    final double Δφ = φ - (φ = atan((Z + eccentricitySquared * ν * sinφ) / p));
-                    if (!(abs(Δφ) >= Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25)) {               // Use ! for accepting NaN.
-                        dstPts[dstOff++] = atan2(Y, X);
-                        dstPts[dstOff++] = φ;
-                        if (withHeight) {
-                            dstPts[dstOff++] = p/cos(φ) - ν;
-                        }
-                        srcOff += srcInc;
-                        dstOff += dstInc;
-                        continue next;
+            if (useIterations) {
+                int it = Formulas.MAXIMUM_ITERATIONS;
+                double sinφ, iν, Δφ;
+                do {
+                    if (--it < 0) {
+                        throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
                     }
+                    sinφ = sin(φ);
+                    iν = sqrt(1 - eccentricitySquared * (sinφ*sinφ));
+                    Δφ = φ - (φ = atan((Z + eccentricitySquared * sinφ / iν) / p));
+                } while (abs(Δφ) >= Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25);
+                if (withHeight) {
+                    /*
+                     * Close to a pole (sin(φ) = ±1), the p/cos(φ) expression become a division between
+                     * two numbers very close to zero (around 10⁻¹⁴), which can result in errors of some
+                     * kilometres. But the height value at the pole is simply Z minus polar axis length.
+                     */
+                    dstPts[dstOff+2] = (abs(sinφ) == 1) ? (abs(Z) - axisRatio) : (p/cos(φ) - 1/iν);
                 }
-                throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
             }
+            dstPts[dstOff  ] = λ;
+            dstPts[dstOff+1] = φ;
+            srcOff += srcInc;
+            dstOff += dstInc;
         }
     }
 
@@ -734,7 +907,7 @@ next:   while (--numPts >= 0) {
      * Returns the inverse of this transform. The default implementation returns a transform
      * that will delegate its work to {@link #inverseTransform(double[], int, double[], int, int)}.
      *
-     * @return the conversion from (geo)centric to ellipsoidal coordinates.
+     * @return the conversion from geocentric or planetocentric to ellipsoidal coordinates.
      */
     @Override
     public MathTransform inverse() {
@@ -746,8 +919,9 @@ next:   while (--numPts >= 0) {
      */
     @Override
     protected int computeHashCode() {
-        int code = super.computeHashCode() + Double.hashCode(axisRatio);
-        if (withHeight) code += 37;
+        int code = super.computeHashCode() + Double.hashCode(eccentricitySquared);
+        if (toSphericalCS) code += 71;
+        if (withHeight)    code += 37;
         return code;
     }
 
@@ -762,8 +936,11 @@ next:   while (--numPts >= 0) {
             return true;                            // Slight optimization
         }
         if (super.equals(object, mode)) {
-            final EllipsoidToCentricTransform that = (EllipsoidToCentricTransform) object;
-            return (withHeight == that.withHeight) && Numerics.equals(axisRatio, that.axisRatio);
+            final var that = (EllipsoidToCentricTransform) object;
+            return (withHeight    == that.withHeight)    &&
+                   (toSphericalCS == that.toSphericalCS) &&
+                   Numerics.equals(axisRatio, that.axisRatio) &&
+                   Numerics.equals(eccentricitySquared, that.eccentricitySquared);
             // No need to compare the contextual parameters since this is done by super-class.
         }
         return false;
@@ -773,27 +950,29 @@ next:   while (--numPts >= 0) {
 
 
     /**
-     * Converts Cartesian coordinates (<var>X</var>,<var>Y</var>,<var>Z</var>)
-     * to ellipsoidal coordinates (λ,φ) or (λ,φ,<var>h</var>).
+     * The descriptor of the inverse transform.
+     *
+     * @todo Move inside {@link Inverse} after migration to JDK17 (which allows static fields in inner classes).
+     */
+    @Debug
+    private static ParameterDescriptorGroup INVERSE_DESCRIPTOR;
+
+    /**
+     * Converts geocentric coordinates (Cartesian or spherical) to ellipsoidal coordinates (λ,φ) or (λ,φ,<var>h</var>).
+     * The implementation of the inverse transform is actually provided by the enclosing class.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      */
-    private static final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
+    private final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**
          * Serial number for inter-operability with different versions.
          */
-        private static final long serialVersionUID = 33004303758761821L;
-
-        /**
-         * The enclosing transform.
-         */
-        private final EllipsoidToCentricTransform forward;
+        private static final long serialVersionUID = 6859079700241660726L;
 
         /**
          * Creates the inverse of the enclosing transform.
          */
-        Inverse(final EllipsoidToCentricTransform forward) {
-            this.forward = forward;
+        Inverse() {
         }
 
         /**
@@ -801,7 +980,7 @@ next:   while (--numPts >= 0) {
          */
         @Override
         public MathTransform inverse() {
-            return forward;
+            return EllipsoidToCentricTransform.this;
         }
 
         /**
@@ -810,7 +989,24 @@ next:   while (--numPts >= 0) {
          */
         @Override
         protected ContextualParameters getContextualParameters() {
-            return forward.context.inverse(GeocentricToGeographic.PARAMETERS, null);
+            return context.inverse(GeocentricToGeographic.PARAMETERS, null);
+            // Caching is done by `context`. No need to cache in this class.
+        }
+
+        /**
+         * Returns a description of the internal parameters of this inverse transform.
+         */
+        @Debug
+        @Override
+        public ParameterDescriptorGroup getParameterDescriptors() {
+            synchronized (EllipsoidToCentricTransform.class) {
+                if (INVERSE_DESCRIPTOR == null) {
+                    INVERSE_DESCRIPTOR = ReferencingUtilities.rename(
+                            EllipsoidToCentricTransform.this.getParameterDescriptors(),
+                            "Centric to ellipsoid (radians domain)");
+                }
+                return INVERSE_DESCRIPTOR;
+            }
         }
 
         /**
@@ -821,36 +1017,19 @@ next:   while (--numPts >= 0) {
         @Override
         public ParameterValueGroup getParameterValues() {
             final ParameterValueGroup pg = getParameterDescriptors().createValue();
-            pg.values().addAll(forward.getParameterValues().values());
+            pg.values().addAll(EllipsoidToCentricTransform.this.getParameterValues().values());
             return pg;
         }
 
         /**
-         * Returns a description of the internal parameters of this inverse transform.
-         * We do not cache this instance for two reasons:
-         *
-         * <ul>
-         *   <li>it is only for debugging purposes, and</li>
-         *   <li>the user may override {@link EllipsoidToCentricTransform#getParameterDescriptors()}.</li>
-         * </ul>
-         */
-        @Debug
-        @Override
-        public ParameterDescriptorGroup getParameterDescriptors() {
-            ImmutableIdentifier name = new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)");
-            return new DefaultParameterDescriptorGroup(Map.of(ParameterDescriptorGroup.NAME_KEY, name), forward.getParameterDescriptors());
-        }
-
-        /**
          * Computes the derivative at the given location. We need to override this method because
-         * we will inverse 3×2 matrices in a special way, with the knowledge that <var>h</var>
-         * can be set to 0.
+         * we will inverse 3×2 matrices in a special way, with the knowledge that <var>h</var> can be set to 0.
          */
         @Override
         public Matrix derivative(final DirectPosition point) throws TransformException {
-            final double[] coordinate = point.getCoordinates();
-            ArgumentChecks.ensureDimensionMatches("point", 3, coordinate);
-            return this.transform(coordinate, 0, coordinate, 0, true);
+            final double[] coordinates = point.getCoordinates();
+            ArgumentChecks.ensureDimensionMatches("point", NUM_CENTRIC_DIM, coordinates);
+            return this.transform(coordinates, 0, coordinates, 0, true);
         }
 
         /**
@@ -867,14 +1046,14 @@ next:   while (--numPts >= 0) {
         {
             final double[] point;
             final int offset;
-            if (derivate && (dstPts == null || !forward.withHeight)) {
-                point  = new double[3];
+            if (derivate && (dstPts == null || !withHeight)) {
+                point  = new double[NUM_CENTRIC_DIM];
                 offset = 0;
             } else {
                 point  = dstPts;
                 offset = dstOff;
             }
-            forward.inverseTransform(srcPts, srcOff, point, offset, 1);
+            inverseTransform(srcPts, srcOff, point, offset, 1);
             if (!derivate) {
                 return null;
             }
@@ -882,13 +1061,15 @@ next:   while (--numPts >= 0) {
                 dstPts[dstOff  ] = point[0];
                 dstPts[dstOff+1] = point[1];
             }
-            // We need to keep h during matrix inversion because (λ,φ,h) values are not independent.
-            Matrix matrix = forward.derivative(new DirectPositionView.Double(point, offset, 3));
-            matrix = Matrices.inverse(matrix);
-            if (!forward.withHeight) {
-                matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);     // Drop height only after matrix inversion is done.
+            // We need to keep h during matrix inversion because (λ,φ,h) values in the result are not independent.
+            var p = new DirectPositionView.Double(point, offset, NUM_CENTRIC_DIM);
+            Matrix derivative = EllipsoidToCentricTransform.this.derivative(p);
+            derivative = Matrices.inverse(derivative);
+            if (!withHeight) {
+                // Can drop the height only after matrix inversion has been done.
+                derivative = MatrixSIS.castOrCopy(derivative).removeRows(VERTICAL_DIM, VERTICAL_DIM + 1);
             }
-            return matrix;
+            return derivative;
         }
 
         /**
@@ -899,7 +1080,7 @@ next:   while (--numPts >= 0) {
         public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts)
                 throws TransformException
         {
-            forward.inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
+            inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
         }
 
         /**
@@ -923,26 +1104,9 @@ next:   while (--numPts >= 0) {
          */
         @Override
         protected void tryConcatenate(final Joiner context) throws FactoryException {
-            if (forward.withHeight) {
-                Matrix matrix = MathTransforms.getMatrix(context.getTransform(+1).orElse(null));
-                if (matrix != null && matrix.getNumRow() == 3) {
-                    /*
-                     * Found a 3×4 matrix after this transform. We can reduce to a 3×3 matrix only if no dimension
-                     * use the column that we are about to drop (i.e. all coefficients in that column are zero).
-                     */
-                    if (matrix.getElement(0,2) == 0 &&
-                        matrix.getElement(1,2) == 0 &&
-                        matrix.getElement(2,2) == 0)
-                    {
-                        matrix = MatrixSIS.castOrCopy(matrix).removeColumns(2, 3);
-                        final MathTransform tr2D = forward.create2D().inverse();
-                        MathTransform next = context.factory.createAffineTransform(matrix);
-                        context.replace(+1, context.factory.createConcatenatedTransform(tr2D, next));
-                        return;
-                    }
-                }
+            if (!reduce(context, +1)) {
+                super.tryConcatenate(context);
             }
-            super.tryConcatenate(context);
         }
 
         /**
@@ -956,7 +1120,7 @@ next:   while (--numPts >= 0) {
         @Override
         final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {
             index = super.beforeFormat(transforms, index, inverse);
-            if (!forward.withHeight) {
+            if (!withHeight) {
                 transforms.add(++index, new Geographic3Dto2D.WKT(false));
             }
             return index;
@@ -1004,37 +1168,26 @@ next:   while (--numPts >= 0) {
      */
     @Override
     protected void tryConcatenate(final Joiner context) throws FactoryException {
-        if (withHeight) {
-            final MathTransform other = context.getTransform(-1).orElse(null);
-            if (other instanceof LinearTransform && other.getSourceDimensions() == 2) {
-                /*
-                 * Found a 4×3 matrix before this transform. We can reduce to a 3×3 matrix only if the row that we are
-                 * about to drop unconditionally set the height to zero (i.e. all coefficients in that row are zero).
-                 */
-                Matrix matrix = ((LinearTransform) other).getMatrix();
-                if (matrix.getElement(2,0) == 0 &&
-                    matrix.getElement(2,1) == 0 &&
-                    matrix.getElement(2,2) == 0)
-                {
-                    matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);
-                    final MathTransform tr2D = create2D();
-                    MathTransform next = context.factory.createAffineTransform(matrix);
-                    context.replace(-1, context.factory.createConcatenatedTransform(next, tr2D));
-                    return;
-                }
-            }
+        if (!reduce(context, -1)) {
+            super.tryConcatenate(context);
         }
-        super.tryConcatenate(context);
     }
 
     /**
-     * Creates a transform with the same parameters as this transform,
-     * but expecting two-dimensional inputs instead of three-dimensional.
+     * If this transform expects three-dimensional inputs, and if the neighbor transform
+     * ignores the vertical dimension, then replaces this transform by a two-dimensional one.
+     *
+     * @param  context  information about the neighbor transforms, and the object where to set the result.
+     * @param  checkAt  relative matrix index: -1 for the forward transform, or +1 for the inverse transform.
+     * @throws FactoryException if an error occurred while combining the transforms.
      */
-    final EllipsoidToCentricTransform create2D() {
-        final ParameterValue<Double> p = context.getOrCreate(SEMI_MAJOR);
-        final Unit<Length> unit = p.getUnit().asType(Length.class);
-        return new EllipsoidToCentricTransform(p.doubleValue(),
-                context.getOrCreate(SEMI_MINOR).doubleValue(unit), unit, false, getTargetType());
+    private boolean reduce(final Joiner context, final int checkAt) throws FactoryException {
+        return withHeight && context.removeUnusedDimensions(checkAt, VERTICAL_DIM, VERTICAL_DIM + 1, (dimension) -> {
+            if (dimension != 2) {
+                return null;
+            }
+            var reduced = new EllipsoidToCentricTransform(this);
+            return (checkAt >= 0) ? reduced.inverse() : reduced;
+        });
     }
 }

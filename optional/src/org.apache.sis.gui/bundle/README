@@ -16,7 +16,7 @@ Installation
 For developing applications using the SIS library or for using on command-line,
 the only requirement is Java 11 or later, except the GDAL module which requires
 Java 22. For launching the desktop application, requirements are Java 22 or later
-and JavaFX 20 or later.
+and JavaFX 24 or later.
 
 1) Unzip `apache-sis-1.4-bin.zip` in any directory.
 2) Invoke `./apache-sis-1.4/bin/sis` for the command-line.
