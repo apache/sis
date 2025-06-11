@@ -104,7 +104,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoid(String)
@@ -336,6 +336,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * and {@linkplain #getSemiMinorAxis() semi-minor} axis values.
      *
      * @return the axis linear unit.
+     *
+     * @see #convertTo(Unit)
      */
     @Override
     public Unit<Length> getAxisUnit() {
@@ -377,7 +379,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Returns the geocentric radius at the given latitude.
+     * Returns the geocentric radius at the given geodetic latitude.
      * Special cases:
      *
      * <ul>
@@ -386,8 +388,11 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *   <li>If φ is NaN, then this method returns NaN.</li>
      * </ul>
      *
-     * @param  φ  latitude in degrees, from -90° to +90° inclusive.
-     * @return geocentric radius at latitude φ°.
+     * @param  φ  geodetic latitude in degrees, from -90° to +90° inclusive.
+     * @return geocentric radius at the geodetic latitude φ°.
+     *
+     * @see org.apache.sis.referencing.operation.transform.EllipsoidToRadiusTransform
+     * @see <a href="https://en.wikipedia.org/wiki/Earth_radius#Geocentric_radius">Geocentric radius on Wikipedia</a>
      *
      * @since 1.4
      */
@@ -403,7 +408,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *
      * @since 1.3
      */
-    @Deprecated
+    @Deprecated(since="1.4", forRemoval=true)
     public double getRadius(final double φ) {
         return getGeocentricRadius(φ);
     }
@@ -552,6 +557,41 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
+     * Returns the properties to use for the ellipsoid created by {@link #convertTo(Unit)}.
+     *
+     * @param  target  the desired unit of measurement.
+     * @return properties of the derived ellipsoid to create.
+     */
+    final Map<String,?> properties(final Unit<Length> target) {
+        return Map.of(NAME_KEY, '“' + getName().getCode() + "” converted to " + target,
+                      "domains", getDomains());
+    }
+
+    /**
+     * Returns an ellipsoid of the same shape as this ellipsoid but using the specified unit of measurement.
+     * If the given unit of measurement is equivalent to the unit used by this ellipsoid, then this method
+     * returns {@code this}. Otherwise, a new ellipsoid with an arbitrary name is returned.
+     *
+     * @param  target  the desired unit of measurement.
+     * @return ellipsoid of the same shape using the given unit of measurement.
+     *
+     * @see #getAxisUnit()
+     * @since 1.5
+     */
+    public DefaultEllipsoid convertTo(final Unit<Length> target) {
+        final UnitConverter c = unit.getConverterTo(target);
+        if (c.isIdentity()) {
+            return this;
+        }
+        return new DefaultEllipsoid(properties(target),
+                c.convert(semiMajorAxis),
+                c.convert(semiMinorAxis),
+                inverseFlattening,
+                ivfDefinitive,
+                target);
+    }
+
+    /**
      * Compares this ellipsoid with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
@@ -573,7 +613,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         }
         switch (mode) {
             case STRICT: {
-                final DefaultEllipsoid that = (DefaultEllipsoid) object;
+                final var that = (DefaultEllipsoid) object;
                 return ivfDefinitive == that.ivfDefinitive &&
                        Numerics.equals(this.semiMajorAxis,     that.semiMajorAxis)     &&
                        Numerics.equals(this.semiMinorAxis,     that.semiMinorAxis)     &&
@@ -608,7 +648,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                  * become the linear unit of map projections if the user does not overwrite them
                  * with an explicit CoordinateSystem declaration.
                  */
-                final Ellipsoid that = (Ellipsoid) object;
+                final var that = (Ellipsoid) object;
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Unit<Length> unit = getAxisUnit();  // In case the user override this method.
                 if (!Utilities.deepEquals(unit, that.getAxisUnit(), mode)) {
                     return false;

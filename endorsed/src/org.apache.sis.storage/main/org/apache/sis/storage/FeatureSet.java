@@ -101,7 +101,6 @@ public interface FeatureSet extends DataSet {
      * @param  query  definition of feature and feature properties filtering applied at reading time.
      * @return resulting subset of features (never {@code null}).
      * @throws UnsupportedQueryException if this {@code FeatureSet} cannot execute the given query.
-     *         This includes query validation errors.
      * @throws DataStoreException if another error occurred while processing the query.
      *
      * @see GridCoverageResource#subset(CoverageQuerty)

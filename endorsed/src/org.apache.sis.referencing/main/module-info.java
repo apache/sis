@@ -71,6 +71,8 @@ module org.apache.sis.referencing {
         with org.apache.sis.referencing.operation.provider.Affine,
              org.apache.sis.referencing.operation.provider.AxisOrderReversal,
              org.apache.sis.referencing.operation.provider.AxisOrderReversal3D,
+             org.apache.sis.referencing.operation.provider.Spherical3Dto2D,
+             org.apache.sis.referencing.operation.provider.Spherical2Dto3D,
              org.apache.sis.referencing.operation.provider.Geographic3Dto2D,
              org.apache.sis.referencing.operation.provider.Geographic2Dto3D,
              org.apache.sis.referencing.operation.provider.GeographicOffsets,

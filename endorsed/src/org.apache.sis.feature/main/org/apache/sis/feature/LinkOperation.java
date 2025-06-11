@@ -95,6 +95,21 @@ final class LinkOperation extends AbstractOperation {
     }
 
     /**
+     * Returns the same operation but using different properties as inputs.
+     *
+     * @param  dependencies  the new properties to use as operation inputs.
+     * @return the new operation, or {@code this} if unchanged.
+     */
+    @Override
+    public AbstractOperation updateDependencies(final Map<String, AbstractIdentifiedType> dependencies) {
+        final AbstractIdentifiedType target = dependencies.get(referentName);
+        if (target == null || target.equals(result)) {
+            return this;
+        }
+        return FeatureOperations.POOL.unique(new LinkOperation(inherit(), target));
+    }
+
+    /**
      * Returns the property from the referenced attribute of feature association.
      *
      * @param  feature     the feature from which to get the property.

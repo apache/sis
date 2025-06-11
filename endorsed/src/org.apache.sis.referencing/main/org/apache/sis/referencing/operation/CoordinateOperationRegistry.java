@@ -653,7 +653,7 @@ class CoordinateOperationRegistry {
         /*
          * At this point we got the list of coordinate operations. Now, sort them in preference order.
          * We will loop over all coordinate operations and select the one having the largest intersection
-         * with the area of interest. Note that if the user did not specified an area of interest himself,
+         * with the area of interest. Note that if the user did not specify an area of interest himself,
          * then we need to get one from the CRS. This is necessary for preventing the transformation from
          * NAD27 to NAD83 in Idaho to select the transform for Alaska (since the latter has a larger area).
          */

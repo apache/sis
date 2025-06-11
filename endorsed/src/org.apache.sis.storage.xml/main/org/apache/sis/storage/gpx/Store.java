@@ -29,7 +29,6 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.Version;
@@ -184,22 +183,6 @@ public class Store extends StaxDataStore implements FeatureSet {
     @Override
     public DefaultFeatureType getType() {
         return types.parent;
-    }
-
-    /**
-     * Returns the feature type for the given name. The {@code name} argument should be the result of calling
-     * {@link org.opengis.util.GenericName#toString()} on the name of one of the feature types in this data store.
-     *
-     * @param  name  the name or alias of the feature type to get.
-     * @return the feature type of the given name or alias (never {@code null}).
-     * @throws IllegalNameException if the given name was not found or is ambiguous.
-     *
-     * @deprecated We are not sure yet if we will keep this method. Decision is pending acquisition of
-     *             more experience with the API proposed by {@link org.apache.sis.storage.FeatureSet}.
-     */
-    @Deprecated(since="0.8")
-    public DefaultFeatureType getFeatureType(final String name) throws IllegalNameException {
-        return types.names.get(this, name);
     }
 
     /**

@@ -218,25 +218,25 @@ public final class FeatureOperations extends Static {
                 }
             }
         }
-        return POOL.unique(new StringJoinOperation(identification, delimiter, prefix, suffix, singleAttributes));
+        return POOL.unique(new StringJoinOperation(identification, delimiter, prefix, suffix, singleAttributes, null));
     }
 
     /**
      * Creates an operation computing the envelope that encompass all geometries found in the given attributes.
-     * Geometries can be in different coordinate reference systems; they will be transformed to the first non-null
-     * CRS in the following choices:
+     * Geometries can be in different coordinate reference systems, in which case they will be transformed to
+     * the first non-null <abbr>CRS</abbr> in the following choices:
      *
      * <ol>
-     *   <li>the CRS specified to this method,</li>
-     *   <li>the CRS of the default geometry, or</li>
-     *   <li>the CRS of the first non-empty geometry.</li>
+     *   <li>the <abbr>CRS</abbr> specified to this method,</li>
+     *   <li>the <abbr>CRS</abbr> of the default geometry, or</li>
+     *   <li>the <abbr>CRS</abbr> of the first non-empty geometry.</li>
      * </ol>
      *
      * The {@linkplain AbstractOperation#getResult() result} of this operation is an {@code Attribute}
      * with values of type {@link org.opengis.geometry.Envelope}. If the {@code crs} argument given to
      * this method is non-null, then the
      * {@linkplain org.apache.sis.geometry.GeneralEnvelope#getCoordinateReferenceSystem() envelope CRS}
-     * will be that CRS.
+     * will be that <abbr>CRS</abbr>.
      *
      * <h4>Limitations</h4>
      * If a geometry contains other geometries, this operation queries only the envelope of the root geometry.
@@ -261,13 +261,13 @@ public final class FeatureOperations extends Static {
             final AbstractIdentifiedType... geometryAttributes) throws FactoryException
     {
         ArgumentChecks.ensureNonNull("geometryAttributes", geometryAttributes);
-        return POOL.unique(new EnvelopeOperation(identification, crs, geometryAttributes));
+        return POOL.unique(new EnvelopeOperation(identification, crs, geometryAttributes, null));
     }
 
     /**
      * Creates a single geometry from a sequence of points or polylines stored in another property.
      * When evaluated, this operation reads a feature property containing a sequence of {@code Point}s or {@code Polyline}s.
-     * Those geometries shall be instances of the specified geometry library (e.g. JTS or ESRI).
+     * Those geometries shall be instances of the specified geometry library (e.g. <abbr>JTS</abbr> or <abbr>ESRI</abbr>).
      * The merged geometry is usually a {@code Polyline},
      * unless the sequence of source geometries is empty or contains a single element.
      * The merged geometry is re-computed every time that the operation is evaluated.

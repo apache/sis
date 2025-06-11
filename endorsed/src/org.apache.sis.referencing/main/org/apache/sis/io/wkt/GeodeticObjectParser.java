@@ -915,7 +915,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (type == null) {
             /*
              * Creates a coordinate system of unknown type. This block is executed during parsing of WKT version 1,
-             * since that legacy format did not specified any information about the coordinate system in use.
+             * since that legacy format did not specify any information about the coordinate system in use.
              * This block should not be executed during parsing of WKT version 2.
              */
             return new AbstractCS(csProperties, axes);

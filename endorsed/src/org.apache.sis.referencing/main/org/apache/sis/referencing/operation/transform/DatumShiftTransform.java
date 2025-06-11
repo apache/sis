@@ -256,8 +256,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
      * Those parameters are used for formatting <i>Well Known Text</i> (WKT) and error messages.
      *
-     * @return the parameter values for the sequence of
-     *         <i>normalize</i> → {@code this} → <i>denormalize</i> transforms.
+     * @return the parameter values for the <i>normalize</i> → {@code this} → <i>denormalize</i> chain of transforms.
      */
     @Override
     protected ContextualParameters getContextualParameters() {

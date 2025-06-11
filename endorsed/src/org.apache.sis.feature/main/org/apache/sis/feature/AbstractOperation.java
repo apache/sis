@@ -19,7 +19,6 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.io.IOException;
@@ -50,11 +49,8 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
  * The value is computed, or the operation is executed, by {@code apply(Feature, ParameterValueGroup)}.
  * If the value is modifiable, new value can be set by call to {@code Attribute.setValue(Object)}.
  *
- * <div class="warning"><b>Warning:</b> this class is experimental and may change after we gained more
- * experience on this aspect of ISO 19109.</div>
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.5
  *
  * @see DefaultFeatureType
  *
@@ -85,28 +81,23 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
      *     <th>Map key</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
      *     <td>{@link GenericName} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEPRECATED_KEY}</td>
      *     <td>{@link Boolean}</td>
      *     <td>{@link #isDeprecated()}</td>
@@ -128,7 +119,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
      * @param  identification  the map given by user to sub-class constructor.
      */
     final Map<String,Object> resultIdentification(final Map<String,?> identification) {
-        final Map<String,Object> properties = new HashMap<>(6);
+        final var properties = new HashMap<String,Object>(6);
         for (final Map.Entry<String,?> entry : identification.entrySet()) {
             final String key = entry.getKey();
             if (key != null && key.startsWith(RESULT_PREFIX)) {
@@ -201,18 +192,50 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
      * other dependencies, the returned set will contain the name of that operation but not the names of the
      * dependencies of that operation (unless they are the same that the direct dependencies of {@code this}).
      *
-     * <div class="note"><b>Rational:</b>
-     * this information is needed for writing the {@code SELECT} SQL statement to send to a database server.
+     * <h4>Purpose</h4>
+     * This information is needed for writing the {@code SELECT} SQL statement to send to a database server.
      * The requested columns will typically be all attributes declared in a {@code FeatureType}, but also
      * any additional columns needed for the operation while not necessarily included in the {@code FeatureType}.
-     * </div>
      *
+     * <h4>Default implementation</h4>
      * The default implementation returns an empty set.
      *
      * @return the names of feature properties needed by this operation for performing its task.
      */
     public Set<String> getDependencies() {
-        return Collections.emptySet();
+        return Set.of();
+    }
+
+    /**
+     * Returns the same operation but using different properties as inputs.
+     * The keys in the given map should be values returned by {@link #getDependencies()},
+     * and the associated values shall be the properties to use instead of the current dependencies.
+     * If any key in the given map is not a member of the {@linkplain #getDependencies() dependency set},
+     * then the entry is ignored. Conversely, if any member of the dependency set is not contained in the
+     * given map, then the associated dependency is unchanged.
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
+     * to {@code org.opengis.feature.Operation}. This change is pending GeoAPI revision.</div>
+     *
+     * <h4>Purpose</h4>
+     * This method is needed by {@link org.apache.sis.feature.builder.FeatureTypeBuilder} when some properties
+     * are operations inherited from another feature type. Even if the dependencies are properties of the same
+     * name, some {@link DefaultAttributeType#characteristics() characteristics} may be different.
+     * For example, the <abbr>CRS</abbr> may change as a result of a change of <abbr>CRS</abbr>.
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation returns {@code this}.
+     * This is consistent with the default implementation of {@link #getDependencies()} returning an empty set.
+     *
+     * @param  dependencies  the new properties to use as operation inputs.
+     * @return the new operation, or {@code this} if unchanged.
+     *
+     * @see #INHERIT_FROM_KEY
+     *
+     * @since 1.5
+     */
+    public AbstractOperation updateDependencies(final Map<String, AbstractIdentifiedType> dependencies) {
+        return this;
     }
 
     /**
@@ -240,7 +263,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
             return true;
         }
         if (super.equals(obj)) {
-            final AbstractOperation that = (AbstractOperation) obj;
+            final var that = (AbstractOperation) obj;
             return Objects.equals(getParameters(), that.getParameters()) &&
                    Objects.equals(getResult(),     that.getResult());
         }
@@ -255,7 +278,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(40).append(Classes.getShortClassName(this)).append('[');
+        final var buffer = new StringBuilder(40).append(Classes.getShortClassName(this)).append('[');
         final GenericName name = getName();
         if (name != null) {
             buffer.append('“');

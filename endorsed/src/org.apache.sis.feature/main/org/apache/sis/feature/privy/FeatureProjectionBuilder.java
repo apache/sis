@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
@@ -34,6 +35,7 @@ import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.privy.Strings;
@@ -195,13 +197,13 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      * This method may return {@code null} if it cannot resolve the property type, in which case
      * the caller should throw an exception (throwing an exception is left to the caller because
      * it can produces a better error message). Operation's dependencies, if any, are added into
-     * the given {@code deferred} list.
+     * the given {@code deferred} set.
      *
      * @param  property  the {@linkplain #source} property to add.
      * @param  deferred  where to add operation's dependencies, or {@code null} for not collecting dependencies.
      * @return builder for the projected property, or {@code null} if it cannot be resolved.
      */
-    private PropertyTypeBuilder addPropertyResult(AbstractIdentifiedType property, final List<String> deferred) {
+    private PropertyTypeBuilder addPropertyResult(AbstractIdentifiedType property, final Collection<String> deferred) {
         if (property instanceof AbstractOperation) {
             final GenericName name = property.getName();
             do {
@@ -244,7 +246,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
             return null;
         }
         final PropertyTypeBuilder builder;
-        List<String> deferred;
+        final Collection<String> deferred;
         if (sourceIsDependency) {
             /*
              * Adding a property which is not defined in the feature type specified at construction time,
@@ -255,19 +257,17 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
             reserve(property.getName(), null);
             deferred = new ArrayList<>();
             builder = addPropertyResult(property, deferred);
-        } else {
+        } else if (property instanceof AbstractOperation) {
             /*
-             * For link operations, remember the dependencies in order to determine (after we added all properties)
+             * For operations, remember the dependencies in order to determine (after we added all properties)
              * if we can keep the property as an operation or if we will need to copy the value in an attribute.
-             * For other kind of operations, unconditionally replace the operation by its result.
+             * If the operation is not an `AbstractOperation`, unconditionally replace operation by its result.
              */
-            deferred = Features.getLinkTargets(property);
-            if (deferred.isEmpty()) {
-                deferred = new ArrayList<>();
-                builder = addPropertyResult(property, deferred);
-            } else {
-                builder = addProperty(property);
-            }
+            deferred = ((AbstractOperation) property).getDependencies();
+            builder = addProperty(property);
+        } else {
+            deferred = new ArrayList<>();
+            builder = addPropertyResult(property, deferred);
         }
         final var item = new Item(named ? property.getName() : null, builder);
         requested.add(item);
@@ -297,7 +297,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
             return null;
         }
         assert properties().contains(builder) : builder;
-        assert requested.stream().noneMatch((item) ->item.builder() == builder) : builder;
+        assert requested.stream().noneMatch((item) -> item.builder == builder) : builder;
         final var item = new Item(named ? builder.getName() : null, builder);
         requested.add(item);
         return item;
@@ -336,9 +336,9 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         private boolean preferCurrentName;
 
         /**
-         * Whether this property needs at least one dependency which is not included in the list of properties
-         * requested by the user. In such case, we cannot keep the link operation and need to replace the link
-         * by a stored attribute.
+         * Whether this property is an operation having at least one dependency which is not included
+         * in the list of properties requested by the user. In such case, we cannot keep the operation
+         * and need to replace it by a stored attribute.
          *
          * @see #replaceIfMissingDependency()
          */
@@ -451,7 +451,10 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
                         final Class<?> c = ((DefaultAttributeType<?>) result).getValueClass();
                         final Class<?> r = type.apply(c);
                         if (r != null) {
-                            // We can be lenient for link operation, but must be strict for other operations.
+                            /*
+                             * We can be lenient for link operation, but must be strict for other operations.
+                             * Example: a link to a geometry, but relaxing the `Polygon` type to `Geometry`.
+                             */
                             if (Features.getLinkTarget(property).isPresent() ? r.isAssignableFrom(c) : r.equals(c)) {
                                 return true;
                             }
@@ -628,6 +631,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      * The elements added into {@code deferred} are {@linkplain #source} properties.
      *
      * @param  deferred  where to add missing transitive dependencies (source properties).
+     * @throws UnsupportedOperationException if there is an attempt to rename a property which is used by an operation.
      */
     private void resolveDependencies(final List<AbstractIdentifiedType> deferred) {
         final var it = dependencies.entrySet().iterator();
@@ -638,12 +642,8 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
             Item item = reservedNames.get(sourceName);
             if (item != null) {
                 if (!sourceName.equals(item.sourceName)) {
-                    /*
-                     * If we want to support that feature in a future version, we would need a `replace` method
-                     * for replacing a builder at a specific index or for a specific property name. A difficulty
-                     * is that for compound identifiers, we have no API for reusing the same prefix and suffix.
-                     */
-                    throw new UnsupportedOperationException("Renaming of properties used in links is not yet supported.");
+                    throw new UnsupportedOperationException(Resources.forLocale(getLocale())
+                            .getString(Resources.Keys.CannotRenameDependency_2, item.sourceName, sourceName));
                 }
             } else {
                 for (Item dependent : entry.getValue()) {
@@ -696,11 +696,12 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      * for meaning that this projection does nothing.
      *
      * @return the feature types with and without dependencies, or empty if there is no projection.
+     * @throws UnsupportedOperationException if there is an attempt to rename a property which is used by an operation.
      */
     public Optional<FeatureProjection> project() {
         requested.forEach(Item::validateName);
         /*
-         * Add properties for all dependencies that are required by link operations but are not already present.
+         * Add properties for all dependencies that are required by operations but are not already present.
          * If there is no need to add anything, `typeWithDependencies` will be directly the feature type to return.
          */
         final List<PropertyTypeBuilder> properties = properties();

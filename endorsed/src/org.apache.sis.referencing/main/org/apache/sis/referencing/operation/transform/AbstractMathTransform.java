@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.awt.geom.AffineTransform;
+import java.util.function.IntFunction;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -34,10 +34,11 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -47,6 +48,8 @@ import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.OptionalCandidate;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
@@ -239,6 +242,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @see org.apache.sis.referencing.operation.DefaultConversion#getParameterValues()
      */
     @Override
+    @OptionalCandidate
     public ParameterValueGroup getParameterValues() {
         /*
          * Do NOT try to infer the parameters from getContextualParameters(). This is usually not appropriate
@@ -258,13 +262,14 @@ public abstract class AbstractMathTransform extends FormattableObject
      * If a split has been done, then this {@code MathTransform} represents only the non-linear step and Apache SIS
      * needs this method for reconstructing the parameters of the complete transform.
      *
-     * @return the parameter values for the sequence of <i>normalize</i> → {@code this} → <i>denormalize</i>
-     *         transforms, or {@code null} if unspecified.
+     * @return the parameter values for the <i>normalize</i> → {@code this} → <i>denormalize</i> chain of transforms,
+     *         or {@code null} if unspecified.
      *         Callers should not modify the returned parameters, since modifications (if allowed)
      *         will generally not be reflected back in this {@code MathTransform}.
      *
      * @since 0.6
      */
+    @OptionalCandidate
     protected ContextualParameters getContextualParameters() {
         return null;
     }
@@ -935,6 +940,9 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @since 1.5
      */
     protected void tryConcatenate(final Joiner context) throws FactoryException {
+        if (context.replaced()) {
+            return;     // Subclass already took action.
+        }
         int relativeIndex = +1;
         do {
             final MathTransform other = context.getTransform(relativeIndex).orElse(null);
@@ -985,14 +993,9 @@ public abstract class AbstractMathTransform extends FormattableObject
 
         /**
          * The concatenated transform to use as a replacement, or {@code null} if none.
+         * <p><b>Note:</b> this is package-private for the purpose of unit tests.</p>
          */
         MathTransform replacement;
-
-        /**
-         * -1 if {@link #replacement} replaces also the previous transform, or
-         * +1 if it replaces also the next transform.
-         */
-        int replacementBound;
 
         /**
          * Creates new concatenation information.
@@ -1005,6 +1008,23 @@ public abstract class AbstractMathTransform extends FormattableObject
             this.factory     = factory;
             this.steps       = steps;
             this.indexOfThis = indexOfThis;
+        }
+
+        /**
+         * Tests whether the transform before or after the enclosing transform is linear.
+         * Invoking this method is equivalent to checking if {@link #getMatrix(int)} returns a non-empty value.
+         *
+         * @param  relativeIndex  index of the transform to test, relatively to the enclosing transform.
+         * @param  ifUnknown      value to return if the math transform at the given index is unknown.
+         * @return whether the transform is linear, or {@code ifNone} if unknown.
+         */
+        public boolean isLinear(int relativeIndex, boolean ifUnknown) {
+            relativeIndex += indexOfThis;
+            if (relativeIndex >= 0 && relativeIndex < steps.size()) {
+                return MathTransforms.isLinear(steps.get(relativeIndex));
+            } else {
+                return ifUnknown;
+            }
         }
 
         /**
@@ -1024,6 +1044,19 @@ public abstract class AbstractMathTransform extends FormattableObject
             } else {
                 return Optional.empty();
             }
+        }
+
+        /**
+         * Returns the transform before or after the enclosing transform as a matrix if that transform is linear.
+         * This is equivalent to invoking {@link #getTransform(int)} followed by fetching the transform matrix.
+         *
+         * @param  relativeIndex  index of the transform to get, relatively to the enclosing transform.
+         * @return the matrix of the requested transform if that transform is linear, or an empty value otherwise.
+         *
+         * @see #isLinear(int, boolean)
+         */
+        public Optional<Matrix> getMatrix(final int relativeIndex) {
+            return getTransform(relativeIndex).map(MathTransforms::getMatrix);
         }
 
         /**
@@ -1052,25 +1085,120 @@ public abstract class AbstractMathTransform extends FormattableObject
         }
 
         /**
-         * Tests whether the transform before or after the enclosing transform is linear.
-         * Invoking this method is equivalent to invoking {@link #getTransform(int)} and testing whether
-         * {@link MathTransforms#getMatrix(MathTransform)} returns a non-null value for that transform.
+         * If the specified range of dimensions is unused by the specified neighbor transform,
+         * removes those dimensions. A range of dimensions is considered unused by a neighbor
+         * if <code>{@link #getMatrix(int) getMatrix}(relativeIndex)</code>
+         * returns a non-empty value and the returned matrix has the following characteristic:
          *
-         * @param  relativeIndex  index of the transform to test, relatively to the enclosing transform.
-         * @param  ifUnknown      value to return if the math transform at the given index is unknown.
-         * @return whether the transform is linear, or {@code ifNone} if unknown.
+         * <ul class="verbose">
+         *   <li>For negative {@code relativeIndex}, all values are zeros in the <em>rows</em> from {@code lower}
+         *       inclusive to {@code upper} exclusive. In such case, the transform at index {@code relativeIndex}+1
+         *       receives input coordinates where the values are always 0 in those dimensions.</li>
+         *   <li>For positive {@code relativeIndex}, all values are zeros in the <em>columns</em> from {@code lower}
+         *       inclusive to {@code upper} exclusive. In such case, the transform at index {@code relativeIndex}-1
+         *       produces output coordinates where the values are always ignored in those dimensions.</li>
+         * </ul>
+         *
+         * If the specified range of dimensions is considered unused, then this method performs the following steps:
+         *
+         * <ul class="verbose">
+         *   <li>Reduce the size of the matrix of the neighbor transform specified by {@code relativeIndex}.
+         *       That reduction is done by removing the rows or columns of above-mentioned zero values.</li>
+         *   <li>Invoke {@code reduce.apply(dimension)} for getting the replacement to use in place of all
+         *       transforms at relative indexes between 0 (inclusive) and {@code relativeIndex} (exclusive).
+         *       The {@code reduce} function will receive in argument the new number of dimensions.
+         *       If {@code reduce} returns {@code null}, this method exits without doing any replacement.</li>
+         *   <li>The transform described by the reduced matrix (step 1) is concatenated with the transform of step 2.
+         *       The concatenation result {@linkplain #replace replaces} all transforms at relative indexes between 0
+         *       (inclusive) and {@code relativeIndex} (also inclusive).</li>
+         * </ul>
+         *
+         * <h4>Example</h4>
+         * For a matrix that describes an affine transform, if the column <var>i</var> has only zero values,
+         * then the coordinate at index <var>i</var> in source coordinate tuples is unused and can be discarded.
+         * For example, a matrix of size 4×3 describes an affine transform from three-dimensional coordinates to
+         * two-dimensional coordinates. In many cases, such affine transform drops the <var>z</var> coordinate.
+         * In order to check and potentially replace such transform by a two-dimensional transform working only
+         * with <var>x</var> and <var>y</var> coordinates, the following code can be used:
+         *
+         * {@snippet lang="java" :
+         *     class MyTransform3D extends AbstractTransform {
+         *         private static final int Z_DIM = 2;
+         *
+         *         @Override
+         *         protected void tryConcatenate(Joiner context) throws FactoryException {
+         *             if (!context.removeUnusedDimensions(+1, Z_DIM, Z_DIM+1, this::reduce)) {
+         *                 super.tryConcatenate(context);    // Try other strategies.
+         *             }
+         *         }
+         *
+         *         private MathTransform reduce(int newDim) {
+         *             switch (newDim) {
+         *                 case 2:  return new MyTransform2D();
+         *                 default: return null;
+         *             }
+         *         }
+         *     }
+         *     }
+         *
+         * In some implementations, such replacement of a {@code MyTransform3D} class by a {@code MyTransform2D} class
+         * may avoid the unnecessary calculation of <var>z</var> output coordinate values.
+         *
+         * @param  relativeIndex  relative index of the potentially affine step to check.
+         * @param  lower   index of the first dimension to try to remove.
+         * @param  upper   index after the last dimension to try to remove.
+         * @param  reduce  provider of transform equivalent to the enclosing transform but with the given number of dimensions.
+         * @return whether the replacement has been done.
+         * @throws FactoryException if an error occurred while combining the transforms.
          */
-        public boolean isLinear(int relativeIndex, boolean ifUnknown) {
-            relativeIndex += indexOfThis;
-            if (relativeIndex < 0 || relativeIndex >= steps.size()) {
-                return ifUnknown;
+        public boolean removeUnusedDimensions(final int relativeIndex, final int lower, final int upper,
+                final IntFunction<MathTransform> reduce) throws FactoryException
+        {
+            final Matrix matrix;
+            if (relativeIndex == 0 || (matrix = getMatrix(relativeIndex).orElse(null)) == null) {
+                return false;
             }
-            MathTransform step = steps.get(relativeIndex);
-            return (step instanceof LinearTransform) || (step instanceof AffineTransform);
+            final boolean before = (relativeIndex < 0);
+            for (int dimension = lower; dimension < upper; dimension++) {
+                if (before) {
+                    for (int i = matrix.getNumCol(); --i >= 0;) {
+                        if (matrix.getElement(dimension, i) != 0) {
+                            return false;
+                        }
+                    }
+                } else {
+                    for (int j = matrix.getNumRow(); --j >= 0;) {
+                        if (matrix.getElement(j, dimension) != 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            /*
+             * The specified range of dimensions is unused in the neighbor transform.
+             * Try to create the non-linear transform with a reduced number of dimensions.
+             */
+            final MathTransform reduced;
+            try {
+                reduced = reduce.apply((before ? matrix.getNumRow() : matrix.getNumCol()) - (upper - lower) - 1);
+            } catch (BackingStoreException e) {
+                throw e.unwrapOrRethrow(FactoryException.class);
+            }
+            if (reduced == null) {
+                return false;
+            }
+            MatrixSIS m = MatrixSIS.castOrCopy(matrix);
+            m = before ? m.removeRows   (lower, upper)
+                       : m.removeColumns(lower, upper);
+
+            final MathTransform linear = factory.createAffineTransform(m);
+            replace(relativeIndex, factory.createConcatenatedTransform(before ? linear : reduced,
+                                                                       before ? reduced : linear));
+            return true;
         }
 
         /**
-         * Requests to replace the enclosing transform and neighbor transforms by the given transform.
+         * Replaces the enclosing transform and neighbor transforms by the given transform.
          * The {@code bound} argument specifies which neighbors are replaced by the specified transform:
          *
          * <ul class="verbose">
@@ -1096,14 +1224,15 @@ public abstract class AbstractMathTransform extends FormattableObject
             ArgumentChecks.ensureNonNull("concatenation", concatenation);
             ArgumentChecks.ensureBetween("bound", -1, +1, bound);
             replacement = concatenation;
-            replacementBound = bound;
         }
 
         /**
-         * {@return whether a concatenated transform has been specified}.
+         * Returns whether a concatenated transform has been specified.
          * This is initially {@code false}, and become {@code true} after a {@code replace(…)} call.
+         *
+         * @return whether {@code replace(…)} has been invoked.
          */
-        public boolean replaced() {
+        final boolean replaced() {
             return replacement != null;
         }
     }
@@ -1187,7 +1316,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * optimization is usually done in subclasses.
          */
         if (object != null && getClass() == object.getClass()) {
-            final AbstractMathTransform that = (AbstractMathTransform) object;
+            final var that = (AbstractMathTransform) object;
             /*
              * If the classes are the same, then the hash codes should be computed in the same way. Since those
              * codes are cached, this is an efficient way to quickly check if the two objects are different.

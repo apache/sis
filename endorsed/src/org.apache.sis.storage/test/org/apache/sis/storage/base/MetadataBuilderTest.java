@@ -158,8 +158,8 @@ public final class MetadataBuilderTest extends TestCase {
             assertTrue(metadata.getContentInfo().isEmpty());
         } else {
             final ContentInformation content = getSingleton(metadata.getContentInfo());
-            assertInstanceOf(DefaultFeatureCatalogueDescription.class, content);
-            final DefaultFeatureTypeInfo info = getSingleton(((DefaultFeatureCatalogueDescription) content).getFeatureTypeInfo());
+            final var catalog = assertInstanceOf(DefaultFeatureCatalogueDescription.class, content);
+            final DefaultFeatureTypeInfo info = getSingleton(catalog.getFeatureTypeInfo());
             assertEquals(expected, info.getFeatureInstanceCount(), errorMessage);
         }
     }

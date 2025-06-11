@@ -87,7 +87,7 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      *     <td>{@link Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.IdentifiedObject#DOMAINS_KEY}</td>
+     *     <td>{@code "domains"}</td>
      *     <td>{@link org.opengis.referencing.ObjectDomain} (optionally as array)</td>
      *     <td>{@link #getDomains()}</td>
      *   </tr><tr>

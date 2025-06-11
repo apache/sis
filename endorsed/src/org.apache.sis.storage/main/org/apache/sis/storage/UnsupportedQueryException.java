@@ -19,6 +19,18 @@ package org.apache.sis.storage;
 
 /**
  * Thrown when a resources cannot be filtered with a given query.
+ * Some examples of cases where this exception may be thrown are:
+ *
+ * <ul>
+ *   <li>The {@link Query} is an instance of a class unsupported by the resource
+ *       (for example, applying a {@link CoverageQuery} on a {@link FeatureSet}).</li>
+ *   <li>The query is requesting a property that does not exist in the {@link Resource}.</li>
+ *   <li>The values in the {@link DataStore} are unconvertible to some characteristics
+ *       (e.g., type or name) requested by the query.</li>
+ * </ul>
+ *
+ * This exception may be thrown when {@link FeatureSet#subset(Query)} is executed,
+ * but may also be deferred until another method of the returned subset is invoked.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.8

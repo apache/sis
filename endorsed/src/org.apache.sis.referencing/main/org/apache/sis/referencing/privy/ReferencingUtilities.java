@@ -44,6 +44,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -52,6 +53,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 
 // Specific to the main branch:
 import java.util.Collection;
@@ -606,6 +608,31 @@ single: if (crs instanceof SingleCRS) {
             }
         }
         return mapping;
+    }
+
+    /**
+     * Returns a parameter descriptor group with the same parameters as the given group, but a different name.
+     * If the given code is equal to the current group code, then the {@code parameters} instance is returned.
+     * Otherwise, a new group is created with the same name {@linkplain Identifier#getAuthority() authority}
+     * and {@linkplain Identifier#getCodeSpace() code space} as the given parameter group, but with the
+     * {@linkplain Identifier#getCode() code} replaced by the given value.
+     *
+     * <p><b>Examples:</b> this method can be used for creating the parameters of an inverse operation
+     * in the common case where the inverse has the same parameters than the forward operation.</p>
+     *
+     * @param  parameters  the parameter group to rename, or {@code null}.
+     * @param  code        the new name of the group, in the same code space as the given parameters.
+     * @return a group with the same parameters but with a different name, or {@code null} if the given group is null.
+     */
+    public static ParameterDescriptorGroup rename(final ParameterDescriptorGroup parameters, final String code) {
+        if (parameters != null) {
+            ReferenceIdentifier name = parameters.getName();
+            if (!code.equals(name.getCode())) {
+                name = new ImmutableIdentifier(name.getAuthority(), name.getCodeSpace(), code);
+                return new DefaultParameterDescriptorGroup(Map.of(ParameterDescriptorGroup.NAME_KEY, name), parameters);
+            }
+        }
+        return parameters;
     }
 
     /**

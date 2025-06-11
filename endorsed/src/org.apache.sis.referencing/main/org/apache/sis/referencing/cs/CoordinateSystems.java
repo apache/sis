@@ -56,7 +56,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 public final class CoordinateSystems extends Static {
@@ -74,6 +74,7 @@ public final class CoordinateSystems extends Static {
      * @param  cs  the coordinate system to test (can be {@code null}).
      * @return whether the given coordinate system can be associated to a geodetic CRS.
      *
+     * @see #getSingleComponents(CoordinateSystem)
      * @since 1.3
      */
     public static boolean isGeodetic(final CoordinateSystem cs) {
@@ -281,20 +282,6 @@ public final class CoordinateSystems extends Static {
     }
 
     /**
-     * Adds all single coordinate systems in the given list.
-     * This method is used for decomposing a coordinate systems into its components.
-     */
-    private static void components(final CoordinateSystem cs, final List<CoordinateSystem> addTo) {
-        if (cs instanceof DefaultCompoundCS) {
-            for (final CoordinateSystem c : ((DefaultCompoundCS) cs).getComponents()) {
-                components(c, addTo);
-            }
-        } else {
-            addTo.add(cs);
-        }
-    }
-
-    /**
      * Returns {@code true} if all {@code CoordinateSystem} interfaces of {@code targetCS} have a counterpart in
      * {@code sourceCS}. This method is equivalent to {@link Classes#implementSameInterfaces(Class, Class, Class)}
      * except that it decomposes {@link DefaultCompoundCS} in its components before to check the two collections
@@ -307,10 +294,8 @@ public final class CoordinateSystems extends Static {
      * then this method returns {@code false}.
      */
     static boolean hasAllTargetTypes(final CoordinateSystem sourceCS, final CoordinateSystem targetCS) {
-        final List<CoordinateSystem> sources = new ArrayList<>(sourceCS.getDimension());
-        final List<CoordinateSystem> targets = new ArrayList<>(targetCS.getDimension());
-        components(sourceCS, sources);
-        components(targetCS, targets);
+        final List<CoordinateSystem> sources = getSingleComponents(sourceCS);
+        final List<CoordinateSystem> targets = getSingleComponents(targetCS);
 next:   for (final CoordinateSystem cs : targets) {
             for (int i=0; i<sources.size(); i++) {
                 if (Classes.implementSameInterfaces(sources.get(i).getClass(), cs.getClass(), CoordinateSystem.class)) {
@@ -549,6 +534,46 @@ next:   for (final CoordinateSystem cs : targets) {
                 return Units.isAngular(unit) ? newUnit : unit;
             }
         });
+    }
+
+    /**
+     * Returns all components of the given coordinate system.
+     * If the given coordinate system (<abbr>CS</abbr>) is null, then this method returns an empty list.
+     * Otherwise, if the given <abbr>CS</abbr> is <em>not</em> an instance of {@link DefaultCompoundCS},
+     * then this method adds that <abbr>CS</abbr> as the singleton element of the returned list.
+     * Otherwise, this method returns all {@linkplain DefaultCompoundCS#getComponents() components}.
+     * If a component is itself a {@link DefaultCompoundCS}, its is recursively decomposed into its
+     * singleton component.
+     *
+     * <h4>Implementation note</h4>
+     * This method always returns a modifiable list.
+     * Callers can freely modify that list without impacting the coordinate system.
+     *
+     * @param  cs  the coordinate system to decompose into singleton components, or {@code null}.
+     * @return the components, or an empty list if {@code cs} is null.
+     *
+     * @see #isGeodetic(CoordinateSystem)
+     * @since 1.5
+     */
+    public static List<CoordinateSystem> getSingleComponents(final CoordinateSystem cs) {
+        final var addTo = new ArrayList<CoordinateSystem>(3);
+        getSingleComponents(cs, addTo);
+        return addTo;
+    }
+
+    /**
+     * Recursively adds all single coordinate systems in the given list.
+     */
+    private static void getSingleComponents(final CoordinateSystem cs, final List<CoordinateSystem> addTo) {
+        if (cs != null) {
+            if (cs instanceof DefaultCompoundCS) {
+                for (final CoordinateSystem c : ((DefaultCompoundCS) cs).getComponents()) {
+                    getSingleComponents(c, addTo);
+                }
+            } else {
+                addTo.add(cs);
+            }
+        }
     }
 
     /**

@@ -17,19 +17,18 @@
 package org.apache.sis.referencing.operation.provider;
 
 import java.util.OptionalInt;
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -71,7 +70,7 @@ public final class GeographicToGeocentric extends AbstractProvider {
     public GeographicToGeocentric() {
         super(Conversion.class, PARAMETERS,
               EllipsoidalCS.class, true,
-              CartesianCS.class, false,
+              CartesianCS.class, false,     // Type expected in WKT, but not the only type accepted by this operation.
               (byte) 2);
     }
 
@@ -108,18 +107,35 @@ public final class GeographicToGeocentric extends AbstractProvider {
      */
     @Override
     public MathTransform createMathTransform(final Context context) throws FactoryException {
-        return create(context, context.getSourceDimensions());
+        return create(context, context.getSourceDimensions(), context.getTargetCSType());
     }
 
     /**
      * Implementation of {@link #createMathTransform(Context)} shared with {@link GeocentricToGeographic}.
+     * This method creates the "geographic to geocentric" operation. Callers is responsible to invert the
+     * transform if the "geocentric to geographic" operation is desired.
+     *
+     * @param  context     the parameter values together with its context.
+     * @param  dimension   the number of dimension of the geographic <abbr>CRS</abbr>.
+     * @param  geocentric  the coordinate system type of the geocentric <abbr>CRS</abbr>.
+     * @return the conversion from geographic to geocentric coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
      */
-    static MathTransform create(final Context context, final OptionalInt dimension) throws FactoryException {
+    static MathTransform create(final Context context, final OptionalInt dimension,
+                                final Class<? extends CoordinateSystem> geocentric)
+            throws FactoryException
+    {
         final Parameters values = Parameters.castOrWrap(context.getCompletedParameters());
-        final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
-        final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
-        return EllipsoidToCentricTransform.createGeodeticConversion(context.getFactory(), semiMajor.doubleValue(),
-                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, dimension.orElse(3) >= 3,
-                EllipsoidToCentricTransform.TargetType.CARTESIAN);
+        final EllipsoidToCentricTransform.TargetType type;
+        if (geocentric == CoordinateSystem.class) {
+            type = EllipsoidToCentricTransform.TargetType.CARTESIAN;    // Default value.
+        } else try {
+            type = EllipsoidToCentricTransform.TargetType.of(geocentric);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidGeodeticParameterException(
+                    Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes), e);
+        }
+        return EllipsoidToCentricTransform.createGeodeticConversion(context.getFactory(),
+                MapProjection.getEllipsoid(values, context), dimension.orElse(3) >= 3, type);
     }
 }

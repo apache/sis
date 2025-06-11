@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
  * <ul>
  *   <li>Spherical longitude (θ), also noted Ω or λ.</li>
  *   <li>Spherical latitude (Ω), also noted θ or φ′ (confusing).</li>
- *   <li>Spherical radius (r).</li>
+ *   <li>Spherical radius (R).</li>
  * </ul>
  * <div class="note"><b>Note:</b>
  * the spherical latitude is related to geodetic latitude φ by {@literal Ω(φ) = atan((1-ℯ²)⋅tan(φ))}.</div>
@@ -65,10 +65,10 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
     static final SphericalToCartesian INSTANCE = new SphericalToCartesian();
 
     /**
-     * Returns the singleton instance on deserialization.
+     * Returns the proxy to serialize instead of this class.
      */
-    private Object readResolve() throws ObjectStreamException {
-        return INSTANCE;
+    private Object writeReplace() throws ObjectStreamException {
+        return new Proxy(SphericalToCartesian.class);
     }
 
     /**

@@ -29,7 +29,6 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.referencing.CommonCRS;
@@ -41,7 +40,7 @@ import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.storage.base.FeatureCatalogBuilder;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Specific to the main branch:
@@ -89,16 +88,6 @@ final class Types {
     final Collection<ContentInformation> metadata;
 
     /**
-     * Binding from names to feature type instances.
-     * Shall not be modified after construction.
-     *
-     * @deprecated We are not sure yet if we will keep this field. Decision is pending acquisition of
-     *             more experience with the API proposed by {@link org.apache.sis.storage.FeatureSet}.
-     */
-    @Deprecated(since="0.8")
-    final FeatureNaming<DefaultFeatureType> names;
-
-    /**
      * Accessor to the geometry implementation in use (Java2D, ESRI or JTS).
      */
     final Geometries<?> geometries;
@@ -128,7 +117,7 @@ final class Types {
             throws FactoryException, IllegalNameException
     {
         geometries = Geometries.factory(library);
-        final Map<String,InternationalString[]> resources = new HashMap<>();
+        final var resources = new HashMap<String, InternationalString[]>();
         final Map<String,?> geomInfo = Map.of(AbstractIdentifiedType.NAME_KEY, AttributeConvention.GEOMETRY_PROPERTY);
         final Map<String,?> envpInfo = Map.of(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
         /*
@@ -143,7 +132,7 @@ final class Types {
          * │ sis:identifier │ Integer │   [1 … 1]    │      SIS-specific property
          * └────────────────┴─────────┴──────────────┘
          */
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder(factory, library, locale);
+        final var builder = new FeatureTypeBuilder(factory, library, locale);
         builder.setNameSpace(Tags.PREFIX).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
         parent = builder.build();
@@ -282,12 +271,11 @@ final class Types {
         builder.addAssociation(trackSegment).setName(Tags.TRACK_SEGMENTS).setMaximumOccurs(Integer.MAX_VALUE);
         track = create(builder, resources);
 
-        final FeatureCatalogBuilder fc = new FeatureCatalogBuilder(null);
-        fc.define(route);
-        fc.define(track);
-        fc.define(wayPoint);
+        final var fc = new MetadataBuilder();
+        fc.addFeatureType(route,    -1);
+        fc.addFeatureType(track,    -1);
+        fc.addFeatureType(wayPoint, -1);
         metadata = fc.buildAndFreeze().getContentInfo();
-        names = fc.features;
     }
 
     /**

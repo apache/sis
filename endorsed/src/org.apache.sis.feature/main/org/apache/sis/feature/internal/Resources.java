@@ -135,6 +135,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short CanNotVisit_2 = 77;
 
         /**
+         * Cannot rename the “{0}” property as “{1}” because it is used by an operation.
+         */
+        public static final short CannotRenameDependency_2 = 93;
+
+        /**
          * The two categories “{0}” and “{2}” have overlapping ranges: {1} and {3} respectively.
          */
         public static final short CategoryRangeOverlap_4 = 15;

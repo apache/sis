@@ -1200,7 +1200,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * Returns or allocate a buffer for use with the {@link ChannelDataInput} or {@link ChannelDataOutput}.
-     * If the user did not specified a buffer, this method may allocate a direct buffer for better
+     * If the user did not specify a buffer, this method may allocate a direct buffer for better
      * leveraging of {@link ChannelDataInput}, which tries hard to transfer data in the most direct
      * way between buffers and arrays. By contrast creating a heap buffer may imply the use of a
      * temporary direct buffer cached by the JDK itself (in JDK internal implementation).

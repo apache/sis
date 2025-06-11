@@ -213,7 +213,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      * {@code "grid_south_pole_angle"} in that order.
      */
     private void setValue(final int index, final double value) {
-        final ParameterDescriptor<?> p = (ParameterDescriptor<?>) context.getDescriptor().descriptors().get(index);
+        final var p = (ParameterDescriptor<?>) context.getDescriptor().descriptors().get(index);
         context.parameter(p.getName().getCode()).setValue(value);
     }
 
@@ -279,7 +279,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     public static MathTransform rotateSouthPole(final MathTransformFactory factory,
             final double φp, final double λp, final double θp) throws FactoryException
     {
-        final PoleRotation kernel = new PoleRotation(true, φp, λp, θp);
+        final var kernel = new PoleRotation(true, φp, λp, θp);
         return kernel.context.completeTransform(factory, kernel);
     }
 
@@ -310,7 +310,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     public static MathTransform rotateNorthPole(final MathTransformFactory factory,
             final double φp, final double λp, final double θp) throws FactoryException
     {
-        final PoleRotation kernel = new PoleRotation(false, φp, λp, θp);
+        final var kernel = new PoleRotation(false, φp, λp, θp);
         return kernel.context.completeTransform(factory, kernel);
     }
 
@@ -325,7 +325,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
         // We assume that it is not worth to cache this descriptor.
-        ImmutableIdentifier name = new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Rotated Latitude/longitude (radians domain)");
+        var name = new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Rotated Latitude/longitude (radians domain)");
         return new DefaultParameterDescriptorGroup(Map.of(ParameterDescriptorGroup.NAME_KEY, name),
                     1, 1, (ParameterDescriptor<?>) context.getDescriptor().descriptors().get(0));
     }
@@ -352,8 +352,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      * the grid pole latitude (which is handled by this transform), but also the grid pole longitude and the
      * grid angle of rotation (which are handled by affine transforms before or after this transform).
      *
-     * @return the parameter values for the sequence of <i>normalize</i> →
-     *         {@code this} → <i>denormalize</i> transforms.
+     * @return the parameter values for the <i>normalize</i> → {@code this} → <i>denormalize</i> chain of transforms.
      */
     @Override
     protected ContextualParameters getContextualParameters() {
@@ -529,7 +528,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
-            final PoleRotation other = (PoleRotation) object;
+            final var other = (PoleRotation) object;
             if (mode.isApproximate()) {
                 return Numerics.epsilonEqual(sinφp, other.sinφp, Formulas.ANGULAR_TOLERANCE * (PI/180)) &&
                        Numerics.epsilonEqual(cosφp, other.cosφp, Formulas.ANGULAR_TOLERANCE * (PI/180));

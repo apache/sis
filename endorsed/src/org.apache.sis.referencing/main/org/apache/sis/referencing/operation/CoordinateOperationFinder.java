@@ -37,8 +37,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -58,12 +56,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
-import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
-import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
-import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
-import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
@@ -261,7 +254,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             throw new FactoryException(resources().getString(Resources.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
         }
         /*
-         * If the user did not specified an area of interest, use the domain of validity of the CRS.
+         * If the user did not specify an area of interest, use the domain of validity of the CRS.
          */
         GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(areaOfInterest);
         if (bbox == null) {
@@ -493,8 +486,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * </ul>
      *
      * This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
-     * But a list is returned because the same step may be implemented by different operation methods. Only one element
-     * in the returned list should be selected (usually the first one).
+     * But a list is returned because the same step may be implemented by different operation methods.
+     * Only one element in the returned list should be selected (usually the first one).
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -509,176 +502,69 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
         final GeodeticDatum sourceDatum = PseudoDatum.of(sourceCRS);
         final GeodeticDatum targetDatum = PseudoDatum.of(targetCRS);
-        Matrix datumShift = null;
         /*
-         * If the prime meridian is not the same, we will concatenate a longitude rotation before or after datum shift
-         * (that concatenation will be performed by the `MathTransformContext` builder created below).
-         * Actually we do not know if the longitude rotation should be before or after datum shift. But this ambiguity
-         * can usually be ignored because Bursa-Wolf parameters are always used with source and target prime meridians
-         * set to Greenwich in EPSG dataset 8.9.  For safety, the SIS's DefaultGeodeticDatum class ensures that if the
-         * prime meridians are not the same, then the target meridian must be Greenwich.
+         * Find the type of operation depending on whether there is a change of geodetic reference frame (datum).
+         * The `DATUM_SHIFT` and `ELLIPSOID_CHANGE` identifiers mean that there is a datum change, and all other
+         * identifiers mean that the coordinate operation is only a change of coordinate system type (Ellipsoidal
+         * ↔ Cartesian ↔ Spherical), axis swapping and unit conversions.
          */
-        final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-        final var context = new MathTransformContext(mtFactory, sourceDatum, targetDatum);
-        context.setSourceAxes(sourceCS, sourceDatum.getEllipsoid());
-        context.setTargetAxes(targetCS, targetDatum.getEllipsoid());
-        /*
-         * If both CRS use the same datum and the same prime meridian, then the coordinate operation is only axis
-         * swapping, unit conversion or change of coordinate system type (Ellipsoidal ↔ Cartesian ↔ Spherical).
-         * Otherwise (if the datum are not the same), we will need to perform a scale, translation and rotation
-         * in Cartesian space using the Bursa-Wolf parameters. If the user does not require the best accuracy,
-         * then the Molodensky approximation may be used for avoiding the conversion step to geocentric CRS.
-         */
-        Identifier identifier;
-        boolean isGeographicToGeocentric = false;
+        final Matrix datumShift;
+        final Identifier identifier;
+        final MathTransform transform;
+        ParameterValueGroup parameters;
+        final Optional<OperationMethod> method;
         final Optional<GeodeticDatum> commonDatum = PseudoDatum.ofOperation(sourceCRS, targetCRS);
         if (commonDatum.isPresent()) {
-            final boolean isGeocentricToGeographic;
-            isGeographicToGeocentric = (sourceCS instanceof EllipsoidalCS && targetCS instanceof CartesianCS);
-            isGeocentricToGeographic = (sourceCS instanceof CartesianCS && targetCS instanceof EllipsoidalCS);
             /*
-             * Above booleans should never be true at the same time. If it nevertheless happen (we are paranoiac;
-             * maybe a lazy user implemented all interfaces in a single class), do not apply any geographic ↔
-             * geocentric conversion. Instead, do as if the coordinate system types were the same.
+             * Coordinate system change (including change in the number of dimensions) without datum shift.
+             * May contain the addition of ellipsoidal height or spherical radius, which need an ellipsoid.
              */
-            if (isGeocentricToGeographic ^ isGeographicToGeocentric) {
-                identifier = GEOCENTRIC_CONVERSION;
-            } else {
-                identifier = AXIS_CHANGES;
-            }
+            final boolean isGeographic = (sourceCS instanceof EllipsoidalCS);
+            identifier = isGeographic != (targetCS instanceof EllipsoidalCS) ? GEOCENTRIC_CONVERSION : AXIS_CHANGES;
+            final var builder = CoordinateOperations.builder(factorySIS.getMathTransformFactory(), Constants.COORDINATE_SYSTEM_CONVERSION);
+            final var ellipsoid = (isGeographic ? sourceDatum : targetDatum).getEllipsoid();
+            builder.setSourceAxes(sourceCS, ellipsoid);
+            builder.setTargetAxes(targetCS, ellipsoid);
+            transform  = builder.create();
+            method     = builder.getMethod();
+            parameters = builder.parameters();
+            datumShift = null;
         } else {
-            identifier = ELLIPSOID_CHANGE;
-            if (sourceDatum instanceof DefaultGeodeticDatum) {
-                datumShift = ((DefaultGeodeticDatum) sourceDatum).getPositionVectorTransformation(targetDatum, areaOfInterest);
-                if (datumShift != null) {
-                    identifier = DATUM_SHIFT;
-                }
-            }
-        }
-        /*
-         * Conceptually, all transformations below could be done by first converting from source coordinate
-         * system to geocentric Cartesian coordinates (X,Y,Z), apply an affine transform represented by the
-         * datum shift matrix, then convert from the (X′,Y′,Z′) coordinates to the target coordinate system.
-         * However, there are two exceptions to this path:
-         *
-         *   1) In the particular where both the source and target CS are ellipsoidal, we may use the
-         *      Molodensky approximation as a shortcut (if the desired accuracy allows).
-         *
-         *   2) Even if we really go through the XYZ coordinates without Molodensky approximation, there is
-         *      at least 9 different ways to name this operation depending on whether the source and target
-         *      CRS are geocentric or geographic, 2- or 3-dimensional, whether there is a translation or not,
-         *      the rotation sign, etc. We try to use the most specific name if we can find one, and fallback
-         *      on an arbitrary name only in last resort.
-         */
-        MathTransform before = null, after = null;
-        ParameterValueGroup parameters;
-        OperationMethod method = null;
-        if (identifier == DATUM_SHIFT || identifier == ELLIPSOID_CHANGE) {
             /*
-             * If the transform can be represented by a single coordinate operation, returns that operation.
+             * Conceptually, all transformations below could be done by first converting from source coordinate
+             * system to geocentric Cartesian coordinates (X,Y,Z), apply an affine transform represented by the
+             * datum shift matrix, then convert from the (X′,Y′,Z′) coordinates to the target coordinate system.
+             * However, there are exceptions to this path:
+             *
+             *   1) Conversion from ellipsoidal to spherical CS can skip the Cartesian step for performance.
+             *   2) Transformation between ellipsoidal CS may use the Molodensky approximation as a shortcut.
+             *   3) Even when really going through the XYZ coordinates, the name of that operation depends on
+             *      whether the source and target CRS are geocentric or geographic, 2- or 3-dimensional,
+             *      whether there is a translation, the rotation sign, etc.
+             *
              * Possible operations are:
              *
              *    - Position Vector transformation (in geocentric, geographic-2D or geographic-3D domains)
              *    - Geocentric translation         (in geocentric, geographic-2D or geographic-3D domains)
              *    - [Abridged] Molodensky          (as an approximation of geocentric translation)
              *    - Identity                       (if the desired accuracy is so large than we can skip datum shift)
-             *
-             * If both CS are ellipsoidal but with different number of dimensions, then a three-dimensional
-             * operation is used and `DefaultMathTransformFactory` will add an ellipsoidal height on-the-fly.
-             * We let the transform factory do this work instead of adding an intermediate "geographic 2D
-             * to 3D" operation here because the transform factory works with normalized CS, which avoid the
-             * need the search in which dimension to add the ellipsoidal height (it should always be last,
-             * but SIS is tolerant to unusual axis order).
              */
+            datumShift = (sourceDatum instanceof DefaultGeodeticDatum) ?
+                    ((DefaultGeodeticDatum) sourceDatum).getPositionVectorTransformation(targetDatum, areaOfInterest) : null;
+            identifier = (datumShift != null) ? DATUM_SHIFT : ELLIPSOID_CHANGE;
+            var builder = new MathTransformContext(factorySIS.getMathTransformFactory(), sourceDatum, targetDatum);
+            builder.setSourceAxes(sourceCS, sourceDatum.getEllipsoid());
+            builder.setTargetAxes(targetCS, targetDatum.getEllipsoid());
             parameters = GeocentricAffine.createParameters(sourceCS, targetCS, datumShift,
                                             DatumShiftMethod.forAccuracy(desiredAccuracy));
-            if (parameters == null) {
-                /*
-                 * Failed to select a coordinate operation. Maybe because the coordinate system types are not the same.
-                 * Convert unconditionally to XYZ geocentric coordinates and apply the datum shift in that CS space.
-                 */
-                if (datumShift != null) {
-                    parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);
-                } else {
-                    parameters = Affine.identity(3);                        // Dimension of geocentric CRS.
-                }
-                final CoordinateSystem normalized = CommonCRS.WGS84.geocentric().getCoordinateSystem();
-                before = context.createCoordinateSystemChange(sourceCS, normalized, sourceDatum.getEllipsoid());
-                after  = context.createCoordinateSystemChange(normalized, targetCS, targetDatum.getEllipsoid());
-                context.setSourceAxes(normalized, null);
-                context.setTargetAxes(normalized, null);
-                /*
-                 * The name of the `parameters` group determines the `OperationMethod` later in this method.
-                 * We cannot leave that name to "Affine" if `before` or `after` transforms are not identity.
-                 * Note: we check for identity transforms instead of relaxing to general `LinearTransform`
-                 * because otherwise, we would have to update values declared in `parameters`. It is doable
-                 * but not done yet.
-                 */
-                if (!(before.isIdentity() && after.isIdentity())) {
-                    method = LooselyDefinedMethod.AFFINE_GEOCENTRIC;
-                }
-            }
-        } else if (identifier == GEOCENTRIC_CONVERSION) {
-            /*
-             * Geographic ↔︎ Geocentric conversion.
-             */
-            final ParameterDescriptorGroup descriptor;
-            if (isGeographicToGeocentric) {
-                descriptor = GeographicToGeocentric.PARAMETERS;
+            if (parameters != null) {
+                builder.setParameters(parameters, false);
+                transform = builder.create();
             } else {
-                descriptor = GeocentricToGeographic.PARAMETERS;
+                transform = builder.createAffineGeocentric(datumShift);
             }
-            parameters = descriptor.createValue();
-        } else {
-            /*
-             * Coordinate system change (including change in the number of dimensions) without datum shift.
-             */
-            final int sourceDim = sourceCS.getDimension();
-            final int targetDim = targetCS.getDimension();
-            if (sourceDim == 2 && targetDim == 3 && sourceCS instanceof EllipsoidalCS) {
-                parameters = Geographic2Dto3D.PARAMETERS.createValue();
-            } else if (sourceDim == 3 && targetDim == 2 && targetCS instanceof EllipsoidalCS) {
-                parameters = Geographic3Dto2D.PARAMETERS.createValue();
-            } else {
-                parameters = Affine.identity(targetDim);
-                /*
-                 * "Coordinate system conversion" needs the ellipsoid associated to the ellipsoidal coordinate system,
-                 * if any. If none or both coordinate systems are ellipsoidal, then the ellipsoid will be ignored.
-                 */
-                var ellipsoid = (sourceCS instanceof EllipsoidalCS ? sourceDatum : targetDatum).getEllipsoid();
-                var builder   = CoordinateOperations.builder(mtFactory, Constants.COORDINATE_SYSTEM_CONVERSION);
-                builder.setSourceAxes(sourceCS, ellipsoid);
-                builder.setTargetAxes(targetCS, ellipsoid);
-                before = builder.create();
-                method = builder.getMethod().orElse(null);
-                context.setSourceAxes(targetCS, null);
-            }
-        }
-        /*
-         * Transform between differents datums using Bursa Wolf parameters. The Bursa Wolf parameters are used
-         * with "standard" geocentric CS, i.e. with X axis towards the prime meridian, Y axis towards East and
-         * Z axis toward North, unless the Molodensky approximation is used. The following steps are applied:
-         *
-         *     source CRS                        →
-         *     normalized CRS with source datum  →
-         *     normalized CRS with target datum  →
-         *     target CRS
-         *
-         * Those steps may be either explicit with the `before` and `after` transforms, or implicit with the
-         * Context parameter. The operation name is inferred from the parameters, unless a method has been
-         * specified in advance.
-         */
-        context.setParameters(parameters, false);
-        MathTransform transform = context.create();
-        if (method == null) {
-            method = context.getMethod().orElse(null);
-        }
-        if (before != null) {
-            parameters = null;      // Providing parameters would be misleading because they apply to only a step of the operation.
-            transform = mtFactory.createConcatenatedTransform(before, transform);
-            if (after != null) {
-                transform = mtFactory.createConcatenatedTransform(transform, after);
-            }
+            method     = builder.getMethod();
+            parameters = builder.parametersForMetadata();
         }
         /*
          * Adjust the accuracy information if the datum shift has been computed by an indirect path.
@@ -693,7 +579,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (accuracy != null) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, accuracy);
         }
-        return asList(createFromMathTransform(properties, sourceCRS, targetCRS, transform, method, parameters, null));
+        return asList(createFromMathTransform(properties, sourceCRS, targetCRS, transform, method.orElse(null), parameters, null));
     }
 
     /**

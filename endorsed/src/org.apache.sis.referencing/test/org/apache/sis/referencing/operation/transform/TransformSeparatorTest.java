@@ -278,8 +278,8 @@ public final class TransformSeparatorTest extends TestCase {
     @Test
     public void testConcatenatedTransform() throws FactoryException {
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
-        final TransformSeparator s = new TransformSeparator(EllipsoidToCentricTransform.createGeodeticConversion(
-                factory, HardCodedDatum.WGS84.getEllipsoid(), false), factory);
+        final var s = new TransformSeparator(EllipsoidToCentricTransform.createGeodeticConversion(
+                                    factory, HardCodedDatum.WGS84.getEllipsoid(), false), factory);
 
         s.addSourceDimensions(0, 1);
         s.addTargetDimensions(0, 1);

@@ -122,7 +122,7 @@ public final class Features extends Static {
      *       result type} is another operation, then the above check is performed recursively.</li>
      * </ul>
      *
-     * @param  type  the data type to express as an attribute type.
+     * @param  type  the data type to express as an attribute type, or {@code null}.
      * @return the attribute type, or empty if this method cannot find any.
      *
      * @since 1.1
@@ -144,7 +144,7 @@ public final class Features extends Static {
      *       result type} is another operation, then the above check is performed recursively.</li>
      * </ul>
      *
-     * @param  type  the data type to express as an attribute type.
+     * @param  type  the data type to express as an attribute type, or {@code null}.
      * @return the association role, or empty if this method cannot find any.
      *
      * @since 1.4

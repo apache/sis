@@ -28,6 +28,8 @@
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>dataset</word>
+            <word>denormalization</word>
             <word>genericity</word>
             <word>Geopackage</word>
             <word>transformative</word>

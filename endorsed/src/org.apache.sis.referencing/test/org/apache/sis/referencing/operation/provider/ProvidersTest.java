@@ -69,6 +69,8 @@ public final class ProvidersTest extends TestCase {
             GeographicToTopocentric.class,
             Geographic3Dto2D.class,
             Geographic2Dto3D.class,
+            Spherical3Dto2D.class,
+            Spherical2Dto3D.class,
             Molodensky.class,
             AbridgedMolodensky.class,
             PseudoPlateCarree.class,

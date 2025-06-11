@@ -20,11 +20,14 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -40,7 +43,7 @@ import org.apache.sis.measure.Units;
  *
  * <h2>Default values to verify</h2>
  * This class assumes the following default values.
- * Subclasses should verify if those default values are suitable from them:
+ * Subclasses should verify if those default values are suitable for them:
  *
  * <ul>
  *   <li>{@link #getOperationType()} defaults to {@link org.opengis.referencing.operation.Transformation}.</li>
@@ -173,6 +176,46 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     }
 
     /**
+     * Creates a source ellipsoid from the given parameter values.
+     * The axis lengths are read from the parameters identified by {@link #SRC_SEMI_MAJOR} and {@link #SRC_SEMI_MINOR}.
+     * An arbitrary ellipsoid name is used. The returned ellipsoid should be used only for the time needed for building
+     * the math transform (because the returned ellipsoid lacks metadata).
+     *
+     * @param  values   the parameters from which to get the axis lengths and unit.
+     * @param  context  the context of parameter values, or {@code null} if none.
+     * @return a temporary source ellipsoid to use for creating the math transform.
+     * @throws ClassCastException if the unit of measurement of an axis length parameter is not linear.
+     */
+    public static Ellipsoid getSourceEllipsoid(final Parameters values, final Context context) {
+        if (context instanceof DefaultMathTransformFactory.Context) {
+            // TODO: move getSourceEllipsoid() in `Context` interface with `Optional` return value.
+            Ellipsoid c = ((DefaultMathTransformFactory.Context) context).getSourceEllipsoid();
+            if (c != null) return c;
+        }
+        return getEllipsoid("source", values, SRC_SEMI_MAJOR, SRC_SEMI_MINOR);
+    }
+
+    /**
+     * Creates a target ellipsoid from the given parameter values.
+     * The axis lengths are read from the parameters identified by {@link #TGT_SEMI_MAJOR} and {@link #TGT_SEMI_MINOR}.
+     * An arbitrary ellipsoid name is used. The returned ellipsoid should be used only for the time needed for building
+     * the math transform (because the returned ellipsoid lacks metadata).
+     *
+     * @param  values   the parameters from which to get the axis lengths and unit.
+     * @param  context  the context of parameter values, or {@code null} if none.
+     * @return a temporary target ellipsoid to use for creating the math transform.
+     * @throws ClassCastException if the unit of measurement of an axis length parameter is not linear.
+     */
+    public static Ellipsoid getTargetEllipsoid(final Parameters values, final Context context) {
+        if (context instanceof DefaultMathTransformFactory.Context) {
+            // TODO: move getTargetEllipsoid() in `Context` interface with `Optional` return value.
+            Ellipsoid c = ((DefaultMathTransformFactory.Context) context).getTargetEllipsoid();
+            if (c != null) return c;
+        }
+        return getEllipsoid("target", values, TGT_SEMI_MAJOR, TGT_SEMI_MINOR);
+    }
+
+    /**
      * Creates a math transform from the specified group of parameter values.
      * This method wraps the affine operation into Geographic/Geocentric conversions.
      *
@@ -191,9 +234,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
          * parameters created by above method call.
          */
         MathTransform toGeocentric = EllipsoidToCentricTransform.createGeodeticConversion(factory,
-                pv.doubleValue(SRC_SEMI_MAJOR),
-                pv.doubleValue(SRC_SEMI_MINOR),
-                Units.METRE,
+                DefaultEllipsoid.castOrCopy(getSourceEllipsoid(pv, context)).convertTo(Units.METRE),
                 context.getSourceDimensions().orElse(minSourceDimension) >= 3,
                 EllipsoidToCentricTransform.TargetType.CARTESIAN);
         /*
@@ -201,9 +242,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
          * because this is the unit of the Geocentric CRS used above.
          */
         MathTransform toGeographic = EllipsoidToCentricTransform.createGeodeticConversion(factory,
-                pv.doubleValue(TGT_SEMI_MAJOR),
-                pv.doubleValue(TGT_SEMI_MINOR),
-                Units.METRE,
+                DefaultEllipsoid.castOrCopy(getTargetEllipsoid(pv, context)).convertTo(Units.METRE),
                 context.getTargetDimensions().orElse(minSourceDimension) >= 3,
                 EllipsoidToCentricTransform.TargetType.CARTESIAN);
         try {

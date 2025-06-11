@@ -737,9 +737,14 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
         }
         try {
             if (handler == null || (op = handler.peek()) == null) {
-                final AuthorityFactory registry = USE_EPSG_FACTORY ? CRS.getAuthorityFactory(Constants.EPSG) : null;
-                op = createOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
-                        (CoordinateOperationAuthorityFactory) registry : null, context).createOperation(sourceCRS, targetCRS);
+                CoordinateOperationAuthorityFactory registry = null;
+                if (USE_EPSG_FACTORY) {
+                    final AuthorityFactory candidate = CRS.getAuthorityFactory(Constants.EPSG);
+                    if (candidate instanceof CoordinateOperationAuthorityFactory) {
+                        registry = (CoordinateOperationAuthorityFactory) candidate;
+                    }
+                }
+                op = createOperationFinder(registry, context).createOperation(sourceCRS, targetCRS);
             }
         } finally {
             if (handler != null) {

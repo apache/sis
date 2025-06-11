@@ -438,7 +438,7 @@ public final class FeatureQueryTest extends TestCase {
                             virtualProjection(ff.property("valueMissing", Integer.class), "renamed1"));
         assertXPathsEqual("value1", "valueMissing");
 
-        var exception = assertThrows(DataStoreContentException.class, this::executeAndGetFirst);
+        var exception = assertThrows(UnsupportedQueryException.class, this::executeAndGetFirst);
         assertMessageContains(exception);
     }
 }

@@ -16,8 +16,10 @@
  */
 package org.apache.sis.feature.builder;
 
+import java.util.HashMap;
 import java.util.Objects;
 import org.opengis.util.GenericName;
+import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
@@ -53,6 +55,41 @@ final class OperationWrapper extends PropertyTypeBuilder {
      */
     @Override
     public AbstractIdentifiedType build() {
+        return operation;
+    }
+
+    /**
+     * Returns the operation or an updated version of the operation.
+     * Updated versions are created for some kinds of operation, described below.
+     * Otherwise, this method returns the same value as {@link #build()}.
+     *
+     * <h4>Updated operations</h4>
+     * If the operation is a link to another property of the feature to build, the result type
+     * of the original operation is replaced by the target of the link in the feature to build.
+     * Even if the attribute name is the same, sometime the value class or some characteristics
+     * are different. Similar updates may also be applied to other kinds of operation.
+     *
+     * @throws IllegalStateException if the builder contains inconsistent information.
+     */
+    @Override
+    final AbstractIdentifiedType buildForFeature() {
+        final FeatureTypeBuilder owner = owner();
+        if (operation instanceof AbstractOperation) {
+            final var op = (AbstractOperation) operation;
+            final var dependencies = new HashMap<String, AbstractIdentifiedType>();
+            for (final String name : op.getDependencies()) {
+                final PropertyTypeBuilder target;
+                try {
+                    target = owner.getProperty(name);
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+                if (target != null) {
+                    dependencies.put(name, target.build());
+                }
+            }
+            return op.updateDependencies(dependencies);
+        }
         return operation;
     }
 

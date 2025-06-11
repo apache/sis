@@ -99,7 +99,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.parameter.ParameterBuilder
  *
@@ -651,7 +651,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Returns the builder for the property of the given name. The given name does not need to contains all elements
-     * of a {@link org.opengis.util.ScopedName}; it is okay to specify only the tip (for example {@code "myName"}
+     * of a {@link org.opengis.util.ScopedName}. It is okay to specify only the tip (for example {@code "myName"}
      * instead of {@code "myScope:myName"}) provided that ignoring the name head does not create ambiguity.
      *
      * @param  name   name of the property to search.
@@ -946,7 +946,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
             int identifierCursor = 0;
             for (int i=0; i<numSpecified; i++) {
                 final PropertyTypeBuilder builder = properties.get(i);
-                final AbstractIdentifiedType instance = builder.build();
+                final AbstractIdentifiedType instance = builder.buildForFeature();
                 propertyTypes[propertyCursor] = instance;
                 /*
                  * Collect the attributes to use as identifier components while we loop over all properties.

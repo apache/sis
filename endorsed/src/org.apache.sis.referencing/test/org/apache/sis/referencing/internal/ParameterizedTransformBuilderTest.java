@@ -47,7 +47,7 @@ public final class ParameterizedTransformBuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, MathTransformProvider.Context)}
+     * Tests {@link ParameterizedTransformBuilder#swapAndScaleAxes(MathTransform)}
      * with different number of dimensions.
      *
      * @throws FactoryException if the transform construction failed.

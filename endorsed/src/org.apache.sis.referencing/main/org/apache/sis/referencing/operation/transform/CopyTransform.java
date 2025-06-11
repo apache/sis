@@ -59,8 +59,8 @@ final class CopyTransform extends AbstractLinearTransform {
      *
      * @param srcDim   the dimension of source coordinates.
      *                 Must be greater than the highest value in {@code indices}.
-     * @param indices  the indices of coordinates to copy in the source array.
-     *                 The length of this array is the target dimension.
+     * @param indices  the indices of coordinates to copy in the target array.
+     *                 The length of this array is the number of target dimensions.
      */
     CopyTransform(final int srcDim, final int[] indices) {
         this.srcDim  = srcDim;
@@ -170,9 +170,8 @@ final class CopyTransform extends AbstractLinearTransform {
      */
     @Override
     public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
-        final int srcDim, dstDim;
-        final int[] indices = this.indices;
-        int srcInc = srcDim = this.srcDim;
+        final int dstDim;
+        int srcInc = srcDim;
         int dstInc = dstDim = indices.length;
         if (srcPts == dstPts) {
             switch (IterationStrategy.suggest(srcOff, srcDim, dstOff, dstDim, numPts)) {
@@ -220,9 +219,8 @@ final class CopyTransform extends AbstractLinearTransform {
      */
     @Override
     public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
-        final int srcDim, dstDim;
-        final int[] indices = this.indices;
-        int srcInc = srcDim = this.srcDim;
+        final int dstDim;
+        int srcInc = srcDim;
         int dstInc = dstDim = indices.length;
         if (srcPts == dstPts) {
             switch (IterationStrategy.suggest(srcOff, srcDim, dstOff, dstDim, numPts)) {
@@ -253,7 +251,7 @@ final class CopyTransform extends AbstractLinearTransform {
             }
         } else {
             // General case: there is a risk that two coordinates overlap.
-            final float[] buffer = new float[dstDim];
+            final var buffer = new float[dstDim];
             while (--numPts >= 0) {
                 for (int i=0; i<dstDim; i++) {
                     buffer[i] = srcPts[srcOff + indices[i]];
@@ -270,8 +268,6 @@ final class CopyTransform extends AbstractLinearTransform {
      */
     @Override
     public void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
-        final int[] indices = this.indices;
-        final int srcDim = this.srcDim;
         final int dstDim = indices.length;
         while (--numPts >= 0) {
             for (int i=0; i<dstDim; i++) {
@@ -286,8 +282,6 @@ final class CopyTransform extends AbstractLinearTransform {
      */
     @Override
     public void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
-        final int[] indices = this.indices;
-        final int srcDim = this.srcDim;
         final int dstDim = indices.length;
         while (--numPts >= 0) {
             for (int i=0; i<dstDim; i++) {
@@ -336,7 +330,6 @@ final class CopyTransform extends AbstractLinearTransform {
          *           inverse = this;
          *       } else { ... }
          */
-        final int srcDim = this.srcDim;
         final int dstDim = indices.length;
         final int[] reverse = new int[srcDim];
         Arrays.fill(reverse, -1);
@@ -374,7 +367,7 @@ final class CopyTransform extends AbstractLinearTransform {
          */
         CopyTransform copyInverse = this;
         if (!Arrays.equals(reverse, indices)) {
-            copyInverse = new CopyTransform(indices.length, reverse);
+            copyInverse = new CopyTransform(dstDim, reverse);
             copyInverse.inverse = this;
         }
         return copyInverse;
@@ -393,7 +386,7 @@ final class CopyTransform extends AbstractLinearTransform {
      */
     @Override
     protected boolean equalsSameClass(final Object object) {
-        final CopyTransform that = (CopyTransform) object;
+        final var that = (CopyTransform) object;
         return srcDim == that.srcDim && Arrays.equals(indices, that.indices);
     }
 }

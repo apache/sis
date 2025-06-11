@@ -17,7 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import java.util.Collection;
+import java.util.Set;
 import java.util.Iterator;
 import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -28,6 +28,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.privy.CollectionsExt;
 
 
 /**
@@ -89,8 +90,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
             }
             isFeatureAssociation = false;
         } else {
-            isFeatureAssociation = (components instanceof DefaultAssociationRole)
-                    && ((DefaultAssociationRole) components).getMaximumOccurs() == 1;
+            isFeatureAssociation = (components instanceof DefaultAssociationRole);
             if (!isFeatureAssociation) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalPropertyType_2,
                                                    components.getName(), components.getClass()));
@@ -119,6 +119,32 @@ final class GroupAsPolylineOperation extends AbstractOperation {
     @Override
     public ParameterDescriptorGroup getParameters() {
         return EMPTY_PARAMS;
+    }
+
+    /**
+     * Returns the names of feature properties that this operation needs for performing its task.
+     */
+    @Override
+    public Set<String> getDependencies() {
+        return Set.of(propertyName);
+    }
+
+    /**
+     * Returns the same operation but using different properties as inputs.
+     *
+     * @param  dependencies  the new properties to use as operation inputs.
+     * @return the new operation, or {@code this} if unchanged.
+     */
+    @Override
+    public AbstractOperation updateDependencies(final Map<String, AbstractIdentifiedType> dependencies) {
+        final AbstractIdentifiedType target = dependencies.get(propertyName);
+        if (target != null) {
+            final AbstractOperation op = create(inherit(), geometries.library, target);
+            if (!equals(op)) {
+                return FeatureOperations.POOL.unique(op);
+            }
+        }
+        return this;
     }
 
     /**
@@ -191,10 +217,10 @@ final class GroupAsPolylineOperation extends AbstractOperation {
          */
         private G compute() {
             /*
-             * Cast to `Collection` should be safe if the constructor
-             * ensured that `Features.getMaximumOccurs(property) > 1`.
+             * The property value is usually cast directly to `Collection` when the
+             * constructor ensured that `Features.getMaximumOccurs(property) > 1`.
              */
-            Iterator<?> paths = ((Collection<?>) feature.getPropertyValue(propertyName)).iterator();
+            Iterator<?> paths = CollectionsExt.toCollection(feature.getPropertyValue(propertyName)).iterator();
             if (isFeatureAssociation) {
                 final Iterator<?> it = paths;
                 paths = new Iterator<Object>() {
@@ -232,7 +258,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
     @Override
     public boolean equals(final Object obj) {
         if (super.equals(obj)) {
-            final GroupAsPolylineOperation that = (GroupAsPolylineOperation) obj;
+            final var that = (GroupAsPolylineOperation) obj;
             return propertyName.equals(that.propertyName) &&
                    geometries.equals(that.geometries);
         }

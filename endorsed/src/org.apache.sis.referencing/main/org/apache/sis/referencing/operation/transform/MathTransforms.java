@@ -648,15 +648,28 @@ public final class MathTransforms extends Static {
     }
 
     /**
+     * Returns whether the given object is a linear transform.
+     * This method is defined here for keeping it consistent with {@link #getMatrix(MathTransform)}.
+     *
+     * @param  transform  the transform to test, or {@cod null}.
+     * @return whether the given transform is non-null and linear.
+     */
+    static boolean isLinear(final Object transform) {
+        return (transform instanceof LinearTransform) ||
+               (transform instanceof AffineTransform) ||
+               (transform instanceof OnewayLinearTransform);
+    }
+
+    /**
      * If the given transform is linear, returns its coefficients as a matrix.
      * More specifically:
      *
      * <ul>
      *   <li>If the given transform is an instance of {@link LinearTransform},
      *       returns {@link LinearTransform#getMatrix()}.</li>
-     *   <li>Otherwise if the given transform is an instance of {@link AffineTransform},
+     *   <li>Otherwise, if the given transform is an instance of {@link AffineTransform},
      *       returns its coefficients in a {@link org.apache.sis.referencing.operation.matrix.Matrix3} instance.</li>
-     *   <li>Otherwise returns {@code null}.</li>
+     *   <li>Otherwise, returns {@code null}.</li>
      * </ul>
      *
      * @param  transform  the transform for which to get the matrix, or {@code null}.
@@ -669,6 +682,9 @@ public final class MathTransforms extends Static {
     public static Matrix getMatrix(final MathTransform transform) {
         if (transform instanceof LinearTransform) {
             return ((LinearTransform) transform).getMatrix();
+        }
+        if (transform instanceof OnewayLinearTransform) {       // Undocumented (package-private)
+            return ((OnewayLinearTransform) transform).delegate.getMatrix();
         }
         if (transform instanceof AffineTransform) {
             return AffineTransforms2D.toMatrix((AffineTransform) transform);

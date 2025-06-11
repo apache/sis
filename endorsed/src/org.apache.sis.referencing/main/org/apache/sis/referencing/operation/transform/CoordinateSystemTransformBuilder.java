@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
-import java.util.ArrayList;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -30,11 +29,17 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.OperationNotFoundException;
+import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.referencing.operation.provider.Spherical2Dto3D;
+import org.apache.sis.referencing.operation.provider.Spherical3Dto2D;
+import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
+import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
 import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
 import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
 import org.apache.sis.referencing.privy.WKTUtilities;
@@ -46,6 +51,9 @@ import org.apache.sis.referencing.privy.CoordinateOperations;
 
 /**
  * Builder of transforms between coordinate systems.
+ * This class performs only axis swapping, unit conversions and change of coordinate system type.
+ * This class does not handle datum shifts. All <abbr>CRS</abbr> associated to the <abbr>CS</abbr>
+ * must use the same datum.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -56,11 +64,52 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
     private CoordinateSystem source, target;
 
     /**
-     * The ellipsoid of the source or the target.
-     * Only one of the source or target should have an ellipsoid,
-     * because this builder is not for datum change.
+     * The ellipsoid of the source and/or the target. Usually, only one of the source or target
+     * is associated to an ellipsoid. If an ellipsoid is specified for both source and target,
+     * then it must be the same ellipsoid because this builder is not for datum change.
      */
     private Ellipsoid ellipsoid;
+
+    /**
+     * The parameters used for creating the transform, or {@code null} if unspecified.
+     *
+     * @see #parameters()
+     * @see #setParameters(MathTransform, OperationMethod, ParameterValueGroup)
+     */
+    private ParameterValueGroup parameters;
+
+    /**
+     * The {@link MathTransform} to use as the source of parameters, or {@code null} if none.
+     * This is used as a fallback if {@link #parameters} is null.
+     *
+     * @see #parameters()
+     * @see #setParameters(MathTransform, OperationMethod, ParameterValueGroup)
+     */
+    private Parameterized parameterized;
+
+    /**
+     * A code identifying the type of parameters. Values can be:
+     *
+     * <ul>
+     *   <li>0: parameters are not set.</li>
+     *   <li>1: identity transform.</li>
+     *   <li>2: linear transform.</li>
+     *   <li>3: non-linear transform.</li>
+     * </ul>
+     *
+     * THe {@link #provider} and {@link #parameters} fields should be updated together
+     * and only with strictly increasing {@code parameterType} values. If parameters
+     * are specified twice for the same type, the first occurrence prevails.
+     *
+     * @see #parameters()
+     * @see #setParameters(MathTransform, OperationMethod, ParameterValueGroup)
+     */
+    private byte parametersType;
+
+    /**
+     * Values for the {@link #parametersType} field.
+     */
+    private static final byte IDENTITY = 1, LINEAR = 2, CONVERSION = 3;
 
     /**
      * Creates a new builder.
@@ -73,6 +122,9 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
 
     /**
      * Sets the source coordinate system.
+     * The ellipsoid shall be either null or the same as the target.
+     *
+     * @throws IllegalStateException if more than one ellipsoid is specified.
      */
     @Override
     public void setSourceAxes(CoordinateSystem cs, Ellipsoid ellipsoid) {
@@ -82,6 +134,9 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
 
     /**
      * Sets the target coordinate system.
+     * The ellipsoid shall be either null or the same as the source.
+     *
+     * @throws IllegalStateException if more than one ellipsoid is specified.
      */
     @Override
     public void setTargetAxes(CoordinateSystem cs, Ellipsoid ellipsoid) {
@@ -90,7 +145,10 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
     }
 
     /**
-     * Sets the ellipsoid if it was not already set.
+     * Sets the unique ellipsoid.
+     *
+     * @param  value  the ellipsoid, or {@code null} if unspecified.
+     * @throws IllegalStateException if more than one ellipsoid is specified.
      */
     private void setEllipsoid(final Ellipsoid value) {
         if (value != null) {
@@ -102,24 +160,31 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
     }
 
     /**
-     * Unsupported operation because this builder has no parameters.
+     * Returns the parameters for creating the transform. If possible, the parameter values will be set
+     * to the values actually used, but this is not guaranteed (this is not required by method contract).
+     * This information is valid after the {@link #create()} method has been invoked.
      */
     @Override
     public ParameterValueGroup parameters() {
-        throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForProperty_1, "method"));
-    }
-
-    /**
-     * Adds the components of the given coordinate system in the specified list.
-     * This method may invoke itself recursively if there is nested compound CS.
-     * The returned list is always a copy and can be safely modified.
-     */
-    private static void getComponents(final CoordinateSystem cs, final List<CoordinateSystem> addTo) {
-        if (cs instanceof DefaultCompoundCS) {
-            addTo.addAll(((DefaultCompoundCS) cs).getComponents());
-        } else {
-            addTo.add(cs);
+        if (parameters == null) {
+            if (parameterized != null) {
+                parameters = parameterized.getParameterValues();
+            }
+            if (parameters == null) {
+                OperationMethod method = provider;
+                if (method == null) {
+                    method = Affine.provider();
+                }
+                /*
+                 * This is either a parameterless conversion (for example, from spherical to Cartesian coordinate system),
+                 * in which case there is no parameters to set, or an affine transform. In the latter case, the default is
+                 * the identity transform, which is often correct. But even if not exact, an identity affine is still okay
+                 * because this method contract is to provide an initial set of parameters to be filled by the user.
+                 */
+                parameters = method.getParameters().createValue();
+            }
         }
+        return parameters;
     }
 
     /**
@@ -137,32 +202,9 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
                     Errors.Keys.MissingValueForProperty_1,
                     (source == null) ? "source" : "target"));
         }
-        if (ellipsoid != null) {
-            final boolean isEllipsoidalSource = (source instanceof EllipsoidalCS);
-            if (isEllipsoidalSource != (target instanceof EllipsoidalCS)) {
-                /*
-                 * For now we support only conversion between EllipsoidalCS and CartesianCS.
-                 * But future Apache SIS versions could add support for conversions between
-                 * EllipsoidalCS and SphericalCS or other coordinate systems.
-                 */
-                if ((isEllipsoidalSource ? target : source) instanceof CartesianCS) {
-                    final var context = CoordinateOperations.builder(factory,
-                            isEllipsoidalSource ? GeographicToGeocentric.NAME
-                                                : GeocentricToGeographic.NAME);
-                    if (isEllipsoidalSource) {
-                        context.setSourceAxes(source, ellipsoid);
-                        context.setTargetAxes(target, null);
-                    } else {
-                        context.setSourceAxes(source, null);
-                        context.setTargetAxes(target, ellipsoid);
-                    }
-                    return context.create();
-                }
-            }
-        }
-        final var sources = new ArrayList<CoordinateSystem>(3); getComponents(source, sources);
-        final var targets = new ArrayList<CoordinateSystem>(3); getComponents(target, targets);
-        final int count   = sources.size();
+        final List<CoordinateSystem> sources = CoordinateSystems.getSingleComponents(source);
+        final List<CoordinateSystem> targets = CoordinateSystems.getSingleComponents(target);
+        final int count = sources.size();
         /*
          * Current implementation expects the same number of components, in the same order
          * and with the same number of dimensions in each component. A future version will
@@ -173,40 +215,90 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
             final int dimension = source.getDimension();
             int firstAffectedCoordinate = 0;
             for (int i=0; i<count; i++) {
-                final CoordinateSystem s = sources.get(i);
-                final CoordinateSystem t = targets.get(i);
-                final int sd = s.getDimension();
-                if (t.getDimension() != sd) {
+                final CoordinateSystem stepSource = sources.get(i);
+                final CoordinateSystem stepTarget = targets.get(i);
+                final int sourceDim = stepSource.getDimension();
+                if (stepTarget.getDimension() != sourceDim) {
                     result = null;
                     break;
                 }
-                final MathTransform subTransform = factory.createPassThroughTransform(
-                        firstAffectedCoordinate,
-                        single(s, t),
-                        dimension - (firstAffectedCoordinate + sd));
-                if (result == null) {
-                    result = subTransform;
-                } else {
-                    result = factory.createConcatenatedTransform(result, subTransform);
+                MathTransform step;
+                try {
+                    step = single(stepSource, stepTarget);
+                } catch (IllegalArgumentException | IncommensurableException e) {
+                    throw new OperationNotFoundException(operationNotFound(stepSource, stepTarget), e);
                 }
-                firstAffectedCoordinate += sd;
+                final int numTrailingCoordinates = dimension - (firstAffectedCoordinate + sourceDim);
+                step = factory.createPassThroughTransform(firstAffectedCoordinate, step, numTrailingCoordinates);
+                if (result == null) {
+                    result = step;
+                } else {
+                    result = factory.createConcatenatedTransform(result, step);
+                }
+                firstAffectedCoordinate += sourceDim;
             }
         }
-        // If we couldn't process components separately, try with the compound CS as a whole.
-        if (result == null) {
+        /*
+         * If we couldn't process components separately, try with the CS as a whole.
+         * It may be a `CompoundCS` (in which case we can still apply axis swapping)
+         * or it may be standard CS with different number of dimensions.
+         */
+        if (result == null) try {
             result = single(source, target);
+        } catch (IllegalArgumentException | IncommensurableException e) {
+            throw new OperationNotFoundException(operationNotFound(source, target), e);
         }
         return unique(result);
     }
 
     /**
      * Implementation of {@code create(…)} for a single component.
-     * This implementation can handle changes of coordinate system type between
+     * This implementation can handle changes of coordinate system type between {@link EllipsoidalCS},
      * {@link CartesianCS}, {@link SphericalCS}, {@link CylindricalCS} and {@link PolarCS}.
+     *
+     * @param  stepSource  source coordinate system of the step to build.
+     * @param  stepTarget  target coordinate system of the step to build.
+     * @return transform between the given coordinate systems (never null in current implementation).
+     * @throws IllegalArgumentException if the <abbr>CS</abbr> are not compatible, or axes do not match.
+     * @throws IncommensurableException if the units are not compatible, or the conversion is non-linear.
+     * @throws FactoryException if a factory method failed.
      */
     private MathTransform single(final CoordinateSystem stepSource,
-                                 final CoordinateSystem stepTarget) throws FactoryException
+                                 final CoordinateSystem stepTarget)
+            throws FactoryException, IncommensurableException
     {
+        /*
+         * Cases that require an ellipsoid. All those cases are delegated to another operation method
+         * in the transform factory. The check for axis order and unit of measurement will be done by
+         * public methods of the factory, which may invoke this `CoordinateSystemTransformBuilder`
+         * recursively but with a different pair of coordinate systems.
+         */
+        if (ellipsoid != null) {
+            if (stepSource instanceof EllipsoidalCS) {
+                if (stepTarget instanceof EllipsoidalCS) {
+                    return addOrRemoveVertical(stepSource, stepTarget, Geographic2Dto3D.NAME, Geographic3Dto2D.NAME);
+                }
+                if ((stepTarget instanceof CartesianCS || stepTarget instanceof SphericalCS)) {
+                    final var context = CoordinateOperations.builder(factory, GeographicToGeocentric.NAME);
+                    context.setSourceAxes(stepSource, ellipsoid);
+                    context.setTargetAxes(stepTarget, null);
+                    return delegate(context);
+                }
+            } else if (stepTarget instanceof EllipsoidalCS) {
+                if ((stepSource instanceof CartesianCS || stepSource instanceof SphericalCS)) {
+                    final var context = CoordinateOperations.builder(factory, GeocentricToGeographic.NAME);
+                    context.setSourceAxes(stepSource, null);
+                    context.setTargetAxes(stepTarget, ellipsoid);
+                    return delegate(context);
+                }
+            } else if (stepSource instanceof SphericalCS && stepTarget instanceof SphericalCS) {
+                return addOrRemoveVertical(stepSource, stepTarget, Spherical2Dto3D.NAME, Spherical3Dto2D.NAME);
+            }
+        }
+        /*
+         * Cases that can be done without ellipsoid. Change of axis order and unit of measurement
+         * needs to be done here. There is no `CoordinateSystemTransformBuilder` recursive calls.
+         */
         int passthrough = 0;
         CoordinateSystemTransform kernel = null;
         if (stepSource instanceof CartesianCS) {
@@ -228,32 +320,122 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
                 passthrough = 1;
             }
         }
-        Exception cause = null;
-        try {
-            if (kernel == null) {
-                return factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(stepSource, stepTarget));
-            } else if (stepSource.getDimension() == kernel.getSourceDimensions() + passthrough &&
-                       stepTarget.getDimension() == kernel.getTargetDimensions() + passthrough)
+        final MathTransform normalized, result;
+        final OperationMethod method;
+        if (kernel == null) {
+            method = Affine.provider();
+            result = factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(stepSource, stepTarget));
+            normalized = result;
+        } else {
+            if (stepSource.getDimension() != kernel.getSourceDimensions() + passthrough ||
+                stepTarget.getDimension() != kernel.getTargetDimensions() + passthrough)
             {
-                final MathTransform tr = (passthrough == 0)
-                        ? kernel.completeTransform(factory)
-                        : kernel.passthrough(factory);
-                final MathTransform before = factory.createAffineTransform(
-                        CoordinateSystems.swapAndScaleAxes(stepSource,
-                        CoordinateSystems.replaceAxes(stepSource, AxesConvention.NORMALIZED)));
-                final MathTransform after  = factory.createAffineTransform(
-                        CoordinateSystems.swapAndScaleAxes(
-                        CoordinateSystems.replaceAxes(stepTarget, AxesConvention.NORMALIZED), stepTarget));
-                final MathTransform result = factory.createConcatenatedTransform(before,
-                                             factory.createConcatenatedTransform(tr, after));
-                provider = (passthrough == 0 ? kernel.method : kernel.method3D);
-                return result;
+                throw new OperationNotFoundException(operationNotFound(stepSource, stepTarget));
             }
-        } catch (IllegalArgumentException | IncommensurableException e) {
-            cause = e;
+            final MathTransform before, after;
+            if (passthrough == 0) {
+                method     = kernel.method;
+                normalized = kernel.completeTransform(factory);
+            } else {
+                method     = kernel.method3D;
+                normalized = kernel.passthrough(factory);
+            }
+            /*
+             * Adjust for axis order an units of measurement.
+             */
+            before = factory.createAffineTransform(
+                    CoordinateSystems.swapAndScaleAxes(stepSource,
+                    CoordinateSystems.replaceAxes(stepSource, AxesConvention.NORMALIZED)));
+            after  = factory.createAffineTransform(
+                    CoordinateSystems.swapAndScaleAxes(
+                    CoordinateSystems.replaceAxes(stepTarget, AxesConvention.NORMALIZED), stepTarget));
+            result = factory.createConcatenatedTransform(before,
+                     factory.createConcatenatedTransform(normalized, after));
         }
-        throw new OperationNotFoundException(Resources.format(Resources.Keys.CoordinateOperationNotFound_2,
+        setParameters(normalized, method, null);
+        return result;
+    }
+
+    /**
+     * Adds or removes the ellipsoidal height or spherical radius dimension.
+     *
+     * @param  stepSource  source coordinate system of the step to build.
+     * @param  stepTarget  target coordinate system of the step to build.
+     * @param  add         the operation method for adding the vertical dimension.
+     * @param  remove      the operation method for removing the vertical dimension.
+     * @return transform adding or removing a vertical coordinate.
+     * @throws IllegalArgumentException if the <abbr>CS</abbr> are not compatible, or axes do not match.
+     * @throws IncommensurableException if the units are not compatible, or the conversion is non-linear.
+     * @throws FactoryException if a factory method failed.
+     *
+     * @see org.apache.sis.referencing.internal.ParameterizedTransformBuilder#addOrRemoveVertical
+     */
+    private MathTransform addOrRemoveVertical(final CoordinateSystem stepSource,
+                                              final CoordinateSystem stepTarget,
+                                              final String add, final String remove)
+            throws FactoryException, IncommensurableException
+    {
+        final int change = stepTarget.getDimension() - stepSource.getDimension();
+        if (change != 0) {
+            final String method = change < 0 ? remove : add;
+            final var context = CoordinateOperations.builder(factory, method);
+            context.setSourceAxes(stepSource, ellipsoid);
+            context.setTargetAxes(stepTarget, ellipsoid);
+            return delegate(context);
+        }
+        // No change in the number of dimensions. Maybe there is axis swapping and unit conversions.
+        MathTransform step = factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(stepSource, stepTarget));
+        setParameters(step, Affine.provider(), null);
+        return step;
+    }
+
+    /**
+     * Delegates the transform creation to another builder, then remember the operation method which was used.
+     *
+     * @param  context  an initialized context on which to invoke the {@code create()} method.
+     * @return result of {@code context.create()}.
+     * @throws FactoryException if the given context cannot create the transform.
+     */
+    private MathTransform delegate(final MathTransformBuilder context) throws FactoryException {
+        final MathTransform step = context.create();
+        setParameters(step, context.getMethod().orElse(null), context.parameters());
+        return step;
+    }
+
+    /**
+     * Remembers the operation method and parameters for the given transform.
+     *
+     * @param  result  the transform that has been created.
+     * @param  method  the method, or {@code null} if unspecified.
+     * @param  values  the parameter values, or {@code null} for inferring from the method.
+     */
+    private void setParameters(final MathTransform result, final OperationMethod method, final ParameterValueGroup values) {
+        final byte type;
+        if (result.isIdentity()) {
+            type = IDENTITY;
+        } else if (MathTransforms.isLinear(result)) {
+            type = LINEAR;
+        } else {
+            type = CONVERSION;
+        }
+        if (parametersType < type) {
+            parametersType = type;
+            provider = method;
+            parameters= values;
+            if (result instanceof Parameterized) {
+                parameterized = (Parameterized) result;
+            }
+        }
+    }
+
+    /**
+     * Returns the error message for an operation not found between the coordinate systems.
+     */
+    private static String operationNotFound(final CoordinateSystem stepSource,
+                                            final CoordinateSystem stepTarget)
+    {
+        return Resources.format(Resources.Keys.CoordinateOperationNotFound_2,
                 WKTUtilities.toType(CoordinateSystem.class, stepSource.getClass()),
-                WKTUtilities.toType(CoordinateSystem.class, stepTarget.getClass())), cause);
+                WKTUtilities.toType(CoordinateSystem.class, stepTarget.getClass()));
     }
 }
