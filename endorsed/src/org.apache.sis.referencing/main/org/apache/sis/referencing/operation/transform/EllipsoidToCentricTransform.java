@@ -1103,7 +1103,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          * </ul>
          */
         @Override
-        protected void tryConcatenate(final Joiner context) throws FactoryException {
+        protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
             if (!reduce(context, +1)) {
                 super.tryConcatenate(context);
             }
@@ -1167,9 +1167,17 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @throws FactoryException if an error occurred while combining the transforms.
      */
     @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
         if (!reduce(context, -1)) {
-            super.tryConcatenate(context);
+            /*
+             * If the target coordinate system is spherical, try to combine the change
+             * of longitude values (such as unit conversion) with other affine transforms.
+             *
+             * TODO: we should allow the two optimizations. Currently, this is one of the other.
+             */
+            if (!(toSphericalCS && context.replacePassThrough(Map.of(0, 0)))) {
+                super.tryConcatenate(context);
+            }
         }
     }
 
@@ -1181,7 +1189,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @param  checkAt  relative matrix index: -1 for the forward transform, or +1 for the inverse transform.
      * @throws FactoryException if an error occurred while combining the transforms.
      */
-    private boolean reduce(final Joiner context, final int checkAt) throws FactoryException {
+    private boolean reduce(final TransformJoiner context, final int checkAt) throws FactoryException {
         return withHeight && context.removeUnusedDimensions(checkAt, VERTICAL_DIM, VERTICAL_DIM + 1, (dimension) -> {
             if (dimension != 2) {
                 return null;

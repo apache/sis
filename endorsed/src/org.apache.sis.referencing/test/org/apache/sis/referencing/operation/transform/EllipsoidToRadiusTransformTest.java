@@ -19,11 +19,14 @@ package org.apache.sis.referencing.operation.transform;
 import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -101,6 +104,24 @@ public final class EllipsoidToRadiusTransformTest extends MathTransformTestCase 
             20, 90,
             30, 32
         });
+    }
+
+    /**
+     * Tests a concatenation of transform that can be simplified by moving an offset of the longitude value.
+     */
+    @Test
+    public void testPassThrough() {
+        transform = new EllipsoidToRadiusTransform(HardCodedDatum.WGS84.getEllipsoid());
+        transform = MathTransforms.concatenate(MathTransforms.scale(2, 3), transform, MathTransforms.translation(-5, 0, 0));
+        final ConcatenatedTransform c = assertInstanceOf(ConcatenatedTransform.class, transform);
+        final EllipsoidToRadiusTransform tr2 = assertInstanceOf(EllipsoidToRadiusTransform.class, c.transform2);
+        assertEquals(0.006694379990141317, tr2.eccentricitySquared, 1E-17);
+        final Matrix tr1 = MathTransforms.getMatrix(c.transform1);
+        assertNotNull(tr1);
+        assertMatrixEquals(new Matrix3(
+                2, 0, -5,
+                0, 3,  0,
+                0, 0,  1), tr1, null, null);
     }
 
     /**

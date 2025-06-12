@@ -55,15 +55,15 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * Index of dimensions having linear units in the coordinate system identified by {@code -linearTransformPosition}.
      * This is used for optimizing the concatenation of this transform by an affine transform.
      *
-     * @see #tryConcatenate(Joiner)
+     * @see #tryConcatenate(TransformJoiner)
      */
     private final int[] linearDimensions;
 
     /**
-     * Relative index of the affine transform doing conversion of linear coordinates.
+     * Relative index of the affine transform doing conversion of linear coordinates, as -1 or +1.
      * If the inputs of this transform are linear coordinate values in a Cartesian coordinate system,
      * then this field shall be -1. If the above-cited linear coordinates are rather in the outputs,
-     * then this field shall be +1.
+     * then this field shall be +1. No other value shall be used.
      *
      * <p>The transform at the relative index {@code -linearTransformPosition} should be a mix
      * of angular and linear coordinate values. The coordinates at the positions identified by
@@ -209,10 +209,10 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * needed anyway for the conversions between radians and degrees.
      */
     @Override
-    protected final void tryConcatenate(final Joiner info) throws FactoryException {
+    protected final void tryConcatenate(final TransformJoiner context) throws FactoryException {
         // Do nothing if there is no linear transform for angular values.
-concat: if (info.isLinear(-linearTransformPosition, true)) {
-            final var linear = ExtendedPrecisionMatrix.castOrWrap(info.getMatrix(linearTransformPosition).orElse(null));
+concat: if (context.getTransform(-linearTransformPosition).map(MathTransforms::isLinear).orElse(true)) {
+            final var linear = ExtendedPrecisionMatrix.castOrWrap(context.getMatrix(linearTransformPosition));
             if (linear != null) {
                 final int n = linear.getNumRow();
                 if (n == linear.getNumCol()) {
@@ -238,20 +238,21 @@ concat: if (info.isLinear(-linearTransformPosition, true)) {
                         for (int j : linearDimensions) {
                             angular.setNumber(j, j, scale);
                         }
-                        MathTransform first = info.factory.createAffineTransform(angular);
+                        MathTransform first = context.factory.createAffineTransform(angular);
                         MathTransform other = this;
                         if (linearTransformPosition < 0) {
                             other = first;
                             first = this;
                         }
-                        first = info.factory.createConcatenatedTransform(first, other);
-                        info.replace(linearTransformPosition, first);
-                        return;
+                        first = context.concatenate(first, other);
+                        if (context.replace(linearTransformPosition, first)) {
+                            return;
+                        }
                     }
                 }
             }
         }
-        super.tryConcatenate(info);
+        super.tryConcatenate(context);
     }
 
     /**

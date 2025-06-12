@@ -62,7 +62,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see MathTransformFactory
  *
@@ -463,7 +463,6 @@ public final class MathTransforms extends Static {
                 compound = concatenate(compound, tr);
             }
         }
-        assert isValid(getSteps(compound)) : compound;
         return compound;
     }
 
@@ -485,14 +484,11 @@ public final class MathTransforms extends Static {
     {
         ArgumentChecks.ensureNonNull("tr1", tr1);
         ArgumentChecks.ensureNonNull("tr2", tr2);
-        final MathTransform tr;
         try {
-            tr = ConcatenatedTransform.create(tr1, tr2, null);
+            return ConcatenatedTransform.create(DefaultMathTransformFactory.provider().caching(false), tr1, tr2);
         } catch (FactoryException e) {
             throw new IllegalArgumentException(e);              // Should never happen actually.
         }
-        assert isValid(getSteps(tr)) : tr;
-        return tr;
     }
 
     /**
@@ -530,8 +526,8 @@ public final class MathTransforms extends Static {
     }
 
     /**
-     * Concatenates the three given transforms. This is a convenience methods doing its job
-     * as two consecutive concatenations.
+     * Concatenates the three given transforms.
+     * This is a convenience methods doing its job as two consecutive concatenations.
      *
      * @param  tr1  the first math transform.
      * @param  tr2  the second math transform.
@@ -546,7 +542,11 @@ public final class MathTransforms extends Static {
         ArgumentChecks.ensureNonNull("tr1", tr1);
         ArgumentChecks.ensureNonNull("tr2", tr2);
         ArgumentChecks.ensureNonNull("tr3", tr3);
-        return concatenate(concatenate(tr1, tr2), tr3);
+        try {
+            return ConcatenatedTransform.create(DefaultMathTransformFactory.provider().caching(false), tr1, tr2, tr3);
+        } catch (FactoryException e) {
+            throw new IllegalArgumentException(e);              // Should never happen actually.
+        }
     }
 
     /**
@@ -606,33 +606,15 @@ public final class MathTransforms extends Static {
     }
 
     /**
-     * Makes sure that the given list does not contains two consecutive linear transforms
-     * (because their matrices should have been multiplied together).
-     * This is used for assertion purposes only.
-     */
-    static boolean isValid(final List<MathTransform> steps) {
-        boolean wasLinear = false;
-        for (final MathTransform step : steps) {
-            if (step instanceof LinearTransform) {
-                if (wasLinear) return false;
-                wasLinear = true;
-            } else {
-                wasLinear = false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Returns all single components of the given (potentially concatenated) transform.
      * This method makes the following choice:
      *
      * <ul>
      *   <li>If {@code transform} is {@code null}, returns an empty list.</li>
-     *   <li>Otherwise if {@code transform} is the result of calls to {@code concatenate(…)} methods, returns
+     *   <li>Otherwise, if {@code transform} is the result of calls to {@code concatenate(…)} methods, returns
      *       all steps making the transformation chain. Nested concatenated transforms (if any) are flattened.
      *       Note that some steps may have have been merged together, resulting in a shorter list.</li>
-     *   <li>Otherwise returns the given transform in a list of size 1.</li>
+     *   <li>Otherwise, returns the given transform in a list of size 1.</li>
      * </ul>
      *
      * @param  transform  the transform for which to get the steps, or {@code null}.

@@ -16,8 +16,8 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.HashMap;
 import java.util.function.Function;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
@@ -26,7 +26,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -35,7 +34,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -68,7 +66,7 @@ import org.apache.sis.util.logging.Logging;
  * (it may be the [0 … 360]° range, but not necessarily).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.geometry.Envelopes#wraparound(MathTransform, Envelope)
  *
@@ -169,11 +167,11 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * while keeping {@link #wraparoundDimension}, {@link #period} and {@link #sourceMedian} unchanged.
      * If no instance can be created for the given number of dimensions, then this method returns {@code null}.
      *
-     * @param  other            matrix defining a transform which will be applied before or after {@code this}.
-     * @param  applyOtherFirst  whether the transform defined by the matrix will be applied before {@code this}.
+     * @param  middle       matrix defining a transform which will be applied before or after {@code this}.
+     * @param  linearFirst  whether the transform defined by the matrix will be applied before {@code this}.
      */
-    private WraparoundTransform redim(final boolean applyOtherFirst, final Matrix other) {
-        final int n = (applyOtherFirst ? other.getNumRow() : other.getNumCol()) - 1;
+    private WraparoundTransform redimension(final boolean linearFirst, final Matrix middle) {
+        final int n = (linearFirst ? middle.getNumRow() : middle.getNumCol()) - 1;
         if (n == dimension) {
             return this;
         }
@@ -217,11 +215,11 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
          * Since we are going to apply a `-targetMedian` translation before the `WraparoundTransform`, the
          * `sourceMedian` used for computing the inverse of that transform must have the same translation.
          */
-        final WraparoundTransform tr = new WraparoundTransform(dimension, wraparoundDimension, period, sourceMedian - targetMedian);
+        final var tr = new WraparoundTransform(dimension, wraparoundDimension, period, sourceMedian - targetMedian);
         if (targetMedian == 0) {
             return tr;
         } else try {
-            final double[] vector = new double[dimension];
+            final var vector = new double[dimension];
             vector[wraparoundDimension] = targetMedian;
             final MathTransform denormalize = MathTransforms.translation(vector);
             final MathTransform ct = MathTransforms.concatenate(denormalize.inverse(), tr, denormalize);
@@ -255,7 +253,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         ArgumentChecks.ensureNonNull("transform",   transform);
         ArgumentChecks.ensureNonNull("replacement", replacement);
         if (transform instanceof ConcatenatedTransform) {
-            final ConcatenatedTransform ct = (ConcatenatedTransform) transform;
+            final var ct = (ConcatenatedTransform) transform;
             final MathTransform tr1 = replace(ct.transform1, replacement);
             final MathTransform tr2 = replace(ct.transform2, replacement);
             if (tr1 != ct.transform1 || tr2 != ct.transform2) {
@@ -410,229 +408,144 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * Concatenates in an optimized way this math transform with the given one, if possible.
      * If this method detects a chain of operations like below:
      *
-     * <blockquote>[wraparound]  ⇄  [affine]  ⇄  [wraparound or something else]</blockquote>
+     * <blockquote>[wraparound]  ⇄  [affine]  ⇄  [wraparound]</blockquote>
      *
-     * Then this method tries to move some dimensions of the [affine] step before or after the
-     * [wraparound] step in order to simplify (or ideally remove) the [affine] step in the middle.
+     * Then this method tries to move the [affine] step before or after the [wraparound] step.
      * This move increases the chances that [affine] step is combined with other affine operations.
      * Only dimensions that do not depend on {@link #wraparoundDimension} can be moved.
      */
     @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
         int relativeIndex = +1;
         do {
             /*
-             * If the other transform is also a `WraparoundTransform` for the same dimension,
+             * If the neighbor transform is also a `WraparoundTransform` for the same dimension,
              * then there is no need to concatenate those two consecutive redudant transforms.
-             * Keep the first transform because it will be the last one (having precedence)
-             * in inverse transform.
+             * Keep the first transform because it will be the last one in inverse transform
+             * (i.e., will have precedence).
              */
-            final boolean applyOtherFirst = (relativeIndex < 0);
-            final MathTransform other = context.getTransform(relativeIndex).orElse(null);
-            if (other instanceof WraparoundTransform && equalsIgnoreInverse((WraparoundTransform) other)) {
-                context.replace(relativeIndex, applyOtherFirst ? other : this);
-                return;
+            final MathTransform neighbor = context.getTransform(relativeIndex).orElse(null);
+            if (neighbor instanceof WraparoundTransform) {
+                final var other = (WraparoundTransform) neighbor;
+                final WraparoundTransform merged = (relativeIndex < 0) ? other.merge(this) : merge(other);
+                if (merged != null && context.replace(relativeIndex, merged)) {
+                    return;
+                }
             }
             /*
-             * The rest of this method inspects a chain of 2 or more transforms before this transform.
+             * Case where the other transform is affine and is located between two `WraparoundTransform`.
+             * We will try to move the affine transform out of there.
              */
-            final List<MathTransform> steps = MathTransforms.getSteps(other);
-            final int count = steps.size();
-            if (count < 2) {
-                continue;
-            }
-            final MathTransform middleTr = steps.get(applyOtherFirst ? count - 1 : 0);
-            Matrix middle = MathTransforms.getMatrix(middleTr);
-            if (middle != null) try {
-                /*
-                 * We have a matrix between this `WraparoundTransform` and something else,
-                 * potentially another `WraparoundTransform`. Try to move as many rows as
-                 * possible outside that `middle` matrix. Ideally we will be able to move
-                 * the matrix completely, which increase the chances to multiply (outside
-                 * this method) with another matrix.
-                 */
-                boolean modified = false;
-                MathTransform step1 = this;
-                MathTransform move = movable(middleTr, middle, context.factory);
-                if (move != null) {
+            final Matrix middle = MathTransforms.getMatrix(neighbor);
+            if (middle != null) {
+                final int firstOrLast = relativeIndex * 2;
+                final MathTransform tr = context.getTransform(firstOrLast).orElse(null);
+                if (tr instanceof WraparoundTransform) {
+                    final var other = (WraparoundTransform) tr;
                     /*
-                     * Update the middle matrix with everything that we could not put in `move`.
-                     * If `applyOtherFirst` is false:
-                     *
-                     *     [move]  →  [redim]  →  [remaining]  →  [other]
-                     *
-                     * If `applyOtherFirst` is true:
-                     *
-                     *     [other]  →  [remaining]  →  [redim]  →  [move]
-                     *
-                     * Usually the matrix is square before the multiplication. But if it was not the case,
-                     * the new matrix will have the same number of columns (source coordinates) but a new
-                     * number of rows (target coordinates). The result should be a square matrix.
+                     * Found two `WraparoundTransform` instances that we may merge in a single one.
+                     * But first, we need to move the linear transform that stands between the two.
+                     * Determine in which direction we can move the linear transform: first or last.
                      */
-                    final Matrix remaining = remaining(applyOtherFirst, move, middle);
-                    final WraparoundTransform redim = redim(applyOtherFirst, remaining);
-                    if (redim != null) {
-                        step1    = concatenate(context, move, redim, applyOtherFirst);
-                        middle   = remaining;
-                        modified = true;
+                    final boolean linearFirst;
+                    if (canMove(middle)) {
+                        linearFirst = (relativeIndex >= 0);
+                    } else if (other.canMove(middle)) {
+                        linearFirst = (relativeIndex < 0);
+                    } else {
+                        continue;
                     }
-                }
-                /*
-                 * Now look at the non-linear transform. If it is another instance of `WraparoundTransform`,
-                 * then we may move the calculation of some coordinates before it. This is the same algorithm
-                 * than above but with `applyOtherFirst` reversed.
-                 */
-                MathTransform step2 = steps.get(applyOtherFirst ? count - 2 : 1);
-                if (step2 instanceof WraparoundTransform) {
-                    WraparoundTransform redim = (WraparoundTransform) step2;
-                    move = redim.movable(null, middle, context.factory);
-                    if (move != null) {
-                        final Matrix remaining = remaining(!applyOtherFirst, move, middle);
-                        redim = redim.redim(!applyOtherFirst, remaining);
-                        if (redim != null) {
-                            step2    = concatenate(context, redim, move, applyOtherFirst);
-                            middle   = remaining;
-                            modified = true;
-                        }
+                    /*
+                     * Try to merge the two consecutive `WraparoundTransform` instances in a single one.
+                     * If they cannot be merged, we will need to keep them as a concatenated transform.
+                     * If they could be merged, we need to take in account that they may not have the
+                     * same number of dimensions if the matrix between them was non-square.
+                     */
+                    WraparoundTransform merged = (relativeIndex < 0) ? other.merge(this) : merge(other);
+                    if (merged != null) {
+                        merged = merged.redimension(linearFirst, middle);
                     }
-                }
-                /*
-                 * Done moving the linear operations that we can move. Put everything together.
-                 * The `middle` transform should become simpler, ideally the identity transform.
-                 *
-                 * As an heuristic rule, we assume that it was worth simplifying if the implementation class changed.
-                 * For example, a `ProjectiveTransform` middle transform may be replaced by `IdentityTransform` (ideal
-                 * case, but replacement by `TranslationTransform` is still good). But if we got the same class, then
-                 * even if the matrix is a little bit simpler it is probably not simpler enough; we will probably get
-                 * no performance benefit. In such case abandon this `tryConcatenate(…)` attempt for reducing risk of
-                 * confusing WKT representation. It may happen in particular if `other` is a `NormalizedProjection`
-                 * with normalization/denormalization matrices. "Simplifying" a (de)normalization matrix may actually
-                 * complexify the map projection WKT representation.
-                 *
-                 * NOTE 1: the decision to apply simplification or not has no incidence on the numerical values
-                 *         of transformation results; the transform chains should be equivalent in either cases.
-                 *         It is only an attempt to avoid unnecessary changes (from a performance point of view)
-                 *         in order to produce less surprising WKT representations during debugging.
-                 *
-                 * NOTE 2: we assume that changes of implementation class can only be simplifications (not more
-                 *         costly classes) because changes applied on the `middle` matrix by above code makes
-                 *         that matrix closer to an identity matrix.
-                 */
-                if (modified) {
-                    MathTransform tr = context.factory.createAffineTransform(middle);
-                    if (tr.getClass() != middleTr.getClass()) {               // See above comment for rational.
-                        tr = concatenate(context, tr, step2, applyOtherFirst);
-                        tr = concatenate(context, step1, tr, applyOtherFirst);
-                        if (applyOtherFirst) {
-                            for (int i = count-2; --i >= 0;) {
-                                tr = context.factory.createConcatenatedTransform(steps.get(i), tr);
-                            }
-                        } else {
-                            for (int i = 2; i < count; i++) {
-                                tr = context.factory.createConcatenatedTransform(tr, steps.get(i));
-                            }
-                        }
-                        context.replace(relativeIndex, tr);
+                    MathTransform concatenated = merged;
+                    if (concatenated == null) {
+                        concatenated = (relativeIndex >= 0) ? context.concatenate(this, other)
+                                                            : context.concatenate(other, this);
+                    }
+                    concatenated = linearFirst ? context.concatenate(neighbor, concatenated)
+                                               : context.concatenate(concatenated, neighbor);
+                    if (context.replace(firstOrLast, concatenated)) {
                         return;
                     }
                 }
-            } catch (NoninvertibleTransformException e) {
-                // Should not happen. But if it is the case, just abandon the optimization effort.
-                Logging.recoverableException(LOGGER, getClass(), "tryConcatenate", e);
             }
         } while ((relativeIndex = -relativeIndex) < 0);
+        /*
+         * If we reach this point, there is no two consecutive `WraparoundTransform` instances that we could simplify.
+         * Maybe the two instances were separated by a linear transform but we could not move that step out of there.
+         * However, even if we cannot move the linear transform fully, the `context.replacePassThrough(…)` method may
+         * still be capable to simplify it.
+         */
+        final var dimensions = new HashMap<Integer, Integer>();
+        for (int i=0; i<dimension; i++) {
+            if (i != wraparoundDimension) {
+                dimensions.put(i, i);
+            }
+        }
+        if (!context.replacePassThrough(dimensions)) {
+            super.tryConcatenate(context);
+        }
     }
 
     /**
-     * Returns a transform based on the given matrix but converting only coordinates in dimensions
-     * that can be processed indifferently before or after this {@code WraparoundTransform}.
+     * Tests if the given matrix can be moved before or after this transform.
+     * If any matrix row (output coordinate) uses the wraparound dimension as input,
+     * then we cannot move that row because the coordinate value may not be the same
+     * after execution of {@code WraparoundTransform}.
      *
-     * @param  tr       the transform of the matrix to analyze, or {@code null} if none.
-     * @param  matrix   the matrix to analyze.
-     * @param  factory  wrapper of the factory given to {@link #tryConcatenate tryConcatenate(…)}.
-     * @return a transform processing only the movable parts, or {@code null} if identity.
+     * @todo Current implementation is conservative, checking both the row and column,
+     *       because the matrix will be moved from before to after the wrap-around transform.
+     *       We could do better: detect when a coordinate is moved, take the scale factor for
+     *       adjusting the {@linkplain #period}.
      */
-    private MathTransform movable(MathTransform tr, Matrix matrix, final MathTransformFactory factory)
-            throws FactoryException
-    {
-        final long moveAll = Numerics.bitmask(dimension) - 1;
-        long canMove = moveAll;
-        /*
-         * If any matrix row (output coordinate) uses the wraparound dimension as input,
-         * then we cannot move that row because the coordinate value may not be the same
-         * after execution of `WraparoundTransform`.
-         */
-        final int lastColumn = matrix.getNumCol() - 1;
-        if (wraparoundDimension < lastColumn) {
-            for (int j = matrix.getNumRow(); --j >= 0;) {
-                final double v = matrix.getElement(j, wraparoundDimension);
+    private boolean canMove(final Matrix middle) {
+        int i = middle.getNumCol();
+        int j = middle.getNumRow();
+        if (wraparoundDimension < i) {
+            while (--j >= 0) {
+                final double v = middle.getElement(j, wraparoundDimension);
                 if (v != (j == wraparoundDimension ? 1 : 0)) {
-                    canMove &= ~Numerics.bitmask(j);
+                    return false;
+                }
+            }
+            j = middle.getNumRow();
+        }
+        if (wraparoundDimension < j) {
+            while (--i >= 0) {
+                final double v = middle.getElement(wraparoundDimension, i);
+                if (v != (i == wraparoundDimension ? 1 : 0)) {
+                    return false;
                 }
             }
         }
-        if (matrix.getElement(wraparoundDimension, lastColumn) != 0) {
-            canMove &= ~Numerics.bitmask(wraparoundDimension);
-        }
-        if (canMove != 0) {
-            if (canMove != moveAll) {
-                /*
-                 * Create a matrix which will convert coordinates in all dimensions that we can process
-                 * before or after this `WraparoundTransform`. We start with a copy and set to identity
-                 * the rows that we cannot move. Typically only one row will be set to identity, which
-                 * makes the "start with a copy" strategy a good choice. Another reason is that we want
-                 * to preserve the "double-double" storage.
-                 */
-                matrix = Matrices.copy(matrix);
-                for (int j = matrix.getNumRow() - 1; --j >=0;) {
-                    if ((canMove & Numerics.bitmask(j)) == 0) {       // True also for dimensions ≥ 64.
-                        for (int i=matrix.getNumCol(); --i >= 0;) {
-                            matrix.setElement(j, i, (i == j) ? 1 : 0);
-                        }
-                    }
-                }
-            } else if (tr != null) {
-                return tr;
-                // OTherwise `matrix` can be used as-is.
-            }
-            if (!matrix.isIdentity()) {
-                return factory.createAffineTransform(matrix);
+        return true;
+    }
+
+    /**
+     * If this transform is redundant with the given transform, returns a single instance.
+     * Otherwise, returns {@code null} for instructing the caller that it must keep the two transforms.
+     * This transform must be before the {@code other} transform in the chain of transform steps.
+     *
+     * @todo Handle the case when a period is a multiple of the other.
+     *
+     * @param  other  the other transform. Must be after this transform in the chain of transform steps.
+     * @return the transform to use instead of the two transforms, or {@code null} if there is no substitute.
+     */
+    private WraparoundTransform merge(final WraparoundTransform other) {
+        if (other.wraparoundDimension == wraparoundDimension) {
+            if (Numerics.equals(period, other.period)) {        // TODO: relax this rule.
+                return this;        // First step in the chain of transforms have precedence.
             }
         }
         return null;
-    }
-
-    /**
-     * Returns a matrix equivalent to applying the inverse of {@code move} first, followed by {@code middle}.
-     * This is appropriate if the {@code move} transform is going to be applied first, followed by {@code remaining}.
-     *
-     * <p>If {@code reverse} is {@code true} then this method performs the concatenation in reverse order.
-     * This is appropriate if the {@code remaining} matrix is going to be applied first, followed by {@code move}.</p>
-     */
-    private static Matrix remaining(final boolean reverse, final MathTransform move, final Matrix middle)
-            throws NoninvertibleTransformException
-    {
-        final Matrix change = MathTransforms.getMatrix(move.inverse());
-        return reverse ? Matrices.multiply(change, middle)
-                       : Matrices.multiply(middle, change);
-    }
-
-    /**
-     * Concatenates the two given transforms, swapping their order if {@code swap} is {@code true}.
-     *
-     * @param  first   the first math transform.
-     * @param  second  the second math transform.
-     * @param  swap    whether the given transforms should be swapped.
-     * @return the concatenated transform.
-     * @throws FactoryException if the factory cannot perform the concatenation.
-     */
-    private static MathTransform concatenate(Joiner context, MathTransform first, MathTransform second, boolean swap) throws FactoryException {
-        if (swap) {
-            var t = first;
-            first = second;
-            second = t;
-        }
-        return context.factory.createConcatenatedTransform(first, second);
     }
 
     /**
@@ -663,15 +576,6 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Returns {@code true} if this transform is equal to the given transform,
-     * comparing only the parameters required for forward conversions.
-     */
-    private boolean equalsIgnoreInverse(final WraparoundTransform other) {
-        return other.dimension == dimension && other.wraparoundDimension == wraparoundDimension
-                && Numerics.equals(period, other.period);
-    }
-
-    /**
      * Compares this transform with the given object for equality.
      *
      * @param  object  the object to compare with this transform.
@@ -683,8 +587,11 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
-            final WraparoundTransform other = (WraparoundTransform) object;
-            return equalsIgnoreInverse(other) && Numerics.equals(sourceMedian, other.sourceMedian);
+            final var other = (WraparoundTransform) object;
+            return other.dimension == dimension &&
+                   other.wraparoundDimension == wraparoundDimension &&
+                   Numerics.equals(period, other.period) &&
+                   Numerics.equals(sourceMedian, other.sourceMedian);
         }
         return false;
     }

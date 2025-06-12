@@ -110,28 +110,27 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      * This implementation does special cases for {@link LinearTransform1D} and {@link ExponentialTransform1D}.
      */
     @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
-        MathTransform concatenation = null;
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
         int relativeIndex = +1;
         do {
+            final MathTransform concatenation;
             final MathTransform other = context.getTransform(relativeIndex).orElse(null);
             if (other instanceof LinearTransform1D) {
-                final LinearTransform1D linear = (LinearTransform1D) other;
-                if (relativeIndex < 0) {
-                    if (linear.offset == 0 && linear.scale > 0) {
-                        concatenation = create(base(), transform(linear.scale));
-                    }
+                final var linear = (LinearTransform1D) other;
+                if (relativeIndex < 0 && linear.offset == 0 && linear.scale > 0) {
+                    // Replace the affine transform which is before by an affine transform after.
+                    concatenation = create(base(), transform(linear.scale));
                 } else {
-                    final double newBase = pow(1 / linear.scale);
-                    if (!Double.isNaN(newBase)) {
-                        concatenation = create(newBase, linear.transform(offset()));
-                    }
+                    // Note: a previous version was handling the `relativeIndex > 0` case,
+                    // but it was useless because the result was always the same transform.
+                    continue;
                 }
             } else if (other instanceof ExponentialTransform1D) {
                 concatenation = ((ExponentialTransform1D) other).concatenateLog(this, -relativeIndex);
+            } else {
+                continue;
             }
-            if (concatenation != null) {
-                context.replace(relativeIndex, concatenation);
+            if (context.replace(relativeIndex, concatenation)) {
                 return;
             }
         } while ((relativeIndex = -relativeIndex) < 0);

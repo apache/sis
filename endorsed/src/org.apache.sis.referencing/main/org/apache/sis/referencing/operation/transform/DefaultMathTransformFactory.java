@@ -960,11 +960,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonNull("tr2", tr2);
         final MathTransform tr;
         try {
-            tr = ConcatenatedTransform.create(tr1, tr2, this);
+            tr = ConcatenatedTransform.create(this, tr1, tr2);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
-        assert MathTransforms.isValid(MathTransforms.getSteps(tr)) : tr;
         return unique(tr);
     }
 

@@ -46,6 +46,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
+import org.apache.sis.referencing.operation.transform.TransformJoiner;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.system.Modules;
@@ -846,10 +847,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
         /**
          * Concatenates in an optimized way this reverse projection with its neighbor, if possible.
-         * This method delegates to {@link #tryInverseConcatenate(Joiner)}.
+         * This method delegates to {@link #tryInverseConcatenate(TransformJoiner)}.
          */
         @Override
-        protected void tryConcatenate(final Joiner context) throws FactoryException {
+        protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
             if (!forward.tryInverseConcatenate(context)) {
                 super.tryConcatenate(context);
             }
@@ -864,7 +865,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @throws FactoryException if an error occurred while combining the transforms.
      * @return whether or not an optimization has been done.
      */
-    boolean tryInverseConcatenate(Joiner context) throws FactoryException {
+    boolean tryInverseConcatenate(TransformJoiner context) throws FactoryException {
         return false;
     }
 
