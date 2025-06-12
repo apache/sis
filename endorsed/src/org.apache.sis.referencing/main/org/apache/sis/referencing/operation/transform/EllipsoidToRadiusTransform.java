@@ -16,38 +16,39 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.Arrays;
 import java.io.Serializable;
 import static java.lang.Math.*;
+import java.util.Arrays;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.datum.Ellipsoid;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.ExportableTransform;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.provider.Spherical2Dto3D;
 import org.apache.sis.referencing.operation.provider.Spherical3Dto2D;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.Formulas;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.Debug;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.util.privy.Numerics;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -86,7 +87,7 @@ import org.apache.sis.util.privy.Numerics;
  *
  * @since 1.5
  */
-public class EllipsoidToRadiusTransform extends AbstractMathTransform implements Serializable {
+public class EllipsoidToRadiusTransform extends AbstractMathTransform implements Serializable, ExportableTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -405,7 +406,7 @@ public class EllipsoidToRadiusTransform extends AbstractMathTransform implements
      * The "almost" is because {@link #inverse()} returns a non-linear transform.
      * For that reason, this class cannot implement {@link LinearTransform}.
      */
-    private final class Inverse extends OnewayLinearTransform implements Parameterized {
+    private final class Inverse extends OnewayLinearTransform implements Parameterized, ExportableTransform {
         /**
          * Serial number for inter-operability with different versions.
          */
@@ -463,6 +464,11 @@ public class EllipsoidToRadiusTransform extends AbstractMathTransform implements
             pg.values().addAll(EllipsoidToRadiusTransform.this.getParameterValues().values());
             return pg;
         }
+
+        @Override
+        public String toECMAScript() throws UnsupportedOperationException {
+            return DELEGATE.toECMAScript();
+        }
     }
 
     /**
@@ -502,4 +508,25 @@ public class EllipsoidToRadiusTransform extends AbstractMathTransform implements
         }
         return false;
     }
+
+    @Override
+    public String toECMAScript() throws UnsupportedOperationException {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+
+        sb.append(
+            "\ttransform : function(src){\n" +
+            "\t\tconst eccentricitySquared = " + Double.toString(eccentricitySquared) + ";\n" +
+            "\t\tconst Ω     = src[1];\n" +
+            "\t\tconst cosΩ  = Math.cos(Ω);\n" +
+            "\t\tconst r2    = 1 - eccentricitySquared*(cosΩ*cosΩ);\n" +
+            "\t\tconst r     = Math.sqrt(r2); // Inverse of radius.\n" +
+            "\t\treturn [src[0], Ω, 1.0/r];\n" +
+            "\t}\n"
+            );
+
+        sb.append("}");
+        return sb.toString();
+    }
+
 }

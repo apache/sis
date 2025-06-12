@@ -966,12 +966,19 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
                 "\t\tconst sinφ  = Math.sin(φ);\n" +
                 "\t\tconst ν     = 1.0/Math.sqrt(1 - eccentricitySquared * (sinφ*sinφ)); // Prime vertical radius of curvature at latitude φ\n" +
                 "\t\tconst rcosφ = (ν + h) * Math.cos(φ);\n" +
-                "\t\tconst d0 = rcosφ * Math.cos(λ); // X: Toward prime meridian\n" +
-                "\t\tconst d1 = rcosφ * Math.sin(λ); // Y: Toward 90° east\n" +
-                "\t\tconst d2 = (ν * (1 - eccentricitySquared) + h) * sinφ; // Z: Toward north pole\n" +
-                "\t\treturn [d0,d1,d2];\n" +
-                "\t}\n"
+                "\t\tconst Z     = (h + ν * (1.0 - eccentricitySquared)) * sinφ;\n");
+
+            if (toSphericalCS) {
+                sb.append(
+                  "\t\treturn [λ, Math.atan(Z / rcosφ), Math.hypot(Z, rcosφ)];" +
+                  "\t}\n"
                 );
+            } else {
+                sb.append(
+                  "\t\treturn [rcosφ * Math.cos(λ), rcosφ * Math.sin(λ), Z];" +
+                  "\t}\n"
+                );
+            }
         } else {
             //constants
             sb.append("\t_ANGULAR_TOLERANCE : ").append(Double.toString(Formulas.ANGULAR_TOLERANCE)).append(",\n");
@@ -986,54 +993,62 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
             sb.append(
                 "\ttransform : function(src){\n" +
-                "\t\tlet dst = new Array("+getTargetDimensions()+");\n" +
-                "\t\tconst X = src[0];\n" +
-                "\t\tconst Y = src[1];\n" +
-                "\t\tconst Z = src[2];\n" +
-                "\t\tconst p = Math.hypot(X, Y);\n" +
-                "\t\tconst tanq  = Z / (p*this._axisRatio);\n" +
-                "\t\tconst cos2q = 1.0/(1.0 + tanq*tanq);\n" +
-                "\t\tconst sin2q = 1.0 - cos2q;\n" +
-                "\t\tlet φ = Math.atan((Z + this._copySign(this._eccentricitySquared * sin2q*Math.sqrt(sin2q), tanq) / this._axisRatio) /\n" +
-                "                (p -          this._eccentricitySquared * cos2q*Math.sqrt(cos2q)));\n" +
-                "\t\t\n");
-            if (!useIterations) {
+                "\t\tlet dst = new Array("+getTargetDimensions()+");\n"
+            );
+
+            if (toSphericalCS) {
                 sb.append(
-                    "\t\tdst[0] = Math.atan2(Y, X);\n" +
-                    "\t\tdst[1] = φ;\n");
-                if (withHeight) {
-                    sb.append(
-                        "\t\tconst sinφ = Math.sin(φ);\n" +
-                        "\t\tconst ν = 1.0/Math.sqrt(1 - this._eccentricitySquared * (sinφ*sinφ));\n" +
-                        "\t\tdst[2] = p/Math.cos(φ) - ν;\n");
-                }
+                    "\t\tconst λ = src[0]; // Spherical longitude\n" +
+                    "\t\tconst Ω = src[1]; // Spherical latitude\n" +
+                    "\t\tconst R = src[2]; // Spherical radius\n" +
+                    "\t\tconst p = R * Math.cos(Ω); // Projection of radius in equatorial plane\n" +
+                    "\t\tconst Z = R * Math.sin(Ω); // Toward north pole\n"
+                );
             } else {
                 sb.append(
-                    "\t\tlet found = false;\n" +
-                    "\t\tfor (let it = this._MAXIMUM_ITERATIONS; !found && it >= 0; it--) {\n" +
-                    "\t\t\tconst sinφ = Math.sin(φ);\n" +
-                    "\t\t\tconst ν = 1/sqrt(1 - this._eccentricitySquared * (sinφ*sinφ));\n" +
-                    "\t\t\tconst Δφ = φ - (φ = atan((Z + this._eccentricitySquared * ν * sinφ) / p));\n" +
-                    "\t\t\tif (!(abs(Δφ) >= this._ANGULAR_TOLERANCE * (Math.PI/180) * 0.25)) { // Use ! for accepting NaN.\n" +
-                    "\t\t\t\tdst[0] = Math.atan2(Y, X);\n" +
-                    "\t\t\t\tdst[1] = φ;\n");
+                    "\t\tconst X = src[0]; // Toward prime meridian\n" +
+                    "\t\tconst Y = src[1]; // Toward 90° east\n" +
+                    "\t\tconst Z = src[2]; // Toward north pole\n" +
+                    "\t\tconst p = Math.hypot(X, Y); // Projection of radius in equatorial plane\n" +
+                    "\t\tconst λ = Math.atan2(Y, X); // Spherical and geodetic longitude\n"
+                );
+            }
+
+            sb.append(
+                "\t\tconst tanq  = Z / (p*this._axisRatio);\n" +
+                "\t\tconst cos2q = 1/(1 + tanq*tanq);\n" +
+                "\t\tconst sin2q = 1 - cos2q;\n" +
+                "\t\tlet φ = Math.atan((Z + this._copySign(this._eccentricitySquared * (Math.sqrt(sin2q) * sin2q), tanq) / this._axisRatio) / (p - this._eccentricitySquared * (Math.sqrt(cos2q) * cos2q)));\n"
+              );
+
+            if (useIterations) {
+                sb.append(
+                    "\t\tlet it = this._MAXIMUM_ITERATIONS;\n" +
+                    "\t\tlet sinφ = 0.0;\n" +
+                    "\t\tlet iν = 0.0;\n" +
+                    "\t\tlet Δφ = 0.0;\n" +
+                    "\t\tdo {\n" +
+                    "\t\t\tif (--it <0) {\n" +
+                    "\t\t\t\tthrow new Error(\"No convergence.\");\n" +
+                    "\t\t\t}\n" +
+                    "\t\t\tsinφ = Math.sin(φ);\n" +
+                    "\t\t\tiν = Math.sqrt(1 - this._eccentricitySquared * (sinφ*sinφ));\n" +
+                    "\t\t\tΔφ = φ - (φ = Math.atan((Z + this._eccentricitySquared * sinφ / iν) / p));\n" +
+                    "\t\twhile (Math.abs(Δφ) >= this._ANGULAR_TOLERANCE * (Math.PI/180) * 0.25);\n"
+                  );
                 if (withHeight) {
                     sb.append(
-                        "\t\t\t\tdst[2] = p/Math.cos(φ) - ν;\n");
+                        "\t\tdst[2] = (Math.abs(sinφ) == 1.0) ? (Math.abs(Z) - this._axisRatio) : (p/Math.cos(φ) - 1.0/iν);\n"
+                      );
                 }
-                sb.append(
-                    "\t\t\t\tfound = true;\n" +
-                    "\t\t\t}\n" +
-                    "\t\t}\n" +
-                    "\t\tif (!found) {\n" +
-                    "\t\t\tdst[0] = Number.NaN;\n" +
-                    "\t\t\tdst[1] = Number.NaN;\n" +
-                    "\t\t}\n"
-                    );
             }
+
             sb.append(
+                "\t\tdst[0] = λ;\n" +
+                "\t\tdst[1] = φ;\n" +
                 "\t\treturn dst;\n" +
-                "\t}\n");
+                "\t}\n"
+            );
         }
 
         sb.append("}");

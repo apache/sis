@@ -26,7 +26,7 @@ public interface ExportableTransform {
     /**
      * The produced code should transform one value only.
      * Input array is expected to be named src.
-     * Ouput array is expected to be named dat.
+     * Ouput array is expected to be named dst.
      *
      * Example of expected produced code :
      * <pre>
