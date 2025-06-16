@@ -635,8 +635,8 @@ public final class MathTransforms extends Static {
      *   <li>Otherwise returns the given transform in a list of size 1.</li>
      * </ul>
      *
-     * @param  transform  the transform for which to get the components, or {@code null}.
-     * @return all single math transforms performed by this concatenated transform.
+     * @param  transform  the transform for which to get the steps, or {@code null}.
+     * @return all steps performed by the given transform.
      */
     public static List<MathTransform> getSteps(final MathTransform transform) {
         if (transform != null) {
@@ -648,6 +648,38 @@ public final class MathTransforms extends Static {
         } else {
             return List.of();
         }
+    }
+
+    /**
+     * Returns the first step of the given (potentially concatenated) transform.
+     * Invoking this method is equivalent to invoking {@link #getSteps(MathTransform)}
+     * and retaining only the first element of the list.
+     *
+     * @param  transform  the transform for which to get the first step, or {@code null}.
+     * @return the first step performed by the given transform, or {@code null} if the argument was null.
+     * @since 1.5
+     */
+    public static MathTransform getFirstStep(MathTransform transform) {
+        while (transform instanceof ConcatenatedTransform) {
+            transform = ((ConcatenatedTransform) transform).transform1;
+        }
+        return transform;
+    }
+
+    /**
+     * Returns the last step of the given (potentially concatenated) transform.
+     * Invoking this method is equivalent to invoking {@link #getSteps(MathTransform)}
+     * and retaining only the last element of the list.
+     *
+     * @param  transform  the transform for which to get the last step, or {@code null}.
+     * @return the last step performed by the given transform, or {@code null} if the argument was null.
+     * @since 1.5
+     */
+    public static MathTransform getLastStep(MathTransform transform) {
+        while (transform instanceof ConcatenatedTransform) {
+            transform = ((ConcatenatedTransform) transform).transform2;
+        }
+        return transform;
     }
 
     /**

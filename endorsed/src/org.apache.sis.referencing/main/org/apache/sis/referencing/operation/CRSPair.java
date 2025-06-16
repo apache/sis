@@ -35,7 +35,7 @@ import org.apache.sis.util.privy.Strings;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class CRSPair {
+final class CRSPair extends org.apache.sis.pending.jdk.Record {
     /**
      * The source and target CRS.
      */
@@ -70,7 +70,7 @@ final class CRSPair {
     @Override
     public boolean equals(final Object object) {
         if (object instanceof CRSPair) {
-            final CRSPair that = (CRSPair) object;
+            final var that = (CRSPair) object;
             return Objects.equals(this.sourceCRS, that.sourceCRS) &&
                    Objects.equals(this.targetCRS, that.targetCRS);
         }

@@ -358,6 +358,34 @@ public final class GridDerivationTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridDerivation#subgrid(GridGeometry)} using a grid with less dimensions
+     * than the source grid geometry.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-610">SIS-610</a>
+     */
+    @Test
+    public void testSubgridWithLessDimensions() {
+        var envelope = new GeneralEnvelope(HardCodedCRS.WGS84_4D);
+        envelope.setRange(0, 10, 20);
+        envelope.setRange(1, 30, 40);
+        envelope.setRange(2, 2, 4);
+        envelope.setRange(3, 3, 6);
+        var env2D  = new Envelope2D(HardCodedCRS.WGS84, 10, 30, 10, 10);
+        var extent = new GridExtent(null, null, new long[] {2, 2, 1, 1}, false);
+        var grid   = new GridGeometry(extent, envelope, GridOrientation.DISPLAY);
+        var aoi    = new GridGeometry(new GridExtent(2, 2), env2D, GridOrientation.DISPLAY);
+        GridGeometry slice = grid.derive().subgrid(aoi).build();
+        Matrix gridToCRS = MathTransforms.getMatrix(slice.getGridToCRS(PixelInCell.CELL_CORNER));
+        Matrix expected = Matrices.create(5, 5, new double[] {
+            5,   0,   0,   0,  10,
+            0,  -5,   0,   0,  40,
+            0,   0,   2,   0,   2,
+            0,   0,   0,   3,   3,
+            0,   0,   0,   0,   1});
+        assertMatrixEquals(expected, gridToCRS, STRICT, "gridToCRS");
+    }
+
+    /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} on a grid using a polar projection.
      * The test also uses a geographic envelope with more dimensions than the source grid geometry.
      * The difficulty is that axis directions do not match directly: the source grid has directions

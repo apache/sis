@@ -188,6 +188,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short ConformanceMeansDatumShift = 11;
 
         /**
+         * A constant value is required for the coordinate at index {0}.
+         */
+        public static final short ConstantCoordinateValueRequired_1 = 109;
+
+        /**
          * This parameter is shown for completeness, but should never have a value different than {0}
          * for this projection.
          */
