@@ -294,6 +294,7 @@ public final class MathTransforms extends Static {
      *
      * @param  preimage  the input values (<var>x</var>) in the function domain, or {@code null}.
      * @param  values    the output values (<var>y</var>) in the function range, or {@code null}.
+     * @throws IllegalArgumentException if {@code preimage} is non-null and the sequence of values is not monotonic.
      * @return the <i>y=f(x)</i> function.
      *
      * @see org.opengis.coverage.InterpolationMethod

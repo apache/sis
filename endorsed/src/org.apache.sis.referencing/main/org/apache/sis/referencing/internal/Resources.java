@@ -448,6 +448,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short NonConformCRS_3 = 73;
 
         /**
+         * This interpolated transform is not invertible because the values are not ordered.
+         */
+        public static final short NonInvertibleBecauseUnordered = 108;
+
+        /**
          * Non invertible {0}×{1} matrix.
          */
         public static final short NonInvertibleMatrix_2 = 51;
