@@ -82,9 +82,9 @@ public final class ProcessorUtils extends Static {
 
 
     /**
-     * @todo Duplicate of {@link org.geotoolkit.referencing.factory.ReferencingFactoryContainer}?
+     * @todo Duplicate of {@link org.apache.sis.referencing.privy.ReferencingFactoryContainer}?
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-162">https://issues.apache.org/jira/browse/SIS-162</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-162">SIS-162</a>
      */
     private static CoordinateReferenceSystem getOrCreateSubCRS(CoordinateReferenceSystem crs, int lower, int upper) {
         if (crs == null) return crs;

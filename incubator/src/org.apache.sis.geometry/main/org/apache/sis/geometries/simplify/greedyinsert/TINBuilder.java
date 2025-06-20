@@ -77,7 +77,7 @@ public final class TINBuilder {
      * @param p2 third dem corner
      * @param p3 fourth dem corner
      * @param delta minimum distance to dem to include point
-     * @throws org.geotoolkit.process.ProcessException if an invalid geometry state occurs
+     * @throws OperationException if an invalid geometry state occurs
      */
     public TINBuilder(Tuple p0, Tuple p1, Tuple p2, Tuple p3, double delta, BiFunction<Tuple,Triangle,Double> errorCalculator) throws OperationException {
         this.crs = p0.getCoordinateReferenceSystem();

@@ -21,7 +21,7 @@
  * @author Johann Sorel (Geomatys)
  */
 module org.apache.sis.geometry {
-    requires esri.geometry.api;
+    requires esri.geometry.api;     // TODO: remove (this is for tests).
     requires org.apache.sis.feature;
     requires org.apache.sis.util;
     requires transitive org.apache.sis.storage;

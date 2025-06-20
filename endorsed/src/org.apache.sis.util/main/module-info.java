@@ -117,7 +117,6 @@ module org.apache.sis.util {
             org.apache.sis.cloud.aws,
             org.apache.sis.console,
             org.apache.sis.openoffice,
-            org.apache.sis.geometry,                    // In the "incubator" sub-project.
             org.apache.sis.gui,                         // In the "optional" sub-project.
             org.apache.sis.referencing.epsg,            // In the "non-free" sub-project.
             org.apache.sis.referencing.database;        // In the "non-free" sub-project.

@@ -659,7 +659,7 @@ public final class Geometries extends Static {
         for (int i = 0, n = triangles.size(); i < n; i++) {
             org.locationtech.jts.geom.Polygon p = triangles.get(i);
             //counter clockwise to ensure up direction
-            p = JTS.ensureWinding(p,false);
+            p = JTS.ensureWinding(p, false);
             final CoordinateSequence ring = p.getExteriorRing().getCoordinateSequence();
             int idx = i*3*dimension;
             switch (dimension) {

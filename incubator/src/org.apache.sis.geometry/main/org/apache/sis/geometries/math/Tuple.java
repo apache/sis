@@ -25,6 +25,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * For interoperability with MathTransform operations a Tuple implements DirectPosition.
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @todo Remove the {@code extends DirectPosition} part. A tuple is not a direct position.
  */
 public interface Tuple<T extends Tuple <T>> extends DirectPosition {
 
