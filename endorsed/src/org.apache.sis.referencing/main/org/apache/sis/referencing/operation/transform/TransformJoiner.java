@@ -486,7 +486,7 @@ valid:  if (i >= 0 && i < steps.size()) {
      */
     public boolean replacePassThrough(Map<Integer,Integer> dimensions) throws FactoryException {
         Matrix before, after;
-        if ((before = getMatrix(-1)) == null || (after = getMatrix(+1)) == null) {
+        if (!isAffine(before = getMatrix(-1)) || !isAffine(after = getMatrix(+1))) {
             return false;
         }
         /*
@@ -498,13 +498,20 @@ valid:  if (i >= 0 && i < steps.size()) {
         final var sourceToTarget = new LinkedHashMap<>(dimensions);
         final var targetToSource = new LinkedHashMap<Integer,Integer>();
         final MathTransform tr   = steps.get(replaceIndex);
-        sourceToTarget.putIfAbsent(tr.getSourceDimensions(),
-                                   tr.getTargetDimensions());   // For the last row and the translation column in matrices.
-        sourceToTarget.forEach((source, target) -> {
+        sourceToTarget.put(tr.getSourceDimensions(),
+                           tr.getTargetDimensions());   // For the last row and the translation column in matrices.
+        for (final var it = sourceToTarget.entrySet().iterator(); it.hasNext();) {
+            final Map.Entry<Integer, Integer> entry = it.next();
+            final Integer source = entry.getKey();
+            final Integer target = entry.getValue();
             if (targetToSource.put(target, source) != null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedNumber_1, target));
             }
-        });
+            // See the "Invariants: When `moveFromBeforeToAfter` = true" comment below in this method.
+            if (source >= before.getNumCol()) {
+                it.remove();
+            }
+        }
         /*
          * Modify the maps for keeping only the dimensions that we can move. Then, choose which matrix
          * to partially simplify in order to get a matrix as close as possible to an identity matrix:
@@ -542,6 +549,24 @@ valid:  if (i >= 0 && i < steps.size()) {
         /*
          * Creates a copy of the matrix which will contain the remaining elements after the moves.
          * Create an initially empty matrix which will contain the elements that have been moved.
+         * Invariants:
+         *
+         *   When `moveFromBeforeToAfter` = true:
+         *   Simplify `before` and will prepend `moved` before `after`.
+         *       simplified.numRow  =  before.numRow  ≥  (srcRow = dimensions.key)       ⟶ SAFE
+         *       simplified.numCol  =  before.numCol        (unrelated to keys)          ⟶ UNSAFE
+         *            moved.numRow  =   after.numcol  ≥  (tgtRow = dimensions.values)    ⟶ SAFE
+         *            moved.numCol  =   after.numcol  ≥  (tgtCol = dimensions.values)    ⟶ SAFE
+         *
+         *   When `moveFromBeforeToAfter` = false:
+         *   Simplify `after` and will append `moved` after `before`.
+         *       simplified.numRow  =   after.numRow        (unrelated to keys)          ⟶ UNSAFE
+         *       simplified.numCol  =   after.numCol  ≥  (srcCol = dimensions.keys)      ⟶ SAFE
+         *            moved.numRow  =  before.numRow  ≥  (tgtRow = dimensions.values)    ⟶ SAFE
+         *            moved.numCol  =  before.numRow  ≥  (tgtCol = dimensions.values)    ⟶ SAFE
+         *
+         * The unsafe case of the latter is excluded in the following loop.
+         * The unsafe case of the former was handled in code above by removing the keys that are too large.
          */
         final MatrixSIS simplified = Matrices.copy(moveFromBeforeToAfter ? before : after);
         final int dim = moveFromBeforeToAfter ? after.getNumCol() : before.getNumRow();
@@ -851,6 +876,26 @@ valid:  if (i >= 0 && i < steps.size()) {
         }
         // No optimized case found.
         return null;
+    }
+
+    /**
+     * Returns whether the last row contains only zeros except the last element which shall be 1.
+     * This method differs from {@link Matrices#isAffine(Matrix)} in that it returns {@code false}
+     * if the given argument is {@code null} and does not require the matrix to square.
+     */
+    private static boolean isAffine(final Matrix matrix) {
+        if (matrix == null) {
+            return false;
+        }
+        double e = 1;
+        final int j = matrix.getNumRow() - 1;
+        for (int i = matrix.getNumCol(); --i >= 0;) {
+            if (matrix.getElement(j, i) != e) {
+                return false;
+            }
+            e = 0;
+        }
+        return true;
     }
 
     /**
