@@ -20,12 +20,12 @@ import static java.lang.StrictMath.*;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.ObliqueMercatorCenter;
 import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.FactoryException;
@@ -57,7 +57,7 @@ public final class ObliqueMercatorTest extends MapProjectionTestCase {
     private static ObliqueMercator create(final double cx, final double cy, final double azimuth) {
         final ObliqueMercatorCenter method = new ObliqueMercatorCenter();
         final ParameterValueGroup values = method.getParameters().createValue();
-        final Ellipsoid ellipsoid = CommonCRS.WGS84.ellipsoid();
+        final Ellipsoid ellipsoid = HardCodedDatum.WGS84.getEllipsoid();
         values.parameter("semi_major")         .setValue(ellipsoid.getSemiMajorAxis());
         values.parameter("semi_minor")         .setValue(ellipsoid.getSemiMinorAxis());
         values.parameter("azimuth")            .setValue(azimuth);

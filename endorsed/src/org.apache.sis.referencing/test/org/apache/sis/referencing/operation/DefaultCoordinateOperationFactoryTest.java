@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.util.privy.Constants;
@@ -42,6 +41,7 @@ import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
@@ -328,7 +328,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
      */
     @Test
     public void testPositionVectorTransformation() throws ParseException, FactoryException, TransformException {
-        final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic();
+        final CoordinateReferenceSystem sourceCRS = HardCodedCRS.WGS84_LATITUDE_FIRST;
         final CoordinateReferenceSystem targetCRS = parse(CoordinateOperationFinderTest.AGD66());
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS, null);
         transform  = operation.getMathTransform();

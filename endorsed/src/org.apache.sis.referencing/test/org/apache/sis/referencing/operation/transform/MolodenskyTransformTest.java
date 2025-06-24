@@ -144,7 +144,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      * @throws FactoryException if an error occurred while creating a transform step.
      */
     private void create(final boolean abridged) throws FactoryException {
-        final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
+        final Ellipsoid source = HardCodedDatum.WGS84.getEllipsoid();
         final Ellipsoid target = CommonCRS.ED50.ellipsoid();
         transform = MolodenskyTransform.createGeodeticTransformation(
                 DefaultMathTransformFactory.provider(),
@@ -383,7 +383,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testIdentity() throws FactoryException {
-        final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
+        final Ellipsoid source = HardCodedDatum.WGS84.getEllipsoid();
         transform = MolodenskyTransform.createGeodeticTransformation(
                 DefaultMathTransformFactory.provider(), source, false, source, false, 0, 0, 0, false);
         assertInstanceOf(LinearTransform.class, transform);
