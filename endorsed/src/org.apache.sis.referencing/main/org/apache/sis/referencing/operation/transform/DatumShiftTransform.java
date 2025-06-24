@@ -83,8 +83,8 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
 
     /**
      * The parameters used for creating this datum shift. They are used for formatting <i>Well Known Text</i> (WKT)
-     * and error messages. Subclasses shall not use the values defined in this object for computation purpose, except at
-     * construction time.
+     * and error messages. Subclasses shall not use the values defined in this object for computation purpose,
+     * except at construction time.
      *
      * @see #getContextualParameters()
      */
@@ -141,6 +141,24 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
         context = new ContextualParameters(descriptor, isSource3D ? 3 : 2, isTarget3D ? 3 : 2);
         this.grid = grid;
         computeConversionFactors();
+    }
+
+    /**
+     * Creates a datum shift transform with the same data as the given transform,
+     * except for the number of dimensions.
+     *
+     * @param  other   the transform to copy.
+     * @param  srcDim  new number of source dimensions.
+     * @param  tgtDim  new number of target dimensions.
+     * @throws IllegalArgumentException if a dimension is zero or negative.
+     */
+    DatumShiftTransform(final DatumShiftTransform other, final int srcDim, final int tgtDim) {
+        context = other.context.redimension(srcDim, tgtDim);
+        grid    = other.grid;
+        scaleX  = other.scaleX;
+        scaleY  = other.scaleY;
+        x0      = other.x0;
+        y0      = other.y0;
     }
 
     /**

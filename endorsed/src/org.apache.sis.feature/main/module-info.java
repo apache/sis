@@ -60,6 +60,7 @@ module org.apache.sis.feature {
             org.apache.sis.gui;                     // In the "optional" sub-project.
 
     exports org.apache.sis.geometry.wrapper to
+            org.apache.sis.geometry,                // In the "incubator" sub-project.
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
@@ -73,6 +74,7 @@ module org.apache.sis.feature {
             org.apache.sis.gui;                     // In the "optional" sub-project.
 
     exports org.apache.sis.geometry.wrapper.jts to
+            org.apache.sis.geometry,                // In the "incubator" sub-project.
             org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
             org.apache.sis.cql;                     // In the "incubator" sub-project.
 

@@ -126,16 +126,18 @@ final class UnitConversion extends AbstractMathTransform1D implements Serializab
      * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
      */
     @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
         int relativeIndex = +1;
         do {
             final MathTransform other = context.getTransform(relativeIndex).orElse(null);
             if (other instanceof UnitConversion) {
                 final var that = (UnitConversion) other;
-                context.replace(relativeIndex, create(relativeIndex < 0
+                if (context.replace(relativeIndex, create(relativeIndex < 0
                         ? that.converter.concatenate(this.converter)
-                        : this.converter.concatenate(that.converter)));
-                return;
+                        : this.converter.concatenate(that.converter))))
+                {
+                    return;
+                }
             }
         } while ((relativeIndex = -relativeIndex) < 0);
         super.tryConcatenate(context);

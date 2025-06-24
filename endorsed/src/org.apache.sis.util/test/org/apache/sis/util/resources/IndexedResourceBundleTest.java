@@ -188,15 +188,15 @@ public final class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getLogRecord(Level, short, Object)} method.
+     * Tests the {@link IndexedResourceBundle#createLogRecord(Level, short, Object)} method.
      */
     @Test
-    public void testGetLogRecord() {
+    public void testCreateLogRecord() {
         testing = Errors.forLocale(Locale.ENGLISH);
-        final LogRecord record = testing.getLogRecord(Level.FINE, Errors.Keys.NullArgument_1, "CRS");
+        final LogRecord record = testing.createLogRecord(Level.FINE, Errors.Keys.NullArgument_1, "CRS");
         assertEquals("NullArgument_1", record.getMessage());
 
-        final SimpleFormatter formatter = new SimpleFormatter();
+        final var formatter = new SimpleFormatter();
         final String message = formatter.format(record);
         assertTrue(message.contains("Argument ‘CRS’ shall not be null."));
         testing = null;

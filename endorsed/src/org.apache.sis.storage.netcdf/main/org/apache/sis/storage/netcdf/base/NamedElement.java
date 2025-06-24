@@ -107,7 +107,7 @@ public abstract class NamedElement {
         if (resources == null) {
             resources = Resources.forLocale(listeners.getLocale());
         }
-        final LogRecord record = resources.getLogRecord(Level.WARNING, key, arguments);
+        final LogRecord record = resources.createLogRecord(Level.WARNING, key, arguments);
         record.setLoggerName(Modules.NETCDF);
         record.setSourceClassName(caller.getCanonicalName());
         record.setSourceMethodName(method);

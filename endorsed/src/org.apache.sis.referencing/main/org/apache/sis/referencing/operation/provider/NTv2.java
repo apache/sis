@@ -649,7 +649,7 @@ public final class NTv2 extends AbstractProvider {
             try {
                 final String source = (String) get("SYSTEM_F", "DATUM_F", "FROM");
                 final String target = (String) get("SYSTEM_T", "DATUM_T", "TO");
-                log(caller, Resources.forLocale(null).getLogRecord(Level.FINE,
+                log(caller, Resources.forLocale(null).createLogRecord(Level.FINE,
                             Resources.Keys.UsingDatumShiftGrid_4, source, target,
                             (created != null) ? created : "?",
                             (updated != null) ? updated : "?"));
@@ -667,7 +667,7 @@ public final class NTv2 extends AbstractProvider {
                         keywords.append(entry.getKey());
                     }
                 }
-                log(caller, Messages.forLocale(null).getLogRecord(Level.WARNING,
+                log(caller, Messages.forLocale(null).createLogRecord(Level.WARNING,
                         Messages.Keys.UnknownKeywordInRecord_2, file, keywords.toString()));
             }
         }

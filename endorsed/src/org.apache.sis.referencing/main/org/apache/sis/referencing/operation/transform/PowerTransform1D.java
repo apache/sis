@@ -30,7 +30,7 @@ import org.apache.sis.util.privy.Numerics;
  * Future version may expand on that.
  *
  * <p>Before to make this class public (if we do), we need to revisit the class name,
- * define parameters and improve the {@link #tryConcatenate(Joiner)} method.</p>
+ * define parameters and improve the {@link #tryConcatenate(TransformJoiner)} method.</p>
  *
  * <h2>Serialization</h2>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -109,7 +109,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -127,7 +127,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -145,7 +145,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -155,7 +155,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -168,14 +168,15 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
      * Concatenates in an optimized way a {@link MathTransform} {@code other} to this {@code MathTransform}.
      */
     @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
         int relativeIndex = +1;
         do {
             final MathTransform other = context.getTransform(relativeIndex).orElse(null);
             if (other instanceof PowerTransform1D) {
                 // Valid for both concatenation and pre-concatenation.
-                context.replace(relativeIndex, create(power + ((PowerTransform1D) other).power));
-                return;
+                if (context.replace(relativeIndex, create(power + ((PowerTransform1D) other).power))) {
+                    return;
+                }
             }
         } while ((relativeIndex = -relativeIndex) < 0);
         // TODO: more optimization could go here for logarithmic and exponential cases.

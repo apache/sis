@@ -107,6 +107,14 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     private CoordinateOperation changeOfCRS;
 
     /**
+     * The source <abbr>CRS</abbr> of the {@link #changeOfCRS} operation.
+     * May be non-null when {@link #changeOfCRS} is null if it was determined in an indirect way.
+     *
+     * @see #getSourceCRS()
+     */
+    private CoordinateReferenceSystem sourceCRS;
+
+    /**
      * Whether the {@link #changeOfCRS} operation has been determined.
      * Note that result of determining that operation may be {@code null}, which is why we need this flag.
      */
@@ -287,6 +295,16 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     }
 
     /**
+     * Returns the source <abbr>CRS</abbr> of the {@link #changeOfCRS} transform.
+     */
+    private CoordinateReferenceSystem getSourceCRS() throws FactoryException, TransformException {
+        if (sourceCRS == null) {
+            sourceCRS = changeOfCRS().getSourceCRS();
+        }
+        return sourceCRS;
+    }
+
+    /**
      * Returns the target of the "corner to CRS" transform.
      * May be {@code null} if the neither the source and target grid geometry define a CRS.
      */
@@ -309,35 +327,54 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      */
     private CoordinateOperation changeOfCRS() throws FactoryException, TransformException {
         if (!knowChangeOfCRS) {
-            final Envelope sourceEnvelope = source.envelope;
-            final Envelope targetEnvelope = target.envelope;
             try {
                 CoordinateOperations.CONSTANT_COORDINATES.set(this);
-                if (sourceEnvelope != null && targetEnvelope != null) {
-                    changeOfCRS = Envelopes.findOperation(sourceEnvelope, targetEnvelope);
-                }
-                if (changeOfCRS == null && source.isDefined(GridGeometry.CRS) && target.isDefined(GridGeometry.CRS)) {
-                    final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
-                    /*
-                     * Unconditionally create operation even if CRS are the same. A non-null operation trig
-                     * the check for wraparound axes, which is necessary even if the transform is identity.
-                     */
-                    DefaultGeographicBoundingBox areaOfInterest = null;
-                    if (sourceEnvelope != null || targetEnvelope != null) try {
-                        areaOfInterest = new DefaultGeographicBoundingBox();
-                        areaOfInterest.setBounds(targetEnvelope != null ? targetEnvelope : sourceEnvelope);
-                    } catch (TransformException e) {
-                        areaOfInterest = null;
-                        recoverableException("changeOfCRS", e);
-                    }
-                    changeOfCRS = CRS.findOperation(sourceCRS, target.getCoordinateReferenceSystem(), areaOfInterest);
-                }
-            } catch (BackingStoreException e) {                         // May be thrown by getConstantCoordinates().
-                throw e.unwrapOrRethrow(TransformException.class);
+                changeOfCRS = changeOfCRS(source, target);
             } finally {
                 CoordinateOperations.CONSTANT_COORDINATES.remove();
             }
             knowChangeOfCRS = true;
+        }
+        return changeOfCRS;
+    }
+
+    /**
+     * Computes the change of <abbr>CRS</abbr> between the given pair of grid geometries.
+     *
+     * @param  source  the grid geometry which is the source of the coordinate operation to find.
+     * @param  target  the grid geometry which is the target of the coordinate operation to find.
+     * @return coordinate operation from source to target CRS, or {@code null} if none.
+     * @throws FactoryException if no operation can be found between the source and target CRS.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
+     */
+    private static CoordinateOperation changeOfCRS(final GridGeometry source, final GridGeometry target)
+            throws FactoryException, TransformException
+    {
+        CoordinateOperation changeOfCRS = null;
+        final Envelope sourceEnvelope = source.envelope;
+        final Envelope targetEnvelope = target.envelope;
+        try {
+            if (sourceEnvelope != null && targetEnvelope != null) {
+                changeOfCRS = Envelopes.findOperation(sourceEnvelope, targetEnvelope);
+            }
+            if (changeOfCRS == null && source.isDefined(GridGeometry.CRS) && target.isDefined(GridGeometry.CRS)) {
+                final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
+                /*
+                 * Unconditionally create operation even if CRS are the same. A non-null operation trig
+                 * the check for wraparound axes, which is necessary even if the transform is identity.
+                 */
+                DefaultGeographicBoundingBox areaOfInterest = null;
+                if (sourceEnvelope != null || targetEnvelope != null) try {
+                    areaOfInterest = new DefaultGeographicBoundingBox();
+                    areaOfInterest.setBounds(targetEnvelope != null ? targetEnvelope : sourceEnvelope);
+                } catch (TransformException e) {
+                    areaOfInterest = null;
+                    recoverableException("changeOfCRS", e);
+                }
+                changeOfCRS = CRS.findOperation(sourceCRS, target.getCoordinateReferenceSystem(), areaOfInterest);
+            }
+        } catch (BackingStoreException e) {                         // May be thrown by getConstantCoordinates().
+            throw e.unwrapOrRethrow(TransformException.class);
         }
         return changeOfCRS;
     }
@@ -410,8 +447,8 @@ apply:          if (forwardChangeOfCRS == null) {
                             targetMedian = sourceMedian;
                             sourceMedian = null;
                         }
-                        final WraparoundApplicator ap = new WraparoundApplicator(sourceMedian,
-                                targetMedian, changeOfCRS.getTargetCRS().getCoordinateSystem());
+                        final var ap = new WraparoundApplicator(sourceMedian, targetMedian,
+                                            changeOfCRS.getTargetCRS().getCoordinateSystem());
                         forwardChangeOfCRS = ap.forDomainOfUse(forwardChangeOfCRS);
                     }
                 }
@@ -432,13 +469,23 @@ apply:          if (forwardChangeOfCRS == null) {
      */
     final MathTransform inverse() throws FactoryException, TransformException {
         final MathTransform sourceCrsToGrid = source.getGridToCRS(anchor).inverse();
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final CoordinateOperation changeOfCRS = changeOfCRS();
-        if (changeOfCRS == null) {
-            return sourceCrsToGrid;
-        }
         if (inverseChangeOfCRS == null) {
-            inverseChangeOfCRS = changeOfCRS.getMathTransform().inverse();
+            if (knowChangeOfCRS) {
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                final CoordinateOperation changeOfCRS = changeOfCRS();
+                if (changeOfCRS != null) {
+                    inverseChangeOfCRS = changeOfCRS.getMathTransform().inverse();
+                }
+            } else {
+                final CoordinateOperation inverse = changeOfCRS(target, source);
+                if (inverse != null) {
+                    sourceCRS = inverse.getTargetCRS();
+                    inverseChangeOfCRS = inverse.getMathTransform();
+                }
+            }
+            if (inverseChangeOfCRS == null) {
+                return sourceCrsToGrid;
+            }
             if (!isWraparoundDisabled) {
                 isWraparoundApplied = false;
                 if (!isWraparoundNeedVerified) {
@@ -605,8 +652,7 @@ apply:          if (forwardChangeOfCRS == null) {
             }
             if (sourceMedian != null) {
                 final MathTransform inverseNoWrap = inverseChangeOfCRS;
-                final WraparoundApplicator ap = new WraparoundApplicator(targetMedian,
-                        sourceMedian, changeOfCRS().getSourceCRS().getCoordinateSystem());
+                final var ap = new WraparoundApplicator(targetMedian, sourceMedian, getSourceCRS().getCoordinateSystem());
                 inverseChangeOfCRS = ap.forDomainOfUse(inverseNoWrap);
                 if (inverseChangeOfCRS != inverseNoWrap) {
                     crsToGrid = MathTransforms.concatenate(inverseChangeOfCRS, sourceCrsToGrid);
@@ -671,8 +717,8 @@ apply:          if (forwardChangeOfCRS == null) {
      * Invoked when the target CRS has some dimensions that the source CRS does not have.
      * For example, this is invoked during the conversion from (<var>x</var>, <var>y</var>)
      * coordinates to (<var>x</var>, <var>y</var>, <var>t</var>). If constant values can
-     * be given to the missing dimensions, than those values are returned. Otherwise this
-     * method returns {@code null}.
+     * be given to the missing dimensions, then those values are returned.
+     * Otherwise this method returns {@code null}.
      *
      * <p>The returned array has a length equals to the number of dimensions in the target CRS.
      * Only coordinates in dimensions without source (<var>t</var> in the above example) will be used.

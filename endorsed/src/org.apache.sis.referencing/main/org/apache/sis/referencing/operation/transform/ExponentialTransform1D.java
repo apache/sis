@@ -154,7 +154,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -172,7 +172,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -190,7 +190,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -200,7 +200,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -214,13 +214,13 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * This implementation does special cases for {@link LinearTransform1D} and {@link LogarithmicTransform1D}.
      */
     @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
         MathTransform concatenation = null;
         int relativeIndex = +1;
         do {
             final MathTransform other = context.getTransform(relativeIndex).orElse(null);
             if (other instanceof LinearTransform1D) {
-                final LinearTransform1D linear = (LinearTransform1D) other;
+                final var linear = (LinearTransform1D) other;
                 if (relativeIndex < 0) {
                     final double newBase  = Math.pow(base, linear.scale);
                     final double newScale = Math.pow(base, linear.offset) * scale;
@@ -235,8 +235,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
             } else if (other instanceof LogarithmicTransform1D) {
                 concatenation = concatenateLog((LogarithmicTransform1D) other, relativeIndex);
             }
-            if (concatenation != null) {
-                context.replace(relativeIndex, concatenation);
+            if (concatenation != null && context.replace(relativeIndex, concatenation)) {
                 return;
             }
         } while ((relativeIndex = -relativeIndex) < 0);

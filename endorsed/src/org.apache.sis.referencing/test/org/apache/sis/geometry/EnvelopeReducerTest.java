@@ -17,11 +17,11 @@
 package org.apache.sis.geometry;
 
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 
@@ -40,14 +40,13 @@ public final class EnvelopeReducerTest extends TestCase {
      * Creates an envelope for the given coordinate values.
      */
     private static GeneralEnvelope createFromExtremums(boolean latlon, double xmin, double ymin, double xmax, double ymax) {
-        final CommonCRS crs = CommonCRS.WGS84;
         final GeneralEnvelope env;
         if (latlon) {
-            env = new GeneralEnvelope(crs.geographic());
+            env = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
             env.setRange(1, xmin, xmax);
             env.setRange(0, ymin, ymax);
         } else {
-            env = new GeneralEnvelope(crs.normalizedGeographic());
+            env = new GeneralEnvelope(HardCodedCRS.WGS84);
             env.setRange(0, xmin, xmax);
             env.setRange(1, ymin, ymax);
         }

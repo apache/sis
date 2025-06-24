@@ -1072,8 +1072,12 @@ codes:  for (int i=0; i<codes.length; i++) {
             }
         }
         if (!quiet) {
-            LogRecord record = Resources.forLocale(locale).getLogRecord(Level.WARNING, Resources.Keys.DeprecatedCode_3,
-                    Constants.EPSG + Constants.DEFAULT_SEPARATOR + code, replacedBy, reason);
+            LogRecord record = Resources.forLocale(locale).createLogRecord(
+                    Level.WARNING,
+                    Resources.Keys.DeprecatedCode_3,
+                    Constants.EPSG + Constants.DEFAULT_SEPARATOR + code,
+                    replacedBy,
+                    reason);
             Logging.completeAndLog(LOGGER, EPSGDataAccess.class, method, record);
         }
         return (String) replacedBy;
@@ -1936,8 +1940,10 @@ codes:  for (int i=0; i<codes.length; i++) {
                     if (!Double.isNaN(semiMinorAxis)) {
                         // Both `inverseFlattening` and `semiMinorAxis` are defined.
                         // Log a warning and create the ellipsoid using the inverse flattening.
-                        final LogRecord record = resources().getLogRecord(Level.WARNING,
-                                Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + Constants.DEFAULT_SEPARATOR + code);
+                        final LogRecord record = resources().createLogRecord(
+                                Level.WARNING,
+                                Resources.Keys.AmbiguousEllipsoid_1,
+                                Constants.EPSG + Constants.DEFAULT_SEPARATOR + code);
                         Logging.completeAndLog(LOGGER, EPSGDataAccess.class, "createEllipsoid", record);
                     }
                     ellipsoid = owner.datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);

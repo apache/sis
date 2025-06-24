@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Map;
 import java.util.Arrays;
 import java.io.Serializable;
 import static java.lang.Math.*;
@@ -467,14 +468,19 @@ public class EllipsoidToRadiusTransform extends AbstractMathTransform implements
 
     /**
      * If the transform after this transform is dropping the third coordinate, removes this transform.
+     * Otherwise, allows {@link TransformJoiner} to move the operations applied on the longitude value
+     * if this move can simplify the chain of transforms.
      *
      * @param  context  information about the neighbor transforms, and the object where to set the result.
      * @throws FactoryException if an error occurred while combining the transforms.
      */
     @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
         if (!context.removeUnusedDimensions(1, SRC_DIM, SRC_DIM + 1, MathTransforms::identity)) {
-            super.tryConcatenate(context);
+            // Try to move operation on the longitude value.
+            if (!context.replacePassThrough(Map.of(0, 0))) {
+                super.tryConcatenate(context);
+            }
         }
     }
 

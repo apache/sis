@@ -57,11 +57,11 @@ dependencies {
      * Dependencies used only by incubated modules. The dependencies are not declared
      * in the global `settings.gradle.kts` because incubated modules are not released.
      */
-    implementation(group = "org.antlr",       name = "antlr4-maven-plugin", version = "4.11.1")
+    implementation(group = "org.antlr",       name = "antlr4-maven-plugin", version = "4.13.2")
     implementation(group = "org.xerial",      name = "sqlite-jdbc",         version = "3.45.1.0")
-    compileOnly   (group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0")
+    compileOnly   (group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.1.0")
     compileOnly   (group = "org.osgi",        name = "osgi.core",           version = "8.0.0")
-    antlr         (group = "org.antlr",       name = "antlr4",              version = "4.11.1")
+    antlr         (group = "org.antlr",       name = "antlr4",              version = "4.13.2")
 }
 
 /*
@@ -169,6 +169,18 @@ publishing {
             pom {
                 name        = "Apache SIS CQL"
                 description = "CQL parser."
+            }
+        }
+        create<MavenPublication>("geometry") {
+            var module = "org.apache.sis.geometry"
+            groupId    = "org.apache.sis.core"
+            artifactId = "sis-geometry"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS Geometry"
+                description = "Geometry API."
             }
         }
         create<MavenPublication>("storage.shapefile") {

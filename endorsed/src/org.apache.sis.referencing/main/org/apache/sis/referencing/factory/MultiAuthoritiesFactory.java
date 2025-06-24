@@ -1557,7 +1557,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     public Set<CoordinateOperation> createFromCoordinateReferenceSystemCodes(
             final String sourceCRS, final String targetCRS) throws FactoryException
     {
-        final Deferred deferred = new Deferred();
+        final var deferred = new Deferred();
         final CoordinateOperationAuthorityFactory factory = create(deferred, sourceCRS);
         final String source = deferred.code;
         if (create(deferred, targetCRS) == factory) {
@@ -1567,7 +1567,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * No coordinate operation because of mismatched factories. This is not illegal (the result is an empty set)
          * but it is worth to notify the user because this case has some chances to be a user error.
          */
-        final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
+        final LogRecord record = Resources.forLocale(null).createLogRecord(Level.WARNING,
                 Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
         Logging.completeAndLog(LOGGER, MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);
         return super.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);

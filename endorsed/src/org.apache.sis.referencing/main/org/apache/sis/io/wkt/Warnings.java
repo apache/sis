@@ -243,7 +243,7 @@ public final class Warnings implements Localized, Serializable {
     public String getMessage(int index) {
         Objects.checkIndex(index, getNumMessages());
         index *= 2;
-        final InternationalString i18n = (InternationalString) messages.get(index);
+        final var i18n = (InternationalString) messages.get(index);
         if (i18n != null) {
             return i18n.toString(errorLocale);
         } else {
@@ -341,7 +341,7 @@ public final class Warnings implements Localized, Serializable {
                                                     : Messages.Keys.NonConformFormatting_1, root));
         if (messages != null) {
             for (final Iterator<?> it = messages.iterator(); it.hasNext();) {
-                final InternationalString i18n = (InternationalString) it.next();
+                final var i18n = (InternationalString) it.next();
                 Exception cause = (Exception) it.next();
                 final String message;
                 if (i18n != null) {

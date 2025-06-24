@@ -325,8 +325,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                                 if (found[i] == null) {
                                     found[i] = name;
                                 } else {
-                                    log(Errors.forLocale(locale)
-                                              .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedFileReference_1, part));
+                                    log(Errors.forLocale(locale).createLogRecord(Level.WARNING,
+                                            Errors.Keys.DuplicatedFileReference_1, part));
                                 }
                             }
                         }

@@ -331,7 +331,7 @@ public class MetadataSource implements AutoCloseable {
                  * little bit simpler, keep only the root cause provided that the exception type is compatible.
                  * If the Derby driver was not found at all, reduce the logging level since Derby is optional.
                  */
-                warning = Errors.forLocale(null).getLogRecord(Level.WARNING, Errors.Keys.CanNotConnectTo_1, Initializer.JNDI);
+                warning = Errors.forLocale(null).createLogRecord(Level.WARNING, Errors.Keys.CanNotConnectTo_1, Initializer.JNDI);
                 warning.setThrown(Exceptions.unwrap(e));
                 if (e instanceof ClassNotFoundException) {
                     warning.setLevel(Level.CONFIG);                         // Derby driver not on the module path.
@@ -784,7 +784,7 @@ public class MetadataSource implements AutoCloseable {
                     if (identifier == null) {
                         identifier = candidate;
                     } else if (!identifier.equals(candidate)) {
-                        warning(MetadataSource.class, "search", Errors.forLocale(null).getLogRecord(
+                        warning(MetadataSource.class, "search", Errors.forLocale(null).createLogRecord(
                                 Level.WARNING, Errors.Keys.DuplicatedElement_1, candidate));
                         break;
                     }

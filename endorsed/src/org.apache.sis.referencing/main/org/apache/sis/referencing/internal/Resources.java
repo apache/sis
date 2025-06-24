@@ -188,6 +188,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short ConformanceMeansDatumShift = 11;
 
         /**
+         * A constant value is required for the coordinate at index {0}.
+         */
+        public static final short ConstantCoordinateValueRequired_1 = 109;
+
+        /**
          * This parameter is shown for completeness, but should never have a value different than {0}
          * for this projection.
          */
@@ -446,6 +451,11 @@ public class Resources extends IndexedResourceBundle {
          * system|3#datum|4#prime meridian|5#ellipsoid|6#CRS}.
          */
         public static final short NonConformCRS_3 = 73;
+
+        /**
+         * This interpolated transform is not invertible because the values are not ordered.
+         */
+        public static final short NonInvertibleBecauseUnordered = 108;
 
         /**
          * Non invertible {0}×{1} matrix.

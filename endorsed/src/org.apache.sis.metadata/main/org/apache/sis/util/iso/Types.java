@@ -833,7 +833,7 @@ public final class Types extends Static {
              * may have been ignored. We declare Types.toInternationalString(…) as the source since
              * it is the public facade invoking this method.
              */
-            final LogRecord record = Messages.forLocale(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
+            final LogRecord record = Messages.forLocale(null).createLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
             Logging.completeAndLog(LOGGER, Types.class, "toInternationalString", record);
         }
     }

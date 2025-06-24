@@ -126,6 +126,7 @@ module org.apache.sis.util {
             org.apache.sis.referencing,
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
+            org.apache.sis.geometry,                    // In the "incubator" sub-project.
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,

@@ -60,12 +60,6 @@ final class IdentityTransform extends AbstractLinearTransform {
      */
     private IdentityTransform(final int dimension) {
         this.dimension = dimension;
-        /*
-         * This value is not used by `inverse()` method, but we set it anyway because
-         * `ConcatenatedTransform.tryOptimized(…)` checks if the value is non-null.
-         * A null value would cause unwanted computation of inverse transform(because
-         * `ConcatenatedTransform` computes it itself.
-         */
         inverse = this;
     }
 
@@ -167,7 +161,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms a single position in a list of coordinate values,
+     * Transforms a single position in a sequence of coordinate tuples,
      * and optionally returns the derivative at that location.
      */
     @Override
@@ -182,7 +176,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -192,7 +186,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff,
@@ -202,7 +196,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -215,7 +209,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final float [] srcPts, int srcOff,

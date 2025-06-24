@@ -942,7 +942,7 @@ public class Errors extends IndexedResourceBundle {
         public static final short UnexpectedProperty_2 = 173;
 
         /**
-         * Unexpected scale factor {1,number} for unit of measurement “{0}”.
+         * Unexpected scale factor {1,number,#,##0.######} for unit of measurement “{0}”.
          */
         public static final short UnexpectedScaleFactorForUnit_2 = 174;
 

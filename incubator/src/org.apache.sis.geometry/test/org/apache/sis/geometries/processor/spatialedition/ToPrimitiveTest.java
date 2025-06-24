@@ -1,0 +1,144 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.geometries.processor.spatialedition;
+
+import org.apache.sis.geometries.ArraySequence;
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.DefaultLineString;
+import org.apache.sis.geometries.DefaultLinearRing;
+import org.apache.sis.geometries.DefaultMultiLineString;
+import org.apache.sis.geometries.DefaultMultiPoint;
+import org.apache.sis.geometries.DefaultPoint;
+import org.apache.sis.geometries.DefaultPolygon;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.MeshPrimitive;
+import org.apache.sis.geometries.MultiLineString;
+import org.apache.sis.geometries.MultiMeshPrimitive;
+import org.apache.sis.geometries.MultiPoint;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.math.TupleArray;
+import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.operation.GeometryOperations;
+import org.apache.sis.referencing.CommonCRS;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+/**
+ *
+ * @author Johann Sorel (Geomatys)
+ */
+public class ToPrimitiveTest {
+
+    private static final CoordinateReferenceSystem CRS2D = CommonCRS.WGS84.normalizedGeographic();
+
+    @Test
+    public void testPoint() {
+        final Point point = new DefaultPoint(CRS2D, 1, 2);
+        final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(point);
+        assertTrue(result instanceof MeshPrimitive);
+        final MeshPrimitive primitive = (MeshPrimitive) result;
+        assertEquals(MeshPrimitive.Type.POINTS, primitive.getType());
+    }
+
+    @Test
+    public void testLineString() {
+        final TupleArray positions = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+        final PointSequence points = new ArraySequence(positions);
+        final LineString line = new DefaultLineString(points);
+        final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(line);
+        assertTrue(result instanceof MeshPrimitive);
+        final MeshPrimitive primitive = (MeshPrimitive) result;
+        assertEquals(MeshPrimitive.Type.LINE_STRIP, primitive.getType());
+    }
+
+    @Test
+    public void testPolygon() {
+        final TupleArray positions = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+        final PointSequence points = new ArraySequence(positions);
+        final LinearRing exterior = new DefaultLinearRing(points);
+        final Polygon point = new DefaultPolygon(exterior);
+        final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(point);
+        assertTrue(result instanceof MeshPrimitive);
+        final MeshPrimitive primitive = (MeshPrimitive) result;
+        assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
+    }
+
+    @Test
+    public void testMultiLineString() {
+        { //one line has 3 points, so we must obtain a MultiPrimitive
+            final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+            final PointSequence points1 = new ArraySequence(positions1);
+            final LineString line1 = new DefaultLineString(points1);
+
+            final TupleArray positions2 = TupleArrays.of(CRS2D, new double[]{3,4,5,6,7,8});
+            final PointSequence points2 = new ArraySequence(positions2);
+            final LineString line2 = new DefaultLineString(points2);
+
+            final MultiLineString mlines = new DefaultMultiLineString(line1, line2);
+
+            final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mlines);
+            assertTrue(result instanceof MultiMeshPrimitive);
+            final MultiMeshPrimitive mp = (MultiMeshPrimitive) result;
+            assertEquals(2, mp.getNumGeometries());
+            assertTrue(mp.getGeometryN(0) instanceof MeshPrimitive);
+            assertTrue(mp.getGeometryN(1) instanceof MeshPrimitive);
+
+            final MeshPrimitive primitive1 = (MeshPrimitive) mp.getGeometryN(0);
+            assertEquals(MeshPrimitive.Type.LINE_STRIP, primitive1.getType());
+
+            final MeshPrimitive primitive2 = (MeshPrimitive) mp.getGeometryN(1);
+            assertEquals(MeshPrimitive.Type.LINE_STRIP, primitive2.getType());
+        }
+        { //all linestrings are lines, we must obtain a Primitive.Lines
+            final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+            final PointSequence points1 = new ArraySequence(positions1);
+            final LineString line1 = new DefaultLineString(points1);
+
+            final TupleArray positions2 = TupleArrays.of(CRS2D, new double[]{3,4,5,6});
+            final PointSequence points2 = new ArraySequence(positions2);
+            final LineString line2 = new DefaultLineString(points2);
+
+            final MultiLineString mlines = new DefaultMultiLineString(line1, line2);
+
+            final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mlines);
+            assertTrue(result instanceof MeshPrimitive.Lines);
+            final MeshPrimitive.Lines mp = (MeshPrimitive.Lines) result;
+            assertEquals(2, mp.getNumGeometries());
+            LineString l1 = mp.getGeometryN(0);
+            LineString l2 = mp.getGeometryN(1);
+            assertArrayEquals(new double[]{0,1,2,3}, l1.getPoints().getAttributeArray(AttributesType.ATT_POSITION).toArrayDouble(), 0.0);
+            assertArrayEquals(new double[]{3,4,5,6}, l2.getPoints().getAttributeArray(AttributesType.ATT_POSITION).toArrayDouble(), 0.0);
+        }
+    }
+
+    @Test
+    public void testMultiPoint() {
+        final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+        final PointSequence points = new ArraySequence(positions1);
+        final MultiPoint mpoints = new DefaultMultiPoint(points);
+
+        final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mpoints);
+        assertTrue(result instanceof MeshPrimitive);
+        final MeshPrimitive primitive1 = (MeshPrimitive) result;
+        assertEquals(MeshPrimitive.Type.POINTS, primitive1.getType());
+    }
+}

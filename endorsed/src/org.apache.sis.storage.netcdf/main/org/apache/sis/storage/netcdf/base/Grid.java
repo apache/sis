@@ -33,7 +33,6 @@ import org.apache.sis.referencing.operation.builder.LocalizationGridException;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.Exceptions;
@@ -533,7 +532,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
                 }
             }
             geometry = new GridGeometry(getExtent(axes), anchor, gridToCRS, crs);
-        } catch (FactoryException | TransformException | IllegalGridGeometryException ex) {
+        } catch (FactoryException | TransformException | RuntimeException ex) {
             canNotCreate(decoder, "getGridGeometry", Resources.Keys.CanNotCreateGridGeometry_3, ex);
         }
         return geometry;

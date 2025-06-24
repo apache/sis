@@ -23,6 +23,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformJoiner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -161,7 +162,7 @@ public abstract class CompoundTransform extends AbstractMathTransform {
      * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
      */
     @Override
-    protected final void tryConcatenate(final Joiner context) throws FactoryException {
+    protected final void tryConcatenate(final TransformJoiner context) throws FactoryException {
         int relativeIndex = +1;
 search: do {
             final MathTransform other = context.getTransform(relativeIndex).orElse(null);
@@ -186,8 +187,9 @@ search: do {
                         }
                         concatenated[i] = context.factory.createConcatenatedTransform(c1, c2);
                     }
-                    context.replace(relativeIndex, create(concatenated));
-                    return;
+                    if (context.replace(relativeIndex, create(concatenated))) {
+                        return;
+                    }
                 }
             }
         } while ((relativeIndex = -relativeIndex) < 0);
