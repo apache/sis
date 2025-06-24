@@ -1033,7 +1033,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
         }
 
         /**
-         * Inverse transforms a single position in a list of coordinate values,
+         * Inverse transforms a single position in a sequence of coordinate tuples,
          * and optionally returns the derivative at that location.
          *
          * <p>This method delegates the derivative computation to the enclosing class, then inverses the result.

@@ -325,7 +325,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      * The default implementation delegates to {@link #shift(double)} for each point.
      */
     @Override
@@ -341,7 +341,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      * The default implementation delegates to {@link #shift(double)} for each point.
      */
     @Override

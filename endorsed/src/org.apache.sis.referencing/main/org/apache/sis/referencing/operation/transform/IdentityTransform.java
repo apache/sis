@@ -161,7 +161,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms a single position in a list of coordinate values,
+     * Transforms a single position in a sequence of coordinate tuples,
      * and optionally returns the derivative at that location.
      */
     @Override
@@ -176,7 +176,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -186,7 +186,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff,
@@ -196,7 +196,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -209,7 +209,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public void transform(final float [] srcPts, int srcOff,

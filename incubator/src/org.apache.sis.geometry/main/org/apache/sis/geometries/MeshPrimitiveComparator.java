@@ -56,7 +56,7 @@ public final class MeshPrimitiveComparator {
 
     /**
      * Set to true to skip degenerated lines and triangles.
-     * This parameter only works when comparaison by elements is true.
+     * This parameter only works when comparison by elements is true.
      */
     public MeshPrimitiveComparator skipDegenerated(boolean skipDegenerated) {
         this.skipDegenerated = skipDegenerated;
@@ -65,7 +65,7 @@ public final class MeshPrimitiveComparator {
 
     /**
      * Finite list of attributes to compare.
-     * This parameter only works when comparaison by elements is true.
+     * This parameter only works when comparison by elements is true.
      */
     public MeshPrimitiveComparator comparedAttributes(String ... names) {
         comparedAttributes = Arrays.asList(names);

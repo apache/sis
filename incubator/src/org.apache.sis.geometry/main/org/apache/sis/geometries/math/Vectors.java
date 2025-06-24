@@ -721,7 +721,7 @@ public final class Vectors extends Static {
      *
      * @param vector first vector
      * @param other second vector
-     * @return substraction of both vectors, buffer if not null
+     * @return subtraction of both vectors, buffer if not null
      */
     public static double[] subtract(final double[] vector, final double[] other, double[] buffer){
         if( vector.length != other.length ) {
@@ -747,7 +747,7 @@ public final class Vectors extends Static {
      * @param vector first vector
      * @param other second vector
      * @param buffer must have same size as vector or be null.
-     * @return substraction of both vectors, buffer if not null
+     * @return subtraction of both vectors, buffer if not null
      */
     public static float[] subtract(final float[] vector, final float[] other, float[] buffer){
         if( vector.length != other.length ) {
@@ -1211,39 +1211,39 @@ public final class Vectors extends Static {
     }
 
     /**
-     * Substract 'substraction' to all source1 elements, result is stored in buffer.
+     * Substract 'subtraction' to all source1 elements, result is stored in buffer.
      * @param source1 first vectors array
      * @param buffer result buffer, not null
      * @param source1Offset first array offset
      * @param bufferOffset output buffer offset
-     * @param substraction vector to subtract
+     * @param subtraction vector to subtract
      * @param nbTuple number of tuple to process
      * @return buffer result array, same as buffer parameter
      */
     public static double[] subtractRegular(double[] source1, double[] buffer,
-            int source1Offset, int bufferOffset, double[] substraction, int nbTuple){
-        final int tupleSize = substraction.length;
+            int source1Offset, int bufferOffset, double[] subtraction, int nbTuple){
+        final int tupleSize = subtraction.length;
         for(int i=0,n=nbTuple*tupleSize;i<n;i++){
-            buffer[bufferOffset+i] = source1[source1Offset+i] - substraction[i%tupleSize];
+            buffer[bufferOffset+i] = source1[source1Offset+i] - subtraction[i%tupleSize];
         }
         return buffer;
     }
 
     /**
-     * Substract 'substraction' to all source1 elements, result is stored in buffer.
+     * Substract 'subtraction' to all source1 elements, result is stored in buffer.
      * @param source1 first vectors array
      * @param buffer result buffer, not null
      * @param source1Offset first array offset
      * @param bufferOffset output buffer offset
-     * @param substraction vector to subtract
+     * @param subtraction vector to subtract
      * @param nbTuple number of tuple to process
      * @return buffer result array, same as buffer parameter
      */
     public static float[] subtractRegular(float[] source1, float[] buffer,
-            int source1Offset, int bufferOffset, float[] substraction, int nbTuple){
-        final int tupleSize = substraction.length;
+            int source1Offset, int bufferOffset, float[] subtraction, int nbTuple){
+        final int tupleSize = subtraction.length;
         for(int i=0,n=nbTuple*tupleSize;i<n;i++){
-            buffer[bufferOffset+i] = source1[source1Offset+i] - substraction[i%tupleSize];
+            buffer[bufferOffset+i] = source1[source1Offset+i] - subtraction[i%tupleSize];
         }
         return buffer;
     }

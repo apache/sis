@@ -153,7 +153,7 @@ final class CopyTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Transforms a single position in a list of coordinate values,
+     * Transforms a single position in a sequence of coordinate tuples,
      * and optionally returns the derivative at that location.
      */
     @Override

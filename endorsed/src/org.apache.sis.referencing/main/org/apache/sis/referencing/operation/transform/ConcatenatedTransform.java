@@ -574,7 +574,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms a single position in a list of coordinate values,
+     * Transforms a single position in a sequence of coordinate tuples,
      * and optionally returns the derivative at that location.
      *
      * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
@@ -608,7 +608,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms many positions in a list of coordinate values. The source points are first
+     * Transforms many positions in a sequence of coordinate tuples. The source points are first
      * transformed by {@link #transform1}, then the intermediate points are transformed by
      * {@link #transform2}. The transformations are performed without intermediate buffer
      * if it can be avoided.
@@ -691,7 +691,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms many positions in a list of coordinate values. The source points are first
+     * Transforms many positions in a sequence of coordinate tuples. The source points are first
      * transformed by {@link #transform1}, then the intermediate points are transformed by
      * {@link #transform2}. An intermediate buffer of type {@code double[]} for intermediate
      * results is used for reducing rounding errors.
@@ -753,7 +753,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms many positions in a list of coordinate values. The source points are first
+     * Transforms many positions in a sequence of coordinate tuples. The source points are first
      * transformed by {@link #transform1}, then the intermediate points are transformed by
      * {@link #transform2}. An intermediate buffer of type {@code double[]} for intermediate
      * results is used for reducing rounding errors.
@@ -795,7 +795,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms many positions in a list of coordinate values. The source points are first
+     * Transforms many positions in a sequence of coordinate tuples. The source points are first
      * transformed by {@link #transform1}, then the intermediate points are transformed by
      * {@link #transform2}. The transformations are performed without intermediate buffer
      * if it can be avoided.
