@@ -141,7 +141,7 @@ public final class WraparoundTransformTest extends TestCase {
     /**
      * Tests wraparound on two axes. We expect two instances of {@link WraparoundTransform} without linear
      * transform between them. The absence of separation between the two {@link WraparoundTransform}s is an
-     * indirect test of {@link WraparoundTransform#tryConcatenate(AbstractMathTransform.Joiner)}.
+     * indirect test of {@link WraparoundTransform#tryConcatenate(TransformJoiner)}.
      *
      * @throws TransformException if a coordinate cannot be computed.
      */

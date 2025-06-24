@@ -75,9 +75,12 @@ final class URLDataSource implements DataSource {
                 log = DRIVERS.add(name);
             }
             if (log) {
-                final LogRecord record = Resources.forLocale(null)
-                        .getLogRecord(Level.CONFIG, Resources.Keys.UseJdbcDriverVersion_3, name,
-                                      metadata.getDriverMajorVersion(), metadata.getDriverMinorVersion());
+                final LogRecord record = Resources.forLocale(null).createLogRecord(
+                        Level.CONFIG,
+                        Resources.Keys.UseJdbcDriverVersion_3,
+                        name,
+                        metadata.getDriverMajorVersion(),
+                        metadata.getDriverMinorVersion());
                 Logging.completeAndLog(LOGGER, StorageConnector.class, "getStorageAs", record);
             }
         }

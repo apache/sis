@@ -225,7 +225,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * @see GeoKeysLoader#warning(short, Object...)
      */
     final void warning(final short key, final Object... args) {
-        LogRecord record = Resources.forLocale(getLocale()).getLogRecord(Level.WARNING, key, args);
+        LogRecord record = Resources.forLocale(getLocale()).createLogRecord(Level.WARNING, key, args);
         // Logger name will be set by listeners.warning(record).
         record.setSourceClassName(GeoTiffStore.class.getName());
         record.setSourceMethodName("getMetadata");

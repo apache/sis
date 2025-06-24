@@ -277,7 +277,8 @@ public final class GridGeometryTest extends TestCase {
                 1, 0, 0.5,
                 0, 1, 0.5,
                 0, 0, 1));
-        final GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, null);
+
+        final var grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, null);
         assertTrue(grid.getGridToCRS(PixelInCell.CELL_CORNER).isIdentity(), "gridToCRS.isIdentity");
         verifyGridToCRS(grid);
     }
@@ -324,7 +325,8 @@ public final class GridGeometryTest extends TestCase {
             0,   0.5, -90,
             0.5, 0,  -180,
             0,   0,     1));
-        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
+
+        final var grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
         assertExtentEquals(
                 new long[] {370, 40},
                 new long[] {389, 339}, grid.getExtent());
@@ -362,7 +364,7 @@ public final class GridGeometryTest extends TestCase {
          * Simplest case: no axis flip.
          * Verification:  y  =  2 × −25 + 40  =  −10  (the minimum value declared in envelope).
          */
-        GridGeometry grid = new GridGeometry(extent, aoi, GridOrientation.HOMOTHETY);
+        var grid = new GridGeometry(extent, aoi, GridOrientation.HOMOTHETY);
         Matrix matrix = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
         assertMatrixEquals(new Matrix3(0.5,  0,   50,
                                        0,    2,   40,
@@ -421,7 +423,7 @@ public final class GridGeometryTest extends TestCase {
          * Same case as the one tested by `testFromExtentAndEnvelope()`,
          * but with axis order swapped.
          */
-        GridGeometry grid = new GridGeometry(extent, aoi, GridOrientation.DISPLAY);
+        var grid = new GridGeometry(extent, aoi, GridOrientation.DISPLAY);
         Matrix matrix = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
         assertMatrixEquals(new Matrix3(0,  0.5,   50,
                                       -2,    0,   20,
@@ -528,23 +530,23 @@ public final class GridGeometryTest extends TestCase {
     public void testUpsample() {
         final GridGeometry grid;
         {   // Source grid
-            final GridExtent extent = new GridExtent(null, new long[] {10,-8}, new long[] {100, 50}, false);
-            final Matrix3 mat = new Matrix3(
+            var extent = new GridExtent(null, new long[] {10,-8}, new long[] {100, 50}, false);
+            var mat = new Matrix3(
                     1,  0, 10,
                     0, -2, 50,
                     0,  0,  1);
-            final MathTransform gridToCRS = MathTransforms.linear(mat);
+            MathTransform gridToCRS = MathTransforms.linear(mat);
             grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
         }
         final GridGeometry upsampled = grid.upsample(4, 4);
         final GridGeometry expected;
         {   // Expected grid
-            GridExtent extent = new GridExtent(null, new long[] {40,-32}, new long[] {400, 200}, false);
-            final Matrix3 mat = new Matrix3(
+            var extent = new GridExtent(null, new long[] {40,-32}, new long[] {400, 200}, false);
+            var mat = new Matrix3(
                     0.25,  0,  9.625,
                     0,  -0.5, 50.750,
                     0,     0,      1);
-            final MathTransform gridToCRS = MathTransforms.linear(mat);
+            MathTransform gridToCRS = MathTransforms.linear(mat);
             expected = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.CARTESIAN_2D);
         }
         assertSame(grid.getEnvelope(), upsampled.getEnvelope(), "envelope");
@@ -559,7 +561,7 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testShiftGrid() {
-        GridGeometry grid = new GridGeometry(
+        final var grid = new GridGeometry(
                 new GridExtent(17, 10),
                 PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix3(
@@ -794,6 +796,43 @@ public final class GridGeometryTest extends TestCase {
                                       10,   0,  10,
                                        0,   0,   1),
                 MathTransforms.getMatrix(tr), STRICT, "createTransformTo");
+    }
+
+    /**
+     * Tests {@link GridGeometry#createTransformTo(GridGeometry, PixelInCell)} with a change
+     * in the number of dimensions. One of the dimensions is non-linear.
+     *
+     * @throws TransformException if the transform cannot be computed.
+     */
+    @Test
+    public void testCreateTransformWithDimensionChange() throws TransformException {
+        final var source = new GridGeometry(
+                new GridExtent(null, null, new long[] {17, 10, 6}, false),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.compound(
+                    MathTransforms.linear(new Matrix3(
+                        1,   0,  -7.0,
+                        0,  -1,  50.0,
+                        0,   0,   1)),
+                    MathTransforms.interpolate(null, new double[] {3, 4, 9})),
+                HardCodedCRS.WGS84_WITH_TIME);
+
+        final var target = new GridGeometry(
+                new GridExtent(200, 300),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                   -0.05,  0,    53.0,
+                    0,     0.1,  -8.0,
+                    0,     0,     1)),
+                HardCodedCRS.WGS84_LATITUDE_FIRST);
+
+        final Matrix expected = Matrices.create(3, 4, new double[] {
+             0,  20,  0, 60,
+            10,   0,  0, 10,
+             0,   0,  0,  1});
+
+        final MathTransform tr = source.createTransformTo(target, PixelInCell.CELL_CENTER);
+        assertMatrixEquals(expected, MathTransforms.getMatrix(tr), STRICT, "createTransformTo");
     }
 
     /**

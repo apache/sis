@@ -666,37 +666,40 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
     }
 
     /**
-     * Gets a localized log record.
+     * Creates a new log record with the localized message identified by the given key.
+     * The logger name, source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
      * @return the log record.
      */
-    public final LogRecord getLogRecord(final Level level, final short key) {
-        final LogRecord record = new LogRecord(level, getKeyConstants().getKeyName(key));
+    public final LogRecord createLogRecord(final Level level, final short key) {
+        final var record = new LogRecord(level, getKeyConstants().getKeyName(key));
         record.setResourceBundleName(getClass().getName());
         record.setResourceBundle(this);
         return record;
     }
 
     /**
-     * Gets a localized log record.
+     * Creates a new log record with the localized message identified by the given key.
+     * The logger name, source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
      * @param  arg0   the parameter for the log message, which may be an array.
      * @return the log record.
      */
-    public final LogRecord getLogRecord(final Level level, final short key,
-                                        final Object arg0)
+    public final LogRecord createLogRecord(final Level level, final short key,
+                                           final Object arg0)
     {
-        final LogRecord record = getLogRecord(level, key);
+        final LogRecord record = createLogRecord(level, key);
         record.setParameters(toArray(arg0));
         return record;
     }
 
     /**
-     * Gets a localized log record.
+     * Creates a new log record with the localized message identified by the given key.
+     * The logger name, source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
@@ -704,15 +707,16 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @param  arg1   the second parameter.
      * @return the log record.
      */
-    public final LogRecord getLogRecord(final Level level, final short key,
-                                        final Object arg0,
-                                        final Object arg1)
+    public final LogRecord createLogRecord(final Level level, final short key,
+                                           final Object arg0,
+                                           final Object arg1)
     {
-        return getLogRecord(level, key, new Object[] {arg0, arg1});
+        return createLogRecord(level, key, new Object[] {arg0, arg1});
     }
 
     /**
-     * Gets a localized log record.
+     * Creates a new log record with the localized message identified by the given key.
+     * The logger name, source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
@@ -721,16 +725,17 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @param  arg2   the third parameter.
      * @return the log record.
      */
-    public final LogRecord getLogRecord(final Level level, final short key,
-                                        final Object arg0,
-                                        final Object arg1,
-                                        final Object arg2)
+    public final LogRecord createLogRecord(final Level level, final short key,
+                                           final Object arg0,
+                                           final Object arg1,
+                                           final Object arg2)
     {
-        return getLogRecord(level, key, new Object[] {arg0, arg1, arg2});
+        return createLogRecord(level, key, new Object[] {arg0, arg1, arg2});
     }
 
     /**
-     * Gets a localized log record.
+     * Creates a new log record with the localized message identified by the given key.
+     * The logger name, source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
@@ -740,13 +745,13 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @param  arg3   the fourth parameter.
      * @return the log record.
      */
-    public final LogRecord getLogRecord(final Level level, final short key,
-                                        final Object arg0,
-                                        final Object arg1,
-                                        final Object arg2,
-                                        final Object arg3)
+    public final LogRecord createLogRecord(final Level level, final short key,
+                                           final Object arg0,
+                                           final Object arg1,
+                                           final Object arg2,
+                                           final Object arg3)
     {
-        return getLogRecord(level, key, new Object[] {arg0, arg1, arg2, arg3});
+        return createLogRecord(level, key, new Object[] {arg0, arg1, arg2, arg3});
     }
 
     /**

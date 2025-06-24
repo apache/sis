@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -237,7 +238,7 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests {@link PassThroughTransform#tryConcatenate(AbstractMathTransform.Joiner)}.
+     * Tests {@link PassThroughTransform#tryConcatenate(TransformJoiner)}.
      * This tests creates a non-linear transform of 6→7 dimensions, then applies a filter
      * keeping only target dimensions 1, 4 and 6 (corresponding to source dimensions 1 and 5).
      *
@@ -253,7 +254,7 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
 
         final var ps      = new PassThroughTransform(2, new PseudoTransform(2, 3), 2);
         final var factory = DefaultMathTransformFactory.provider().caching(false);
-        final var context = new AbstractMathTransform.Joiner(List.of(ps, MathTransforms.linear(m)), 0, factory);
+        final var context = new TransformJoiner(List.of(ps, MathTransforms.linear(m)), factory, List.of());
         ps.tryConcatenate(context);
         MathTransform c = context.replacement;
 
@@ -334,5 +335,36 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
             // _____________[0]_________[1]-____[2]____[3]_______[4]     Dimension index in sub-transform.
             new double[] {2, 1, -1,    0.2,    0.1, 9,  2, 8, 4, -1},
             new double[] {2, 4, -1, 1600.6, 2700.7, 9, 10, 8, 4,  6});
+    }
+
+    /**
+     * Tests a concatenation that delegates the work to {@link TransformJoiner#replacePassThrough(Map)}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-384">SIS-384</a>
+     */
+    @Test
+    public void testTransformJoiner() {
+        final Matrix before   = Matrices.createIdentity(5);
+        final Matrix after    = Matrices.createIdentity(5);
+        final Matrix expected = Matrices.createIdentity(5);
+        List.of(before, expected).forEach((m) -> {
+            m.setElement(0, 0,  0.025);
+            m.setElement(1, 1, -0.025);
+            m.setElement(0, 4,  3.0125);
+            m.setElement(1, 4, 44.9875);
+        });
+        List.of(after, expected).forEach((m) -> {
+            m.setElement(3, 3, 3600000.0);
+            m.setElement(3, 4, 1.5127128E12);
+        });
+        final var interpolate = MathTransforms.interpolate(null, new double[] {2.0, 10.0, 20.0, 35.0, 50.0, 75.0, 100.0});
+        final var passThrough = PassThroughTransform.create(2, interpolate, 1);
+        transform = MathTransforms.concatenate(MathTransforms.linear(before), passThrough, MathTransforms.linear(after));
+
+        final var c = assertInstanceOf(ConcatenatedTransform.class, transform);
+        final Matrix m = MathTransforms.getMatrix(c.transform1);
+        assertNotNull(m);
+        assertSame(passThrough, c.transform2);
+        assertMatrixEquals(expected, m, 0, null);
     }
 }

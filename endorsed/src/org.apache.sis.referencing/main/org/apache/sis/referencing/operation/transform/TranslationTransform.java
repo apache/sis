@@ -159,7 +159,7 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     }
 
     /**
-     * Converts a single position in a list of coordinate values,
+     * Converts a single position in a sequence of coordinate tuples,
      * and optionally computes the derivative at that location.
      *
      * @return {@inheritDoc}

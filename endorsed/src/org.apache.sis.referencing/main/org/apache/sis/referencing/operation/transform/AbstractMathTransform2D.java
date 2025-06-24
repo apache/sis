@@ -64,10 +64,8 @@ import org.apache.sis.referencing.privy.ShapeUtilities;
 public abstract class AbstractMathTransform2D extends AbstractMathTransform implements MathTransform2D {
     /**
      * Number of input and output dimensions of all {@code AbstractMathTransform2D}, which is {@value}.
-     * We define this constant for clarity only; its value shall not be modified.
-     * This is used for making clearer in the code when the literal 2 stands for the number of dimensions.
-     * It reduces confusion in contexts where the literal 2 also appear for other meanings than the number
-     * of dimensions.
+     * We define this constant for clarity only, its value shall never be modified.
+     * This constant is used for making clearer when the literal {@value} stands for the number of dimensions.
      *
      * @see #getSourceDimensions()
      * @see #getTargetDimensions()

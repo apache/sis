@@ -114,7 +114,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      */
     public final LogRecord toLogRecord(final Level level) {
         final IndexedResourceBundle resources = getBundle(null);
-        final LogRecord record = resources.getLogRecord(level, key);
+        final LogRecord record = resources.createLogRecord(level, key);
         if (hasArguments) {
             record.setParameters(resources.toArray(arguments));
         }

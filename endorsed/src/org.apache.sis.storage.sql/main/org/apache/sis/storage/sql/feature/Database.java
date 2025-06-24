@@ -892,7 +892,7 @@ public class Database<G> extends Syntax  {
      * @param cause        the cause, or {@code null} if none.
      */
     final void warning(final short resourceKey, final Exception cause) {
-        LogRecord record = Resources.forLocale(listeners.getLocale()).getLogRecord(Level.WARNING, resourceKey);
+        LogRecord record = Resources.forLocale(listeners.getLocale()).createLogRecord(Level.WARNING, resourceKey);
         record.setThrown(cause);
         log(record);
     }

@@ -498,7 +498,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
         }
 
         /**
-         * Transforms a single position in a list of coordinate values,
+         * Transforms a single position in a sequence of coordinate tuples,
          * and optionally returns the derivative at that location.
          *
          * @throws TransformException if there is no convergence.

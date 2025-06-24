@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.List;
+import java.util.Map;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -24,6 +26,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 
 // Test dependencies
@@ -56,8 +59,8 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testDirect2D() throws TransformException {
-        final AffineTransform2D first  = new AffineTransform2D(1, 0, 0, 1, 2.00, 4.00);    // translate(2, 4)
-        final AffineTransform2D second = new AffineTransform2D(1, 0, 0, 1, 0.25, 0.75);    // translate(0.25, 0.75);
+        final var first  = new AffineTransform2D(1, 0, 0, 1, 2.00, 4.00);    // translate(2, 4)
+        final var second = new AffineTransform2D(1, 0, 0, 1, 0.25, 0.75);    // translate(0.25, 0.75);
 
         // Direct for 2D case.
         tolerance = 1E-10;
@@ -99,7 +102,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
     @Test
     public void testGeneric() throws FactoryException, TransformException {
         final MathTransform first = MathTransforms.linear(Matrices.createDimensionSelect(4, new int[] {1,3}));
-        final AffineTransform2D second = new AffineTransform2D(0.5, 0, 0, 0.25, 0, 0);     // scale(0.5, 0.25);
+        final var second = new AffineTransform2D(0.5, 0, 0, 0.25, 0, 0);    // scale(0.5, 0.25);
         transform = new ConcatenatedTransform(first, second);
         isInverseTransformSupported = false;
         validate();
@@ -110,7 +113,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
         verifyTransform(source, target);
 
         // Optimized case.
-        transform = ConcatenatedTransform.create(first, second, null);
+        transform = MathTransforms.concatenate(first, second);
         assertInstanceOf(ProjectiveTransform.class, transform, "Expected optimized concatenation through matrix multiplication.");
         validate();
         verifyTransform(source, target);
@@ -118,7 +121,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
 
     /**
      * Tests the concatenation of a 3D affine transform with a pass-through transform.
-     * The {@link ConcatenatedTransform#create(MathTransform, MathTransform, MathTransformFactory)}
+     * The {@link ConcatenatedTransform#create(MathTransformFactory, MathTransform...)}
      * method should optimize this case.
      *
      * @throws FactoryException if an error occurred while creating the math transform to test.
@@ -128,7 +131,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
         final MathTransform kernel = new PseudoTransform(2, 3);                     // Any non-linear transform.
         final MathTransform passth = MathTransforms.passThrough(0, kernel, 1);
         final Matrix4 matrix = new Matrix4();
-        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
+        transform = MathTransforms.concatenate(MathTransforms.linear(matrix), passth);
         assertSame(passth, transform, "Identity transform should be ignored.");
         assertEquals(3, transform.getSourceDimensions());
         assertEquals(4, transform.getTargetDimensions());
@@ -139,7 +142,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
          */
         matrix.m00 = 3;
         matrix.m13 = 2;
-        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
+        transform = MathTransforms.concatenate(MathTransforms.linear(matrix), passth);
         MathTransform subTransform;
         subTransform = assertInstanceOf(PassThroughTransform.class, transform).subTransform;
         subTransform = assertInstanceOf(ConcatenatedTransform.class, subTransform).transform2;
@@ -151,18 +154,60 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
          * cannot anymore be concatenated with the sub-transform.
          */
         matrix.m22 = 4;
-        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
-        assertInstanceOf(ConcatenatedTransform.class, transform, "Expected a new concatenated transform.");
-        assertSame(passth, ((ConcatenatedTransform) transform).transform2);
+        transform = MathTransforms.concatenate(MathTransforms.linear(matrix), passth);
+        final var concat = assertInstanceOf(ConcatenatedTransform.class, transform);
+        assertSame(passth, concat.transform2);
         assertEquals(3, transform.getSourceDimensions());
         assertEquals(4, transform.getTargetDimensions());
     }
 
     /**
+     * Test pass-through which is build-in the transform.
+     *
+     * @throws FactoryException if an error occurred while creating the math transform to test.
+     */
+    @Test
+    public void testBuildinPassthrough() throws FactoryException {
+        final var kernel = new PseudoTransform(2, 2) {
+            /** Whether the pass-through optimization has been applied. */
+            private boolean done;
+
+            /** Tries to apply the pass-through optimization. */
+            @Override protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
+                if (context.replacePassThrough(Map.of(1, 1))) {
+                    assertFalse(done);
+                    done = true;
+                }
+            }
+        };
+        final Matrix3 before, after;
+        before = new Matrix3(0.25,  0,    -45,
+                             0,    -0.25,  90,
+                             0,     0,      1);
+
+        after  = new Matrix3(1,     0,     45,
+                             0,    -1,     90,
+                             0,     0,      1);
+
+        transform = MathTransforms.concatenate(MathTransforms.linear(before), kernel, MathTransforms.linear(after));
+        final List<MathTransform> steps = MathTransforms.getSteps(transform);
+        assertEquals(3, steps.size());
+        assertSame(kernel, steps.get(1));
+        /*
+         * The optimization should have moved the -1 factor from `after` to `before`
+         * in order to simplify `after` to a matrix doing only a translation.
+         */
+        after .m11 = -after .m11;    after .m12 = 0;
+        before.m11 = -before.m11;    before.m12 = 0;
+        assertMatrixEquals(before, MathTransforms.getMatrix(steps.get(0)), STRICT, "before");
+        assertMatrixEquals(after,  MathTransforms.getMatrix(steps.get(2)), STRICT, "after");
+    }
+
+    /**
      * Tests concatenation of transforms built from non-square matrices. The transforms are invertible
      * when taken separately, but the transform resulting from concatenation cannot be inverted unless
-     * {@link ConcatenatedTransform#tryOptimized(MathTransform, MathTransform, MathTransformFactory)}
-     * prepares in advance the inverse transform using the inverse of original transforms.
+     * {@link TransformJoiner#simplify(List)} prepares in advance the inverse transform
+     * using the inverse of original transforms.
      *
      * @throws NoninvertibleTransformException if a transform cannot be inverted.
      */

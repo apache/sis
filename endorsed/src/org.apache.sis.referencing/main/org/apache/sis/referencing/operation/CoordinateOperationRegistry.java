@@ -1041,7 +1041,7 @@ class CoordinateOperationRegistry {
                     sourceCRS, targetCRS, null, operation.getMethod(), mt);
         } else {
             // Should never happen because parameters are mandatory, but let be safe.
-            log(resources().getLogRecord(Level.WARNING, Resources.Keys.MissingParameterValues_1,
+            log(resources().createLogRecord(Level.WARNING, Resources.Keys.MissingParameterValues_1,
                     IdentifiedObjects.getIdentifierOrName(operation)), null);
         }
         return null;

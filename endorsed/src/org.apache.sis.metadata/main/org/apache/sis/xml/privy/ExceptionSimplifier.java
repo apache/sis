@@ -137,7 +137,7 @@ public final class ExceptionSimplifier {
     public LogRecord record(final Class<?> classe, final String method) {
         final LogRecord record;
         if (errorKey != 0) {
-            record = Errors.forLocale(null).getLogRecord(Level.WARNING, errorKey, errorValues);
+            record = Errors.forLocale(null).createLogRecord(Level.WARNING, errorKey, errorValues);
         } else {
             record = new LogRecord(Level.WARNING, exception.getMessage());
         }

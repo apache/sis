@@ -523,7 +523,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate values. This implementation accepts float or double arrays,
+     * Transforms a sequence of coordinate tuples. This implementation accepts float or double arrays,
      * since the quasi-totality of the implementation is the same. Locale variables still of the
      * {@code double} type because this is the type used in {@link Category} objects.
      */
@@ -653,7 +653,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate values. This method can be invoked only if {@link #categories} contains
+     * Transforms a sequence of coordinate tuples. This method can be invoked only if {@link #categories} contains
      * at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override
@@ -663,7 +663,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate values. This method can be invoked only if {@link #categories} contains
+     * Transforms a sequence of coordinate tuples. This method can be invoked only if {@link #categories} contains
      * at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override
@@ -673,7 +673,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate values. This method can be invoked only if {@link #categories} contains
+     * Transforms a sequence of coordinate tuples. This method can be invoked only if {@link #categories} contains
      * at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override
@@ -683,7 +683,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Transforms a list of coordinate values. This method can be invoked only if {@link #categories} contains
+     * Transforms a sequence of coordinate tuples. This method can be invoked only if {@link #categories} contains
      * at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override

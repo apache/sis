@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Map;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -40,9 +41,11 @@ import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.referencing.operation.transform.TransformJoiner;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.math.MathFunctions.isPositive;
@@ -609,28 +612,26 @@ subst:  if (variant.spherical || eccentricity == 0) {
      * @return whether or not an optimization has been done.
      */
     @Override
-    final boolean tryInverseConcatenate(Joiner context) throws FactoryException {
+    final boolean tryInverseConcatenate(TransformJoiner context) throws FactoryException {
         int relativeIndex = +1;
         do {
-            final Matrix m = context.getMiddleMatrix(relativeIndex).orElse(null);
-            /*
-             * Verify that the latitude row is an identity conversion except for the sign which is allowed to change
-             * (but no scale and no translation are allowed). Ignore the longitude row because it just passes through
-             * this Mercator projection with no impact on any calculation.
-             */
-            if (m != null
-                    && Matrices.isAffine(m)
-                    && m.getNumRow() == DIMENSION+1
-                    && m.getNumCol() == DIMENSION+1
-                    && m.getElement(1, 0) == 0
-                    && m.getElement(1, DIMENSION) == 0
-                    && Math.abs(m.getElement(1,1)) == 1)
-            {
-                context.replace(relativeIndex, context.factory.createAffineTransform(m));
-                return true;
-            }
+            if (context.replaceRoundtrip(relativeIndex, (middle) -> {
+                final Matrix m = MathTransforms.getMatrix(middle);
+                /*
+                 * Verify that the latitude row is an identity conversion except for the sign which is allowed to change
+                 * (but no scale and no translation are allowed). Ignore the longitude row because it just passes through
+                 * this Mercator projection with no impact on any calculation.
+                 */
+                return (m != null
+                        && Matrices.isAffine(m)
+                        && m.getNumRow() == DIMENSION+1
+                        && m.getNumCol() == DIMENSION+1
+                        && m.getElement(1, DIMENSION) == 0
+                        && m.getElement(1, 0) == 0
+                        && Math.abs(m.getElement(1,1)) == 1) ? middle : null;
+            })) return true;
         } while ((relativeIndex = -relativeIndex) < 0);
-        return false;
+        return context.replacePassThrough(Map.of(0, 0));
     }
 
     /**
@@ -644,7 +645,7 @@ subst:  if (variant.spherical || eccentricity == 0) {
      * @throws FactoryException if an error occurred while combining the transforms.
      */
     @Override
-    protected final void tryConcatenate(final Joiner context) throws FactoryException {
+    protected final void tryConcatenate(final TransformJoiner context) throws FactoryException {
         if (!tryInverseConcatenate(context)) {
             super.tryConcatenate(context);
         }

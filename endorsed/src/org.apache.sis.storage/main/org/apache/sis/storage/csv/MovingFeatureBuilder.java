@@ -220,8 +220,13 @@ final class MovingFeatureBuilder extends MovingFeatures {
                     for (int j=i; --j >= 0;) {          // This is inefficient but used only in case of warnings.
                         p = p.previous;
                     }
-                    warningListener.accept(Resources.forLocale(null).getLogRecord(Level.WARNING,
-                            Resources.Keys.UnexpectedNumberOfCoordinates_4, featureName, new Date(p.startTime), dimension, length));
+                    warningListener.accept(Resources.forLocale(null).createLogRecord(
+                            Level.WARNING,
+                            Resources.Keys.UnexpectedNumberOfCoordinates_4,
+                            featureName,
+                            new Date(p.startTime),
+                            dimension,
+                            length));
                 }
                 continue;
             }

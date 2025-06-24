@@ -96,7 +96,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public final void transform(final double[] srcPts, final int srcOff,
@@ -107,7 +107,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public final void transform(final float[] srcPts, final int srcOff,
@@ -118,7 +118,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public final void transform(final float [] srcPts, final int srcOff,
@@ -129,7 +129,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      */
     @Override
     public final void transform(final double[] srcPts, final int srcOff,

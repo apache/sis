@@ -25,16 +25,19 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
+import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
+import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
 import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.referencing.privy.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.referencing.datum.HardCodedDatum;
 
 // Specific to the main branch:
 import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
@@ -64,13 +67,13 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Creates a Molodensky transform for a datum shift from WGS84 to ED50.
+     * Creates a three-dimensional Molodensky transform for a datum shift from WGS84 to ED50.
      * Tolerance thresholds are also initialized.
      *
      * @throws FactoryException if an error occurred while creating a transform step.
      */
     private void create(final boolean abridged) throws FactoryException {
-        final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
+        final Ellipsoid source = HardCodedDatum.WGS84.getEllipsoid();
         final Ellipsoid target = CommonCRS.ED50.ellipsoid();
         transform = MolodenskyTransform.createGeodeticTransformation(
                 DefaultMathTransformFactory.provider(),
@@ -258,12 +261,55 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testIdentity() throws FactoryException {
-        final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
+        final Ellipsoid source = HardCodedDatum.WGS84.getEllipsoid();
         transform = MolodenskyTransform.createGeodeticTransformation(
                 DefaultMathTransformFactory.provider(), source, false, source, false, 0, 0, 0, false);
         assertInstanceOf(LinearTransform.class, transform);
         assertTrue(transform.isIdentity());
         validate();
+    }
+
+    /**
+     * Tests the concatenation of a 3-dimensional transform with a "3D to 2D" transform.
+     *
+     * @throws FactoryException if an error occurred while creating a transform step.
+     * @throws TransformException if an error occurred while requesting the inverse transform.
+     */
+    @Test
+    public void testRedimension3Dto2D() throws FactoryException, TransformException {
+        final DefaultMathTransformFactory factory = DefaultMathTransformFactory.provider();
+        transform = new MolodenskyTransform(
+                HardCodedDatum.WGS84.getEllipsoid(), true,
+                GeodeticDatumMock.ED50.getEllipsoid(), true,
+                GeocentricTranslationTest.TX,
+                GeocentricTranslationTest.TY,
+                GeocentricTranslationTest.TZ,
+                false);
+        validate();
+        MolodenskyTransform forward, inverse;
+
+        // Verify initial conditions.
+        forward = assertInstanceOf(MolodenskyTransform.class, transform);
+        inverse = assertInstanceOf(MolodenskyTransform.class, transform.inverse());
+        assertSame(forward, inverse.inverse());
+        assertEquals(3, forward.getSourceDimensions());
+        assertEquals(3, forward.getTargetDimensions());
+
+        // Drop target dimension.
+        transform = MathTransforms.concatenate(transform, factory.builder(Geographic3Dto2D.NAME).create());
+        forward = assertInstanceOf(MolodenskyTransform.class, transform);
+        inverse = assertInstanceOf(MolodenskyTransform.class, transform.inverse());
+        assertSame(forward, inverse.inverse());
+        assertEquals(3, forward.getSourceDimensions());
+        assertEquals(2, forward.getTargetDimensions());
+
+        // Drop source dimension.
+        transform = MathTransforms.concatenate(factory.builder(Geographic2Dto3D.NAME).create(), transform);
+        forward = assertInstanceOf(MolodenskyTransform.class, transform);
+        inverse = assertInstanceOf(MolodenskyTransform.class, transform.inverse());
+        assertSame(forward, inverse.inverse());
+        assertEquals(2, forward.getSourceDimensions());
+        assertEquals(2, forward.getTargetDimensions());
     }
 
     /**

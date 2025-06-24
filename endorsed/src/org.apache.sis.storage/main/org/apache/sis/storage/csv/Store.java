@@ -268,7 +268,7 @@ final class Store extends URIDataStore implements FeatureSet {
                         break;
                     }
                     default: {
-                        final LogRecord record = errors().getLogRecord(Level.WARNING, Errors.Keys.UnknownKeyword_1, keyword);
+                        final LogRecord record = errors().createLogRecord(Level.WARNING, Errors.Keys.UnknownKeyword_1, keyword);
                         record.setSourceClassName(Store.class.getName());
                         record.setSourceMethodName("parseHeader");
                         listeners.warning(record);

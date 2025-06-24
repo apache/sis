@@ -447,7 +447,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                         case '2': {
                             final String interp = line.substring(p, length);
                             if (!interp.matches("(?i)INTERPOLATION[^A-Z]+BILINEAIRE")) {
-                                final LogRecord record = Errors.forLocale(null).getLogRecord(
+                                final LogRecord record = Errors.forLocale(null).createLogRecord(
                                         Level.WARNING, Errors.Keys.UnsupportedInterpolation_1, interp);
 
                                 // We declare `createMathTransform(…)` method because it is closer to public API.

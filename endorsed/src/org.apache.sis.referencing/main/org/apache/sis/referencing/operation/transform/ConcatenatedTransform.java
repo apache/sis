@@ -36,7 +36,6 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.Classes;
@@ -46,7 +45,6 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -55,7 +53,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 
 /**
  * Base class for concatenated transforms. Instances can be created by calls to the
- * {@link #create(MathTransform, MathTransform, MathTransformFactory)} method.
+ * {@link #create(MathTransformFactory, MathTransform...)} method.
  * When possible, the above-cited method concatenates {@linkplain ProjectiveTransform projective transforms}
  * before to fallback on the creation of new {@code ConcatenatedTransform} instances.
  *
@@ -70,13 +68,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 5772066656987558634L;
-
-    /**
-     * Tolerance threshold for considering a matrix as identity. Since the value used here is smaller
-     * than 1 ULP (about 2.22E-16), it applies only to the zero terms in the matrix. The terms on the
-     * diagonal are still expected to be exactly 1.
-     */
-    private static final double IDENTITY_TOLERANCE = 1E-16;
 
     /**
      * The first math transform.
@@ -113,209 +104,15 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         this.transform1 = transform1;
         this.transform2 = transform2;
         if (!isValid()) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.CanNotConcatenateTransforms_2,
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.CanNotConcatenateTransforms_2,
                     getName(transform1), getName(transform2)));
         }
     }
 
     /**
-     * Concatenates the two given transforms.
-     * If the concatenation result works with two-dimensional input and output points,
-     * then the returned transform will implement {@link MathTransform2D}.
-     * Likewise if the concatenation result works with one-dimensional input and output points,
-     * then the returned transform will implement {@link MathTransform1D}.
-     *
-     * <h4>Implementation note</h4>
-     * {@code ConcatenatedTransform} implementations are available in two versions: direct and non-direct.
-     * The "non-direct" versions use an intermediate buffer when performing transformations; they are slower
-     * and consume more memory. They are used only as a fallback when a "direct" version cannot be created.
-     *
-     * @param  tr1      the first math transform.
-     * @param  tr2      the second math transform.
-     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return the concatenated transform.
-     *
-     * @see MathTransforms#concatenate(MathTransform, MathTransform)
-     */
-    public static MathTransform create(final MathTransform tr1, final MathTransform tr2, final MathTransformFactory factory)
-            throws FactoryException, MismatchedDimensionException
-    {
-        final int dim1 = tr1.getTargetDimensions();
-        final int dim2 = tr2.getSourceDimensions();
-        if (dim1 != dim2) {
-            throw new MismatchedDimensionException(Resources.format(Resources.Keys.CanNotConcatenateTransforms_2, getName(tr1),
-                    getName(tr2)) + ' ' + Errors.format(Errors.Keys.MismatchedDimension_2, dim1, dim2));
-        }
-        final MathTransform mt = tryOptimized(tr1, tr2, factory);
-        if (mt != null) {
-            return mt;
-        }
-        /*
-         * Cannot avoid the creation of a ConcatenatedTransform object.
-         * Check for the type to create (1D, 2D, general case...)
-         */
-        final int dimSource = tr1.getSourceDimensions();
-        final int dimTarget = tr2.getTargetDimensions();
-        if (dimSource == 1 && dimTarget == 1) {
-            /*
-             * Result needs to be a MathTransform1D.
-             */
-            if (tr1 instanceof MathTransform1D && tr2 instanceof MathTransform1D) {
-                return new ConcatenatedTransformDirect1D((MathTransform1D) tr1,
-                                                         (MathTransform1D) tr2);
-            } else {
-                return new ConcatenatedTransform1D(tr1, tr2);
-            }
-        } else if (dimSource == 2 && dimTarget == 2) {
-            /*
-             * Result needs to be a MathTransform2D.
-             */
-            if (tr1 instanceof MathTransform2D && tr2 instanceof MathTransform2D) {
-                return new ConcatenatedTransformDirect2D((MathTransform2D) tr1,
-                                                         (MathTransform2D) tr2);
-            } else {
-                return new ConcatenatedTransform2D(tr1, tr2);
-            }
-        } else if (dimSource == dim1 && dimTarget == dim2) {
-            return new ConcatenatedTransformDirect(tr1, tr2);
-        } else {
-            return new ConcatenatedTransform(tr1, tr2);
-        }
-    }
-
-    /**
-     * Tries to return an optimized concatenation, for example by merging two affine transforms
-     * into a single one. If no optimized case has been found, returns {@code null}. In the latter
-     * case, the caller will need to create a more heavy {@link ConcatenatedTransform} instance.
-     *
-     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
-     */
-    private static MathTransform tryOptimized(final MathTransform tr1, final MathTransform tr2,
-                                              MathTransformFactory factory) throws FactoryException
-    {
-        /*
-         * Trivial - but actually essential!! - check for the identity cases.
-         */
-        if (tr1.isIdentity()) return tr2;
-        if (tr2.isIdentity()) return tr1;
-        /*
-         * Give a chance to AbstractMathTransform to return an optimized object. For example, LogarithmicTransform
-         * concatenated with ExponentialTransform can produce a new formula, PassThrouthTransform may concatenate
-         * its sub-transform, etc. We try both ways (concatenation and pre-concatenation) and see which way gives
-         * the shortest concatenation chain. It is not that much expensive given that most implementations return
-         * null directly.
-         */
-        int stepCount = 0;
-        MathTransform shortest = null;
-        boolean inverseCaseTested = false;
-        if (tr1 instanceof AbstractMathTransform) {
-            // TODO: after removal of the deprecated method, invoke `tryConcatenate(Joiner)` only once.
-            @SuppressWarnings("removal")
-            final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
-            inverseCaseTested = true;
-            if (optimized != null) {
-                stepCount = getStepCount(optimized);
-                shortest  = optimized;
-            }
-        }
-        if (tr2 instanceof AbstractMathTransform) {
-            @SuppressWarnings("removal")
-            final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
-            inverseCaseTested = true;
-            if (optimized != null) {
-                if (shortest == null || getStepCount(optimized) < stepCount) {
-                    return optimized;
-                }
-                shortest = optimized;
-            }
-        }
-        if (shortest != null) {
-            return shortest;
-        }
-        /*
-         * If one transform is the inverse of the other, return the identity transform.
-         * We need to test this case before the linear transform case below, because the
-         * matrices may contain NaN values.
-         */
-        if (!inverseCaseTested && (isInverseEquals(tr1, tr2) || isInverseEquals(tr2, tr1))) {
-            assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
-            assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
-            return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
-        }
-        /*
-         * If both transforms use matrix, then we can create
-         * a single transform using the concatenated matrix.
-         */
-        factory = ReferencingUtilities.nonNull(factory);
-        final MathTransform concatenated = multiply(tr1, tr2, factory);
-        if (concatenated instanceof AbstractLinearTransform) {
-            /*
-             * Following code computes the inverse of `concatenated` transform.  In principle this is not necessary
-             * because `AbstractLinearTransform.inverse()` can inverse the matrix when first needed. However if the
-             * matrices are not square (e.g. if a transform is dropping a dimension), some information may be lost.
-             * By computing inverse transform now as the product of matrices provided by the two inverse transforms
-             * (as opposed to inverting the product of forward transform matrices), we use information that would
-             * otherwise be lost (e.g. the inverse of the transform dropping a dimension may be a transform setting
-             * that dimension to a constant value, often zero). Consequently, the inverse transform here may have real
-             * values for coefficients that `AbstractLinearTransform.inverse()` would have set to NaN, or may succeed
-             * where `AbstractLinearTransform.inverse()` would have throw an exception. Even with square matrices,
-             * computing the inverse transform now may avoid some rounding errors.
-             */
-            final var impl = (AbstractLinearTransform) concatenated;
-            if (impl.inverse == null) try {
-                final MathTransform inverse = multiply(tr2.inverse(), tr1.inverse(), factory);
-                if (inverse != null) {
-                    if (inverse.isIdentity()) {
-                        return inverse;
-                    }
-                    if (inverse instanceof LinearTransform) {
-                        impl.inverse = (LinearTransform) inverse;
-                    }
-                }
-            } catch (NoninvertibleTransformException e) {
-                /*
-                 * Ignore. The `concatenated.inverse()` method will try to compute the inverse itself,
-                 * possible at the cost of more NaN values than what above code would have produced.
-                 */
-                Logging.recoverableException(LOGGER, ConcatenatedTransform.class, "create", e);
-            }
-        }
-        return concatenated;
-    }
-
-    /**
-     * Returns a transform resulting from the multiplication of the matrices of given transforms.
-     * If the given transforms does not provide matrix, then this method returns {@code null}.
-     *
-     * @param  factory  wrapper for the factory which is (indirectly) invoking this method.
-     */
-    private static MathTransform multiply(final MathTransform tr1, final MathTransform tr2,
-            final MathTransformFactory factory) throws FactoryException
-    {
-        final Matrix matrix1 = MathTransforms.getMatrix(tr1);
-        if (matrix1 != null) {
-            final Matrix matrix2 = MathTransforms.getMatrix(tr2);
-            if (matrix2 != null) {
-                final Matrix matrix = Matrices.multiply(matrix2, matrix1);
-                if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
-                    return MathTransforms.identity(matrix.getNumRow() - 1);         // Returns a cached instance.
-                }
-                /*
-                 * NOTE: It is quite tempting to "fix rounding errors" in the matrix before to create the transform.
-                 * But this is often wrong for datum shift transformations (Molodensky and the like) since the datum
-                 * shifts are very small. The shift may be the order of magnitude of the tolerance threshold. Instead,
-                 * Apache SIS performs matrix operations using double-double arithmetic in the hope to get exact
-                 * results at the `double` accuracy, which avoid the need for a tolerance threshold.
-                 */
-                return factory.createAffineTransform(matrix);
-            }
-        }
-        // No optimized case found.
-        return null;
-    }
-
-    /**
      * Returns a name for the specified math transform.
+     * This is used for formatting the message in exceptions.
      */
     private static String getName(final MathTransform transform) {
         ParameterValueGroup params = null;
@@ -332,6 +129,210 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             }
         }
         return Classes.getShortClassName(transform);
+    }
+
+    /**
+     * Replaces the last element of the given list by the first or last step of the transform chains.
+     * If the last element of the {@code steps} list is an instance of {@link ConcatenatedTransform},
+     * then this method replaces that element by {@link #transform1} if {@code first} is {@code true},
+     * or by {@link #transform2} if {@code first} is {@code false}. The other step of this transform
+     * is added without being expanded.
+     *
+     * <h4>Rational</h4>
+     * We do not expand all steps because this is usually not needed. If the steps in the middle
+     * have not be optimized previously, there is no reason to try to optimize them again since
+     * the neighbor transforms have not yet changed.
+     *
+     * @param  steps  the list to modify.
+     * @param  pairs  the list where to opportunistically add {@link ConcatenatedTransform} instances.
+     * @param  first  whether to expand {@link #transform1} ({@code true}) or {@link #transform2} ({@code false})
+     */
+    private static void expand(final List<MathTransform> steps,
+                               final List<ConcatenatedTransform> pairs,
+                               final boolean first)
+    {
+        int replaceIndex = steps.size() - 1;
+        MathTransform tr = steps.get(replaceIndex);
+        while (tr instanceof ConcatenatedTransform) {
+            final var ct = (ConcatenatedTransform) tr;
+            pairs.add(ct);
+            steps.set(replaceIndex,   ct.transform1);
+            steps.add(replaceIndex+1, ct.transform2);
+            if (first) {
+                tr = ct.transform1;
+            } else {
+                tr = ct.transform2;
+                replaceIndex++;
+            }
+        }
+    }
+
+    /**
+     * Concatenates the given transforms.
+     * If the concatenation result works with two-dimensional input and output points,
+     * then the returned transform will implement {@link MathTransform2D}.
+     * Likewise if the concatenation result works with one-dimensional input and output points,
+     * then the returned transform will implement {@link MathTransform1D}.
+     *
+     * <h4>Implementation note</h4>
+     * {@code ConcatenatedTransform} implementations are available in two versions: direct and non-direct.
+     * The "non-direct" versions use an intermediate buffer when performing transformations; they are slower
+     * and consume more memory. They are used only as a fallback when a "direct" version cannot be created.
+     *
+     * @param  factory     the factory which is (indirectly) invoking this method.
+     * @param  transforms  the transform steps to concatenate.
+     * @return the concatenated transform.
+     *
+     * @see MathTransforms#concatenate(MathTransform, MathTransform)
+     */
+    public static MathTransform create(final MathTransformFactory factory, MathTransform... transforms)
+            throws FactoryException, MismatchedDimensionException
+    {
+        /*
+         * Check arguments. Should be done first, before to exclude identity transforms,
+         * because even the identity transforms shall have compatible number of dimensions.
+         */
+        for (int i=1; i<transforms.length; i++) {
+            final MathTransform tr1 = transforms[i-1];
+            final MathTransform tr2 = transforms[i  ];
+            final int dim1 = tr1.getTargetDimensions();
+            final int dim2 = tr2.getSourceDimensions();
+            if (dim1 != dim2) {
+                String message = Resources.format(Resources.Keys.CanNotConcatenateTransforms_2, getName(tr1), getName(tr2));
+                throw new MismatchedDimensionException(message + ' ' + Errors.format(Errors.Keys.MismatchedDimension_2, dim1, dim2));
+            }
+        }
+        /*
+         * Create a semi-shallow (or semi-deep) list of steps by expanding only the `ConcatenatedTransform` instances
+         * that are located at the junction between two elements of the given `transforms` array. For each junction
+         * at index `i`, the last step of `transforms[i]` and the first step of `transforms[i+1]` are unwrapped.
+         * It may force the unwrapping of some other steps in order to not lose any of them.
+         * Other instances of `ConcatenatedTransform` are added as-is in the `steps` list.
+         */
+        final var steps   = new ArrayList<MathTransform>();
+        final var pairs   = new ArrayList<ConcatenatedTransform>();
+        final var context = new TransformJoiner(steps, factory, pairs);
+        boolean changed;
+        do {
+            for (final MathTransform tr : transforms) {
+                if (!tr.isIdentity()) {
+                    if (steps.isEmpty()) {
+                        steps.add(tr);
+                    } else {
+                        expand(steps, pairs, false);    // Expand `transform2` of the previous step.
+                        steps.add(tr);
+                        expand(steps, pairs, true);     // Expand `transform1` of this step.
+                    }
+                }
+            }
+            /*
+             * Thank to above expansion, we can now see when there is two consecutive linear transforms or when a
+             * transform is immediately followed by its inverse. The non-expanded `ConcatenatedTransform` instances
+             * were already analyzed in a previous call of this method and do not need to be analyzed again.
+             */
+            changed = context.simplify();
+            switch (steps.size()) {
+                case 0: return MathTransforms.identity(transforms[0].getSourceDimensions());
+                case 1: return steps.get(0);
+            }
+            if (changed) {
+                transforms = steps.toArray(MathTransform[]::new);
+                steps.clear();
+                pairs.clear();
+            }
+        } while (changed);
+        /*
+         * Give to `AbstractMathTransform` a chance to return an optimized concatenation.
+         * If an optimization is provided, it replaces the whole `steps` chain. Examples:
+         *
+         *   - If a `LogarithmicTransform` is concatenated with an `ExponentialTransform`,
+         *     the optimization can produce a new formula implemented by a different class.
+         *   - `PassThrouthTransform` may concatenate its sub-transform.
+         *   - etc.
+         */
+        MathTransform concatenated = null;
+        for (int i=steps.size(); --i >= 0;) {
+            final MathTransform tr = steps.get(i);
+            if (tr instanceof AbstractMathTransform) {
+                context.reset(i);
+                ((AbstractMathTransform) tr).tryConcatenate(context);
+                final MathTransform replacement = context.replacement;
+                if (replacement != null) {
+                    if (concatenated == null || getStepCount(replacement) < getStepCount(concatenated)) {
+                        concatenated = replacement;
+                    }
+                }
+            }
+        }
+        /*
+         * If no optimization was found, we cannot avoid the creation of a `ConcatenatedTransform` object.
+         * Check for the type to create (1D, 2D, or general case) and whether an efficient "direct" variant
+         * can be used.
+         */
+        if (concatenated == null) {
+            context.reassemble();
+            concatenated = steps.get(0);
+            final int count = steps.size();
+            for (int i=1; i<count; i++) {
+                final MathTransform tr2 = steps.get(i);
+                final int dimSource = concatenated.getSourceDimensions();
+                final int dimTarget = tr2.getTargetDimensions();
+                if (dimSource == AbstractMathTransform1D.DIMENSION &&
+                    dimTarget == AbstractMathTransform1D.DIMENSION)
+                {
+                    if (concatenated instanceof MathTransform1D && tr2 instanceof MathTransform1D) {
+                        concatenated = new ConcatenatedTransformDirect1D((MathTransform1D) concatenated, (MathTransform1D) tr2);
+                    } else {
+                        concatenated = new ConcatenatedTransform1D(concatenated, tr2);
+                    }
+                } else if (dimSource == AbstractMathTransform2D.DIMENSION &&
+                           dimTarget == AbstractMathTransform2D.DIMENSION)
+                {
+                    if (concatenated instanceof MathTransform2D && tr2 instanceof MathTransform2D) {
+                        concatenated = new ConcatenatedTransformDirect2D((MathTransform2D) concatenated, (MathTransform2D) tr2);
+                    } else {
+                        concatenated = new ConcatenatedTransform2D(concatenated, tr2);
+                    }
+                } else if (dimSource == concatenated.getTargetDimensions() &&
+                           dimTarget == tr2.getSourceDimensions())
+                {
+                    concatenated = new ConcatenatedTransformDirect(concatenated, tr2);
+                } else {
+                    concatenated = new ConcatenatedTransform(concatenated, tr2);
+                }
+            }
+        }
+        assert isValid(MathTransforms.getSteps(concatenated)) : concatenated;
+        return concatenated;
+    }
+
+    /**
+     * Verifies that the given list does not contain two consecutive linear transforms.
+     * Consecutive linear transforms are considered an error because their matrices should
+     * have been multiplied together. Also checks that the source dimension of each step
+     * is equal to the target dimension of the previous step.
+     * This method is used for assertion purposes only.
+     */
+    private static boolean isValid(final List<MathTransform> steps) {
+        boolean wasLinear = false;
+        MathTransform previous = null;
+        for (final MathTransform step : steps) {
+            if (previous != null) {
+                if (previous.getTargetDimensions() != step.getSourceDimensions()) {
+                    return false;
+                }
+            }
+            if (step instanceof LinearTransform) {
+                if (wasLinear) {
+                    return false;
+                }
+                wasLinear = true;
+            } else {
+                wasLinear = false;
+            }
+            previous = step;
+        }
+        return true;
     }
 
     /**
@@ -398,7 +399,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     public final List<MathTransform> getSteps() {
         final var transforms = new ArrayList<MathTransform>(5);
-        getSteps(transforms);
+        addStepsTo(transforms);
         return transforms;
     }
 
@@ -415,7 +416,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     private List<Object> getPseudoSteps() {
         final var transforms = new ArrayList<Object>();
-        getSteps(transforms);
+        addStepsTo(transforms);
         /*
          * Pre-process the transforms before to format. Some steps may be merged, or new
          * steps may be created. Do not move size() out of the loop, because it may change.
@@ -466,16 +467,16 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Adds all concatenated transforms in the given list.
      *
-     * @param  transforms  the list where to add concatenated transforms.
+     * @param  transforms  the list where to add the transform steps.
      */
-    private void getSteps(final List<? super MathTransform> transforms) {
+    private void addStepsTo(final List<? super MathTransform> transforms) {
         if (transform1 instanceof ConcatenatedTransform) {
-            ((ConcatenatedTransform) transform1).getSteps(transforms);
+            ((ConcatenatedTransform) transform1).addStepsTo(transforms);
         } else {
             transforms.add(transform1);
         }
         if (transform2 instanceof ConcatenatedTransform) {
-            ((ConcatenatedTransform) transform2).getSteps(transforms);
+            ((ConcatenatedTransform) transform2).addStepsTo(transforms);
         } else {
             transforms.add(transform2);
         }
@@ -573,7 +574,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms a single position in a list of coordinate values,
+     * Transforms a single position in a sequence of coordinate tuples,
      * and optionally returns the derivative at that location.
      *
      * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
@@ -607,7 +608,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms many positions in a list of coordinate values. The source points are first
+     * Transforms many positions in a sequence of coordinate tuples. The source points are first
      * transformed by {@link #transform1}, then the intermediate points are transformed by
      * {@link #transform2}. The transformations are performed without intermediate buffer
      * if it can be avoided.
@@ -690,7 +691,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms many positions in a list of coordinate values. The source points are first
+     * Transforms many positions in a sequence of coordinate tuples. The source points are first
      * transformed by {@link #transform1}, then the intermediate points are transformed by
      * {@link #transform2}. An intermediate buffer of type {@code double[]} for intermediate
      * results is used for reducing rounding errors.
@@ -752,7 +753,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms many positions in a list of coordinate values. The source points are first
+     * Transforms many positions in a sequence of coordinate tuples. The source points are first
      * transformed by {@link #transform1}, then the intermediate points are transformed by
      * {@link #transform2}. An intermediate buffer of type {@code double[]} for intermediate
      * results is used for reducing rounding errors.
@@ -794,7 +795,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Transforms many positions in a list of coordinate values. The source points are first
+     * Transforms many positions in a sequence of coordinate tuples. The source points are first
      * transformed by {@link #transform1}, then the intermediate points are transformed by
      * {@link #transform2}. The transformations are performed without intermediate buffer
      * if it can be avoided.
@@ -862,7 +863,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         assert isValid();
         if (inverse == null) try {
-            inverse = create(transform2.inverse(), transform1.inverse(), null);
+            inverse = create(DefaultMathTransformFactory.provider(), transform2.inverse(), transform1.inverse());
             setInverse(inverse, this);
         } catch (FactoryException e) {
             throw new NoninvertibleTransformException(Resources.format(Resources.Keys.NonInvertibleTransform), e);
@@ -900,49 +901,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         criteria.estimateOnInverse(transform2.inverse(), head);
         criteria.estimateOnInverse(head);
         return criteria.result();
-    }
-
-    /**
-     * Concatenates or pre-concatenates in an optimized way this transform with the given transform, if possible.
-     * This method tries to delegate the concatenation to {@link #transform1} or {@link #transform2}.
-     * Assuming that transforms are associative, this is equivalent to trying the following arrangements:
-     *
-     * <pre class="text">
-     *   Instead of : other → tr1 → tr2
-     *   Try:         (other → tr1) → tr2          where (…) denote an optimized concatenation.
-     *
-     *   Instead of : tr1 → tr2 → other
-     *   Try:         tr1 → (tr2 → other)          where (…) denote an optimized concatenation.</pre>
-     *
-     * @throws FactoryException if an error occurred while combining the transforms.
-     */
-    @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
-        int relativeIndex = +1;
-        do {
-            MathTransform step1 = transform2;     // In the first iteration, we will try to concatenate after this.
-            MathTransform step2 = context.getTransform(relativeIndex).orElse(null);
-            if (step2 != null) {
-                if (relativeIndex < 0) {
-                    step1 = step2;
-                    step2 = transform1;           // In the second iteration, we will try to concatenate before this.
-                }
-                step2 = tryOptimized(step1, step2, context.factory);
-                if (step2 != null) {
-                    step1 = transform1;           // In the first iteration, keep this and replace after.
-                    if (relativeIndex < 0) {
-                        step1 = step2;
-                        step2 = transform2;       // In the second iteration, keep this and replace before.
-                    }
-                    context.replace(relativeIndex, create(step1, step2, context.factory));
-                    return;
-                }
-            }
-        } while ((relativeIndex = -relativeIndex) < 0);
-        /*
-         * Do not invoke `super.tryConcatenate(context)`. The test of whether `this` is the
-         * inverse of `other` has been done indirectly by the calls to `tryOptimized(…)`.
-         */
     }
 
     /**

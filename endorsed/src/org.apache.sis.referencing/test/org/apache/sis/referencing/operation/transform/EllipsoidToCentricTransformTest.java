@@ -98,7 +98,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
          */
         if (addSphericalToCartesian) {
             var tr = new MathTransformWrapper(SphericalToCartesian.INSTANCE.completeTransform(factory));
-            transform = ConcatenatedTransform.create(transform, tr, factory);
+            transform = ConcatenatedTransform.create(factory, transform, tr);
         }
     }
 
@@ -262,7 +262,7 @@ public class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests {@link EllipsoidToCentricTransform#tryConcatenate(AbstractMathTransform.Joiner)}.
+     * Tests {@link EllipsoidToCentricTransform#tryConcatenate(TransformJoiner)}.
      * The test creates <q>Geographic 3D to 2D conversion</q>, <q>Geographic/Geocentric conversions</q>
      * and <q>Geocentric translation</q> transforms, then concatenate them.
      *

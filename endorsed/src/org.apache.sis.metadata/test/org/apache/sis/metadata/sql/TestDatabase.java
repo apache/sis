@@ -259,7 +259,6 @@ public class TestDatabase implements AutoCloseable {
         // Server default to "localhost".
         ds.setDatabaseName(NAME);
         ds.setApplicationName("Apache SIS test database");
-        ds.setCurrentSchema(schema);
         /*
          * Current version does not use pooling on the assumption that connections to local host are fast enough.
          * We verify that the schema does not exist, even if the `create` argument is `false`, because we assume
@@ -293,7 +292,7 @@ public class TestDatabase implements AutoCloseable {
                          * If the limit (in seconds) is exceeded, an SQLTimeoutException is thrown and test fails.
                          */
                         s.setQueryTimeout(10);
-                        s.execute("DROP SCHEMA \"" + ds.getCurrentSchema() + "\" CASCADE");
+                        s.execute("DROP SCHEMA \"" + schema + "\" CASCADE");
                     }
                 }
             }

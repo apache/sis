@@ -26,7 +26,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.privy.GeodeticObjectBuilder;
 import org.apache.sis.util.ComparisonMode;
@@ -524,8 +523,8 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
      */
     @Test
     public void testEquals() throws FactoryException {
-        final ProjectedCRS standard   = create(CommonCRS.WGS84.geographic());
-        final ProjectedCRS normalized = create(CommonCRS.WGS84.normalizedGeographic());
+        final ProjectedCRS standard   = create(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        final ProjectedCRS normalized = create(HardCodedCRS.WGS84);
         final var c = assertInstanceOf(LenientComparable.class, standard);
         assertFalse(c.equals(normalized, ComparisonMode.STRICT));
         assertFalse(c.equals(normalized, ComparisonMode.BY_CONTRACT));

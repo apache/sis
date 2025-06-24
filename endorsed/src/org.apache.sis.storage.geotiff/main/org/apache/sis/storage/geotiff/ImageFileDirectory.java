@@ -1915,7 +1915,7 @@ final class ImageFileDirectory extends DataCube {
      * @param  parameters  the parameters to put in the message.
      */
     private void warning(final Level level, final short key, final Object... parameters) {
-        final LogRecord record = reader.resources().getLogRecord(level, key, parameters);
+        final LogRecord record = reader.resources().createLogRecord(level, key, parameters);
         record.setSourceClassName(GeoTiffStore.class.getName());
         record.setSourceMethodName("components()");
         // Logger name will be set by listeners.warning(record).

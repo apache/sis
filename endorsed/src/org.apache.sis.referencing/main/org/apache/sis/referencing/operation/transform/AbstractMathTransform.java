@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.function.IntFunction;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -38,8 +37,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.system.Loggers;
@@ -49,9 +46,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.OptionalCandidate;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
 
 // Specific to the main branch:
 import org.opengis.geometry.MismatchedDimensionException;
@@ -186,8 +181,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * This method is (for example) for preventing a viewer to crash when attempting to render a world-wide image.</p>
      *
      * <p>Callers do not need to search through {@linkplain MathTransforms#getSteps(MathTransform) transform steps}.
-     * SIS implementation of {@link MathTransforms#concatenate(MathTransform, MathTransform) concatenated transforms}
-     * do that automatically.</p>
+     * The Apache <abbr>SIS</abbr> implementation of {@link MathTransforms#concatenate(MathTransform, MathTransform)
+     * concatenated transforms} does that automatically.</p>
      *
      * @param  criteria  controls the definition of transform domain.
      * @return estimation of a domain where this transform is considered numerically applicable.
@@ -846,40 +841,6 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Returns {@code true} if {@code tr1} is the inverse of {@code tr2}.
-     * If this method is unsure, it conservatively returns {@code false}.
-     * The transform that may be inverted is {@code tr1}.
-     *
-     * @param  tr1  the transform to inverse.
-     * @param  tr2  the transform that may be the inverse of {@code tr1}.
-     * @return whether this transform is the inverse of the given transform. If unsure, {@code false}.
-     */
-    static boolean isInverseEquals(MathTransform tr1, final MathTransform tr2) {
-        if (tr1.getSourceDimensions() != tr2.getTargetDimensions() ||
-            tr1.getTargetDimensions() != tr2.getSourceDimensions())
-        {
-            return false;
-        }
-        if ((tr1 instanceof LinearTransform) != (tr2 instanceof LinearTransform)) {
-            // For avoiding creation of inverse transform for a result that should be false.
-            return false;
-        }
-        try {
-            tr1 = tr1.inverse();
-        } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(LOGGER, AbstractMathTransform.class, "isInverseEquals", e);
-            return false;
-        }
-        if (tr1 instanceof LenientComparable) {
-            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATE);
-        }
-        if (tr2 instanceof LenientComparable) {
-            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATE);
-        }
-        return tr1.equals(tr2);
-    }
-
-    /**
      * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
      * If an optimization is possible, a new math transform is created to perform the combined transformation.
      * The {@code applyOtherFirst} value determines the transformation order as bellow:
@@ -904,33 +865,29 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @since 0.8
      *
-     * @deprecated Replaced by {@link #tryConcatenate(Joiner)}.
+     * @deprecated Replaced by {@link #tryConcatenate(TransformJoiner)}.
      *             See <a href="https://issues.apache.org/jira/browse/SIS-595">SIS-595</a>.
      */
     @Deprecated(forRemoval=true, since="1.5")
     protected MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
             throws FactoryException
     {
-        MathTransform first = this;
-        if (applyOtherFirst) {
-            first = other;
-            other = this;
-        }
-        final var context = new Joiner(List.of(first, other), applyOtherFirst ? 1 : 0, ReferencingUtilities.nonNull(factory));
-        tryConcatenate(context);
-        return context.replacement;
+        return null;
     }
 
     /**
-     * Concatenates or pre-concatenates in an optimized way this math transform with its neighbor, if possible.
-     * If an optimization is possible, a new math transform is created to perform the combined transformation.
-     * If no optimization is available, the concatenation will be prepared by {@link DefaultMathTransformFactory}
-     * using a generic implementation.
+     * Concatenates in an optimized way this math transform with its neighbor, if possible.
+     * If an optimization is possible, a new {@link MathTransform} is created to perform a calculation
+     * equivalent to the {@linkplain MathTransforms#getSteps(MathTransform) sequence of transform steps}.
+     * If no optimization is available, the concatenation will be done by a generic implementation which
+     * will execute one transform step after the other.
      *
-     * <p>The default implementation checks if a neighbor transform is the inverse of this transform. This method is
-     * ought to be overridden by subclasses capable of concatenating some combination of transforms in a special way.
-     * {@link LinearTransform} implementations do not need to override this method because matrix multiplications
-     * will be handled automatically. This method does not need to handle the {@link #isIdentity()} case neither.</p>
+     * <p>This method is ought to be overridden by subclasses capable of replacing a specific sequence of steps.
+     * The replacement is specific to each {@code AbstractMathTransform} implementation because the replacement
+     * typically uses mathematical identities that depend on the formulas used by this transform.
+     * This method does not need to care about the following more generic cases:
+     * {@linkplain #isIdentity() identity} transforms, transforms immediately followed by their {@linkplain #inverse() inverses},
+     * multiplication of {@linkplain MathTransforms#getMatrix(MathTransform) matrixes} in consecutive transforms.</p>
      *
      * @param  context  information about the neighbor transforms, and the object where to set the result.
      * @throws FactoryException if an error occurred while combining the transforms.
@@ -939,301 +896,19 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @since 1.5
      */
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
-        if (context.replaced()) {
-            return;     // Subclass already took action.
-        }
-        int relativeIndex = +1;
-        do {
-            final MathTransform other = context.getTransform(relativeIndex).orElse(null);
-            if (other != null && isInverseEquals(this, other)) {
-                int dimension = (relativeIndex < 0) ? getTargetDimensions() : getSourceDimensions();
-                context.replace(relativeIndex, MathTransforms.identity(dimension));
-                break;
-            }
-        } while ((relativeIndex = -relativeIndex) < 0);
-    }
-
-    /**
-     * Information about how to concatenate the enclosing transform with the previous or next transforms.
-     * Those information give an opportunity for {@link AbstractMathTransform} implementations to replace
-     * the default concatenation algorithm by an optimized alternative. Examples of optimizations may be:
-     * detecting when two consecutive non-linear operations are equivalent to a third non-linear operation,
-     * or rewriting and moving linear transforms before or after the enclosing transform (such moves can
-     * cause two linear transforms to become consecutive, which enable their efficient merging).
-     *
-     * <h2>Usage</h2>
-     * Implementations can inspect the surrounding transforms by calls to {@link #getTransform(int)} or
-     * {@link #isLinear(int, boolean)}. If they decide to replace the enclosing transform and a neighbor
-     * transform by a single optimized transform, they can call {@link #replace(int, MathTransform)}.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.5
-     *
-     * @see #tryConcatenate(Joiner)
-     *
-     * @since 1.5
-     */
-    protected static final class Joiner {
-        /**
-         * Partial or complete list of coordinate operations to concatenate.
-         * This list may contain only the neighbor steps.
-         */
-        private final List<MathTransform> steps;
-
-        /**
-         * Index of the enclosing transform in the {@link #steps} list.
-         */
-        private final int indexOfThis;
-
-        /**
-         * The factory to use for creating the concatenated transform. Never null.
-         */
-        public final MathTransformFactory factory;
-
-        /**
-         * The concatenated transform to use as a replacement, or {@code null} if none.
-         * <p><b>Note:</b> this is package-private for the purpose of unit tests.</p>
-         */
-        MathTransform replacement;
-
-        /**
-         * Creates new concatenation information.
-         *
-         * @param steps        partial or complete list of coordinate operations to concatenate.
-         * @param indexOfThis  index of the enclosing transform in the {@code steps} list.
-         * @param factory      the factory to use for creating the concatenated transform.
-         */
-        Joiner(final List<MathTransform> steps, final int indexOfThis, final MathTransformFactory factory) {
-            this.factory     = factory;
-            this.steps       = steps;
-            this.indexOfThis = indexOfThis;
-        }
-
-        /**
-         * Tests whether the transform before or after the enclosing transform is linear.
-         * Invoking this method is equivalent to checking if {@link #getMatrix(int)} returns a non-empty value.
-         *
-         * @param  relativeIndex  index of the transform to test, relatively to the enclosing transform.
-         * @param  ifUnknown      value to return if the math transform at the given index is unknown.
-         * @return whether the transform is linear, or {@code ifNone} if unknown.
-         */
-        public boolean isLinear(int relativeIndex, boolean ifUnknown) {
-            relativeIndex += indexOfThis;
-            if (relativeIndex >= 0 && relativeIndex < steps.size()) {
-                return MathTransforms.isLinear(steps.get(relativeIndex));
-            } else {
-                return ifUnknown;
-            }
-        }
-
-        /**
-         * Returns the transform before or after the enclosing transform. By definition, invoking this method
-         * with a relative index of 0 always returns the enclosing transform. Invoking this method with other
-         * values may or may not return a transform, because {@code Joiner} may have information about only
-         * a subset of the transform steps. If present, a relative index of -1 returns the previous transform
-         * while a relative index of +1 returns the next transform.
-         *
-         * @param  relativeIndex  index of the transform to get, relatively to the enclosing transform.
-         * @return the requested transform. An empty value does not necessarily mean that the transform does not exist.
-         */
-        public Optional<MathTransform> getTransform(int relativeIndex) {
-            relativeIndex += indexOfThis;
-            if (relativeIndex >= 0 && relativeIndex < steps.size()) {
-                return Optional.of(steps.get(relativeIndex));
-            } else {
-                return Optional.empty();
-            }
-        }
-
-        /**
-         * Returns the transform before or after the enclosing transform as a matrix if that transform is linear.
-         * This is equivalent to invoking {@link #getTransform(int)} followed by fetching the transform matrix.
-         *
-         * @param  relativeIndex  index of the transform to get, relatively to the enclosing transform.
-         * @return the matrix of the requested transform if that transform is linear, or an empty value otherwise.
-         *
-         * @see #isLinear(int, boolean)
-         */
-        public Optional<Matrix> getMatrix(final int relativeIndex) {
-            return getTransform(relativeIndex).map(MathTransforms::getMatrix);
-        }
-
-        /**
-         * If a neighbor transform is linear and located between a transform and its inverse, returns it as a matrix.
-         * This method checks for a sequence of <var>forward</var> → <var>affine</var> → <var>reverse</var> transforms,
-         * where the <var>forward</var> and <var>reverse</var> steps are the inverse of each other.
-         * If such sequence is found, the matrix of the <var>affine</var> step is returned.
-         *
-         * @param  relativeIndex  relative index of the affine step.
-         * @return the matrix of the affine transform step if it is located
-         *         between transforms that are the inverse of each other.
-         */
-        public Optional<Matrix> getMiddleMatrix(final int relativeIndex) {
-            if (Math.abs(relativeIndex) == 1) {
-                final MathTransform affine = getTransform(relativeIndex).orElse(null);
-                final List<MathTransform> subSteps = MathTransforms.getSteps(affine);
-                if (subSteps.size() == 2) {
-                    final int oi = Math.max(0, relativeIndex);
-                    final MathTransform inverse = subSteps.get(oi);
-                    if (isInverseEquals(steps.get(indexOfThis), inverse)) {
-                        return Optional.ofNullable(MathTransforms.getMatrix(subSteps.get(oi ^ 1)));
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
+        // TODO: make this method empty after the deprecated method has been removed.
+        if (context.replacement == null) {
+            boolean applyOtherFirst = false;
+            do {
+                final MathTransform other = context.getTransform(applyOtherFirst ? -1 : +1).orElse(null);
+                if (other != null) {
+                    context.replacement = tryConcatenate(applyOtherFirst, other, context.factory);
+                    if (context.replacement != null) {
+                        break;
                     }
                 }
-            }
-            return Optional.empty();
-        }
-
-        /**
-         * If the specified range of dimensions is unused by the specified neighbor transform,
-         * removes those dimensions. A range of dimensions is considered unused by a neighbor
-         * if <code>{@link #getMatrix(int) getMatrix}(relativeIndex)</code>
-         * returns a non-empty value and the returned matrix has the following characteristic:
-         *
-         * <ul class="verbose">
-         *   <li>For negative {@code relativeIndex}, all values are zeros in the <em>rows</em> from {@code lower}
-         *       inclusive to {@code upper} exclusive. In such case, the transform at index {@code relativeIndex}+1
-         *       receives input coordinates where the values are always 0 in those dimensions.</li>
-         *   <li>For positive {@code relativeIndex}, all values are zeros in the <em>columns</em> from {@code lower}
-         *       inclusive to {@code upper} exclusive. In such case, the transform at index {@code relativeIndex}-1
-         *       produces output coordinates where the values are always ignored in those dimensions.</li>
-         * </ul>
-         *
-         * If the specified range of dimensions is considered unused, then this method performs the following steps:
-         *
-         * <ul class="verbose">
-         *   <li>Reduce the size of the matrix of the neighbor transform specified by {@code relativeIndex}.
-         *       That reduction is done by removing the rows or columns of above-mentioned zero values.</li>
-         *   <li>Invoke {@code reduce.apply(dimension)} for getting the replacement to use in place of all
-         *       transforms at relative indexes between 0 (inclusive) and {@code relativeIndex} (exclusive).
-         *       The {@code reduce} function will receive in argument the new number of dimensions.
-         *       If {@code reduce} returns {@code null}, this method exits without doing any replacement.</li>
-         *   <li>The transform described by the reduced matrix (step 1) is concatenated with the transform of step 2.
-         *       The concatenation result {@linkplain #replace replaces} all transforms at relative indexes between 0
-         *       (inclusive) and {@code relativeIndex} (also inclusive).</li>
-         * </ul>
-         *
-         * <h4>Example</h4>
-         * For a matrix that describes an affine transform, if the column <var>i</var> has only zero values,
-         * then the coordinate at index <var>i</var> in source coordinate tuples is unused and can be discarded.
-         * For example, a matrix of size 4×3 describes an affine transform from three-dimensional coordinates to
-         * two-dimensional coordinates. In many cases, such affine transform drops the <var>z</var> coordinate.
-         * In order to check and potentially replace such transform by a two-dimensional transform working only
-         * with <var>x</var> and <var>y</var> coordinates, the following code can be used:
-         *
-         * {@snippet lang="java" :
-         *     class MyTransform3D extends AbstractTransform {
-         *         private static final int Z_DIM = 2;
-         *
-         *         @Override
-         *         protected void tryConcatenate(Joiner context) throws FactoryException {
-         *             if (!context.removeUnusedDimensions(+1, Z_DIM, Z_DIM+1, this::reduce)) {
-         *                 super.tryConcatenate(context);    // Try other strategies.
-         *             }
-         *         }
-         *
-         *         private MathTransform reduce(int newDim) {
-         *             switch (newDim) {
-         *                 case 2:  return new MyTransform2D();
-         *                 default: return null;
-         *             }
-         *         }
-         *     }
-         *     }
-         *
-         * In some implementations, such replacement of a {@code MyTransform3D} class by a {@code MyTransform2D} class
-         * may avoid the unnecessary calculation of <var>z</var> output coordinate values.
-         *
-         * @param  relativeIndex  relative index of the potentially affine step to check.
-         * @param  lower   index of the first dimension to try to remove.
-         * @param  upper   index after the last dimension to try to remove.
-         * @param  reduce  provider of transform equivalent to the enclosing transform but with the given number of dimensions.
-         * @return whether the replacement has been done.
-         * @throws FactoryException if an error occurred while combining the transforms.
-         */
-        public boolean removeUnusedDimensions(final int relativeIndex, final int lower, final int upper,
-                final IntFunction<MathTransform> reduce) throws FactoryException
-        {
-            final Matrix matrix;
-            if (relativeIndex == 0 || (matrix = getMatrix(relativeIndex).orElse(null)) == null) {
-                return false;
-            }
-            final boolean before = (relativeIndex < 0);
-            for (int dimension = lower; dimension < upper; dimension++) {
-                if (before) {
-                    for (int i = matrix.getNumCol(); --i >= 0;) {
-                        if (matrix.getElement(dimension, i) != 0) {
-                            return false;
-                        }
-                    }
-                } else {
-                    for (int j = matrix.getNumRow(); --j >= 0;) {
-                        if (matrix.getElement(j, dimension) != 0) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            /*
-             * The specified range of dimensions is unused in the neighbor transform.
-             * Try to create the non-linear transform with a reduced number of dimensions.
-             */
-            final MathTransform reduced;
-            try {
-                reduced = reduce.apply((before ? matrix.getNumRow() : matrix.getNumCol()) - (upper - lower) - 1);
-            } catch (BackingStoreException e) {
-                throw e.unwrapOrRethrow(FactoryException.class);
-            }
-            if (reduced == null) {
-                return false;
-            }
-            MatrixSIS m = MatrixSIS.castOrCopy(matrix);
-            m = before ? m.removeRows   (lower, upper)
-                       : m.removeColumns(lower, upper);
-
-            final MathTransform linear = factory.createAffineTransform(m);
-            replace(relativeIndex, factory.createConcatenatedTransform(before ? linear : reduced,
-                                                                       before ? reduced : linear));
-            return true;
-        }
-
-        /**
-         * Replaces the enclosing transform and neighbor transforms by the given transform.
-         * The {@code bound} argument specifies which neighbors are replaced by the specified transform:
-         *
-         * <ul class="verbose">
-         *   <li>If -1, then transforming a point <var>p</var> by {@code concatenation} shall be equivalent
-         *       to first transforming <var>p</var> by {@code getTransform(-1)}, and then transforming the
-         *       result by {@code getTransform(0)}.</li>
-         *   <li>If +1, then transforming a point <var>p</var> by {@code concatenation} shall be equivalent
-         *       to first transforming <var>p</var> by {@code getTransform(0)}, and then transforming the
-         *       result by {@code getTransform(+1)}.</li>
-         *   <li>If 0, then only the enclosing transform is replaced. Neighbor are unchanged.</li>
-         * </ul>
-         *
-         * This method can be invoked only once per {@code Joiner} instance.
-         *
-         * @param  bound          relative index of first (if negative) or last (if positive) transform to replace.
-         * @param  concatenation  the transform to use instead of the enclosing and neighbor ones.
-         * @throws IllegalStateException if a {@code replace(…)} method has already been invoked.
-         */
-        public void replace(final int bound, final MathTransform concatenation) {
-            if (replaced()) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.AlreadyInitialized_1, "concatenation"));
-            }
-            ArgumentChecks.ensureNonNull("concatenation", concatenation);
-            ArgumentChecks.ensureBetween("bound", -1, +1, bound);
-            replacement = concatenation;
-        }
-
-        /**
-         * Returns whether a concatenated transform has been specified.
-         * This is initially {@code false}, and become {@code true} after a {@code replace(…)} call.
-         *
-         * @return whether {@code replace(…)} has been invoked.
-         */
-        final boolean replaced() {
-            return replacement != null;
+            } while ((applyOtherFirst = !applyOtherFirst) == true);
         }
     }
 

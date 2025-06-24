@@ -439,7 +439,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                 reset();
                 netcdfFileClass = Void.TYPE;
             }
-            final LogRecord record = Resources.forLocale(null).getLogRecord(severity, Resources.Keys.CanNotUseUCAR);
+            final LogRecord record = Resources.forLocale(null).createLogRecord(severity, Resources.Keys.CanNotUseUCAR);
             record.setThrown(cause);
             Logging.completeAndLog(Decoder.LOGGER, NetcdfStoreProvider.class, open ? "open" : "probeContent", record);
         }

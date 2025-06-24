@@ -170,7 +170,7 @@ public final class StoreFormat extends WKTFormat {
      */
     private void log(final Exception e) {
         final LogRecord record = Resources.forLocale(listeners.getLocale())
-                .getLogRecord(Level.WARNING, Resources.Keys.CanNotReadCRS_WKT_1, listeners.getSourceName());
+                .createLogRecord(Level.WARNING, Resources.Keys.CanNotReadCRS_WKT_1, listeners.getSourceName());
         record.setSourceClassName(listeners.getSource().getClass().getCanonicalName());
         record.setSourceMethodName("getMetadata");
         record.setLoggerName(Loggers.WKT);

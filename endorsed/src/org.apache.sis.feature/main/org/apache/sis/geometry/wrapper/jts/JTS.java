@@ -19,9 +19,15 @@ package org.apache.sis.geometry.wrapper.jts;
 import java.util.Map;
 import java.util.Objects;
 import java.awt.Shape;
+import org.locationtech.jts.algorithm.Orientation;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateSequences;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -40,6 +46,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.geometry.wrapper.Geometries.LOGGER;
+import org.locationtech.jts.geom.GeometryCollection;
 
 
 /**
@@ -331,5 +338,94 @@ public final class JTS extends Static {
      */
     public static Geometry fromAWT(final GeometryFactory factory, final Shape shape, final double flatness) {
         return ShapeConverter.create(factory, Objects.requireNonNull(shape), flatness);
+    }
+
+    /**
+     * Makes the given geometry clockwise or counterclockwise.
+     * This method ensures that shells are in the requested winding and holes are in reverse-winding.
+     * If the given geometry already has the desired orientation, then it is returned unchanged.
+     *
+     * <h4>Limitations</h4>
+     * The current implementation handles only the {@link GeometryCollection}, {@link MultiPolygon},
+     * {@link Polygon} and {@link LinearRing} geometry types. Other geometry types are returned unchanged.
+     *
+     * @param  geometry  the geometry to make clockwise or counterclockwise.
+     * @param  clockwise {@code true} for making the exterior ring clockwise, or {@code false} for counterclockwise.
+     * @return the given geometry with the requested winding. May be the {@code geometry} returned directly.
+     */
+    public static Geometry ensureWinding(final Geometry geometry, final boolean clockwise) {
+        if (geometry instanceof MultiPolygon) {
+            final var collection = (MultiPolygon) geometry;
+            final var components = new Polygon[collection.getNumGeometries()];
+            boolean changed = false;
+            for (int i=0; i<components.length; i++) {
+                final var c = (Polygon) geometry.getGeometryN(i);
+                changed |= (c != (components[i] = ensureWinding(c, clockwise)));
+            }
+            if (changed) {
+                return geometry.getFactory().createMultiPolygon(components);
+            }
+        } else if (geometry instanceof GeometryCollection) {
+            final var collection = (GeometryCollection) geometry;
+            final var components = new Geometry[collection.getNumGeometries()];
+            boolean changed = false;
+            for (int i=0; i<components.length; i++) {
+                final var c = geometry.getGeometryN(i);
+                changed |= (c != (components[i] = ensureWinding(c, clockwise)));    // Recursive method invocation.
+            }
+            if (changed) {
+                return geometry.getFactory().createGeometryCollection(components);
+            }
+        } else if (geometry instanceof Polygon) {
+            return ensureWinding((Polygon) geometry, clockwise);
+        } else if (geometry instanceof LinearRing) {
+            return ensureWinding((LinearRing) geometry, clockwise);
+        }
+        return geometry;
+    }
+
+    /**
+     * Makes the given polygon clockwise or counterclockwise.
+     * This method ensures that the shell is in the requested winding and holes are in reverse-winding.
+     * If the given polygon already has the desired orientation, then it is returned unchanged.
+     *
+     * @param  geometry  the polygon to make clockwise or counterclockwise.
+     * @param  clockwise {@code true} for making the polygon clockwise, or {@code false} for counterclockwise.
+     * @return the given polygon with the requested winding. May be the {@code geometry} returned directly.
+     */
+    public static Polygon ensureWinding(final Polygon geometry, final boolean clockwise) {
+        LinearRing outer = geometry.getExteriorRing();
+        boolean same = (outer == (outer = ensureWinding(outer, clockwise)));
+        final var holes = new LinearRing[geometry.getNumInteriorRing()];
+        for (int i=0; i<holes.length; i++) {
+            final LinearRing inner = geometry.getInteriorRingN(i);
+            same &= (inner == (holes[i] = ensureWinding(inner, !clockwise)));
+        }
+        if (same) {
+            return geometry;
+        }
+        final Polygon reversed = geometry.getFactory().createPolygon(outer, holes);
+        copyMetadata(geometry, reversed);
+        return reversed;
+    }
+
+    /**
+     * Makes the given ring clockwise or counterclockwise.
+     * If the given ring already has the desired orientation, then it is returned unchanged.
+     *
+     * @param  geometry  the ring to make clockwise or counterclockwise.
+     * @param  clockwise {@code true} for making the ring clockwise, or {@code false} for counterclockwise.
+     * @return the given ring with the requested winding. May be the {@code geometry} returned directly.
+     */
+    public static LinearRing ensureWinding(final LinearRing geometry, final boolean clockwise) {
+        CoordinateSequence cs = geometry.getCoordinateSequence();
+        if (Orientation.isCCW(cs) != clockwise) {
+            return geometry;
+        }
+        cs = cs.copy();
+        CoordinateSequences.reverse(cs);
+        final LinearRing reversed = geometry.getFactory().createLinearRing(cs);
+        copyMetadata(geometry, reversed);
+        return reversed;
     }
 }

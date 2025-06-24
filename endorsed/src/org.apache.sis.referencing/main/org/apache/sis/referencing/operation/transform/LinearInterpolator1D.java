@@ -173,7 +173,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
         if (preimage != null) {
             final MathTransform1D indexToValues = tr;
             try {
-                tr = create(preimage.clone()).inverse();                                // preimageToIndex transform.
+                tr = create(preimage.clone()).inverse();    // Transform from `preimage` to index used as input.
             } catch (NoninvertibleTransformException e) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.NonMonotonicSequence_1, "preimage"), e);
             }
@@ -292,7 +292,10 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      */
     @Override
     public MathTransform1D inverse() throws NoninvertibleTransformException {
-        return (inverse != null) ? inverse : super.inverse();
+        if (inverse != null) {
+            return inverse;
+        }
+        throw new NoninvertibleTransformException(Resources.format(Resources.Keys.NonInvertibleBecauseUnordered));
     }
 
     /**

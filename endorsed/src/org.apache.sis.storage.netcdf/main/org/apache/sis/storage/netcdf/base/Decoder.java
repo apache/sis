@@ -523,7 +523,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
         final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
         final Logger logger = listeners.getLogger();
         if (logger.isLoggable(level)) {
-            final LogRecord record = resources().getLogRecord(level, resourceKey,
+            final LogRecord record = resources().createLogRecord(level, resourceKey,
                     getFilename(), time / (double) Constants.NANOS_PER_SECOND);
             Logging.completeAndLog(logger, caller, method, record);
         }

@@ -814,6 +814,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final SubOperationInfo[] infos;
         try {
             infos = SubOperationInfo.createSteps(this, sourceComponents, targetComponents);
+        } catch (NoninvertibleTransformException e) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), e);
         } catch (TransformException e) {
             throw new FactoryException(notFoundMessage(sourceCRS, targetCRS), e);
         }
@@ -850,10 +852,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             operation = createFromAffineTransform(AXIS_CHANGES, sourceCRS, stepSourceCRS, null, select);
         }
         /*
-         * For each sub-operation, create a PassThroughOperation for the (stepSourceCRS → stepTargetCRS) operation.
-         * Each source CRS inside this loop will be for dimensions at indices [startAtDimension … endAtDimension-1].
+         * For each sub-operation, create a `PassThroughOperation` for the (`stepSourceCRS` → `stepTargetCRS`) operation.
+         * Each source CRS in the loop will be for dimensions at indices [`firstAffectedCoordinate` … `endAtDimension`-1].
          * Note that those indices are not necessarily the same as the indices in the fields of the same name in
-         * SubOperationInfo, because those indices are not relative to the same CompoundCRS.
+         * `SubOperationInfo`, because those indices are not relative to the same `CompoundCRS`.
          */
         int endAtDimension = 0;
         int remainingSourceDimensions = select.getNumRow() - 1;
@@ -879,16 +881,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 stepTargetCRS = createCompoundCRS(target, stepComponents);
             }
             int delta = source.getCoordinateSystem().getDimension();
-            final int startAtDimension = endAtDimension;
+            final int firstAffectedCoordinate = endAtDimension;
             endAtDimension += delta;
             final int numTrailingCoordinates = remainingSourceDimensions - endAtDimension;
             CoordinateOperation subOperation = info.operation;
-            if ((startAtDimension | numTrailingCoordinates) != 0) {
+            if ((firstAffectedCoordinate | numTrailingCoordinates) != 0) {
                 final Map<String,?> properties = IdentifiedObjects.getProperties(subOperation);
                 /*
-                 * The DefaultPassThroughOperation constuctor expect a SingleOperation.
-                 * In most case, the 'subOperation' is already of this kind. However if
-                 * it is not, try to copy it in such object.
+                 * The `DefaultPassThroughOperation` constuctor expects a `SingleOperation`.
+                 * In most case, the `subOperation` is already of this kind.
+                 * However if it is not, try to copy it in such object.
                  */
                 final SingleOperation op;
                 if (SubTypes.isSingleOperation(subOperation)) {
@@ -899,8 +901,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                             subOperation.getSourceCRS(), subOperation.getTargetCRS(), null,
                             new DefaultOperationMethod(subTransform), subTransform);
                 }
-                subOperation = new DefaultPassThroughOperation(properties, stepSourceCRS, stepTargetCRS,
-                        op, startAtDimension, numTrailingCoordinates);
+                subOperation = new DefaultPassThroughOperation(
+                        properties,
+                        stepSourceCRS,
+                        stepTargetCRS,
+                        op,
+                        firstAffectedCoordinate,
+                        numTrailingCoordinates);
             }
             /*
              * Concatenate the operation with the ones we have found so far, and use the current `stepTargetCRS`
@@ -919,11 +926,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * source dimensions, add those constants as the last step. It never occur except is some particular
          * contexts like when computing a transform between two `GridGeometry` instances.
          */
-        if (stepComponents.length < infos.length) {
-            final Matrix m = SubOperationInfo.createConstantOperation(infos, stepComponents.length,
+        if (stepComponents.length < infos.length) try {
+            final Matrix m = SubOperationInfo.createConstantOperation(infos,
                     stepSourceCRS.getCoordinateSystem().getDimension(),
                         targetCRS.getCoordinateSystem().getDimension());
             operation = concatenate(operation, createFromAffineTransform(CONSTANTS, stepSourceCRS, targetCRS, null, m));
+        } catch (TransformException e) {
+            throw new FactoryException(notFoundMessage(sourceCRS, targetCRS), e);
         }
         return asList(operation);
     }

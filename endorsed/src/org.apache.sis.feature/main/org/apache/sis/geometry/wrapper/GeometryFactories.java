@@ -61,7 +61,7 @@ public final class GeometryFactories {
         try {
             factory = (Geometries<?>) Class.forName(classname).getField("INSTANCE").get(null);
         } catch (ReflectiveOperationException | LinkageError e) {
-            LogRecord record = Resources.forLocale(null).getLogRecord(Level.CONFIG,
+            LogRecord record = Resources.forLocale(null).createLogRecord(Level.CONFIG,
                     Resources.Keys.OptionalLibraryNotFound_2, name, e.toString());
             Logging.completeAndLog(Geometries.LOGGER, Geometries.class, "register", record);
             return previous;

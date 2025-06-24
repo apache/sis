@@ -23,6 +23,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -81,10 +82,15 @@ public final class Interpolation1D extends AbstractProvider {
      * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
+     * @throws InvalidGeodeticParameterException if a preimage is specified and its sequence of values is not monotonic.
      */
     @Override
-    public MathTransform createMathTransform(final Context context) {
+    public MathTransform createMathTransform(final Context context) throws InvalidGeodeticParameterException {
         final Parameters pv = Parameters.castOrWrap(context.getCompletedParameters());
-        return MathTransforms.interpolate(pv.getValue(PREIMAGE), pv.getValue(VALUES));
+        try {
+            return MathTransforms.interpolate(pv.getValue(PREIMAGE), pv.getValue(VALUES));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidGeodeticParameterException(e.getMessage(), e);
+        }
     }
 }

@@ -214,7 +214,7 @@ create: try {
         if (error == null) {
             return Optional.empty();
         }
-        LogRecord record = Resources.forLocale(null).getLogRecord(Level.CONFIG, Resources.Keys.CannotInitialize_1, name);
+        LogRecord record = Resources.forLocale(null).createLogRecord(Level.CONFIG, Resources.Keys.CannotInitialize_1, name);
         record.setThrown(error);
         return Optional.of(record);
     }

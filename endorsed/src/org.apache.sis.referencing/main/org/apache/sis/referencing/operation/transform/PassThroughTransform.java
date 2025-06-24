@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import org.opengis.util.FactoryException;
@@ -320,6 +322,26 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
+     * Returns the integers defining the positions of modified coordinates.
+     * The map keys are the indexes in source coordinate tuples and map values
+     * are the indexes in target coordinate tuples.
+     *
+     * @return the dimensions of modified coordinates in source (map keys) and target (map values) coordinates tuples.
+     */
+    private Map<Integer, Integer> getPassThroughCoordinates() {
+        final var dimensions = new LinkedHashMap<Integer, Integer>();
+        for (int i=0; i<firstAffectedCoordinate; i++) {
+            dimensions.put(i, i);
+        }
+        final int srcOff = firstAffectedCoordinate + subTransform.getSourceDimensions();
+        final int dstOff = firstAffectedCoordinate + subTransform.getTargetDimensions();
+        for (int i=0; i<numTrailingCoordinates; i++) {
+            dimensions.put(srcOff + i, dstOff + i);
+        }
+        return dimensions;
+    }
+
+    /**
      * Returns the sub-transform to apply on the {@linkplain #getModifiedCoordinates() modified coordinates}.
      * This is often the sub-transform specified at construction time, but not necessarily.
      *
@@ -343,8 +365,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms a single position in a list of coordinate values, and opportunistically
-     * computes the transform derivative if requested.
+     * Transforms a single position in a sequence of coordinate tuples,
+     * and opportunistically computes the transform derivative if requested.
      *
      * @return {@inheritDoc}
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
@@ -492,7 +514,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      *
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
@@ -502,7 +524,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      *
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
@@ -512,7 +534,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      *
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
@@ -536,7 +558,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many positions in a list of coordinate values.
+     * Transforms many positions in a sequence of coordinate tuples.
      *
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
@@ -734,8 +756,11 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @param  context        information about the neighbor transforms, and the object where to set the result.
      * @param  relativeIndex  index of the transform to replace, relatively to this transform.
      * @param  other          the other transform to concatenate with {@link #subTransform}.
+     * @return whether the replacement has been done.
      */
-    private void concatenateSubTransform(final Joiner context, final int relativeIndex, MathTransform other) throws FactoryException {
+    private boolean concatenateSubTransform(final TransformJoiner context, final int relativeIndex, MathTransform other)
+            throws FactoryException
+    {
         MathTransform first = subTransform;
         if (relativeIndex < 0) {
             first = other;
@@ -743,7 +768,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         }
         other = context.factory.createConcatenatedTransform(first, other);
         other = context.factory.createPassThroughTransform(firstAffectedCoordinate, other, numTrailingCoordinates);
-        context.replace(relativeIndex, other);
+        return context.replace(relativeIndex, other);
     }
 
     /**
@@ -751,9 +776,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * This method applies the following special cases:
      *
      * <ul>
-     *  <li>If the other transform is also a {@code PassThroughTransform}, then the two transforms may be merged
-     *      in a single {@code PassThroughTransform} instance.</li>
-     *  <li>If the other transform discards some dimensions, verify if we still need a {@code PassThroughTransform}.</li>
+     *   <li>If the other transform is also a {@code PassThroughTransform},
+     *       then the two transforms may be merged in a single {@code PassThroughTransform} instance.</li>
+     *   <li>If the other transform discards some dimensions, verify if we still need a {@code PassThroughTransform}.</li>
      * </ul>
      *
      * @param  context  information about the neighbor transforms, and the object where to set the result.
@@ -762,17 +787,20 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @since 1.5
      */
     @Override
-    protected void tryConcatenate(final Joiner context) throws FactoryException {
-        int relativeIndex = -1;     // Note: algorithm below needs to test (before, after) in that order.
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
+        int relativeIndex = -1;     // Note: algorithm below needs to test (-1, +1) in that order.
         MathTransform other;        // The transform immediately before or after, this transform.
         Matrix m;                   // The matrix of `other`, or null if `other` is non-linear.
         do {
             other = context.getTransform(relativeIndex).orElse(null);
             if (other instanceof PassThroughTransform) {
-                final PassThroughTransform opt = (PassThroughTransform) other;
-                if (opt.firstAffectedCoordinate == firstAffectedCoordinate && opt.numTrailingCoordinates == numTrailingCoordinates) {
-                    concatenateSubTransform(context, relativeIndex, opt.subTransform);
-                    return;
+                final var opt = (PassThroughTransform) other;
+                if (opt.firstAffectedCoordinate == firstAffectedCoordinate &&
+                    opt.numTrailingCoordinates  == numTrailingCoordinates)
+                {
+                    if (concatenateSubTransform(context, relativeIndex, opt.subTransform)) {
+                        return;
+                    }
                 }
             }
             /*
@@ -785,8 +813,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             if (m != null) {
                 final Matrix sub = toSubMatrix(relativeIndex < 0, m);
                 if (sub != null) {
-                    concatenateSubTransform(context, relativeIndex, context.factory.createAffineTransform(sub));
-                    return;
+                    if (concatenateSubTransform(context, relativeIndex, context.factory.createAffineTransform(sub))) {
+                        return;
+                    }
                 }
             }
         } while ((relativeIndex = -relativeIndex) >= 0);
@@ -834,12 +863,20 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             retainedDimensions |= subTransformMask;           // Ensure that we keep all sub-transform dimensions.
         }
         if (retainedDimensions == fullTransformMask) {
-            return;                                           // Nothing to change.
+            /*
+             * Nothing to change by this method. But maybe `contextJoiner` is capable to merge together
+             * the affine transforms located immediately before and after this `PassThroughTransform`.
+             * See https://issues.apache.org/jira/browse/SIS-384 for an example.
+             */
+            context.replacePassThrough(getPassThroughCoordinates());
+            return;
         }
         final int change = subTransform.getSourceDimensions() - subTransform.getTargetDimensions();
         if (change == 0 && !keepSubTransform) {
-            context.replace(relativeIndex, other);      // Shortcut avoiding creation of new MathTransforms.
-            return;
+            // Shortcut avoiding creation of new MathTransforms.
+            if (context.replace(+1, other)) {
+                return;
+            }
         }
         /*
          * We enter in this block if some dimensions can be discarded. We want to discard them before
@@ -901,18 +938,19 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
          *   2) The passthrough transform with less input and output dimensions.
          *   3) The `other` transform with less input dimensions.
          */
-        MathTransform tr = context.factory.createAffineTransform(Matrices.createDimensionSelect(dimension + change, indices));
+        final MathTransformFactory factory = context.factory;
+        MathTransform tr = factory.createAffineTransform(Matrices.createDimensionSelect(dimension + change, indices));
         if (keepSubTransform) {
-            tr = context.factory.createConcatenatedTransform(tr,
-                    context.factory.createPassThroughTransform(numKeepBefore, subTransform, numKeepAfter));
+            tr = factory.createConcatenatedTransform(tr,
+                    factory.createPassThroughTransform(numKeepBefore, subTransform, numKeepAfter));
         }
-        tr = context.factory.createConcatenatedTransform(tr, context.factory.createAffineTransform(reduced));
-        context.replace(relativeIndex, tr);
+        tr = factory.createConcatenatedTransform(tr, factory.createAffineTransform(reduced));
+        context.replace(+1, tr);
     }
 
     /**
      * Returns a mask for the {@code n} lowest bits. This is a convenience method for a frequently
-     * used operation in {@link #tryConcatenate(Joiner)}.
+     * used operation in {@link #tryConcatenate(TransformJoiner)}.
      */
     private static long maskLowBits(final int n) {
         return Numerics.bitmask(n) - 1;

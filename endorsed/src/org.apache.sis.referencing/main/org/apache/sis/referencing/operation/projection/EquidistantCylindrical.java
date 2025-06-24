@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Map;
 import java.util.EnumMap;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
@@ -34,6 +35,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.provider.Equirectangular;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.referencing.operation.transform.TransformJoiner;
 
 
 /**
@@ -257,5 +259,28 @@ public class EquidistantCylindrical extends NormalizedProjection {
         }
         dstPts[dstOff  ] = srcPts[srcOff];
         dstPts[dstOff+1] = y + μ;
+    }
+
+    /**
+     * Allows longitude conversions to be done before or after the map projection.
+     * The conversion can be moved because the longitude value is not used in this projection.
+     */
+    @Override
+    final boolean tryInverseConcatenate(TransformJoiner context) throws FactoryException {
+        return context.replacePassThrough(Map.of(0, 0));
+    }
+
+    /**
+     * Allows longitude conversions to be done before or after the map projection.
+     * The conversion can be moved because the longitude value is not used in this projection.
+     *
+     * @param  context  information about the neighbor transforms, and the object where to set the result.
+     * @throws FactoryException if an error occurred while combining the transforms.
+     */
+    @Override
+    protected final void tryConcatenate(final TransformJoiner context) throws FactoryException {
+        if (!tryInverseConcatenate(context)) {
+            super.tryConcatenate(context);
+        }
     }
 }

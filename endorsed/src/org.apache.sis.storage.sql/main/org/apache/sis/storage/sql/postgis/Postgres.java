@@ -84,8 +84,10 @@ public final class Postgres<G> extends Database<G> {
                 }
             }
         } catch (SQLException e) {
-            log(Resources.forLocale(listeners.getLocale()).getLogRecord(Level.CONFIG,
-                Resources.Keys.SpatialExtensionNotFound_1, "PostGIS"));
+            log(Resources.forLocale(listeners.getLocale()).createLogRecord(
+                    Level.CONFIG,
+                    Resources.Keys.SpatialExtensionNotFound_1,
+                    "PostGIS"));
         }
     }
 

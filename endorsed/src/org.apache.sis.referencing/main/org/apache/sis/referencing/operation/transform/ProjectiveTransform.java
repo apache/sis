@@ -341,7 +341,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     }
 
     /**
-     * Converts a single coordinate tuple in a list of coordinate values,
+     * Converts a single coordinate tuple in a sequence of coordinate tuples,
      * and optionally computes the derivative at that location.
      *
      * @return {@inheritDoc}

@@ -273,7 +273,7 @@ final class AuthorityFactoryIdentifier {
      * @param  used  the factory which will be used.
      */
     void logConflict(final AuthorityFactory used) {
-        log(Resources.forLocale(null).getLogRecord(Level.WARNING, Resources.Keys.IgnoredServiceProvider_3,
+        log(Resources.forLocale(null).createLogRecord(Level.WARNING, Resources.Keys.IgnoredServiceProvider_3,
                 type.api, getAuthorityAndVersion(), Classes.getClass(used)));
     }
 
@@ -282,7 +282,7 @@ final class AuthorityFactoryIdentifier {
      * {@code AuthorityFactoryIdentifier} fallback on a default version.
      */
     void logFallback() {
-        log(Resources.forLocale(null).getLogRecord(Level.WARNING, Resources.Keys.FallbackDefaultFactoryVersion_2,
+        log(Resources.forLocale(null).createLogRecord(Level.WARNING, Resources.Keys.FallbackDefaultFactoryVersion_2,
                 authority, version));
     }
 

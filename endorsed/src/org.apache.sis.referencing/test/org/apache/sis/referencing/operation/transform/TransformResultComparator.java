@@ -193,8 +193,9 @@ final class TransformResultComparator implements MathTransform {
      * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
      * @return the concatenated transform.
      */
-    static MathTransform concatenate(final MathTransform tr1, final MathTransform tr2,
-            final MathTransformFactory factory) throws FactoryException
+    static MathTransform concatenate(final MathTransform tr1,
+                                     final MathTransform tr2,
+                                     final MathTransformFactory factory) throws FactoryException
     {
         double tolerance;
         final MathTransform t1, r1, t2, r2;
@@ -215,11 +216,11 @@ final class TransformResultComparator implements MathTransform {
         } else {
             t2 = r2 = tr2;
         }
-        final MathTransform tested = ConcatenatedTransform.create(t1, t2, factory);
+        final MathTransform tested = ConcatenatedTransform.create(factory, t1, t2);
         if (r1 == t1 && r2 == t2) {
             return tested;
         }
-        final MathTransform reference = ConcatenatedTransform.create(r1, r2, factory);
+        final MathTransform reference = ConcatenatedTransform.create(factory, r1, r2);
         return new TransformResultComparator(reference, tested, tolerance);
     }
 }

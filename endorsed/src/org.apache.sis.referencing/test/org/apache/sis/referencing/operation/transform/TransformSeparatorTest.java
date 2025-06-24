@@ -379,7 +379,7 @@ public final class TransformSeparatorTest extends TestCase {
      * Compares coordinate computed by a reference with coordinates computed by the transform to test.
      * We use this method when we cannot easily analyze the {@link MathTransform} created by the test
      * case, for example because it may have been rearranged in arbitrary ways for optimization purpose
-     * (e.g. {@link PassThroughTransform#tryConcatenate(AbstractMathTransform.Joiner)}).
+     * (e.g. {@link PassThroughTransform#tryConcatenate(TransformJoiner)}).
      *
      * @param  tr1     first half of the transform to use as a reference.
      * @param  tr2     second half of the transform to use as a reference.
@@ -415,7 +415,7 @@ public final class TransformSeparatorTest extends TestCase {
         final MathTransform linear       = MathTransforms.scale(4, 1, 1, 1, 1, 6);
         final MathTransform nonLinear    = new PseudoTransform(3, 2);
         final MathTransform passthrough  = MathTransforms.passThrough(2, nonLinear, 1);
-        final MathTransform concatenated = new ConcatenatedTransform(linear, passthrough);      // Bypass 'tryOptimized' method.
+        final MathTransform concatenated = new ConcatenatedTransform(linear, passthrough);  // Bypass optimizations.
         final TransformSeparator sep = new TransformSeparator(concatenated);
         sep.addSourceDimensionRange(0, 2);
         assertMatrixEquals(new Matrix3(4, 0, 0, 0, 1, 0, 0,  0, 1),

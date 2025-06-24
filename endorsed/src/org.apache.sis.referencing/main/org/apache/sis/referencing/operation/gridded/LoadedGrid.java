@@ -500,7 +500,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
             final MathTransform st = createGeodeticTransformation(provider, factory, sg);
             if (specializations.putIfAbsent(domain, st) != null) {
                 GridLoader.log(provider, Errors.forLocale(null)
-                        .getLogRecord(Level.FINE, Errors.Keys.DuplicatedElement_1, domain));
+                        .createLogRecord(Level.FINE, Errors.Keys.DuplicatedElement_1, domain));
             }
         } catch (TransformException e) {
             throw new FactoryException(e);

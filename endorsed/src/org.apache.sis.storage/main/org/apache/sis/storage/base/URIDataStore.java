@@ -564,8 +564,10 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     protected final void cannotReadAuxiliaryFile(final Class<? extends DataStore> classe, final String method,
             final String extension, final Exception cause, final boolean warning)
     {
-        final LogRecord record = Resources.forLocale(getLocale())
-                .getLogRecord(warning ? Level.WARNING : Level.FINE, Resources.Keys.CanNotReadAuxiliaryFile_1, extension);
+        final LogRecord record = Resources.forLocale(getLocale()).createLogRecord(
+                warning ? Level.WARNING : Level.FINE,
+                Resources.Keys.CanNotReadAuxiliaryFile_1,
+                extension);
         record.setSourceClassName(classe.getCanonicalName());
         record.setSourceMethodName(method);
         record.setThrown(cause);

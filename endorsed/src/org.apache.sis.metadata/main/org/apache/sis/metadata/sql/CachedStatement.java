@@ -150,7 +150,7 @@ final class CachedStatement implements AutoCloseable {
             final boolean hasNext = r.next();
             r.close();
             if (hasNext) {
-                warning(type, "<init>", Errors.forLocale(null).getLogRecord(
+                warning(type, "<init>", Errors.forLocale(null).createLogRecord(
                         Level.WARNING, Errors.Keys.DuplicatedIdentifier_1, identifier));
             }
             identifier = null;

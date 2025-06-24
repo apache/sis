@@ -58,25 +58,37 @@ import org.opengis.geometry.MismatchedDimensionException;
  */
 public abstract class AbstractMathTransform1D extends AbstractMathTransform implements MathTransform1D {
     /**
+     * Number of input and output dimensions of all {@code AbstractMathTransform1D}, which is {@value}.
+     * We define this constant for clarity only, its value shall never be modified.
+     * This constant is used for making clearer when the literal {@value} stands for the number of dimensions.
+     *
+     * @see #getSourceDimensions()
+     * @see #getTargetDimensions()
+     *
+     * @since 1.5
+     */
+    protected static final int DIMENSION = 1;
+
+    /**
      * Constructor for subclasses.
      */
     protected AbstractMathTransform1D() {
     }
 
     /**
-     * Returns the dimension of input points, which is always 1.
+     * Returns the dimension of input points, which is always {@value #DIMENSION}.
      */
     @Override
     public final int getSourceDimensions() {
-        return 1;
+        return DIMENSION;
     }
 
     /**
-     * Returns the dimension of output points, which is always 1.
+     * Returns the dimension of output points, which is always {@value #DIMENSION}.
      */
     @Override
     public final int getTargetDimensions() {
-        return 1;
+        return DIMENSION;
     }
 
     /**
@@ -135,7 +147,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
         if (point == null) {
             coordinate = Double.NaN;
         } else {
-            ensureDimensionMatches("point", 1, point);
+            ensureDimensionMatches("point", DIMENSION, point);
             coordinate = point.getOrdinate(0);
         }
         return new Matrix1(derivative(coordinate));
@@ -214,7 +226,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
             if (point == null) {
                 coordinate = Double.NaN;
             } else {
-                ensureDimensionMatches("point", 1, point);
+                ensureDimensionMatches("point", DIMENSION, point);
                 coordinate = point.getOrdinate(0);
             }
             return new Matrix1(derivative(coordinate));

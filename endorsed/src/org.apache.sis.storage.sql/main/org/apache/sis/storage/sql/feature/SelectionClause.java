@@ -354,7 +354,7 @@ public final class SelectionClause extends SQLBuilder implements Consumer<Warnin
      */
     @Override
     public void accept(final WarningEvent event) {
-        final LogRecord record = resources().getLogRecord(
+        final LogRecord record = resources().createLogRecord(
                 Level.WARNING,
                 Resources.Keys.IncompatibleLiteralCRS_2,
                 event.getOperatorType().map(Enum::name).orElse("?"),

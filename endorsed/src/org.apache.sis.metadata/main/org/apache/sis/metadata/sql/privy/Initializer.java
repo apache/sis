@@ -294,7 +294,7 @@ public abstract class Initializer {
                      */
                 }
             } catch (NoInitialContextException | NameNotFoundException e) {
-                final LogRecord record = Messages.forLocale(null).getLogRecord(
+                final LogRecord record = Messages.forLocale(null).createLogRecord(
                         Level.CONFIG, Messages.Keys.JNDINotSpecified_1, JNDI);
 
                 // The null arguments let `Logging` infers the public caller.
@@ -415,7 +415,7 @@ public abstract class Initializer {
             level = connected ? Level.FINE : Level.CONFIG;
             connected = true;
         }
-        final LogRecord record = Messages.forLocale(null).getLogRecord(level,
+        final LogRecord record = Messages.forLocale(null).createLogRecord(level,
                 Messages.Keys.ConnectedToGeospatialDatabase_1, SQLUtilities.getSimplifiedURL(metadata));
         Logging.completeAndLog(SystemListener.LOGGER, classe, method, record);
     }
@@ -439,7 +439,7 @@ public abstract class Initializer {
             value = DataDirectory.ENV;
         }
         final Messages resources = Messages.forLocale(locale);
-        return asLog ? resources.getLogRecord(Level.WARNING, key, value) : resources.getString(key, value);
+        return asLog ? resources.createLogRecord(Level.WARNING, key, value) : resources.getString(key, value);
     }
 
     /**

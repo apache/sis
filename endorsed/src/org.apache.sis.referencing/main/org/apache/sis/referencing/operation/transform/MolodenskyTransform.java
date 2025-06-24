@@ -268,6 +268,35 @@ public class MolodenskyTransform extends DatumShiftTransform {
     }
 
     /**
+     * Constructs a Molodensky transform with the same parameters as the given instance,
+     * except the number of dimensions.
+     *
+     * @param other          the other instance to copy.
+     * @param isSource3D     {@code true} if the new source coordinates shall have a height.
+     * @param isTarget3D     {@code true} if the new target coordinates shall have a height.
+     * @param createInverse  whether to invoke {@link #redimension} for creating the inverse.
+     */
+    private MolodenskyTransform(final MolodenskyTransform other,
+            final boolean isSource3D, final boolean isTarget3D, final boolean createInverse)
+    {
+        super(other, isSource3D ? 3 : 2, isTarget3D ? 3 : 2);
+        this.isSource3D = isSource3D;
+        this.isTarget3D = isTarget3D;
+        isAbridged = other.isAbridged;
+        tX = other.tX;
+        tY = other.tY;
+        tZ = other.tZ;
+        Δa = other.Δa;
+        Δfmod = other.Δfmod;
+        semiMajor = other.semiMajor;
+        eccentricitySquared = other.eccentricitySquared;
+        if (createInverse) {
+            inverse = new MolodenskyTransform(other.inverse, isTarget3D, isSource3D, false);
+            inverse.inverse = this;
+        }
+    }
+
+    /**
      * Creates a Molodensky transform from the specified parameters.
      * If a non-null {@code grid} is specified, it is caller's responsibility to verify its validity.
      *
@@ -282,7 +311,6 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
      * @param descriptor  the contextual parameter descriptor.
      */
-    @SuppressWarnings("this-escape")
     private MolodenskyTransform(final Ellipsoid source, final boolean isSource3D,
                                 final Ellipsoid target, final boolean isTarget3D,
                                 final double tX, final double tY, final double tZ,
@@ -415,6 +443,24 @@ public class MolodenskyTransform extends DatumShiftTransform {
         }
         tr.inverse.context.completeTransform(factory, null);
         return tr.context.completeTransform(factory, tr);
+    }
+
+    /**
+     * If this transform expects three-dimensional inputs or outputs, and if the transform before or after
+     * this one unconditionally sets the height to zero, replaces this transform by a two-dimensional one.
+     *
+     * @param  context  information about the neighbor transforms, and the object where to set the result.
+     * @throws FactoryException if an error occurred while combining the transforms.
+     *
+     * @since 1.5
+     */
+    @Override
+    protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
+        if (!(isSource3D && context.removeUnusedDimensions(-1, 2, 3, (d) -> (d == 2) ? new MolodenskyTransform(this, false, isTarget3D, true) : null)) &&
+            !(isTarget3D && context.removeUnusedDimensions(+1, 2, 3, (d) -> (d == 2) ? new MolodenskyTransform(this, isSource3D, false, true) : null)))
+        {
+            super.tryConcatenate(context);
+        }
     }
 
     /**

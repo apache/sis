@@ -300,7 +300,7 @@ public class TileOpExecutor {
             } catch (Exception ex) {
                 final Point tile = new Point(tx, ty);
                 errors.add(tile, trimImagingWrapper(ex), () -> Resources.forLocale(null)
-                            .getLogRecord(Level.WARNING, Resources.Keys.CanNotUpdateTile_2, tile.x, tile.y));
+                            .createLogRecord(Level.WARNING, Resources.Keys.CanNotUpdateTile_2, tile.x, tile.y));
             }
         }
         errorHandler.publish(errors);

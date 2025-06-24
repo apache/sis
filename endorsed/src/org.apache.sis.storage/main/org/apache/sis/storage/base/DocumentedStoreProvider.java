@@ -90,7 +90,7 @@ public abstract class DocumentedStoreProvider extends URIDataStoreProvider {
             if (name != null) try {
                 return format = MetadataSource.getProvided().lookup(Format.class, name);
             } catch (MetadataStoreException e) {
-                final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
+                final LogRecord record = Resources.forLocale(null).createLogRecord(Level.WARNING,
                         Resources.Keys.CanNotGetCommonMetadata_2, getShortName(), e.getLocalizedMessage());
                 record.setSourceClassName(getClass().getCanonicalName());
                 record.setSourceMethodName("getFormat");

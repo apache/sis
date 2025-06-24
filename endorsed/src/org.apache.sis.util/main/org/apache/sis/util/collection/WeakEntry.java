@@ -170,7 +170,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
          * We are done. Log the operation if logging is enabled at that level.
          */
         if (LOGGER.isLoggable(Level.FINEST)) {
-            final LogRecord record = Messages.forLocale(null).getLogRecord(Level.FINEST,
+            final LogRecord record = Messages.forLocale(null).createLogRecord(Level.FINEST,
                     Messages.Keys.ChangedContainerCapacity_2, oldTable.length, table.length);
             record.setSourceMethodName(callerMethod);
             record.setSourceClassName(entryType.getEnclosingClass().getCanonicalName());
