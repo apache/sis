@@ -552,9 +552,12 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
              * have been set to `Boolean.FALSE`.
              */
             if (mismatchedParam != null) {
-                final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
-                        Resources.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
-                        mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
+                final LogRecord record = Resources.forLocale(null).createLogRecord(
+                        Level.WARNING,
+                        Resources.Keys.MismatchedEllipsoidAxisLength_3,
+                        ellipsoid.getName().getCode(),
+                        mismatchedParam.getDescriptor().getName().getCode(),
+                        mismatchedValue);
                 Logging.completeAndLog(CoordinateOperations.LOGGER, getClass(), "create", record);
             }
         }

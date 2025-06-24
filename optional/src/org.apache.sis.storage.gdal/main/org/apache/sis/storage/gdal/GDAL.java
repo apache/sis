@@ -419,7 +419,7 @@ final class GDAL extends NativeFunctions {
         // Initialize GDAL after we found all functions.
         if (!invoke("GDALAllRegister")) {
             log(GDAL.class, "<init>", Resources.forLocale(null)
-                    .getLogRecord(Level.WARNING, Resources.Keys.CannotInitialize_1, Constants.GDAL));
+                    .createLogRecord(Level.WARNING, Resources.Keys.CannotInitialize_1, Constants.GDAL));
         }
     }
 

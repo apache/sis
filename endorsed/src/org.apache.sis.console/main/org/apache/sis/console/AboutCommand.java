@@ -144,7 +144,7 @@ final class AboutCommand extends CommandRunner {
                     final double scale = (delay >= 10) ? 1 : (delay >= 1) ? 10 : 100;
                     delay = Math.rint(delay * scale) / scale;
                 }
-                final LogRecord record = Messages.forLocale(locale).getLogRecord(Level.INFO,
+                final LogRecord record = Messages.forLocale(locale).createLogRecord(Level.INFO,
                         Messages.Keys.ConfigurationOf_3, address, new Date(), delay);
                 record.setLoggerName(Loggers.APPLICATION);
                 Logging.completeAndLog(null, Command.class, "main", record);

@@ -318,7 +318,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * @param  args   the parameter for the log message, which may be an array.
      */
     final void warning(final short errorKey, final Object args) {
-        warning(Errors.forLocale(getLocale()).getLogRecord(Level.WARNING, errorKey, args));
+        warning(Errors.forLocale(getLocale()).createLogRecord(Level.WARNING, errorKey, args));
     }
 
     /**

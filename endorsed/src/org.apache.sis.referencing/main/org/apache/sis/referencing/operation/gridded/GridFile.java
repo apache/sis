@@ -262,7 +262,8 @@ public final class GridFile {
      * @param  file    the grid file, as a {@link String} or a {@link URI}.
      */
     public static void startLoading(final Class<?> caller, final Object file) {
-        GridLoader.log(caller, Resources.forLocale(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file));
+        GridLoader.log(caller, Resources.forLocale(null)
+                .createLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file));
     }
 
     /**
@@ -278,7 +279,7 @@ public final class GridFile {
         if (localDirectory != null && !datumDirectoryLogged.get()) {
             final Path directory = localDirectory.getDirectory();
             if (directory != null && !datumDirectoryLogged.getAndSet(true)) {
-                GridLoader.log(caller, Resources.forLocale(null).getLogRecord(Level.INFO,
+                GridLoader.log(caller, Resources.forLocale(null).createLogRecord(Level.INFO,
                                        Resources.Keys.DatumChangesDirectory_1, directory));
             }
         }

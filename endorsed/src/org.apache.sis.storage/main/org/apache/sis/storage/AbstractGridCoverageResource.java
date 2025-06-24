@@ -235,7 +235,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
                 }
             });
             final LogRecord record = Resources.forLocale(locale)
-                    .getLogRecord(level, Resources.Keys.LoadedGridCoverage_6, parameters);
+                    .createLogRecord(level, Resources.Keys.LoadedGridCoverage_6, parameters);
             record.setSourceClassName(GridCoverageResource.class.getName());
             record.setSourceMethodName("read");
             record.setLoggerName(logger.getName());

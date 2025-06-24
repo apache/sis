@@ -230,8 +230,11 @@ final class EPSGInstaller extends ScriptRunner {
                 return false;
             }
         }
-        InstallationScriptProvider.log(Messages.forLocale(locale).getLogRecord(Level.INFO,
-                Messages.Keys.CreatingSchema_2, EPSG, SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
+        InstallationScriptProvider.log(Messages.forLocale(locale).createLogRecord(
+                Level.INFO,
+                Messages.Keys.CreatingSchema_2,
+                EPSG,
+                SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
         final String[] scripts = scriptProvider.getResourceNames(EPSG);
         int numRows = 0;
         for (int i=0; i<scripts.length; i++) {
@@ -240,9 +243,11 @@ final class EPSGInstaller extends ScriptRunner {
             }
         }
         time = System.nanoTime() - time;
-        InstallationScriptProvider.log(Messages.forLocale(locale).getLogRecord(
+        InstallationScriptProvider.log(Messages.forLocale(locale).createLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
-                Messages.Keys.InsertDuration_2, numRows, time / (float) Constants.NANOS_PER_SECOND));
+                Messages.Keys.InsertDuration_2,
+                numRows,
+                time / (float) Constants.NANOS_PER_SECOND));
         return true;
     }
 

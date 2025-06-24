@@ -375,7 +375,7 @@ abstract class AnnotatedImage extends ImageAdapter {
                             errors = report = new ErrorHandler.Report();
                         }
                         report.add(null, e, () -> Errors.forLocale(null)
-                                .getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property));
+                                .createLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property));
                     }
                 } finally {
                     handler.putAndUnlock(success ? value : null);       // Cache only if no error occurred.

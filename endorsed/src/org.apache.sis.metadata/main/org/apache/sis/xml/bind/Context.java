@@ -823,7 +823,7 @@ public final class Context extends MarshalContext {
             } else {
                 throw new IllegalArgumentException(String.valueOf(resources));
             }
-            record = bundle.getLogRecord(level, key, arguments);
+            record = bundle.createLogRecord(level, key, arguments);
         } else {
             record = new LogRecord(level, Exceptions.formatChainedMessages(locale, null, exception));
         }

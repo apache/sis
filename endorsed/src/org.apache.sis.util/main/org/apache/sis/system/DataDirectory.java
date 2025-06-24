@@ -125,7 +125,7 @@ public enum DataDirectory {
      * Logs a message to the {@code "org.apache.sis.system"} logger.
      */
     private static void log(final Level level, final Exception e, final short key, final Object... parameters) {
-        final LogRecord record = Messages.forLocale(null).getLogRecord(level, key, parameters);
+        final LogRecord record = Messages.forLocale(null).createLogRecord(level, key, parameters);
         if (e != null) {
             record.setThrown(e);
         }

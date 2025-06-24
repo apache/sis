@@ -370,7 +370,7 @@ public final class Reader implements Cloneable {
     public final void cannotParse(final Exception error, final String value, final boolean ignoreable) {
         if (isNewWarning(error.getClass(), value)) {
             final LogRecord record = Errors.forLocale(listeners.getLocale())
-                    .getLogRecord(ignoreable ? Level.FINE : Level.WARNING, Errors.Keys.CanNotParse_1, value);
+                    .createLogRecord(ignoreable ? Level.FINE : Level.WARNING, Errors.Keys.CanNotParse_1, value);
             record.setThrown(error);
             listeners.warning(record);
         }

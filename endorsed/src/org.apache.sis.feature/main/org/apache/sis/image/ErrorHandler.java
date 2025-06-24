@@ -173,7 +173,7 @@ public interface ErrorHandler {
                 if (description == null) {
                     if (tile != null) {
                         description = Resources.forLocale(null)
-                                .getLogRecord(Level.WARNING, Resources.Keys.CanNotProcessTile_2, tile.x, tile.y);
+                                .createLogRecord(Level.WARNING, Resources.Keys.CanNotProcessTile_2, tile.x, tile.y);
                     } else {
                         description = new LogRecord(Level.WARNING, error.toString());
                     }

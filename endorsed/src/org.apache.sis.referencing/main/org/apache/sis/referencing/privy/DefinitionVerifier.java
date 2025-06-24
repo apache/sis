@@ -354,7 +354,7 @@ public final class DefinitionVerifier {
     public LogRecord warning(final boolean fine) {
         if (arguments != null) {
             if (resourceKey != 0) {
-                return Resources.forLocale(locale).getLogRecord(Level.WARNING, resourceKey, arguments);
+                return Resources.forLocale(locale).createLogRecord(Level.WARNING, resourceKey, arguments);
             } else if (fine) {
                 return new LogRecord(Level.FINE, (String) arguments[0]);
             }

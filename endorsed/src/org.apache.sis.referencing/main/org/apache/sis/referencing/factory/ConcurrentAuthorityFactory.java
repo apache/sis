@@ -493,9 +493,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 final Messages resources = Messages.forLocale(null);
                 final LogRecord record;
                 if (code != null) {
-                    record = resources.getLogRecord(level, Messages.Keys.CreateDurationFromIdentifier_3, type, code, duration);
+                    record = resources.createLogRecord(level, Messages.Keys.CreateDurationFromIdentifier_3, type, code, duration);
                 } else {
-                    record = resources.getLogRecord(level, Messages.Keys.CreateDuration_2, type, duration);
+                    record = resources.createLogRecord(level, Messages.Keys.CreateDuration_2, type, duration);
                 }
                 Logging.completeAndLog(LOGGER, getClass(), caller, record);
             }

@@ -66,8 +66,10 @@ public abstract class OptionalDependency extends SystemListener {
     {
         final T first = loader.findFirst().orElse(null);
         if (first == null) {
-            LogRecord record = Messages.forLocale(null).getLogRecord(Level.CONFIG,
-                                Messages.Keys.OptionalModuleNotFound_1, dependency);
+            LogRecord record = Messages.forLocale(null).createLogRecord(
+                    Level.CONFIG,
+                    Messages.Keys.OptionalModuleNotFound_1,
+                    dependency);
             record.setLoggerName(type.getModule().getName());
             Logging.completeAndLog(null, type, "getInstance", record);
         }

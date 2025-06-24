@@ -463,7 +463,7 @@ public class MetadataWriter extends MetadataSource {
                                             .appendIdentifier(schema(), table).append(" DROP CONSTRAINT ")
                                             .appendIdentifier(fkey.keyName).toString());
                                     warning(MetadataWriter.class, "add", Messages.forLocale(null)
-                                            .getLogRecord(Level.WARNING, Messages.Keys.DroppedForeignerKey_1,
+                                            .createLogRecord(Level.WARNING, Messages.Keys.DroppedForeignerKey_1,
                                             table + '.' + column + " ⇒ " + fkey.tableName + '.' + ID_COLUMN));
                                 }
                             }
