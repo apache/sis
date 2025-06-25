@@ -350,6 +350,7 @@ public final class CharSequencesTest extends TestCase {
         assertTrue(isAcronymForWords("alias",                     "Alias"));
         assertTrue(isAcronymForWords("area",                      "Area"));
         assertTrue(isAcronymForWords("change",                    "Change"));
+        assertTrue(isAcronymForWords("conventionalrs",            "ConventionalRS"));
         assertTrue(isAcronymForWords("coordinateaxis",            "Coordinate Axis"));
         assertTrue(isAcronymForWords("coordinateaxisname",        "Coordinate Axis Name"));
         assertTrue(isAcronymForWords("coordoperation",            "Coordinate_Operation"));
@@ -361,12 +362,19 @@ public final class CharSequencesTest extends TestCase {
         assertTrue(isAcronymForWords("coordinatereferencesystem", "Coordinate Reference System"));
         assertTrue(isAcronymForWords("coordinatesystem",          "Coordinate System"));
         assertTrue(isAcronymForWords("datum",                     "Datum"));
+        assertTrue(isAcronymForWords("datumensemble",             "DatumEnsemble"));
+        assertTrue(isAcronymForWords("datumensemblemember",       "DatumEnsembleMember"));
+        assertTrue(isAcronymForWords("datumrealizationmethod",    "DatumRealizationMethod"));
+        assertTrue(isAcronymForWords("definingoperation",         "DefiningOperation"));
         assertTrue(isAcronymForWords("deprecation",               "Deprecation"));
         assertTrue(isAcronymForWords("ellipsoid",                 "Ellipsoid"));
+        assertTrue(isAcronymForWords("extent",                    "Extent"));
         assertTrue(isAcronymForWords("namingsystem",              "Naming System"));
         assertTrue(isAcronymForWords("primemeridian",             "Prime Meridian"));
+        assertTrue(isAcronymForWords("scope",                     "Scope"));
         assertTrue(isAcronymForWords("supersession",              "Supersession"));
         assertTrue(isAcronymForWords("unitofmeasure",             "Unit of Measure"));
+        assertTrue(isAcronymForWords("usage",                     "Usage"));
         assertTrue(isAcronymForWords("versionhistory",            "Version History"));
         assertFalse(isAcronymForWords(null,                       "Deprecation"));
         /*

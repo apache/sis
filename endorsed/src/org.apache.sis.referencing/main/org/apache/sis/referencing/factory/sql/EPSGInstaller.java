@@ -122,8 +122,9 @@ final class EPSGInstaller extends ScriptRunner {
              * TODO: move to org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter.
              */
             addReplacement(SQLTranslator.TABLE_PREFIX + "alias",                      "Alias");
-            addReplacement(SQLTranslator.TABLE_PREFIX + "area",                       "Area");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "area",                       "Area");      // Deprecated (removed in EPSG 10)
             addReplacement(SQLTranslator.TABLE_PREFIX + "change",                     "Change");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "conventionalrs",             "ConventionalRS");
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordinateaxis",             "Coordinate Axis");
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordinateaxisname",         "Coordinate Axis Name");
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperation",             "Coordinate_Operation");
@@ -135,12 +136,19 @@ final class EPSGInstaller extends ScriptRunner {
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordinatereferencesystem",  "Coordinate Reference System");
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordinatesystem",           "Coordinate System");
             addReplacement(SQLTranslator.TABLE_PREFIX + "datum",                      "Datum");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datumensemble",              "DatumEnsemble");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datumensemblemember",        "DatumEnsembleMember");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datumrealizationmethod",     "DatumRealizationMethod");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "definingoperation",          "DefiningOperation");
             addReplacement(SQLTranslator.TABLE_PREFIX + "deprecation",                "Deprecation");
             addReplacement(SQLTranslator.TABLE_PREFIX + "ellipsoid",                  "Ellipsoid");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "extent",                     "Extent");
             addReplacement(SQLTranslator.TABLE_PREFIX + "namingsystem",               "Naming System");
             addReplacement(SQLTranslator.TABLE_PREFIX + "primemeridian",              "Prime Meridian");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "scope",                      "Scope");
             addReplacement(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
             addReplacement(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "usage",                      "Usage");
             addReplacement(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
             if (isEnumTypeSupported) {
                 addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind",             "Datum Kind");
@@ -164,7 +172,7 @@ final class EPSGInstaller extends ScriptRunner {
     final void prependNamespace(final String schema) {
         modifyReplacements((key, value) -> {
             if (key.startsWith(SQLTranslator.TABLE_PREFIX)) {
-                final StringBuilder buffer = new StringBuilder(value.length() + schema.length() + 5);
+                final var buffer = new StringBuilder(value.length() + schema.length() + 5);
                 buffer.append(identifierQuote).append(schema).append(identifierQuote).append('.');
                 final boolean isQuoted = value.endsWith(identifierQuote);
                 if (!isQuoted) buffer.append(identifierQuote);

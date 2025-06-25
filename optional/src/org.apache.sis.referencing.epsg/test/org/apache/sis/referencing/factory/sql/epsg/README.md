@@ -65,7 +65,7 @@ Open the `Tables.sql` file for edition:
   remove the `UNIQUE` constraint on the `change_id` column
   and add a `CONSTRAINT pk_change PRIMARY KEY (change_id)` line instead.
 * In the statement creating the `epsg_datum` table,
-  change the type of the `realization_epoch` column to `DATE`.
+  change the type of the `realization_epoch` and `publication_date` columns to `DATE`.
 * Change the type of `ellipsoid_shape`, `reverse_op`, `param_sign_reversal`
   `show_crs`, `show_operation` and all `deprecated` fields from `SMALLINT`
   (or sometimes `VARCHAR(3)`) to `BOOLEAN`.
