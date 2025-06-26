@@ -1,7 +1,10 @@
-Do not create an `epsg` sub-package (except for tests or maintenance tasks only)
-because the `org.apache.sis.referencing.factory.sql.epsg` package name is owned
-by the `org.apache.sis.referencing.epsg` module and we should not put anything
-in a package owned by another module.
+# Location of EPSG resources
 
-We make this separation for licensing reason because the EPSG geodetic dataset
-is subject to different terms of use than Apache 2 license.
+There is no `epsg` sub-package in this module because such package is defined
+in the `optional/src/org.apache.sis.referencing.factory.sql.epsg` module.
+The current directory nevertheless contains EPSG-related classes and resources,
+which are prefixed by "EPSG" instead of being placed in the `epsg` sub-package.
+This mix of two conventions is for licensing reasons: use of `epsg` sub-package
+requires acceptance of EPSG terms of use, while the EPSG-related resources in
+this directory are under Apache 2 license and can be used without the `epsg`
+sub-package if the user got EPSG scripts in another way.

@@ -60,7 +60,7 @@ import org.apache.sis.metadata.sql.TestDatabase;
  * <a href="https://sis.apache.org/source.html#non-free">SIS non-free directory</a>.</p>
  *
  * <p>Every databases created by this test suite exist only in memory.
- * This class does not write anything to disk (except maybe some temporary files).</p>
+ * This class does not write to disk, except temporary files for some databases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -103,11 +103,14 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     /**
      * Returns the SQL scripts needed for testing the database creation,
      * or skip the JUnit test if those scripts are not found.
+     *
+     * @return provider of SQL scripts to execute for building the EPSG geodetic dataset.
+     * @throws IOException if an I/O operation was required and failed.
      */
     private static InstallationScriptProvider getScripts() throws IOException {
         final var scripts = new InstallationScriptProvider.Default(null);
         assumeTrue(scripts.getAuthorities().contains(Constants.EPSG),
-                "EPSG scripts not found in Databases/ExternalSources directory.");
+                "EPSG scripts not found in the \"Databases/ExternalSources\" directory.");
         return scripts;
     }
 

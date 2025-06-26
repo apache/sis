@@ -389,7 +389,8 @@ public class ScriptRunner implements AutoCloseable {
      * SQL keywords understood by the database. For example if a database does not support the {@code "TEXT"}
      * data type, it may be replaced by {@code "LONG VARCHAR"}.
      *
-     * <b>Limitation:</b> the {@code inScript} word to replace must be a single word with no space.
+     * <h4>Limitation</h3>
+     * The {@code inScript} word to replace must be a single word with no space.
      * If the text to replace contains two words (for example {@code "CREATE TABLE"}), then revert
      * commit {@code bceb569558bfb7e3cf1a14aaf9261e786db06856} for bringing back this functionality.
      *

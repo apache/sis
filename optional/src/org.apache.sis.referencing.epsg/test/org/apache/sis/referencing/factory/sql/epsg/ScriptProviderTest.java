@@ -40,7 +40,7 @@ public final strictfp class ScriptProviderTest {
     }
 
     /**
-     * Returns the {@link ScriptProvider} instance declared in the {@code META-INF/services/} directory.
+     * Returns the {@link ScriptProvider} instance declared in the {@code module-info.class} file.
      * The provider may coexist with providers defined in other modules, so we need to filter them.
      */
     private static InstallationResources getInstance() {

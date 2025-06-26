@@ -75,7 +75,7 @@ import org.apache.sis.util.resources.Messages;
  * subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see EPSGDataAccess
  * @see SQLTranslator
@@ -520,9 +520,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
 
     /**
      * Returns {@code true} if the given Data Access Object (DAO) can be closed. This method is invoked automatically
-     * after the {@linkplain #getTimeout timeout} if the given DAO has been idle during all that time. The default
-     * implementation always returns {@code false} if a set returned by {@link EPSGDataAccess#getAuthorityCodes(Class)}
-     * is still in use.
+     * after the {@linkplain #getTimeout timeout} if the given <abbr>DAO</abbr> has been idle during all that time.
+     * Returns {@code false} if a set returned by {@link EPSGDataAccess#getAuthorityCodes(Class)} is still in use.
      *
      * @param  factory  the Data Access Object which is about to be closed.
      * @return {@code true} if the given Data Access Object can be closed.
@@ -536,8 +535,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * Returns whether the given object can be cached.
      * This method is invoked after {@link EPSGDataAccess} created a new object not previously in the cache.
      *
-     * @return whether the given object should be cached.
-     *
+     * @hidden
      * @since 0.8
      */
     @Override

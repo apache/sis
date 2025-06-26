@@ -38,7 +38,7 @@ import org.apache.sis.setup.InstallationResources;
 
 
 /**
- * Runs the SQL scripts for creating an EPSG database.
+ * Runs the <abbr>SQL</abbr> scripts for creating an <abbr>EPSG</abbr> database.
  *
  * See {@code org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter}
  * in the test directory for more information about how the scripts are formatted.
@@ -55,7 +55,7 @@ final class EPSGInstaller extends ScriptRunner {
      *     SET datum_name = replace(datum_name, CHAR(182), CHAR(10));
      *     }
      *
-     * Note: this regular expression use a capturing group.
+     * Note: this regular expression uses a capturing group.
      */
     static final String REPLACE_STATEMENT =
             "UPDATE\\s+[\\w\\.\" ]+\\s+SET\\s+(\\w+)\\s*=\\s*replace\\s*\\(\\s*\\1\\W+.*";
