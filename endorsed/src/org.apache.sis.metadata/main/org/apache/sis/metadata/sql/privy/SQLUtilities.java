@@ -23,6 +23,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -116,7 +117,7 @@ public final class SQLUtilities extends Static {
      * @return the given text with wildcard characters escaped.
      */
     public static String escape(final String text, final String escape) {
-        if (text != null && escape != null && !escape.isEmpty()) {
+        if (text != null && !Strings.isNullOrEmpty(escape)) {
             final char escapeChar = escape.charAt(0);
             StringBuilder buffer = null;
             for (int i = text.length(); --i >= 0;) {

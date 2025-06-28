@@ -142,7 +142,9 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
         }
         final String filter = (selection != null) ? selection.query(connection, spatialInformation) : null;
         if (distinct || filter != null || sort != null || (offset | count) != 0) {
-            final var builder = new SQLBuilder(table.database).append(sql);
+            final var builder = new SQLBuilder(table.database);
+            builder.setCatalogAndSchema(connection);
+            builder.append(sql);
             if (distinct) {
                 builder.insertDistinctAfterSelect();
             }

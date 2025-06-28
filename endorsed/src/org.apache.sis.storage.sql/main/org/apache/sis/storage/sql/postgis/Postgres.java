@@ -230,8 +230,8 @@ public final class Postgres<G> extends Database<G> {
     protected Envelope getEstimatedExtent(final TableReference table, final Column[] columns, final boolean recall)
             throws SQLException
     {
-        final ExtentEstimator ex = new ExtentEstimator(this, table, columns);
         try (Connection c = source.getConnection(); Statement statement = c.createStatement()) {
+            final ExtentEstimator ex = new ExtentEstimator(this, table, columns, c);
             return ex.estimate(statement, recall);
         }
     }

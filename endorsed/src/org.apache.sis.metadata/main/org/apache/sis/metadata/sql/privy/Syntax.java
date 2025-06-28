@@ -16,12 +16,14 @@
  */
 package org.apache.sis.metadata.sql.privy;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import org.apache.sis.util.privy.Strings;
 
 
 /**
- * Information about the syntax to use for building SQL statements.
+ * Information about the syntax to use for building <abbr>SQL</abbr> statements.
  * This object extract from {@link DatabaseMetaData} the information needed by {@link SQLBuilder}.
  * It can be cached if many {@link SQLBuilder} instances are going to be created.
  *
@@ -34,10 +36,21 @@ public class Syntax {
     public final Dialect dialect;
 
     /**
+     * Whether a catalog appears at the start of a fully qualified table name.
+     * If not, the catalog appears at the end.
+     */
+    final boolean isCatalogAtStart;
+
+    /**
+     * The character that the database uses as the separator between a catalog and table name.
+     */
+    final String catalogSeparator;
+
+    /**
      * The characters used for quoting identifiers, or an empty string if none.
      * This is the value returned by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
-    final String quote;
+    final String identifierQuote;
 
     /**
      * Whether the schema name should be written between quotes. If {@code false},
@@ -61,7 +74,17 @@ public class Syntax {
      * @see #escapeWildcards(String)
      * @see SQLBuilder#appendWildcardEscaped(String)
      */
-    final String escape;
+    final String wildcardEscape;
+
+    /**
+     * The default catalog of the connection, or {@code null} if none.
+     */
+    String currentCatalog;
+
+    /**
+     * The default schema of the connection, or {@code null} if none.
+     */
+    String currentSchema;
 
     /**
      * Creates a new {@code Syntax} initialized from the given database metadata.
@@ -72,13 +95,18 @@ public class Syntax {
      */
     public Syntax(final DatabaseMetaData metadata, final boolean quoteSchema) throws SQLException {
         if (metadata != null) {
-            dialect = Dialect.guess(metadata);
-            quote   = metadata.getIdentifierQuoteString();
-            escape  = metadata.getSearchStringEscape();
+            dialect          = Dialect.guess(metadata);
+            isCatalogAtStart = metadata.isCatalogAtStart();
+            catalogSeparator = metadata.getCatalogSeparator();
+            identifierQuote  = metadata.getIdentifierQuoteString();
+            wildcardEscape   = metadata.getSearchStringEscape();
+            setCatalogAndSchema(metadata.getConnection());
         } else {
-            dialect = Dialect.ANSI;
-            quote   = "\"";
-            escape  = null;
+            dialect          = Dialect.ANSI;
+            isCatalogAtStart = true;
+            catalogSeparator = ".";
+            identifierQuote  = "\"";
+            wildcardEscape   = null;
         }
         this.quoteSchema = quoteSchema;
     }
@@ -89,10 +117,28 @@ public class Syntax {
      * @param  other  the template from which to copy metadata.
      */
     Syntax(final Syntax other) {
-        dialect     = other.dialect;
-        escape      = other.escape;
-        quote       = other.quote;
-        quoteSchema = other.quoteSchema;
+        dialect          = other.dialect;
+        isCatalogAtStart = other.isCatalogAtStart;
+        catalogSeparator = other.catalogSeparator;
+        identifierQuote  = other.identifierQuote;
+        wildcardEscape   = other.wildcardEscape;
+        currentCatalog   = other.currentCatalog;
+        currentSchema    = other.currentSchema;
+        quoteSchema      = other.quoteSchema;
+    }
+
+    /**
+     * Sets the current catalog and schema.
+     * When {@linkplain SQLBuilder#appendIdentifier(String, String, String, boolean) formatting an identifier},
+     * then given catalog and/or schema may be omitted if equal to the current catalog and/or schema, in order
+     * to make the <abbr>SQL</abbr> statement simpler.
+     *
+     * @param  current  the connection which will execute the <abbr>SQL</abbr> statement.
+     * @throws SQLException if an error occurred while fetching information from the connection.
+     */
+    public final void setCatalogAndSchema(final Connection current) throws SQLException {
+        currentCatalog = current.getCatalog();
+        currentSchema  = current.getSchema();
     }
 
     /**
@@ -120,7 +166,7 @@ public class Syntax {
      * @return the given text with wildcard characters escaped.
      */
     public final String escapeWildcards(final String text) {
-        return SQLUtilities.escape(text, escape);
+        return SQLUtilities.escape(text, wildcardEscape);
     }
 
     /**
@@ -134,6 +180,6 @@ public class Syntax {
      * @return whether the database can escape wildcard characters.
      */
     public final boolean canEscapeWildcards() {
-        return (escape != null) && !escape.isEmpty();
+        return !Strings.isNullOrEmpty(wildcardEscape);
     }
 }
