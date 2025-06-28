@@ -161,8 +161,12 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     private final InstallationScriptProvider scriptProvider;
 
     /**
-     * The translator from the SQL statements using MS-Access dialect to SQL statements using the dialect
-     * of the actual database. If null, will be created when first needed.
+     * The translator from the <abbr>SQL</abbr> statements hard-coded in {@link EPSGDataAccess}
+     * to <abbr>SQL</abbr> statements compatible with the actual <abbr>EPSG</abbr> database.
+     * This translator may also change the schema and table names used in the queries in the
+     * actual database uses different names.
+     *
+     * <p>If {@code null}, a default translator will be created when first needed.</p>
      */
     private volatile SQLTranslator translator;
 
@@ -507,10 +511,10 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * by {@code new MyDataAccessSubclass(…)}.
      *
      * @param  connection  a connection to the EPSG database.
-     * @param  translator  the translator from the SQL statements using MS-Access dialect to SQL statements
-     *                     using the dialect of the actual database.
+     * @param  translator  translator from the <abbr>SQL</abbr> statements hard-coded in {@link EPSGDataAccess}
+     *                     to <abbr>SQL</abbr> statements compatible with the actual <abbr>EPSG</abbr> database.
      * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
-     * @throws SQLException if a problem with the database has been detected.
+     * @throws SQLException if an error occurred with the database connection.
      *
      * @see EPSGDataAccess#EPSGDataAccess(EPSGFactory, Connection, SQLTranslator)
      */

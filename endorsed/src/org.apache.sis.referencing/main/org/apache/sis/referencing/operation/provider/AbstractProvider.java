@@ -327,12 +327,12 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * This is different than the EPSG dataset in two ways:
      *
      * <ul class="verbose">
-     *   <li>EPSG provides an equivalent information in the {@code PARAM_SIGN_REVERSAL} column of the
-     *       {@code [Coordinate_Operation Parameter Usage]} table, but on a parameter-by-parameter basis
+     *   <li><abbr>EPSG</abbr> provides an equivalent information in the {@code PARAM_SIGN_REVERSAL} column
+     *       of the {@code "Coordinate_Operation Parameter Usage"} table, but on a parameter-by-parameter basis
      *       instead of for the whole operation (which is probably better).</li>
      *
-     *   <li>EPSG provides another information in the {@code REVERSE_OP} column of the
-     *       {@code [Coordinate_Operation Method]} table, but this is not equivalent to this method because it
+     *   <li><abbr>EPSG</abbr> provides another information in the {@code REVERSE_OP} column of the
+     *       {@code "Coordinate_Operation Method"} table, but this is not equivalent to this method because it
      *       does not differentiate the map projection methods from <em>inverse</em> map projection methods.</li>
      * </ul>
      *

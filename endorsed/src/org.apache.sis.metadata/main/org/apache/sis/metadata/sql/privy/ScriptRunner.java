@@ -384,10 +384,14 @@ public class ScriptRunner implements AutoCloseable {
      * The replacement is performed only for occurrences outside identifiers or texts.
      *
      * <h4>Example</h4>
-     * This is used for mapping the table names in the EPSG scripts to table names as they were in the MS-Access
-     * flavor of EPSG database. It may also contains the mapping between SQL keywords used in the SQL scripts to
-     * SQL keywords understood by the database. For example if a database does not support the {@code "TEXT"}
-     * data type, it may be replaced by {@code "LONG VARCHAR"}.
+     * This is used for mapping the <abbr>EPSG</abbr> table names from the mixed-cases convention used in
+     * the {@code org.apache.sis.referencing.epsg} module to the lower-cases convention which is actually
+     * used if the user installed the <abbr>EPSG</abbr> database manually (there is more differences than
+     * only the case).
+     *
+     * <p>Another example is the replacement of <abbr>SQL</abbr> keywords used in the scripts by keywords
+     * understood by the database. For example, if a database does not support the {@code "TEXT"} data type,
+     * this method can be used for replacing {@code "TEXT"} by {@code "LONG VARCHAR"}.</p>
      *
      * <h4>Limitation</h3>
      * The {@code inScript} word to replace must be a single word with no space.

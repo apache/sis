@@ -343,36 +343,37 @@ public final class CharSequencesTest extends TestCase {
         assertFalse(isAcronymForWords("GC",     "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("ENE",    "NORTH_EAST"));
         /*
-         * Following are mapping of EPSG table names from MS-Access to ANSI SQL.
-         * All those items must be recognized as acroynms - this is requred by EPSGDataAccess.
+         * Following are mapping of table names between two variants of EPSG dataset.
+         * All those items shoud be recognized as acroynms, as this mapping is used
+         * by `EPSGDataAccess` for logging purposes.
          */
-        assertTrue(isAcronymForWords("alias",                     "[Alias]"));
-        assertTrue(isAcronymForWords("area",                      "[Area]"));
-        assertTrue(isAcronymForWords("coordinateaxis",            "[Coordinate Axis]"));
-        assertTrue(isAcronymForWords("coordinateaxisname",        "[Coordinate Axis Name]"));
-        assertTrue(isAcronymForWords("coordoperation",            "[Coordinate_Operation]"));
-        assertTrue(isAcronymForWords("coordoperationmethod",      "[Coordinate_Operation Method]"));
-        assertTrue(isAcronymForWords("coordoperationparam",       "[Coordinate_Operation Parameter]"));
-        assertTrue(isAcronymForWords("coordoperationparamusage",  "[Coordinate_Operation Parameter Usage]"));
-        assertTrue(isAcronymForWords("coordoperationparamvalue",  "[Coordinate_Operation Parameter Value]"));
-        assertTrue(isAcronymForWords("coordoperationpath",        "[Coordinate_Operation Path]"));
-        assertTrue(isAcronymForWords("coordinatereferencesystem", "[Coordinate Reference System]"));
-        assertTrue(isAcronymForWords("coordinatesystem",          "[Coordinate System]"));
-        assertTrue(isAcronymForWords("datum",                     "[Datum]"));
-        assertTrue(isAcronymForWords("ellipsoid",                 "[Ellipsoid]"));
-        assertTrue(isAcronymForWords("namingsystem",              "[Naming System]"));
-        assertTrue(isAcronymForWords("primemeridian",             "[Prime Meridian]"));
-        assertTrue(isAcronymForWords("supersession",              "[Supersession]"));
-        assertTrue(isAcronymForWords("unitofmeasure",             "[Unit of Measure]"));
-        assertTrue(isAcronymForWords("versionhistory",            "[Version History]"));
-        assertTrue(isAcronymForWords("change",                    "[Change]"));
-        assertTrue(isAcronymForWords("deprecation",               "[Deprecation]"));
-        assertFalse(isAcronymForWords(null,                       "[Deprecation]"));
+        assertTrue(isAcronymForWords("alias",                     "Alias"));
+        assertTrue(isAcronymForWords("area",                      "Area"));
+        assertTrue(isAcronymForWords("change",                    "Change"));
+        assertTrue(isAcronymForWords("coordinateaxis",            "Coordinate Axis"));
+        assertTrue(isAcronymForWords("coordinateaxisname",        "Coordinate Axis Name"));
+        assertTrue(isAcronymForWords("coordoperation",            "Coordinate_Operation"));
+        assertTrue(isAcronymForWords("coordoperationmethod",      "Coordinate_Operation Method"));
+        assertTrue(isAcronymForWords("coordoperationparam",       "Coordinate_Operation Parameter"));
+        assertTrue(isAcronymForWords("coordoperationparamusage",  "Coordinate_Operation Parameter Usage"));
+        assertTrue(isAcronymForWords("coordoperationparamvalue",  "Coordinate_Operation Parameter Value"));
+        assertTrue(isAcronymForWords("coordoperationpath",        "Coordinate_Operation Path"));
+        assertTrue(isAcronymForWords("coordinatereferencesystem", "Coordinate Reference System"));
+        assertTrue(isAcronymForWords("coordinatesystem",          "Coordinate System"));
+        assertTrue(isAcronymForWords("datum",                     "Datum"));
+        assertTrue(isAcronymForWords("deprecation",               "Deprecation"));
+        assertTrue(isAcronymForWords("ellipsoid",                 "Ellipsoid"));
+        assertTrue(isAcronymForWords("namingsystem",              "Naming System"));
+        assertTrue(isAcronymForWords("primemeridian",             "Prime Meridian"));
+        assertTrue(isAcronymForWords("supersession",              "Supersession"));
+        assertTrue(isAcronymForWords("unitofmeasure",             "Unit of Measure"));
+        assertTrue(isAcronymForWords("versionhistory",            "Version History"));
+        assertFalse(isAcronymForWords(null,                       "Deprecation"));
         /*
-         * It is important the following is not recognized as an acronym,
-         * otherwise it leads to a confusion in EPSGDataAccess.
+         * It is important that the following is not recognized as an acronym,
+         * otherwise it leads to a confusion in `EPSGDataAccess`.
          */
-        assertFalse(isAcronymForWords("coordoperation", "[Coordinate_Operation Method]"));
+        assertFalse(isAcronymForWords("coordoperation", "Coordinate_Operation Method"));
     }
 
     /**

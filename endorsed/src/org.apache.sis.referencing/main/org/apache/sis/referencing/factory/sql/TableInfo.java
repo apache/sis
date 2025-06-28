@@ -31,29 +31,29 @@ import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 
 
 /**
- * Information about a specific table. The MS-Access dialect of SQL is assumed;
- * it will be translated into ANSI SQL later by {@link SQLTranslator#apply(String)} if needed.
+ * Information about a specific table. This class uses the mixed-case variant of the <abbr>EPSG</abbr> table names.
+ * If needed, those names will be converted by {@link SQLTranslator#apply(String)} to the actual table names.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
 final class TableInfo {
     /**
-     * The {@link EPSG} item used for coordinate reference systems.
+     * The item used for coordinate reference systems.
      */
     static final TableInfo CRS;
 
     /**
-     * The {@link EPSG} item used for datums.
+     * The item used for datums.
      */
     static final TableInfo DATUM;
 
     /**
-     * The {@link EPSG} item used for ellipsoids.
+     * The item used for ellipsoids.
      */
     static final TableInfo ELLIPSOID;
 
     /**
-     * List of tables and columns to test for codes values.
+     * List of tables and columns to test for existence of codes values.
      * Those tables are used by the {@link EPSGDataAccess#createObject(String)} method
      * in order to detect which of the following methods should be invoked for a given code:
      *
@@ -73,7 +73,7 @@ final class TableInfo {
      */
     static final TableInfo[] EPSG = {
         CRS = new TableInfo(CoordinateReferenceSystem.class,
-                "[Coordinate Reference System]",
+                "\"Coordinate Reference System\"",
                 "COORD_REF_SYS_CODE",
                 "COORD_REF_SYS_NAME",
                 "COORD_REF_SYS_KIND",
@@ -92,7 +92,7 @@ final class TableInfo {
                  */
 
         new TableInfo(CoordinateSystem.class,
-                "[Coordinate System]",
+                "\"Coordinate System\"",
                 "COORD_SYS_CODE",
                 "COORD_SYS_NAME",
                 "COORD_SYS_TYPE",
@@ -105,14 +105,14 @@ final class TableInfo {
                 null),
 
         new TableInfo(CoordinateSystemAxis.class,
-                "[Coordinate Axis] AS CA INNER JOIN [Coordinate Axis Name] AS CAN" +
-                                 " ON CA.COORD_AXIS_NAME_CODE=CAN.COORD_AXIS_NAME_CODE",
+                "\"Coordinate Axis\" AS CA INNER JOIN \"Coordinate Axis Name\" AS CAN " +
+                                    "ON CA.COORD_AXIS_NAME_CODE=CAN.COORD_AXIS_NAME_CODE",
                 "COORD_AXIS_CODE",
                 "COORD_AXIS_NAME",
                 null, null, null, null),
 
         DATUM = new TableInfo(Datum.class,
-                "[Datum]",
+                "\"Datum\"",
                 "DATUM_CODE",
                 "DATUM_NAME",
                 "DATUM_TYPE",
@@ -123,19 +123,19 @@ final class TableInfo {
                 null),
 
         ELLIPSOID = new TableInfo(Ellipsoid.class,
-                "[Ellipsoid]",
+                "\"Ellipsoid\"",
                 "ELLIPSOID_CODE",
                 "ELLIPSOID_NAME",
                 null, null, null, null),
 
         new TableInfo(PrimeMeridian.class,
-                "[Prime Meridian]",
+                "\"Prime Meridian\"",
                 "PRIME_MERIDIAN_CODE",
                 "PRIME_MERIDIAN_NAME",
                 null, null, null, null),
 
         new TableInfo(CoordinateOperation.class,
-                "[Coordinate_Operation]",
+                "\"Coordinate_Operation\"",
                 "COORD_OP_CODE",
                 "COORD_OP_NAME",
                 "COORD_OP_TYPE",
@@ -144,31 +144,32 @@ final class TableInfo {
                 "SHOW_OPERATION"),
 
         new TableInfo(OperationMethod.class,
-                "[Coordinate_Operation Method]",
+                "\"Coordinate_Operation Method\"",
                 "COORD_OP_METHOD_CODE",
                 "COORD_OP_METHOD_NAME",
                 null, null, null, null),
 
         new TableInfo(ParameterDescriptor.class,
-                "[Coordinate_Operation Parameter]",
+                "\"Coordinate_Operation Parameter\"",
                 "PARAMETER_CODE",
                 "PARAMETER_NAME",
                 null, null, null, null),
 
         new TableInfo(Unit.class,
-                "[Unit of Measure]",
+                "\"Unit of Measure\"",
                 "UOM_CODE",
                 "UNIT_OF_MEAS_NAME",
                 null, null, null, null),
     };
 
     /**
-     * The class of object to be created.
+     * The class of object to be created (usually a GeoAPI interface).
      */
     final Class<?> type;
 
     /**
-     * The table name for SQL queries. May contains a {@code "JOIN"} clause.
+     * The table name for SQL queries, including schema name and quotes for mixed-case names.
+     * May contain a {@code JOIN} clause.
      *
      * @see #unquoted()
      */
@@ -186,8 +187,8 @@ final class TableInfo {
 
     /**
      * Column type for the type (usually with the {@code "_TYPE"} suffix), or {@code null}.
-     * {@link EPSGDataAccess} and {@link AuthorityCodes} assumes that values in this column
-     * have the maximal length described in the {@value #ENUM_REPLACEMENT} statement.
+     * {@link EPSGDataAccess} and {@link AuthorityCodes} assume that values in this column
+     * are not longer than the maximal length specified in {@value #ENUM_REPLACEMENT}.
      */
     private final String typeColumn;
 
@@ -213,6 +214,15 @@ final class TableInfo {
 
     /**
      * Stores information about a specific table.
+     *
+     * @param type        the class of object to be created (usually a GeoAPI interface).
+     * @param table       the table name for SQL queries, including quotes for mixed-case names.
+     * @param codeColumn  column name for the code (usually with the {@code "_CODE"} suffix).
+     * @param nameColumn  column name for the name (usually with the {@code "_NAME"} suffix), or {@code null}.
+     * @param typeColumn  column type for the type (usually with the {@code "_TYPE"} suffix), or {@code null}.
+     * @param subTypes    sub-interfaces of {@link #type} to handle, or {@code null} if none.
+     * @param typeNames   names of {@code subTypes} in the database, or {@code null} if none.
+     * @param showColumn  the column that specify if the object should be shown, or {@code null} if none.
      */
     private TableInfo(final Class<?> type,
                       final String table, final String codeColumn, final String nameColumn,
@@ -230,32 +240,31 @@ final class TableInfo {
     }
 
     /**
-     * Returns the table name without brackets.
+     * Returns the table name without schema name and without quotes.
      */
     final String unquoted() {
-        return table.substring(1, table.length() - 1);
+        return table.substring(table.indexOf('"') + 1, table.lastIndexOf('"'));
     }
 
     /**
-     * Returns {@code true} if the given table {@code name} matches the {@code expected} name.
+     * Returns {@code true} if the given table {@code name} matches the name expected by {@code this}.
      * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example, {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
      *
-     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} type of the
+     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} types of the
      * {@code EPSG_Prepare.sql} file.</p>
      *
-     * @param  expected  the expected table name (e.g. {@code "Coordinate_Operation"}).
-     * @param  name      the actual table name.
+     * @param  name  the table name to test.
      * @return whether the given {@code name} is considered to match the expected name.
      */
-    static boolean tableMatches(final String expected, String name) {
+    final boolean tableMatches(String name) {
         if (name == null) {
             return false;
         }
         if (name.startsWith(SQLTranslator.TABLE_PREFIX)) {
             name = name.substring(SQLTranslator.TABLE_PREFIX.length());
         }
-        return CharSequences.isAcronymForWords(name, expected);
+        return CharSequences.isAcronymForWords(name, unquoted());
     }
 
     /**
@@ -288,7 +297,7 @@ final class TableInfo {
      *     WHERE COORD_REF_SYS_KIND LIKE 'geographic%' AND
      *     }
      *
-     * In any case, the caller shall add at least one condition after this method call.
+     * The caller shall add at least one condition after this method call.
      *
      * @param  userType  the type specified by the user.
      * @param  buffer    where to append the {@code WHERE} clause.

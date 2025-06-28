@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,7 +86,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
                 "UPDATE epsg_datum\n" +
                 "SET datum_name = replace(datum_name, CHAR(182), CHAR(10))"));
 
-        // Modified statement with MS-Access table name in a schema.
+        // Modified statement with mixed-case table name in a schema.
         assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
                 "UPDATE epsg.\"Alias\"\n" +
                 "SET object_table_name = replace(object_table_name, CHR(182), CHR(10))"));
@@ -199,7 +198,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     private void createAndTest(final DataSource ds, final InstallationScriptProvider scriptProvider)
             throws SQLException, FactoryException
     {
-        final Map<String,Object> properties = new HashMap<>();
+        final var properties = new HashMap<String,Object>();
         assertNull(properties.put("dataSource", ds));
         assertNull(properties.put("scriptProvider", scriptProvider));
         assertEquals(0, countCRSTables(ds), "Should not contain EPSG tables before we created them.");

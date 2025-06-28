@@ -91,8 +91,9 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
-     * Creates immediately a schema of the given name in the database and remember that the
-     * {@code "epsg_"} prefix in table names will need to be replaced by path to that schema.
+     * Creates immediately a schema of the given name in the database.
+     * The {@code "epsg_"} prefix in table names or the {@code "epsg"}
+     * schema name will be replaced by the given schema name.
      *
      * <p>This method should be invoked only once. It does nothing if the database does not supports schema.</p>
      *
@@ -103,17 +104,22 @@ final class EPSGInstaller extends ScriptRunner {
     public void setSchema(final String schema) throws SQLException, IOException {
         if (isSchemaSupported) {
             /*
-             * Creates the schema on the database. We do that before to setup the 'toSchema' map, while the map still null.
+             * Creates the schema on the database.
              * Note that we do not quote the schema name, which is a somewhat arbitrary choice.
              */
-            execute(new StringBuilder("CREATE SCHEMA ").append(identifierQuote).append(schema).append(identifierQuote));
+            final var sb = new StringBuilder(40);
+            execute(sb.append("CREATE SCHEMA ").append(identifierQuote).append(schema).append(identifierQuote));
             if (isGrantOnSchemaSupported) {
-                execute(new StringBuilder("GRANT USAGE ON SCHEMA ")
+                sb.setLength(0);
+                execute(sb.append("GRANT USAGE ON SCHEMA ")
                         .append(identifierQuote).append(schema).append(identifierQuote).append(" TO ").append(PUBLIC));
             }
             /*
-             * Mapping from the table names used in the SQL scripts to the original names used in the MS-Access database.
+             * Mapping from the table names used in the SQL scripts to the names used in `EPSGDataAccess`.
+             * Those names are the ones that were used in the original EPSG dataset in MS-Access database.
              * We use those original names because they are easier to read than the names in SQL scripts.
+             *
+             * TODO: move to org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter.
              */
             addReplacement(SQLTranslator.TABLE_PREFIX + "alias",                      "Alias");
             addReplacement(SQLTranslator.TABLE_PREFIX + "area",                       "Area");
