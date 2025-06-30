@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -233,6 +232,27 @@ public class Matrix2 extends MatrixSIS {
     }
 
     /**
+     * Sets the elements to a rotation matrix of the given arithmetic angle.
+     * Angle 0 is oriented toward positive <var>x</bar> axis,
+     * rotation is counter-clockwise and the unit of measurement is radians.
+     * The resulting matrix is not affine in the sense of {@link #isAffine()}.
+     * The matrix is:
+     *
+     * <pre class="math">
+     *        ┌                  ┐
+     *        │ cos(θ)  −sin(θ)  │
+     *        │ sin(θ)   cos(θ)  │
+     *        └                  ┘</pre>
+     *
+     * @param θ  arithmetic rotation angle in radians.
+     * @since 1.5
+     */
+    public void setToRotation(double θ) {
+        m00 =  (m11 = Math.cos(θ));
+        m01 = -(m10 = Math.sin(θ));
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -265,34 +285,18 @@ public class Matrix2 extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * @since 1.5
      */
     @Override
-    public double[] multiply(double[] v) {
-        if (v.length != 2) {
-            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 2, v.length));
-        }
-        final double x = v[0];
-        final double y = v[1];
-        return new double[]{
+    public double[] multiply(final double[] vector) {
+        ensureLengthMatch(2, vector);
+        final double x = vector[0];
+        final double y = vector[1];
+        return new double[] {
             m00 * x + m01 * y,
             m10 * x + m11 * y
         };
-    }
-
-    /**
-     * Set matrix to given rotation angle,
-     * Rotation is in counter-clockwise direction.
-     * Resulting matrix will not be affine.
-     *
-     * @param angleRad angle in radians
-     */
-    public void setToRotation(double angleRad) {
-        final double sin = Math.sin(angleRad);
-        final double cos = Math.cos(angleRad);
-        m00 = cos;
-        m01 = -sin;
-        m10 = sin;
-        m11 = cos;
     }
 
     /**

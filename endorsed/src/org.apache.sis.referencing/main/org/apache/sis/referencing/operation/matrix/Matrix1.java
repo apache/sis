@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -240,16 +239,17 @@ public class Matrix1 extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * @since 1.5
      */
     @Override
-    public double[] multiply(double[] v) {
-        if (v.length != 1) {
-            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 1, v.length));
-        }
-        return new double[]{
-            m00 * v[0]
+    public double[] multiply(final double[] vector) {
+        ensureLengthMatch(1, vector);
+        return new double[] {
+            m00 * vector[0]
         };
     }
+
     /**
      * Normalizes all columns in-place.
      * For a 1×1 matrix with non-NaN value, this method sets the {@link #m00} value

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
-import org.apache.sis.util.resources.Errors;
 import org.opengis.referencing.operation.Matrix;
 
 
@@ -329,17 +328,17 @@ public class Matrix4 extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * @since 1.5
      */
     @Override
-    public double[] multiply(double[] v) {
-        if (v.length != 4) {
-            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 4, v.length));
-        }
-        final double x = v[0];
-        final double y = v[1];
-        final double z = v[2];
-        final double w = v[3];
-        return new double[]{
+    public double[] multiply(final double[] vector) {
+        ensureLengthMatch(4, vector);
+        final double x = vector[0];
+        final double y = vector[1];
+        final double z = vector[2];
+        final double w = vector[3];
+        return new double[] {
             m00 * x + m01 * y + m02 * z + m03 * w,
             m10 * x + m11 * y + m12 * z + m13 * w,
             m20 * x + m21 * y + m22 * z + m23 * w,
