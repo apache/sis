@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -260,6 +261,38 @@ public class Matrix2 extends MatrixSIS {
         final double swap = m10;
         m10 = m01;
         m01 = swap;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double[] multiply(double[] v) {
+        if (v.length != 2) {
+            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 2, v.length));
+        }
+        final double x = v[0];
+        final double y = v[1];
+        return new double[]{
+            m00 * x + m01 * y,
+            m10 * x + m11 * y
+        };
+    }
+
+    /**
+     * Set matrix to given rotation angle,
+     * Rotation is in counter-clockwise direction.
+     * Resulting matrix will not be affine.
+     *
+     * @param angleRad angle in radians
+     */
+    public void setToRotation(double angleRad) {
+        final double sin = Math.sin(angleRad);
+        final double cos = Math.cos(angleRad);
+        m00 = cos;
+        m01 = -sin;
+        m10 = sin;
+        m11 = cos;
     }
 
     /**

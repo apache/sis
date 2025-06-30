@@ -16,14 +16,15 @@
  */
 package org.apache.sis.geometries.math;
 
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 
 /**
- * TODO to mix with SIS matrices
  *
  * @author Johann Sorel (Geomatys)
+ * @todo Remove this class when all elements are merged in MatrixSIS
  */
-public abstract class Matrix {
+public abstract class Matrix extends MatrixSIS {
 
     public abstract void transform(Tuple tuple, Tuple result);
 

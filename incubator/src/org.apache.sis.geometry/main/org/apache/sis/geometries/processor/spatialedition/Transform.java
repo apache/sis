@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DefaultPolygon;
+import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.opengis.referencing.operation.TransformException;
 
@@ -48,6 +51,7 @@ public final class Transform {
 
         final int sourceDimension = reference.getDimension();
         final int targetDimension = operation.crs.getCoordinateSystem().getDimension();
+        final SampleSystem ss = SampleSystem.of(operation.crs);
 
         if (sourceDimension == targetDimension) {
             //use in place transform
@@ -57,6 +61,7 @@ public final class Transform {
             } catch (TransformException ex) {
                 throw new OperationException(ex.getMessage(), ex);
             }
+            positions.setSampleSystem(ss);
             return positions;
         } else {
             final int nb = reference.getLength();
@@ -67,7 +72,63 @@ public final class Transform {
             } catch (TransformException ex) {
                 throw new OperationException(ex.getMessage(), ex);
             }
-            return TupleArrays.of(SampleSystem.of(operation.crs), result);
+            return TupleArrays.of(ss, result);
+        }
+    }
+
+    public static class LinearRing implements Processor<org.apache.sis.geometries.operation.spatialedition.Transform, org.apache.sis.geometries.LinearRing> {
+
+        @Override
+        public Class<org.apache.sis.geometries.operation.spatialedition.Transform> getOperationClass() {
+            return org.apache.sis.geometries.operation.spatialedition.Transform.class;
+        }
+
+        @Override
+        public Class<org.apache.sis.geometries.LinearRing> getGeometryClass() {
+            return org.apache.sis.geometries.LinearRing.class;
+        }
+
+        @Override
+        public void process(org.apache.sis.geometries.operation.spatialedition.Transform operation) throws OperationException {
+            final org.apache.sis.geometries.LinearRing r = (org.apache.sis.geometries.LinearRing) operation.geometry;
+
+            PointSequence ps = r.getPoints();
+            final TupleArray reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
+            final TupleArray positions = transform(reference, operation);
+            final ArraySequence cp = new ArraySequence(positions);
+            for (String name : ps.getAttributesType().getAttributeNames()) {
+                if (!AttributesType.ATT_POSITION.equals(name)) {
+                    cp.setAttribute(name, ps.getAttributeArray(name).copy());
+                }
+            }
+            operation.result = new DefaultLinearRing(cp);
+        }
+    }
+
+    public static class Polygon implements Processor<org.apache.sis.geometries.operation.spatialedition.Transform, org.apache.sis.geometries.Polygon> {
+
+        @Override
+        public Class<org.apache.sis.geometries.operation.spatialedition.Transform> getOperationClass() {
+            return org.apache.sis.geometries.operation.spatialedition.Transform.class;
+        }
+
+        @Override
+        public Class<org.apache.sis.geometries.Polygon> getGeometryClass() {
+            return org.apache.sis.geometries.Polygon.class;
+        }
+
+        @Override
+        public void process(org.apache.sis.geometries.operation.spatialedition.Transform operation) throws OperationException {
+            final org.apache.sis.geometries.Polygon p = (org.apache.sis.geometries.Polygon) operation.geometry;
+
+            Curve exterior = (Curve) GeometryOperations.SpatialEdition.transform(p.getExteriorRing(), operation.crs, operation.transform);
+
+            final List<Curve> interiors = new ArrayList<>(p.getInteriorRings());
+            for (int i = 0, n = interiors.size(); i < n; i++) {
+                interiors.set(i, (Curve) GeometryOperations.SpatialEdition.transform(interiors.get(i), operation.crs, operation.transform));
+            }
+
+            operation.result = new DefaultPolygon((org.apache.sis.geometries.LinearRing) exterior, (List) interiors);
         }
     }
 

@@ -17,47 +17,47 @@
 package org.apache.sis.geometries.math;
 
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class Matrix2D extends Matrix{
-
-    private final Matrix2 matrix;
+public final class Matrix2D extends Matrix2{
 
     public Matrix2D() {
-        this.matrix = new Matrix2();
-    }
-
-    public Matrix2D(Matrix2 matrix) {
-        this.matrix = matrix;
     }
 
     public Matrix2D(double m00, double m01, double m10, double m11) {
-        this.matrix = new Matrix2(m00, m01, m10, m11);
+        super(m00, m01, m10, m11);
     }
 
-    @Override
+    public Matrix2D(double[] elements) {
+        super(elements);
+    }
+
+
     public void transform(Tuple tuple, Tuple result) {
         //TODO not efficient
-        result.set(matrix.multiply(tuple.toArrayDouble()));
+        result.set(multiply(tuple.toArrayDouble()));
     }
 
-    @Override
-    public Matrix2D inverse() throws NoninvertibleMatrixException {
-        return new Matrix2D(Matrix2.castOrCopy(matrix.inverse()));
+    /**
+     * Casts or copies the given matrix to a {@code Matrix2D} implementation. If the given {@code matrix}
+     * is already an instance of {@code Matrix2D}, then it is returned unchanged. Otherwise this method
+     * verifies the matrix size, then copies all elements in a new {@code Matrix2D} object.
+     *
+     * @param  matrix  the matrix to cast or copy, or {@code null}.
+     * @return the matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     * @throws IllegalArgumentException if the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     */
+    public static Matrix2D castOrCopy(final org.opengis.referencing.operation.Matrix matrix) throws IllegalArgumentException {
+        if (matrix == null || matrix instanceof Matrix2D) {
+            return (Matrix2D) matrix;
+        }
+        if (matrix.getNumCol() != 2 || matrix.getNumRow() != 2) {
+            throw new IllegalArgumentException("Matrix is not of size 2x2");
+        }
+        return new Matrix2D(Matrix2.castOrCopy(matrix).getElements());
     }
-
-    public Matrix2D fromRotation(double angleRad) {
-        final double sin = Math.sin(angleRad);
-        final double cos = Math.cos(angleRad);
-        matrix.m00 = cos;
-        matrix.m01 = sin;
-        matrix.m10 = -sin;
-        matrix.m11 = cos;
-        return this;
-    }
-
 }

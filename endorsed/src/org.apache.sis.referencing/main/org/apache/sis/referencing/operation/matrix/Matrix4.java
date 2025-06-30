@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import org.apache.sis.util.resources.Errors;
 import org.opengis.referencing.operation.Matrix;
 
 
@@ -324,6 +325,26 @@ public class Matrix4 extends MatrixSIS {
         swap = m12; m12 = m21; m21 = swap;
         swap = m13; m13 = m31; m31 = swap;
         swap = m23; m23 = m32; m32 = swap;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double[] multiply(double[] v) {
+        if (v.length != 4) {
+            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 4, v.length));
+        }
+        final double x = v[0];
+        final double y = v[1];
+        final double z = v[2];
+        final double w = v[3];
+        return new double[]{
+            m00 * x + m01 * y + m02 * z + m03 * w,
+            m10 * x + m11 * y + m12 * z + m13 * w,
+            m20 * x + m21 * y + m22 * z + m23 * w,
+            m30 * x + m31 * y + m32 * z + m33 * w
+        };
     }
 
     /**
