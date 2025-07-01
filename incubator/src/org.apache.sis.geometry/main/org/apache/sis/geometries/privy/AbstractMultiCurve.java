@@ -14,47 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
 
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.MultiCurve;
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiSurface<T extends Surface> extends AbstractGeometry implements MultiSurface<T> {
+public abstract class AbstractMultiCurve<T extends Curve> extends AbstractGeometry implements MultiCurve<T> {
 
-    private final T[] surfaces;
+    private final T[] curves;
 
-    public DefaultMultiSurface(T[] geometries) {
-        this.surfaces = geometries;
-    }
-
-    @Override
-    public String getGeometryType() {
-        return "MULTISURFACE";
+    public AbstractMultiCurve(T[] geometries) {
+        this.curves = geometries;
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return surfaces[0].getCoordinateReferenceSystem();
+        return curves[0].getCoordinateReferenceSystem();
     }
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        for (T c : surfaces) {
+        for (Curve c : curves) {
             c.setCoordinateReferenceSystem(cs);
         }
     }
 
     @Override
     public int getNumGeometries() {
-        return surfaces.length;
+        return curves.length;
     }
 
     @Override
     public T getGeometryN(int n) {
-        return surfaces[n];
+        return curves[n];
     }
 
 }

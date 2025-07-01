@@ -16,21 +16,21 @@
  */
 package org.apache.sis.geometries.triangulate.delaunay;
 
-import org.apache.sis.geometries.AbstractGeometry;
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.DefaultLinearRing;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.MeshPrimitive.Vertex;
+import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.math.Tuple;
 import java.awt.geom.Point2D;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.referencing.privy.ShapeUtilities;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 
 /**
  *
@@ -38,7 +38,7 @@ import org.apache.sis.geometries.MeshPrimitive;
  */
 final class OrientedTriangle extends AbstractGeometry implements Triangle, PointSequence {
 
-    private final LinearRing ring = new DefaultLinearRing(this);
+    private final LinearRing ring = GeometryFactory.createLinearRing(this);
 
     private boolean obsolete = false;
     public final OrientedEdge ab;

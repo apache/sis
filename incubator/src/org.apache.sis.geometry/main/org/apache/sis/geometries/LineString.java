@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
 import javax.measure.quantity.Length;
 import org.apache.sis.geometry.GeneralEnvelope;

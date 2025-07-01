@@ -17,8 +17,8 @@
 package org.apache.sis.geometries.triangulate.delaunay;
 
 import java.util.Iterator;
-import org.apache.sis.geometries.MeshPrimitive;
-import org.apache.sis.geometries.MeshPrimitive.Vertex;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.referencing.CommonCRS;

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.processor.spatialanalysis2d;
 
-import org.apache.sis.geometries.DefaultPoint;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.operation.GeometryOperations;
@@ -41,8 +41,8 @@ public class DistanceTest {
     public void PointPoint() {
 
         { //different CRS
-            final Point point1 = new DefaultPoint(CommonCRS.WGS84.geographic());
-            final Point point2 = new DefaultPoint(CommonCRS.WGS84.normalizedGeographic());
+            final Point point1 = GeometryFactory.createPoint(CommonCRS.WGS84.geographic());
+            final Point point2 = GeometryFactory.createPoint(CommonCRS.WGS84.normalizedGeographic());
             try {
                 new Distance(point1, point2).eval();
                 fail("evaluation should fail");
@@ -52,14 +52,14 @@ public class DistanceTest {
         }
 
         { //at same position
-            final Point point1 = new DefaultPoint(CRS2D, 10.0, 5.0);
-            final Point point2 = new DefaultPoint(CRS2D, 10.0, 5.0);
+            final Point point1 = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
+            final Point point2 = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
             assertEquals(0.0, GeometryOperations.SpatialAnalysis2D.distance(point1, point2), 0.0);
         }
 
         { //at 1.0 of distance
-            final Point point1 = new DefaultPoint(CRS2D, 10, 5);
-            final Point point2 = new DefaultPoint(CRS2D, 10, 6);
+            final Point point1 = GeometryFactory.createPoint(CRS2D, 10, 5);
+            final Point point2 = GeometryFactory.createPoint(CRS2D, 10, 6);
             assertEquals(1.0, GeometryOperations.SpatialAnalysis2D.distance(point1, point2), 0.0);
         }
     }

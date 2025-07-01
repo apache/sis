@@ -14,17 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
+
+import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.PointSequence;
 
 /**
- * TODO : add linear ring constraints.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultLinearRing extends DefaultLineString implements LinearRing{
+public class DefaultLineString extends AbstractGeometry implements LineString {
 
-    public DefaultLinearRing(PointSequence points) {
-        super(points);
+    private final PointSequence points;
+
+    public DefaultLineString(PointSequence points) {
+        this.points = points;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return points.isEmpty();
+    }
+
+    @Override
+    public PointSequence getPoints() {
+        return points;
     }
 
 }

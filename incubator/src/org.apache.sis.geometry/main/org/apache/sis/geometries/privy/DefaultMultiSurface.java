@@ -14,56 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
 
-import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.MultiSurface;
+import org.apache.sis.geometries.Surface;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
+public class DefaultMultiSurface<T extends Surface> extends AbstractGeometry implements MultiSurface<T> {
 
-    private final PointSequence points;
+    private final T[] surfaces;
 
-    public DefaultMultiPoint(PointSequence points) {
-        this.points = points;
+    public DefaultMultiSurface(T[] geometries) {
+        this.surfaces = geometries;
+    }
+
+    @Override
+    public String getGeometryType() {
+        return "MULTISURFACE";
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return points.getCoordinateReferenceSystem();
+        return surfaces[0].getCoordinateReferenceSystem();
     }
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        points.setCoordinateReferenceSystem(cs);
-    }
-
-    @Override
-    public Envelope getEnvelope() {
-        return points.getEnvelope();
+        for (T c : surfaces) {
+            c.setCoordinateReferenceSystem(cs);
+        }
     }
 
     @Override
     public int getNumGeometries() {
-        return points.size();
+        return surfaces.length;
     }
 
     @Override
-    public Point getGeometryN(int n) {
-        return points.getPoint(n);
-    }
-
-    @Override
-    public AttributesType getAttributesType() {
-        return points.getAttributesType();
-    }
-
-    @Override
-    public PointSequence asPointSequence() {
-        return points;
+    public T getGeometryN(int n) {
+        return surfaces[n];
     }
 
 }

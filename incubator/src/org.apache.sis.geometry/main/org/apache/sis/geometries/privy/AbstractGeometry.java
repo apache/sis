@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
 
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrayCursor;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.PointSequence;
 
 /**
  * Abstract geometry, manages crs only.
@@ -44,7 +46,7 @@ public abstract class AbstractGeometry implements Geometry {
         return asText();
     }
 
-    protected static void toText(StringBuilder sb, Tuple tuple) {
+    public static void toText(StringBuilder sb, Tuple tuple) {
         sb.append(tuple.get(0));
         for (int i = 1, n = tuple.getDimension(); i < n; i++) {
             sb.append(' ');
@@ -52,7 +54,7 @@ public abstract class AbstractGeometry implements Geometry {
         }
     }
 
-    protected static void toText(StringBuilder sb, TupleArray array) {
+    public static void toText(StringBuilder sb, TupleArray array) {
         final TupleArrayCursor cursor = array.cursor();
         boolean first = true;
         while (cursor.next()) {
@@ -64,7 +66,7 @@ public abstract class AbstractGeometry implements Geometry {
         }
     }
 
-    protected static void toText(StringBuilder sb, PointSequence array) {
+    public static void toText(StringBuilder sb, PointSequence array) {
         final int size = array.size();
         if (size == 0) return;
 

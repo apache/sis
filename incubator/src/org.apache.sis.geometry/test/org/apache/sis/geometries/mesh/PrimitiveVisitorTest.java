@@ -14,11 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.mesh;
 
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.TIN;
+import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.math.Vector3D;

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.operation.spatialanalysis2d;
 
-import org.apache.sis.geometries.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 
 /**
  * Enum used in {@linkplain ISOBand isoband computation} to manage the integration of

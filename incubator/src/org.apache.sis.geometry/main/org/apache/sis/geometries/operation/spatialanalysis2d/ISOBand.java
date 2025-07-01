@@ -16,8 +16,8 @@
  */
 package org.apache.sis.geometries.operation.spatialanalysis2d;
 
-import org.apache.sis.geometries.MeshPrimitive;
-import org.apache.sis.geometries.MeshPrimitiveVisitor;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToArray;

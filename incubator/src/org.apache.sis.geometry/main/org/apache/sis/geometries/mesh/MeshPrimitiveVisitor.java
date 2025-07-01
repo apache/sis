@@ -14,12 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.mesh;
 
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrayCursor;
 import org.apache.sis.geometries.math.TupleArrays;
 import java.util.HashSet;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.Triangle;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -187,11 +193,11 @@ public abstract class MeshPrimitiveVisitor {
     }
 
     private Triangle readTriangle(int idx0, int idx1, int idx2) {
-        return new DefaultTriangle(new DefaultLinearRing(new MeshPrimitive.Sequence(primitive, new int[]{idx0, idx1, idx2, idx0})));
+        return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new MeshPrimitive.Sequence(primitive, new int[]{idx0, idx1, idx2, idx0})));
     }
 
     private LineString readLine(int idx0, int idx1) {
-        return new DefaultLineString(new MeshPrimitive.Sequence(primitive, new int[]{idx0, idx1}));
+        return GeometryFactory.createLineString(new MeshPrimitive.Sequence(primitive, new int[]{idx0, idx1}));
     }
 
     /**

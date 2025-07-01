@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
 
 import org.apache.sis.geometries.math.Tuple;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 

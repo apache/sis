@@ -16,21 +16,20 @@
  */
 package org.apache.sis.geometries.processor.spatialedition;
 
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.ArraySequence;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.DefaultLineString;
-import org.apache.sis.geometries.DefaultPoint;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.geometries.processor.Processor;
+import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrayCursor;
 import org.apache.sis.geometries.math.TupleArrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
+import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.geometries.privy.ArraySequence;
+import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -132,8 +131,8 @@ public final class To3D {
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.To3D operation) throws OperationException {
             final org.apache.sis.geometries.Point base = (org.apache.sis.geometries.Point) operation.geometry;
-            final ArraySequence copy3d = to3d(base.asPointSequence(), operation.crs3d, operation.Zeditor);
-            operation.result = new DefaultPoint(copy3d);
+            final PointSequence copy3d = to3d(base.asPointSequence(), operation.crs3d, operation.Zeditor);
+            operation.result = GeometryFactory.createPoint(copy3d);
         }
     }
 
@@ -155,8 +154,8 @@ public final class To3D {
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.To3D operation) throws OperationException {
             final org.apache.sis.geometries.LineString base = (org.apache.sis.geometries.LineString) operation.geometry;
-            final ArraySequence copy3d = to3d(base.getPoints(), operation.crs3d, operation.Zeditor);
-            operation.result = new DefaultLineString(copy3d);
+            final PointSequence copy3d = to3d(base.getPoints(), operation.crs3d, operation.Zeditor);
+            operation.result = GeometryFactory.createLineString(copy3d);
         }
     }
 
@@ -164,7 +163,7 @@ public final class To3D {
      * Add Z axis to Primitive.
      * Also works for ModelPrimitive.
      */
-    public static class Primitive implements Processor<org.apache.sis.geometries.operation.spatialedition.To3D, org.apache.sis.geometries.MeshPrimitive>{
+    public static class Primitive implements Processor<org.apache.sis.geometries.operation.spatialedition.To3D, org.apache.sis.geometries.mesh.MeshPrimitive>{
 
         @Override
         public Class<org.apache.sis.geometries.operation.spatialedition.To3D> getOperationClass() {
@@ -172,14 +171,14 @@ public final class To3D {
         }
 
         @Override
-        public Class<org.apache.sis.geometries.MeshPrimitive> getGeometryClass() {
-            return org.apache.sis.geometries.MeshPrimitive.class;
+        public Class<org.apache.sis.geometries.mesh.MeshPrimitive> getGeometryClass() {
+            return org.apache.sis.geometries.mesh.MeshPrimitive.class;
         }
 
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.To3D operation) throws OperationException {
-            final org.apache.sis.geometries.MeshPrimitive base = (org.apache.sis.geometries.MeshPrimitive) operation.geometry;
-            final org.apache.sis.geometries.MeshPrimitive copy3d = base.deepCopy();
+            final org.apache.sis.geometries.mesh.MeshPrimitive base = (org.apache.sis.geometries.mesh.MeshPrimitive) operation.geometry;
+            final org.apache.sis.geometries.mesh.MeshPrimitive copy3d = base.deepCopy();
             operation.result = copy3d;
 
             TupleArray positions = copy3d.getPositions();

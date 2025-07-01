@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.mesh;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -30,6 +30,17 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.MultiLineString;
+import org.apache.sis.geometries.MultiPoint;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.TIN;
+import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -1141,7 +1152,7 @@ public interface MeshPrimitive extends Geometry {
         @Override
         public LineString getGeometryN(int n) {
             final int[] indices = (index == null) ? new int[]{n*2, n*2+1} : index.toArrayInt(n*2, 2);
-            return new DefaultLineString(new Sequence(this, indices));
+            return GeometryFactory.createLineString(new Sequence(this, indices));
         }
     }
 
@@ -1207,7 +1218,7 @@ public interface MeshPrimitive extends Geometry {
                 indices = Arrays.copyOf(indices, 4);
                 indices[3] = indices[0];
             }
-            return new DefaultTriangle(new DefaultLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
         }
     }
 
@@ -1235,7 +1246,7 @@ public interface MeshPrimitive extends Geometry {
                 indices[2] = (int) index.get(2 + n).get(0);
             }
                 indices[3] = indices[0];
-            return new DefaultTriangle(new DefaultLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
         }
     }
 
@@ -1273,7 +1284,7 @@ public interface MeshPrimitive extends Geometry {
             }
             indices[3] = indices[0];
 
-            return new DefaultTriangle(new DefaultLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
         }
     }
 }

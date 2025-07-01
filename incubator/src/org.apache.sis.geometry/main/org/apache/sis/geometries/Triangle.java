@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import java.util.Collections;
 import java.util.List;
 import org.apache.sis.geometries.math.Maths;

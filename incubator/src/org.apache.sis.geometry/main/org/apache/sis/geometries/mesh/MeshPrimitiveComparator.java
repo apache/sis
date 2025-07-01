@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.mesh;
 
-import org.apache.sis.geometries.MeshPrimitive.Vertex;
+import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.TupleArray;
 import java.util.ArrayList;
@@ -24,6 +24,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.Triangle;
 import org.apache.sis.util.Utilities;
 
 /**

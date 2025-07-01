@@ -14,42 +14,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
 
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.MultiPoint;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.PointSequence;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultGeometryCollection<T extends Geometry> extends AbstractGeometry implements GeometryCollection<T> {
+public class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
 
-    private final T[] geometries;
+    private final PointSequence points;
 
-    public DefaultGeometryCollection(T[] geometries) {
-        this.geometries = geometries;
+    public DefaultMultiPoint(PointSequence points) {
+        this.points = points;
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return geometries[0].getCoordinateReferenceSystem();
+        return points.getCoordinateReferenceSystem();
     }
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        for (T c : geometries) {
-            c.setCoordinateReferenceSystem(cs);
-        }
+        points.setCoordinateReferenceSystem(cs);
+    }
+
+    @Override
+    public Envelope getEnvelope() {
+        return points.getEnvelope();
     }
 
     @Override
     public int getNumGeometries() {
-        return geometries.length;
+        return points.size();
     }
 
     @Override
-    public T getGeometryN(int n) {
-        return geometries[n];
+    public Point getGeometryN(int n) {
+        return points.getPoint(n);
+    }
+
+    @Override
+    public AttributesType getAttributesType() {
+        return points.getAttributesType();
+    }
+
+    @Override
+    public PointSequence asPointSequence() {
+        return points;
     }
 
 }

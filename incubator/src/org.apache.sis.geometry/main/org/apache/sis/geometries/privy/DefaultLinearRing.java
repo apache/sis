@@ -14,16 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
+
+import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.PointSequence;
 
 /**
+ * TODO : add linear ring constraints.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiPolygon extends DefaultMultiSurface<Polygon> implements MultiPolygon {
+public class DefaultLinearRing extends DefaultLineString implements LinearRing{
 
-    public DefaultMultiPolygon(Polygon[] geometries) {
-        super(geometries);
+    public DefaultLinearRing(PointSequence points) {
+        super(points);
     }
 
 }

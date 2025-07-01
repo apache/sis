@@ -14,10 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
 
 import java.util.Collections;
 import java.util.List;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.Polygon;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.geometry.Envelope;

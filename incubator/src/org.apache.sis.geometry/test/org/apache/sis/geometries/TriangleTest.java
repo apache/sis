@@ -35,9 +35,9 @@ public class TriangleTest {
     public void constructorTest() {
 
         final TupleArray positions = TupleArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
-        final PointSequence points = new ArraySequence(positions);
-        final LinearRing exterior = new DefaultLinearRing(points);
-        final Triangle triangle = new DefaultTriangle(exterior);
+        final PointSequence points = GeometryFactory.createSequence(positions);
+        final LinearRing exterior = GeometryFactory.createLinearRing(points);
+        final Triangle triangle = GeometryFactory.createTriangle(exterior);
 
         assertNotNull(triangle.getExteriorRing());
         assertTrue(triangle.getInteriorRings().isEmpty());

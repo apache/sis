@@ -14,28 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
+
+import org.apache.sis.geometries.MultiPolygon;
+import org.apache.sis.geometries.Polygon;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultLineString extends AbstractGeometry implements LineString {
+public class DefaultMultiPolygon extends DefaultMultiSurface<Polygon> implements MultiPolygon {
 
-    private final PointSequence points;
-
-    public DefaultLineString(PointSequence points) {
-        this.points = points;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return points.isEmpty();
-    }
-
-    @Override
-    public PointSequence getPoints() {
-        return points;
+    public DefaultMultiPolygon(Polygon[] geometries) {
+        super(geometries);
     }
 
 }

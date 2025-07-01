@@ -28,9 +28,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.sis.geometries.ArraySequence;
-import org.apache.sis.geometries.DefaultLinearRing;
-import org.apache.sis.geometries.DefaultTriangle;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
@@ -125,9 +123,9 @@ public final class TINBuilder {
         for (int i = 0, n = finished.size(); i < n; i++) {
             final WTriangle t = finished.get(i);
             final TupleArray positions = TupleArrays.of(Arrays.asList(t.p0, t.p1, t.p2, t.p0), t.p0.getSampleSystem(), t.p0.getDataType());
-            final PointSequence points = new ArraySequence(positions);
-            final LinearRing exterior = new DefaultLinearRing(points);
-            triangles.add(new DefaultTriangle(exterior));
+            final PointSequence points = GeometryFactory.createSequence(positions);
+            final LinearRing exterior = GeometryFactory.createLinearRing(points);
+            triangles.add(GeometryFactory.createTriangle(exterior));
         }
         return triangles;
     }

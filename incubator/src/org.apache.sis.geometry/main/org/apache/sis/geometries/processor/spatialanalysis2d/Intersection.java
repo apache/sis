@@ -17,16 +17,14 @@
 package org.apache.sis.geometries.processor.spatialanalysis2d;
 
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.DefaultLineString;
-import org.apache.sis.geometries.DefaultMultiLineString;
-import org.apache.sis.geometries.DefaultPointSequence;
+import org.apache.sis.geometries.privy.DefaultPointSequence;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.MultiLineString;
-import org.apache.sis.geometries.MultiMeshPrimitive;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PreparedTIN;
-import org.apache.sis.geometries.MeshPrimitiveVisitor;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.geometries.operation.OperationException;
@@ -43,8 +41,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.sis.geometries.GeometryFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometries.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 
 /**
  *
@@ -227,7 +226,7 @@ public final class Intersection {
                             final double[] bary2 = Triangle.getBarycentricValue2D(x1, y1, x2, y2, x3, y3, p2.get(0), p2.get(1), 0.0, false);
                             final Point point1 = triangle.interpolate(bary1);
                             final Point point2 = triangle.interpolate(bary2);
-                            segments.add(new DefaultLineString(new DefaultPointSequence(point1, point2)));
+                            segments.add(GeometryFactory.createLineString(new DefaultPointSequence(point1, point2)));
                         }
                     }
                 } catch (TransformException ex) {
@@ -235,7 +234,7 @@ public final class Intersection {
                 }
             }
 
-            final MultiLineString mline = new DefaultMultiLineString(segments.toArray(LineString[]::new));
+            final MultiLineString mline = GeometryFactory.createMultiLineString(segments.toArray(LineString[]::new));
             final MeshPrimitive intersection = (MeshPrimitive) GeometryOperations.SpatialEdition.toPrimitive(mline);
             operation.result = intersection;
         }

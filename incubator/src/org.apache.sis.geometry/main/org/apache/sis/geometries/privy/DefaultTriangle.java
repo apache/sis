@@ -14,9 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.privy;
 
 import java.util.Objects;
+import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.Triangle;
 
 
 /**

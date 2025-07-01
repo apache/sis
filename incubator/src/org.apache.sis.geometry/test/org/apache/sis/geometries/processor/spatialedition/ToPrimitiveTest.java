@@ -16,20 +16,14 @@
  */
 package org.apache.sis.geometries.processor.spatialedition;
 
-import org.apache.sis.geometries.ArraySequence;
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.DefaultLineString;
-import org.apache.sis.geometries.DefaultLinearRing;
-import org.apache.sis.geometries.DefaultMultiLineString;
-import org.apache.sis.geometries.DefaultMultiPoint;
-import org.apache.sis.geometries.DefaultPoint;
-import org.apache.sis.geometries.DefaultPolygon;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.MultiLineString;
-import org.apache.sis.geometries.MultiMeshPrimitive;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
@@ -52,7 +46,7 @@ public class ToPrimitiveTest {
 
     @Test
     public void testPoint() {
-        final Point point = new DefaultPoint(CRS2D, 1, 2);
+        final Point point = GeometryFactory.createPoint(CRS2D, 1, 2);
         final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(point);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
@@ -62,8 +56,8 @@ public class ToPrimitiveTest {
     @Test
     public void testLineString() {
         final TupleArray positions = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
-        final PointSequence points = new ArraySequence(positions);
-        final LineString line = new DefaultLineString(points);
+        final PointSequence points = GeometryFactory.createSequence(positions);
+        final LineString line = GeometryFactory.createLineString(points);
         final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(line);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
@@ -73,9 +67,9 @@ public class ToPrimitiveTest {
     @Test
     public void testPolygon() {
         final TupleArray positions = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
-        final PointSequence points = new ArraySequence(positions);
-        final LinearRing exterior = new DefaultLinearRing(points);
-        final Polygon point = new DefaultPolygon(exterior);
+        final PointSequence points = GeometryFactory.createSequence(positions);
+        final LinearRing exterior = GeometryFactory.createLinearRing(points);
+        final Polygon point = GeometryFactory.createPolygon(exterior, null);
         final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(point);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
@@ -86,14 +80,14 @@ public class ToPrimitiveTest {
     public void testMultiLineString() {
         { //one line has 3 points, so we must obtain a MultiPrimitive
             final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
-            final PointSequence points1 = new ArraySequence(positions1);
-            final LineString line1 = new DefaultLineString(points1);
+            final PointSequence points1 = GeometryFactory.createSequence(positions1);
+            final LineString line1 = GeometryFactory.createLineString(points1);
 
             final TupleArray positions2 = TupleArrays.of(CRS2D, new double[]{3,4,5,6,7,8});
-            final PointSequence points2 = new ArraySequence(positions2);
-            final LineString line2 = new DefaultLineString(points2);
+            final PointSequence points2 = GeometryFactory.createSequence(positions2);
+            final LineString line2 = GeometryFactory.createLineString(points2);
 
-            final MultiLineString mlines = new DefaultMultiLineString(line1, line2);
+            final MultiLineString mlines = GeometryFactory.createMultiLineString(line1, line2);
 
             final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mlines);
             assertTrue(result instanceof MultiMeshPrimitive);
@@ -110,14 +104,14 @@ public class ToPrimitiveTest {
         }
         { //all linestrings are lines, we must obtain a Primitive.Lines
             final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
-            final PointSequence points1 = new ArraySequence(positions1);
-            final LineString line1 = new DefaultLineString(points1);
+            final PointSequence points1 = GeometryFactory.createSequence(positions1);
+            final LineString line1 = GeometryFactory.createLineString(points1);
 
             final TupleArray positions2 = TupleArrays.of(CRS2D, new double[]{3,4,5,6});
-            final PointSequence points2 = new ArraySequence(positions2);
-            final LineString line2 = new DefaultLineString(points2);
+            final PointSequence points2 = GeometryFactory.createSequence(positions2);
+            final LineString line2 = GeometryFactory.createLineString(points2);
 
-            final MultiLineString mlines = new DefaultMultiLineString(line1, line2);
+            final MultiLineString mlines = GeometryFactory.createMultiLineString(line1, line2);
 
             final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mlines);
             assertTrue(result instanceof MeshPrimitive.Lines);
@@ -133,8 +127,8 @@ public class ToPrimitiveTest {
     @Test
     public void testMultiPoint() {
         final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
-        final PointSequence points = new ArraySequence(positions1);
-        final MultiPoint mpoints = new DefaultMultiPoint(points);
+        final PointSequence points = GeometryFactory.createSequence(positions1);
+        final MultiPoint mpoints = GeometryFactory.createMultiPoint(points);
 
         final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mpoints);
         assertTrue(result instanceof MeshPrimitive);
