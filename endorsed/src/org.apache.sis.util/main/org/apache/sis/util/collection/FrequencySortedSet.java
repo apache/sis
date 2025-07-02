@@ -30,12 +30,12 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * A set with elements ordered by the amount of time they were {@linkplain #add added}.
+ * A set with elements ordered by the amount of time they were added.
  * By default, less frequently added elements are first and most frequently added elements are last.
  * If some elements were added the same amount of time, then the iterator will traverse them in their
  * insertion order.
  *
- * <p>An optional boolean argument in the constructor allows the construction of set in reversed order
+ * <p>An optional Boolean argument in the constructor allows the construction of set in reversed order
  * (most frequently added elements first, less frequently added last). This is similar but not identical
  * to creating a default {@code FrequencySortedSet} and iterating through it in reverse order.
  * The difference is that elements added the same amount of time will still be traversed in their insertion order.</p>
@@ -50,7 +50,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @since 0.8
  */
-public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E>, Comparator<E>, Serializable {
+public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -336,7 +336,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
          */
         @Override
         public Comparator<E> comparator() {
-            return FrequencySortedSet.this;
+            return FrequencySortedSet.this.comparator();
         }
 
         /**
@@ -347,11 +347,11 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
                 ensureSorted();
                 elements = sorted;
                 if (hasFrom) {
-                    lower = Arrays.binarySearch(elements, fromElement, FrequencySortedSet.this);
+                    lower = Arrays.binarySearch(elements, fromElement, comparator());
                     if (lower < 0) lower = ~lower;
                 }
                 if (hasTo) {
-                    upper = Arrays.binarySearch(elements, toElement, FrequencySortedSet.this);
+                    upper = Arrays.binarySearch(elements, toElement, comparator());
                     if (upper < 0)     upper = ~upper;
                     if (upper < lower) upper =  lower;
                 } else {
@@ -576,15 +576,13 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
 
     /**
      * Returns the comparator used to order the elements in this set.
-     * For a {@code FrequencySortedSet}, the comparator is always {@code this}.
      *
      * <p>This method is final because the {@code FrequencySortedSet} implementation makes
      * assumptions on the comparator that would not hold if this method were overridden.</p>
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Comparator<E> comparator() {
-        return this;
+        return this::compare;
     }
 
     /**
@@ -596,7 +594,6 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      * <p>This method is final because the {@code FrequencySortedSet} implementation makes
      * assumptions on the comparator that would not hold if this method were overridden.</p>
      */
-    @Override
     public final int compare(final E o1, final E o2) {
         return signedFrequency(o1) - signedFrequency(o2);
     }
