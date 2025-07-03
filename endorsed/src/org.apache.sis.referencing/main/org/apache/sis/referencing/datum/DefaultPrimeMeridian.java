@@ -263,7 +263,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         }
         if (super.equals(object, mode)) switch (mode) {
             case STRICT: {
-                final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
+                final var that = (DefaultPrimeMeridian) object;
                 return Numerics.equals(this.greenwichLongitude, that.greenwichLongitude) &&
                         Objects.equals(this.angularUnit,        that.angularUnit);
             }

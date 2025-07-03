@@ -50,7 +50,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
@@ -1211,8 +1211,8 @@ class CoordinateOperationRegistry {
          * to return the existing instance.
          */
         if (crs.getClass() == candidate.getClass() && candidate.getCoordinateSystem().getDimension() == 3) {
-            if (Utilities.equalsIgnoreMetadata(PseudoDatum.getDatumOrEnsemble((SingleCRS) candidate),
-                                               PseudoDatum.getDatumOrEnsemble((SingleCRS) crs)))
+            if (Utilities.equalsIgnoreMetadata(DatumOrEnsemble.of((SingleCRS) candidate),
+                                               DatumOrEnsemble.of((SingleCRS) crs)))
             {
                 return candidate;               // Keep the existing instance since it may contain useful metadata.
             }

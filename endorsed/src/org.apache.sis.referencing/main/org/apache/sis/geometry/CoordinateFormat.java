@@ -52,9 +52,9 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.privy.AxisDirections;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
@@ -1172,7 +1172,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
          */
         Resolution derived(final CoordinateReferenceSystem crs) throws IncommensurableException {
             if (isAngular || Units.isLinear(unit)) {
-                final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
+                final Ellipsoid ellipsoid = DatumOrEnsemble.getEllipsoid(crs).orElse(null);
                 final double radius = Formulas.getAuthalicRadius(ellipsoid);
                 if (radius > 0) {                                       // Indirectly filter null ellipsoid.
                     Unit<Length> axisUnit = ellipsoid.getAxisUnit();

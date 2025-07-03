@@ -73,6 +73,8 @@ import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
+import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
@@ -1552,12 +1554,13 @@ check:  while (lower != 0 || upper != dimension) {
      * @param  crs  the coordinate reference system from which to get the prime meridian.
      * @return the Greenwich longitude (in degrees) of the prime meridian of the given CRS.
      *
-     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     * @see DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     * @see DatumOrEnsemble#getPrimeMeridian(CoordinateReferenceSystem)
      *
      * @since 0.5
      */
     public static double getGreenwichLongitude(final GeodeticCRS crs) {
-        return ReferencingUtilities.getGreenwichLongitude(ReferencingUtilities.getPrimeMeridian(crs), Units.DEGREE);
+        return ReferencingUtilities.getGreenwichLongitude(DatumOrEnsemble.getPrimeMeridian(crs).orElse(null), Units.DEGREE);
     }
 
     /**

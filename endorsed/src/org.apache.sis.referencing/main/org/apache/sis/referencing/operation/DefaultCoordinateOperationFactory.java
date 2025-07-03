@@ -39,7 +39,7 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.MergedProperties;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
@@ -412,7 +412,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
             final Iterator<SingleCRS> it = components.iterator();
             while (it.hasNext()) {
-                if (PseudoDatum.getDatumOrEnsemble(component, it.next()).isPresent()) {
+                if (DatumOrEnsemble.ofTarget(component, it.next()).isPresent()) {
                     it.remove();
                     continue next;
                 }

@@ -22,8 +22,8 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.util.privy.Constants;
@@ -60,7 +60,7 @@ final class ExplicitParameters extends FormattableObject {
      */
     ExplicitParameters(final AbstractDerivedCRS crs, final String keyword) {
         conversion = crs.getConversionFromBase();
-        ellipsoid = ReferencingUtilities.getEllipsoid(crs);
+        ellipsoid = DatumOrEnsemble.getEllipsoid(crs).orElse(null);
         this.keyword = keyword;
     }
 
