@@ -145,6 +145,8 @@ public final class NTv2 extends AbstractProvider {
         final DatumShiftGridFile<Angle,Angle> grid;
         try {
             grid = getOrLoad(provider, file, version);
+        } catch (FactoryException e) {
+            throw e;
         } catch (Exception e) {
             throw DatumShiftGridLoader.canNotLoad(provider.getSimpleName(), file, e);
         }

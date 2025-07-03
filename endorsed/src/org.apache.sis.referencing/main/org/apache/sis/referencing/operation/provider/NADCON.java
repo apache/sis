@@ -143,6 +143,8 @@ public final class NADCON extends AbstractProvider {
                     getOrLoad(pg.getMandatoryValue(LATITUDE), pg.getMandatoryValue(LONGITUDE)));
         } catch (NoSuchFileException e) {
             throw new MissingFactoryResourceException(e.getMessage(), e);
+        } catch (FactoryException e) {
+            throw e;
         } catch (Exception e) {
             throw new FactoryException(e);
         }

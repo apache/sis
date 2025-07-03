@@ -353,6 +353,8 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
         final DatumShiftGridFile<Angle,Length> grid;
         try {
             grid = getOrLoad(file, isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
+        } catch (FactoryException e) {
+            throw e;
         } catch (Exception e) {
             // NumberFormatException, ArithmeticException, NoSuchElementException, and more.
             throw DatumShiftGridLoader.canNotLoad(HEADER, file, e);
