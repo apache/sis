@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.privy;
-
-import org.apache.sis.geometries.LineString;
-import org.apache.sis.geometries.MultiLineString;
+package org.apache.sis.geometries;
 
 /**
+ * A multi-polyhedron is a collection of polyhedron objects. These are arbitrary aggregations.
+ * There is no assumption regarding the topological relationships between the polyhedron objects,
+ * but in most cases the polyhedron objects will not intersect each other.
  *
  * @author Johann Sorel (Geomatys)
+ * @see https://docs.ogc.org/DRAFTS/21-045r1.html#multi_polyhedron
  */
-public class DefaultMultiLineString extends DefaultMultiCurve<LineString> implements MultiLineString {
+public interface MultiPolyhedron extends GeometryCollection<Polyhedron> {
 
-    public DefaultMultiLineString(LineString... geometries) {
-        super(geometries);
+    public static final String TYPE = "MULTIPOLYHEDRON";
+
+    @Override
+    public default String getGeometryType() {
+        return TYPE;
     }
 
 }

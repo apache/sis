@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.privy;
+package org.apache.sis.geometries.conics;
 
-import org.apache.sis.geometries.LineString;
-import org.apache.sis.geometries.MultiLineString;
+import org.apache.sis.geometries.Curve;
 
 /**
- *
+ * @todo
  * @author Johann Sorel (Geomatys)
+ * @see https://docs.ogc.org/DRAFTS/21-045r1.html#circular_string
  */
-public class DefaultMultiLineString extends DefaultMultiCurve<LineString> implements MultiLineString {
+public interface CircularString extends Curve {
 
-    public DefaultMultiLineString(LineString... geometries) {
-        super(geometries);
+    public static final String TYPE = "CIRCULARSTRING";
+
+    @Override
+    public default String getGeometryType() {
+        return TYPE;
     }
-
 }

@@ -18,18 +18,17 @@ package org.apache.sis.geometries.privy;
 
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.MultiCurve;
-import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractMultiCurve<T extends Curve> extends AbstractGeometry implements MultiCurve<T> {
+public class DefaultMultiCurve<T extends Curve> extends AbstractGeometry implements MultiCurve<T> {
 
     private final T[] curves;
 
-    public AbstractMultiCurve(T[] geometries) {
+    public DefaultMultiCurve(T[] geometries) {
         this.curves = geometries;
     }
 

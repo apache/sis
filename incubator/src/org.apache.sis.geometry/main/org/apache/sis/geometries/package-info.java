@@ -21,7 +21,9 @@
  * <ul>
  * <li>ISO 19107 version 2019</li>
  * <li>OGC Simple Feature Access https://www.ogc.org/standards/sfa</li>
+ * <li>OGC Features and Geometries JSON - Part 1: Core  https://docs.ogc.org/DRAFTS/21-045r1.html</li>
  * <li>Khronos GLTF-2 https://github.com/KhronosGroup/glTF/tree/main/specification/2.0</li>
+ * <li>Khronos ANARI https://github.com/KhronosGroup/ANARI-SDK</li>
  * </ul>
  *
  * This API being a merge of different geometry standard some elements differ from the original specifications.
