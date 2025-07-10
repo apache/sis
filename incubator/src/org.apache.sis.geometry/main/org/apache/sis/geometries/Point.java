@@ -119,7 +119,7 @@ public interface Point extends Primitive {
     @Override
     default Envelope getEnvelope() {
         final Tuple first = getPosition();
-        final GeneralEnvelope env = new GeneralEnvelope(first, first);
+        final BBox env = new BBox(first, first);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return env;
     }

@@ -202,7 +202,7 @@ public final class Transform {
                         final Vector tag = (tangents == null) ? null : Vectors.create(tangents.getSampleSystem(), tangents.getDataType());
                         for (int i = 0, n = positions.getLength(); i < n; i++) {
                             positions.get(i, pos);
-                            final MatrixSIS matrix = MatrixSIS.castOrCopy(operation.transform.derivative(pos));
+                            final MatrixSIS matrix = MatrixSIS.castOrCopy(operation.transform.derivative(Vectors.asDirectPostion(pos)));
                             if (nor != null) {
                                 cpn.get(i, nor);
                                 nor.set(matrix.multiply(nor.toArrayDouble()));

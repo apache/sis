@@ -27,9 +27,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.util.ArgumentChecks;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -151,6 +154,11 @@ public final class ArraySequence implements PointSequence, AttributesType {
     @Override
     public TupleArray getAttributeArray(String name) {
         return attributes.get(name).copy();
+    }
+
+    @Override
+    public BBox getAttributeRange(String name) {
+        return TupleArrays.computeRange(attributes.get(name));
     }
 
     /**

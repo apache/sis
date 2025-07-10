@@ -19,16 +19,15 @@ package org.apache.sis.geometries.math;
 import org.apache.sis.util.Utilities;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 /**
  * A tuple is an array of values.
- * For interoperability with MathTransform operations a Tuple implements DirectPosition.
  *
  * @author Johann Sorel (Geomatys)
- *
- * @todo Remove the {@code extends DirectPosition} part. A tuple is not a direct position.
  */
-public interface Tuple<T extends Tuple <T>> extends DirectPosition {
+public interface Tuple<T extends Tuple <T>> {
 
     /**
      * @return sample system, never null.
@@ -38,7 +37,6 @@ public interface Tuple<T extends Tuple <T>> extends DirectPosition {
     /**
      * @return sample system size.
      */
-    @Override
     default int getDimension() {
         return getSampleSystem().getSize();
     }
@@ -46,7 +44,6 @@ public interface Tuple<T extends Tuple <T>> extends DirectPosition {
     /**
      * @return sample system CRS, may be null.
      */
-    @Override
     default CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return getSampleSystem().getCoordinateReferenceSystem();
     }
@@ -156,7 +153,7 @@ public interface Tuple<T extends Tuple <T>> extends DirectPosition {
      */
     default T setAll(double value) {
         for (int i = 0, n = getDimension(); i < n; i++) {
-            setCoordinate(i, value);
+            set(i, value);
         }
         return (T) this;
     }
@@ -277,27 +274,30 @@ public interface Tuple<T extends Tuple <T>> extends DirectPosition {
     }
 
     /**
-     * {@inheritDoc }
+     * Apply given transform on this tuple.
+     *
+     * @param trs not null
+     * @return this tuple
+     * @throws TransformException
      */
-    @Override
-    default double getCoordinate(int dimension) throws IndexOutOfBoundsException {
-        return get(dimension);
+    default T transform(MathTransform trs) throws TransformException {
+        final double[] array = toArrayDouble();
+        trs.transform(array, 0, array, 0, 1);
+        return set(array);
     }
 
     /**
-     * {@inheritDoc }
+     * Transform this tuple and store the result in given tuple.
+     *
+     * @param trs not null
+     * @param target not null to store transform result
+     * @return this tuple
+     * @throws TransformException
      */
-    @Override
-    default void setCoordinate(int dimension, double value) throws IndexOutOfBoundsException, UnsupportedOperationException {
-        set(dimension,value);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    default double[] getCoordinates() {
-        return toArrayDouble();
+    default void transformTo(MathTransform trs, Tuple<?> target) throws TransformException {
+        final double[] array = toArrayDouble();
+        trs.transform(array, 0, array, 0, 1);
+        target.set(array);
     }
 
     /**

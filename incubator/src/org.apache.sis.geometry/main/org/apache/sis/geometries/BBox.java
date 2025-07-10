@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -51,6 +52,14 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     /**
+     * @param lower lower corner
+     * @param upper upper corner
+     */
+    public BBox(Tuple lower, Tuple upper) {
+        super(Vectors.asDirectPostion(lower), Vectors.asDirectPostion(upper));
+    }
+
+    /**
      * @param crs sphere coordinate system, not null.
      */
     public BBox(CoordinateReferenceSystem crs) {
@@ -78,19 +87,21 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         return "POLYGON"; //TODO not in OGC SFA.
     }
 
+    public void add(Tuple<?> position) throws MismatchedDimensionException {
+        add(Vectors.asDirectPostion(position));
+    }
+
     /**
      * {@inheritDoc }
      */
-    @Override
-    public Tuple getLowerCorner() {
+    public Tuple<?> getLower() {
         return Vectors.castOrWrap(super.getLowerCorner());
     }
 
     /**
      * {@inheritDoc }
      */
-    @Override
-    public Tuple getUpperCorner() {
+    public Tuple<?> getUpper() {
         return Vectors.castOrWrap(super.getUpperCorner());
     }
 

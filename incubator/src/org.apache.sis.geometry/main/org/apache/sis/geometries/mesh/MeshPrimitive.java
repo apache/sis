@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
@@ -41,6 +42,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.math.AbstractTupleArray;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -52,6 +54,7 @@ import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector1D;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
@@ -341,23 +344,13 @@ public interface MeshPrimitive extends Geometry {
          */
         @Override
         public Envelope getEnvelope() {
-
             final TupleArray positions = getAttribute(ATT_POSITION);
             if (positions.isEmpty()) {
                 final GeneralEnvelope env = new GeneralEnvelope(getCoordinateReferenceSystem());
                 env.setToNaN();
                 return env;
             }
-
-            final Vector tuple = Vectors.create(positions.getSampleSystem(), DataType.FLOAT);
-            positions.get(0, tuple);
-            final GeneralEnvelope env = new GeneralEnvelope(tuple, tuple);
-
-            for (int i = 1, n = positions.getLength(); i < n; i++) {
-                positions.get(i, tuple);
-                env.add(tuple);
-            }
-            return env;
+            return TupleArrays.computeRange(positions);
         }
 
         public List<Geometry> getComponents() {
@@ -1112,6 +1105,11 @@ public interface MeshPrimitive extends Geometry {
         @Override
         public void setAttribute(int index, String name, Tuple value) {
             primitive.getAttribute(name).set(this.index[index], value);
+        }
+
+        @Override
+        public BBox getAttributeRange(String name) {
+            return TupleArrays.computeRange(TupleArrays.subset(primitive.getAttribute(name),index));
         }
     }
 

@@ -114,11 +114,11 @@ public class VectorsTest {
         final Vector3D.Double coord1 = new Vector3D.Double(0,100,-300);
         final Vector3D.Double coord2 = new Vector3D.Double(100,300,-100);
 
-        trs.transform(coord1, coord1);
-        trs.transform(coord2, coord2);
+        coord1.transform(trs);
+        coord2.transform(trs);
 
-        assertArrayEquals(new double[] {0, 0, 0}, coord1.getCoordinates(), DELTA);
-        assertArrayEquals(new double[] {32767, 32767, 32767}, coord2.getCoordinates(), DELTA);
+        assertArrayEquals(new double[] {0, 0, 0}, coord1.toArrayDouble(), DELTA);
+        assertArrayEquals(new double[] {32767, 32767, 32767}, coord2.toArrayDouble(), DELTA);
 
     }
 }

@@ -25,7 +25,6 @@ import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector2D;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometry.GeneralEnvelope;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
@@ -58,7 +57,7 @@ public interface Triangle extends Polygon {
 
     @Override
     default List<Curve> getInteriorRings() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
@@ -74,8 +73,8 @@ public interface Triangle extends Polygon {
     @Override
     default Envelope getEnvelope() {
         final PointSequence exterior = getExteriorRing().getPoints();
-        final Tuple first = exterior.getPosition(0);
-        final GeneralEnvelope env = new GeneralEnvelope(first, first);
+        final Tuple<?> first = exterior.getPosition(0);
+        final BBox env = new BBox(first, first);
         env.add(exterior.getPosition(1));
         env.add(exterior.getPosition(2));
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
@@ -85,9 +84,9 @@ public interface Triangle extends Polygon {
     @Override
     default double getArea() {
         final PointSequence points = getExteriorRing().getPoints();
-        final Tuple a = points.getPosition(0);
-        final Tuple b = points.getPosition(1);
-        final Tuple c = points.getPosition(2);
+        final Tuple<?> a = points.getPosition(0);
+        final Tuple<?> b = points.getPosition(1);
+        final Tuple<?> c = points.getPosition(2);
         final double area = (
                       a.get(0) * (b.get(1) - c.get(1))
                     + b.get(0) * (c.get(1) - a.get(1))
@@ -103,10 +102,10 @@ public interface Triangle extends Polygon {
      */
     default double distance(Tuple pt) {
         final PointSequence exterior = getExteriorRing().getPoints();
-        final Tuple p0 = exterior.getPosition(0);
-        final Tuple p1 = exterior.getPosition(1);
-        final Tuple p2 = exterior.getPosition(2);
-        Vector normal = Maths.calculateNormal(p0, p1, p2);
+        final Tuple<?> p0 = exterior.getPosition(0);
+        final Tuple<?> p1 = exterior.getPosition(1);
+        final Tuple<?> p2 = exterior.getPosition(2);
+        Vector<?> normal = Maths.calculateNormal(p0, p1, p2);
         double planD = normal.dot(p0);
         return Maths.distance(pt, normal, planD);
     }

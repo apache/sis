@@ -55,9 +55,9 @@ public final class ISOLine {
             @Override
             protected void visit(Triangle candidate) {
                 final PointSequence points = candidate.getExteriorRing().getPoints();
-                final double[] p0 = points.getPosition(0).getCoordinates();
-                final double[] p1 = points.getPosition(1).getCoordinates();
-                final double[] p2 = points.getPosition(2).getCoordinates();
+                final double[] p0 = points.getPosition(0).toArrayDouble();
+                final double[] p1 = points.getPosition(1).toArrayDouble();
+                final double[] p2 = points.getPosition(2).toArrayDouble();
 
                 for (double step : steps) {
                     final boolean p0a = p0[Z] >= step;

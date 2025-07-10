@@ -108,7 +108,7 @@ public final class Sphere extends AbstractGeometry {
     @Override
     public Envelope getEnvelope() {
         final Tuple center = getCenter();
-        final GeneralEnvelope env = new GeneralEnvelope(center, center);
+        final BBox env = new BBox(center, center);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         if (radius > 0) {
             for (int i = 0, n = getDimension(); i < n; i++) {

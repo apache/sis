@@ -40,11 +40,6 @@ public abstract class AbstractTupleArray implements TupleArray {
     }
 
     @Override
-    public TupleArrayCursor cursor() {
-        return new Cursor();
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -79,37 +74,5 @@ public abstract class AbstractTupleArray implements TupleArray {
     @Override
     public int hashCode() {
         return getDataType().hashCode() | (getDimension() * 21) | (getLength() * 7);
-    }
-
-    private final class Cursor implements TupleArrayCursor {
-        private final int length = getLength();
-        private int coordinate = -1;
-        private final Tuple buffer = Vectors.create(AbstractTupleArray.this.getSampleSystem(), AbstractTupleArray.this.getDataType());
-
-        @Override
-        public Tuple samples() {
-            get(length, buffer);
-            return buffer;
-        }
-
-        @Override
-        public int coordinate() {
-            return coordinate;
-        }
-
-        @Override
-        public void moveTo(int coordinate) {
-            this.coordinate = coordinate;
-        }
-
-        @Override
-        public boolean next() {
-            if (coordinate + 1 >= length) {
-                return false;
-            } else {
-                this.coordinate++;
-                return true;
-            }
-        }
     }
 }

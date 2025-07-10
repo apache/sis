@@ -218,15 +218,40 @@ public final class Vectors extends Static {
         }
     }
 
-    public static Vector<?> castOrWrap(DirectPosition tuple) {
-        if (tuple instanceof Vector) {
-            return (Vector) tuple;
+    public static Vector<?> castOrCopy(Tuple pos) {
+        if (pos instanceof Vector) {
+            return (Vector) pos;
         } else {
-            CoordinateReferenceSystem crs = tuple.getCoordinateReferenceSystem();
-            return crs == null ? new WrapVector(tuple, tuple.getDimension()) : new WrapVector(tuple);
+            final SampleSystem type = pos.getSampleSystem();
+            final DataType dt = pos.getDataType();
+            final Vector v = create(type, dt);
+            v.set(pos);
+            return v;
         }
     }
 
+    public static Vector<?> castOrWrap(DirectPosition pos) {
+        if (pos instanceof Vector) {
+            return (Vector) pos;
+        } else if (pos instanceof Tuple) {
+            return new WrapTuple((Tuple) pos);
+        } else {
+            CoordinateReferenceSystem crs = pos.getCoordinateReferenceSystem();
+            return crs == null ? new WrapDirectPostion(pos, pos.getDimension()) : new WrapDirectPostion(pos);
+        }
+    }
+
+    public static Vector<?> castOrWrap(Tuple tuple) {
+        if (tuple instanceof Vector) {
+            return (Vector) tuple;
+        } else {
+            return new WrapTuple(tuple);
+        }
+    }
+
+    public static DirectPosition asDirectPostion(Tuple tuple) {
+        return new AsDirectPosition(tuple);
+    }
     /**
      * Create an unmodifiable view of the given tuple.
      *
@@ -237,16 +262,51 @@ public final class Vectors extends Static {
         return new TupleUnmodifiable(tuple);
     }
 
-    private static class WrapVector extends AbstractTuple<WrapVector> implements Vector<WrapVector> {
+    private static class WrapTuple extends AbstractTuple<WrapTuple> implements Vector<WrapTuple> {
 
-        private final DirectPosition pos;
+        private final Tuple pos;
 
-        public WrapVector(DirectPosition pos, int size) {
+        public WrapTuple(Tuple pos, int size) {
             super(size);
             this.pos = pos;
         }
 
-        public WrapVector(DirectPosition pos) {
+        public WrapTuple(Tuple pos) {
+            super(pos.getSampleSystem());
+            this.pos = pos;
+        }
+
+        @Override
+        public DataType getDataType() {
+            return pos.getDataType();
+        }
+
+        @Override
+        public double get(int indice) {
+            return pos.get(indice);
+        }
+
+        @Override
+        public void set(int indice, double value) {
+            pos.set(indice, value);
+        }
+
+        @Override
+        public int getDimension() {
+            return pos.getDimension();
+        }
+    }
+
+    private static class WrapDirectPostion extends AbstractTuple<WrapDirectPostion> implements Vector<WrapDirectPostion> {
+
+        private final DirectPosition pos;
+
+        public WrapDirectPostion(DirectPosition pos, int size) {
+            super(size);
+            this.pos = pos;
+        }
+
+        public WrapDirectPostion(DirectPosition pos) {
             super(pos.getCoordinateReferenceSystem());
             this.pos = pos;
         }
@@ -270,6 +330,41 @@ public final class Vectors extends Static {
         public int getDimension() {
             return pos.getDimension();
         }
+    }
+
+    private static class AsDirectPosition implements DirectPosition {
+
+        private final Tuple tuple;
+
+        public AsDirectPosition(Tuple tuple) {
+            this.tuple = tuple;
+        }
+
+        @Override
+        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+            return tuple.getCoordinateReferenceSystem();
+        }
+
+        @Override
+        public int getDimension() {
+            return tuple.getDimension();
+        }
+
+        @Override
+        public double[] getCoordinates() {
+            return tuple.toArrayDouble();
+        }
+
+        @Override
+        public double getCoordinate(int i) {
+            return tuple.get(i);
+        }
+
+        @Override
+        public void setCoordinate(int i, double d) {
+            tuple.set(i,d);
+        }
+
     }
 
     /**
@@ -1748,7 +1843,9 @@ public final class Vectors extends Static {
             final DataType dt = DataType.forRange(NumberRange.create(0, true, quantizeRange, true), true);
             buffer = (R) Vectors.create(tuple.getDimension(), dt);
         }
-        trs.transform(tuple, buffer);
+        double[] array = buffer.toArrayDouble();
+        trs.transform(tuple.toArrayDouble(), 0, array, 0, 1);
+        buffer.set(array);
         return buffer;
     }
 
