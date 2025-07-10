@@ -50,6 +50,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.FilterFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -95,6 +96,7 @@ public class ShapefileStoreTest {
                 assertEquals(20.0, feature1.getPropertyValue("float"));
                 assertEquals(LocalDate.of(2023, 10, 27), feature1.getPropertyValue("date"));
                 Point pt1 = (Point) feature1.getPropertyValue("geometry");
+                assertTrue(pt1.getUserData() instanceof CoordinateReferenceSystem);
 
                 assertTrue(iterator.hasNext());
                 Feature feature2 = iterator.next();
@@ -104,6 +106,7 @@ public class ShapefileStoreTest {
                 assertEquals(60.0, feature2.getPropertyValue("float"));
                 assertEquals(LocalDate.of(2023, 10, 28), feature2.getPropertyValue("date"));
                 Point pt2 = (Point) feature2.getPropertyValue("geometry");
+                assertTrue(pt2.getUserData() instanceof CoordinateReferenceSystem);
 
                 assertFalse(iterator.hasNext());
             }
@@ -140,6 +143,7 @@ public class ShapefileStoreTest {
                 assertEquals(60.0, feature.getPropertyValue("float"));
                 assertEquals(LocalDate.of(2023, 10, 28), feature.getPropertyValue("date"));
                 Point pt2 = (Point) feature.getPropertyValue("geometry");
+                assertTrue(pt2.getUserData() instanceof CoordinateReferenceSystem);
 
                 assertFalse(iterator.hasNext());
             }
