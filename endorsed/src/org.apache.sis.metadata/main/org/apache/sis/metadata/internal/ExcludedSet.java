@@ -24,9 +24,9 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A unmodifiable empty set with a customized exception message thrown by the {@link #add(Object)}
- * method. This set is used only for mutually exclusive properties, when a collection cannot have
- * elements because the other property is set.
+ * A unmodifiable empty set with a customized exception message thrown by the {@link #add(Object)} method.
+ * This set is used only for mutually exclusive properties, when a collection cannot have elements because
+ * the other property is set.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

@@ -45,6 +45,7 @@ import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.metadata.privy.SecondaryTrait;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -82,6 +83,7 @@ import org.opengis.referencing.datum.RealizationMethod;
  *
  * @since 1.5
  */
+@SecondaryTrait(Datum.class)
 public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObject implements DatumEnsemble<D>, Datum {
     /**
      * Serial number for inter-operability with different versions.

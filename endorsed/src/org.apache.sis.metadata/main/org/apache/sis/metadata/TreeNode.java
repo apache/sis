@@ -1077,7 +1077,7 @@ class TreeNode implements Node {
      */
     @Override
     public final String toString() {
-        final StringBuilder buffer = new StringBuilder(60);
+        final var buffer = new StringBuilder(60);
         appendStringTo(buffer);
         return buffer.toString();
     }

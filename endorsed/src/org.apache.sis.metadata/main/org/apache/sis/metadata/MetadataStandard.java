@@ -18,8 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.LinkedHashSet;
-import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
@@ -27,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
+import org.apache.sis.metadata.privy.SecondaryTrait;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.Citation;
@@ -494,21 +494,29 @@ public class MetadataStandard implements Serializable {
             }
         } else {
             /*
-             * Gets every interfaces from the supplied class in declaration order,
-             * including the ones declared in the super-class.
+             * Get every interfaces from the supplied class in declaration order,
+             * including the ones declared in the super-class. The Boolean value
+             * tells whether the type is supported. Types associated to `FALSE`
+             * shall be ignored.
              */
-            final Set<Class<?>> interfaces = new LinkedHashSet<>();
+            final var validities = new LinkedHashMap<Class<?>, Boolean>();
+            final SecondaryTrait ignore = key.type.getAnnotation(SecondaryTrait.class);
+            if (ignore != null) {
+                validities.put(ignore.value(), Boolean.FALSE);
+            }
             for (Class<?> t=key.type; t!=null; t=t.getSuperclass()) {
-                getInterfaces(t, key.propertyType, interfaces);
+                getInterfaces(t, key.propertyType, validities);
             }
             /*
-             * If we found more than one interface, removes the
-             * ones that are sub-interfaces of the other.
+             * Remove all unsupported types. Then, if we found more than one supported
+             * interface, remove the ones that are sub-interfaces of the other.
              */
+            validities.values().removeIf((isSupported) -> !isSupported);
+            final Set<Class<?>> interfaces = validities.keySet();
             for (final Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
                 final Class<?> candidate = it.next();
-                for (final Class<?> child : interfaces) {
-                    if (candidate != child && candidate.isAssignableFrom(child)) {
+                for (final Class<?> other : interfaces) {
+                    if (candidate != other && candidate.isAssignableFrom(other)) {
                         it.remove();
                         break;
                     }
@@ -522,7 +530,7 @@ public class MetadataStandard implements Serializable {
                 }
                 /*
                  * Found more than one interface; we don't know which one to pick.
-                 * Returns `null` for now; the caller will thrown an exception.
+                 * Returns `null` for now; the caller will throw an exception.
                  */
             } else if (IMPLEMENTATION_CAN_ALTER_API) {
                 /*
@@ -543,8 +551,9 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Puts every interfaces for the given type in the specified collection.
+     * Puts every interfaces for the given type in the specified map.
      * This method invokes itself recursively for scanning parent interfaces.
+     * The keys tell whether the interface is supported. validities
      *
      * <p>If the given class is the return value of a property, then the type of that property should be specified
      * in the {@code propertyType} argument. This information allows this method to take in account only the types
@@ -554,14 +563,10 @@ public class MetadataStandard implements Serializable {
      *
      * @see Classes#getAllInterfaces(Class)
      */
-    private void getInterfaces(final Class<?> type, final Class<?> propertyType, final Collection<Class<?>> interfaces) {
+    private void getInterfaces(final Class<?> type, final Class<?> propertyType, final Map<Class<?>, Boolean> validities) {
         for (final Class<?> candidate : type.getInterfaces()) {
-            if (propertyType.isAssignableFrom(candidate)) {
-                if (isSupported(candidate.getName())) {
-                    interfaces.add(candidate);
-                }
-                getInterfaces(candidate, propertyType, interfaces);
-            } else if (IMPLEMENTATION_CAN_ALTER_API) {
+            final boolean recursive = propertyType.isAssignableFrom(candidate);
+            if (recursive || (IMPLEMENTATION_CAN_ALTER_API && isPendingAPI(propertyType))) {
                 /*
                  * If a GeoAPI interface is not assignable to the property type, maybe it is because the property type
                  * did not existed at the time current GeoAPI version was published. In such case, the implementation
@@ -569,11 +574,8 @@ public class MetadataStandard implements Serializable {
                  * we skip the `isAssignableFrom` check, but without recursive addition of parent interfaces since we
                  * would not know when to stop.
                  */
-                if (isPendingAPI(propertyType)) {
-                    if (isSupported(candidate.getName())) {
-                        interfaces.add(candidate);
-                    }
-                    // No recursive call here.
+                if (validities.putIfAbsent(candidate, isSupported(candidate.getName())) == null && recursive) {
+                    getInterfaces(candidate, propertyType, validities);
                 }
             }
         }
@@ -1062,14 +1064,15 @@ public class MetadataStandard implements Serializable {
             return false;
         }
         final PropertyAccessor accessor = getAccessor(new CacheKey(type1), true);
-        if (type1 != type2 && (!accessor.type.isAssignableFrom(type2)
-                || accessor.type != getAccessor(new CacheKey(type2), false).type))
-        {
-            /*
-             * Note: the check for (accessor.type != getAccessor(…).type) would have been enough, but checking
-             * for isAssignableFrom(…) first can avoid the (relatively costly) creation of new PropertyAccessor.
-             */
-            return false;
+        if (type1 != type2) {
+            // Not strictly necessary, but can avoid the relatively costly creation of new `PropertyAccessor`.
+            if (!accessor.type.isAssignableFrom(type2)) {
+                return false;
+            }
+            // The real condition.
+            if (accessor.type != getAccessor(new CacheKey(type2), false).type) {
+                return false;
+            }
         }
         /*
          * At this point, we have to perform the actual property-by-property comparison.
