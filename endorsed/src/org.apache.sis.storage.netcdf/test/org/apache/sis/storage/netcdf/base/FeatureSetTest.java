@@ -184,7 +184,7 @@ public class FeatureSetTest extends TestCase {
             }
         }
         // Convert the time vector to an array of instants.
-        final Instant[] instants = new Instant[times.length];
+        final var instants = new Instant[times.length];
         for (int i=0; i<times.length; i++) {
             instants[i] = timeOrigin.plus(times[i], ChronoUnit.MINUTES);
         }
@@ -192,11 +192,11 @@ public class FeatureSetTest extends TestCase {
          * Verify property values and characteristics.
          */
         assertEquals(identifier, instance.getPropertyValue("features"));
-        final Attribute<?> trajectory = (Attribute<?>) instance.getProperty("trajectory");
+        final var trajectory = (Attribute<?>) instance.getProperty("trajectory");
         asserLineStringEquals((Shape) trajectory.getValue(), longitudes, latitudes);
         assertArrayEquals(stations, ((Collection<?>) instance.getPropertyValue("stations")).toArray());
         assertArrayEquals(instants, trajectory.characteristics().get("datetimes").getValues().toArray());
-        assertInstanceOf(GeographicCRS.class, AttributeConvention.getCRSCharacteristic(trajectory));
+        assertInstanceOf(GeographicCRS.class, AttributeConvention.getCRSCharacteristic(instance, "trajectory"));
     }
 
     /**

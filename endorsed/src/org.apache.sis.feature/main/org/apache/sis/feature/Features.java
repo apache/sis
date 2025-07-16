@@ -84,7 +84,8 @@ public final class Features extends Static {
              * the latter case we could have (to be strict) to return a <? extends V> type.
              */
             if (!valueClass.equals(actual)) {
-                throw new ClassCastException(Resources.format(Resources.Keys.MismatchedValueClass_3,
+                throw new ClassCastException(Resources.format(
+                        Resources.Keys.MismatchedValueClass_3,
                         type.getName(), valueClass, actual));
             }
         }
@@ -115,7 +116,8 @@ public final class Features extends Static {
              * the latter case we could have (to be strict) to return a <? extends V> type.
              */
             if (!valueClass.equals(actual)) {
-                throw new ClassCastException(Resources.format(Resources.Keys.MismatchedValueClass_3,
+                throw new ClassCastException(Resources.format(
+                        Resources.Keys.MismatchedValueClass_3,
                         attribute.getName(), valueClass, actual));
             }
         }
@@ -183,7 +185,7 @@ public final class Features extends Static {
                  * contain a cycle. However, given that the consequence of an infinite cycle here
                  * would be thread freeze, we check as a safety.
                  */
-                final Map<IdentifiedType,Boolean> done = new IdentityHashMap<>(4);
+                final var done = new IdentityHashMap<IdentifiedType,Boolean>(4);
                 while (!target.isInstance(type = ((Operation) type).getResult())) {
                     if (!(type instanceof Operation) || done.put(type, Boolean.TRUE) != null) {
                         return Optional.empty();
@@ -352,9 +354,9 @@ public final class Features extends Static {
             if (feature instanceof AbstractFeature) {
                 quality = ((AbstractFeature) feature).quality();
             } else {
-                final Validator v = new Validator(ScopeCode.FEATURE);
-                v.validate(feature.getType(), feature);
-                quality = v.quality;
+                final var validator = new Validator(ScopeCode.FEATURE);
+                validator.validate(feature.getType(), feature);
+                quality = validator.quality;
             }
             /*
              * Loop on quality elements and check conformance results.

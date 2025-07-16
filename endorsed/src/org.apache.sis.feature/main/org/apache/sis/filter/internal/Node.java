@@ -383,7 +383,7 @@ public abstract class Node implements Serializable {
      * Reports that an operation failed because of the given exception.
      * This method assumes that the warning occurred in a {@code test(…)} or {@code apply(…)} method.
      *
-     * @param  e            the exception that occurred.
+     * @param  exception    the exception that occurred.
      * @param  recoverable  {@code true} if the caller has been able to fallback on a default value,
      *                      or {@code false} if the caller has to return {@code null}.
      *
@@ -391,16 +391,16 @@ public abstract class Node implements Serializable {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
-    protected final void warning(final Exception e, final boolean recoverable) {
+    protected final void warning(final Exception exception, final boolean recoverable) {
         final Consumer<WarningEvent> listener = WarningEvent.LISTENER.get();
         if (listener != null) {
-            listener.accept(new WarningEvent(this, e));
+            listener.accept(new WarningEvent(this, exception));
         } else {
             final String method = (this instanceof Predicate) ? "test" : "apply";
             if (recoverable) {
-                Logging.recoverableException(LOGGER, getClass(), method, e);
+                Logging.recoverableException(LOGGER, getClass(), method, exception);
             } else {
-                Logging.unexpectedException(LOGGER, getClass(), method, e);
+                Logging.unexpectedException(LOGGER, getClass(), method, exception);
             }
         }
     }
