@@ -21,7 +21,7 @@ import org.opengis.filter.InvalidFilterValueException;
 
 
 /**
- * Exceptions thrown when the XPath in an expression is invalid or unsupported.
+ * Exception thrown when the XPath in an expression is invalid or unsupported.
  * Apache SIS currently supports only a small subset of XPath syntax, mostly paths of
  * the form {@code "a/b/c"} (and not everywhere) and the {@code "Q{namespace}"} syntax.
  *

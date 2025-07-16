@@ -33,10 +33,13 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.filter.sqlmm.SQLMM;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
@@ -47,15 +50,19 @@ import org.opengis.geometry.TransfiniteSet;
 import org.opengis.geometry.complex.Complex;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
-import org.opengis.filter.InvalidFilterValueException;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**
- * Wraps a JTS, ESRI or Java2D geometry behind a {@code Geometry} interface.
+ * Wraps a <abbr>JTS</abbr>, <abbr>ESRI</abbr> or Java2D geometry behind a {@code Geometry} interface.
+ *
+ * <h4>Future plans</h4>
  * This is a temporary class to be refactored later as a more complete geometry framework.
  * The methods provided in this class are not committed API, and often not even clean API.
- * They are only utilities added for very specific Apache SIS needs and will certainly
- * change without warning in future Apache SIS version.
+ * They are only utilities added for very specific Apache <abbr>SIS</abbr> needs and will
+ * certainly change without warning in future Apache <abbr>SIS</abbr> versions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -63,7 +70,24 @@ import org.opengis.filter.InvalidFilterValueException;
  */
 public abstract class GeometryWrapper extends AbstractGeometry implements Geometry {
     /**
+     * The coordinate reference system, or {@code null} if unspecified.
+     * The value of this field should be set by subclass constructors.
+     *
+     * <h4>Where this value come from</h4>
+     * This information is sometime redundant with information stored in the geometry itself.
+     * However, even when the geometry library supports some kind of <abbr>SRID</abbr> field,
+     * the value in geometry instances is sometime 0 or null. In such case, this {@code crs}
+     * field may come from other sources such as characteristics of the {@code FeatureType}.
+     *
+     * @see #getCoordinateDimension()
+     * @see #getCoordinateReferenceSystem()
+     * @see #setCoordinateReferenceSystem(CoordinateReferenceSystem)
+     */
+    protected CoordinateReferenceSystem crs;
+
+    /**
      * Creates a new geometry object.
+     * Subclasses should set the {@link #crs} field if known.
      */
     protected GeometryWrapper() {
     }
@@ -89,11 +113,11 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     protected abstract Object implementation();
 
     /**
-     * Returns the Spatial Reference System Identifier (SRID) if available.
-     * The SRID is used in database such as PostGIS and is generally database-dependent.
-     * This is <em>not</em> necessarily an EPSG code, even if it is a common practice
-     * to use the same numerical values as EPSG. Note that the absence of SRID does
-     * not mean that {@link #getCoordinateReferenceSystem()} would return no CRS.
+     * Returns the Spatial Reference System Identifier (<abbr>SRID</abbr>) if available.
+     * The <abbr>SRID</abbr> is used in databases such as PostGIS and is generally database-dependent.
+     * This is <em>not</em> necessarily an <abbr>EPSG</abbr> code, even if it is a common practice to
+     * use the same numerical values as <abbr>EPSG</abbr>. Note that the absence of <abbr>SRID</abbr>
+     * does not mean that {@link #getCoordinateReferenceSystem()} would return no <abbr>CRS</abbr>.
      *
      * <p>Users should invoke the {@link #getCoordinateReferenceSystem()} method instead.
      * This {@code getSRID()} method is provided for classes such as {@code DataStore} backed by an SQL database.
@@ -108,26 +132,54 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     }
 
     /**
-     * Gets the Coordinate Reference System (CRS) of this geometry. In some libraries (for example JTS) the CRS
-     * is stored in the {@link Geometries#rootClass} instances of that library. In other libraries (e.g. Java2D)
-     * the CRS is stored only in this {@code GeometryWrapper} instance.
+     * Gets the Coordinate Reference System (<abbr>CRS</abbr>) of the geometry.
+     * In some libraries such as <abbr>JTS</abbr>, some <abbr>CRS</abbr> information can be stored in the
+     * geometry object of that library. In other libraries such as Java2D, the <abbr>CRS</abbr> is stored
+     * only in this {@code GeometryWrapper} instance.
      *
-     * @return the geometry CRS, or {@code null} if unknown.
-     * @throws BackingStoreException if the CRS is defined by a SRID code and that code cannot be used.
+     * @return the geometry <abbr>CRS</abbr>, or {@code null} if unknown.
      */
     @Override
-    public abstract CoordinateReferenceSystem getCoordinateReferenceSystem();
+    public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        return crs;
+    }
 
     /**
      * Sets the coordinate reference system.
      * This method should be invoked only for newly created geometries. If the geometry library supports
-     * user objects (e.g. JTS), there is no guarantee that this method will not overwrite user setting.
+     * user objects (e.g. JTS), there is no guarantee that this method will not overwrite user's setting.
      *
      * @param  crs  the coordinate reference system to set.
+     * @throws MismatchedDimensionException if the <abbr>CRS</abbr> does not have the expected number of dimensions.
      *
      * @see #transform(CoordinateReferenceSystem)
      */
-    public abstract void setCoordinateReferenceSystem(CoordinateReferenceSystem crs);
+    public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
+        ArgumentChecks.ensureDimensionMatches("crs", getCoordinateDimension(), crs);
+        this.crs = crs;
+    }
+
+    /**
+     * Returns the dimension of the coordinates that define this geometry.
+     * It must be the same as the dimension of the coordinate reference system for this geometry.
+     *
+     * @return the coordinate dimension.
+     */
+    @Override
+    public int getCoordinateDimension() {
+        return Geometries.BIDIMENSIONAL;
+    }
+
+    /**
+     * Creates an initially empty envelope with the <abbr>CRS</abbr> of this geometry.
+     * If this geometry has no <abbr>CRS</abbr>, then a two- or three-dimensional envelope is created.
+     * This is a convenience method for {@link #getEnvelope()} implementations.
+     *
+     * @return an initially empty envelope.
+     */
+    protected final GeneralEnvelope createEnvelope() {
+        return (crs != null) ? new GeneralEnvelope(crs) : new GeneralEnvelope(getCoordinateDimension());
+    }
 
     /**
      * Returns the geometry bounding box, together with its coordinate reference system.
@@ -185,6 +237,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @param  paths  the points or polylines to merge in a single polyline instance.
      * @return the merged polyline (may be the underlying geometry of {@code this} but never {@code null}).
      * @throws ClassCastException if collection elements are not instances of the point or geometry class.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public abstract Object mergePolylines(final Iterator<?> paths);
 
@@ -198,23 +251,23 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @param  context   the preferred CRS and other context to use if geometry transformations are needed.
      * @return result of applying the specified predicate.
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
-     * @throws InvalidFilterValueException if an error occurred while executing the operation on given geometries.
+     * @throws FactoryException if transformation to the target <abbr>CRS</abbr> cannot be found.
+     * @throws TransformException if a geometry cannot be transformed.
+     * @throws IncommensurableException if a unit conversion was necessary but failed.
+     * @throws BackingStoreException if the operation failed because of another checked exception.
      */
     public final boolean predicate(final DistanceOperatorName type, final GeometryWrapper other,
                                    final Quantity<Length> distance, final SpatialOperationContext context)
+            throws FactoryException, TransformException, IncommensurableException
     {
-        final GeometryWrapper[] geometries = new GeometryWrapper[] {this, other};
-        try {
-            if (context.transform(geometries)) {
-                double dv = distance.getValue().doubleValue();
-                final Unit<?> unit = ReferencingUtilities.getUnit(context.commonCRS);
-                if (unit != null) {
-                    dv = distance.getUnit().getConverterToAny(unit).convert(dv);
-                }
-                return geometries[0].predicateSameCRS(type, geometries[1], dv);
+        final var geometries = new GeometryWrapper[] {this, other};
+        if (context.transform(geometries)) {
+            double dv = distance.getValue().doubleValue();
+            final Unit<?> unit = ReferencingUtilities.getUnit(context.commonCRS);
+            if (unit != null) {
+                dv = distance.getUnit().getConverterToAny(unit).convert(dv);
             }
-        } catch (FactoryException | TransformException | IncommensurableException e) {
-            throw new InvalidFilterValueException(e);
+            return geometries[0].predicateSameCRS(type, geometries[1], dv);
         }
         /*
          * No common CRS. Consider that we have no intersection, no overlap, etc.
@@ -235,18 +288,18 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @param  context  the preferred CRS and other context to use if geometry transformations are needed.
      * @return result of applying the specified predicate.
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
-     * @throws InvalidFilterValueException if an error occurred while executing the operation on given geometries.
+     * @throws FactoryException if transformation to the target <abbr>CRS</abbr> cannot be found.
+     * @throws TransformException if a geometry cannot be transformed.
+     * @throws IncommensurableException if a unit conversion was necessary but failed.
+     * @throws BackingStoreException if the operation failed because of another checked exception.
      */
     public final boolean predicate(final SpatialOperatorName type, final GeometryWrapper other,
                                    final SpatialOperationContext context)
+            throws FactoryException, TransformException, IncommensurableException
     {
-        final GeometryWrapper[] geometries = new GeometryWrapper[] {this, other};
-        try {
-            if (context.transform(geometries)) {
-                return geometries[0].predicateSameCRS(type, geometries[1]);
-            }
-        } catch (FactoryException | TransformException | IncommensurableException e) {
-            throw new InvalidFilterValueException(e);
+        final var geometries = new GeometryWrapper[] {this, other};
+        if (context.transform(geometries)) {
+            return geometries[0].predicateSameCRS(type, geometries[1]);
         }
         /*
          * No common CRS. Consider that we have no intersection, no overlap, etc.
@@ -256,7 +309,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     }
 
     /**
-     * Applies a SQLMM operation on this geometry.
+     * Applies a <abbr>SQLMM</abbr> operation on this geometry.
      * This method shall be invoked only for operations without non-geometric parameters.
      *
      * @param  operation  the SQLMM operation to apply.
@@ -264,6 +317,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public final Object operation(final SQLMM operation) {
         assert operation.geometryCount() == 1 && operation.maxParamCount == 1 : operation;
@@ -273,7 +327,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     }
 
     /**
-     * Applies a SQLMM operation on two geometries.
+     * Applies a <abbr>SQLMM</abbr> operation on two geometries.
      * This method shall be invoked only for operations without non-geometric parameters.
      * The second geometry is transformed to the same CRS as this geometry for conformance with SQLMM standard.
      *
@@ -284,18 +338,17 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
      * @throws TransformException if it was necessary to transform the other geometry and that transformation failed.
+     * @throws BackingStoreException if the operation failed because of another checked exception.
      */
-    public final Object operation(final SQLMM operation, final GeometryWrapper other)
-            throws TransformException
-    {
+    public final Object operation(final SQLMM operation, final GeometryWrapper other) throws TransformException {
         assert operation.geometryCount() == 2 && operation.maxParamCount == 2 : operation;
-        final Object result = operationSameCRS(operation, toSameCRS(other), null);
+        final Object result = operationSameCRS(operation, other.transform(crs), null);
         assert isInstance(operation, result) : result;
         return result;
     }
 
     /**
-     * Applies a SQLMM operation on this geometry with one operation-specific argument.
+     * Applies a <abbr>SQLMM</abbr> operation on this geometry with one operation-specific argument.
      * The argument shall be non-null, unless the argument is optional.
      *
      * @param  operation  the SQLMM operation to apply.
@@ -304,12 +357,13 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public final Object operationWithArgument(final SQLMM operation, final Object argument) {
         assert operation.geometryCount() == 1 && operation.maxParamCount == 2 : operation;
-        if (argument == null && operation.minParamCount > 1) {
+        if (operation.minParamCount > 1) {
             // TODO: fetch argument name.
-            throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, "arg1"));
+            ArgumentChecks.ensureNonNull("arg1", argument);
         }
         final Object result = operationSameCRS(operation, null, argument);
         assert isInstance(operation, result) : result;
@@ -317,7 +371,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     }
 
     /**
-     * Applies a SQLMM operation on two geometries with one operation-specific argument.
+     * Applies a <abbr>SQLMM</abbr> operation on two geometries with one operation-specific argument.
      * The argument shall be non-null, unless the argument is optional.
      * The second geometry is transformed to the same CRS as this geometry for conformance with SQLMM standard.
      *
@@ -329,6 +383,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
      * @throws TransformException if it was necessary to transform the other geometry and that transformation failed.
+     * @throws BackingStoreException if the operation failed because of another checked exception.
      */
     public final Object operationWithArgument(final SQLMM operation, final GeometryWrapper other, final Object argument)
             throws TransformException
@@ -338,30 +393,9 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
             // TODO: fetch argument name.
             throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, "arg2"));
         }
-        final Object result = operationSameCRS(operation, toSameCRS(other), argument);
+        final Object result = operationSameCRS(operation, other.transform(crs), argument);
         assert isInstance(operation, result) : result;
         return result;
-    }
-
-    /**
-     * Transforms the {@code other} geometry to the same CRS as this geometry.
-     * This method should be cheap for the common case where the other geometry
-     * already uses the CRS, in which case it is returned unchanged.
-     *
-     * <p>If this geometry does not define a CRS, then current implementation
-     * returns the other geometry unchanged.</p>
-     *
-     * @param  other  the other geometry.
-     * @return the other geometry in the same CRS as this geometry.
-     * @throws TransformException if the other geometry cannot be transformed.
-     *         If may be because the other geometry does not define its CRS.
-     */
-    private GeometryWrapper toSameCRS(final GeometryWrapper other) throws TransformException {
-        if (isSameCRS(other)) {
-            return other;
-        }
-        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        return (crs != null) ? other.transform(crs) : this;
     }
 
     /**
@@ -374,7 +408,8 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
 
     /**
      * Applies a filter predicate between this geometry and another geometry.
-     * This method assumes that the two geometries are in the same CRS (this is not verified).
+     * This method assumes that the two geometries are in the same <abbr>CRS</abbr> (this is not verified).
+     * Conversions, if needed, shall be done by the caller.
      *
      * <p><b>Note:</b> {@link SpatialOperatorName#BBOX} is implemented by {@code NOT DISJOINT}.
      * It is caller's responsibility to ensure that one of the geometries is rectangular.</p>
@@ -383,6 +418,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @param  other  the other geometry to test with this geometry.
      * @return result of applying the specified predicate.
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     protected boolean predicateSameCRS(SpatialOperatorName type, GeometryWrapper other) {
         throw new UnsupportedOperationException(Geometries.unsupported(type.name()));
@@ -390,21 +426,25 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
 
     /**
      * Applies a filter predicate between this geometry and another geometry within a given distance.
-     * This method assumes that the two geometries are in the same CRS and that the unit of measurement
-     * is the same for {@code distance} than for axes (this is not verified).
+     * This method assumes that the two geometries are in the same <abbr>CRS</abbr> and that the unit
+     * of measurement is the same for {@code distance} than for axes (this is not verified).
+     * Conversions, if needed, shall be done by the caller.
      *
      * @param  type      the predicate operation to apply.
      * @param  other     the other geometry to test with this geometry.
      * @param  distance  distance to test between the geometries.
      * @return result of applying the specified predicate.
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     protected boolean predicateSameCRS(DistanceOperatorName type, GeometryWrapper other, double distance) {
         throw new UnsupportedOperationException(Geometries.unsupported(type.name()));
     }
 
     /**
-     * Applies a SQLMM operation on this geometry.
+     * Applies a <abbr>SQLMM</abbr> operation on this geometry.
+     * This method assumes that the two geometries are in the same <abbr>CRS</abbr> (this is not verified).
+     * Conversions, if needed, shall be done by the caller.
      *
      * @param  operation  the SQLMM operation to apply.
      * @param  other      the other geometry, or {@code null} if the operation requires only one geometry.
@@ -413,6 +453,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @throws UnsupportedOperationException if the operation cannot be performed with current implementation.
      * @throws ClassCastException if the operation can only be executed on some specific geometry subclasses
      *         (for example polylines) and the wrapped geometry is not of that class.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     protected Object operationSameCRS(SQLMM operation, GeometryWrapper other, Object argument) {
         throw new UnsupportedOperationException(Geometries.unsupported(operation.name()));
@@ -439,6 +480,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @param  target  the desired type.
      * @return the converted geometry.
      * @throws IllegalArgumentException if the geometry cannot be converted to the specified type.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public GeometryWrapper toGeometryType(final GeometryType target) {
         final Class<?> type = factory().getGeometryClass(target);
@@ -451,85 +493,90 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
 
     /**
      * Transforms this geometry using the given coordinate operation.
-     * If the operation is {@code null}, then the geometry is returned unchanged.
-     * If the geometry uses a different CRS than the source CRS of the given operation
-     * and {@code validate} is {@code true},
-     * then a new operation to the target CRS will be automatically computed.
+     * If the geometry uses a different <abbr>CRS</abbr> than the source <abbr>CRS</abbr>
+     * of the given {@code operation} and if the {@code validate} argument is {@code true},
+     * then a new operation to the target <abbr>CRS</abbr> will be automatically computed.
      *
-     * <p>This method is preferred to {@link #transform(CoordinateReferenceSystem)}
-     * when possible because not all geometry libraries store the CRS of their objects.</p>
+     * <p>This method is preferred to the {@link #transform(CoordinateReferenceSystem)} method
+     * because not all geometry libraries store the <abbr>CRS</abbr> of their objects.</p>
      *
-     * @param  operation  the coordinate operation to apply, or {@code null}.
-     * @param  validate   whether to validate the operation source CRS.
+     * @param  operation  the coordinate operation to apply.
+     * @param  validate   whether to validate the operation source <abbr>CRS</abbr>.
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
      * @throws UnsupportedOperationException if this operation is not supported for current implementation.
-     * @throws FactoryException if transformation to the target CRS cannot be found.
+     * @throws FactoryException if transformation to the target <abbr>CRS</abbr> cannot be found.
      * @throws TransformException if the geometry cannot be transformed.
+     * @throws BackingStoreException if the operation failed because of another checked exception.
      */
-    public GeometryWrapper transform(CoordinateOperation operation, boolean validate)
+    public GeometryWrapper transform(final CoordinateOperation operation, boolean validate)
             throws FactoryException, TransformException
     {
-        throw new UnsupportedOperationException(Geometries.unsupported("transform"));
+        MathTransform transform = operation.getMathTransform();
+        if (validate && crs != null) {
+            CoordinateOperation step = CRS.findOperation(crs, operation.getSourceCRS(), null);
+            transform = MathTransforms.concatenate(step.getMathTransform(), transform);
+        }
+        final GeometryWrapper wrapper = transform(transform);
+        wrapper.setCoordinateReferenceSystem(operation.getTargetCRS());
+        return wrapper;
     }
 
     /**
      * Transforms this geometry using the given transform.
-     * If the transform is {@code null}, then the geometry is returned unchanged.
-     * Otherwise, a new geometry is returned without CRS.
+     * If the transform is identity, then the geometry is returned unchanged.
+     * Otherwise, a new geometry is returned without <abbr>CRS</abbr>.
      *
-     * @param  transform  the math transform to apply, or {@code null}.
+     * @param  transform  the math transform to apply.
      * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
      * @throws UnsupportedOperationException if this operation is not supported for current implementation.
      * @throws TransformException if the geometry cannot be transformed.
+     * @throws FactoryException if a problem happened while setting the <abbr>CRS</abbr>.
+     * @throws BackingStoreException if the operation failed because of another checked exception.
      */
-    public GeometryWrapper transform(MathTransform transform) throws TransformException {
-        if (transform == null || transform.isIdentity()) {
+    public GeometryWrapper transform(final MathTransform transform)
+            throws FactoryException, TransformException
+    {
+        if (transform.isIdentity()) {
             return this;
         }
         throw new UnsupportedOperationException(Geometries.unsupported("transform"));
     }
 
     /**
-     * Transforms this geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS is null, then the geometry is returned unchanged.
-     * If this geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
+     * Transforms this geometry to the specified Coordinate Reference System (<abbr>CRS</abbr>).
+     * If the given <abbr>CRS</abbr> is {@code null} or the same as the current <abbr>CRS</abbr>,
+     * or if the geometry has no <abbr>CRS</abbr>, then this wrapper is returned unchanged.
      *
-     * <p>Consider using {@link #transform(CoordinateOperation, boolean)} instead of this method as much as possible,
-     * both for performance reasons and because not all geometry libraries provide information about the CRS
-     * of their geometries.</p>
+     * <p>Consider using {@link #transform(CoordinateOperation, boolean)} instead of this method,
+     * for performance reasons and because not all geometry libraries associate <abbr>CRS</abbr>
+     * with their geometric objects.</p>
      *
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
      * @return the transformed geometry (may be the same geometry but never {@code null}).
      * @throws UnsupportedOperationException if this operation is not supported for current implementation.
      * @throws TransformException if the given geometry has no CRS or cannot be transformed.
+     * @throws BackingStoreException if the operation failed because of another checked exception.
      *
      * @see #getCoordinateReferenceSystem()
      */
     @Override
     public GeometryWrapper transform(final CoordinateReferenceSystem targetCRS) throws TransformException {
-        if (targetCRS == null) {
+        if (targetCRS == null || targetCRS == crs || crs == null) {
             return this;
         }
-        throw new UnsupportedOperationException(Geometries.unsupported("transform"));
+        try {
+            return transform(CRS.findOperation(crs, targetCRS, null), false);
+        } catch (FactoryException e) {
+            /*
+             * We wrap that exception because `Geometry.transform(…)` does not declare `FactoryException`.
+             * We may revisit in a future version if `Geometry.transform(…)` method declaration is updated.
+             */
+            throw new TransformException(e);
+        }
     }
 
     /**
-     * Returns {@code true} if the given geometry use the same CRS as this geometry, or conservatively
-     * returns {@code false} in case of doubt. This method should perform only a cheap test; it is used
-     * as a way to filter rapidly if {@link #transform(CoordinateReferenceSystem)} needs to be invoked.
-     * If this method wrongly returned {@code false}, the {@code transform(…)} method will return the
-     * geometry unchanged anyway.
-     *
-     * <p>If both CRS are undefined (null), then they are considered the same.</p>
-     *
-     * @param  other  the second geometry.
-     * @return {@code true} if the two geometries use equivalent CRS or if the CRS is undefined on both side,
-     *         or {@code false} in case of doubt.
-     */
-    public abstract boolean isSameCRS(GeometryWrapper other);
-
-    /**
-     * Formats the wrapped geometry in Well Known Text (WKT).
+     * Formats the wrapped geometry in Well Known Text (<abbr>WKT</abbr>) format.
      * If the geometry contains curves, then the {@code flatness} parameter specifies the maximum distance that
      * the line segments used in the Well Known Text are allowed to deviate from any point on the original curve.
      * This parameter is ignored if the geometry does not contain curves.
@@ -559,27 +606,26 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * for reducing the risk of compilation failures during the upcoming revision of GeoAPI interfaces since
      * some of those methods will be removed.
      */
-    @Deprecated public final Geometry       getMbRegion()                             {throw new UnsupportedOperationException();}
-    @Deprecated public final DirectPosition getRepresentativePoint()                  {throw new UnsupportedOperationException();}
-    @Deprecated public final Boundary       getBoundary()                             {throw new UnsupportedOperationException();}
-    @Deprecated public final Complex        getClosure()                              {throw new UnsupportedOperationException();}
-    @Deprecated public final boolean        isSimple()                                {throw new UnsupportedOperationException();}
-    @Deprecated public final boolean        isCycle()                                 {throw new UnsupportedOperationException();}
-    @Deprecated public final double         distance(Geometry geometry)               {throw new UnsupportedOperationException();}
-    @Deprecated public final int            getDimension(DirectPosition point)        {throw new UnsupportedOperationException();}
-    @Deprecated public final int            getCoordinateDimension()                  {throw new UnsupportedOperationException();}
-    @Deprecated public final Set<Complex>   getMaximalComplex()                       {throw new UnsupportedOperationException();}
-    @Deprecated public final Geometry       getConvexHull()                           {throw new UnsupportedOperationException();}
-    @Deprecated public final Geometry       getBuffer(double distance)                {throw new UnsupportedOperationException();}
-    @Deprecated public final Geometry       clone() throws CloneNotSupportedException {throw new CloneNotSupportedException();}
-    @Deprecated public final boolean        contains(TransfiniteSet pointSet)         {throw new UnsupportedOperationException();}
-    @Deprecated public final boolean        contains(DirectPosition point)            {throw new UnsupportedOperationException();}
-    @Deprecated public final boolean        intersects(TransfiniteSet pointSet)       {throw new UnsupportedOperationException();}
-    @Deprecated public final boolean        equals(TransfiniteSet pointSet)           {throw new UnsupportedOperationException();}
-    @Deprecated public final TransfiniteSet union(TransfiniteSet pointSet)            {throw new UnsupportedOperationException();}
-    @Deprecated public final TransfiniteSet intersection(TransfiniteSet pointSet)     {throw new UnsupportedOperationException();}
-    @Deprecated public final TransfiniteSet difference(TransfiniteSet pointSet)       {throw new UnsupportedOperationException();}
-    @Deprecated public final TransfiniteSet symmetricDifference(TransfiniteSet ps)    {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final Geometry       getMbRegion()                             {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final DirectPosition getRepresentativePoint()                  {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final Boundary       getBoundary()                             {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final Complex        getClosure()                              {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final boolean        isSimple()                                {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final boolean        isCycle()                                 {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final double         distance(Geometry geometry)               {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final int            getDimension(DirectPosition point)        {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final Set<Complex>   getMaximalComplex()                       {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final Geometry       getConvexHull()                           {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final Geometry       getBuffer(double distance)                {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final Geometry       clone() throws CloneNotSupportedException {throw new CloneNotSupportedException();}
+    @Deprecated @Override public final boolean        contains(TransfiniteSet pointSet)         {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final boolean        contains(DirectPosition point)            {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final boolean        intersects(TransfiniteSet pointSet)       {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final boolean        equals(TransfiniteSet pointSet)           {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final TransfiniteSet union(TransfiniteSet pointSet)            {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final TransfiniteSet intersection(TransfiniteSet pointSet)     {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final TransfiniteSet difference(TransfiniteSet pointSet)       {throw new UnsupportedOperationException();}
+    @Deprecated @Override public final TransfiniteSet symmetricDifference(TransfiniteSet ps)    {throw new UnsupportedOperationException();}
 
     /**
      * Returns {@code true} if the given object is a wrapper of the same class

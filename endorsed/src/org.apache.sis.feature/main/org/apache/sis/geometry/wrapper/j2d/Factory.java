@@ -183,7 +183,7 @@ public final class Factory extends Geometries<Shape> {
      */
     @Override
     public Shape createMultiPoint(boolean isFloat, Dimensions dimensions, DoubleBuffer coordinates) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedImplementationException(unsupported("createMultiPoint"));
     }
 
     /**

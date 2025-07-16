@@ -36,6 +36,7 @@ import org.apache.sis.filter.privy.WarningEvent;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.iso.Names;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -51,9 +52,8 @@ import org.opengis.feature.AttributeType;
 
 
 /**
- * Base class of Apache SIS implementation of OGC expressions, comparators or filters.
- * {@code Node} instances are associated together in a tree, which can be formatted
- * by {@link #toString()}.
+ * Base class of Apache <abbr>SIS</abbr> implementations of <abbr>OGC</abbr> expressions, comparators and filters.
+ * {@code Node} instances are organized in a tree which can be formatted by {@link #toString()}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -94,15 +94,15 @@ public abstract class Node implements Serializable {
      * @see Expression#getFunctionName()
      */
     protected static <T> AttributeType<T> createType(final Class<T> type, final Object name) {
-        // We do not use `Map.of(…)` for letting the attribute type constructor do the null check.
+        // We do not use `Map.of(…)` for better exception message in case of null name.
         return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
                                           type, 1, 1, null, (AttributeType<?>[]) null);
     }
 
     /**
-     * Returns the most specialized class of the given pair of class. A specialized class is guaranteed to exist
+     * Returns the most specialized class of the given pair of classes. A specialized class is guaranteed to exist
      * if parametrized type safety has not been bypassed with unchecked casts, because {@code <R>} is always valid.
-     * However this method is not guaranteed to be able to find that specialized type, because it could be none of
+     * However, this method is not guaranteed to be able to find that specialized type, because it could be none of
      * the given arguments if {@code t1}, {@code t2} and {@code <R>} are interfaces with {@code <R>} extending both
      * {@code t1} and {@code t2}.
      *
@@ -169,33 +169,25 @@ public abstract class Node implements Serializable {
 
     /**
      * Returns an expression whose results is a geometry wrapper.
+     * Note that the {@code apply(R)} method of the returned expression may throw {@link BackingStoreException}.
      *
      * @param  <R>         the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
      * @param  <G>         the geometry implementation type.
      * @param  library     the geometry library to use.
-     * @param  expression  the expression providing source values.
+     * @param  expression  the expression providing geometry instances of the given library.
      * @return an expression whose results is a geometry wrapper.
      * @throws InvalidFilterValueException if the given expression is already a wrapper
      *         but for another geometry implementation.
      */
-    @SuppressWarnings("unchecked")
     protected static <R,G> Expression<R, GeometryWrapper> toGeometryWrapper(
             final Geometries<G> library, final Expression<R,?> expression)
     {
-        if (expression instanceof GeometryConverter<?,?>) {
-            final Geometries<?> other = ((GeometryConverter<?,?>) expression).library;
-            if (library.equals(other)) {
-                return (GeometryConverter<R,G>) expression;
-            }
-            throw new InvalidFilterValueException(Resources.format(
-                    Resources.Keys.MixedGeometryImplementation_2, library.library, other.library));
-        }
-        return new GeometryConverter<>(library, expression);
+        return GeometryConverter.create(library, expression);
     }
 
     /**
      * If the given exception was wrapped by {@link #toGeometryWrapper(Geometries, Expression)},
-     * returns the original expression. Otherwise returns the given expression.
+     * returns the original expression. Otherwise, returns the given expression as-is.
      *
      * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
      * @param  expression  the expression to unwrap.

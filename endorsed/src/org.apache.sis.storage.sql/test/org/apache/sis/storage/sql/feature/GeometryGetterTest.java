@@ -26,7 +26,6 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.geometry.wrapper.GeometryWithCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.setup.GeometryLibrary;
@@ -109,11 +108,10 @@ public final class GeometryGetterTest extends TestCase {
         assertEquals(GF.createPoint(42.2, 43.3), geometry);
         final GeometryWrapper wrapper = Geometries.factory(library).castOrWrap(geometry);
         /*
-         * If the wrapper is an instance of `GeometryWithCRS`, then the CRS is stored
-         * with the wrapper instead of the geometry implementation. In such case, the
-         * CRS is lost on `GeometryWrapper.geometry()` and cannot be tested.
+         * The following assertion can be executed only with library that store the CRS
+         * in the geometry object itself rather than as a field of the geometry wrapper.
          */
-        if (!(wrapper instanceof GeometryWithCRS)) {
+        if (library == GeometryLibrary.JTS) {
             assertSame(HardCodedCRS.WGS84, wrapper.getCoordinateReferenceSystem());
         }
     }
