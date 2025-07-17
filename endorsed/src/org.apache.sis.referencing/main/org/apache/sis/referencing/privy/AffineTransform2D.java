@@ -271,19 +271,19 @@ public class AffineTransform2D extends ImmutableAffineTransform
          */
         if (ptDst == ptSrc) {
             if (ptSrc instanceof Point2D) {
-                final Point2D point = (Point2D) ptSrc;
+                final var point = (Point2D) ptSrc;
                 super.transform(point, point);
                 return ptSrc;
             }
         } else {
             if (ptDst == null) {
-                final DirectPosition2D point = new DirectPosition2D(ptSrc.getCoordinate(0), ptSrc.getCoordinate(1));
+                final var point = new DirectPosition2D(ptSrc.getCoordinate(0), ptSrc.getCoordinate(1));
                 super.transform(point, point);
                 return point;
             }
             ArgumentChecks.ensureDimensionMatches("ptDst", DIMENSION, ptDst);
             if (ptDst instanceof Point2D) {
-                final Point2D point = (Point2D) ptDst;
+                final var point = (Point2D) ptDst;
                 point.setLocation(ptSrc.getCoordinate(0), ptSrc.getCoordinate(1));
                 super.transform(point, point);
                 return ptDst;
@@ -292,7 +292,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
         /*
          * At this point, we have no choice to create a temporary Point2D.
          */
-        final Point2D.Double point = new Point2D.Double(ptSrc.getCoordinate(0), ptSrc.getCoordinate(1));
+        final var point = new Point2D.Double(ptSrc.getCoordinate(0), ptSrc.getCoordinate(1));
         super.transform(point, point);
         ptDst.setCoordinate(0, point.x);
         ptDst.setCoordinate(1, point.y);
@@ -479,7 +479,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     @Override
     public String toWKT() {
-        final Formatter formatter = new Formatter();
+        final var formatter = new Formatter();
         formatter.append(this);
         return formatter.toWKT();
     }

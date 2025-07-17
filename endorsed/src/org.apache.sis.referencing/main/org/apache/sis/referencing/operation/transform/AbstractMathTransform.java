@@ -338,7 +338,7 @@ public abstract class AbstractMathTransform extends FormattableObject
              * Destination not set. We are going to create the destination here. Since we know that the
              * destination will be the SIS implementation, write directly into the `coordinates` array.
              */
-            final GeneralDirectPosition destination = new GeneralDirectPosition(dimTarget);
+            final var destination = new GeneralDirectPosition(dimTarget);
             final double[] source;
             if (dimSource <= dimTarget) {
                 source = destination.coordinates;
