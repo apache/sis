@@ -79,7 +79,7 @@ public interface CoverageModifier {
      * @param  connector  the storage connector from which to get the modifier.
      * @return the modifier to use, never {@code null}.
      */
-    static CoverageModifier getOrDefault(StorageConnector connector) {
+    public static CoverageModifier getOrDefault(StorageConnector connector) {
         final CoverageModifier customizer = connector.getOption(DataOptionKey.COVERAGE_MODIFIER);
         return (customizer != null) ? customizer : DEFAULT;
     }
@@ -330,22 +330,44 @@ public interface CoverageModifier {
 
     /**
      * Invoked when a sample dimension is created in a coverage.
-     * The data store invokes this method with a builder initialized to a default name,
+     * The data store invokes this method with a {@link SampleDimension} builder initialized to a default name,
      * which may be the {@linkplain SampleDimension.Builder#setName(int) band number}.
-     * The builder may also contain a {@linkplain SampleDimension.Builder#setBackground(Number) background value}.
+     * The builder may also contain a {@linkplain SampleDimension.Builder#setBackground(Number) background value}
+     * and {@linkplain SampleDimension.Builder#categories() categories}.
      * Implementations can override this method for setting a better name
-     * or for declaring the meaning of sample values (by adding categories).
+     * or for declaring the meaning of sample values (by replacing categories).
      *
      * <h4>Default implementation</h4>
-     * The default implementation creates a "no data" category for the
-     * {@linkplain SampleDimension.Builder#getBackground() background value} if such value exists.
+     * The default implementation returns {@code dimensions.build()} with no modification on the given builder.
+     *
+     * <h4>Example: measurement data</h4>
+     * The following example declares that the values 0 means "no data".
      * The presence of such "no data" category will cause the raster to be converted to floating point
      * values before operations such as {@code resample}, in order to replace those "no data" by NaN values.
-     * If this replacement is not desired, then subclass should override this method for example like below:
+     * When a "no data" category is declared, it is strongly recommended to also declare the range of real data.
+     * The following example declares the range 1 to 255 inclusive.
      *
      * {@snippet lang="java" :
      * @Override
      * public SampleDimension customize(BandSource source, SampleDimension.Builder dimension) {
+     *     dimension.categories().clear();      // Discard the categories created by the store.
+     *     dimension.addQualitative(null, 0);   // Declare value 0 as "no data".
+     *     dimension.addQuantitative("Some name for my data", 1, 255, null);
+     *     return dimension.build();
+     * }
+     * }
+     *
+     * See the various {@code addQuantitative(…)} methods for information about how to declare a transfer function
+     * (a conversion from pixel values to the unit of measurement).
+     *
+     * <h4>Example: visualization only</h4>
+     * If the pixel values have no meaning other than visualization, this method can be overridden
+     * as below for making sure that they raster is not interpreted as measurement data:
+     *
+     * {@snippet lang="java" :
+     * @Override
+     * public SampleDimension customize(BandSource source, SampleDimension.Builder dimension) {
+     *     dimension.categories().clear();      // Discard the categories created by the store.
      *     return dimension.build();
      * }
      * }
@@ -359,12 +381,6 @@ public interface CoverageModifier {
     default SampleDimension customize(final BandSource source, final SampleDimension.Builder dimension)
             throws DataStoreException
     {
-        final Number fill = dimension.getBackground();
-        if (fill != null) {
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            NumberRange<?> samples = new NumberRange(fill.getClass(), fill, true, fill, true);
-            dimension.addQualitative(null, samples);
-        }
         return dimension.build();
     }
 
