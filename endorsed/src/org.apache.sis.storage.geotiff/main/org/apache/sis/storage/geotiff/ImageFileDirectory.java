@@ -1641,6 +1641,19 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
+     * Returns the number of sample values for moving to the next row in a tile of the <abbr>TIFF</abbr> file.
+     * The given {@code pixelStride} argument should be {@code sampleModel.getPixelString()} and the returned
+     * value should be {@code sampleModel.getScanlineStride()}.
+     *
+     * @param  pixelStride  number of sample values for moving to the next pixel.
+     * @return number of sample values for moving to the next row.
+     */
+    @Override
+    final long getScanlineStride(final int pixelStride) {
+        return Math.multiplyFull(pixelStride, tileWidth);
+    }
+
+    /**
      * Returns the number of components per pixel.
      */
     @Override
@@ -1868,11 +1881,12 @@ final class ImageFileDirectory extends DataCube {
      * Gets the stream position or the length in bytes of compressed tile arrays in the GeoTIFF file.
      * Values in the returned vector are {@code long} primitive type.
      *
-     * @return stream position (relative to file beginning) and length of compressed tile arrays, in bytes.
+     * @param  length  {@code false} for requesting tile offsets, or {@code true} for tile lengths.
+     * @return stream position (relative to file beginning) or length of compressed tile arrays, in bytes.
      */
     @Override
-    Vector[] getTileArrayInfo() {
-        return new Vector[] {tileOffsets, tileByteCounts};
+    Vector getTileArrayInfo(final boolean length) {
+        return length ? tileByteCounts : tileOffsets;
     }
 
     /**

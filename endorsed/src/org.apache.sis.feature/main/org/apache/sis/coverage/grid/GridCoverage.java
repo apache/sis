@@ -537,7 +537,7 @@ public abstract class GridCoverage extends BandedCoverage {
     public TreeTable toTree(final Locale locale, final int bitmask) {
         final Vocabulary vocabulary = Vocabulary.forLocale(Objects.requireNonNull(locale));
         final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
-        final TreeTable tree = new DefaultTreeTable(column);
+        final var tree = new DefaultTreeTable(column);
         final TreeTable.Node root = tree.getRoot();
         root.setValue(column, Classes.getShortClassName(this));
         TreeTable.Node branch = root.newChild();
