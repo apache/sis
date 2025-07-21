@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ConcurrentModificationException;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
@@ -219,20 +220,6 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
     }
 
     /**
-     * Returns the value for the property of the given name.
-     *
-     * @param  name  the property name.
-     * @return the value for the given property, or {@code null} if none.
-     * @throws PropertyNotFoundException if the given argument is not an attribute or association name of this feature.
-     */
-    @Override
-    public Object getPropertyValue(final String name) throws PropertyNotFoundException {
-        final Object value = getValueOrFallback(name, MISSING);
-        if (value != MISSING) return value;
-        throw new PropertyNotFoundException(propertyNotFound(type, getName(), name));
-    }
-
-    /**
      * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
      *
      * @param  name  the property name.
@@ -323,6 +310,20 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
     }
 
     /**
+     * Returns the explicit or default value of a characteristic of a property.
+     * Overridden for skipping the creation of property instances when there is no characteristic.
+     */
+    @Override
+    public Optional<?> getCharacteristicValue(final String property, final String characteristic)
+            throws PropertyNotFoundException
+    {
+        if (valuesKind != VALUES) {
+            return super.getCharacteristicValue(property, characteristic);
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Verifies if all current properties met the constraints defined by the feature type. This method returns
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports() reports} for all invalid
      * properties, if any.
@@ -330,11 +331,11 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
     @Override
     public DataQuality quality() {
         if (valuesKind == VALUES) {
-            final Validator v = new Validator(ScopeCode.FEATURE);
+            final var validator = new Validator(ScopeCode.FEATURE);
             for (final Map.Entry<String, Integer> entry : indices.entrySet()) {
-                v.validateAny(type.getProperty(entry.getKey()), properties.get(entry.getValue()));
+                validator.validateAny(type.getProperty(entry.getKey()), properties.get(entry.getValue()));
             }
-            return v.quality;
+            return validator.quality;
         }
         // Slower path when there is a possibility that user overridden the Property.quality() methods.
         return super.quality();

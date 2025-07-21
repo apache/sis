@@ -193,7 +193,7 @@ final class LZW extends CompressionChannel {
     /**
      * Pointers to byte sequences for a code in the {@link #entriesForCodes} array.
      * Each element is a value encoded by {@link #offsetAndLength(int, int)} method.
-     * Elements are decoded by {@link #offset(int)} {@link #length(int)} methods.
+     * Elements are decoded by {@link #offset(int)} and {@link #length(int)} methods.
      */
     private final int[] entriesForCodes;
 
@@ -304,6 +304,7 @@ final class LZW extends CompressionChannel {
     @Override
     public int read(final ByteBuffer target) throws IOException {
         final int start = target.position();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         int previousCode = this.previousCode;
         /*
          * If a previous invocation of this method was unable to write some data

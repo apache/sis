@@ -16,17 +16,17 @@
  */
 package org.apache.sis.geometries.triangulate.delaunay;
 
-import org.apache.sis.geometries.AbstractGeometry;
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.MeshPrimitive.Vertex;
+import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import java.util.Iterator;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 
 /**
  * A oriented edge is a straight line between from a start point to an end point.

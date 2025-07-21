@@ -25,6 +25,7 @@ import java.util.concurrent.RecursiveAction;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
@@ -203,8 +204,8 @@ public final class TupleArrays extends Static {
         while (cursor.next()) {
             final Tuple samples = cursor.samples();
             if (first) {
-                bbox.getLowerCorner().set(samples);
-                bbox.getUpperCorner().set(samples);
+                bbox.getLower().set(samples);
+                bbox.getUpper().set(samples);
                 first = false;
             } else {
                 bbox.add(samples);
@@ -327,12 +328,19 @@ public final class TupleArrays extends Static {
                 Tuple source = cursor.samples();
                 Tuple target = resultCursor.samples();
                 for (int s = 0; s < dim; s++) {
-                    target.setCoordinate(s+offset, source.get(s));
+                    target.set(s+offset, source.get(s));
                 }
             }
             offset += dim;
         }
         return result;
+    }
+
+    /**
+     * Create a view of only the given selected index tuples in the array.
+     */
+    public static TupleArray subset(TupleArray array, int ... selection) {
+        return new Subset(array, selection);
     }
 
     /**
@@ -477,4 +485,85 @@ public final class TupleArrays extends Static {
 
     private TupleArrays(){}
 
+    private static class Subset extends AbstractTupleArray {
+
+        private final TupleArray base;
+        private final int[] index;
+
+        public Subset(TupleArray base, int[] index) {
+            this.base = base;
+            this.index = index;
+        }
+
+        @Override
+        public int getLength() {
+            return index.length;
+        }
+
+        @Override
+        public SampleSystem getSampleSystem() {
+            return base.getSampleSystem();
+        }
+
+        @Override
+        public void setSampleSystem(SampleSystem type) {
+            base.setSampleSystem(type);
+        }
+
+        @Override
+        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+            return base.getCoordinateReferenceSystem();
+        }
+
+        @Override
+        public int getDimension() {
+            return base.getDimension();
+        }
+
+        @Override
+        public DataType getDataType() {
+            return base.getDataType();
+        }
+
+        @Override
+        public void get(int index, Tuple buffer) {
+            base.get(this.index[index], buffer);
+        }
+
+        @Override
+        public void set(int index, Tuple buffer) {
+            base.set(this.index[index], buffer);
+        }
+
+        @Override
+        public TupleArrayCursor cursor() {
+            final TupleArrayCursor bc = base.cursor();
+            return new TupleArrayCursor() {
+                private int coordinate = -1;
+                @Override
+                public Tuple<?> samples() {
+                    bc.moveTo(index[coordinate]);
+                    return bc.samples();
+                }
+
+                @Override
+                public int coordinate() {
+                    return coordinate;
+                }
+
+                @Override
+                public void moveTo(int coordinate) {
+                    this.coordinate = coordinate;
+                }
+
+                @Override
+                public boolean next() {
+                    if (coordinate >= index.length-1) return false;
+                    coordinate++;
+                    return true;
+                }
+            };
+        }
+
+    }
 }

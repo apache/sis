@@ -35,6 +35,7 @@ package org.apache.sis.geometries;
  * A MultiCurve is defined as topologically closed.
  *
  * @author Johann Sorel (Geomatys)
+ * @see https://docs.ogc.org/DRAFTS/21-045r1.html#multi_curve
  */
 public interface MultiCurve<T extends Curve> extends GeometryCollection<T>{
 

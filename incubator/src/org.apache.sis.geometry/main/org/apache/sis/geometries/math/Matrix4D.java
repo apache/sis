@@ -17,22 +17,16 @@
 package org.apache.sis.geometries.math;
 
 import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
+ * @todo Remove this class when all elements are merged in Matrix4
  */
-public class Matrix4D extends Matrix{
+public class Matrix4D extends Matrix4 {
 
-    private final Matrix4 matrix;
 
     public Matrix4D() {
-        this.matrix = new Matrix4();
-    }
-
-    public Matrix4D(Matrix4 matrix) {
-        this.matrix = matrix;
     }
 
     public Matrix4D(
@@ -41,7 +35,7 @@ public class Matrix4D extends Matrix{
             double m20, double m21, double m22, double m23,
             double m30, double m31, double m32, double m33
             ) {
-        this.matrix = new Matrix4(
+        super(
                 m00, m01, m02, m03,
                 m10, m11, m12, m13,
                 m20, m21, m22, m23,
@@ -49,14 +43,32 @@ public class Matrix4D extends Matrix{
         );
     }
 
-    @Override
-    public void transform(Tuple tuple, Tuple result) {
-        //TODO not efficient
-        result.set(matrix.multiply(tuple.toArrayDouble()));
+    public Matrix4D(double[] elements) {
+        super(elements);
     }
 
-    @Override
-    public Matrix4D inverse() throws NoninvertibleMatrixException {
-        return new Matrix4D(Matrix4.castOrCopy(matrix.inverse()));
+    public void transform(Tuple tuple, Tuple result) {
+        //TODO not efficient
+        result.set(multiply(tuple.toArrayDouble()));
+    }
+
+    /**
+     * Casts or copies the given matrix to a {@code Matrix4D} implementation. If the given {@code matrix}
+     * is already an instance of {@code Matrix4D}, then it is returned unchanged. Otherwise this method
+     * verifies the matrix size, then copies all elements in a new {@code Matrix4D} object.
+     *
+     * @param  matrix  the matrix to cast or copy, or {@code null}.
+     * @return the matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     * @throws IllegalArgumentException if the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     */
+    public static Matrix4D castOrCopy(final org.opengis.referencing.operation.Matrix matrix) throws IllegalArgumentException {
+        if (matrix == null || matrix instanceof Matrix4D) {
+            return (Matrix4D) matrix;
+        }
+        if (matrix.getNumCol() != 4 || matrix.getNumRow() != 4) {
+            throw new IllegalArgumentException("Matrix is not of size 4x4");
+        }
+        return new Matrix4D(Matrix4.castOrCopy(matrix).getElements());
     }
 }

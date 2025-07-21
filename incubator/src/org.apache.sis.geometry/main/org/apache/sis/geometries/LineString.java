@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
 import javax.measure.quantity.Length;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -105,14 +106,7 @@ public interface LineString extends Curve {
         if (points.isEmpty()) {
             return null;
         }
-
-        final Tuple start = points.getPosition(0);
-        final GeneralEnvelope env = new GeneralEnvelope(start, start);
-        for (int i = 1, n = points.size(); i < n; i++) {
-            env.add(points.getPosition(i));
-        }
-        env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
-        return env;
+        return points.getEnvelope();
     }
 
     @Override

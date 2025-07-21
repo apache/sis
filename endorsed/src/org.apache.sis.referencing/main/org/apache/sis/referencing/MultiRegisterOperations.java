@@ -50,7 +50,7 @@ import org.apache.sis.util.iso.AbstractFactory;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.RegisterOperations;
 import org.opengis.referencing.crs.SingleCRS;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 
 
 /**
@@ -351,7 +351,7 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
             return false;
         }
         for (int i=0; i<n; i++) {
-            if (PseudoDatum.getDatumOrEnsemble(sources.get(i), targets.get(i)).isEmpty()) {
+            if (DatumOrEnsemble.ofTarget(sources.get(i), targets.get(i)).isEmpty()) {
                 return false;
             }
         }

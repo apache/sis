@@ -613,13 +613,13 @@ public class TransformSeparator {
          * target dimensions that depend only on specified source dimensions. If a target dimension depends on
          * at least one discarded source dimension, then that output dimension will be discarded as well.
          */
-        final Matrix matrix = MathTransforms.getMatrix(step);
+        final MatrixSIS matrix = MatrixSIS.castOrCopy(MathTransforms.getMatrix(step));
         if (matrix != null) {
             targetDimensions = null;
             int startOfRow = 0;                         // Index of next row to be stored in the `elements` array.
             boolean isLastRowAccepted = false;          // To be set to `true` if we complete successfully up to last row.
             final int numFilteredColumns = (dimensions.length + 1);
-            double[] elements = new double[(numTgt + 1) * numFilteredColumns];
+            Number[] elements = new Number[(numTgt + 1) * numFilteredColumns];
 reduce:     for (int j=0; j <= numTgt; j++) {
                 /*
                  * For each target dimension (i.e. a matrix row), find the matrix elements (excluding translation
@@ -628,10 +628,10 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                  */
                 int filteredColumn = 0;
                 for (int i=0; i<numSrc; i++) {
-                    final double element = matrix.getElement(j,i);
+                    final Number element = matrix.getNumber(j,i);
                     if (filteredColumn < dimensions.length && dimensions[filteredColumn] == i) {
                         elements[startOfRow + filteredColumn++] = element;
-                    } else if (element != 0) {
+                    } else if (element.doubleValue() != 0) {
                         /*
                          * Output dimension `j` depends on one of discarded input dimension `i`.
                          * The whole row will be discarded.
@@ -644,7 +644,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                  * in the array of source dimensions to keep. The matrix coefficients for that row are copied in the
                  * `elements` array.
                  */
-                elements[startOfRow + filteredColumn++] = matrix.getElement(j, numSrc);  // Copy the translation term.
+                elements[startOfRow + filteredColumn++] = matrix.getNumber(j, numSrc);   // Copy the translation term.
                 assert filteredColumn == numFilteredColumns : filteredColumn;            // We should have used all values in the `dimensions` array.
                 startOfRow += numFilteredColumns;
                 /*

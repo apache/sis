@@ -272,7 +272,7 @@ public interface PreparedTIN extends TIN {
         //cache last position crs
         private CoordinateReferenceSystem lastCrs;
         private MathTransform lastTransform;
-        private final Vector target;
+        private final Vector<?> target;
         private final Vector2D.Double p = new Vector2D.Double();
         private final GeneralEnvelope env;
 
@@ -291,7 +291,7 @@ public interface PreparedTIN extends TIN {
             this.epsilon = epsilon;
         }
 
-        public Optional<Point> evaluate(DirectPosition dp) throws CannotEvaluateException {
+        public Optional<Point> evaluate(Tuple<?> dp) throws CannotEvaluateException {
             final CoordinateReferenceSystem dpCrs = dp.getCoordinateReferenceSystem();
             final MathTransform transform;
             if (dpCrs == null) {
@@ -319,13 +319,14 @@ public interface PreparedTIN extends TIN {
 
             if (transform != null) {
                 try {
-                    dp = transform.transform(dp, target);
+                    dp.transformTo(transform, target);
+                    dp = target;
                 } catch (TransformException ex) {
                     throw new CannotEvaluateException(ex.getMessage(), ex);
                 }
             }
-            p.x = dp.getCoordinate(0);
-            p.y = dp.getCoordinate(1);
+            p.x = dp.get(0);
+            p.y = dp.get(1);
 
             //use a local coordinate epsilon if undefined
             double epsilon = this.epsilon;

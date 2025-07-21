@@ -58,7 +58,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import static org.apache.sis.geometry.wrapper.GeometryType.POINT;
@@ -83,20 +82,25 @@ final class Wrapper extends GeometryWrapper {
 
     /**
      * Creates a new wrapper around the given geometry.
+     *
+     * @param  geometry  the geometry to wrap.
+     * @throws FactoryException if the <abbr>CRS</abbr> cannot be created from the <abbr>SRID</abbr> code.
      */
-    Wrapper(final Geometry geometry) {
+    Wrapper(final Geometry geometry) throws FactoryException {
         this.geometry = geometry;
+        crs = JTS.getCoordinateReferenceSystem(geometry);
     }
 
     /**
-     * Returns the given geometry in new wrapper,
-     * or {@code this} if {@code g} is same as current geometry.
+     * Creates a new wrapper with the same <abbr>CRS</abbr> than the given wrapper.
      *
-     * @param  result  the geometry computed by a JTS operation.
-     * @return wrapper for the given geometry. May be {@code this}.
+     * @param  source    the source wrapper from which is derived the geometry.
+     * @param  geometry  the geometry to wrap.
      */
-    private Wrapper rewrap(final Geometry result) {
-        return (result != geometry) ? new Wrapper(result) : this;
+    private Wrapper(final Wrapper source, final Geometry geometry) {
+        this.geometry = geometry;
+        this.crs = source.crs;
+        JTS.copyMetadata(source.geometry, geometry);
     }
 
     /**
@@ -128,29 +132,22 @@ final class Wrapper extends GeometryWrapper {
     }
 
     /**
-     * Returns the geometry coordinate reference system, or {@code null} if none.
-     *
-     * @return the coordinate reference system, or {@code null} if none.
-     * @throws BackingStoreException if the CRS cannot be created from the SRID code.
-     */
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        try {
-            return JTS.getCoordinateReferenceSystem(geometry);
-        } catch (FactoryException e) {
-            throw new BackingStoreException(e);
-        }
-    }
-
-    /**
      * Sets the coordinate reference system. This method overwrites any previous user object.
      * This is okay for the context in which Apache SIS uses this method, which is only for
      * newly created geometries.
      */
     @Override
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        ArgumentChecks.ensureDimensionMatches("crs", getCoordinatesDimension(geometry), crs);
+        super.setCoordinateReferenceSystem(crs);
         JTS.setCoordinateReferenceSystem(geometry, crs);
+    }
+
+    /**
+     * Returns the dimension of the coordinates that define this geometry.
+     */
+    @Override
+    public int getCoordinateDimension() {
+        return getCoordinatesDimension(geometry);
     }
 
     /**
@@ -215,6 +212,7 @@ final class Wrapper extends GeometryWrapper {
     @Override
     public DirectPosition getCentroid() {
         final Coordinate c = geometry.getCentroid().getCoordinate();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
         if (crs == null) {
             final double z = c.getZ();
@@ -555,8 +553,7 @@ add:    for (Geometry next = geometry;;) {
         if (!getGeometryClass(target).isInstance(geometry)) {
             final Geometry result = convert(target);
             if (result != geometry) {
-                JTS.copyMetadata(geometry, result);
-                return new Wrapper(result);
+                return new Wrapper(this, result);
             }
         }
         return this;
@@ -774,8 +771,21 @@ add:    for (Geometry next = geometry;;) {
      * @throws TransformException if the geometry cannot be transformed.
      */
     @Override
-    public GeometryWrapper transform(final MathTransform transform) throws TransformException {
+    public GeometryWrapper transform(final MathTransform transform) throws FactoryException, TransformException {
         return rewrap(JTS.transform(geometry, transform));
+    }
+
+    /**
+     * Returns the given geometry in a new wrapper, or {@code this} if {@code result} is same as current geometry.
+     * If a new wrapper is created, then its <abbr>CRS</abbr> will be inferred from the geometry <abbr>SRID</abbr>
+     * or user properties.
+     *
+     * @param  result  the geometry computed by a JTS operation.
+     * @return wrapper for the given geometry. May be {@code this}.
+     * @throws FactoryException if the <abbr>CRS</abbr> cannot be created from the <abbr>SRID</abbr> code.
+     */
+    private Wrapper rewrap(final Geometry result) throws FactoryException {
+        return (result == geometry) ? this : new Wrapper(result);
     }
 
     /**
@@ -787,21 +797,6 @@ add:    for (Geometry next = geometry;;) {
     @Override
     public Shape toJava2D() {
         return JTS.asShape(geometry);
-    }
-
-    /**
-     * Returns {@code true} if the given geometry use the same CRS as this geometry, or conservatively
-     * returns {@code false} in case of doubt. This method should perform only a cheap test; it is used
-     * as a way to filter rapidly if {@link #transform(CoordinateReferenceSystem)} needs to be invoked.
-     *
-     * @param  other  the second geometry.
-     * @return {@code true} if the two geometries use equivalent CRS or if the CRS is undefined on both side,
-     *         or {@code false} in case of doubt.
-     * @throws ClassCastException if the given wrapper is not for the same geometry library.
-     */
-    @Override
-    public boolean isSameCRS(final GeometryWrapper other) {
-        return JTS.isSameCRS(geometry, ((Wrapper) other).geometry);
     }
 
     /**

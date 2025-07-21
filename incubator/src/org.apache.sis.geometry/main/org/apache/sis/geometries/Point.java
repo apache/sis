@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -118,7 +119,7 @@ public interface Point extends Primitive {
     @Override
     default Envelope getEnvelope() {
         final Tuple first = getPosition();
-        final GeneralEnvelope env = new GeneralEnvelope(first, first);
+        final BBox env = new BBox(first, first);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return env;
     }

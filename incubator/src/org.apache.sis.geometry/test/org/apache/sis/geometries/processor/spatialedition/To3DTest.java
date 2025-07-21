@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.processor.spatialedition;
 
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;

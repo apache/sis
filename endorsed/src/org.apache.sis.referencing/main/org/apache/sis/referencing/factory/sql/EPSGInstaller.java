@@ -38,7 +38,7 @@ import org.apache.sis.setup.InstallationResources;
 
 
 /**
- * Runs the SQL scripts for creating an EPSG database.
+ * Runs the <abbr>SQL</abbr> scripts for creating an <abbr>EPSG</abbr> database.
  *
  * See {@code org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter}
  * in the test directory for more information about how the scripts are formatted.
@@ -55,7 +55,7 @@ final class EPSGInstaller extends ScriptRunner {
      *     SET datum_name = replace(datum_name, CHAR(182), CHAR(10));
      *     }
      *
-     * Note: this regular expression use a capturing group.
+     * Note: this regular expression uses a capturing group.
      */
     static final String REPLACE_STATEMENT =
             "UPDATE\\s+[\\w\\.\" ]+\\s+SET\\s+(\\w+)\\s*=\\s*replace\\s*\\(\\s*\\1\\W+.*";
@@ -91,8 +91,9 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
-     * Creates immediately a schema of the given name in the database and remember that the
-     * {@code "epsg_"} prefix in table names will need to be replaced by path to that schema.
+     * Creates immediately a schema of the given name in the database.
+     * The {@code "epsg_"} prefix in table names or the {@code "epsg"}
+     * schema name will be replaced by the given schema name.
      *
      * <p>This method should be invoked only once. It does nothing if the database does not supports schema.</p>
      *
@@ -103,21 +104,27 @@ final class EPSGInstaller extends ScriptRunner {
     public void setSchema(final String schema) throws SQLException, IOException {
         if (isSchemaSupported) {
             /*
-             * Creates the schema on the database. We do that before to setup the 'toSchema' map, while the map still null.
+             * Creates the schema on the database.
              * Note that we do not quote the schema name, which is a somewhat arbitrary choice.
              */
-            execute(new StringBuilder("CREATE SCHEMA ").append(identifierQuote).append(schema).append(identifierQuote));
+            final var sb = new StringBuilder(40);
+            execute(sb.append("CREATE SCHEMA ").append(identifierQuote).append(schema).append(identifierQuote));
             if (isGrantOnSchemaSupported) {
-                execute(new StringBuilder("GRANT USAGE ON SCHEMA ")
+                sb.setLength(0);
+                execute(sb.append("GRANT USAGE ON SCHEMA ")
                         .append(identifierQuote).append(schema).append(identifierQuote).append(" TO ").append(PUBLIC));
             }
             /*
-             * Mapping from the table names used in the SQL scripts to the original names used in the MS-Access database.
+             * Mapping from the table names used in the SQL scripts to the names used in `EPSGDataAccess`.
+             * Those names are the ones that were used in the original EPSG dataset in MS-Access database.
              * We use those original names because they are easier to read than the names in SQL scripts.
+             *
+             * TODO: move to org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter.
              */
             addReplacement(SQLTranslator.TABLE_PREFIX + "alias",                      "Alias");
-            addReplacement(SQLTranslator.TABLE_PREFIX + "area",                       "Area");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "area",                       "Area");      // Deprecated (removed in EPSG 10)
             addReplacement(SQLTranslator.TABLE_PREFIX + "change",                     "Change");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "conventionalrs",             "ConventionalRS");
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordinateaxis",             "Coordinate Axis");
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordinateaxisname",         "Coordinate Axis Name");
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperation",             "Coordinate_Operation");
@@ -129,12 +136,19 @@ final class EPSGInstaller extends ScriptRunner {
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordinatereferencesystem",  "Coordinate Reference System");
             addReplacement(SQLTranslator.TABLE_PREFIX + "coordinatesystem",           "Coordinate System");
             addReplacement(SQLTranslator.TABLE_PREFIX + "datum",                      "Datum");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datumensemble",              "DatumEnsemble");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datumensemblemember",        "DatumEnsembleMember");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datumrealizationmethod",     "DatumRealizationMethod");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "definingoperation",          "DefiningOperation");
             addReplacement(SQLTranslator.TABLE_PREFIX + "deprecation",                "Deprecation");
             addReplacement(SQLTranslator.TABLE_PREFIX + "ellipsoid",                  "Ellipsoid");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "extent",                     "Extent");
             addReplacement(SQLTranslator.TABLE_PREFIX + "namingsystem",               "Naming System");
             addReplacement(SQLTranslator.TABLE_PREFIX + "primemeridian",              "Prime Meridian");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "scope",                      "Scope");
             addReplacement(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
             addReplacement(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "usage",                      "Usage");
             addReplacement(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
             if (isEnumTypeSupported) {
                 addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind",             "Datum Kind");
@@ -158,7 +172,7 @@ final class EPSGInstaller extends ScriptRunner {
     final void prependNamespace(final String schema) {
         modifyReplacements((key, value) -> {
             if (key.startsWith(SQLTranslator.TABLE_PREFIX)) {
-                final StringBuilder buffer = new StringBuilder(value.length() + schema.length() + 5);
+                final var buffer = new StringBuilder(value.length() + schema.length() + 5);
                 buffer.append(identifierQuote).append(schema).append(identifierQuote).append('.');
                 final boolean isQuoted = value.endsWith(identifierQuote);
                 if (!isQuoted) buffer.append(identifierQuote);

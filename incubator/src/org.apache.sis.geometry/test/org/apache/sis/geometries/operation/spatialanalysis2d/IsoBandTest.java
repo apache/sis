@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.TupleArrays;
 import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToCoord2D;

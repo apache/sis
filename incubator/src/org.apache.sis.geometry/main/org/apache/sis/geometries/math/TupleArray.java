@@ -269,7 +269,7 @@ public interface TupleArray {
         final Vector v = Vectors.createDouble(getDimension());
         for (int i=0,n=getLength();i<n;i++) {
             get(i, v);
-            trs.transform(v, v);
+            v.transform(trs);
             set(i,v);
         }
     }

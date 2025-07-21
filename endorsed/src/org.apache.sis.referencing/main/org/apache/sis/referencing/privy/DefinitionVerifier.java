@@ -18,6 +18,7 @@ package org.apache.sis.referencing.privy;
 
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
@@ -32,7 +33,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.internal.Resources;
@@ -300,13 +301,13 @@ public final class DefinitionVerifier {
      * Indicates in which part of CRS description a difference has been found. Numerical values must match the number
      * in the {@code {choice}} instruction in the message associated to {@link Resources.Keys#NonConformCRS_3}.
      */
-    private static final int METHOD=0, CONVERSION=1, CS=2, DATUM=3, PRIME_MERIDIAN=4, ELLIPSOID=5, OTHER=6;
+    private static final int METHOD=0, CONVERSION=1, CS=2, ELLIPSOID=3, PRIME_MERIDIAN=4, DATUM=5, OTHER=6;
 
     /**
      * Returns a code indicating in which part the two given CRS differ. The given iterators usually iterate over
      * exactly one element, but may iterate over more elements if the CRS were instance of {@code CompoundCRS}.
-     * The returned value is one of {@link #METHOD}, {@link #CONVERSION}, {@link #CS}, {@link #DATUM},
-     * {@link #PRIME_MERIDIAN}, {@link #ELLIPSOID} or {@link #OTHER} constants.
+     * The returned value is one of {@link #METHOD}, {@link #CONVERSION}, {@link #CS}, {@link #PRIME_MERIDIAN},
+     * {@link #ELLIPSOID}, {@link #DATUM} or {@link #OTHER} constants.
      */
     @SuppressWarnings("deprecation")
     private static int diffCode(final Iterator<SingleCRS> authoritative, final Iterator<SingleCRS> given) {
@@ -321,23 +322,18 @@ public final class DefinitionVerifier {
                         return Utilities.equalsApproximately(cnvA.getMethod(), cnvG.getMethod()) ? CONVERSION : METHOD;
                     }
                 }
-                if (!Utilities.equalsApproximately(crsA.getCoordinateSystem(), crsG.getCoordinateSystem())) {
-                    return CS;
-                }
-                if (!Utilities.equalsApproximately(ReferencingUtilities.getEllipsoid(crsA),
-                                                   ReferencingUtilities.getEllipsoid(crsG)))
-                {
-                    return ELLIPSOID;
-                }
-                if (!Utilities.equalsApproximately(ReferencingUtilities.getPrimeMeridian(crsA),
-                                                   ReferencingUtilities.getPrimeMeridian(crsG)))
-                {
-                    return PRIME_MERIDIAN;
-                }
-                if (!Utilities.equalsApproximately(PseudoDatum.getDatumOrEnsemble(crsA),
-                                                   PseudoDatum.getDatumOrEnsemble(crsG)))
-                {
-                    return DATUM;
+                for (int code = CS; code <= DATUM; code++) {
+                    final Function<SingleCRS, ?> getter;
+                    switch (code) {
+                        case CS:             getter = SingleCRS::getCoordinateSystem; break;
+                        case ELLIPSOID:      getter = DatumOrEnsemble::getEllipsoid; break;
+                        case PRIME_MERIDIAN: getter = DatumOrEnsemble::getPrimeMeridian; break;
+                        case DATUM:          getter = DatumOrEnsemble::of; break;
+                        default: throw new AssertionError(code);
+                    }
+                    if (!Utilities.equalsApproximately(getter.apply(crsA), getter.apply(crsG))) {
+                        return code;
+                    }
                 }
                 break;
             }

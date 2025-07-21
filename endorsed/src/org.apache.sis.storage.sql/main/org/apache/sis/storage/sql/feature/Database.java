@@ -319,7 +319,7 @@ public class Database<G> extends Syntax  {
         this.cacheOfCRS    = new Cache<>(7, 2, false);
         this.cacheOfSRID   = new WeakHashMap<>();
         this.tablesByNames = new FeatureNaming<>();
-        supportsCatalogs   = dialect.supportsCatalog() && metadata.supportsCatalogsInDataManipulation();
+        supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
         supportsJavaTime   = dialect.supportsJavaTime();
         crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
@@ -410,9 +410,7 @@ public class Database<G> extends Syntax  {
             if (found) {
                 spatialSchema = convention;
                 if (consistent) {
-                    if (dialect.supportsCatalog()) {
-                        catalogOfSpatialTables = catalog;
-                    }
+                    catalogOfSpatialTables = catalog;
                     schemaOfSpatialTables = schema;
                 }
                 break;

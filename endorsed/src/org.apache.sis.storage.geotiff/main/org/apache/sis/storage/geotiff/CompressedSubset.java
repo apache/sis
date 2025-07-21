@@ -36,10 +36,13 @@ import org.apache.sis.image.privy.RasterFactory;
  */
 final class CompressedSubset extends DataSubset {
     /**
-     * Number of sample values to skip for moving to the next row of a tile in the GeoTIFF file.
-     * This is not necessarily the same scanline stride as for the tiles created by this class.
+     * Number of sample values to skip for moving to the next row of a tile in the <abbr>TIFF</abbr> file.
+     * This is not necessarily the same scanline stride as the one for the tiles created by this class.
+     *
+     * @see #sourcePixelStride
+     * @see java.awt.image.ComponentSampleModel#getScanlineStride()
      */
-    private final long scanlineStride;
+    private final long sourceScanlineStride;
 
     /**
      * Number of sample values to skip before to read the first value of the first pixel in a row.
@@ -73,7 +76,7 @@ final class CompressedSubset extends DataSubset {
     private final int[] skipAfterChunks;
 
     /**
-     * Number of sample values that compose a chunk (pixel or sample) in the GeoTIFF file.
+     * Number of sample values that compose a chunk (pixel or sample) in the <abbr>TIFF</abbr> file.
      * The value of this field can be:
      *
      * <ul>
@@ -107,9 +110,9 @@ final class CompressedSubset extends DataSubset {
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(source, subset);
-        scanlineStride     = Math.multiplyExact(sourcePixelStride, getTileSize(X_DIMENSION));
-        final int between  = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(X_DIMENSION) - 1));
-        long afterLastBand = scanlineStride - sourcePixelStride;
+        sourceScanlineStride = source.getScanlineStride(sourcePixelStride);
+        long afterLastBand   = sourceScanlineStride - sourcePixelStride;
+        final int between    = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(X_DIMENSION) - 1));
         if (includedBands != null && sourcePixelStride > 1) {
             final int[] skips = new int[includedBands.length];
             final int m = skips.length - 1;
@@ -184,7 +187,7 @@ final class CompressedSubset extends DataSubset {
      * @param  upper        (<var>x</var>, <var>y</var>) coordinates after the last pixel to read relative to the tile.
      * @param  subsampling  (<var>sx</var>, <var>sy</var>) subsampling factors.
      * @param  location     pixel coordinates in the upper-left corner of the tile to return.
-     * @return a single tile decoded from the GeoTIFF file.
+     * @return a single tile decoded from the <abbr>TIFF</abbr> file.
      */
     @Override
     Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
@@ -241,14 +244,14 @@ final class CompressedSubset extends DataSubset {
              * by the mathematical operation identified by `predictor`.
              */
             for (long y = lower[1]; --y >= 0;) {
-                inflater.skip(scanlineStride);          // `skip(…)` may round to next element boundary.
+                inflater.skip(sourceScanlineStride);    // `skip(…)` may round to next element boundary.
             }
             for (int y = height; --y > 0;) {            // (height - 1) iterations.
                 inflater.skip(head);
                 inflater.uncompressRow();
                 inflater.skip(tail);
                 for (int j=betweenRows; --j>=0;) {
-                    inflater.skip(scanlineStride);
+                    inflater.skip(sourceScanlineStride);
                 }
             }
             inflater.skip(head);                        // Last iteration without the trailing `skip(…)` calls.

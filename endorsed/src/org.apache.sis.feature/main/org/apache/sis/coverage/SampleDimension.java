@@ -542,7 +542,7 @@ public class SampleDimension implements Serializable {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @author  Alexis Manin (Geomatys)
-     * @version 1.4
+     * @version 1.5
      * @since   1.0
      */
     public static class Builder {
@@ -1150,7 +1150,8 @@ public class SampleDimension implements Serializable {
          *                  or {@code null} for a default "data" name.
          * @param  samples  the minimum and maximum sample values in the category. Element class is usually
          *                  {@link Integer}, but {@link Float} and {@link Double} types are accepted as well.
-         * @param  toUnits  the transfer function from sample values to real values in the specified units.
+         * @param  toUnits  the transfer function from sample values to real values in the specified units,
+         *                  or {@code null} if none.
          * @param  units    the units of measurement of values after conversion by the transfer function,
          *                  or {@code null} if unknown or not applicable.
          * @return {@code this}, for method call chaining.
@@ -1160,9 +1161,12 @@ public class SampleDimension implements Serializable {
          * @see TransferFunction
          */
         public Builder addQuantitative(CharSequence name, NumberRange<?> samples, MathTransform1D toUnits, Unit<?> units) {
-            ArgumentChecks.ensureNonNull("toUnits", toUnits);
+            ArgumentChecks.ensureNonNull("samples", samples);
             if (name == null) {
                 name = DATA;
+            }
+            if (toUnits == null) {
+                toUnits = Category.identity();
             }
             add(new Category(name, samples, toUnits, units, toNaN));
             return this;

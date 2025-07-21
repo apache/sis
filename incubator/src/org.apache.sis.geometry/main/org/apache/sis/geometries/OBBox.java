@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
@@ -122,7 +123,7 @@ public final class OBBox extends AbstractGeometry {
         final Tuple<?> nxAxis = xAxis.copy().scale(-1);
         final Tuple<?> nyAxis = yAxis.copy().scale(-1);
         final Tuple<?> nzAxis = zAxis.copy().scale(-1);
-        final GeneralEnvelope env = new GeneralEnvelope(center,center);
+        final BBox env = new BBox(center,center);
         final Vector<?> corner = center.copy();
         env.add(corner.set(center).add( xAxis).add( yAxis).add( zAxis));
         env.add(corner.set(center).add( xAxis).add( yAxis).add(nzAxis));

@@ -96,7 +96,7 @@ public final class AttributeTypeBuilderTest extends TestCase {
         assertEquals(10,                    attribute.getMinimumOccurs());
         assertEquals(60,                    attribute.getMaximumOccurs());
         assertTrue  (AttributeConvention.characterizedByMaximalLength(attribute));
-        assertEquals(Integer.valueOf(80), AttributeConvention.getMaximalLengthCharacteristic(attribute.newInstance()));
+        assertEquals(Integer.valueOf(80), AttributeConvention.getMaximalLengthCharacteristic(null, attribute));
     }
 
     /**

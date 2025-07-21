@@ -16,8 +16,8 @@
  */
 package org.apache.sis.geometries.operation.spatialanalysis2d;
 
-import org.apache.sis.geometries.MeshPrimitive;
-import org.apache.sis.geometries.MeshPrimitiveVisitor;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToArray;
@@ -83,25 +83,25 @@ public final class ISOBand {
                 Tuple t1 = points.getPosition(1);
                 Tuple t2 = points.getPosition(2);
                 //sort points by Z, the point ordering to not matter for the algo
-                if (t0.getCoordinate(Z) < t1.getCoordinate(Z)) {
+                if (t0.get(Z) < t1.get(Z)) {
                     Tuple t = t0;
                     t0 = t1;
                     t1 = t;
                 }
-                if (t1.getCoordinate(Z) < t2.getCoordinate(Z)) {
+                if (t1.get(Z) < t2.get(Z)) {
                     Tuple t = t1;
                     t1 = t2;
                     t2 = t;
-                    if (t0.getCoordinate(Z) < t1.getCoordinate(Z)) {
+                    if (t0.get(Z) < t1.get(Z)) {
                         t = t0;
                         t0 = t1;
                         t1 = t;
                     }
                 }
 
-                final double[] p0 = t0.getCoordinates();
-                final double[] p1 = t1.getCoordinates();
-                final double[] p2 = t2.getCoordinates();
+                final double[] p0 = t0.toArrayDouble();
+                final double[] p1 = t1.toArrayDouble();
+                final double[] p2 = t2.toArrayDouble();
 
                 for (NumberRange range : levels.keySet()) {
                     final double min = range.getMinDouble(true);

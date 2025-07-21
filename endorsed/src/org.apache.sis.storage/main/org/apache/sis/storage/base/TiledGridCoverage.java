@@ -105,12 +105,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
     protected final GridExtent readExtent;
 
     /**
-     * Whether to force the {@link #readExtent} tile intersection to the {@link #virtualTileSize}.
-     * This is relevant only for the last column of tile matrix, because those tiles may be truncated
-     * if the image size is not a multiple of tile size. It is usually necessary to read those tiles
-     * fully anyway because otherwise, the pixels read from the storage would not be aligned with the
-     * pixels stored in the {@link Raster}. However, there is a few exceptions where the read extent
-     * should not be forced to the tile size:
+     * Whether to enforce {@link #virtualTileSize} even if the intersection with {@link #readExtent} is smaller.
+     * Forcing whole tile is relevant mostly (but not only) for the last column of tile matrix, because otherwise
+     * the {@linkplain java.awt.image.ComponentSampleModel#getScanlineStride() scanline stride} would be wrong.
+     * However, there is a few exceptions where the read extent should not be forced to the tile size:
      *
      * <ul>
      *   <li>If the image is untiled, then the {@link org.apache.sis.storage.base.TiledGridResource.Subset}
@@ -120,21 +118,38 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * </ul>
      *
      * This a list of Boolean flags packed as a bitmask with the flag for the first dimension in the lowest bit.
-     * The default implementation always sets the flag of the last dimension to {@code false} (0), then sets the
-     * flags of other dimensions to {@code true} (1) if we are not in the case of a big untiled image.
+     * The default implementation sets the bit to 1 in all dimensions where the read operation should be done in
+     * a tiled fashion (i.e., not reading a sub-region of an effectively untiled image).
+     *
+     * <h4>Example</h4>
+     * The GeoTIFF reader always sets the flag of the last dimension (the rows) to {@code false} (0),
+     * then sets the flags of other dimensions to {@code true} (1) if we are not in the case of a big
+     * untiled image.
      */
     private final long forceWholeTiles;
 
     /**
-     * Size of all tiles in the domain of this {@code TiledGridCoverage}, without clipping and subsampling.
+     * Size of all tiles in the domain of this {@code TiledGridCoverage}, without sub-sampling.
      * All coverages created from the same {@link TiledGridResource} shall have the same tile size values.
      * The length of this array is the number of dimensions in the source {@link GridExtent}.
      * This is often {@value #BIDIMENSIONAL} but can also be more.
      *
-     * <p>The tile size may be virtual if the {@link TiledGridResource} subclass decided to coalesce
-     * many real tiles in bigger virtual tiles. This is sometime useful when a subsampling is applied,
-     * for avoiding that the subsampled tiles become too small.
-     * This strategy may be convenient when coalescing is easy.</p>
+     * <h4>What is a "virtual" size</h4>
+     * The tile size stored in this field is usually the size of tiles used by the binary encoding of the file
+     * which is read by {@link TiledGridResource}. However, this tile size may differ in two circumstances.
+     * In such case, this tile size is said "virtual".
+     *
+     * <h5>Tiles coalescence</h5>
+     * The first circumstance is when the {@link TiledGridResource} subclass
+     * decided to coalesce many tiles from the file in bigger tiles in memory.
+     * This is sometime useful when a sub-sampling is applied,
+     * for avoiding that the sub-sampled tiles become too small.
+     * This strategy may be convenient when coalescing tiles is easy for the subclass.
+     *
+     * <h5>Untiled image</h5>
+     * The second circumstance is when the coverage is effectively untiled.
+     * It may be because the binary file is untiled, or because the requested region is fully inside a single tile.
+     * In such case, the virtual tile size is the size of the requested region.
      *
      * @see #getTileSize(int)
      */
@@ -233,7 +248,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
     protected final Number[] fillValues;
 
     /**
-     * Whether the reading of tiles is deferred to {@link RenderedImage#getTile(int, int)} time.
+     * Whether the reading of tiles is deferred until {@link RenderedImage#getTile(int, int)} is invoked.
+     * This is true if the user explicitly {@linkplain TiledGridResource#setLoadingStrategy requested such
+     * deferred loading strategy} and the resource considers that it is worth to do so.
      */
     private final boolean deferredTileReading;
 
@@ -248,7 +265,6 @@ public abstract class TiledGridCoverage extends GridCoverage {
     protected TiledGridCoverage(final TiledGridResource.Subset subset) {
         super(subset.domain, subset.ranges);
         final GridExtent extent = subset.domain.getExtent();
-        final int dimension = subset.virtualTileSize.length;
         deferredTileReading = subset.deferredTileReading();     // May be shorter than other arrays or the grid geometry.
         readExtent          = subset.readExtent;
         subsampling         = subset.subsampling;
@@ -256,6 +272,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         includedBands       = subset.includedBands;
         rasters             = subset.cache;
         virtualTileSize     = subset.virtualTileSize;
+        final int dimension = virtualTileSize.length;
         tmcOfFirstTile      = new long[dimension];
         tileStrides         = new int [dimension];
         final int[] subSize = new int [dimension];
@@ -307,9 +324,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns the size of all tiles in the domain of this {@code TiledGridCoverage}, without clipping and subsampling.
-     * It may be a virtual tile size if the {@link TiledGridResource} subclass decided to coalesce many real tiles into
-     * fewer bigger virtual tiles.
+     * Returns the size of all tiles in the domain of this {@code TiledGridCoverage}, without sub-sampling.
+     * This usually the same size as the tiles in the storage which is read by {@link TiledGridResource},
+     * but not necessarily. It may be larger if the {@link TiledGridResource} subclass decided to coalesce
+     * many real tiles into larger virtual tiles, or it may be smaller when reading a sub-region of an
+     * effectively untiled coverage.
      *
      * @param  dimension  dimension for which to get tile size.
      * @return tile size in the given dimension, without clipping and subsampling.

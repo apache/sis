@@ -75,7 +75,7 @@ import org.apache.sis.util.resources.Messages;
  * subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see EPSGDataAccess
  * @see SQLTranslator
@@ -161,8 +161,12 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     private final InstallationScriptProvider scriptProvider;
 
     /**
-     * The translator from the SQL statements using MS-Access dialect to SQL statements using the dialect
-     * of the actual database. If null, will be created when first needed.
+     * The translator from the <abbr>SQL</abbr> statements hard-coded in {@link EPSGDataAccess}
+     * to <abbr>SQL</abbr> statements compatible with the actual <abbr>EPSG</abbr> database.
+     * This translator may also change the schema and table names used in the queries in the
+     * actual database uses different names.
+     *
+     * <p>If {@code null}, a default translator will be created when first needed.</p>
      */
     private volatile SQLTranslator translator;
 
@@ -507,10 +511,10 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * by {@code new MyDataAccessSubclass(…)}.
      *
      * @param  connection  a connection to the EPSG database.
-     * @param  translator  the translator from the SQL statements using MS-Access dialect to SQL statements
-     *                     using the dialect of the actual database.
+     * @param  translator  translator from the <abbr>SQL</abbr> statements hard-coded in {@link EPSGDataAccess}
+     *                     to <abbr>SQL</abbr> statements compatible with the actual <abbr>EPSG</abbr> database.
      * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
-     * @throws SQLException if a problem with the database has been detected.
+     * @throws SQLException if an error occurred with the database connection.
      *
      * @see EPSGDataAccess#EPSGDataAccess(EPSGFactory, Connection, SQLTranslator)
      */
@@ -520,9 +524,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
 
     /**
      * Returns {@code true} if the given Data Access Object (DAO) can be closed. This method is invoked automatically
-     * after the {@linkplain #getTimeout timeout} if the given DAO has been idle during all that time. The default
-     * implementation always returns {@code false} if a set returned by {@link EPSGDataAccess#getAuthorityCodes(Class)}
-     * is still in use.
+     * after the {@linkplain #getTimeout timeout} if the given <abbr>DAO</abbr> has been idle during all that time.
+     * Returns {@code false} if a set returned by {@link EPSGDataAccess#getAuthorityCodes(Class)} is still in use.
      *
      * @param  factory  the Data Access Object which is about to be closed.
      * @return {@code true} if the given Data Access Object can be closed.
@@ -536,8 +539,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * Returns whether the given object can be cached.
      * This method is invoked after {@link EPSGDataAccess} created a new object not previously in the cache.
      *
-     * @return whether the given object should be cached.
-     *
+     * @hidden
      * @since 0.8
      */
     @Override

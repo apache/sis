@@ -43,22 +43,26 @@ import org.apache.sis.metadata.sql.TestDatabase;
 
 /**
  * Rewrites the {@code INSERT TO ...} statements in a SQL script in a more compact form.
- * This class is used only for updating the SQL scripts used by Apache SIS for the EPSG
- * dataset when a newer release of the EPSG dataset is available.
- * The steps to follow are documented in the {@code package.html} file.
+ * This class is used only for updating the <abbr>SQL</abbr> scripts used by Apache SIS
+ * for the <abbr>EPSG</abbr> dataset when a newer release of that dataset is available.
+ * The steps to follow are documented in the {@code README.md} file.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
 public final class DataScriptFormatter extends ScriptRunner {
     /**
-     * Compacts the {@code Data.sql} file provided by EPSG. This method expects two arguments.
-     * The first argument is the file of the SQL script to read, which must exist.
-     * The second argument is the file where to write the compacted SQL script,
-     * which will be overwritten without warning if it exists.
+     * Compacts the {@code *Data_Script.sql} file provided by <abbr>EPSG</abbr>.
+     * This method expects two arguments:
+     *
+     * <ol>
+     *   <li>The file of the <abbr>SQL</abbr> script to convert, which must exist.</li>
+     *   <li>The file where to write the compacted script, which will be overwritten without warning if it exists.</li>
+     * </ol>
+     *
      * The values of those arguments are typically:
      *
      * <ol>
-     *   <li>{@code $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql}</li>
+     *   <li>{@code $EPSG_SCRIPTS/PostgreSQL_Data_Script.sql}</li>
      *   <li>{@code sis-epsg/src/main/resources/org/apache/sis/referencing/factory/sql/epsg/Data.sql}</li>
      * </ol>
      *
@@ -74,8 +78,8 @@ public final class DataScriptFormatter extends ScriptRunner {
         try (TestDatabase db = TestDatabase.create("dummy");
              Connection c = db.source.getConnection())
         {
-            final DataScriptFormatter f = new DataScriptFormatter(c);
-            f.run(Path.of(arguments[0]), Path.of(arguments[1]));
+            final var formatter = new DataScriptFormatter(c);
+            formatter.run(Path.of(arguments[0]), Path.of(arguments[1]));
         }
     }
 
@@ -103,7 +107,7 @@ public final class DataScriptFormatter extends ScriptRunner {
     /**
      * Indices (in reversal order) of columns to change from type SMALLINT to type BOOLEAN.
      * Index 0 is the last column, index 1 is the column before the last, <i>etc</i>.
-     * We use the reverse order because most boolean columns in the EPSG dataset are last.
+     * We use the reverse order because most Boolean columns in the EPSG dataset are last.
      */
     private int[] booleanColumnIndices;
 
@@ -140,7 +144,7 @@ public final class DataScriptFormatter extends ScriptRunner {
         super(c, Integer.MAX_VALUE);
         final int[]    lastColumn  = new int[] {0  };
         final int[] twoLastColumns = new int[] {0,1};
-        final Map<String,int[]> m = new HashMap<>();
+        final var m = new HashMap<String,int[]>();
         m.put("epsg_area",                         lastColumn );
         m.put("epsg_coordinateaxisname",           lastColumn );
         m.put("epsg_coordinatereferencesystem", twoLastColumns);
@@ -373,7 +377,7 @@ public final class DataScriptFormatter extends ScriptRunner {
     private static String editColumns(final int[] indices, final String line, final UnaryOperator<String> converter)
             throws SQLException
     {
-        final StringBuilder buffer = new StringBuilder(line);
+        final var buffer = new StringBuilder(line);
         int end = CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length());
         if (buffer.codePointBefore(end) == ')') end--;
         for (int n=0, columnIndex=0; n < indices.length; columnIndex++) {

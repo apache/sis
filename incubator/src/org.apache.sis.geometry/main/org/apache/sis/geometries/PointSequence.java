@@ -68,18 +68,7 @@ public interface PointSequence {
      * @return Envelope in geometry coordinate reference system.
      */
     default Envelope getEnvelope() {
-        final int size = size();
-        if (size == 0) {
-            return null;
-        }
-
-        final Tuple start = getPosition(0);
-        final GeneralEnvelope env = new GeneralEnvelope(start, start);
-        for (int i = 1; i < size; i++) {
-            env.add(getPosition(i));
-        }
-        env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
-        return env;
+        return getAttributeRange(AttributesType.ATT_POSITION);
     }
 
     default boolean isEmpty() {
@@ -141,4 +130,23 @@ public interface PointSequence {
         }
         return ta;
     }
+
+    /**
+     * Get attribute values range
+     *
+     * @return BBox in attribute sample system
+     */
+    default BBox getAttributeRange(String name) {
+        if (isEmpty()) {
+            return null;
+        }
+        final Tuple<?> start = getAttribute(0, name);
+        final BBox env = new BBox(start, start);
+        for (int i = 1, n = size(); i < n; i++) {
+            env.add(getAttribute(i, name));
+        }
+        env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
+        return env;
+    }
+
 }

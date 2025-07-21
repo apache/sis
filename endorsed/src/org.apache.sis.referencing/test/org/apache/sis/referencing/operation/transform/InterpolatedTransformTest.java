@@ -61,7 +61,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      *         with source coordinates in the first array and target coordinates in the second array.
      */
     private double[][] createSinusoidal(final double rotation) throws TransformException {
-        final SinusoidalShiftGrid grid = new SinusoidalShiftGrid(rotation);
+        final var grid = new SinusoidalShiftGrid(rotation);
         transform = new InterpolatedTransform(grid);
         return grid.samplePoints();
     }

@@ -347,6 +347,8 @@ final class ImageFileDirectory extends DataCube {
     /**
      * The minimum or maximum sample value found in the image, with one value per band.
      * May be a vector of length 1 if the same single value applies to all bands.
+     *
+     * @see #getValidValues(int, double)
      */
     private Vector minValues, maxValues;
 
@@ -1157,8 +1159,11 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * Computes the minimal or maximal values of the given vector. Those vectors do not need to have the same length.
+     * Computes the minimal or maximal values of the given vector.
+     * Those vectors do not need to have the same length.
      * One of those two vector will be modified in-place.
+     * This is a paranoiac safety in case a tag for minimal or maximum values appears more than once.
+     * This duplication is not so unlikely since each extremum can be described by two different tags.
      *
      * @param  a    the first vector, or {@code null} if none.
      * @param  b    the new vector to combine with the existing one. Cannot be null.
@@ -1399,8 +1404,8 @@ final class ImageFileDirectory extends DataCube {
             metadata.addNewBand(sampleDimensions.get(band));
             metadata.setBitPerSample(bitsPerSample);
             if (!metadata.hasSampleValueRange()) {
-                if (isMinSpecified) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
-                if (isMaxSpecified) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
+                if (isMinSpecified) metadata.addMinimumSampleValue(extremum(minValues, band).doubleValue());
+                if (isMaxSpecified) metadata.addMaximumSampleValue(extremum(maxValues, band).doubleValue());
             }
         }
         /*
@@ -1512,27 +1517,37 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * Information about which band is subject to modification. This information is given to
-     * {@link CoverageModifier} for allowing users to modify name, metadata or sample dimensions.
+     * Returns the minimum and maximum non-fill values in the specified band.
+     * This is the values explicitly defined in <abbr>TIFF</abbr> tags if present,
+     * otherwise the values derived from the data type if it is an integer type.
+     *
+     * @param  band     the band for which to get the minimum and maximum values.
+     * @param  exclude  the fill value to exclude, or NaN if none.
+     * @return the minimum and maximum values in the specified band.
      */
-    private final class Source extends CoverageModifier.BandSource {
-        /** Creates a new source for the specified band. */
-        Source(final int bandIndex, final DataType dataType) {
-            super(reader.store, index, bandIndex, samplesPerPixel, dataType);
-        }
-
-        /** Computes the range of sample values if requested. */
-        @Override public Optional<NumberRange<?>> getSampleRange() {
-            final Vector minValues = ImageFileDirectory.this.minValues;
-            final Vector maxValues = ImageFileDirectory.this.maxValues;
-            if (minValues != null && maxValues != null) {
-                final int band = getBandIndex();
-                return Optional.of(NumberRange.createBestFit(sampleFormat == FLOAT,
-                        minValues.get(Math.min(band, minValues.size()-1)), true,
-                        maxValues.get(Math.min(band, maxValues.size()-1)), true));
+    private Optional<NumberRange<?>> getValidValues(final int band, final double exclude) {
+        Number min = extremum(minValues, band);
+        if (min != null) {
+            Number max = extremum(maxValues, band);
+            if (max != null) {
+                return Optional.of(NumberRange.createBestFit(
+                        sampleFormat == FLOAT,
+                        min, min.doubleValue() != exclude,      // Always true if `exclude` is NaN.
+                        max, max.doubleValue() != exclude));
             }
-            return Optional.empty();
         }
+        return Optional.empty();
+    }
+
+    /**
+     * Extracts a value from the vector of minimum or maximum values.
+     *
+     * @param  values  the vector of minimum or maximum values.
+     * @param  band    the index of the valud to get.
+     * @return the value for the given band, or {@code null} if none.
+     */
+    private static Number extremum(final Vector values, final int band) {
+        return (values == null) ? null : values.get(Math.min(band, values.size() - 1));
     }
 
     /**
@@ -1575,10 +1590,39 @@ final class ImageFileDirectory extends DataCube {
                     } else {
                         builder.setName(band + 1);
                     }
-                    builder.setBackground(fill);
+                    /*
+                     * If a "no data" value is present, declare both as background value and a qualitative category.
+                     * The latter will cause the image to be converted to floating point during resample operations,
+                     * with "no data" replaced by NaN. For completeness, we need to declare the range of real values.
+                     */
+                    final Optional<NumberRange<?>> sampleRange;
+                    if (fill != null) {
+                        builder.setBackground(fill);
+                        sampleRange = getValidValues(band, fill.doubleValue());
+                        sampleRange.ifPresent((range) -> {
+                            if (!range.containsAny(fill)) {
+                                builder.addQuantitative(null, range, null, null);
+                                builder.addQualitative(null, fill, fill);
+                            }
+                        });
+                    } else {
+                        // Do not declare any category. It will be understood as "visualization only".
+                        sampleRange = null;
+                    }
+                    /*
+                     * Give a change to users to replace the above default categories by their own.
+                     * The information provided to the user include the optional range of values,
+                     * computed only when requested if it was not already computed.
+                     */
                     final SampleDimension sd;
                     if (isIndexValid) {
-                        sd = reader.store.customizer.customize(new Source(band, dataType), builder);
+                        var source = new CoverageModifier.BandSource(reader.store, index, band, samplesPerPixel, dataType) {
+                            @Override public Optional<NumberRange<?>> getSampleRange() {
+                                if (sampleRange != null) return sampleRange;
+                                return getValidValues(getBandIndex(), Double.NaN);
+                            }
+                        };
+                        sd = reader.store.customizer.customize(source, builder);
                     } else {
                         sd = builder.build();
                     }
@@ -1638,6 +1682,19 @@ final class ImageFileDirectory extends DataCube {
             }
         }
         return sampleModel;
+    }
+
+    /**
+     * Returns the number of sample values for moving to the next row in a tile of the <abbr>TIFF</abbr> file.
+     * The given {@code pixelStride} argument should be {@code sampleModel.getPixelString()} and the returned
+     * value should be {@code sampleModel.getScanlineStride()}.
+     *
+     * @param  pixelStride  number of sample values for moving to the next pixel.
+     * @return number of sample values for moving to the next row.
+     */
+    @Override
+    final long getScanlineStride(final int pixelStride) {
+        return Math.multiplyFull(pixelStride, tileWidth);
     }
 
     /**
@@ -1868,11 +1925,12 @@ final class ImageFileDirectory extends DataCube {
      * Gets the stream position or the length in bytes of compressed tile arrays in the GeoTIFF file.
      * Values in the returned vector are {@code long} primitive type.
      *
-     * @return stream position (relative to file beginning) and length of compressed tile arrays, in bytes.
+     * @param  length  {@code false} for requesting tile offsets, or {@code true} for tile lengths.
+     * @return stream position (relative to file beginning) or length of compressed tile arrays, in bytes.
      */
     @Override
-    Vector[] getTileArrayInfo() {
-        return new Vector[] {tileOffsets, tileByteCounts};
+    Vector getTileArrayInfo(final boolean length) {
+        return length ? tileByteCounts : tileOffsets;
     }
 
     /**

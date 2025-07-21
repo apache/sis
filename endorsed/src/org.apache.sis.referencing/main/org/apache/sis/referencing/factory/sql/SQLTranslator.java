@@ -17,61 +17,57 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.Function;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.OptionalCandidate;
+import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Constants;
-import static org.apache.sis.util.privy.Strings.isNullOrEmpty;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.referencing.internal.Resources;
 
 
 /**
- * Converts the SQL statements from MS-Access dialect to standard SQL. The {@link #apply(String)} method
- * is invoked when a new {@link java.sql.PreparedStatement} is about to be created from a SQL string.
- * Since the <a href="https://epsg.org/">EPSG dataset</a> is available primarily in MS-Access format,
- * the original SQL statements are formatted using a dialect specific to that particular database software.
- * If the actual EPSG dataset to query is hosted on another database product, then the SQL query needs to be
- * adapted to the target database dialect before to be executed.
- *
- * <h2>Example</h2>
- * SQL statements for an EPSG dataset hosted on the <i>PostgreSQL</i> database need to have their brackets
- * ({@code '['} and {@code ']'}) replaced by the quote character ({@code '"'}) before to be sent to the database
- * driver. Furthermore, table names may be different. So the following MS-Access query:
- *
- * <ul>
- *   <li>{@code SELECT * FROM [Coordinate Reference System]}</li>
- * </ul>
- *
- * needs to be converted to one of the following possibilities for a PostgreSQL database
- * (the reason for those multiple choices will be discussed later):
+ * Adapter of <abbr>SQL</abbr> statements for variations in syntax and table names.
+ * The {@link #apply(String)} method is invoked when a new {@link PreparedStatement}
+ * is about to be created from a <abbr>SQL</abbr> string.
+ * This class allows {@link EPSGFactory} to accept some variants of table names.
+ * For example, the following <abbr>SQL</abbr> query:
  *
  * <ul>
  *   <li>{@code SELECT * FROM "Coordinate Reference System"}</li>
- *   <li>{@code SELECT * FROM epsg_coordinatereferencesystem} (in the default schema)</li>
- *   <li>{@code SELECT * FROM epsg.coordinatereferencesystem} (in the {@code "epsg"} schema)</li>
- *   <li>{@code SELECT * FROM epsg."Coordinate Reference System"}</li>
  * </ul>
  *
- * <h2>ANSI SQL</h2>
- * In addition to the file in MS-Access format, EPSG also provides the dataset as SQL files for PostgreSQL,
- * MySQL and Oracle databases. Those SQL files are used as both <i>Data Description Language</i> (DDL)
- * and <i>Data Manipulation Language</i> (DML).
- * But the table names and some column names in those scripts differ from the ones used in the MS-Access database.
- * The following table summarizes the name changes:
+ * may be converted to one of the following possibilities:
+ *
+ * <ul>
+ *   <li>{@code SELECT * FROM "Coordinate Reference System"} (no change)</li>
+ *   <li>{@code SELECT * FROM coordinatereferencesystem}</li>
+ *   <li>{@code SELECT * FROM epsg_coordinatereferencesystem}</li>
+ * </ul>
+ *
+ * The mixed-case variant is used in the dataset distributed by <abbr>EPSG</abbr> in the MS-Access format,
+ * while the lower-case variant is used in the <abbr>SQL</abbr> scripts distributed by <abbr>EPSG</abbr>.
+ * By default, this class auto-detects which database schema contains the <abbr>EPSG</abbr> tables
+ * and whether the database uses the lower-case or mixed-case variant of table names.
+ * It is legal to use the mixed-case variant in a PostgreSQL database (for example)
+ * even if <abbr>EPSG</abbr> distributes the PosthreSQL scripts in lower-case.
+ * The following table gives the mapping between the two variants accepted by {@link EPSGFactory}:
  *
  * <table class="sis">
  *   <caption>Table and column names</caption>
- *   <tr><th>Element</th><th>Name in MS-Access database</th>                    <th>Name in SQL scripts</th></tr>
+ *   <tr><th>Element</th><th>Name in MS-Access database</th>                    <th>Name in <abbr>SQL</abbr> scripts</th></tr>
  *   <tr><td>Table</td>  <td>{@code Alias}</td>                                 <td>{@code epsg_alias}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Area}</td>                                  <td>{@code epsg_area}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code Change}</td>                                <td>{@code epsg_change}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code ConventionalRS}</td>                        <td>{@code epsg_conventionalrs}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Coordinate Axis}</td>                       <td>{@code epsg_coordinateaxis}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Coordinate Axis Name}</td>                  <td>{@code epsg_coordinateaxisname}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Coordinate_Operation}</td>                  <td>{@code epsg_coordoperation}</td></tr>
@@ -83,17 +79,22 @@ import org.apache.sis.referencing.internal.Resources;
  *   <tr><td>Table</td>  <td>{@code Coordinate Reference System}</td>           <td>{@code epsg_coordinatereferencesystem}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Coordinate System}</td>                     <td>{@code epsg_coordinatesystem}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Datum}</td>                                 <td>{@code epsg_datum}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code DatumEnsemble}</td>                         <td>{@code epsg_datumensemble}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code DatumEnsembleMember}</td>                   <td>{@code epsg_datumensemblemember}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code DatumRealizationMethod}</td>                <td>{@code epsg_datumrealizationmethod}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code DefiningOperation}</td>                     <td>{@code epsg_definingoperation}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code Deprecation}</td>                           <td>{@code epsg_deprecation}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Ellipsoid}</td>                             <td>{@code epsg_ellipsoid}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code Extent}</td>                                <td>{@code epsg_extent}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Naming System}</td>                         <td>{@code epsg_namingsystem}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Prime Meridian}</td>                        <td>{@code epsg_primemeridian}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code Scope}</td>                                 <td>{@code epsg_scope}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Supersession}</td>                          <td>{@code epsg_supersession}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Unit of Measure}</td>                       <td>{@code epsg_unitofmeasure}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code Version History}</td>                       <td>{@code epsg_versionhistory}</td></tr>
+ *   <tr><td>Table</td>  <td>{@code Usage}</td>                                 <td>{@code epsg_usage}</td></tr>
  *   <tr><td>Column</td> <td>{@code ORDER}</td>                                 <td>{@code coord_axis_order}</td></tr>
  * </table>
- *
- * By default this class auto-detects the schema that contains the EPSG tables and whether the table names are
- * the ones used by EPSG in the MS-Access version or the PostgreSQL, MySQL or Oracle version of the database.
- * Consequently, it is legal to use the MS-Access table names, which are more readable, in a PostgreSQL database.
  *
  * <h2>Thread safety</h2>
  * All {@code SQLTranslator} instances given to the {@link EPSGFactory} constructor
@@ -103,32 +104,34 @@ import org.apache.sis.referencing.internal.Resources;
  * @author  Martin Desruisseaux (IRD)
  * @author  Didier Richard (IGN)
  * @author  John Grange
- * @version 1.0
+ * @version 1.5
  * @since   0.7
  */
 public class SQLTranslator implements Function<String,String> {
     /**
-     * Table names used as "sentinel value" for detecting the presence of an EPSG database.
-     * This array lists different possible names for the same table. The first entry must be
-     * the MS-Access name. Other names may be in any order. They will be tried in reverse order.
+     * The prefix in table names. The SQL scripts are provided by EPSG with this prefix in front of all table names.
+     * SIS rather uses a modified version of those SQL scripts which creates the tables in an "EPSG" database schema.
+     * But we still need to check for existence of this prefix in case someone used the original SQL scripts.
+     *
+     * @see #usePrefixedTableNames
+     */
+    static final String TABLE_PREFIX = "epsg_";
+
+    /**
+     * Table names used as "sentinel value" for detecting the presence of an <abbr>EPSG</abbr> database.
+     * This array lists different names that may be used for the same table. The names will be tested in
+     * declaration order.
      */
     private static final String[] SENTINEL = {
-        "Coordinate Reference System",
-        "coordinatereferencesystem",
-        "epsg_coordinatereferencesystem"
+        TABLE_PREFIX + "coordinatereferencesystem",
+        "Coordinate Reference System",      // The index of this entry must be declared in `MIXED_CASE`.
+        "coordinatereferencesystem"
     };
 
     /**
      * Index of the {@link #SENTINEL} element which is in mixed case. No other element should be in mixed case.
      */
-    private static final int MIXED_CASE = 0;
-
-    /**
-     * The prefix in table names. The SQL scripts are provided by EPSG with this prefix in front of all table names.
-     * SIS rather uses a modified version of those SQL scripts which creates the tables in an "EPSG" database schema.
-     * But we still need to check for existence of this prefix in case someone used the original SQL scripts.
-     */
-    static final String TABLE_PREFIX = "epsg_";
+    private static final int MIXED_CASE = 1;
 
     /**
      * The columns that may be of {@code BOOLEAN} type instead of {@code SMALLINT}.
@@ -140,21 +143,18 @@ public class SQLTranslator implements Function<String,String> {
     };
 
     /**
-     * The column where {@code VARCHAR} value may need to be casted to an enumeration.
-     * With PostgreSQL, only columns in the {@code WHERE} part of the SQL statement needs
-     * an explicit cast; the columns in the {@code SELECT} part are implicitly casted.
+     * The column where {@code VARCHAR} value may need to be cast to an enumeration.
+     * With PostgreSQL, only columns in the {@code WHERE} part of the <abbr>SQL</abbr> statement
+     * needs an explicit cast, as the columns in the {@code SELECT} part are implicitly cast.
      */
     private static final String ENUMERATION_COLUMN = "OBJECT_TABLE_NAME";           // In "Alias" table.
 
     /**
      * The name of the catalog that contains the EPSG tables, or {@code null} or an empty string.
      * <ul>
-     *   <li>The {@code ""} value retrieves the EPSG schema without a catalog.</li>
+     *   <li>The {@code ""} value retrieves the <abbr>EPSG</abbr> schema without a catalog.</li>
      *   <li>The {@code null} value means that the catalog name should not be used to narrow the search.</li>
      * </ul>
-     *
-     * <p><b>Consider this field as final.</b> This field is non-final only for construction convenience,
-     * or for updating after the {@link EPSGInstaller} class created the database.</p>
      *
      * @see #getCatalog()
      */
@@ -164,50 +164,61 @@ public class SQLTranslator implements Function<String,String> {
      * The name of the schema that contains the EPSG tables, or {@code null} or an empty string.
      * <ul>
      *   <li>The {@code ""} value retrieves the EPSG tables without a schema.
-     *       In such case, table names are prefixed by {@value #TABLE_PREFIX}.</li>
+     *       In such case, table names are typically prefixed by {@value #TABLE_PREFIX}.</li>
      *   <li>The {@code null} value means that the schema name should not be used to narrow the search.
-     *       In such case, {@code SQLTranslator} will tries to automatically detect the schema.</li>
+     *       In such case, {@code SQLTranslator} will try to automatically detect the schema.</li>
      * </ul>
      *
-     * <b>Consider this field as final.</b> This field is non-final only for construction convenience,
-     * or for updating after the {@link EPSGInstaller} class created the database.
+     * Note that the <abbr>SQL</abbr> scripts distributed by <abbr>EPSG</abbr> do not use schema.
+     * Instead, <abbr>EPSG</abbr> puts an {@value #TABLE_PREFIX} prefix in front of every table names.
+     * The {@link #usePrefixedTableNames} flag tells whether it is the case for the current database.
+     * The two approaches (schema or prefix) are redundant, but it is okay to use both of them anyway.
      *
      * @see #getSchema()
+     * @see #usePrefixedTableNames
      */
     private String schema;
 
     /**
-     * Whether the table names are prefixed by {@value #TABLE_PREFIX}. When installed by Apache SIS,
-     * the table names are not prefixed if the tables are stored in a schema. However, the dataset may
-     * have been installed manually by users following different rules.
+     * Whether the table names are prefixed by {@value #TABLE_PREFIX}. The <abbr>EPSG</abbr> geodetic dataset
+     * in the {@code org.apache.sis.referencing.epsg} module replaces that prefix by the {@code "epsg"} schema.
+     * However, if the dataset has been installed manually by the user, then the table name prefix is present.
+     *
+     * @see #TABLE_PREFIX
+     * @see #schema
      */
-    private boolean isPrefixed;
+    private boolean usePrefixedTableNames;
 
     /**
-     * Mapping from words used in the MS-Access database to words used in the ANSI versions of EPSG databases.
-     * A word may be a table or a column name, or a part of it. A table name may consist of many words separated
-     * by spaces. This map does not list all tables used in EPSG schema, but only the ones that cannot be mapped
+     * {@code true} if this class uses mixed-case convention for table names.
+     * In such case, the table names will need to be quoted using the {@link #quote} character.
+     */
+    private boolean useMixedCaseTableNames;
+
+    /**
+     * Mapping from mixed-case "word" used by {@link EPSGDataAccess} to the words actually used by the database.
+     * A word may be a table name or a part of it. A table name may consist of many words separated by spaces.
+     * This map does not list all tables used in <abbr>EPSG</abbr> schema, but only the ones that cannot be mapped
      * by more generic code (e.g. by replacing spaces by '_').
      *
-     * <p>The keys are the names in the MS-Access database, and the values are the names in the SQL scripts.
-     * By convention, all column names in keys are in upper-case while table names are in mixed-case characters.</p>
+     * <p>The keys are names that are hard-coded in the <abbr>SQL</abbr> statements of {@link EPSGDataAccess} class,
+     * and values are the names used in the <abbr>EPSG</abbr> database on which {@link EPSGDataAccess} is connected.
+     * By convention, all column names are in upper-case while table names are in mixed-case characters.</p>
      */
-    private final Map<String,String> accessToAnsi;
+    private Map<String,String> tableRenaming;
 
     /**
-     * {@code true} if this class needs to quote table names. This quoting should be done only if the database
-     * uses the MS-Access table names, even if we are targeting a PostgreSQL, MySQL or Oracle database.
-     *
-     * <p><b>Consider this field as final.</b> This field is non-final only for construction convenience,
-     * or for updating after the {@link EPSGInstaller} class created the database.</p>
+     * Mapping from column names used by {@link EPSGDataAccess} to the names actually used by the database.
+     * The {@code COORD_AXIS_ORDER} column may be {@code ORDER} in the MS-Access database.
+     * This map is rarely non-empty.
      */
-    private boolean quoteTableNames;
+    private Map<String,String> columnRenaming;
 
     /**
      * The characters used for quoting identifiers, or a whitespace if none.
      * This information is provided by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
-    private final String quote;
+    private final String identifierQuote;
 
     /**
      * Non-null if the {@value #ENUMERATION_COLUMN} column in {@code "Alias"} table uses enumeration instead
@@ -233,9 +244,15 @@ public class SQLTranslator implements Function<String,String> {
     private boolean isTableFound;
 
     /**
-     * Creates a new SQL translator for the database described by the given metadata.
+     * Whether the <abbr>SQL</abbr> queries hard-coded in {@link EPSGDataAccess} can be used verbatim
+     * with the actual database. This is {@code true} if this translator applies no change at all.
+     */
+    private boolean sameQueries;
+
+    /**
+     * Creates a new <abbr>SQL</abbr> translator for the database described by the given metadata.
      * This constructor detects automatically the dialect: the characters to use for quoting identifiers,
-     * and whether the table names are the ones used in the MS-Access database or in the SQL scripts.
+     * and whether the <abbr>EPSG</abbr> table names uses the mixed-case or lower-case convention.
      *
      * <p>If the given catalog or schema name is non-null, then the {@linkplain DatabaseMetaData#getTables
      * search for EPSG tables} will be restricted to the catalog or schema of that name.
@@ -248,8 +265,7 @@ public class SQLTranslator implements Function<String,String> {
      * @throws SQLException if an error occurred while querying the database metadata.
      */
     public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
-        quote = md.getIdentifierQuoteString().trim();
-        accessToAnsi = new HashMap<>(4);
+        identifierQuote = md.getIdentifierQuoteString().trim();
         this.catalog = catalog;
         this.schema  = schema;
         setup(md);
@@ -259,29 +275,30 @@ public class SQLTranslator implements Function<String,String> {
      * Sets the value of all non-final fields. This method performs two steps:
      *
      * <ol class="verbose">
-     *   <li>Finds the schema that seems to contain the EPSG tables. If there is more than one schema containing the
+     *   <li>Find the schema that seems to contain the EPSG tables. If there is more than one schema containing the
      *       tables, gives precedence to the schema named "EPSG" if one is found. If there is no schema named "EPSG",
-     *       takes an arbitrary schema. It may be the empty string if the tables are not contained in a schema.</li>
+     *       take an arbitrary schema. It may be the empty string if the tables are not contained in a schema.</li>
      *
-     *   <li>Fills the {@link #accessToAnsi} map. That map translates the table and column names used in the SQL
-     *       statements into the names used by the database. Two conventions are understood: the names used in
-     *       the MS-Access database or the names used in the SQL scripts. Both of them are distributed by EPSG.</li>
+     *   <li>Fill the {@link #tableRenaming} and {@link #columnRenaming} maps. These maps translate table
+     *       and column names used in the <abbr>SQL</abbr> statements into the names used by the database.
+     *       Two conventions are understood: the names used in the MS-Access database or the names used
+     *       in the <abbr>SQL</abbr> scripts. Both of them are distributed by <abbr>EPSG</abbr>.</li>
      * </ol>
      */
     final void setup(final DatabaseMetaData md) throws SQLException {
         final boolean toUpperCase = md.storesUpperCaseIdentifiers();
         final String escape = md.getSearchStringEscape();
         String schemaPattern = SQLUtilities.escape(schema, escape);
-        for (int i = SENTINEL.length; --i >= 0;) {
+        for (int i=0; i<SENTINEL.length; i++) {
             String table = SENTINEL[i];
             if (toUpperCase && i != MIXED_CASE) {
                 table = table.toUpperCase(Locale.US);
             }
             try (ResultSet result = md.getTables(catalog, schemaPattern, table, null)) {
                 if (result.next()) {
-                    isTableFound    = true;
-                    isPrefixed      = table.startsWith(TABLE_PREFIX);
-                    quoteTableNames = (i == MIXED_CASE);
+                    isTableFound = true;
+                    usePrefixedTableNames  = table.startsWith(TABLE_PREFIX);
+                    useMixedCaseTableNames = (i == MIXED_CASE);
                     do {
                         catalog = result.getString(Reflection.TABLE_CAT);
                         schema  = result.getString(Reflection.TABLE_SCHEM);
@@ -292,27 +309,28 @@ public class SQLTranslator implements Function<String,String> {
                 }
             }
         }
-        /*
-         * At this point the catalog and schema have been found or confirmed, or are still null
-         * if we did not found them. Now fill the 'accessToAnsi' map.
-         */
-        boolean translateColumns = true;
-        accessToAnsi.clear();
-        if (quoteTableNames) {
-            /*
-             * MS-Access database uses a column named "ORDER" in the "Coordinate Axis" table.
-             * This column has been renamed "coord_axis_order" in DLL scripts.
-             * We need to check which name our current database uses.
-             */
-            try (ResultSet result = md.getColumns(catalog, schemaPattern, "Coordinate Axis", "ORDER")) {
-                translateColumns = !result.next();
-            }
-        } else {
-            accessToAnsi.put("Coordinate_Operation", "coordoperation");
-            accessToAnsi.put("Parameter", "param");
+        tableRenaming  = Map.of();
+        columnRenaming = Map.of();
+        if (!isTableFound) {
+            return;
         }
-        if (translateColumns) {
-            accessToAnsi.put("ORDER", "coord_axis_order");
+        /*
+         * At this point, the catalog and schema have been found or have been confirmed,
+         * or are still null if we did not found the EPSG table used as a sentinel value.
+         */
+        if (!useMixedCaseTableNames) {
+            tableRenaming = Map.of("Coordinate_Operation", "coordoperation",
+                                   "Parameter",            "param");
+        }
+        /*
+         * MS-Access database uses a column named "ORDER" in the "Coordinate Axis" table.
+         * This column has been renamed "coord_axis_order" in DLL scripts.
+         * We need to check which name our current database uses.
+         */
+        try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTableName("Coordinate Axis"), "ORDER")) {
+            if (result.next()) {
+                columnRenaming = Map.of("COORD_AXIS_ORDER", "ORDER");
+            }
         }
         /*
          * Detect if the database uses boolean types where applicable.
@@ -324,7 +342,7 @@ public class SQLTranslator implements Function<String,String> {
             deprecated  =  deprecated.toLowerCase(Locale.US);
             objectTable = objectTable.toLowerCase(Locale.US);
         }
-        final String tablePattern = isPrefixed ? SQLUtilities.escape(TABLE_PREFIX, escape) + '%' : null;
+        final String tablePattern = usePrefixedTableNames ? SQLUtilities.escape(TABLE_PREFIX, escape) + '%' : null;
         try (ResultSet result = md.getColumns(catalog, schemaPattern, tablePattern, deprecated)) {
             while (result.next()) {
                 if (CharSequences.endsWith(result.getString(Reflection.TABLE_NAME), "Datum", true)) {
@@ -335,8 +353,8 @@ public class SQLTranslator implements Function<String,String> {
             }
         }
         /*
-         * Detect if the table use enumeration (on PostgreSQL database) instead of VARCHAR.
-         * Enumerations appear in various tables, but is used in WHERE clause in the Alias table.
+         * Detect if the tables use enumeration (on PostgreSQL database) instead of VARCHAR.
+         * Enumerations appear in various tables, including in a WHERE clause for the Alias table.
          */
         try (ResultSet result = md.getColumns(catalog, schemaPattern, tablePattern, objectTable)) {
             while (result.next()) {
@@ -349,6 +367,11 @@ public class SQLTranslator implements Function<String,String> {
                 }
             }
         }
+        sameQueries = (tableNameEnum == null)
+                && tableRenaming.isEmpty()
+                && columnRenaming.isEmpty()
+                && "\"".equals(identifierQuote)
+                && !useBoolean;
     }
 
     /**
@@ -359,6 +382,7 @@ public class SQLTranslator implements Function<String,String> {
      *
      * @return the catalog that contains the EPSG schema, or {@code null}.
      */
+    @OptionalCandidate
     public String getCatalog() {
         return catalog;
     }
@@ -371,6 +395,7 @@ public class SQLTranslator implements Function<String,String> {
      *
      * @return the schema that contains the EPSG tables, or {@code null}.
      */
+    @OptionalCandidate
     public String getSchema() {
         return schema;
     }
@@ -409,60 +434,94 @@ public class SQLTranslator implements Function<String,String> {
     }
 
     /**
-     * Adapts the given SQL statement from the original MS-Access dialect to the dialect of the target database.
-     * Table and column names may also be replaced.
+     * Converts a mixed-case table name to the convention used in the database.
+     * The names of the tables for the two conventions are listed in a table in the Javadoc of this class.
+     * The rreturned string does not include the identifier quotes.
      *
-     * @param  sql  the statement in MS-Access dialect.
-     * @return the SQL statement adapted to the dialect of the target database.
+     * @param  name  the mixed-case table name.
+     * @return the name converted to the convention used by the database.
+     * @since 1.5
+     */
+    public final String toActualTableName(String name) {
+        if (useMixedCaseTableNames) {
+            return name;
+        }
+        final var buffer = new StringBuilder(name.length() + 5);
+        toActualTableName(name, buffer);
+        return buffer.toString().toLowerCase(Locale.US);
+    }
+
+    /**
+     * Appends the table name in the given buffer, converted to the convention used in the database.
+     * Identifier quotes are added when mixed-case is used. Otherwise, the identifier may not be in
+     * the right lower/upper case. But when there is no identifier quotes, the database should convert
+     * to* whatever convention it uses.
+     */
+    private void toActualTableName(final String name, final StringBuilder buffer) {
+        if (useMixedCaseTableNames) {
+            buffer.append(identifierQuote).append(name).append(identifierQuote);
+        } else {
+            if (usePrefixedTableNames) {
+                buffer.append(TABLE_PREFIX);
+            }
+            for (final String word : name.split("\\s")) {
+                buffer.append(tableRenaming.getOrDefault(word, word));
+            }
+            // Ignore lower/upper case.
+        }
+    }
+
+    /**
+     * Adapts the given <abbr>SQL</abbr> statement from the mixed-case convention to the convention used by
+     * the target database. The mixed-case convention is used by {@link EPSGDataAccess} hard-coded queries.
+     * This method can replace the schema and table names, and sometime some <abbr>SQL</abbr> keywords,
+     * for complying with the expectation of the target database.
+     *
+     * @param  sql  a <abbr>SQL</abbr> statement with table names in mixed-case convention.
+     * @return the given statement adapted to the expectation of the target database.
      */
     @Override
     public String apply(final String sql) {
-        if (quote.isEmpty() && accessToAnsi.isEmpty() && isNullOrEmpty(schema) && isNullOrEmpty(catalog)) {
-            return sql;
+        if (sameQueries) {
+            return sql;     // Shortcut when there is nothing to change.
         }
-        final StringBuilder ansi = new StringBuilder(sql.length() + 16);
-        int start, end = 0;
-        while ((start = sql.indexOf('[', end)) >= 0) {
-            /*
-             * Append every characters since the end of the last processed table/column name,
-             * or since the beginning of the SQL statement if we are in the first iteration.
-             * Then find the end of the new table/column name to process in this iteration.
-             */
-            ansi.append(sql, end, start);
-            if ((end = sql.indexOf(']', ++start)) < 0) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.MissingCharacterInElement_2, sql.substring(start), ']'));
-            }
-            /*
-             * The name can be a table name or a column name, but only table names will be quoted.
-             * EPSG seems to write all column names in upper-case (MS-Access) or lower-case (ANSI),
-             * so we will let the database driver selects the case of its choice for column names.
-             */
-            final String name = sql.substring(start, end++);
-            if (CharSequences.isUpperCase(name)) {
-                ansi.append(accessToAnsi.getOrDefault(name, name));
-            } else {
-                appendIdentifier(ansi, name);
+        final var buffer = new StringBuilder(sql.length() + 16);
+        int end = 0;
+        if (!(useMixedCaseTableNames && "\"".equals(identifierQuote))) {
+            int start;
+            while ((start = sql.indexOf('"', end)) >= 0) {
+                /*
+                 * Append every characters since the end of the last processed table/column name,
+                 * or since the beginning of the SQL statement if we are in the first iteration.
+                 * Then find the end of the new table/column name to process in this iteration.
+                 */
+                buffer.append(sql, end, start);
+                if ((end = sql.indexOf('"', ++start)) < 0) {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.MissingCharacterInElement_2, sql.substring(start), '"'));
+                }
+                toActualTableName(sql.substring(start, end++), buffer);
             }
         }
-        ansi.append(sql, end, sql.length());
+        buffer.append(sql, end, sql.length());
+        columnRenaming.forEach((toSearch, replaceBy) -> StringBuilders.replace(buffer, toSearch, replaceBy));
         /*
          * If the database use the BOOLEAN type instead of SMALLINT, replaces "deprecated=0' by "deprecated=false".
          */
         if (useBoolean) {
-            int w = ansi.indexOf("WHERE");
+            int w = buffer.indexOf("WHERE");
             if (w >= 0) {
                 w += 5;
                 for (final String field : BOOLEAN_COLUMNS) {
-                    int p = ansi.indexOf(field, w);
+                    int p = buffer.indexOf(field, w);
                     if (p >= 0) {
                         p += field.length();
-                        if (!replaceIfEquals(ansi, p, "=0", "=FALSE") &&
-                            !replaceIfEquals(ansi, p, "<>0", "=TRUE"))
+                        if (!replaceIfEquals(buffer, p, "=0", "=FALSE") &&
+                            !replaceIfEquals(buffer, p, "<>0", "=TRUE"))
                         {
                             // Remove "ABS" in "ABS(DEPRECATED)" or "ABS(CO.DEPRECATED)".
-                            if ((p = ansi.lastIndexOf("(", p)) > w) {
-                                replaceIfEquals(ansi, p-3, "ABS", "");
+                            if ((p = buffer.lastIndexOf("(", p)) > w) {
+                                replaceIfEquals(buffer, p-3, "ABS", "");
                             }
                         }
                     }
@@ -474,49 +533,23 @@ public class SQLTranslator implements Function<String,String> {
          * The enumeration type is typically "EPSG"."Table Name".
          */
         if (tableNameEnum != null) {
-            int w = ansi.lastIndexOf(ENUMERATION_COLUMN + "=?");
+            int w = buffer.lastIndexOf(ENUMERATION_COLUMN + "=?");
             if (w >= 0) {
                 w += ENUMERATION_COLUMN.length() + 1;
-                ansi.replace(w, w+1, "CAST(? AS " + tableNameEnum + ')');
+                buffer.replace(w, w+1, "CAST(? AS " + tableNameEnum + ')');
             }
         }
-        return ansi.toString();
-    }
-
-    /**
-     * Appends the given identifier in the given buffer, between quotes and prefixed with the schema name.
-     * This is used mostly for appending table names, but can also be used for appending enumeration types.
-     */
-    private void appendIdentifier(final StringBuilder buffer, final String identifier) {
-        if (!isNullOrEmpty(catalog)) {
-            buffer.append(quote).append(catalog).append(quote).append('.');
-        }
-        if (!isNullOrEmpty(schema)) {
-            buffer.append(quote).append(schema).append(quote).append('.');
-        }
-        if (quoteTableNames) {
-            buffer.append(quote);
-        }
-        if (isPrefixed) {
-            buffer.append(TABLE_PREFIX);
-        }
-        if (quoteTableNames) {
-            buffer.append(accessToAnsi.getOrDefault(identifier, identifier)).append(quote);
-        } else {
-            for (final String word : identifier.split("\\s")) {
-                buffer.append(accessToAnsi.getOrDefault(word, word));
-            }
-        }
+        return buffer.toString();
     }
 
     /**
      * Replaces the text at the given position in the buffer if it is equal to the {@code expected} text.
      */
-    private static boolean replaceIfEquals(final StringBuilder ansi, final int pos,
+    private static boolean replaceIfEquals(final StringBuilder buffer, final int pos,
             final String expected, final String replacement)
     {
-        if (CharSequences.regionMatches(ansi, pos, expected)) {
-            ansi.replace(pos, pos + expected.length(), replacement);
+        if (CharSequences.regionMatches(buffer, pos, expected)) {
+            buffer.replace(pos, pos + expected.length(), replacement);
             return true;
         }
         return false;

@@ -18,7 +18,6 @@ package org.apache.sis.referencing.privy;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.function.Function;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
@@ -30,10 +29,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.util.Static;
@@ -56,7 +52,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**
@@ -225,91 +220,6 @@ public final class ReferencingUtilities extends Static {
             return datum.getRealizationMethod().map(VerticalDatumTypes::ellipsoidal).orElse(false);
         }
         return false;
-    }
-
-    /**
-     * Returns the ellipsoid used by the given coordinate reference system, or {@code null} if none.
-     * More specifically:
-     *
-     * <ul>
-     *   <li>If the given CRS is an instance of {@link SingleCRS} and its datum is a {@link GeodeticDatum},
-     *       then this method returns the datum ellipsoid.</li>
-     *   <li>Otherwise, if the given CRS is associated to a {@link DatumEnsemble} and all members of the
-     *       ensemble have equal (ignoring metadata) ellipsoid, then returns that ellipsoid.</li>
-     *   <li>Otherwise, if the given CRS is an instance of {@link CompoundCRS}, then this method
-     *       invokes itself recursively for each component until a geodetic reference frame is found.</li>
-     *   <li>Otherwise, this method returns {@code null}.</li>
-     * </ul>
-     *
-     * Note that this method does not check if a compound <abbr>CRS</abbr> contains more than one ellipsoid
-     * (it should never be the case). Note also that this method may return {@code null} even if the CRS is
-     * geodetic.
-     *
-     * @param  crs  the coordinate reference system for which to get the ellipsoid.
-     * @return the ellipsoid, or {@code null} if none.
-     */
-    public static Ellipsoid getEllipsoid(final CoordinateReferenceSystem crs) {
-        return getGeodeticProperty(crs, GeodeticDatum::getEllipsoid);
-    }
-
-    /**
-     * Returns the prime meridian used by the given coordinate reference system, or {@code null} if none.
-     * This method applies the same rules as {@link #getEllipsoid(CoordinateReferenceSystem)}.
-     *
-     * @param  crs  the coordinate reference system for which to get the prime meridian.
-     * @return the prime meridian, or {@code null} if none.
-     */
-    public static PrimeMeridian getPrimeMeridian(final CoordinateReferenceSystem crs) {
-        return getGeodeticProperty(crs, GeodeticDatum::getPrimeMeridian);
-    }
-
-    /**
-     * Implementation of {@code getEllipsoid(CRS)} and {@code getPrimeMeridian(CRS)}.
-     * The difference between this method and {@link org.apache.sis.referencing.datum.PseudoDatum}
-     * is that this method ignore null values and does not throw an exception in case of mismatch.
-     *
-     * @param  <P>     the type of object to get.
-     * @param  crs     the coordinate reference system for which to get the ellipsoid or prime meridian.
-     * @param  getter  the method to invoke on {@link GeodeticDatum} instances.
-     * @return the ellipsoid or prime meridian, or {@code null} if none.
-     */
-    private static <P> P getGeodeticProperty(final CoordinateReferenceSystem crs, final Function<GeodeticDatum, P> getter) {
-single: if (crs instanceof SingleCRS) {
-            final SingleCRS scrs = (SingleCRS) crs;
-            final Datum datum = scrs.getDatum();
-            if (datum instanceof GeodeticDatum) {
-                P property = getter.apply((GeodeticDatum) datum);
-                if (property != null) {
-                    return property;
-                }
-            }
-            final DatumEnsemble<?> ensemble = scrs.getDatumEnsemble();
-            if (ensemble != null) {
-                P common = null;
-                for (Datum member : ensemble.getMembers()) {
-                    if (member instanceof GeodeticDatum) {
-                        final P property = getter.apply((GeodeticDatum) member);
-                        if (property != null) {
-                            if (common == null) {
-                                common = property;
-                            } else if (!Utilities.equalsIgnoreMetadata(property, common)) {
-                                break single;
-                            }
-                        }
-                    }
-                }
-                return common;
-            }
-        }
-        if (crs instanceof CompoundCRS) {
-            for (final CoordinateReferenceSystem c : ((CompoundCRS) crs).getComponents()) {
-                final P property = getGeodeticProperty(c, getter);
-                if (property != null) {
-                    return property;
-                }
-            }
-        }
-        return null;
     }
 
     /**

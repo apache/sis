@@ -702,7 +702,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
 
     /**
      * Tests the same CRS as {@link #testProjectedWithGradUnits()}, but from a WKT 2 definition
-     * (except for inclusion of accented characters).
+     * (except for inclusion of accented letters).
      *
      * @throws ParseException if the parsing failed.
      *

@@ -407,6 +407,7 @@ check:  if (dataType.isInteger()) {
     public final class Subset {
         /**
          * The full size of the coverage in the enclosing {@link TiledGridResource}.
+         * This is taken from {@link #getGridGeometry()} and does not take sub-sampling in account.
          */
         final GridExtent sourceExtent;
 
@@ -463,11 +464,14 @@ check:  if (dataType.isInteger()) {
         final long[] subsamplingOffsets;
 
         /**
-         * Size of tiles (or chunks) in the resource, without clipping and subsampling.
-         * May be a virtual tile size (i.e., tiles larger than the real tiles) if the
-         * resource can easily coalesce many tiles in a single read operation.
+         * Size of tiles (or chunks) in the resource, without sub-sampling.
+         * May be a virtual tile size (i.e., tiles larger than the tiles in the file)
+         * if the resource can easily coalesce many tiles in a single read operation.
+         * Conversely, it may also be smaller than the real tile size if the subset
+         * is effectively untiled (the requested region covers a single tile).
          *
          * @see #getVirtualTileSize(long[])
+         * @see TiledGridCoverage#virtualTileSize
          */
         final long[] virtualTileSize;
 
@@ -584,7 +588,9 @@ check:  if (dataType.isInteger()) {
                 subsamplingOffsets = ArraysExt.resize(target.getSubsamplingOffsets(), dimension);
             }
             /*
-             * Virtual tile size is usually the same as the real tile size.
+             * Virtual tile size is usually the same as the tile size encoded in the binary file.
+             * The virtual size may be larger if the subclass override `getVirtualTileSize(…)`.
+             * The loop below is where the virtual tile size may be made smaller.
              */
             virtualTileSize = getVirtualTileSize(subsampling);
             for (int i=0; i < virtualTileSize.length; i++) {
@@ -638,14 +644,19 @@ check:  if (dataType.isInteger()) {
 
         /**
          * Returns flags telling, for each dimension, whether the read region should be an integer number of tiles.
+         * By default (when {@link #canReadTruncatedTiles(int, boolean)} is not overridden), the flags are set for
+         * all dimensions except the ones where the region to read is smaller than the tile size. The latter case
+         * happens when reading an effectively untiled coverage (when the requested region is inside a single tile).
          *
          * @param  subSize  tile size after subsampling.
          * @return a bitmask with the flag for the first dimension in the lowest bit.
+         *
+         * @see TiledGridCoverage#forceWholeTiles
          */
         final long forceWholeTiles(final int[] subSize) {
             long forceWholeTiles = 0;
             for (int i=0; i<subSize.length; i++) {
-                if (!canReadTruncatedTiles(i, Math.multiplyExact(subsampling[i], subSize[i]) != virtualTileSize[i])) {
+                if (!canReadTruncatedTiles(i, Math.multiplyExact(subsampling[i], subSize[i]) < virtualTileSize[i])) {
                     forceWholeTiles |= Numerics.bitmask(i);
                 }
             }
@@ -672,7 +683,9 @@ check:  if (dataType.isInteger()) {
         }
 
         /**
-         * Whether the reading of tiles is deferred to {@link RenderedImage#getTile(int, int)} time.
+         * Whether the reading of tiles is deferred until {@link RenderedImage#getTile(int, int)} is invoked.
+         * This is true if the user explicitly {@linkplain #setLoadingStrategy requested such deferred loading
+         * strategy} and this method considers that it is worth to do so.
          */
         final boolean deferredTileReading() {
             if (loadingStrategy != RasterLoadingStrategy.AT_GET_TILE_TIME) {

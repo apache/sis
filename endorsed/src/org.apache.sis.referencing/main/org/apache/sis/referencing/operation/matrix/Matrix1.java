@@ -238,6 +238,19 @@ public class Matrix1 extends MatrixSIS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @since 1.5
+     */
+    @Override
+    public double[] multiply(final double[] vector) {
+        ensureLengthMatch(1, vector);
+        return new double[] {
+            m00 * vector[0]
+        };
+    }
+
+    /**
      * Normalizes all columns in-place.
      * For a 1×1 matrix with non-NaN value, this method sets the {@link #m00} value
      * to +1, -1 or 0 with the same sign as the original value.

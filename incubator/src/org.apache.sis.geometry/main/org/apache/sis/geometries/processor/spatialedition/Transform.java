@@ -16,23 +16,23 @@
  */
 package org.apache.sis.geometries.processor.spatialedition;
 
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.ArraySequence;
-import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.DefaultLinearRing;
-import org.apache.sis.geometries.DefaultTriangle;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.operation.GeometryOperations;
-import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
-import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.math.Vectors;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.geometries.math.TupleArray;
+import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometries.operation.GeometryOperations;
+import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.geometries.privy.ArraySequence;
+import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.opengis.referencing.operation.TransformException;
 
@@ -48,6 +48,7 @@ public final class Transform {
 
         final int sourceDimension = reference.getDimension();
         final int targetDimension = operation.crs.getCoordinateSystem().getDimension();
+        final SampleSystem ss = SampleSystem.of(operation.crs);
 
         if (sourceDimension == targetDimension) {
             //use in place transform
@@ -57,6 +58,7 @@ public final class Transform {
             } catch (TransformException ex) {
                 throw new OperationException(ex.getMessage(), ex);
             }
+            positions.setSampleSystem(ss);
             return positions;
         } else {
             final int nb = reference.getLength();
@@ -67,11 +69,11 @@ public final class Transform {
             } catch (TransformException ex) {
                 throw new OperationException(ex.getMessage(), ex);
             }
-            return TupleArrays.of(SampleSystem.of(operation.crs), result);
+            return TupleArrays.of(ss, result);
         }
     }
 
-    public static class MultiPrimitive implements Processor<org.apache.sis.geometries.operation.spatialedition.Transform, org.apache.sis.geometries.MultiMeshPrimitive>{
+    public static class LinearRing implements Processor<org.apache.sis.geometries.operation.spatialedition.Transform, org.apache.sis.geometries.LinearRing> {
 
         @Override
         public Class<org.apache.sis.geometries.operation.spatialedition.Transform> getOperationClass() {
@@ -79,17 +81,73 @@ public final class Transform {
         }
 
         @Override
-        public Class<org.apache.sis.geometries.MultiMeshPrimitive> getGeometryClass() {
-            return org.apache.sis.geometries.MultiMeshPrimitive.class;
+        public Class<org.apache.sis.geometries.LinearRing> getGeometryClass() {
+            return org.apache.sis.geometries.LinearRing.class;
         }
 
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.Transform operation) throws OperationException {
-            final org.apache.sis.geometries.MultiMeshPrimitive<?> mp = (org.apache.sis.geometries.MultiMeshPrimitive) operation.geometry;
-            final org.apache.sis.geometries.MultiMeshPrimitive<?> copy = new org.apache.sis.geometries.MultiMeshPrimitive(operation.crs);
-            final List<org.apache.sis.geometries.MeshPrimitive> primitives = new ArrayList<>();
-            for (org.apache.sis.geometries.MeshPrimitive p : mp.getComponents()) {
-                primitives.add((org.apache.sis.geometries.MeshPrimitive) GeometryOperations.SpatialEdition.transform(p, operation.crs, operation.transform));
+            final org.apache.sis.geometries.LinearRing r = (org.apache.sis.geometries.LinearRing) operation.geometry;
+
+            PointSequence ps = r.getPoints();
+            final TupleArray reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
+            final TupleArray positions = transform(reference, operation);
+            final ArraySequence cp = new ArraySequence(positions);
+            for (String name : ps.getAttributesType().getAttributeNames()) {
+                if (!AttributesType.ATT_POSITION.equals(name)) {
+                    cp.setAttribute(name, ps.getAttributeArray(name).copy());
+                }
+            }
+            operation.result = GeometryFactory.createLinearRing(cp);
+        }
+    }
+
+    public static class Polygon implements Processor<org.apache.sis.geometries.operation.spatialedition.Transform, org.apache.sis.geometries.Polygon> {
+
+        @Override
+        public Class<org.apache.sis.geometries.operation.spatialedition.Transform> getOperationClass() {
+            return org.apache.sis.geometries.operation.spatialedition.Transform.class;
+        }
+
+        @Override
+        public Class<org.apache.sis.geometries.Polygon> getGeometryClass() {
+            return org.apache.sis.geometries.Polygon.class;
+        }
+
+        @Override
+        public void process(org.apache.sis.geometries.operation.spatialedition.Transform operation) throws OperationException {
+            final org.apache.sis.geometries.Polygon p = (org.apache.sis.geometries.Polygon) operation.geometry;
+
+            Curve exterior = (Curve) GeometryOperations.SpatialEdition.transform(p.getExteriorRing(), operation.crs, operation.transform);
+
+            final List<Curve> interiors = new ArrayList<>(p.getInteriorRings());
+            for (int i = 0, n = interiors.size(); i < n; i++) {
+                interiors.set(i, (Curve) GeometryOperations.SpatialEdition.transform(interiors.get(i), operation.crs, operation.transform));
+            }
+
+            operation.result = GeometryFactory.createPolygon((org.apache.sis.geometries.LinearRing) exterior, (List) interiors);
+        }
+    }
+
+    public static class MultiPrimitive implements Processor<org.apache.sis.geometries.operation.spatialedition.Transform, org.apache.sis.geometries.mesh.MultiMeshPrimitive>{
+
+        @Override
+        public Class<org.apache.sis.geometries.operation.spatialedition.Transform> getOperationClass() {
+            return org.apache.sis.geometries.operation.spatialedition.Transform.class;
+        }
+
+        @Override
+        public Class<org.apache.sis.geometries.mesh.MultiMeshPrimitive> getGeometryClass() {
+            return org.apache.sis.geometries.mesh.MultiMeshPrimitive.class;
+        }
+
+        @Override
+        public void process(org.apache.sis.geometries.operation.spatialedition.Transform operation) throws OperationException {
+            final org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> mp = (org.apache.sis.geometries.mesh.MultiMeshPrimitive) operation.geometry;
+            final org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> copy = new org.apache.sis.geometries.mesh.MultiMeshPrimitive(operation.crs);
+            final List<org.apache.sis.geometries.mesh.MeshPrimitive> primitives = new ArrayList<>();
+            for (org.apache.sis.geometries.mesh.MeshPrimitive p : mp.getComponents()) {
+                primitives.add((org.apache.sis.geometries.mesh.MeshPrimitive) GeometryOperations.SpatialEdition.transform(p, operation.crs, operation.transform));
             }
             copy.append(primitives);
             operation.result = copy;
@@ -100,7 +158,7 @@ public final class Transform {
      * Transform primitive to a new CoordinateReferenceSystem.
      * Note : this method will clone all other attributes untransformed.
      */
-    public static class Primitive implements Processor<org.apache.sis.geometries.operation.spatialedition.Transform, org.apache.sis.geometries.MeshPrimitive>{
+    public static class Primitive implements Processor<org.apache.sis.geometries.operation.spatialedition.Transform, org.apache.sis.geometries.mesh.MeshPrimitive>{
 
         @Override
         public Class<org.apache.sis.geometries.operation.spatialedition.Transform> getOperationClass() {
@@ -108,14 +166,14 @@ public final class Transform {
         }
 
         @Override
-        public Class<org.apache.sis.geometries.MeshPrimitive> getGeometryClass() {
-            return org.apache.sis.geometries.MeshPrimitive.class;
+        public Class<org.apache.sis.geometries.mesh.MeshPrimitive> getGeometryClass() {
+            return org.apache.sis.geometries.mesh.MeshPrimitive.class;
         }
 
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.Transform operation) throws OperationException {
-            final org.apache.sis.geometries.MeshPrimitive p = (org.apache.sis.geometries.MeshPrimitive) operation.geometry;
-            final org.apache.sis.geometries.MeshPrimitive copy = org.apache.sis.geometries.MeshPrimitive.create(p.getType());
+            final org.apache.sis.geometries.mesh.MeshPrimitive p = (org.apache.sis.geometries.mesh.MeshPrimitive) operation.geometry;
+            final org.apache.sis.geometries.mesh.MeshPrimitive copy = org.apache.sis.geometries.mesh.MeshPrimitive.create(p.getType());
 
             final Set<String> toSkip = new HashSet<>();
             final TupleArray positions = p.getAttribute(AttributesType.ATT_POSITION);
@@ -144,7 +202,7 @@ public final class Transform {
                         final Vector tag = (tangents == null) ? null : Vectors.create(tangents.getSampleSystem(), tangents.getDataType());
                         for (int i = 0, n = positions.getLength(); i < n; i++) {
                             positions.get(i, pos);
-                            final MatrixSIS matrix = MatrixSIS.castOrCopy(operation.transform.derivative(pos));
+                            final MatrixSIS matrix = MatrixSIS.castOrCopy(operation.transform.derivative(Vectors.asDirectPostion(pos)));
                             if (nor != null) {
                                 cpn.get(i, nor);
                                 nor.set(matrix.multiply(nor.toArrayDouble()));
@@ -208,7 +266,7 @@ public final class Transform {
                     cp.setAttribute(name, ps.getAttributeArray(name).copy());
                 }
             }
-            operation.result = new DefaultTriangle(new DefaultLinearRing(cp));
+            operation.result = GeometryFactory.createTriangle(GeometryFactory.createLinearRing(cp));
         }
 
     }

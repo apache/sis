@@ -18,8 +18,6 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import javax.measure.Unit;
-import javax.measure.IncommensurableException;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.wrapper.Geometries;
@@ -27,6 +25,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.filter.internal.Node;
+import org.apache.sis.util.Exceptions;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
@@ -81,6 +80,7 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
     /**
      * Creates a new binary function.
      *
+     * @param  library     the geometry library to use.
      * @param  geometry1   the first of the two expressions to be used by this function.
      * @param  geometry2   the second of the two expressions to be used by this function.
      * @param  systemUnit  if the CRS needs to be in some units of measurement, the {@link Unit#getSystemUnit()} value.
@@ -102,20 +102,20 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
         final int index;
         final Literal<R,?> literal;
         final GeometryWrapper value;
-        if (geometry2 instanceof Literal<?,?>) {
-            literal = (Literal<R,?>) geometry2;
-            value   = expression2.apply(null);
-            index   = 1;
-        } else if (geometry1 instanceof Literal<?,?>) {
-            literal = (Literal<R,?>) geometry1;
-            value   = expression1.apply(null);
-            index   = 0;
-        } else {
-            literal = null;
-            value   = null;
-            index   = -1;
-        }
         try {
+            if (geometry2 instanceof Literal<?,?>) {
+                literal = (Literal<R,?>) geometry2;
+                value   = expression2.apply(null);
+                index   = 1;
+            } else if (geometry1 instanceof Literal<?,?>) {
+                literal = (Literal<R,?>) geometry1;
+                value   = expression1.apply(null);
+                index   = 0;
+            } else {
+                literal = null;
+                value   = null;
+                index   = -1;
+            }
             context = new SpatialOperationContext(null, value, systemUnit, index);
             if (value != null) {
                 final GeometryWrapper gt = context.transform(value);
@@ -128,8 +128,8 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
                     }
                 }
             }
-        } catch (FactoryException | TransformException | IncommensurableException e) {
-            throw new InvalidFilterValueException(e);
+        } catch (Exception e) {
+            throw new InvalidFilterValueException(Exceptions.unwrap(e));
         }
         this.expression1 = expression1;
         this.expression2 = expression2;

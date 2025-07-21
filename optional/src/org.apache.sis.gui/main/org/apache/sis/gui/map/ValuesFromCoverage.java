@@ -176,7 +176,7 @@ final class ValuesFromCoverage extends ValuesUnderCursor implements ChangeListen
                      * (u,v) components of velocity vectors, which we want to keep together by default.
                      */
                     final int numBands = bands.size();
-                    final CheckMenuItem[] menuItems = new CheckMenuItem[numBands];
+                    final var menuItems = new CheckMenuItem[numBands];
                     final BitSet selection = selectedBands;
                     selection.clear();
                     selection.set(0, (numBands <= 3) ? numBands : 1, true);
@@ -227,15 +227,16 @@ final class ValuesFromCoverage extends ValuesUnderCursor implements ChangeListen
         if (refreshing) {
             return null;
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ValuesFormatter formatter = this.formatter;
         if (formatter != null && needsBandRefresh && usePrototype()) {
             final ObservableList<MenuItem> menus = valueChoices.getItems();
-            final String[] labels = new String[menus.size()];
+            final var labels = new String[menus.size()];
             for (int i=0; i<labels.length; i++) {
                 labels[i] = menus.get(i).getText();
             }
-            final HashSet<String> others = new HashSet<>();
-            final BitSet selection = (BitSet) selectedBands.clone();
+            final var others = new HashSet<String>();
+            final var selection = (BitSet) selectedBands.clone();
             BackgroundThreads.execute(new Task<String>() {
                 /** Invoked in background thread for configuring the formatter. */
                 @Override protected String call() {

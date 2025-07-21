@@ -46,7 +46,7 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.GeodeticObjectBuilder;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -445,7 +445,7 @@ final class Store extends URIDataStore implements FeatureSet {
                     timeEncoding = TimeEncoding.ABSOLUTE;
                 } else {
                     temporal = builder.createTemporalCRS(startTime, timeUnit);
-                    timeEncoding = new TimeEncoding(PseudoDatum.of(temporal), timeUnit);
+                    timeEncoding = new TimeEncoding(DatumOrEnsemble.asDatum(temporal), timeUnit);
                 }
                 components[count++] = temporal;
                 name = name + " + " + temporal.getName().getCode();

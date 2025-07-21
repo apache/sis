@@ -287,7 +287,7 @@ class PropertyAccessor {
                 final int lo = name.codePointAt(base);
                 final int up = Character.toUpperCase(lo);
                 final int length = name.length();
-                final StringBuilder buffer = new StringBuilder(length - base + 5).append(SET);
+                final var buffer = new StringBuilder(length - base + 5).append(SET);
                 if (lo != up) {
                     buffer.appendCodePoint(up).append(name, base + Character.charCount(lo), length);
                 } else {
@@ -1319,7 +1319,7 @@ class PropertyAccessor {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(60);
+        final var buffer = new StringBuilder(60);
         buffer.append("PropertyAccessor[").append(standardCount).append(" getters");
         final int extra = allCount - standardCount;
         if (extra != 0) {

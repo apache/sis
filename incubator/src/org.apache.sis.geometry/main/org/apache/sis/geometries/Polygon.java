@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -40,6 +41,7 @@ import org.opengis.geometry.coordinate.GriddedSurface;
  * f) The exterior of a Polygon with 1 or more holes is not connected. Each hole defines a connected component of the exterior.
  *
  * @author Johann Sorel (Geomatys)
+ * @see https://docs.ogc.org/DRAFTS/21-045r1.html#curve_polygon
  */
 @UML(identifier="Polygon", specification=ISO_19107) // section 8.1.2
 public interface Polygon extends Surface {

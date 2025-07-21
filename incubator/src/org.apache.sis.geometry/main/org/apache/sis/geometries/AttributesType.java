@@ -28,7 +28,11 @@ import java.util.Map;
  * 3D Engine decompose draw calls by primitive types.
  * Each indexed primitives are forwarded with a set of Attributes.
  *
- * @author Johann Sorel (Geomatys)
+ * In common GIS, a single ordinate has been defined as 'M'.
+ * It is a very limited capability compared to 3D engine geometry properties.
+ *
+ * @author Johann Sorel (Geomatys
+ * @see https://docs.ogc.org/DRAFTS/21-045r1.html#bb_measures
  */
 public interface AttributesType {
 

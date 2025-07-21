@@ -23,6 +23,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -116,7 +117,7 @@ public final class SQLUtilities extends Static {
      * @return the given text with wildcard characters escaped.
      */
     public static String escape(final String text, final String escape) {
-        if (text != null && escape != null && !escape.isEmpty()) {
+        if (text != null && !Strings.isNullOrEmpty(escape)) {
             final char escapeChar = escape.charAt(0);
             StringBuilder buffer = null;
             for (int i = text.length(); --i >= 0;) {
@@ -136,8 +137,8 @@ public final class SQLUtilities extends Static {
     }
 
     /**
-     * Returns a string like the given string but with accented letters replaced by ASCII letters
-     * and all characters that are not letter or digit replaced by the wildcard % character.
+     * Returns a string like the given string but with accented letters replaced by <abbr>ASCII</abbr>
+     * letters and all characters that are not letter or digit replaced by the wildcard % character.
      *
      * @param  text     the text to get as a SQL LIKE pattern.
      * @param  toLower  whether to convert characters to lower case.
@@ -150,7 +151,7 @@ public final class SQLUtilities extends Static {
     }
 
     /**
-     * Returns a SQL LIKE pattern for the given text. The text is optionally returned in all lower cases
+     * Returns a <abbr>SQL</abbr> LIKE pattern for the given text. The text is optionally returned in all lower cases
      * for allowing case-insensitive searches. Punctuations are replaced by any sequence of characters ({@code '%'})
      * and non-ASCII letters or digits are replaced by any single character ({@code '_'}). This method avoid to put
      * a {@code '%'} symbol as the first character since it prevents some databases to use their index.

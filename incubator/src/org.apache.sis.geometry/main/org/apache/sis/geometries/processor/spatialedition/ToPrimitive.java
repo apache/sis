@@ -16,18 +16,18 @@
  */
 package org.apache.sis.geometries.processor.spatialedition;
 
-import org.apache.sis.geometries.ArraySequence;
-import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.operation.GeometryOperations;
-import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.math.TupleArray;
+import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.operation.GeometryOperations;
+import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.geometries.privy.ArraySequence;
+import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.geometries.triangulate.EarClipping;
 
 /**
@@ -63,7 +63,7 @@ public final class ToPrimitive {
 
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.ToPrimitive operation) throws OperationException {
-            final org.apache.sis.geometries.MeshPrimitive primitive = new org.apache.sis.geometries.MeshPrimitive.Points();
+            final org.apache.sis.geometries.mesh.MeshPrimitive primitive = new org.apache.sis.geometries.mesh.MeshPrimitive.Points();
             final AttributesType attributesType = operation.geometry.getAttributesType();
             for (String name : attributesType.getAttributeNames()) {
                 final TupleArray array = TupleArrays.of(attributesType.getAttributeSystem(name), attributesType.getAttributeType(name), 1);
@@ -91,7 +91,7 @@ public final class ToPrimitive {
 
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.ToPrimitive operation) throws OperationException {
-            final org.apache.sis.geometries.MeshPrimitive primitive = new org.apache.sis.geometries.MeshPrimitive.LineStrip();
+            final org.apache.sis.geometries.mesh.MeshPrimitive primitive = new org.apache.sis.geometries.mesh.MeshPrimitive.LineStrip();
             final ArraySequence array = toArraySequence(((org.apache.sis.geometries.LineString) operation.geometry).getPoints());
             for (String name : array.getAttributeNames()) {
                 primitive.setAttribute(name, array.getAttribute(name));
@@ -141,7 +141,7 @@ public final class ToPrimitive {
         public void process(org.apache.sis.geometries.operation.spatialedition.ToPrimitive operation) throws OperationException {
             final org.apache.sis.geometries.MultiPoint cdt = (org.apache.sis.geometries.MultiPoint) operation.geometry;
             final ArraySequence array = toArraySequence(cdt.asPointSequence());
-            final org.apache.sis.geometries.MeshPrimitive primitive = new org.apache.sis.geometries.MeshPrimitive.Points();
+            final org.apache.sis.geometries.mesh.MeshPrimitive primitive = new org.apache.sis.geometries.mesh.MeshPrimitive.Points();
             for (String name : array.getAttributeNames()) {
                 primitive.setAttribute(name, array.getAttribute(name));
             }
@@ -175,7 +175,7 @@ public final class ToPrimitive {
             }
 
             if (allLines) {
-                final org.apache.sis.geometries.MeshPrimitive.Lines primitive = new org.apache.sis.geometries.MeshPrimitive.Lines();
+                final org.apache.sis.geometries.mesh.MeshPrimitive.Lines primitive = new org.apache.sis.geometries.mesh.MeshPrimitive.Lines();
                 final AttributesType attributesType = cdt.getAttributesType();
                 for (String name : attributesType.getAttributeNames()) {
                     primitive.setAttribute(name, TupleArrays.of(attributesType.getAttributeSystem(name), attributesType.getAttributeType(name), numGeometries*2));
@@ -192,13 +192,13 @@ public final class ToPrimitive {
                 }
                 operation.result = primitive;
             } else {
-                final org.apache.sis.geometries.MultiMeshPrimitive<org.apache.sis.geometries.MeshPrimitive> mp =
-                        new org.apache.sis.geometries.MultiMeshPrimitive(operation.geometry.getCoordinateReferenceSystem());
+                final org.apache.sis.geometries.mesh.MultiMeshPrimitive<org.apache.sis.geometries.mesh.MeshPrimitive> mp =
+                        new org.apache.sis.geometries.mesh.MultiMeshPrimitive(operation.geometry.getCoordinateReferenceSystem());
                 for (int i = 0; i < numGeometries; i++) {
                     final Geometry p = GeometryOperations.SpatialEdition.toPrimitive(cdt.getGeometryN(i));
-                    if (p instanceof org.apache.sis.geometries.MultiMeshPrimitive<?> subm) {
+                    if (p instanceof org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> subm) {
                         mp.append(subm.getComponents());
-                    } else if (p instanceof org.apache.sis.geometries.MeshPrimitive cd){
+                    } else if (p instanceof org.apache.sis.geometries.mesh.MeshPrimitive cd){
                         mp.append(Collections.singletonList(cd));
                     }
                 }
@@ -224,13 +224,13 @@ public final class ToPrimitive {
 
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.ToPrimitive operation) throws OperationException {
-            final org.apache.sis.geometries.MultiMeshPrimitive<org.apache.sis.geometries.MeshPrimitive> mp = new org.apache.sis.geometries.MultiMeshPrimitive(operation.geometry.getCoordinateReferenceSystem());
+            final org.apache.sis.geometries.mesh.MultiMeshPrimitive<org.apache.sis.geometries.mesh.MeshPrimitive> mp = new org.apache.sis.geometries.mesh.MultiMeshPrimitive(operation.geometry.getCoordinateReferenceSystem());
             final org.apache.sis.geometries.GeometryCollection cdt = (org.apache.sis.geometries.GeometryCollection) operation.geometry;
             for (int i = 0, n = cdt.getNumGeometries(); i < n; i++) {
                 final Geometry p = GeometryOperations.SpatialEdition.toPrimitive(cdt.getGeometryN(i));
-                if (p instanceof org.apache.sis.geometries.MultiMeshPrimitive<?> subm) {
+                if (p instanceof org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> subm) {
                     mp.append(subm.getComponents());
-                } else if (p instanceof org.apache.sis.geometries.MeshPrimitive cd){
+                } else if (p instanceof org.apache.sis.geometries.mesh.MeshPrimitive cd){
                     mp.append(Collections.singletonList(cd));
                 }
             }
@@ -241,7 +241,7 @@ public final class ToPrimitive {
     /**
      * Does nothing, geometry is already a Primitive.
      */
-    public static class Primitive implements Processor<org.apache.sis.geometries.operation.spatialedition.ToPrimitive, org.apache.sis.geometries.MeshPrimitive>{
+    public static class Primitive implements Processor<org.apache.sis.geometries.operation.spatialedition.ToPrimitive, org.apache.sis.geometries.mesh.MeshPrimitive>{
 
         @Override
         public Class<org.apache.sis.geometries.operation.spatialedition.ToPrimitive> getOperationClass() {
@@ -249,20 +249,20 @@ public final class ToPrimitive {
         }
 
         @Override
-        public Class<org.apache.sis.geometries.MeshPrimitive> getGeometryClass() {
-            return org.apache.sis.geometries.MeshPrimitive.class;
+        public Class<org.apache.sis.geometries.mesh.MeshPrimitive> getGeometryClass() {
+            return org.apache.sis.geometries.mesh.MeshPrimitive.class;
         }
 
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.ToPrimitive operation) throws OperationException {
-            operation.result = (org.apache.sis.geometries.MeshPrimitive) operation.geometry;
+            operation.result = (org.apache.sis.geometries.mesh.MeshPrimitive) operation.geometry;
         }
     }
 
     /**
      * Does nothing, geometry is already a MultiPrimitive.
      */
-    public static class MultiPrimitive implements Processor<org.apache.sis.geometries.operation.spatialedition.ToPrimitive, org.apache.sis.geometries.MultiMeshPrimitive>{
+    public static class MultiPrimitive implements Processor<org.apache.sis.geometries.operation.spatialedition.ToPrimitive, org.apache.sis.geometries.mesh.MultiMeshPrimitive>{
 
         @Override
         public Class<org.apache.sis.geometries.operation.spatialedition.ToPrimitive> getOperationClass() {
@@ -270,13 +270,13 @@ public final class ToPrimitive {
         }
 
         @Override
-        public Class<org.apache.sis.geometries.MultiMeshPrimitive> getGeometryClass() {
-            return org.apache.sis.geometries.MultiMeshPrimitive.class;
+        public Class<org.apache.sis.geometries.mesh.MultiMeshPrimitive> getGeometryClass() {
+            return org.apache.sis.geometries.mesh.MultiMeshPrimitive.class;
         }
 
         @Override
         public void process(org.apache.sis.geometries.operation.spatialedition.ToPrimitive operation) throws OperationException {
-            operation.result = (org.apache.sis.geometries.MultiMeshPrimitive) operation.geometry;
+            operation.result = (org.apache.sis.geometries.mesh.MultiMeshPrimitive) operation.geometry;
         }
     }
 

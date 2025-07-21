@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.privy.AbstractGeometry;
+
 /**
  * A MultiPolygon is a MultiSurface whose elements are Polygons.
  *

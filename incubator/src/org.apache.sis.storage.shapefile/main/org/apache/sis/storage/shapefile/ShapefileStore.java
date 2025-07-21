@@ -75,7 +75,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.privy.FunctionNames;
 import org.apache.sis.filter.privy.ListingPropertyVisitor;
-import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.*;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
@@ -85,6 +85,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStore;
@@ -125,6 +126,7 @@ import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
+import org.opengis.metadata.Identifier;
 
 
 /**
@@ -455,6 +457,15 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 throw new DataStoreException("Faild to open shp and dbf files.", ex);
             }
 
+            int srid = 0;
+            final Identifier id = IdentifiedObjects.getIdentifier(crs, Citations.EPSG);
+            if (id != null) try {
+                srid = Integer.parseInt(id.getCode());
+            } catch (NumberFormatException e) {
+                // Ignore. Note: this is also the exception if id.getCode() is null.
+            }
+            final int geomSrid = srid;
+
             final Spliterator spliterator;
             if (readShp && dbfPropertiesIndex.length > 0) {
                 //read both shp and dbf
@@ -471,6 +482,10 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             dbfreader.moveToOffset(offset);
                             final Object[] dbfRecord = dbfreader.next();
                             final Feature next = type.newInstance();
+                            if (shpRecord.geometry != null) {
+                                shpRecord.geometry.setUserData(crs);
+                                shpRecord.geometry.setSRID(geomSrid);
+                            }
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                                 next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
@@ -491,6 +506,10 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             final ShapeRecord shpRecord = shpreader.next();
                             if (shpRecord == null) return false;
                             final Feature next = type.newInstance();
+                            if (shpRecord.geometry != null) {
+                                shpRecord.geometry.setUserData(crs);
+                                shpRecord.geometry.setSRID(geomSrid);
+                            }
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
                             action.accept(next);
                             return true;

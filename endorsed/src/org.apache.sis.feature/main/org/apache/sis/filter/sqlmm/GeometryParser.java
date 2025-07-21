@@ -20,6 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -112,7 +113,7 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
             }
             return library.getGeometry(result);
         } catch (Exception e) {
-            warning(e, false);
+            warning(Exceptions.unwrap(e), false);
         }
         return null;
     }

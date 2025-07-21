@@ -60,7 +60,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.MapProjection;
@@ -391,7 +391,7 @@ public final class GeoEncoder {
         if (writeEPSG(GeoKeys.Vertical, crs)) {
             writeName(GeoKeys.VerticalCitation, null, crs);
             addUnits(UnitKey.VERTICAL, crs.getCoordinateSystem());
-            final VerticalDatum datum = PseudoDatum.of(crs);
+            final VerticalDatum datum = DatumOrEnsemble.asDatum(crs);
             if (writeEPSG(GeoKeys.VerticalDatum, datum)) {
                 /*
                  * OGC requirement 25.5 said "VerticalCitationGeoKey SHALL be populated."
@@ -438,7 +438,7 @@ public final class GeoEncoder {
         writeModelType(isBaseCRS ? GeoCodes.ModelTypeProjected : type);
         if (writeEPSG(GeoKeys.GeodeticCRS, crs)) {
             writeName(GeoKeys.GeodeticCitation, "GCS Name", isPseudoProjection ? null : crs);
-            writeDatum(PseudoDatum.of(crs));
+            writeDatum(DatumOrEnsemble.asDatum(crs));
         } else if (isBaseCRS) {
             writeUnit(UnitKey.ANGULAR);         // Map projection parameters may need this unit.
         }

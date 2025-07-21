@@ -436,7 +436,7 @@ final class EnvelopeOperation extends AbstractOperation {
                  * the actual CRS.
                  */
                 if (sourceCRS != null && targetCRS != null) try {
-                    if (op == null) {
+                    if (op == null || sourceCRS != op.getSourceCRS()) {
                         op = CRS.findOperation(sourceCRS, targetCRS, null);
                     }
                     if (!op.getMathTransform().isIdentity()) {

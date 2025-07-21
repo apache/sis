@@ -45,7 +45,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
@@ -602,7 +602,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         public void setSource(final GeodeticCRS crs) {
             if (crs != null) {
                 sourceCS = crs.getCoordinateSystem();
-                sourceEllipsoid = ReferencingUtilities.getEllipsoid(crs);
+                sourceEllipsoid = DatumOrEnsemble.getEllipsoid(crs).orElse(null);
             } else {
                 sourceCS = null;
                 sourceEllipsoid = null;
@@ -642,7 +642,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         public void setTarget(final GeodeticCRS crs) {
             if (crs != null) {
                 targetCS = crs.getCoordinateSystem();
-                targetEllipsoid = ReferencingUtilities.getEllipsoid(crs);
+                targetEllipsoid = DatumOrEnsemble.getEllipsoid(crs).orElse(null);
             } else {
                 targetCS = null;
                 targetEllipsoid = null;

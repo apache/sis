@@ -37,6 +37,9 @@ import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
+import org.apache.sis.geometries.privy.ArraySequence;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
@@ -54,7 +57,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.IdentifiedObject;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -75,7 +77,6 @@ import org.opengis.util.InternationalString;
  * @author Johann Sorel (Geomatys)
  */
 public final class Geometries extends Static {
-    static final GeometryFactory GF = new GeometryFactory();
 
     private static final CoordinateReferenceSystem UNDEFINED_CRS_1D = createUndefined(1);
     private static final CoordinateReferenceSystem UNDEFINED_CRS_2D = createUndefined(2);
@@ -741,44 +742,44 @@ public final class Geometries extends Static {
         if (jts == null) {
             return null;
         } else if (jts instanceof org.locationtech.jts.geom.Point cdt) {
-            return new DefaultPoint(toPointSequence(cdt.getCoordinateSequence(), crs));
+            return GeometryFactory.createPoint(toPointSequence(cdt.getCoordinateSequence(), crs));
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiPoint cdt) {
-            return new DefaultMultiPoint(toPointSequence(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs));
+            return GeometryFactory.createMultiPoint(toPointSequence(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs));
 
         } else if (jts instanceof org.locationtech.jts.geom.LinearRing cdt) {
-            return new DefaultLinearRing(toPointSequence(cdt.getCoordinateSequence(), crs));
+            return GeometryFactory.createLinearRing(toPointSequence(cdt.getCoordinateSequence(), crs));
 
         } else if (jts instanceof org.locationtech.jts.geom.LineString cdt) {
-            return new DefaultLineString(toPointSequence(cdt.getCoordinateSequence(), crs));
+            return GeometryFactory.createLineString(toPointSequence(cdt.getCoordinateSequence(), crs));
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiLineString cdt) {
             final LineString[] strings = new LineString[cdt.getNumGeometries()];
             for (int i = 0; i < strings.length; i++) {
                 strings[i] = (LineString) fromJTS(cdt.getGeometryN(i), crs);
             }
-            return new DefaultMultiLineString(strings);
+            return GeometryFactory.createMultiLineString(strings);
         } else if (jts instanceof org.locationtech.jts.geom.Polygon cdt) {
             final LinearRing exterior = (LinearRing) fromJTS(cdt.getExteriorRing(), crs);
             final List<LinearRing> interiors = new ArrayList<>(cdt.getNumInteriorRing());
             for (int i = 0, n = cdt.getNumInteriorRing(); i < n; i++) {
                 interiors.add((LinearRing) fromJTS(cdt.getInteriorRingN(i), crs));
             }
-            return new DefaultPolygon(exterior, interiors);
+            return GeometryFactory.createPolygon(exterior, interiors);
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiPolygon cdt) {
             final Surface[] geoms = new Surface[cdt.getNumGeometries()];
             for (int i = 0; i < geoms.length; i++) {
                 geoms[i] = (Surface) fromJTS(cdt.getGeometryN(i), crs);
             }
-            return new DefaultMultiSurface(geoms);
+            return GeometryFactory.createMultiSurface(geoms);
 
         } else if (jts instanceof org.locationtech.jts.geom.GeometryCollection cdt) {
             final Geometry[] geoms = new Geometry[cdt.getNumGeometries()];
             for (int i = 0; i < geoms.length; i++) {
                 geoms[i] = fromJTS(cdt.getGeometryN(i), crs);
             }
-            return new DefaultGeometryCollection(geoms);
+            return GeometryFactory.createGeometryCollection(geoms);
 
         } else {
             throw new IllegalArgumentException("Unknown JTS geometry type");

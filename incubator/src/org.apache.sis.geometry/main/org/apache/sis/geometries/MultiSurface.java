@@ -31,6 +31,7 @@ package org.apache.sis.geometries;
  * having overlapping interiors in their 2D projections.
  *
  * @author Johann Sorel (Geomatys)
+ * @see https://docs.ogc.org/DRAFTS/21-045r1.html#multi_surface
  */
 public interface MultiSurface<T extends Surface> extends GeometryCollection<T>{
 

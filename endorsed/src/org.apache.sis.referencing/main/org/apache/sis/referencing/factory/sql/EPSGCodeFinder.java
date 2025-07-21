@@ -220,7 +220,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
          */
         @Override
         public final String toString() {
-            final StringBuilder buffer = new StringBuilder(50);
+            final var buffer = new StringBuilder(50);
             appendToWhere(buffer, false);
             return buffer.toString();
         }
@@ -382,7 +382,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          * but does not execute it now. Note that this block overwrites the `buffer` content,
          * so that buffer shall not contain valuable information yet.
          */
-        final StringBuilder buffer = new StringBuilder(350);     // Temporary buffer for building SQL query.
+        final var buffer = new StringBuilder(350);     // Temporary buffer for building SQL query.
         final Set<String> namePatterns;
         final String aliasSQL;
         if (ArraysExt.containsIdentity(filters, Condition.NAME)) {
@@ -392,7 +392,9 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                 namePatterns.add(toDatumPattern(id.tip().toString(), buffer));
             }
             buffer.setLength(0);
-            buffer.append("SELECT OBJECT_CODE FROM [Alias] WHERE OBJECT_TABLE_NAME='").append(table.unquoted()).append("' AND ");
+            buffer.append("SELECT OBJECT_CODE FROM \"Alias\" WHERE OBJECT_TABLE_NAME='")
+                  .append(dao.translator.toActualTableName(table.unquoted()))
+                  .append("' AND ");
             // PostgreSQL does not require explicit cast when the value is a literal instead of "?".
             appendFilterByName(namePatterns, "ALIAS", buffer);
             aliasSQL = dao.translator.apply(buffer.toString());
@@ -457,7 +459,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              * At this point the SQL query is complete. Run it, preserving order.
              * Then sort the result by taking in account the supersession table.
              */
-            final Set<String> result = new LinkedHashSet<>();       // We need to preserve order in this set.
+            final var result = new LinkedHashSet<String>();     // We need to preserve order in this set.
             try (ResultSet r = stmt.executeQuery(dao.translator.apply(buffer.toString()))) {
                 while (r.next()) {
                     result.add(r.getString(1));

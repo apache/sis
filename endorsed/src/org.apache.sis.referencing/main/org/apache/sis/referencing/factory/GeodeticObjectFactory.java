@@ -652,7 +652,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final DefaultDatumEnsemble<D> ensemble;
         try {
-            ensemble = new DefaultDatumEnsemble<>(complete(properties), members, accuracy);
+            ensemble = DefaultDatumEnsemble.create(complete(properties), members, accuracy);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }

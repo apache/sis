@@ -398,7 +398,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
                 /*
                  * We are cheating here since the array component may not be assignable to T.
                  * But if this assumption is wrong, then the call to System.arraycopy(…) later
-                 * will thrown an ArrayStoreException, which is the exception type required by
+                 * will throw an ArrayStoreException, which is the exception type required by
                  * the Collection.toArray(T[]) javadoc.
                  */
                 dest = (T[]) Array.newInstance(dest.getClass().getComponentType(), size);

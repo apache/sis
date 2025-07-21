@@ -22,7 +22,7 @@ import java.util.Arrays;
 import static java.lang.StrictMath.*;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
@@ -131,7 +131,7 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
 
         /** Creates a new calculator for the given coordinate reference system. */
         Calculator(final GeographicCRS crs) {
-            super(crs, ReferencingUtilities.getEllipsoid(crs));
+            super(crs, DatumOrEnsemble.getEllipsoid(crs).orElseThrow());
         }
 
         /** Invoked when {@link GeodesicsOnEllipsoid} computed an intermediate value. */

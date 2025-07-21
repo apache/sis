@@ -64,7 +64,6 @@ public abstract class AbstractTupleTest {
         assertTrue(tuple.isAll(0.0));
         testCellGetSet(tuple);
         testToArray(tuple);
-        testDirectPosition(tuple);
         testEquality(tuple);
 
         switch (tuple.getDataType()) {
@@ -135,40 +134,6 @@ public abstract class AbstractTupleTest {
             //ok
         }
 
-    }
-
-    /**
-     * Test methods inherited from DirectPosition.
-     */
-    private void testDirectPosition(Tuple<?> tuple) {
-        final int dim = tuple.getDimension();
-
-        for (int i = 0; i < dim; i++) {
-            tuple.setCoordinate(i, i+1);
-            assertEquals(i+1, tuple.getCoordinate(i), TOLERANCE);
-        }
-
-        //test out of range
-        try {
-            tuple.setCoordinate(-1, 10);
-            fail(UNVALID_INDEX_EXPECTED);
-        } catch (IndexOutOfBoundsException ex) {
-            //ok
-        }
-        try {
-            tuple.setCoordinate(dim, 10);
-            fail(UNVALID_INDEX_EXPECTED);
-        } catch (IndexOutOfBoundsException ex) {
-            //ok
-        }
-
-        {//test getCoordinate
-            final double[] values = tuple.getCoordinates();
-            assertEquals(dim, values.length);
-            for (int i = 0; i < dim; i++) {
-                assertEquals(i+1, values[i], TOLERANCE);
-            }
-        }
     }
 
     /**
@@ -275,7 +240,6 @@ public abstract class AbstractTupleTest {
             //test get set
             tuple.set(i, value);
             assertEquals(value, tuple.get(i), 0.0);
-            assertEquals(value, tuple.getCoordinate(i), 0.0);
             tuple.set(i, 0);
 
             //test copy
@@ -287,8 +251,6 @@ public abstract class AbstractTupleTest {
             //test array
             tuple.set(i, value);
             double[] array = tuple.toArrayDouble();
-            assertEquals(value, array[i], 0.0);
-            array = tuple.getCoordinates();
             assertEquals(value, array[i], 0.0);
             tuple.set(0, 0);
         }

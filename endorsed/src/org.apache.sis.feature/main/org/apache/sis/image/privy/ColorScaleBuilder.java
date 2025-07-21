@@ -413,7 +413,7 @@ public final class ColorScaleBuilder {
             var samples = NumberRange.create(1, true, MAX_VALUE, true);
             builder.setBackground(TRANSPARENT, 0).addQuantitative(COLOR_INDEX, samples, defaultRange);
         } else {
-            builder.addQuantitative(COLOR_INDEX, defaultRange, identity(), null);
+            builder.addQuantitative(COLOR_INDEX, defaultRange, null, null);
         }
         target = builder.build();
         /*
@@ -711,15 +711,12 @@ reuse:  if (source != null) {
      */
     public MathTransform1D getSampleToIndexValues() throws NoninvertibleTransformException {
         checkInitializationStatus(true);
-        return (target != null) ? target.getTransferFunction().orElseGet(ColorScaleBuilder::identity).inverse() : identity();
-    }
-
-    /**
-     * Returns the identity transform.
-     *
-     * @see Category#identity()
-     */
-    private static MathTransform1D identity() {
+        if (target != null) {
+            MathTransform1D toTarget = target.getTransferFunction().orElse(null);
+            if (toTarget != null) {
+                return toTarget.inverse();
+            }
+        }
         return (MathTransform1D) MathTransforms.identity(1);
     }
 }

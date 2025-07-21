@@ -146,21 +146,6 @@ final class TupleUnmodifiable extends AbstractTuple {
     }
 
     @Override
-    public double getCoordinate(int dimension) throws IndexOutOfBoundsException {
-        return parent.getCoordinate(dimension);
-    }
-
-    @Override
-    public void setCoordinate(int dimension, double value) throws IndexOutOfBoundsException, UnsupportedOperationException {
-        throw new UnsupportedOperationException("This implementation is unmodifiable");
-    }
-
-    @Override
-    public double[] getCoordinates() {
-        return parent.getCoordinates();
-    }
-
-    @Override
     public Tuple copy() {
         return parent.copy();
     }
