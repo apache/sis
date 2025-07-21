@@ -284,6 +284,8 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         final LoadedGrid<Angle,Length> grid;
         try {
             grid = getOrLoad(file, isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
+        } catch (FactoryException e) {
+            throw e;
         } catch (Exception e) {
             // NumberFormatException, ArithmeticException, NoSuchElementException, and more.
             throw file.canNotLoad(FranceGeocentricInterpolation.class, HEADER, e);

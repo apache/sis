@@ -331,25 +331,27 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
         if (hasPredicates || count != 0) {
             return super.count();
         }
-        /*
-         * Build the full SQL statement here, without using `FeatureAdapter.sql`,
-         * because we do not need to follow foreigner keys.
-         */
-        final var sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT).append("COUNT(");
-        if (distinct) {
-            String separator = "DISTINCT ";
-            for (final Column attribute : table.attributes) {
-                sql.append(separator).appendIdentifier(attribute.label);
-                separator = ", ";
-            }
-        } else {
-            // If we want a count and no distinct clause is specified, a single column is sufficient.
-            sql.appendIdentifier(table.attributes[0].label);
-        }
-        table.appendFromClause(sql.append(')'));
         lock(table.database.transactionLocks);
         try (Connection connection = getConnection()) {
             makeReadOnly(connection);
+            /*
+             * Build the full SQL statement here, without using `FeatureAdapter.sql`,
+             * because we do not need to follow foreigner keys.
+             */
+            final var sql = new SQLBuilder(table.database);
+            sql.setCatalogAndSchema(connection);
+            sql.append(SQLBuilder.SELECT).append("COUNT(");
+            if (distinct) {
+                String separator = "DISTINCT ";
+                for (final Column attribute : table.attributes) {
+                    sql.append(separator).appendIdentifier(attribute.label);
+                    separator = ", ";
+                }
+            } else {
+                // If we want a count and no distinct clause is specified, a single column is sufficient.
+                sql.appendIdentifier(table.attributes[0].label);
+            }
+            table.appendFromClause(sql.append(')'));
             if (selection != null) {
                 final String filter = selection.query(connection, null);
                 if (filter != null) {

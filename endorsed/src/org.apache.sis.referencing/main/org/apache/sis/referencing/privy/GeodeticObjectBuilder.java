@@ -63,7 +63,7 @@ import org.apache.sis.parameter.Parameters;
 
 // Specific to the main branch:
 import org.apache.sis.temporal.TemporalDate;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 
 
@@ -360,7 +360,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         conversionName = c.getName().getCode();
         method         = c.getMethod();
         parameters     = c.getParameterValues();
-        datum          = PseudoDatum.of(crs.getBaseCRS());
+        datum          = DatumOrEnsemble.asDatum(crs.getBaseCRS());
         properties.putAll(IdentifiedObjects.getProperties(crs, ProjectedCRS.IDENTIFIERS_KEY));
         return this;
     }

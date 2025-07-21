@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.sql.postgis;
 
+import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -79,11 +80,14 @@ final class ExtentEstimator {
     /**
      * Creates a new extent estimator for the specified table.
      */
-   ExtentEstimator(final Database<?> database, final TableReference table, final Column[] columns) {
+   ExtentEstimator(final Database<?> database, final TableReference table, final Column[] columns, final Connection c)
+           throws SQLException
+   {
         this.database = database;
         this.table    = table;
         this.columns  = columns;
         this.builder  = new SQLBuilder(database);
+        builder.setCatalogAndSchema(c);
     }
 
     /**

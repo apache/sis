@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +59,7 @@ import org.apache.sis.metadata.sql.TestDatabase;
  * <a href="https://sis.apache.org/source.html#non-free">SIS non-free directory</a>.</p>
  *
  * <p>Every databases created by this test suite exist only in memory.
- * This class does not write anything to disk (except maybe some temporary files).</p>
+ * This class does not write to disk, except temporary files for some databases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -87,7 +86,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
                 "UPDATE epsg_datum\n" +
                 "SET datum_name = replace(datum_name, CHAR(182), CHAR(10))"));
 
-        // Modified statement with MS-Access table name in a schema.
+        // Modified statement with mixed-case table name in a schema.
         assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
                 "UPDATE epsg.\"Alias\"\n" +
                 "SET object_table_name = replace(object_table_name, CHR(182), CHR(10))"));
@@ -103,11 +102,14 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     /**
      * Returns the SQL scripts needed for testing the database creation,
      * or skip the JUnit test if those scripts are not found.
+     *
+     * @return provider of SQL scripts to execute for building the EPSG geodetic dataset.
+     * @throws IOException if an I/O operation was required and failed.
      */
     private static InstallationScriptProvider getScripts() throws IOException {
         final var scripts = new InstallationScriptProvider.Default(null);
         assumeTrue(scripts.getAuthorities().contains(Constants.EPSG),
-                "EPSG scripts not found in Databases/ExternalSources directory.");
+                "EPSG scripts not found in the \"Databases/ExternalSources\" directory.");
         return scripts;
     }
 
@@ -196,7 +198,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     private void createAndTest(final DataSource ds, final InstallationScriptProvider scriptProvider)
             throws SQLException, FactoryException
     {
-        final Map<String,Object> properties = new HashMap<>();
+        final var properties = new HashMap<String,Object>();
         assertNull(properties.put("dataSource", ds));
         assertNull(properties.put("scriptProvider", scriptProvider));
         assertEquals(0, countCRSTables(ds), "Should not contain EPSG tables before we created them.");

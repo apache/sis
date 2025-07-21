@@ -32,6 +32,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.Resources;
@@ -256,7 +257,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             final var builder = new ParameterizedTransformBuilder(factory, null);
             builder.setParameters(parameters, true);
             builder.setSourceAxes(source);
-            builder.setTargetAxes(target.getCoordinateSystem(), isDerived ? null : ReferencingUtilities.getEllipsoid(target));
+            builder.setTargetAxes(target.getCoordinateSystem(), isDerived ? null : DatumOrEnsemble.getEllipsoid(target).orElse(null));
             transform = builder.create();
             if (builder instanceof MathTransformProvider.Context) {
                 final var context = (MathTransformProvider.Context) builder;

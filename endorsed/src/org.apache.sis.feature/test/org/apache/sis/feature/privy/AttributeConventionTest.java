@@ -76,7 +76,7 @@ public final class AttributeConventionTest extends TestCase {
         final Map<String,?> properties = Map.of(DefaultAttributeType.NAME_KEY, "geometry");
         var attribute = new DefaultAttributeType<>(properties, Point.class, 1, 1, null);
         assertFalse(AttributeConvention.characterizedByCRS(attribute));
-        assertNull(AttributeConvention.getCRSCharacteristic(attribute.newInstance()));
+        assertFalse(attribute.characteristics().containsKey(AttributeConvention.CRS));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the Coordinate Reference System of the "geometry" attribute. Then test again.
@@ -87,7 +87,6 @@ public final class AttributeConventionTest extends TestCase {
 
         attribute = new DefaultAttributeType<>(properties, Point.class, 1, 1, null, characteristic);
         assertTrue(AttributeConvention.characterizedByCRS(attribute));
-        assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(attribute.newInstance()));
         assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(null, attribute));
         /*
          * Test again AttributeConvention.getCRSCharacteristic(…, PropertyType), but following link.
@@ -106,17 +105,17 @@ public final class AttributeConventionTest extends TestCase {
         final Map<String,?> properties = Map.of(DefaultAttributeType.NAME_KEY, "name");
         var attribute = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
         assertFalse(AttributeConvention.characterizedByMaximalLength(attribute));
-        assertNull(AttributeConvention.getMaximalLengthCharacteristic(attribute.newInstance()));
+        assertNull(AttributeConvention.getMaximalLengthCharacteristic(null, attribute));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the maximal length of the "name" attribute. Then test again.
          */
-        final DefaultAttributeType<Integer> characteristic = new DefaultAttributeType<>(
+        final var characteristic = new DefaultAttributeType<Integer>(
                 Map.of(DefaultAttributeType.NAME_KEY, AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC),
                 Integer.class, 1, 1, 120);
 
         attribute = new DefaultAttributeType<>(properties, String.class, 1, 1, null, characteristic);
         assertTrue(AttributeConvention.characterizedByMaximalLength(attribute));
-        assertEquals(Integer.valueOf(120), AttributeConvention.getMaximalLengthCharacteristic(attribute.newInstance()));
+        assertEquals(Integer.valueOf(120), AttributeConvention.getMaximalLengthCharacteristic(null, attribute));
     }
 }

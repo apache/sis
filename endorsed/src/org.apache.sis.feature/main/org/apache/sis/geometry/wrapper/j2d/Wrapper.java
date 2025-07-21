@@ -31,7 +31,6 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.wrapper.GeometryWithCRS;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.referencing.privy.ShapeUtilities;
@@ -50,7 +49,7 @@ import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-final class Wrapper extends GeometryWithCRS {
+final class Wrapper extends GeometryWrapper {
     /**
      * The wrapped implementation.
      */
@@ -166,8 +165,9 @@ final class Wrapper extends GeometryWithCRS {
         boolean lineTo = false;
 add:    for (;;) {
             if (next instanceof Point2D) {
-                final double x = ((Point2D) next).getX();
-                final double y = ((Point2D) next).getY();
+                final var p = (Point2D) next;
+                final double x = p.getX();
+                final double y = p.getY();
                 if (Double.isNaN(x) || Double.isNaN(y)) {
                     lineTo = false;
                 } else if (lineTo) {

@@ -55,9 +55,9 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 
 /**
- * Raster data obtained from a GeoTIFF file in the domain requested by user. The number of dimensions is 2
- * for standard TIFF files, but this class accepts higher number of dimensions if 3- or 4-dimensional data
- * are stored in a GeoTIFF file using some convention. This base class transfers uncompressed data.
+ * Raster data obtained from a GeoTIFF file in the domain requested by user. The number of dimensions is 2 for
+ * standard <abbr>TIFF</abbr> files, but this class accepts higher number of dimensions if 3- or 4-dimensional
+ * data are stored in a GeoTIFF file using some convention. This base class transfers uncompressed data.
  * Compressed data are handled by specialized subclasses.
  *
  * <h2>Cell Coordinates</h2>
@@ -114,7 +114,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
     protected final int numBanks;
 
     /**
-     * Number of interleaved sample values in a pixel in the GeoTIFF file (ignoring band subset).
+     * Number of interleaved sample values in a pixel in the <abbr>TIFF</abbr> file (ignoring band subset).
      * For planar images (banded sample model), this is equal to 1. For pixel interleaved image,
      * this is equal to the number of bands in the original image.
      *
@@ -122,6 +122,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * and 8 samples are packed in each byte. Conversely a sample may also be 1, 2, 4 or 8 bytes.</p>
      *
      * @see java.awt.image.ComponentSampleModel#getPixelStride()
+     * @see CompressedSubset#sourceScanlineStride
      */
     protected final int sourcePixelStride;
 
@@ -149,11 +150,10 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     DataSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(subset);
-        this.source    = source;
-        this.numTiles  = toIntExact(source.getNumTiles());
-        final Vector[] tileArrayInfo = source.getTileArrayInfo();
-        this.tileOffsets    = tileArrayInfo[0];
-        this.tileByteCounts = tileArrayInfo[1];
+        this.source         = source;
+        this.numTiles       = toIntExact(source.getNumTiles());
+        this.tileOffsets    = source.getTileArrayInfo(false);
+        this.tileByteCounts = source.getTileArrayInfo(true);
         /*
          * "Banks" (in `java.awt.image.DataBuffer` sense) are synonymous to "bands" for planar image only.
          * Otherwise there is only one bank no matter the number of bands. Each bank will be read separately.
@@ -229,8 +229,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     protected final int getBankCapacity(final int pixelsPerElement) {
         // `ceilDiv(…)` must happen before multiplication by image height.
-        final int scanlineStride = ceilDiv(multiplyExact(model.getWidth(), targetPixelStride), pixelsPerElement);
-        return multiplyExact(scanlineStride, model.getHeight());
+        final int targetScanlineStride = ceilDiv(multiplyExact(model.getWidth(), targetPixelStride), pixelsPerElement);
+        return multiplyExact(targetScanlineStride, model.getHeight());
     }
 
     /**
@@ -489,7 +489,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @param  upper        (<var>x</var>, <var>y</var>) coordinates after the last pixel to read relative to the tile.
      * @param  subsampling  (<var>sx</var>, <var>sy</var>) subsampling factors.
      * @param  location     pixel coordinates in the upper-left corner of the tile to return.
-     * @return a single tile decoded from the GeoTIFF file.
+     * @return a single tile decoded from the <abbr>TIFF</abbr> file.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if a logical error occurred.
      * @throws RuntimeException if the Java2D image cannot be created for another reason
@@ -583,7 +583,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
     /**
      * Creates the raster with the given data buffer, which contains the pixels that have been read.
      *
-     * @param  buffer    the sample values which have been read from the GeoTIFF tile.
+     * @param  buffer    the sample values which have been read from the <abbr>TIFF</abbr> tile.
      * @param  location  pixel coordinates in the upper-left corner of the tile to return.
      * @return raster with the given sample values.
      */

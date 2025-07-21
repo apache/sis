@@ -39,6 +39,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
+import org.opengis.util.FactoryException;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.wrapper.Capability;
 import org.apache.sis.geometry.wrapper.Dimensions;
@@ -48,6 +49,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -144,13 +146,14 @@ public final class Factory extends Geometries<Geometry> {
      * @param  geometry  the geometry instance to wrap (can be {@code null}).
      * @return a wrapper for the given geometry implementation, or {@code null}.
      * @throws ClassCastException if the given geometry is not an instance of valid type.
+     * @throws BackingStoreException if the <abbr>CRS</abbr> cannot be created from the <abbr>SRID</abbr> code.
      */
     @Override
     public GeometryWrapper castOrWrap(final Object geometry) {
         if (geometry == null || geometry instanceof Wrapper) {
             return (Wrapper) geometry;
         } else {
-            return new Wrapper((Geometry) geometry);
+            return createWrapper((Geometry) geometry);
         }
     }
 
@@ -159,10 +162,15 @@ public final class Factory extends Geometries<Geometry> {
      *
      * @param  geometry  the geometry to wrap.
      * @return wrapper for the given geometry.
+     * @throws BackingStoreException if the <abbr>CRS</abbr> cannot be created from the <abbr>SRID</abbr> code.
      */
     @Override
     protected GeometryWrapper createWrapper(final Geometry geometry) {
-        return new Wrapper(geometry);
+        try {
+            return new Wrapper(geometry);
+        } catch (FactoryException e) {
+            throw new BackingStoreException(e);
+        }
     }
 
     /**
@@ -423,6 +431,7 @@ public final class Factory extends Geometries<Geometry> {
      * @param  geometries  the polygons or linear rings to put in a multi-polygons.
      * @throws ClassCastException if an element in the array is not a JTS geometry.
      * @throws IllegalArgumentException if an element is a non-closed linear string.
+     * @throws BackingStoreException if the <abbr>CRS</abbr> cannot be created from the <abbr>SRID</abbr> code.
      */
     @Override
     public GeometryWrapper createMultiPolygon(final Object[] geometries) {
@@ -455,7 +464,7 @@ public final class Factory extends Geometries<Geometry> {
             }
             polygons[i] = polygon;
         }
-        return new Wrapper(factory(isFloat).createMultiPolygon(polygons));
+        return createWrapper(factory(isFloat).createMultiPolygon(polygons));
     }
 
     /**
@@ -476,6 +485,7 @@ public final class Factory extends Geometries<Geometry> {
      * @throws IllegalArgumentException if the given geometry type is not supported.
      * @throws ClassCastException if {@code components} is not an array or a collection of supported geometry components.
      * @throws ArrayStoreException if {@code components} is an array with invalid component type.
+     * @throws BackingStoreException if the <abbr>CRS</abbr> cannot be created from the <abbr>SRID</abbr> code.
      */
     @Override
     public GeometryWrapper createFromComponents(final GeometryType type, final Object components) {
@@ -535,7 +545,7 @@ public final class Factory extends Geometries<Geometry> {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, type));
             }
         }
-        return new Wrapper(geometry);
+        return createWrapper(geometry);
     }
 
     /**
@@ -618,10 +628,11 @@ public final class Factory extends Geometries<Geometry> {
      *
      * @param  wkt  the Well Known Text to parse.
      * @return the geometry object for the given WKT.
-     * @throws ParseException if the WKT cannot be parsed.
+     * @throws ParseException if the <abbr>WKT</abbr> cannot be parsed.
+     * @throws FactoryException if the <abbr>CRS</abbr> cannot be created from the <abbr>SRID</abbr> code.
      */
     @Override
-    public GeometryWrapper parseWKT(final String wkt) throws ParseException {
+    public GeometryWrapper parseWKT(final String wkt) throws ParseException, FactoryException {
         // WKTReader(GeometryFactory) constructor is cheap.
         final WKTReader reader = new WKTReader(factory);
         reader.setIsOldJtsCoordinateSyntaxAllowed(false);
@@ -634,10 +645,11 @@ public final class Factory extends Geometries<Geometry> {
      *
      * @param  data  the sequence of bytes to parse.
      * @return the geometry object for the given WKB.
-     * @throws ParseException if the WKB cannot be parsed.
+     * @throws ParseException if the <abbr>WKB</abbr> cannot be parsed.
+     * @throws FactoryException if the <abbr>CRS</abbr> cannot be created from the <abbr>SRID</abbr> code.
      */
     @Override
-    public GeometryWrapper parseWKB(final ByteBuffer data) throws ParseException {
+    public GeometryWrapper parseWKB(final ByteBuffer data) throws ParseException, FactoryException {
         byte[] array;
         if (data.hasArray()) {
             /*

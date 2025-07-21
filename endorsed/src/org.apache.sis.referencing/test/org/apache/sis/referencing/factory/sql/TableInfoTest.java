@@ -35,11 +35,12 @@ public final class TableInfoTest extends TestCase {
     }
 
     /**
-     * Tests {@link TableInfo#tableMatches(String, String)}.
+     * Tests {@link TableInfo#tableMatches(String)}.
      */
     @Test
     public void testTableMatches() {
-        assertTrue(TableInfo.tableMatches("Coordinate_Operation",          "epsg_coordoperation"));
-        assertTrue(TableInfo.tableMatches("[Coordinate Reference System]", "epsg_coordinatereferencesystem"));
+        assertTrue(TableInfo.DATUM    .tableMatches("epsg_datum"));
+        assertTrue(TableInfo.ELLIPSOID.tableMatches("epsg_ellipsoid"));
+        assertTrue(TableInfo.CRS      .tableMatches("epsg_coordinatereferencesystem"));
     }
 }

@@ -19,7 +19,6 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
-import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
@@ -43,6 +42,7 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -152,11 +152,6 @@ import org.apache.sis.temporal.TemporalDate;
  * in the common case where only a few EPSG codes are used by an application.
  * {@code EPSGDataAccess.createFoo(String)} methods do not cache by themselves and query the database on every invocation.
  *
- * <h2>SQL dialects</h2>
- * Because the primary distribution format for the EPSG dataset is MS-Access, this class uses SQL statements formatted
- * for the MS-Access dialect. For usage with other database software products like PostgreSQL or Derby,
- * a {@link SQLTranslator} instance is provided to the constructor.
- *
  * @author  Yann Cézard (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
@@ -202,7 +197,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     @Workaround(library = "EPSG:6401-6420", version = "8.9")        // Deprecated in 2002 but still present in 2016.
     private static final Map<Integer,Integer> DEPRECATED_CS = deprecatedCS();
     static Map<Integer,Integer> deprecatedCS() {
-        final Map<Integer,Integer> m = new HashMap<>(24);
+        final var m = new HashMap<Integer,Integer>(24);
 
         // Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree
         Integer replacement = 6422;
@@ -335,8 +330,10 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     protected final Connection connection;
 
     /**
-     * The translator from the SQL statements using MS-Access dialect
-     * to SQL statements using the dialect of the actual database.
+     * The translator from the <abbr>SQL</abbr> statements hard-coded in this class to
+     * <abbr>SQL</abbr> statements compatible with the actual <abbr>EPSG</abbr> database.
+     * This translator may also change the schema and table names used in the queries
+     * in the actual database uses different names.
      */
     protected final SQLTranslator translator;
 
@@ -352,17 +349,22 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @param owner       the {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  the connection to the underlying EPSG database.
-     * @param translator  the translator from the SQL statements using MS-Access dialect
-     *                    to SQL statements using the dialect of the actual database.
+     * @param translator  translator from the <abbr>SQL</abbr> statements hard-coded in this class to
+     *                    <abbr>SQL</abbr> statements compatible with the actual <abbr>EPSG</abbr> database.
+     * @throws SQLException if an error occurred with the database connection.
      *
      * @see EPSGFactory#newDataAccess(Connection, SQLTranslator)
      */
-    protected EPSGDataAccess(final EPSGFactory owner, final Connection connection, final SQLTranslator translator) {
+    protected EPSGDataAccess(final EPSGFactory owner, final Connection connection, final SQLTranslator translator)
+            throws SQLException
+    {
         this.owner      = owner;
         this.connection = Objects.requireNonNull(connection);
         this.translator = Objects.requireNonNull(translator);
         this.namespace  = owner.nameFactory.createNameSpace(
                           owner.nameFactory.createLocalName(null, Constants.IOGP), null);
+        connection.setCatalog(translator.getCatalog());
+        connection.setSchema (translator.getSchema());
     }
 
     /**
@@ -412,7 +414,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         /*
          * We do not cache this citation because the caching service is already provided by ConcurrentAuthorityFactory.
          */
-        final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
+        final var c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
         c.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, Constants.EPSG)));
         try {
             /*
@@ -420,7 +422,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
              * instead of UTC because the date is for information purpose only, and the local timezone is
              * more likely to be shown nicely (without artificial hours) to the user.
              */
-            final String query = translator.apply("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +
+            final String query = translator.apply("SELECT VERSION_NUMBER, VERSION_DATE FROM \"Version History\"" +
                                                   " ORDER BY VERSION_DATE DESC, VERSION_HISTORY_CODE DESC");
             String version = null;
             try (Statement stmt = connection.createStatement();
@@ -431,7 +433,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
                     final Date date = result.getDate(2);                            // Local timezone.
                     if (version != null && date != null) {                          // Paranoiac check.
                         c.setEdition(new SimpleInternationalString(version));
-                        c.setEditionDate(date);
+                        c.setEditionDate(LocalDate.ofEpochDay(date.getTime() / Constants.MILLISECONDS_PER_DAY));
                         break;
                     }
                 }
@@ -465,7 +467,7 @@ addURIs:    for (int i=0; ; i++) {
                     }
                     default: break addURIs;     // Finished adding all URIs.
                 }
-                final DefaultOnlineResource r = new DefaultOnlineResource();
+                final var r = new DefaultOnlineResource();
                 try {
                     r.setLinkage(new URI(url));
                 } catch (URISyntaxException exception) {
@@ -688,6 +690,7 @@ addURIs:    for (int i=0; ; i++) {
     private int[] toPrimaryKeys(final String table, final String codeColumn, final String nameColumn, final String... codes)
             throws SQLException, FactoryException
     {
+        String actualTable = null;
         final int[] primaryKeys = new int[codes.length];
 codes:  for (int i=0; i<codes.length; i++) {
             final String code = codes[i];
@@ -697,15 +700,19 @@ codes:  for (int i=0; i<codes.length; i++) {
                  * We search first in the primary table. If no name is not found there, then we
                  * will search in the aliases table as a fallback.
                  */
+                if (actualTable == null) {
+                    actualTable = translator.toActualTableName(table);
+                }
                 final String pattern = SQLUtilities.toLikePattern(code, false);
                 Integer resolved = null;
                 boolean alias = false;
                 do {
                     PreparedStatement stmt;
                     if (alias) {
-                        // Note: "OBJECT_TABLE_NAME=?" is handled in a special way by SQLTranslator.
-                        stmt = prepareStatement("AliasKey", "SELECT OBJECT_CODE, ALIAS FROM [Alias] WHERE OBJECT_TABLE_NAME=? AND ALIAS LIKE ?");
-                        stmt.setString(1, table);
+                        stmt = prepareStatement("AliasKey",
+                                "SELECT OBJECT_CODE, ALIAS FROM \"Alias\"" +
+                                " WHERE OBJECT_TABLE_NAME=? AND ALIAS LIKE ?");
+                        stmt.setString(1, actualTable);
                         stmt.setString(2, pattern);
                     } else {
                         /*
@@ -726,7 +733,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         if (stmt == null) {
                             stmt = connection.prepareStatement(translator.apply(
                                     "SELECT " + codeColumn + ", " + nameColumn +
-                                    " FROM [" + table + "] WHERE " + nameColumn + " LIKE ?"));
+                                    " FROM \"" + actualTable + "\" WHERE " + nameColumn + " LIKE ?"));
                             statements.put(KEY, stmt);
                             lastTableForName = table;
                         }
@@ -778,7 +785,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             final String sql, final String... codes) throws SQLException, FactoryException
     {
         assert Thread.holdsLock(this);
-        assert sql.contains('[' + table + ']') : table;
+        assert sql.contains('"' + table + '"') : table;
         assert (codeColumn == null) || sql.contains(codeColumn) || table.equals("Area") : codeColumn;
         assert (nameColumn == null) || sql.contains(nameColumn) || table.equals("Area") : nameColumn;
         return executeQuery(table, sql, toPrimaryKeys(table, codeColumn, nameColumn, codes));
@@ -1047,9 +1054,9 @@ codes:  for (int i=0; i<codes.length; i++) {
         String reason = null;
         Object replacedBy = null;
         try (ResultSet result = executeMetadataQuery("Deprecation",
-                "SELECT DEPRECATION_REASON, REPLACED_BY FROM [Deprecation]" +
-                " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?", table, code))
-                // Note: "OBJECT_TABLE_NAME=?" is handled in a special way by SQLTranslator.
+                "SELECT DEPRECATION_REASON, REPLACED_BY FROM \"Deprecation\"" +
+                " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
+                translator.toActualTableName(table), code))
         {
             while (result.next()) {
                 reason     = getOptionalString (result, 1);
@@ -1063,13 +1070,13 @@ codes:  for (int i=0; i<codes.length; i++) {
             replacedBy = replacedBy.toString();
         }
         /*
-         * Try to infer the method name from the table name. For example if the deprecated code was found in
-         * the [Coordinate Reference System] table, then we declare createCoordinateReferenceSystem(String)
+         * Try to infer the method name from the table name. For example, if the deprecated code was found in
+         * the "Coordinate Reference System" table, then we declare `createCoordinateReferenceSystem(String)`
          * as the source of the log message.
          */
         String method = "create";
         for (final TableInfo info : TableInfo.EPSG) {
-            if (TableInfo.tableMatches(info.table, table)) {
+            if (info.tableMatches(table)) {
                 method += info.type.getSimpleName();
                 break;
             }
@@ -1113,14 +1120,14 @@ codes:  for (int i=0; i<codes.length; i++) {
          *   - We do not perform this replacement directly in our EPSG database because ASCII letters are more
          *     convenient for implementing accent-insensitive searches.
          */
-        final List<GenericName> aliases = new ArrayList<>();
+        final var aliases = new ArrayList<GenericName>();
         try (ResultSet result = executeMetadataQuery("Alias",
                 "SELECT NAMING_SYSTEM_NAME, ALIAS" +
-                " FROM [Alias] INNER JOIN [Naming System]" +
-                  " ON [Alias].NAMING_SYSTEM_CODE =" +
-                " [Naming System].NAMING_SYSTEM_CODE" +
-                " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?", table, code))
-                // Note: "OBJECT_TABLE_NAME=?" is handled in a special way by SQLTranslator.
+                " FROM \"Alias\" INNER JOIN \"Naming System\"" +
+                  " ON \"Alias\".NAMING_SYSTEM_CODE =" +
+                " \"Naming System\".NAMING_SYSTEM_CODE" +
+                " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
+                translator.toActualTableName(table), code))
         {
             while (result.next()) {
                 final String naming = getOptionalString(result, 1);
@@ -1156,7 +1163,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             properties.put(NamedIdentifier.VERSION_KEY,   version);
             properties.put(NamedIdentifier.AUTHORITY_KEY, authority);
             properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
-            final NamedIdentifier id = new NamedIdentifier(properties);
+            final var id = new NamedIdentifier(properties);
             properties.clear();
             properties.put(IdentifiedObject.NAME_KEY, id);
         }
@@ -1351,7 +1358,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " PROJECTION_CONV_CODE,"        +     // [11] For ProjectedCRS
                       " CMPD_HORIZCRS_CODE,"          +     // [12] For CompoundCRS only
                       " CMPD_VERTCRS_CODE"            +     // [13] For CompoundCRS only
-                " FROM [Coordinate Reference System]" +
+                " FROM \"Coordinate Reference System\"" +
                 " WHERE COORD_REF_SYS_CODE = ?", code))
         {
             while (result.next()) {
@@ -1633,7 +1640,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " DEPRECATED," +
                       " ELLIPSOID_CODE," +          // Only for geodetic type
                       " PRIME_MERIDIAN_CODE" +      // Only for geodetic type
-                " FROM [Datum]" +
+                " FROM \"Datum\"" +
                 " WHERE DATUM_CODE = ?", code))
         {
             while (result.next()) {
@@ -1774,23 +1781,23 @@ codes:  for (int i=0; i<codes.length; i++) {
         if (code == BursaWolfInfo.TARGET_DATUM) {
             return null;
         }
-        final List<BursaWolfInfo> bwInfos = new ArrayList<>();
+        final var bwInfos = new ArrayList<BursaWolfInfo>();
         try (ResultSet result = executeQuery("BursaWolfParametersSet",
                 "SELECT COORD_OP_CODE," +
                       " COORD_OP_METHOD_CODE," +
                       " TARGET_CRS_CODE," +
                       " AREA_OF_USE_CODE"+
-                " FROM [Coordinate_Operation]" +
+                " FROM \"Coordinate_Operation\"" +
                " WHERE DEPRECATED=0" +           // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                  " AND TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
                  " AND COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
                  " AND COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +
                  " AND SOURCE_CRS_CODE IN " +
-               "(SELECT COORD_REF_SYS_CODE FROM [Coordinate Reference System] WHERE DATUM_CODE = ?)" +
+               "(SELECT COORD_REF_SYS_CODE FROM \"Coordinate Reference System\" WHERE DATUM_CODE = ?)" +
             " ORDER BY TARGET_CRS_CODE, COORD_OP_ACCURACY, COORD_OP_CODE DESC", code))
         {
             while (result.next()) {
-                final BursaWolfInfo info = new BursaWolfInfo(
+                final var info = new BursaWolfInfo(
                         getInteger(code, result, 1),                // Operation
                         getInteger(code, result, 2),                // Method
                         getInteger(code, result, 3),                // Target datum
@@ -1819,7 +1826,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         /*
          * Now, iterate over the results and fetch the parameter values for each BursaWolfParameters object.
          */
-        final BursaWolfParameters[] parameters = new BursaWolfParameters[size];
+        final var parameters = new BursaWolfParameters[size];
         final Locale locale = getLocale();
         int count = 0;
         for (int i=0; i<size; i++) {
@@ -1841,12 +1848,12 @@ codes:  for (int i=0; i<codes.length; i++) {
             if (!equalsIgnoreMetadata(meridian, datum.getPrimeMeridian())) {
                 continue;
             }
-            final BursaWolfParameters bwp = new BursaWolfParameters(datum, info.getDomainOfValidity(owner));
+            final var bwp = new BursaWolfParameters(datum, info.getDomainOfValidity(owner));
             try (ResultSet result = executeQuery("BursaWolfParameters",
                 "SELECT PARAMETER_CODE," +
                       " PARAMETER_VALUE," +
                       " UOM_CODE" +
-                " FROM [Coordinate_Operation Parameter Value]" +
+                " FROM \"Coordinate_Operation Parameter Value\"" +
                 " WHERE COORD_OP_CODE = ?" +
                   " AND COORD_OP_METHOD_CODE = ?", info.operation, info.method))
             {
@@ -1906,7 +1913,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " UOM_CODE," +
                       " REMARKS," +
                       " DEPRECATED" +
-                " FROM [Ellipsoid]" +
+                " FROM \"Ellipsoid\"" +
                 " WHERE ELLIPSOID_CODE = ?", code))
         {
             while (result.next()) {
@@ -1996,7 +2003,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " UOM_CODE," +
                       " REMARKS," +
                       " DEPRECATED" +
-                " FROM [Prime Meridian]" +
+                " FROM \"Prime Meridian\"" +
                 " WHERE PRIME_MERIDIAN_CODE = ?", code))
         {
             while (result.next()) {
@@ -2054,7 +2061,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " AREA_NORTH_BOUND_LAT," +
                       " AREA_WEST_BOUND_LON," +
                       " AREA_EAST_BOUND_LON" +
-                " FROM [Area]" +
+                " FROM \"Area\"" +
                 " WHERE AREA_CODE = ?", code))
         {
             while (result.next()) {
@@ -2080,7 +2087,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     bbox = new DefaultGeographicBoundingBox(xmin, xmax, ymin, ymax);
                 }
                 if (description != null || bbox != null) {
-                    DefaultExtent extent = new DefaultExtent(description, bbox, null, null);
+                    var extent = new DefaultExtent(description, bbox, null, null);
                     extent.transitionTo(DefaultExtent.State.FINAL);
                     returnValue = ensureSingleton(extent, returnValue, code);
                 }
@@ -2135,7 +2142,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " DIMENSION," +
                       " REMARKS," +
                       " DEPRECATED" +
-                " FROM [Coordinate System]" +
+                " FROM \"Coordinate System\"" +
                 " WHERE COORD_SYS_CODE = ?", code))
         {
             while (result.next()) {
@@ -2245,9 +2252,6 @@ codes:  for (int i=0; i<codes.length; i++) {
     /**
      * Returns the coordinate system axis from an EPSG code for a {@link CoordinateSystem}.
      *
-     * <p><strong>WARNING:</strong> The EPSG database uses "{@code ORDER}" as a column name.
-     * This is tolerated by Access, but MySQL does not accept that name.</p>
-     *
      * @param  cs         the EPSG code for the coordinate system.
      * @param  dimension  of the coordinate system, which is also the size of the returned array.
      * @return an array of coordinate system axis.
@@ -2258,12 +2262,12 @@ codes:  for (int i=0; i<codes.length; i++) {
             throws SQLException, FactoryException
     {
         int i = 0;
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
+        final var axes = new CoordinateSystemAxis[dimension];
         try (ResultSet result = executeQuery("AxisOrder",
                 "SELECT COORD_AXIS_CODE" +
-                " FROM [Coordinate Axis]" +
+                " FROM \"Coordinate Axis\"" +
                 " WHERE COORD_SYS_CODE = ?" +
-                " ORDER BY [ORDER]", cs))
+                " ORDER BY COORD_AXIS_ORDER", cs))
         {
             while (result.next()) {
                 final String axis = getString(cs, result, 1);
@@ -2318,7 +2322,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " COORD_AXIS_ORIENTATION," +
                       " COORD_AXIS_ABBREVIATION," +
                       " UOM_CODE" +
-                " FROM [Coordinate Axis]" +
+                " FROM \"Coordinate Axis\"" +
                " WHERE COORD_AXIS_CODE = ?", code))
         {
             while (result.next()) {
@@ -2358,7 +2362,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         if (returnValue == null) {
             try (ResultSet result = executeQuery("Coordinate Axis Name",
                     "SELECT COORD_AXIS_NAME, DESCRIPTION, REMARKS" +
-                    " FROM [Coordinate Axis Name]" +
+                    " FROM \"Coordinate Axis Name\"" +
                     " WHERE COORD_AXIS_NAME_CODE = ?", code))
             {
                 while (result.next()) {
@@ -2417,7 +2421,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " FACTOR_C," +
                       " TARGET_UOM_CODE," +
                       " UNIT_OF_MEAS_NAME" +
-                " FROM [Unit of Measure]" +
+                " FROM \"Unit of Measure\"" +
                 " WHERE UOM_CODE = ?", code))
         {
             while (result.next()) {
@@ -2432,8 +2436,10 @@ codes:  for (int i=0; i<codes.length; i++) {
                      */
                     final boolean pb = (b != 1);
                     if (pb || c != 1) {
-                        throw new FactoryDataException(error().getString(Errors.Keys.InconsistentAttribute_2,
-                                    pb ? "FACTOR_B" : "FACTOR_C", pb ? b : c));
+                        throw new FactoryDataException(error().getString(
+                                Errors.Keys.InconsistentAttribute_2,
+                                pb ? "FACTOR_B" : "FACTOR_C",
+                                pb ? b : c));
                     }
                 }
                 Unit<?> unit = Units.valueOfEPSG(source);                           // Check in our list of hard-coded unit codes.
@@ -2492,7 +2498,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " PARAMETER_NAME," +
                       " DESCRIPTION," +
                       " DEPRECATED" +
-                " FROM [Coordinate_Operation Parameter]" +
+                " FROM \"Coordinate_Operation Parameter\"" +
                 " WHERE PARAMETER_CODE = ?", code))
         {
             while (result.next()) {
@@ -2515,7 +2521,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      */
                     type = Double.class;
                     try (ResultSet r = executeQuery("ParameterType",
-                            "SELECT PARAM_VALUE_FILE_REF FROM [Coordinate_Operation Parameter Value]" +
+                            "SELECT PARAM_VALUE_FILE_REF FROM \"Coordinate_Operation Parameter Value\"" +
                             " WHERE (PARAMETER_CODE = ?) AND PARAM_VALUE_FILE_REF IS NOT NULL", epsg))
                     {
                         while (r.next()) {
@@ -2536,7 +2542,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      */
                     units = new LinkedHashSet<>();
                     try (ResultSet r = executeQuery("ParameterUnit",
-                            "SELECT UOM_CODE FROM [Coordinate_Operation Parameter Value]" +
+                            "SELECT UOM_CODE FROM \"Coordinate_Operation Parameter Value\"" +
                             " WHERE (PARAMETER_CODE = ?)" +
                             " GROUP BY UOM_CODE" +
                             " ORDER BY COUNT(UOM_CODE) DESC", epsg))
@@ -2567,7 +2573,8 @@ next:                   while (r.next()) {
                  */
                 InternationalString isReversible = null;
                 try (ResultSet r = executeQuery("ParameterSign",
-                        "SELECT DISTINCT PARAM_SIGN_REVERSAL FROM [Coordinate_Operation Parameter Usage]" +
+                        "SELECT DISTINCT PARAM_SIGN_REVERSAL" +
+                        " FROM \"Coordinate_Operation Parameter Usage\"" +
                         " WHERE (PARAMETER_CODE = ?)", epsg))
                 {
                     if (r.next()) {
@@ -2597,8 +2604,7 @@ next:                   while (r.next()) {
                 final Map<String,Object> properties =
                         createProperties("Coordinate_Operation Parameter", name, epsg, isReversible, deprecated);
                 properties.put(ImmutableIdentifier.DESCRIPTION_KEY, description);
-                final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor<>(properties,
-                        1, 1, type, valueDomain, null, null);
+                final var descriptor = new DefaultParameterDescriptor<>(properties, 1, 1, type, valueDomain, null, null);
                 returnValue = ensureSingleton(descriptor, returnValue, code);
             }
         } catch (SQLException exception) {
@@ -2618,10 +2624,10 @@ next:                   while (r.next()) {
      * @throws SQLException if a SQL statement failed.
      */
     private ParameterDescriptor<?>[] createParameterDescriptors(final Integer method) throws FactoryException, SQLException {
-        final List<ParameterDescriptor<?>> descriptors = new ArrayList<>();
+        final var descriptors = new ArrayList<ParameterDescriptor<?>>();
         try (ResultSet result = executeQuery("Coordinate_Operation Parameter Usage",
                 "SELECT PARAMETER_CODE" +
-                " FROM [Coordinate_Operation Parameter Usage]" +
+                " FROM \"Coordinate_Operation Parameter Usage\"" +
                 " WHERE COORD_OP_METHOD_CODE = ?" +
                 " ORDER BY SORT_ORDER", method))
         {
@@ -2648,10 +2654,10 @@ next:                   while (r.next()) {
                       " CV.PARAMETER_VALUE," +
                       " CV.PARAM_VALUE_FILE_REF," +
                       " CV.UOM_CODE" +
-               " FROM ([Coordinate_Operation Parameter Value] AS CV" +
-          " INNER JOIN [Coordinate_Operation Parameter] AS CP" +
+               " FROM (\"Coordinate_Operation Parameter Value\" AS CV" +
+          " INNER JOIN \"Coordinate_Operation Parameter\" AS CP" +
                    " ON CV.PARAMETER_CODE = CP.PARAMETER_CODE)" +
-          " INNER JOIN [Coordinate_Operation Parameter Usage] AS CU" +
+          " INNER JOIN \"Coordinate_Operation Parameter Usage\" AS CU" +
                   " ON (CP.PARAMETER_CODE = CU.PARAMETER_CODE)" +
                  " AND (CV.COORD_OP_METHOD_CODE = CU.COORD_OP_METHOD_CODE)" +
                 " WHERE CV.COORD_OP_METHOD_CODE = ?" +
@@ -2749,7 +2755,7 @@ next:                   while (r.next()) {
                       " COORD_OP_METHOD_NAME," +
                       " REMARKS," +
                       " DEPRECATED" +
-                 " FROM [Coordinate_Operation Method]" +
+                 " FROM \"Coordinate_Operation Method\"" +
                 " WHERE COORD_OP_METHOD_CODE = ?", code))
         {
             while (result.next()) {
@@ -2763,8 +2769,8 @@ next:                   while (r.next()) {
                 /*
                  * Note: we do not store the formula at this time, because the text is very verbose and rarely used.
                  */
-                final OperationMethod method = new DefaultOperationMethod(properties,
-                            new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors));
+                final var params = new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors);
+                final var method = new DefaultOperationMethod(properties, params);
                 returnValue = ensureSingleton(method, returnValue, code);
             }
         } catch (SQLException exception) {
@@ -2818,7 +2824,7 @@ next:                   while (r.next()) {
                           " COORD_OP_SCOPE," +
                           " REMARKS," +
                           " DEPRECATED" +
-                    " FROM [Coordinate_Operation]" +
+                    " FROM \"Coordinate_Operation\"" +
                     " WHERE COORD_OP_CODE = ?", code))
             {
                 while (result.next()) {
@@ -2896,7 +2902,7 @@ next:                   while (r.next()) {
                     opProperties.put(CoordinateOperation.OPERATION_VERSION_KEY, version);
                     if (!Double.isNaN(accuracy)) {
                         opProperties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                                PositionalAccuracyConstant.create(accuracy));
+                                         PositionalAccuracyConstant.create(accuracy));
                     }
                     /*
                      * Creates the operation. Conversions should be the only operations allowed to have
@@ -2916,10 +2922,10 @@ next:                   while (r.next()) {
                          */
                         result.close();
                         opProperties = new HashMap<>(opProperties);         // Because this class uses a shared map.
-                        final List<String> codes = new ArrayList<>();
+                        final var codes = new ArrayList<String>();
                         try (ResultSet cr = executeQuery("Coordinate_Operation Path",
                                 "SELECT SINGLE_OPERATION_CODE" +
-                                 " FROM [Coordinate_Operation Path]" +
+                                 " FROM \"Coordinate_Operation Path\"" +
                                 " WHERE (CONCAT_OPERATION_CODE = ?)" +
                                 " ORDER BY OP_PATH_STEP", epsg))
                         {
@@ -2927,7 +2933,7 @@ next:                   while (r.next()) {
                                 codes.add(getString(code, cr, 1));
                             }
                         }
-                        final CoordinateOperation[] operations = new CoordinateOperation[codes.size()];
+                        final var operations = new CoordinateOperation[codes.size()];
                         ensureNoCycle(CoordinateOperation.class, epsg);
                         try {
                             for (int i=0; i<operations.length; i++) {
@@ -3024,7 +3030,7 @@ next:                   while (r.next()) {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         final String label = sourceCRS + " ⇨ " + targetCRS;
-        final CoordinateOperationSet set = new CoordinateOperationSet(owner);
+        final var set = new CoordinateOperationSet(owner);
         try {
             final int[] pair = toPrimaryKeys(null, null, null, sourceCRS, targetCRS);
             boolean searchTransformations = false;
@@ -3038,8 +3044,8 @@ next:                   while (r.next()) {
                 if (searchTransformations) {
                     key = "TransformationFromCRS";
                     sql = "SELECT COORD_OP_CODE" +
-                          " FROM [Coordinate_Operation] AS CO" +
-                          " JOIN [Area] ON AREA_OF_USE_CODE = AREA_CODE" +
+                          " FROM \"Coordinate_Operation\" AS CO" +
+                          " JOIN \"Area\" ON AREA_OF_USE_CODE = AREA_CODE" +
                           " WHERE CO.DEPRECATED=0" +   // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                             " AND SOURCE_CRS_CODE = ?" +
                             " AND TARGET_CRS_CODE = ?" +
@@ -3050,7 +3056,7 @@ next:                   while (r.next()) {
                 } else {
                     key = "ConversionFromCRS";
                     sql = "SELECT PROJECTION_CONV_CODE" +
-                          " FROM [Coordinate Reference System]" +
+                          " FROM \"Coordinate Reference System\"" +
                           " WHERE SOURCE_GEOGCRS_CODE = ?" +
                             " AND COORD_REF_SYS_CODE = ?";
                 }
@@ -3127,11 +3133,11 @@ next:                   while (r.next()) {
                     unexpectedException("sort", e);
                     continue;
                 }
-                // Note: "OBJECT_TABLE_NAME=?" is handled in a special way by SQLTranslator.
                 try (ResultSet result = executeMetadataQuery("Supersession",
-                        "SELECT SUPERSEDED_BY FROM [Supersession]" +
+                        "SELECT SUPERSEDED_BY FROM \"Supersession\"" +
                         " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?" +
-                        " ORDER BY SUPERSESSION_YEAR DESC", table, code))
+                        " ORDER BY SUPERSESSION_YEAR DESC",
+                        translator.toActualTableName(table), code))
                 {
                     while (result.next()) {
                         final String replacement = result.getString(1);

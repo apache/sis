@@ -168,7 +168,9 @@ final class FeatureAdapter {
          * Order matter, because `FeatureIterator` iterator will map the columns
          * to the attributes listed in the `attributes` array in that order.
          */
-        final var sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT);
+        final var sql = new SQLBuilder(table.database);
+        sql.setCatalogAndSchema(metadata.getConnection());
+        sql.append(SQLBuilder.SELECT);
         for (final Column column : attributes) {
             String function = null;
             if (column.getGeometryType().isPresent()) {

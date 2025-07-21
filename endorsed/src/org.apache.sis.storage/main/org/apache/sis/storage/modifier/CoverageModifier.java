@@ -66,12 +66,6 @@ import org.apache.sis.util.privy.Strings;
  */
 public interface CoverageModifier {
     /**
-     * The default instance using the default implementation documented in each method.
-     */
-    CoverageModifier DEFAULT = new CoverageModifier() {
-    };
-
-    /**
      * Returns modifier specified in the options of the given storage connector.
      * This convenience method fetches the value associated to {@link DataOptionKey#COVERAGE_MODIFIER}.
      * If there is no such value, then this method returns the {@link #DEFAULT} instance.
@@ -79,9 +73,9 @@ public interface CoverageModifier {
      * @param  connector  the storage connector from which to get the modifier.
      * @return the modifier to use, never {@code null}.
      */
-    static CoverageModifier getOrDefault(StorageConnector connector) {
+    public static CoverageModifier getOrDefault(StorageConnector connector) {
         final CoverageModifier customizer = connector.getOption(DataOptionKey.COVERAGE_MODIFIER);
-        return (customizer != null) ? customizer : DEFAULT;
+        return (customizer != null) ? customizer : Source.DEFAULT;
     }
 
     /**
@@ -92,11 +86,18 @@ public interface CoverageModifier {
      * @since   1.5
      */
     public static class Source {
+        /**
+         * The default instance using the default implementation documented in each method.
+         * Defined in this class because we cannot have private static field in an interface.
+         */
+        static final CoverageModifier DEFAULT = new CoverageModifier() {
+        };
+
         /** The data store for which to modify a file or coverage description. */
         private final DataStore store;
 
         /** Index of the coverage for which to compute information, or -1 for the whole file. */
-        private final int coverage;
+        private final int coverageIndex;
 
         /** The type of raster data, or {@code null} if unknown. */
         private final DataType dataType;
@@ -108,21 +109,21 @@ public interface CoverageModifier {
          * @param store  the data store for which to modify some coverages or sample dimensions.
          */
         public Source(final DataStore store) {
-            this.store    = Objects.requireNonNull(store);
-            this.coverage = -1;
+            this.store = Objects.requireNonNull(store);
+            this.coverageIndex = -1;
             this.dataType = null;
         }
 
         /**
          * Creates a new source for a coverage at the specified index.
          *
-         * @param store     the data store for which to modify some coverages or sample dimensions.
-         * @param coverage  index of the coverage (image) for which to compute information.
-         * @param dataType  the type of raster data, or {@code null} if unknown.
+         * @param store          the data store for which to modify some coverages or sample dimensions.
+         * @param coverageIndex  index of the coverage (image) for which to compute information.
+         * @param dataType       the type of raster data, or {@code null} if unknown.
          */
-        public Source(final DataStore store, final int coverage, final DataType dataType) {
-            this.store    = Objects.requireNonNull(store);
-            this.coverage = coverage;
+        public Source(final DataStore store, final int coverageIndex, final DataType dataType) {
+            this.store = Objects.requireNonNull(store);
+            this.coverageIndex = coverageIndex;
             this.dataType = dataType;
         }
 
@@ -148,7 +149,7 @@ public interface CoverageModifier {
          * @return the index of the coverage to eventually modify.
          */
         public OptionalInt getCoverageIndex() {
-            return (coverage >= 0) ? OptionalInt.of(coverage) : OptionalInt.empty();
+            return (coverageIndex >= 0) ? OptionalInt.of(coverageIndex) : OptionalInt.empty();
         }
 
         /**
@@ -194,14 +195,14 @@ public interface CoverageModifier {
         @Override
         public String toString() {
             @SuppressWarnings("LocalVariableHidesMemberVariable")
-            final int coverage  = getCoverageIndex().orElse(-1);
-            final int bandIndex = getBandIndex();
-            final int numBands  = getNumBands();
+            final int coverageIndex = getCoverageIndex().orElse(-1);
+            final int bandIndex     = getBandIndex();
+            final int numBands      = getNumBands();
             return Strings.toString(getClass(),
                     "store",         getDataStore().getDisplayName(),
-                    "coverageIndex", (coverage  >= 0) ? coverage  : null,
-                    "bandIndex",     (bandIndex >= 0) ? bandIndex : null,
-                    "numBands",      (numBands  >= 0) ? numBands  : null,
+                    "coverageIndex", (coverageIndex >= 0) ? coverageIndex  : null,
+                    "bandIndex",     (bandIndex     >= 0) ? bandIndex : null,
+                    "numBands",      (numBands      >= 0) ? numBands  : null,
                     "dataType",      getDataType(),
                     "sampleRange", getSampleRange().orElse(null));
         }
@@ -224,16 +225,16 @@ public interface CoverageModifier {
         /**
          * Creates a new source for the specified band.
          *
-         * @param store      the data store which contains the band to modify.
-         * @param coverage   index of the coverage for which to create a sample dimension.
-         * @param bandIndex  index of the band for which to create a sample dimension.
-         * @param numBands   number of bands.
-         * @param dataType   type of raster data, or {@code null} if unknown.
+         * @param store          the data store which contains the band to modify.
+         * @param coverageIndex  index of the coverage for which to create a sample dimension.
+         * @param bandIndex      index of the band for which to create a sample dimension.
+         * @param numBands       number of bands.
+         * @param dataType       type of raster data, or {@code null} if unknown.
          */
-        public BandSource(final DataStore store, final int coverage, final int bandIndex,
+        public BandSource(final DataStore store, final int coverageIndex, final int bandIndex,
                           final int numBands, final DataType dataType)
         {
-            super(store, coverage, dataType);
+            super(store, coverageIndex, dataType);
             this.bandIndex = bandIndex;
             this.numBands  = numBands;
         }
@@ -330,22 +331,44 @@ public interface CoverageModifier {
 
     /**
      * Invoked when a sample dimension is created in a coverage.
-     * The data store invokes this method with a builder initialized to a default name,
+     * The data store invokes this method with a {@link SampleDimension} builder initialized to a default name,
      * which may be the {@linkplain SampleDimension.Builder#setName(int) band number}.
-     * The builder may also contain a {@linkplain SampleDimension.Builder#setBackground(Number) background value}.
+     * The builder may also contain a {@linkplain SampleDimension.Builder#setBackground(Number) background value}
+     * and {@linkplain SampleDimension.Builder#categories() categories}.
      * Implementations can override this method for setting a better name
-     * or for declaring the meaning of sample values (by adding categories).
+     * or for declaring the meaning of sample values (by replacing categories).
      *
      * <h4>Default implementation</h4>
-     * The default implementation creates a "no data" category for the
-     * {@linkplain SampleDimension.Builder#getBackground() background value} if such value exists.
+     * The default implementation returns {@code dimensions.build()} with no modification on the given builder.
+     *
+     * <h4>Example: measurement data</h4>
+     * The following example declares that the values 0 means "no data".
      * The presence of such "no data" category will cause the raster to be converted to floating point
      * values before operations such as {@code resample}, in order to replace those "no data" by NaN values.
-     * If this replacement is not desired, then subclass should override this method for example like below:
+     * When a "no data" category is declared, it is strongly recommended to also declare the range of real data.
+     * The following example declares the range 1 to 255 inclusive.
      *
      * {@snippet lang="java" :
      * @Override
      * public SampleDimension customize(BandSource source, SampleDimension.Builder dimension) {
+     *     dimension.categories().clear();      // Discard the categories created by the store.
+     *     dimension.addQualitative(null, 0);   // Declare value 0 as "no data".
+     *     dimension.addQuantitative("Some name for my data", 1, 255, null);
+     *     return dimension.build();
+     * }
+     * }
+     *
+     * See the various {@code addQuantitative(…)} methods for information about how to declare a transfer function
+     * (a conversion from pixel values to the unit of measurement).
+     *
+     * <h4>Example: visualization only</h4>
+     * If the pixel values have no meaning other than visualization, this method can be overridden
+     * as below for making sure that they raster is not interpreted as measurement data:
+     *
+     * {@snippet lang="java" :
+     * @Override
+     * public SampleDimension customize(BandSource source, SampleDimension.Builder dimension) {
+     *     dimension.categories().clear();      // Discard the categories created by the store.
      *     return dimension.build();
      * }
      * }
@@ -359,12 +382,6 @@ public interface CoverageModifier {
     default SampleDimension customize(final BandSource source, final SampleDimension.Builder dimension)
             throws DataStoreException
     {
-        final Number fill = dimension.getBackground();
-        if (fill != null) {
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            NumberRange<?> samples = new NumberRange(fill.getClass(), fill, true, fill, true);
-            dimension.addQualitative(null, samples);
-        }
         return dimension.build();
     }
 

@@ -203,7 +203,7 @@ public enum DataDirectory {
         if (directory == null) {
             final Path root = getRootDirectory();
             if (root != null) {
-                final StringBuilder buffer = new StringBuilder(name());
+                final var buffer = new StringBuilder(name());
                 for (int i=1; i<buffer.length(); i++) {
                     final char c = buffer.charAt(i);
                     if (c == '_') buffer.deleteCharAt(i);

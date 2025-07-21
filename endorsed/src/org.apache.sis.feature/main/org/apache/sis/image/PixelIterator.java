@@ -394,7 +394,7 @@ public class PixelIterator {
          */
         static int getScanlineStride(final SampleModel sm) {
             if (sm instanceof ComponentSampleModel) {
-                final ComponentSampleModel csm = (ComponentSampleModel) sm;
+                final var csm = (ComponentSampleModel) sm;
                 if (csm.getPixelStride() == 1) {
                     for (final int offset : csm.getBandOffsets()) {
                         if (offset != 0) return 0;
@@ -404,13 +404,13 @@ public class PixelIterator {
                     }
                 }
             } else if (sm instanceof SinglePixelPackedSampleModel) {
-                final SinglePixelPackedSampleModel csm = (SinglePixelPackedSampleModel) sm;
+                final var csm = (SinglePixelPackedSampleModel) sm;
                 final int[] offsets = csm.getBitOffsets();
                 if (offsets.length == 1 && offsets[0] == 0) {
                     return csm.getScanlineStride();
                 }
             } else if (sm instanceof MultiPixelPackedSampleModel) {
-                final MultiPixelPackedSampleModel csm = (MultiPixelPackedSampleModel) sm;
+                final var csm = (MultiPixelPackedSampleModel) sm;
                 if (csm.getDataBitOffset() == 0 && csm.getPixelBitStride() == DataBuffer.getDataTypeSize(csm.getDataType())) {
                     return csm.getScanlineStride();
                 }

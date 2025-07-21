@@ -27,7 +27,7 @@ import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -109,7 +109,7 @@ final class VerticalInfo {
      */
     final VerticalInfo resolve(final VerticalCRS crs) {
         if (crs != null) {
-            if (PseudoDatum.of(crs).getVerticalDatumType() == VerticalDatumType.GEOIDAL) {
+            if (DatumOrEnsemble.asDatum(crs).getVerticalDatumType() == VerticalDatumType.GEOIDAL) {
                 return resolve(crs, crs.getCoordinateSystem().getAxis(0));
             }
         }
@@ -183,7 +183,7 @@ final class VerticalInfo {
          */
         final VerticalCS cs = csFactory.createVerticalCS (properties(axis.getName()), axis);
         extent.setVerticalCRS(crsFactory.createVerticalCRS(properties((isUP ? compatibleCRS : axis).getName()),
-                                                           PseudoDatum.of(compatibleCRS),
+                                                           DatumOrEnsemble.asDatum(compatibleCRS),
                                                            cs));
         return next;
     }

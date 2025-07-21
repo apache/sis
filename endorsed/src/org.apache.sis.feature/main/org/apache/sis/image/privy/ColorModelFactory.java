@@ -481,6 +481,9 @@ public final class ColorModelFactory {
                                               final double lower, final double upper, final Color... colors)
     {
         ArgumentChecks.ensureNonEmpty("colors", colors);
+        if (colors.length == 2 && colors[0].getRGB() == 0xFF000000 && colors[1].getRGB() == 0xFFFFFFFF) {
+            return createGrayScale(dataType, numBands, visibleBand, lower, upper);
+        }
         return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
             new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true, null)
         });

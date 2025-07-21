@@ -84,7 +84,7 @@ import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 
 
 /**
@@ -389,7 +389,7 @@ final class GridMapping {
             }
             datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
         } else {
-            datum = PseudoDatum.of(defaultDefinitions.geographic());
+            datum = DatumOrEnsemble.asDatum(defaultDefinitions.geographic());
         }
         /*
          * Geographic CRS from all above properties.

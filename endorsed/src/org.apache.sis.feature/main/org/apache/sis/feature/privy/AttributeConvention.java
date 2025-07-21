@@ -28,7 +28,6 @@ import org.apache.sis.geometry.wrapper.Geometries;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
@@ -134,7 +133,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link org.opengis.referencing.crs.CoordinateReferenceSystem}.</p>
      *
-     * @see #getCRSCharacteristic(Object)
+     * @see #getCRSCharacteristic(AbstractFeature, String)
      */
     public static final ScopedName CRS_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "crs");
 
@@ -164,7 +163,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link Integer}.</p>
      *
-     * @see #getMaximalLengthCharacteristic(Object)
+     * @see #getMaximalLengthCharacteristic(AbstractFeature, String)
      */
     public static final ScopedName MAXIMAL_LENGTH_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "maximalLength");
 
@@ -191,7 +190,7 @@ public final class AttributeConvention extends Static {
 
     /**
      * String representation of the {@link #ENVELOPE_PROPERTY} name.
-     * This can be used in calls to {@link Feature#getPropertyValue(String)}.
+     * This can be used in calls to {@link AbstractFeature#getPropertyValue(String)}.
      */
     public static final String ENVELOPE = "sis:envelope";
 
@@ -295,18 +294,20 @@ public final class AttributeConvention extends Static {
     }
 
     /**
-     * Returns the Coordinate Reference Systems characteristic for the given attribute, or {@code null} if none.
+     * Returns the Coordinate Reference Systems characteristic for the specified attribute, or {@code null} if none.
      * This method gets the value or default value from the characteristic named {@link #CRS_CHARACTERISTIC}.
      *
-     * @param  attribute  the attribute for which to get the CRS, or {@code null}.
-     * @return the Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
+     * @param  feature   the feature instance from which to get the <abbr>CRS</abbr> of an attribute.
+     * @param  property  name of the property for which to get the <abbr>CRS</abbr>.
+     * @return the Coordinate Reference System characteristic of the specified property, or {@code null} if none.
+     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property of the given feature.
      * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      *
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setCRS(CoordinateReferenceSystem)
      */
-    public static CoordinateReferenceSystem getCRSCharacteristic(final Object attribute) {
-        return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS);
+    public static CoordinateReferenceSystem getCRSCharacteristic(final AbstractFeature feature, final String property) {
+        return (CoordinateReferenceSystem) getCharacteristic(feature, property, CRS);
     }
 
     /**
@@ -315,8 +316,8 @@ public final class AttributeConvention extends Static {
      * If the given property is a link, then this method follows the link in the given feature type (if non-null).
      *
      * <p>This method should be used only when the actual property instance is unknown.
-     * Otherwise, {@code getCRSCharacteristic(Property)} should be used because the CRS
-     * may vary for each property instance.</p>
+     * Otherwise, {@link #getCRSCharacteristic(AbstractFeature, String)} should be used because
+     * the <abbr>CRS</abbr> may vary for each property instance.</p>
      *
      * @param  feature    the feature type in which to follow links, or {@code null} if none.
      * @param  attribute  the attribute type for which to get the CRS, or {@code null}.
@@ -344,15 +345,17 @@ public final class AttributeConvention extends Static {
      * Returns the maximal length characteristic for the given attribute, or {@code null} if none.
      * This method gets the value or default value from the characteristic named {@link #MAXIMAL_LENGTH_CHARACTERISTIC}.
      *
-     * @param  attribute  the attribute for which to get the maximal length, or {@code null}.
-     * @return the maximal length characteristic of the given attribute, or {@code null} if none.
+     * @param  feature   the feature instance from which to get the maximal length of an attribute.
+     * @param  property  the name of the property for which to get the maximal length.
+     * @return the maximal length characteristic of the specified property, or {@code null} if none.
+     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property of the given feature.
      * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
      *         to an object which is not an {@link Integer} instance.
      *
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setMaximalLength(Integer)
      */
-    public static Integer getMaximalLengthCharacteristic(final Object attribute) {
-        return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH);
+    public static Integer getMaximalLengthCharacteristic(final AbstractFeature feature, final String property) {
+        return (Integer) getCharacteristic(feature, property, MAXIMAL_LENGTH);
     }
 
     /**
@@ -361,8 +364,8 @@ public final class AttributeConvention extends Static {
      * If the given property is a link, then this method follows the link in the given feature type (if non-null).
      *
      * <p>This method should be used only when the actual property instance is unknown.
-     * Otherwise, {@code getMaximalLengthCharacteristic(Property)} should be used because
-     * the maximal length may vary for each property instance.</p>
+     * Otherwise, {@link #getMaximalLengthCharacteristic(AbstractFeature, String)} should be used
+     * because the maximal length may vary for each property instance.</p>
      *
      * @param  feature    the feature type in which to follow links, or {@code null} if none.
      * @param  attribute  the attribute type for which to get the maximal length, or {@code null}.
@@ -395,29 +398,18 @@ public final class AttributeConvention extends Static {
     }
 
     /**
-     * Fetches from the given property the value or default value of the named characteristic.
-     * If the given property is null, or is not an attribute, or does not have characteristics
+     * Fetches from the specified property the value or default value of the named characteristic.
+     * If the specified property is null, or is not an attribute, or does not have characteristics
      * of the given name, then this method returns {@code null}.
      *
-     * @param  attribute  the attribute from which to get the characteristic value or default value, or {@code null}.
-     * @param  name       name of the characteristic to get.
-     * @return the value or default value of the given characteristic in the given property, or {@code null} if none.
+     * @param  feature         the feature instance from which to get the characteristic.
+     * @param  property        name of the property for which to get the characteristic.
+     * @param  characteristic  name of the characteristic from which to get the value or default value.
+     * @return the value or default value of the specified characteristic in the specified property, or {@code null} if none.
+     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property of the given feature.
      */
-    private static Object getCharacteristic(final Object attribute, final String name) {
-        if (attribute instanceof AbstractAttribute<?>) {
-            final AbstractAttribute<?> at = ((AbstractAttribute<?>) attribute).characteristics().get(name);
-            if (at != null) {
-                final Object value = at.getValue();
-                if (value != null) {
-                    return value;
-                }
-            }
-            final DefaultAttributeType<?> type = ((AbstractAttribute<?>) attribute).getType().characteristics().get(name);
-            if (type != null) {
-                return type.getDefaultValue();
-            }
-        }
-        return null;
+    private static Object getCharacteristic(final AbstractFeature feature, final String property, final String characteristic) {
+        return feature.getCharacteristicValue(property, characteristic).orElse(null);
     }
 
     /**

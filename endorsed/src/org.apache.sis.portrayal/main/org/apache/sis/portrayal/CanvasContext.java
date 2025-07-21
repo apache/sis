@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -33,8 +32,8 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.Formulas;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.system.Configuration;
 
 
@@ -201,12 +200,11 @@ final class CanvasContext extends CoordinateOperationContext {
                     }
                     combined[j] = m;
                 }
-                final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(objectiveToGeographic.getTargetCRS());
-                if (ellipsoid != null) {
+                DatumOrEnsemble.getEllipsoid(objectiveToGeographic.getTargetCRS()).ifPresent((ellipsoid) -> {
                     double radius = Formulas.radiusOfConformalSphere(ellipsoid, combined[1]);
                     radius = ellipsoid.getAxisUnit().getConverterTo(Units.METRE).convert(radius);
                     resolution = MathFunctions.magnitude(combined) * radius;
-                }
+                });
             }
         }
     }

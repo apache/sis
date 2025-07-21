@@ -607,7 +607,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
             return false;
         }
         // Conversion attempt happen in the PropertyAccessor.set(…) method.
-        final Boolean changed = (Boolean) accessor.set(index, metadata, value, PropertyAccessor.APPEND);
+        final var changed = (Boolean) accessor.set(index, metadata, value, PropertyAccessor.APPEND);
         if (changed == null) {
             throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1,
                     accessor.name(index, KeyNamePolicy.UML_IDENTIFIER)));

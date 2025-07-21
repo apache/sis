@@ -125,7 +125,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  * {@link #setLocalCoordinates(double, double)} explicitly instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 public class StatusBar extends Widget implements EventHandler<MouseEvent> {
@@ -146,6 +146,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * This is in case {@link #computeSizeOfSampleValues(String, Iterable)} underestimates the required size.
      */
     private static final int VALUES_PADDING = 9;
+
+    /**
+     * Minimal size of the text field where sample values are shown.
+     */
+    private static final int MINIMAL_VALUES_SIZE = 60;
 
     /**
      * The container of controls making the status bar.
@@ -1037,6 +1042,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @see #positionReferenceSystem
      */
+    @SuppressWarnings("StringEquality")
     private void setFormatCRS(final CoordinateReferenceSystem crs, final Quantity<Length> accuracy) {
         int dimension = localToPositionCRS.getTargetDimensions();
         GeneralDirectPosition target = targetCoordinates;
@@ -1059,7 +1065,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         precisionUnit = null;
         String text = null;
         if (crs != null) {
-            final StringBuilder b = new StringBuilder().append('(');
+            final var b = new StringBuilder().append('(');
             final CoordinateSystem cs = crs.getCoordinateSystem();
             dimension = (cs != null) ? cs.getDimension() : 0;       // Paranoiac check (should never be null).
             for (int i=0; i<dimension; i++) {
@@ -1473,6 +1479,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
      * Returns {@code true} if the position contains a valid coordinates.
      */
+    @SuppressWarnings("StringEquality")
     private boolean isPositionVisible() {
         if (position.isVisible()) {
             final String text = position.getText();
@@ -1490,23 +1497,23 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      */
     private void setSampleValuesVisible(final boolean visible) {
         final ObservableList<Node> c = view.getChildren();
-        Label view = sampleValues;
+        Label sampleView = sampleValues;
         if (visible) {
-            if (view == null) {
-                view = new Label();
-                view.setAlignment(Pos.CENTER_RIGHT);
-                view.setTextAlignment(TextAlignment.RIGHT);
-                view.setMinWidth(Label.USE_PREF_SIZE);
-                view.setMaxWidth(Label.USE_PREF_SIZE);
-                sampleValues = view;
+            if (sampleView == null) {
+                sampleView = new Label();
+                sampleView.setAlignment(Pos.CENTER_RIGHT);
+                sampleView.setTextAlignment(TextAlignment.RIGHT);
+                sampleView.setMinWidth(Label.USE_PREF_SIZE);
+                sampleView.setMaxWidth(Label.USE_PREF_SIZE);
+                sampleValues = sampleView;
             }
-            if (c.lastIndexOf(view) < 0) {
+            if (c.lastIndexOf(sampleView) < 0) {
                 final Separator separator = new Separator(Orientation.VERTICAL);
-                c.addAll(separator, view);
+                c.addAll(separator, sampleView);
             }
-        } else if (view != null) {
-            view.setText(null);
-            int i = c.lastIndexOf(view);
+        } else if (sampleView != null) {
+            sampleView.setText(null);
+            int i = c.lastIndexOf(sampleView);
             if (i >= 0) {
                 c.remove(i);
                 if (--i >= 0) {
@@ -1532,14 +1539,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     final boolean computeSizeOfSampleValues(final String prototype, final Iterable<String> others) {
         setSampleValuesVisible(prototype != null && !prototype.isEmpty());
         if (isSampleValuesVisible) {
-            final Label view = sampleValues;
-            view.setText(prototype);
-            view.setPrefWidth(Label.USE_COMPUTED_SIZE);                 // Enable `prefWidth(…)` computation.
-            double width = view.prefWidth(view.getHeight());
-            final double max = Math.max(width * 1.25, 200);                     // Arbitrary limit.
+            final Label sampleView = sampleValues;
+            sampleView.setText(prototype);
+            sampleView.setPrefWidth(Label.USE_COMPUTED_SIZE);               // Enable `prefWidth(…)` computation.
+            double width = sampleView.prefWidth(sampleView.getHeight());
+            final double max = Math.max(width * 1.25, 200);                 // Arbitrary limit.
             for (final String other : others) {
-                view.setText(other);
-                final double cw = view.prefWidth(view.getHeight());
+                sampleView.setText(other);
+                final double cw = sampleView.prefWidth(sampleView.getHeight());
                 if (cw > width) {
                     width = cw;
                     if (width > max) {
@@ -1548,11 +1555,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                     }
                 }
             }
-            view.setText(null);
+            sampleView.setText(null);
             if (!(width > 0)) {                 // May be 0 if canvas is not yet added to scene graph.
                 return false;
             }
-            view.setPrefWidth(width + VALUES_PADDING);
+            sampleView.setPrefWidth(Math.max(width + VALUES_PADDING, MINIMAL_VALUES_SIZE));
         }
         return true;
     }

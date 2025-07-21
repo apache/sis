@@ -103,8 +103,8 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
     private final FieldPosition field;
 
     /**
-     * Unit symbol to write after each value.
-     * Array shall not be modified after construction.
+     * Unit symbol to write after each value, including the leading space separator if needed.
+     * The content of this array shall not be modified after construction.
      */
     private final String[] units;
 
@@ -188,9 +188,9 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
          * if selected or not. We do that on the assumption that the same format and symbol
          * are typically shared by all bands.
          */
-        final Map<Integer,NumberFormat> sharedFormats = new HashMap<>();
-        final Map<Unit<?>,String>       sharedSymbols = new HashMap<>();
-        final UnitFormat                unitFormat    = new UnitFormat(locale);
+        final var sharedFormats = new HashMap<Integer,NumberFormat>();
+        final var sharedSymbols = new HashMap<Unit<?>,String>();
+        final var unitFormat    = new UnitFormat(locale);
         for (int b=0; b<numBands; b++) {
             /*
              * Build the list of texts to show for missing values. A coverage can have
@@ -215,8 +215,9 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
              * Infer a number of fraction digits to use for the resolution of sample values in each band.
              */
             final SampleDimension isd = sd.forConvertedValues(false);
-            final Integer nf = isd.getTransferFunctionFormula().map(
-                    (formula) -> suggestFractionDigits(formula, isd)).orElse(DEFAULT_FORMAT);
+            final Integer nf = isd.getTransferFunctionFormula()
+                    .map((formula) -> suggestFractionDigits(formula, isd))
+                    .orElse(DEFAULT_FORMAT);
             /*
              * Create number formats with a number of fraction digits inferred from sample value resolution.
              * The same format instances are shared when possible. Keys are the number of fraction digits.
@@ -284,7 +285,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
     final String setSelectedBands(final BitSet selection, final String[] labels, final HashSet<String> others) {
         synchronized (buffer) {
             final List<SampleDimension> bands = evaluator.getCoverage().getSampleDimensions();
-            final StringBuilder names = new StringBuilder().append('(');
+            final var names = new StringBuilder().append('(');
             buffer.setLength(0);
             for (int i = -1; (i = selection.nextSetBit(i+1)) >= 0;) {
                 if (buffer.length() != 0) {
@@ -293,9 +294,11 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
                 }
                 names.append(labels[i]);
                 final int start = buffer.length();
-                final Comparable<?>[] sampleValues = bands.get(i).forConvertedValues(true)
-                        .getSampleRange().map((r) -> new Comparable<?>[] {r.getMinValue(), r.getMaxValue()})
-                        .orElseGet(() -> new Comparable<?>[] {0xFFFF});                 // Arbitrary value.
+                final Comparable<?>[] sampleValues = bands.get(i)
+                        .forConvertedValues(true)
+                        .getSampleRange()
+                        .map((range)  -> new Comparable<?>[] {range.getMinValue(), range.getMaxValue()})
+                        .orElseGet(() -> new Comparable<?>[] {0xFFFF});     // Arbitrary value.
                 for (final Comparable<?> value : sampleValues) {
                     final int end = buffer.length();
                     sampleFormats[i].format(value, buffer, field);

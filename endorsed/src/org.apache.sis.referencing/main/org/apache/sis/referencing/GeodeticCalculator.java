@@ -41,6 +41,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.provider.MapProjection;
@@ -292,11 +293,9 @@ public class GeodeticCalculator {
      * @return a new geodetic calculator using the specified CRS.
      */
     public static GeodeticCalculator create(final CoordinateReferenceSystem crs) {
-        final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(Objects.requireNonNull(crs));
-        if (ellipsoid == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
-                    ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs)));
-        }
+        final Ellipsoid ellipsoid = DatumOrEnsemble.getEllipsoid(Objects.requireNonNull(crs))
+                .orElseThrow(() -> new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
+                                ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs))));
         if (ellipsoid.isSphere()) {
             return new GeodeticCalculator(crs, ellipsoid);
         } else {

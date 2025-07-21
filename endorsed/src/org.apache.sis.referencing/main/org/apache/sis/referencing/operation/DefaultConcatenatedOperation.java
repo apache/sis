@@ -34,10 +34,10 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.privy.CoordinateOperations;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Utilities;
@@ -176,7 +176,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             targetCRS = crs;
         } else if (mtFactory != null) {
             var builder = CoordinateOperations.builder(mtFactory, Constants.COORDINATE_SYSTEM_CONVERSION);
-            builder.setSourceAxes(crs.getCoordinateSystem(), ReferencingUtilities.getEllipsoid(crs));
+            builder.setSourceAxes(crs.getCoordinateSystem(), DatumOrEnsemble.getEllipsoid(crs).orElse(null));
             builder.setTargetAxes(targetCRS.getCoordinateSystem(), null);
             transform = mtFactory.createConcatenatedTransform(transform, builder.create());
         }

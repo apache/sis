@@ -535,9 +535,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      */
     public double[] multiply(final double[] vector) {
         final int numCol = getNumCol();
-        if (vector.length != numCol) {
-            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, numCol, vector.length));
-        }
+        ensureLengthMatch(numCol, vector);
         final double[] target = new double[getNumRow()];
         for (int j=0; j<target.length; j++) {
             Number sum = null;
@@ -581,9 +579,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      */
     public void translate(final double[] vector) {
         final int numCol = getNumCol();
-        if (vector.length != numCol) {
-            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, numCol, vector.length));
-        }
+        ensureLengthMatch(numCol, vector);
         final int numRow = getNumRow();
         for (int j=0; j<numRow; j++) {
             Number sum = null;

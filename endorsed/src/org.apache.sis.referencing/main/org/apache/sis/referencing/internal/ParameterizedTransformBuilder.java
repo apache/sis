@@ -50,6 +50,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
@@ -62,7 +63,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.transform.EllipsoidToRadiusTransform;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.privy.CoordinateOperations;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.Parameters;
@@ -200,7 +200,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
      * @param  crs  the <abbr>CRS</abbr> from which to fetch the hints, or {@code null}.
      */
     public final void setSourceAxes(final CoordinateReferenceSystem crs) {
-        setSourceAxes(crs != null ? crs.getCoordinateSystem() : null, ReferencingUtilities.getEllipsoid(crs));
+        setSourceAxes(crs != null ? crs.getCoordinateSystem() : null, DatumOrEnsemble.getEllipsoid(crs).orElse(null));
     }
 
     /**
@@ -211,7 +211,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
      * @param  crs  the <abbr>CRS</abbr> from which to fetch the hints, or {@code null}.
      */
     public final void setTargetAxes(final CoordinateReferenceSystem crs) {
-        setTargetAxes(crs != null ? crs.getCoordinateSystem() : null, ReferencingUtilities.getEllipsoid(crs));
+        setTargetAxes(crs != null ? crs.getCoordinateSystem() : null, DatumOrEnsemble.getEllipsoid(crs).orElse(null));
     }
 
     /**

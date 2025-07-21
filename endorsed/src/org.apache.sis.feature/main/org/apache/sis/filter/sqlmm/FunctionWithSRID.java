@@ -86,10 +86,10 @@ abstract class FunctionWithSRID<R> extends SpatialFunction<R> {
      *
      * @param  operation   identification of the SQLMM operation.
      * @param  parameters  sub-expressions that will be evaluated to provide the parameters to the function.
-     * @param  hasSRID     whether the SRID is expected as one of {@link #PRESENT}, {@link #ABSENT} or {@link #MAYBE}.
+     * @param  hasSRID     whether the <abbr>SRID</abbr> is expected: {@link #PRESENT}, {@link #ABSENT} or {@link #MAYBE}.
      *
      * @todo The {@code MAYBE} flag could be removed if we know the type of value evaluated by the expression.
-     *       For now it exists mostly because the last parameter given to {@code ST_Point} can be of various types.
+     *       For now, it exists mostly because the last parameter given to {@code ST_Point} can be of various types.
      */
     FunctionWithSRID(final SQLMM operation, final Expression<R,?>[] parameters, int hasSRID) {
         super(operation, parameters);

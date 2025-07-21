@@ -43,7 +43,7 @@ import static org.apache.sis.referencing.privy.ReferencingUtilities.getPropertie
 import org.opengis.referencing.crs.GeographicCRS;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
 
@@ -86,7 +86,7 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
     EllipsoidalHeightSeparator(final GeodeticCRS baseCRS, final boolean vertical) {
         this.datum    = baseCRS.getDatum();
         this.ensemble = getDatumEnsemble(baseCRS);
-        this.pseudo   = PseudoDatum.of(baseCRS);
+        this.pseudo   = DatumOrEnsemble.asDatum(baseCRS);
         this.vertical = vertical;
     }
 
@@ -121,7 +121,7 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
             VerticalCRS component = CommonCRS.Vertical.ELLIPSOIDAL.crs();
             if (!Utilities.equalsIgnoreMetadata(component.getCoordinateSystem(), cs)) {
                 component = factory().createVerticalCRS(getPropertiesForModifiedCRS(component),
-                                                        PseudoDatum.of(component),
+                                                        DatumOrEnsemble.asDatum(component),
                                                         (VerticalCS) cs);
             }
             return component;

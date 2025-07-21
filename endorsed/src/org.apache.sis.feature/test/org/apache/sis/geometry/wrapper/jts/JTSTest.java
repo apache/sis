@@ -95,7 +95,7 @@ public final class JTSTest extends TestCase {
              * Test setting a 2D CRS on a 2 dimensional geometry.
              */
             final Geometry geometry = factory.createPoint(new CoordinateXY(5, 6));
-            final GeometryWrapper wrapper = Geometries.wrap(geometry).get();
+            final GeometryWrapper wrapper = Geometries.wrap(geometry).orElseThrow();
             wrapper.setCoordinateReferenceSystem(crs2D);
             assertEquals(crs2D, wrapper.getCoordinateReferenceSystem());
         }
@@ -150,7 +150,7 @@ public final class JTSTest extends TestCase {
              */
             final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
             final Geometry geometry = factory.createPoint(new CoordinateXY(5, 6));
-            final GeometryWrapper wrapper = Geometries.wrap(geometry).get();
+            final GeometryWrapper wrapper = Geometries.wrap(geometry).orElseThrow();
             wrapper.setCoordinateReferenceSystem(crs);
             final GeneralEnvelope envelope = wrapper.getEnvelope();
             assertEquals(crs, envelope.getCoordinateReferenceSystem());
@@ -166,7 +166,7 @@ public final class JTSTest extends TestCase {
              */
             final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
             final Geometry geometry = factory.createPoint(new Coordinate(5, 6, 7));
-            final GeometryWrapper wrapper = Geometries.wrap(geometry).get();
+            final GeometryWrapper wrapper = Geometries.wrap(geometry).orElseThrow();
             wrapper.setCoordinateReferenceSystem(crs);
             final GeneralEnvelope envelope = wrapper.getEnvelope();
             assertEquals(crs, envelope.getCoordinateReferenceSystem());

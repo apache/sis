@@ -277,6 +277,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
                 System.arraycopy(selected, i+1, selected, i, last - i);
                 selected[last] = component;
                 n--;
+                i--;
             }
         }
         final var stepComponents = new CoordinateReferenceSystem[n];

@@ -134,12 +134,25 @@ abstract class DataCube extends TiledGridResource implements StoreResource {
     abstract long getNumTiles();
 
     /**
-     * Gets the stream position and the length in bytes of compressed tile arrays in the GeoTIFF file.
+     * Gets the stream position or the length in bytes of compressed tile arrays in the GeoTIFF file.
      * Values in the returned vector are {@code long} primitive type.
      *
-     * @return stream position (relative to file beginning) and length of compressed tile arrays, in bytes.
+     * @param  length  {@code false} for requesting tile offsets, or {@code true} for tile lengths.
+     * @return stream position (relative to file beginning) or length of compressed tile arrays, in bytes.
      */
-    abstract Vector[] getTileArrayInfo();
+    abstract Vector getTileArrayInfo(boolean length);
+
+    /**
+     * Returns the number of sample values for moving to the next row in a tile of the <abbr>TIFF</abbr> file.
+     * The {@code pixelStride} argument could be computed by this class, but is given in argument because its
+     * value is already known by the caller.
+     *
+     * @param  pixelStride  number of sample values for moving to the next pixel.
+     * @return number of sample values for moving to the next row.
+     *
+     * @see java.awt.image.ComponentSampleModel#getScanlineStride()
+     */
+    abstract long getScanlineStride(int pixelStride);
 
     /**
      * Returns {@code true} if {@link Integer#reverseBytes(int)} should be invoked on each byte read.

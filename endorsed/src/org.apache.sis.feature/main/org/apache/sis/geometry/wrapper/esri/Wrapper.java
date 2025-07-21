@@ -39,7 +39,6 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.wrapper.GeometryWithCRS;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.util.Debug;
@@ -55,7 +54,7 @@ import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-final class Wrapper extends GeometryWithCRS {
+final class Wrapper extends GeometryWrapper {
     /**
      * The wrapped implementation.
      */

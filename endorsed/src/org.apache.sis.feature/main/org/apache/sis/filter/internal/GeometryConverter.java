@@ -29,6 +29,7 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.filter.Optimization;
 
 // Specific to the main branch:
@@ -37,8 +38,8 @@ import org.apache.sis.filter.Expression;
 
 
 /**
- * Expression whose results is a geometry wrapper. This converter evaluates another expression,
- * which is given at construction time, potentially converts the result then wraps it.
+ * Expression whose result is a geometry wrapper. This converter evaluates another expression,
+ * which is given at construction time, then wraps the result in a {@link GeometryWrapper}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
@@ -48,7 +49,7 @@ import org.apache.sis.filter.Expression;
  *
  * @see org.apache.sis.filter.ConvertFunction
  */
-final class GeometryConverter<R,G> extends Node implements Optimization.OnExpression<R, GeometryWrapper> {
+class GeometryConverter<R,G> extends Node implements Optimization.OnExpression<R, GeometryWrapper> {
     /**
      * For cross-version compatibility.
      */
@@ -65,7 +66,10 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
     final Geometries<G> library;
 
     /**
-     * The expression to be used by this operator.
+     * The expression which returns instances of a geometry library such as <abbr>JTS</abbr>.
+     * The objects returned by this expression shall be recognized by the {@linkplain #library},
+     * with the addition of the following special cases: {@link DirectPosition}, {@link Envelope},
+     * {@link GeographicBoundingBox} and (in some cases) {@code Feature}.
      *
      * @see #getParameters()
      */
@@ -73,14 +77,40 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
     final Expression<R,?> expression;
 
     /**
-     * Creates a new converter expression.
+     * Creates a new converter for the given expression producing library-specific objects.
+     * This constructor is for subclasses. Use {@link #create(Geometries, Expression)} instead.
      *
      * @param  library     the geometry library to use.
-     * @param  expression  the expression providing source values.
+     * @param  expression  the expression providing geometric objects of the given library.
      */
-    public GeometryConverter(final Geometries<G> library, final Expression<R,?> expression) {
-        this.expression = Objects.requireNonNull(expression);
+    GeometryConverter(final Geometries<G> library, final Expression<R,?> expression) {
         this.library    = Objects.requireNonNull(library);
+        this.expression = Objects.requireNonNull(expression);
+    }
+
+    /**
+     * Creates a new converter for the given expression producing library-specific objects.
+     *
+     * @param  library     the geometry library to use.
+     * @param  expression  the expression providing geometric objects of the given library.
+     * @return the geometry converter.
+     */
+    @SuppressWarnings("unchecked")
+    public static <R,G> GeometryConverter<R,G> create(final Geometries<G> library, final Expression<R,?> expression) {
+        if (expression instanceof GeometryConverter<?,?>) {
+            final var candidate = (GeometryConverter<R,?>) expression;
+            if (library.equals(candidate.library)) {
+                return (GeometryConverter<R,G>) expression;
+            }
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.MixedGeometryImplementation_2,
+                    library.library, candidate.library.library));
+        }
+        GeometryConverter<?,G> candidate = GeometryFromFeature.tryCreate(library, expression);
+        if (candidate == null) {
+            return new GeometryConverter<>(library, expression);
+        }
+        return (GeometryConverter<R,G>) candidate;
     }
 
     /**
@@ -89,7 +119,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      */
     @Override
     public Expression<R, GeometryWrapper> recreate(final Expression<R,?>[] effective) {
-        return new GeometryConverter<>(library, effective[0]);
+        return create(library, effective[0]);
     }
 
     /**

@@ -750,8 +750,10 @@ public class MetadataSource implements AutoCloseable {
                     } else {
                         final Class<?> type = value.getClass();
                         if (standard.isMetadata(type)) {
-                            dependency = search(getTableName(standard.getInterface(type)),
-                                    null, asValueMap(value), stmt, new SQLBuilder(helper));
+                            final var builder = new SQLBuilder(helper);
+                            builder.setCatalogAndSchema(stmt.getConnection());
+                            final String other = getTableName(standard.getInterface(type));
+                            dependency = search(other, null, asValueMap(value), stmt, builder);
                             if (dependency == null) {
                                 return null;                    // Dependency not found.
                             }

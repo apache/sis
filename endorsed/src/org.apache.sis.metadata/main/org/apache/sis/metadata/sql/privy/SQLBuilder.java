@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.sql.privy;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.privy.Strings;
 
 
 /**
@@ -163,7 +165,7 @@ public class SQLBuilder extends Syntax {
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendIdentifier(final String name) {
-        buffer.append(quote).append(name).append(quote);
+        buffer.append(identifierQuote).append(name).append(identifierQuote);
         return this;
     }
 
@@ -191,34 +193,45 @@ public class SQLBuilder extends Syntax {
      * Unquoted names are useful when the name is for built-in functions,
      * which often use the lower/upper case convention of the database.
      *
+     * <h4>Simplification</h4>
+     * If the given catalog is equal to the {@linkplain Connection#getCatalog() catalog which was current} when
+     * {@link #setCatalogAndSchema(Connection)} has been invoked, then the catalog name is omitted for simplicty.
+     * Likewise, if the given schema is equal to the {@linkplain Connection#getSchema() current schema},
+     * then the schema name will also be omitted.
+     *
      * @param  catalog    the catalog, or {@code null} or empty if none.
      * @param  schema     the schema, or {@code null} or empty if none.
      * @param  name       the name part of the identifier to append.
      * @param  quoteName  whether to quote the name part.
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder appendIdentifier(final String catalog, final String schema, final String name, final boolean quoteName) {
-        if (catalog != null && !catalog.isEmpty()) {
-            appendIdentifier(catalog);
-            buffer.append('.');
-            if (schema == null || schema.isEmpty()) {
-                buffer.append(quote).append(quote).append('.');
+    public final SQLBuilder appendIdentifier(final String catalog, String schema, final String name, final boolean quoteName) {
+        boolean showSchema  = !(Strings.isNullOrEmpty(schema)  || schema .equals(currentSchema));
+        boolean showCatalog = !(Strings.isNullOrEmpty(catalog) || catalog.equals(currentCatalog) || Strings.isNullOrEmpty(catalogSeparator));
+        if (showCatalog && isCatalogAtStart) {
+            appendIdentifier(catalog).append(catalogSeparator);
+            showSchema = true;
+            if (schema == null) {
+                schema = "";
             }
         }
-        if (schema != null && !schema.isEmpty()) {
+        if (showSchema) {
             if (quoteSchema) {
                 appendIdentifier(schema);
             } else {
-                buffer.append(schema);
+                append(schema);
             }
-            buffer.append('.');
+            append('.');
         }
         if (quoteName) {
-            return appendIdentifier(name);
+            appendIdentifier(name);
         } else {
-            buffer.append(name);
-            return this;
+            append(name);
         }
+        if (showCatalog && !isCatalogAtStart) {
+            append(catalogSeparator).appendIdentifier(catalog);
+        }
+        return this;
     }
 
     /**
@@ -229,12 +242,7 @@ public class SQLBuilder extends Syntax {
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendEqualsValue(final Object value) {
-        if (value == null) {
-            buffer.append(" IS NULL");
-            return this;
-        }
-        buffer.append('=');
-        return appendValue(value);
+        return (value == null) ? append(" IS NULL") : append('=').appendValue(value);
     }
 
     /**
@@ -245,12 +253,7 @@ public class SQLBuilder extends Syntax {
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendValue(final String value) {
-        if (value == null) {
-            buffer.append("NULL");
-        } else {
-            buffer.append('\'').append(value.replace("'", "''")).append('\'');
-        }
-        return this;
+        return (value == null) ? append("NULL") : append('\'').append(value.replace("'", "''")).append('\'');
     }
 
     /**
@@ -327,11 +330,11 @@ public class SQLBuilder extends Syntax {
         final int start = buffer.length();
         buffer.append(value);
         if (canEscapeWildcards()) {
-            final char escapeChar = escape.charAt(0);
+            final char escapeChar = wildcardEscape.charAt(0);
             for (int i = buffer.length(); --i >= start;) {
                 final char c = buffer.charAt(i);
-                if (c == '_' || c == '%' || (c == escapeChar && value.startsWith(escape, i))) {
-                    buffer.insert(i, escape);
+                if (c == '_' || c == '%' || (c == escapeChar && value.startsWith(wildcardEscape, i))) {
+                    buffer.insert(i, wildcardEscape);
                 }
             }
         }

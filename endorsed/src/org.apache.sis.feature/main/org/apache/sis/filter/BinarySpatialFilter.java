@@ -23,6 +23,7 @@ import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.util.Exceptions;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
@@ -139,8 +140,8 @@ final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> {
             final GeometryWrapper right = expression2.apply(object);
             if (right != null) try {
                 return left.predicate(operatorType, right, context);
-            } catch (RuntimeException e) {
-                warning(e, true);
+            } catch (Exception e) {
+                warning(Exceptions.unwrap(e), true);
             }
         }
         return emptyResult();

@@ -281,7 +281,7 @@ public final class GpkgStoreTest {
         assertEquals(1, features.size());
         final AbstractFeature feature = features.get(0);
 
-        GeometryWrapper geometry = Geometries.wrap(feature.getPropertyValue("sis:geometry")).get();
+        GeometryWrapper geometry = Geometries.wrap(feature).orElseThrow();
         assertEquals(expectedCRS, IdentifiedObjects.getIdentifierOrName(geometry.getCoordinateReferenceSystem()));
         assertEquals(expectedWKT, geometry.formatWKT(1));
         assertEquals(1, feature.getPropertyValue("fid"));

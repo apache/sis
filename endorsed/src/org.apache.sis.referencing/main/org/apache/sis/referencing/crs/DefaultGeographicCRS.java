@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
@@ -263,7 +263,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * @since 1.5
      */
     public PrimeMeridian getPrimeMeridian() {
-        return PseudoDatum.of(this).getPrimeMeridian();
+        return DatumOrEnsemble.asDatum(this).getPrimeMeridian();
     }
 
     /**
@@ -279,7 +279,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * @since 1.5
      */
     public Ellipsoid getEllipsoid() {
-        return PseudoDatum.of(this).getEllipsoid();
+        return DatumOrEnsemble.asDatum(this).getEllipsoid();
     }
 
     /**

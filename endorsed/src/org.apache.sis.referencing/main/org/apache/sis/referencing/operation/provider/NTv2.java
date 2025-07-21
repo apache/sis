@@ -143,6 +143,8 @@ public final class NTv2 extends AbstractProvider {
         final LoadedGrid<Angle,Angle> grid;
         try {
             grid = getOrLoad(provider, file, version);
+        } catch (FactoryException e) {
+            throw e;
         } catch (Exception e) {
             throw file.canNotLoad(provider, provider.getSimpleName(), e);
         }

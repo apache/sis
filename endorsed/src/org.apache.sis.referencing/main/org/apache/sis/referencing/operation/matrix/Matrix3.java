@@ -290,6 +290,24 @@ public class Matrix3 extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * @since 1.5
+     */
+    @Override
+    public double[] multiply(final double[] vector) {
+        ensureLengthMatch(3, vector);
+        final double x = vector[0];
+        final double y = vector[1];
+        final double z = vector[2];
+        return new double[] {
+            m00 * x + m01 * y + m02 * z,
+            m10 * x + m11 * y + m12 * z,
+            m20 * x + m21 * y + m22 * z
+        };
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public Matrix3 clone() {

@@ -24,8 +24,8 @@
  *
  *
  * <h2>Connection to the database</h2>
- * By default Apache SIS uses Apache Derby,
- * but the database can also be PostgreSQL or MS-Access.
+ * Apache SIS uses the Apache Derby database by default. However, connection to the <abbr>EPSG</abbr>
+ * dataset should work with any <abbr>SQL</abbr> compliant databases (tested on PostgreSQL and HSQL).
  * The database connection is obtained by the first of the following data sources which is found:
  *
  * <ol>

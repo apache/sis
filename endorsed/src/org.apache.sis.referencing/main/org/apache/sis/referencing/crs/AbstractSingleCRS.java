@@ -30,7 +30,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 
@@ -104,33 +103,13 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
                       final CoordinateSystem cs)
     {
         super(properties, cs);
-        /*
-         * If the given datum is actually a wrapper for a datum ensemble, unwrap the datum ensemble
-         * and verify the consistency. This class should never store `PseudoDatum` instances.
-         */
-        if (datum instanceof PseudoDatum<?>) {
-            @SuppressWarnings("unchecked")      // Type is verified below.
-            final var pseudo = (PseudoDatum<D>) datum;
-            final var member = pseudo.getInterface();
-            if (member != datumType) {
-                throw new IllegalArgumentException(Errors.forProperties(properties)
-                            .getString(Errors.Keys.IllegalArgumentClass_2, "datum",
-                                       PseudoDatum.class.getSimpleName() + '<' + member.getSimpleName() + '>'));
-            }
-            if (ensemble == null) {
-                this.ensemble = pseudo.ensemble;
-            } else if (Utilities.equalsIgnoreMetadata(ensemble, pseudo.ensemble)) {
-                this.ensemble = ensemble;
-            } else {
-                throw new IllegalArgumentException(Errors.forProperties(properties)
-                            .getString(Errors.Keys.IncompatiblePropertyValue_1, "pseudo-datum"));
-            }
-            ArgumentChecks.ensureNonEmpty((ensemble != null) ? "ensemble" : "pseudo-datum", this.ensemble.getMembers());
-        } else {
-            this.datum    = datum;
-            this.ensemble = ensemble;
-            checkDatum(properties);
+        if (datum instanceof DefaultDatumEnsemble<?>) {
+            throw new IllegalArgumentException(Errors.forProperties(properties)
+                    .getString(Errors.Keys.IllegalArgumentClass_2, "datum", DefaultDatumEnsemble.class.getSimpleName()));
         }
+        this.datum    = datum;
+        this.ensemble = ensemble;
+        checkDatum(properties);
     }
 
     /**
@@ -190,9 +169,9 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
     AbstractSingleCRS(final SingleCRS crs) {
         super(crs);
         datum = (D) crs.getDatum();
-        if (datum instanceof PseudoDatum<?>) {
+        if (datum instanceof DefaultDatumEnsemble<?>) {
             throw new IllegalArgumentException(
-                    Errors.format(Errors.Keys.IllegalPropertyValueClass_2, "datum", PseudoDatum.class));
+                    Errors.format(Errors.Keys.IllegalPropertyValueClass_2, "datum", DefaultDatumEnsemble.class));
         }
         ensemble = (DefaultDatumEnsemble<D>) MissingMethods.getDatumEnsemble(crs);
         checkDatum(null);

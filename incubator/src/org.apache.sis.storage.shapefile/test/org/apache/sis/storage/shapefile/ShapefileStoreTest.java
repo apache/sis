@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.filter.DefaultFilterFactory;
@@ -94,6 +95,7 @@ public class ShapefileStoreTest {
                 assertEquals(20.0, feature1.getPropertyValue("float"));
                 assertEquals(LocalDate.of(2023, 10, 27), feature1.getPropertyValue("date"));
                 Point pt1 = (Point) feature1.getPropertyValue("geometry");
+                assertTrue(pt1.getUserData() instanceof CoordinateReferenceSystem);
 
                 assertTrue(iterator.hasNext());
                 AbstractFeature feature2 = iterator.next();
@@ -103,6 +105,7 @@ public class ShapefileStoreTest {
                 assertEquals(60.0, feature2.getPropertyValue("float"));
                 assertEquals(LocalDate.of(2023, 10, 28), feature2.getPropertyValue("date"));
                 Point pt2 = (Point) feature2.getPropertyValue("geometry");
+                assertTrue(pt2.getUserData() instanceof CoordinateReferenceSystem);
 
                 assertFalse(iterator.hasNext());
             }
@@ -139,6 +142,7 @@ public class ShapefileStoreTest {
                 assertEquals(60.0, feature.getPropertyValue("float"));
                 assertEquals(LocalDate.of(2023, 10, 28), feature.getPropertyValue("date"));
                 Point pt2 = (Point) feature.getPropertyValue("geometry");
+                assertTrue(pt2.getUserData() instanceof CoordinateReferenceSystem);
 
                 assertFalse(iterator.hasNext());
             }

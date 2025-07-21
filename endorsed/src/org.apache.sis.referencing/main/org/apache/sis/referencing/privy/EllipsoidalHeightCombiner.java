@@ -35,7 +35,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -111,7 +111,7 @@ public final class EllipsoidalHeightCombiner {
         for (int i=0; i<components.length; i++) {
             final CoordinateReferenceSystem vertical = components[i];
             if (vertical instanceof VerticalCRS) {
-                final VerticalDatum datum = PseudoDatum.of((VerticalCRS) vertical);
+                final VerticalDatum datum = DatumOrEnsemble.asDatum((VerticalCRS) vertical);
                 if (ReferencingUtilities.isEllipsoidalHeight(datum)) {
                     int axisPosition = 0;
                     CoordinateSystem cs2D;
@@ -144,7 +144,7 @@ public final class EllipsoidalHeightCombiner {
                         final var geod = (GeodeticCRS) crs;
                         final EllipsoidalCS cs3D;
                         cs3D = factories.getCSFactory() .createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
-                        crs  = factories.getCRSFactory().createGeographicCRS(crsProps, PseudoDatum.of(geod), cs3D);
+                        crs  = factories.getCRSFactory().createGeographicCRS(crsProps, DatumOrEnsemble.asDatum(geod), cs3D);
                     } else {
                         final ProjectedCRS proj = (ProjectedCRS) crs;
                         GeographicCRS base = proj.getBaseCRS();

@@ -232,6 +232,27 @@ public class Matrix2 extends MatrixSIS {
     }
 
     /**
+     * Sets the elements to a rotation matrix of the given arithmetic angle.
+     * Angle 0 is oriented toward positive <var>x</bar> axis,
+     * rotation is counter-clockwise and the unit of measurement is radians.
+     * The resulting matrix is not affine in the sense of {@link #isAffine()}.
+     * The matrix is:
+     *
+     * <pre class="math">
+     *        ┌                  ┐
+     *        │ cos(θ)  −sin(θ)  │
+     *        │ sin(θ)   cos(θ)  │
+     *        └                  ┘</pre>
+     *
+     * @param θ  arithmetic rotation angle in radians.
+     * @since 1.5
+     */
+    public void setToRotation(double θ) {
+        m00 =  (m11 = Math.cos(θ));
+        m01 = -(m10 = Math.sin(θ));
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -260,6 +281,22 @@ public class Matrix2 extends MatrixSIS {
         final double swap = m10;
         m10 = m01;
         m01 = swap;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.5
+     */
+    @Override
+    public double[] multiply(final double[] vector) {
+        ensureLengthMatch(2, vector);
+        final double x = vector[0];
+        final double y = vector[1];
+        return new double[] {
+            m00 * x + m01 * y,
+            m10 * x + m11 * y
+        };
     }
 
     /**

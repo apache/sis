@@ -18,7 +18,6 @@ package org.apache.sis.metadata.sql.privy;
 
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.Constants;
 
@@ -40,7 +39,6 @@ public enum Dialect {
              | Supports.JAVA_TIME
              | Supports.READ_ONLY_UPDATE
              | Supports.CONCURRENCY
-             | Supports.CATALOG
              | Supports.SRID),
 
     /**
@@ -52,8 +50,7 @@ public enum Dialect {
      */
     DERBY("derby", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                  | Supports.READ_ONLY_UPDATE
-                 | Supports.CONCURRENCY
-                 | Supports.CATALOG),
+                 | Supports.CONCURRENCY),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
@@ -62,8 +59,7 @@ public enum Dialect {
     HSQL("hsqldb", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
                  | Supports.JAVA_TIME
                  | Supports.READ_ONLY_UPDATE
-                 | Supports.CONCURRENCY
-                 | Supports.CATALOG),
+                 | Supports.CONCURRENCY),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
@@ -74,7 +70,6 @@ public enum Dialect {
                            | Supports.JAVA_TIME
                            | Supports.READ_ONLY_UPDATE
                            | Supports.CONCURRENCY
-                           | Supports.CATALOG
                            | Supports.SRID),
 
     /**
@@ -84,7 +79,6 @@ public enum Dialect {
                    | Supports.JAVA_TIME
                    | Supports.READ_ONLY_UPDATE
                    | Supports.CONCURRENCY
-                   | Supports.CATALOG
                    | Supports.SRID),
 
     /**
@@ -191,16 +185,6 @@ public enum Dialect {
      */
     public final boolean supportsConcurrency() {
         return (flags & Supports.CONCURRENCY) != 0;
-    }
-
-    /**
-     * Whether the JDBC driver supports catalog or correctly reports that there is no catalog.
-     * This flag should be {@code false} when the JDBC driver returns a non-null catalog name
-     * (for example, the database name) but doesn't accept the use of that catalog in SQL.
-     */
-    @Workaround(library = "DuckDB", version = "1.2.2.0")
-    public final boolean supportsCatalog() {
-        return (flags & Supports.CATALOG) != 0;
     }
 
     /**

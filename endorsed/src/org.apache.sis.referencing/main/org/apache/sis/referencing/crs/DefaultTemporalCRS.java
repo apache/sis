@@ -37,7 +37,7 @@ import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.datum.PseudoDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
@@ -343,7 +343,7 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      * @since 1.5
      */
     public final Temporal getOrigin() {     // Must be final because invoked at construction time.
-        return TemporalDate.toTemporal(PseudoDatum.of(this).getOrigin());
+        return TemporalDate.toTemporal(DatumOrEnsemble.asDatum(this).getOrigin());
     }
 
     /**

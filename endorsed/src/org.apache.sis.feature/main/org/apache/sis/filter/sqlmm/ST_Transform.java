@@ -48,7 +48,7 @@ import org.apache.sis.pending.geoapi.filter.Literal;
  *   </li>
  * </ol>
  *
- * <h2>Limitation</h2>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Current implementation ignores the <var>z</var> and <var>m</var> values.</li>
  *   <li>If the SRID is an integer, it is interpreted as an EPSG code.
@@ -121,8 +121,8 @@ final class ST_Transform<R> extends FunctionWithSRID<R> {
      * by the second expression and returns the result.
      *
      * @param  input  the object from which to get a geometry.
-     * @return the transformed geometry, or {@code null} if the given object is not an instance of
-     *         a supported geometry library (JTS, ERSI, Java2D…).
+     * @return the transformed geometry, or {@code null} if the given object is not an instance
+     *         of a supported geometry library (<abbr>JTS</abbr>, <abbr>ERSI</abbr>, Java2D…).
      */
     @Override
     public Object apply(final R input) {

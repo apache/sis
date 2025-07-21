@@ -25,6 +25,7 @@ import org.opengis.geometry.Geometry;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
+import org.apache.sis.util.Exceptions;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.Literal;
@@ -156,8 +157,8 @@ final class DistanceFilter<R> extends BinaryGeometryFilter<R> {
             final GeometryWrapper right = expression2.apply(object);
             if (right != null) try {
                 return left.predicate(operatorType, right, distance, context);
-            } catch (RuntimeException e) {
-                warning(e, true);
+            } catch (Exception e) {
+                warning(Exceptions.unwrap(e), true);
             }
         }
         return emptyResult();

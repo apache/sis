@@ -75,43 +75,6 @@ public final class JTS extends Static {
     }
 
     /**
-     * Returns {@code true} if the two geometries use the same CRS, based on very cheap comparison.
-     * A value of {@code false} does not necessarily means that the CRS are different, but it means
-     * that a more expensive comparison is required. If CRS are specified by SRID codes, then this
-     * method assumes that the two SRID codes are defined by the same authority (e.g. EPSG).
-     *
-     * <p>If both CRS are undefined (null), then they are considered the same.</p>
-     *
-     * @param  first   the first geometry.
-     * @param  second  the second geometry.
-     * @return {@code true} if the two geometries use equivalent CRS, or {@code false} in case of doubt.
-     */
-    static boolean isSameCRS(final Geometry first, final Geometry second) {
-        final int id1 =  first.getSRID();
-        final int id2 = second.getSRID();
-        if ((id1 | id2) != 0) {
-            return id1 == id2;
-        }
-        /*
-         * Identity comparison is often sufficient since all geometries typically share the same CRS.
-         * If they are not the same instance, a more expensive `equalsIgnoreMetadata(…)` method here
-         * would probably duplicate the work done later by the `transform(Geometry, …)` method.
-         */
-        Object c1 = first.getUserData();
-        if (c1 != null && !(c1 instanceof CoordinateReferenceSystem)) {
-            c1 = (c1 instanceof Map<?,?>) ? ((Map<?,?>) c1).get(CRS_KEY) : null;
-        }
-        Object c2 = second.getUserData();
-        if (c1 == c2) {
-            return true;                // Quick check for common case.
-        }
-        if (c2 != null && !(c2 instanceof CoordinateReferenceSystem)) {
-            c2 = (c2 instanceof Map<?,?>) ? ((Map<?,?>) c2).get(CRS_KEY) : null;
-        }
-        return c1 == c2;
-    }
-
-    /**
      * Gets the Coordinate Reference System (CRS) from the given geometry.
      * This method expects the CRS to be stored in one the following ways:
      *
@@ -202,7 +165,7 @@ public final class JTS extends Static {
 
     /**
      * Finds an operation between the given CRS valid in the given area of interest.
-     * This method does not verify the CRS of the given geometry.
+     * This method does not verify the <abbr>CRS</abbr> of the given geometry.
      *
      * @param  sourceCRS       the CRS of source coordinates.
      * @param  targetCRS       the CRS of target coordinates.
@@ -233,9 +196,9 @@ public final class JTS extends Static {
     }
 
     /**
-     * Transforms the given geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS or the given geometry is null or is the same as current CRS,
-     * then the geometry is returned unchanged.
+     * Transforms the given geometry to the specified Coordinate Reference System (<abbr>CRS</abbr>).
+     * If the given geometry is {@code null}, or if the given <abbr>CRS</abbr> is {@code null} or the
+     * same as the current geometry <abbr>CRS</abbr>, then the given geometry is returned unchanged.
      * If the geometry has no Coordinate Reference System, then the geometry is returned unchanged.
      *
      * <p><b>This operation may be slow!</b>

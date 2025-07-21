@@ -10,14 +10,15 @@
 -- If enumerated values are not supported by the database, Apache SIS will automatically replace their usage
 -- by the VARCHAR type.
 --
-CREATE TYPE epsg_datum_kind AS ENUM ('geodetic', 'vertical', 'temporal', 'engineering');
-CREATE TYPE epsg_crs_kind   AS ENUM ('geocentric', 'geographic 2D', 'geographic 3D', 'projected', 'vertical', 'temporal', 'compound', 'engineering');
-CREATE TYPE epsg_cs_kind    AS ENUM ('ellipsoidal', 'spherical', 'Cartesian', 'vertical', 'gravity-related', 'time', 'linear', 'polar', 'cylindrical', 'affine');
+CREATE TYPE epsg_datum_kind AS ENUM ('geodetic', 'vertical', 'temporal', 'engineering', 'dynamic geodetic', 'ensemble');
+CREATE TYPE epsg_crs_kind   AS ENUM ('geocentric', 'geographic 2D', 'geographic 3D', 'projected', 'vertical', 'temporal', 'compound', 'engineering', 'derived');
+CREATE TYPE epsg_cs_kind    AS ENUM ('ellipsoidal', 'spherical', 'Cartesian', 'vertical', 'gravity-related', 'time', 'linear', 'polar', 'cylindrical', 'affine', 'ordinal');
 CREATE TYPE epsg_table_name AS ENUM
    ('Alias',
-    'Area',
-    'AxisName',
+    'Area',         -- Deprecated (removed in EPSG 10).
+    'AxisName',     -- Deprecated (removed in EPSG 10).
     'Change',
+    'ConventionalRS',
     'Coordinate Axis',
     'Coordinate Axis Name',
     'Coordinate_Operation',
@@ -29,12 +30,19 @@ CREATE TYPE epsg_table_name AS ENUM
     'Coordinate Reference System',
     'Coordinate System',
     'Datum',
+    'DatumEnsemble',
+    'DatumEnsembleMember',
+    'DatumRealizationMethod',
+    'DefiningOperation',
     'Deprecation',
     'Ellipsoid',
+    'Extent',
     'Naming System',
     'Prime Meridian',
+    'Scope',
     'Supersession',
     'Unit of Measure',
+    'Usage',
     'Version History');
 
 --

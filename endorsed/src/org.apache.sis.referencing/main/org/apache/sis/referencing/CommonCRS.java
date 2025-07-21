@@ -52,6 +52,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
@@ -68,7 +69,6 @@ import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -985,7 +985,7 @@ public enum CommonCRS {
             return ((GeodeticDatum) object).getEllipsoid();
         }
         if (object instanceof CoordinateReferenceSystem) {
-            return ReferencingUtilities.getEllipsoid((CoordinateReferenceSystem) object);
+            return DatumOrEnsemble.getEllipsoid((CoordinateReferenceSystem) object).orElse(null);
         }
         return null;
     }
@@ -1001,7 +1001,7 @@ public enum CommonCRS {
             return ((GeodeticDatum) object).getPrimeMeridian();
         }
         if (object instanceof CoordinateReferenceSystem) {
-            return ReferencingUtilities.getPrimeMeridian((CoordinateReferenceSystem) object);
+            return DatumOrEnsemble.getPrimeMeridian((CoordinateReferenceSystem) object).orElse(null);
         }
         return null;
     }

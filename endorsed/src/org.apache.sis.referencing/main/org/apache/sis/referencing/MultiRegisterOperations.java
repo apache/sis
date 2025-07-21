@@ -57,7 +57,7 @@ import org.apache.sis.util.iso.AbstractFactory;
  * <p>This class delegates its work to {@linkplain CRS#forCode(String) static methods} or to
  * {@link MultiAuthoritiesFactory}. It does not provide new services compared to the above,
  * but provides a more high-level <abbr>API</abbr> with the most important registry-based
- * services in a single place. {@link RegisterOperations} can also be used as en entry point,
+ * services in a single place. {@code RegisterOperations} can also be used as en entry point,
  * with accesses to the low-level <abbr>API</abbr> granted by {@link #getFactory(Class)}.</p>
  *
  * <h2>User-defined geodetic registries</h2>

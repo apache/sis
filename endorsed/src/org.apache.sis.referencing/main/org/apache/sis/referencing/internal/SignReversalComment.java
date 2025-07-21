@@ -24,8 +24,8 @@ import org.apache.sis.util.AbstractInternationalString;
 
 /**
  * Comments telling whether a parameter value uses the same sign or the opposite sign for the inverse operation.
- * Those comments are used for encoding the {@code PARAM_SIGN_REVERSAL} boolean value in the
- * {@code [Coordinate_Operation Parameter Usage]} table of the EPSG dataset.
+ * Those comments are used for encoding the {@code PARAM_SIGN_REVERSAL} Boolean value in the
+ * {@code "Coordinate_Operation Parameter Usage"} table of the <abbr>EPSG</abbr> dataset.
  *
  * <p>This approach may change in any future SIS version.</p>
  *

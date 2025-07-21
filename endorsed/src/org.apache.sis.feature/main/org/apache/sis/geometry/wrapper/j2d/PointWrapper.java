@@ -27,7 +27,6 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.wrapper.GeometryWithCRS;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.util.Debug;
@@ -42,7 +41,7 @@ import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class PointWrapper extends GeometryWithCRS {
+final class PointWrapper extends GeometryWrapper {
     /**
      * The wrapped implementation.
      */
@@ -176,19 +175,19 @@ final class PointWrapper extends GeometryWithCRS {
             case ST_Envelope:   return getEnvelope();
             case ST_Boundary: {
                 if (point instanceof Point) {
-                    final Point p = (Point) point;
-                    final Rectangle r = new Rectangle();
+                    final var p = (Point) point;
+                    final var r = new Rectangle();
                     r.x = p.x;
                     r.y = p.y;
                     return r;
                 } else if (point instanceof Point2D.Float) {
-                    final Point2D.Float p = (Point2D.Float) point;
-                    final Rectangle2D.Float r = new Rectangle2D.Float();
+                    final var p = (Point2D.Float) point;
+                    final var r = new Rectangle2D.Float();
                     r.x = p.x;
                     r.y = p.y;
                     return r;
                 } else {
-                    final Rectangle2D.Double r = new Rectangle2D.Double();
+                    final var r = new Rectangle2D.Double();
                     r.x = point.getX();
                     r.y = point.getY();
                     return r;

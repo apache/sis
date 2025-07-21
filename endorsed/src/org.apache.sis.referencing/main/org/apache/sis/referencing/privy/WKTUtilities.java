@@ -41,6 +41,7 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.AbstractDatum;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
@@ -400,8 +401,7 @@ public final class WKTUtilities extends Static {
      */
     public static int[] suggestFractionDigits(final CoordinateReferenceSystem crs, final Vector[] points) {
         final int[] fractionDigits = suggestFractionDigits(points);
-        final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
-        if (ellipsoid != null) {
+        DatumOrEnsemble.getEllipsoid(crs).ifPresent((ellipsoid) -> {
             /*
              * Use heuristic precisions for geodetic or projected CRS. We do not apply those heuristics
              * for other kind of CRS (e.g. engineering) because we do not know what could be the size
@@ -428,7 +428,7 @@ public final class WKTUtilities extends Static {
                     fractionDigits[i] = f;                              // Use at least the heuristic precision.
                 }
             }
-        }
+        });
         return fractionDigits;
     }
 

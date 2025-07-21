@@ -145,6 +145,8 @@ public final class NADCON extends AbstractProvider {
             return LoadedGrid.createGeodeticTransformation(NADCON.class, context.getFactory(), grid);
         } catch (NoSuchFileException e) {
             throw new MissingFactoryResourceException(e.getMessage(), e);
+        } catch (FactoryException e) {
+            throw e;
         } catch (Exception e) {
             throw new FactoryException(e);
         }

@@ -283,10 +283,12 @@ public final class GridFile {
                                        Resources.Keys.DatumChangesDirectory_1, directory));
             }
         }
-        if (cause instanceof NoSuchFileException || cause instanceof FileNotFoundException) {
-            return new MissingFactoryResourceException(Resources.format(Resources.Keys.FileNotFound_2), cause);
+        final boolean notFound = cause instanceof NoSuchFileException || cause instanceof FileNotFoundException;
+        String message = Resources.format(notFound ? Resources.Keys.FileNotFound_2 : Resources.Keys.FileNotReadable_2, format, parameter);
+        if (notFound) {
+            return new MissingFactoryResourceException(message, cause);
         } else {
-            return new FactoryDataException(Resources.format(Resources.Keys.FileNotReadable_2, format, parameter), cause);
+            return new FactoryDataException(message, cause);
         }
     }
 

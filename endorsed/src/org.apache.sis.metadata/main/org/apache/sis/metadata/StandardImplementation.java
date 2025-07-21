@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.logging.Logger;
 import java.io.ObjectStreamException;
-import java.util.concurrent.ConcurrentHashMap;
 import org.opengis.annotation.UML;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
@@ -181,7 +180,7 @@ final class StandardImplementation extends MetadataStandard {
          * newer version of the Apache SIS library. The newer version could contain constants
          * not yet declared in this older SIS version, so we have to use this instance.
          */
-        implementations = new ConcurrentHashMap<>();
+        implementations = new IdentityHashMap<>();
         return this;
     }
 }

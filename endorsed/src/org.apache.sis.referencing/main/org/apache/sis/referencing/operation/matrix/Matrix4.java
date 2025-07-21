@@ -328,6 +328,26 @@ public class Matrix4 extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * @since 1.5
+     */
+    @Override
+    public double[] multiply(final double[] vector) {
+        ensureLengthMatch(4, vector);
+        final double x = vector[0];
+        final double y = vector[1];
+        final double z = vector[2];
+        final double w = vector[3];
+        return new double[] {
+            m00 * x + m01 * y + m02 * z + m03 * w,
+            m10 * x + m11 * y + m12 * z + m13 * w,
+            m20 * x + m21 * y + m22 * z + m23 * w,
+            m30 * x + m31 * y + m32 * z + m33 * w
+        };
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public Matrix4 clone() {

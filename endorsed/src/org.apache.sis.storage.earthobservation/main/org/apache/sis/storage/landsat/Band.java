@@ -37,7 +37,6 @@ import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.privy.CollectionsExt.first;
 
@@ -171,8 +170,8 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
             sd.setOffset     (sampleDimension.getOffset());
             sd.setUnits      (sampleDimension.getUnits());
             if (sampleDimension instanceof DefaultBand) {
-                final DefaultBand s = (DefaultBand) sampleDimension;
-                final DefaultBand t = (DefaultBand) sd;
+                final var s = (DefaultBand) sampleDimension;
+                final var t = (DefaultBand) sd;
                 t.setPeakResponse(s.getPeakResponse());
                 t.setBoundUnits(s.getBoundUnits());
             }
@@ -187,8 +186,8 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
     public SampleDimension customize(final BandSource source, final SampleDimension.Builder dimension) {
         if (isMain(source) && source.getBandIndex() == 0) {
             dimension.setName(identifier);
-            final NumberRange<?> sampleRange = source.getSampleRange().orElse(null);
-            if (sampleRange != null) {
+            dimension.categories().clear();
+            source.getSampleRange().ifPresent((sampleRange) -> {
                 final Number min    = sampleRange.getMinValue();
                 final Number max    = sampleRange.getMaxValue();
                 final Double scale  = sampleDimension.getScaleFactor();
@@ -199,10 +198,10 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
                         dimension.addQualitative(null, 0);
                         if (lower == 0) lower = 1;
                     }
-                    dimension.addQuantitative(this.band.group.measurement, lower, max.intValue(),
+                    dimension.addQuantitative(band.group.measurement, lower, max.intValue(),
                                               scale, offset, sampleDimension.getUnits());
                 }
-            }
+            });
         }
         return dimension.build();
     }

@@ -201,6 +201,15 @@ public class InfoStatements implements Localized, AutoCloseable {
     }
 
     /**
+     * Returns a new builder of <abbr>SQL</abbr> statement.
+     */
+    private SQLBuilder builder() throws SQLException {
+        final var builder = new SQLBuilder(database);
+        builder.setCatalogAndSchema(connection);
+        return builder;
+    }
+
+    /**
      * Appends a {@code " FROM <table> WHERE "} text to the given builder.
      * The table name will be prefixed by catalog and schema name if applicable.
      */
@@ -250,7 +259,7 @@ public class InfoStatements implements Localized, AutoCloseable {
             return null;
         }
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-        final var sql = new SQLBuilder(database).append(SQLBuilder.SELECT);
+        final var sql = builder().append(SQLBuilder.SELECT);
         if (geomColNameColumn == null) {
             geomColNameColumn = schema.geomColNameColumn;
         }
@@ -397,7 +406,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                 return null;
             }
             final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-            final var sql = new SQLBuilder(database)
+            final var sql = builder()
                     .append(SQLBuilder.SELECT).append("DISTINCT ")
                     .appendIdentifier(schema.crsIdentifierColumn)
                     .append(" FROM ").appendIdentifier(schema.geometryColumns)
@@ -465,7 +474,7 @@ public class InfoStatements implements Localized, AutoCloseable {
             search = schema.crsIdentifierColumn;
             get    = schema.crsAuthorityCodeColumn;
         }
-        final var sql = new SQLBuilder(database).append(SQLBuilder.SELECT)
+        final var sql = builder().append(SQLBuilder.SELECT)
                 .append(schema.crsAuthorityNameColumn).append(", ").append(get);
 
         for (CRSEncoding encoding : database.crsEncodings) {
@@ -884,7 +893,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      */
     private int addCRS(final SRID search, final Set<Integer> sridFounInUse) throws Exception {
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-        final var sql = new SQLBuilder(database).append(SQLBuilder.INSERT);
+        final var sql = builder().append(SQLBuilder.INSERT);
         database.formatTableName(sql, schema.crsTable);
         sql.append(" (").append(schema.crsIdentifierColumn)
            .append(", ").append(schema.crsAuthorityNameColumn)

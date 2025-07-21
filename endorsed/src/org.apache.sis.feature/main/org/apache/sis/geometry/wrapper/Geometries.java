@@ -31,6 +31,7 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.privy.AxisDirections;
@@ -38,15 +39,19 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.BackingStoreException;
+
+// Specific to the main branch:
+import org.apache.sis.feature.AbstractFeature;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**
- * Utility methods on geometric objects defined in libraries outside Apache SIS.
+ * Utility methods on geometric objects defined in libraries outside Apache <abbr>SIS</abbr>.
  * We use this class for isolating dependencies from the {@code org.apache.feature} package
- * to ESRI's API or to Java Topology Suite (JTS) API.
+ * to <abbr>ESRI</abbr>'s <abbr>API</abbr> or to Java Topology Suite (<abbr>JTS</abbr>) API.
  * This gives us a single place to review if we want to support different geometry libraries,
  * or if Apache SIS come with its own implementation.
  *
@@ -96,8 +101,8 @@ public abstract class Geometries<G> implements Serializable {
     /**
      * The fallback implementation to use if the default one is not available.
      * This is set by {@link GeometryFactories} and should not change after initialization.
-     * We do not synchronize accesses to this field because we keep it stable after
-     * {@link GeometryFactories} class initialization.
+     * We do not synchronize the accesses to this field because we keep the field value stable
+     * after {@link GeometryFactories} class initialization.
      *
      * <h4>Temporarily permitted change</h4>
      * {@link GeometryFactories#setStandard(Geometries)} temporarily permits a change of this field,
@@ -108,7 +113,7 @@ public abstract class Geometries<G> implements Serializable {
 
     /**
      * {@code true} if {@link #pointClass} is not a subtype of {@link #rootClass}.
-     * This is true for Java2D and false for JTS and ESRI libraries.
+     * This is true for Java2D and false for <abbr>JTS</abbr> and <abbr>ESRI</abbr> libraries.
      */
     private final transient boolean isPointClassDistinct;
 
@@ -212,6 +217,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  wrapper  the wrapper for which to get the geometry, or {@code null}.
      * @return the geometry instance of the library requested by user, or {@code null} if the given wrapper was null.
      * @throws ClassCastException if the given wrapper is not an instance of the class expected by this factory.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      *
      * @see #getGeometryClass(GeometryType)
      * @see #implementation(Object)
@@ -228,12 +234,55 @@ public abstract class Geometries<G> implements Serializable {
     }
 
     /**
+     * Wraps the geometry stored in a property of the given feature. This method should be used
+     * instead of {@link #wrap(Object)} when the value come from a feature instance in order to
+     * allow <abbr>SIS</abbr> to fetch a default <abbr>CRS</abbr> when the geometry object does
+     * not specify the <abbr>CRS</abbr> itself.
+     *
+     * @param  feature   the feature from which wrap a geometry, or {@code null} if none.
+     * @param  property  the name of the property from which to get the default <abbr>CRS</abbr>.
+     * @return a wrapper for the geometry implementation of the given feature, or empty value.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
+     */
+    public static Optional<GeometryWrapper> wrap(final AbstractFeature feature, final String property) {
+        if (feature == null) {
+            return Optional.empty();
+        }
+        final Optional<GeometryWrapper> value = wrap(feature.getPropertyValue(property));
+        value.ifPresent((wrapper) -> {
+            if (wrapper.crs == null) {
+                wrapper.crs = AttributeConvention.getCRSCharacteristic(feature, property);
+            }
+        });
+        return value;
+    }
+
+    /**
+     * Wraps the default geometry of the given feature. This method should be used instead of {@link #wrap(Object)}
+     * when possible because it allows <abbr>SIS</abbr> to fetch a default <abbr>CRS</abbr> when the geometry object
+     * does not specify the <abbr>CRS</abbr> itself.
+     *
+     * @param  feature   the feature from which wrap the default geometry, or {@code null} if none.
+     * @return a wrapper for the geometry implementation of the given feature, or empty value.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
+     */
+    public static Optional<GeometryWrapper> wrap(final AbstractFeature feature) {
+        return wrap(feature, AttributeConvention.GEOMETRY);
+    }
+
+    /**
      * Wraps the given geometry implementation if recognized.
      * If the given object is already an instance of {@link GeometryWrapper}, then it is returned as-is.
      * If the given object is not recognized, then this method returns an empty value.
      *
+     * <h4>Recommended alternative</h4>
+     * Prefers {@link #wrap(AbstractFeature)} for wrapping the default geometry of a feature instance.
+     * This is preferred for allowing <abbr>SIS</abbr> to fetch the default <abbr>CRS</abbr>
+     * from the feature type when that information was not present in the geometry object.
+     *
      * @param  geometry  the geometry instance to wrap (can be {@code null}).
      * @return a wrapper for the given geometry implementation, or empty value.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      *
      * @see #castOrWrap(Object)
      * @see #implementation(Object)
@@ -271,6 +320,7 @@ public abstract class Geometries<G> implements Serializable {
      * @return a wrapper for the given geometry implementation, or {@code null} if the given object was null.
      * @throws ClassCastException if the given object is not a wrapper or a geometry object
      *         of the implementation of the library identified by {@link #library}.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      *
      * @see #wrap(Object)
      */
@@ -325,6 +375,7 @@ public abstract class Geometries<G> implements Serializable {
      *
      * @param  point  the point to convert to a geometry.
      * @return the given point converted to a geometry.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public final GeometryWrapper createPoint(final DirectPosition point) {
         final Object geometry;
@@ -350,6 +401,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  x  the first coordinate value.
      * @param  y  the second coordinate value.
      * @return the point for the given coordinate values.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      *
      * @see Capability#SINGLE_PRECISION
      */
@@ -365,6 +417,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  x  the first coordinate value.
      * @param  y  the second coordinate value.
      * @return the point for the given coordinate values.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      *
      * @see GeometryWrapper#getPointCoordinates()
      */
@@ -379,6 +432,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  y  the second coordinate value.
      * @param  z  the third coordinate value.
      * @return the point for the given coordinate values.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      *
      * @see Capability#Z_COORDINATE
      * @see GeometryWrapper#getPointCoordinates()
@@ -396,6 +450,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  dimensions   the dimensions of the coordinate tuple.
      * @param  coordinates  a (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuple.
      * @return the point for the given coordinate values.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public abstract Object createPoint(boolean isFloat, Dimensions dimensions, DoubleBuffer coordinates);
 
@@ -412,6 +467,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  dimensions   the dimensions of the coordinate tuples.
      * @param  coordinates  sequence of (x,y), (x,y,z), (x,y,m) or (x,y,z,m) coordinate tuples.
      * @return the collection of points for the given points.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public abstract G createMultiPoint(boolean isFloat, Dimensions dimensions, DoubleBuffer coordinates);
 
@@ -438,6 +494,7 @@ public abstract class Geometries<G> implements Serializable {
      * @throws UnsupportedOperationException if the geometry library cannot create the requested collection.
      * @throws IllegalArgumentException if a polygon was requested but the given coordinates do not make
      *         a closed shape (linear ring).
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public abstract G createPolyline(boolean polygon, boolean isFloat, Dimensions dimensions, DoubleBuffer... coordinates);
 
@@ -453,6 +510,7 @@ public abstract class Geometries<G> implements Serializable {
      * @throws UnsupportedOperationException if the geometry library cannot create the requested collection.
      * @throws IllegalArgumentException if a polygon was requested but the given coordinates do not make
      *         a closed shape (linear ring).
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public final G createPolyline(final boolean polygon, final Dimensions dimensions, final Vector... coordinates) {
         boolean isFloat = true;
@@ -485,6 +543,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  geometries  the polygons or linear rings to put in a multi-polygons.
      * @return the multi-polygon.
      * @throws ClassCastException if an element in the array is not an implementation of backing library.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      *
      * @todo Consider a more general method creating a multi-polygon or multi-line depending on object types,
      *       or returning a more primitive geometry type if the given array contains only one element.
@@ -512,6 +571,7 @@ public abstract class Geometries<G> implements Serializable {
      * @throws IllegalArgumentException if the given geometry type is not supported.
      * @throws ClassCastException if {@code components} is not an array or a collection of supported geometry components.
      * @throws ArrayStoreException if {@code components} is an array with invalid component type.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public abstract GeometryWrapper createFromComponents(GeometryType type, Object components);
 
@@ -523,6 +583,7 @@ public abstract class Geometries<G> implements Serializable {
      * @throws IllegalArgumentException if the library has no specific type for the given components.
      * @throws ClassCastException if {@code components} is not an array or a collection of supported geometry components.
      * @throws ArrayStoreException if {@code components} is an array with invalid component type.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     protected final GeometryWrapper createFromComponents(final Object components) {
         final Class<?> c = components.getClass();
@@ -544,6 +605,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  expand  whether to expand the envelope to full axis range if there is a wraparound.
      * @param  addPts  whether to allow insertion of intermediate points on edges of axis domains.
      * @return a polyline made of a sequence of at least 5 points describing the given rectangle.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     private GeometryWrapper createGeometry2D(final Envelope envelope, final int xd, final int yd,
                                              final boolean expand, final boolean addPts)
@@ -622,6 +684,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  envelope  the envelope to convert.
      * @param  strategy  how to resolve wrap-around ambiguities on the envelope.
      * @return the envelope as a polygon, or potentially as two polygons in {@link WraparoundMethod#SPLIT} case.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      */
     public GeometryWrapper toGeometry2D(final Envelope envelope, final WraparoundMethod strategy) {
         int xd = 0, yd = 1;
@@ -694,6 +757,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  geometry  the geometry to wrap.
      * @return wrapper for the given geometry.
      * @throws ClassCastException if the given geometry is not an instance of valid type.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
      *
      * @see #castOrWrap(Object)
      */

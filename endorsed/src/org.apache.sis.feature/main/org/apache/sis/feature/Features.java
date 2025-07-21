@@ -72,7 +72,8 @@ public final class Features extends Static {
              * the latter case we could have (to be strict) to return a <? extends V> type.
              */
             if (!valueClass.equals(actual)) {
-                throw new ClassCastException(Resources.format(Resources.Keys.MismatchedValueClass_3,
+                throw new ClassCastException(Resources.format(
+                        Resources.Keys.MismatchedValueClass_3,
                         type.getName(), valueClass, actual));
             }
         }
@@ -103,7 +104,8 @@ public final class Features extends Static {
              * the latter case we could have (to be strict) to return a <? extends V> type.
              */
             if (!valueClass.equals(actual)) {
-                throw new ClassCastException(Resources.format(Resources.Keys.MismatchedValueClass_3,
+                throw new ClassCastException(Resources.format(
+                        Resources.Keys.MismatchedValueClass_3,
                         attribute.getName(), valueClass, actual));
             }
         }
@@ -171,7 +173,7 @@ public final class Features extends Static {
                  * contain a cycle. However, given that the consequence of an infinite cycle here
                  * would be thread freeze, we check as a safety.
                  */
-                final Map<AbstractIdentifiedType,Boolean> done = new IdentityHashMap<>(4);
+                final var done = new IdentityHashMap<AbstractIdentifiedType,Boolean>(4);
                 while (!target.isInstance(type = ((AbstractOperation) type).getResult())) {
                     if (!(type instanceof AbstractOperation) || done.put(type, Boolean.TRUE) != null) {
                         return Optional.empty();
