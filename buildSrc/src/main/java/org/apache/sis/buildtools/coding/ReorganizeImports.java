@@ -73,11 +73,14 @@ import java.util.Set;
  *   cd ../geoapi-3.1
  *   git diff
  *   git add --update
+ *   gradle test
+ *   git stash
  *   git merge geoapi-4.0 -s ours --no-commit
+ *   git stash pop
+ *   git add --update
  *   gradle test
  *   git diff
- *   git add --update
- *   git merge --continue --message "Merge of automatic reorganization of imports order."
+ *   git commit --message "Merge of automatic reorganization of imports order."
  *   }
  *
  * Finally apply the same pattern on the {@code main} branch.
