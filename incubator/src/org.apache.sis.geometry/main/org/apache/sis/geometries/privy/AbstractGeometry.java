@@ -16,13 +16,14 @@
  */
 package org.apache.sis.geometries.privy;
 
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.math.TupleArray;
+import org.apache.sis.geometries.math.TupleArrayCursor;
+
 
 /**
  * Abstract geometry, manages crs only.

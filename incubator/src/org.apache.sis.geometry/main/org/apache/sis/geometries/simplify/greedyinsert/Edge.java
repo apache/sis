@@ -19,6 +19,7 @@ package org.apache.sis.geometries.simplify.greedyinsert;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -18,6 +18,7 @@ package org.apache.sis.geometries.privy;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -26,9 +27,11 @@ import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.math.Vector2D;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

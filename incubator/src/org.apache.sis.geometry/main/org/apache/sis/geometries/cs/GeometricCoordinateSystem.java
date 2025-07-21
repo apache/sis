@@ -16,12 +16,13 @@
  */
 package org.apache.sis.geometries.cs;
 
-import org.apache.sis.geometries.Bearing;
-import org.apache.sis.geometries.math.Vector;
 import javax.measure.quantity.Length;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.geometries.Bearing;
+import org.apache.sis.geometries.math.Vector;
+
 
 /**
  *

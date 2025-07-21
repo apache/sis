@@ -16,22 +16,25 @@
  */
 package org.apache.sis.geometries.mesh;
 
-import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.math.Vector3D;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * Tests for MeshGeometry visitor.

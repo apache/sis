@@ -18,6 +18,7 @@ package org.apache.sis.geometries.math;
 
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

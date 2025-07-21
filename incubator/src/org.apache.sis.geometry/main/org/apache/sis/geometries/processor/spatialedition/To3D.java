@@ -19,6 +19,8 @@ package org.apache.sis.geometries.processor.spatialedition;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.PointSequence;
@@ -32,8 +34,7 @@ import org.apache.sis.geometries.privy.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
+
 
 /**
  *

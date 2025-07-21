@@ -22,6 +22,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.locationtech.jts.index.quadtree.Quadtree;
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector2D;
@@ -31,14 +39,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
-import org.locationtech.jts.index.quadtree.Quadtree;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
 
 /**
  * Decorate a TIN, adding optimized search capabilities.

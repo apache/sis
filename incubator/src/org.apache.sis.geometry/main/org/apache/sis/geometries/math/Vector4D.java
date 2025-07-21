@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.math;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

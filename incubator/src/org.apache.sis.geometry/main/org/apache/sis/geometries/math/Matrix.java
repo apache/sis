@@ -19,6 +19,7 @@ package org.apache.sis.geometries.math;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -18,6 +18,7 @@ package org.apache.sis.geometries.conics;
 
 import org.apache.sis.geometries.Curve;
 
+
 /**
  * @todo
  * @author Johann Sorel (Geomatys)

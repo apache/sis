@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation.spatialanalysis2d;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 
+
 /**
  * Returns a geometric object that represents the convex hull of this geometric object.
  * Convex hulls, being dependent on straight lines, can be accurately represented in linear interpolations

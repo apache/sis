@@ -16,14 +16,15 @@
  */
 package org.apache.sis.geometries;
 
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

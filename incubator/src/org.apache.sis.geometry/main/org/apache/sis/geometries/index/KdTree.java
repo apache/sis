@@ -26,6 +26,7 @@ import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;
 
+
 /**
  * Adapted version of KdTree from :
  * https://stackoverflow.com/questions/253767/kdtree-implementation-in-java

@@ -23,6 +23,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys

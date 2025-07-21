@@ -16,12 +16,13 @@
  */
 package org.apache.sis.geometries.privy;
 
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

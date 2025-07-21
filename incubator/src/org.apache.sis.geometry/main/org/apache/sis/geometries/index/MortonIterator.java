@@ -18,6 +18,7 @@ package org.apache.sis.geometries.index;
 
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * Morton iterator utilities.
  *

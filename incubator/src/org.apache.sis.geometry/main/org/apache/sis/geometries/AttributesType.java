@@ -16,13 +16,14 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.DataType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.geometries.math.DataType;
+
 
 /**
  * 3D Engine decompose draw calls by primitive types.

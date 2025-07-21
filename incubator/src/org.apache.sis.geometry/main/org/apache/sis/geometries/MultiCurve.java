@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+
 /**
  * A MultiCurve is a 1-dimensional GeometryCollection whose elements are Curves
  *

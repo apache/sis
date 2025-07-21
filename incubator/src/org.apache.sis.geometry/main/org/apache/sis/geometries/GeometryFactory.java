@@ -19,6 +19,7 @@ package org.apache.sis.geometries;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.privy.ArraySequence;
@@ -32,7 +33,7 @@ import org.apache.sis.geometries.privy.DefaultMultiSurface;
 import org.apache.sis.geometries.privy.DefaultPoint;
 import org.apache.sis.geometries.privy.DefaultPolygon;
 import org.apache.sis.geometries.privy.DefaultTriangle;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

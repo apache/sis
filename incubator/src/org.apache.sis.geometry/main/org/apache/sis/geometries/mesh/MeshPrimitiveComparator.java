@@ -16,9 +16,6 @@
  */
 package org.apache.sis.geometries.mesh;
 
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,7 +26,11 @@ import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
+import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.util.Utilities;
+
 
 /**
  *

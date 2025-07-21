@@ -20,6 +20,7 @@ import javax.measure.quantity.Length;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

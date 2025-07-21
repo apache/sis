@@ -16,25 +16,28 @@
  */
 package org.apache.sis.geometries.processor.spatialedition;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.MultiLineString;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

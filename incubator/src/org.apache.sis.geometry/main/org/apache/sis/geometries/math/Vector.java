@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.math;
 
+
 /**
  * A vector is a subclass of tuple with arithmetic operations defined.
  *

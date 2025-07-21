@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.processor.spatialedition;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.operation.GeometryOperations;
@@ -23,8 +25,7 @@ import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  *

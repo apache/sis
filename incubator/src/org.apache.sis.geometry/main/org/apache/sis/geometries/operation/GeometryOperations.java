@@ -16,15 +16,36 @@
  */
 package org.apache.sis.geometries.operation;
 
-import org.apache.sis.geometries.math.SampleSystem;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.measure.quantity.Length;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.geometries.math.DataType;
+import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.math.TupleArray;
+import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.operation.spatialanalysis2d.Buffer;
 import org.apache.sis.geometries.operation.spatialanalysis2d.ConvexHull;
 import org.apache.sis.geometries.operation.spatialanalysis2d.Difference;
@@ -48,28 +69,8 @@ import org.apache.sis.geometries.operation.spatialrelations2d.Relate;
 import org.apache.sis.geometries.operation.spatialrelations2d.Touches;
 import org.apache.sis.geometries.operation.spatialrelations2d.Within;
 import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.measure.quantity.Length;
 import org.apache.sis.util.Static;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+
 
 /**
  *

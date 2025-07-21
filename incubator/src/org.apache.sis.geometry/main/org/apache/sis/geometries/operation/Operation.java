@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * A geometric operation which involve one or two geometries and produces one or many results.
  *

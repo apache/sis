@@ -30,6 +30,7 @@ import org.apache.sis.geometries.privy.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.geometries.triangulate.EarClipping;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

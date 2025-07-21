@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.cs.Projection;
 import java.util.List;
-import org.apache.sis.measure.Range;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.cs.Projection;
+import org.apache.sis.measure.Range;
+
 
 /**
  *

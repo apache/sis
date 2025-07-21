@@ -16,9 +16,10 @@
  */
 package org.apache.sis.geometries;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * A MultiPoint is a 0-dimensional GeometryCollection.

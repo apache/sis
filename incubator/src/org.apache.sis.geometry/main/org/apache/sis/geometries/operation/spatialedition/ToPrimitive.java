@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation.spatialedition;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 
+
 /**
  * Transform geometry to a Primitive or MultiPrimitive.
  *

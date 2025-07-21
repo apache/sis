@@ -19,6 +19,7 @@ package org.apache.sis.geometries.privy;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.PointSequence;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

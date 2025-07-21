@@ -16,19 +16,19 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.privy.AbstractGeometry;
 import java.util.Collections;
 import java.util.List;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector2D;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

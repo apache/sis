@@ -17,14 +17,17 @@
 package org.apache.sis.geometries.triangulate.delaunay;
 
 import java.util.Iterator;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

@@ -16,13 +16,14 @@
  */
 package org.apache.sis.geometries.operation.spatialedition;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.referencing.CRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.util.FactoryException;
+
 
 /**
  * Returns a geometric object that represents a transformed version of the geometry.

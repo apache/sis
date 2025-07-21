@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.operation;
 
+
 /**
  * Raised if an geometry operation fails.
  *

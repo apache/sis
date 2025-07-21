@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometries.splines;
 
-import org.apache.sis.geometries.Knot;
-import org.apache.sis.geometries.polynomials.PolynomialCurve;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.Knot;
+import org.apache.sis.geometries.polynomials.PolynomialCurve;
+
 
 /**
  *

@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.util.Utilities;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.util.Utilities;
+
 
 /**
  * A tuple is an array of values.

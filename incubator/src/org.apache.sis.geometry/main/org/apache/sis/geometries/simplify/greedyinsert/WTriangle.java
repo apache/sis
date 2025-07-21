@@ -16,20 +16,21 @@
  */
 package org.apache.sis.geometries.simplify.greedyinsert;
 
-import org.apache.sis.geometries.privy.AbstractGeometry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.operation.OperationException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * Triangle.

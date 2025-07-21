@@ -16,9 +16,10 @@
  */
 package org.apache.sis.geometries.privy;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation.spatialanalysis2d;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 
+
 /**
  * Returns a geometric object that represents the Point set symmetric difference of this geometric
  * object with anotherGeometry.

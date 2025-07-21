@@ -23,8 +23,11 @@ import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.operation.spatialanalysis2d.Distance;
 import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *

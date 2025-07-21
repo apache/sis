@@ -16,13 +16,14 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.sis.geometries.processor.spatialanalysis2d.Distance;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * The Sutherland–Hodgman algorithm is an algorithm used for clipping polygons.

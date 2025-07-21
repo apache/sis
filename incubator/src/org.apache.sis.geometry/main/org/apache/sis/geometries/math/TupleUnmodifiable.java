@@ -16,9 +16,10 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.util.ArgumentChecks;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.util.ArgumentChecks;
+
 
 /**
  * Unmodifiable tuple.

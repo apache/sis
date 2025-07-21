@@ -17,14 +17,16 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.io.Serializable;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 
 
 /**

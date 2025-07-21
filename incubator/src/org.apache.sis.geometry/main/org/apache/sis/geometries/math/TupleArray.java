@@ -18,12 +18,13 @@ package org.apache.sis.geometries.math;
 
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.ArgumentChecks;
+
 
 /**
  * A tuple array is fixed size array of tuples.

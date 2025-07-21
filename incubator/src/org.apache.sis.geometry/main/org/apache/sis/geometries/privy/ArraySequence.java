@@ -16,24 +16,25 @@
  */
 package org.apache.sis.geometries.privy;
 
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.geometries.math.DataType;
+import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.math.TupleArray;
+import org.apache.sis.geometries.math.TupleArrayCursor;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

@@ -16,15 +16,18 @@
  */
 package org.apache.sis.geometries.mesh;
 
-import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitiveIndexes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveIndexes;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
 
 /**
  * In those tests created index may change because of hash maps and set sorting.

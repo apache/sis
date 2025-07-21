@@ -19,13 +19,14 @@ package org.apache.sis.geometries.math;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.iso.Names;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.GenericName;
+
 
 /**
  * Experimental class to store multisamples dimensions.

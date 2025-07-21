@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation.spatialanalysis2d;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 
+
 /**
  * Returns the shortest distance between any two Points in the two geometric objects as calculated in the
  * spatial reference system of this geometric object.

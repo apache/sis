@@ -17,11 +17,12 @@
 package org.apache.sis.geometries.math;
 
 import java.util.Arrays;
-import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.util.ArgumentChecks;
+
 
 /**
  *

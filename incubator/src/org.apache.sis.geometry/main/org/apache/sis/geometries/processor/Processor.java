@@ -20,6 +20,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 import org.apache.sis.geometries.operation.OperationException;
 
+
 /**
  * A processor is able to process a single operation type.
  *
