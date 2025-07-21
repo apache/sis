@@ -59,6 +59,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -75,7 +76,6 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.privy.FunctionNames;
 import org.apache.sis.filter.privy.ListingPropertyVisitor;
-import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
@@ -120,12 +120,12 @@ import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.filter.Expression;
 import org.apache.sis.filter.Filter;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.LogicalOperator;
 import org.apache.sis.pending.geoapi.filter.LogicalOperatorName;
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
-import org.opengis.metadata.Identifier;
 
 
 /**

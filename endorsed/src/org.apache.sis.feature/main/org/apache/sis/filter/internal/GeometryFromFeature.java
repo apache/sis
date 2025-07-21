@@ -23,8 +23,8 @@ import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.filter.privy.XPath;
 
 // Specific to the main branch:
-import org.apache.sis.filter.Expression;
 import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 

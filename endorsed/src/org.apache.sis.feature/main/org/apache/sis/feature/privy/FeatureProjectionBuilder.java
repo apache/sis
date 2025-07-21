@@ -43,11 +43,11 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the main branch:
-import org.apache.sis.filter.Expression;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 

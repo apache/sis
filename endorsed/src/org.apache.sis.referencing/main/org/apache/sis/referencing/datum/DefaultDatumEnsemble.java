@@ -51,8 +51,10 @@ import org.apache.sis.util.resources.Errors;
 
 // Specific to the main and geoapi-3.1 branches:
 import java.util.Date;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.VerticalDatumType;
+
+// Specific to the main branch:
+import org.opengis.metadata.extent.Extent;
 
 
 /**

@@ -29,6 +29,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+
+// Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
