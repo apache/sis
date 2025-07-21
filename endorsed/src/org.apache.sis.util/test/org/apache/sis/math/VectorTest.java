@@ -141,7 +141,7 @@ public final class VectorTest extends TestCase {
         assertEquals(array.length, vector.size());
         assertEquals(Byte.class, vector.getElementType());
         /*
-         * Verify element values. Bytes shall be casted to shorts in order to handle unsigned values.
+         * Verify element values. Bytes shall be cast to shorts in order to handle unsigned values.
          * The widening casts should be unconditional, even for positive values that could fit in a byte,
          * because some codes using `Vector` expect a stable type (for example `NetcdfStore` which copies
          * vector values into feature properties).

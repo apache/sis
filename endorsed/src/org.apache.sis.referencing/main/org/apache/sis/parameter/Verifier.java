@@ -104,7 +104,7 @@ final class Verifier {
      * @param  value       the value to check, or {@code null}.
      * @param  unit        the unit of the value to check, or {@code null}.
      * @return the given value converted to the descriptor unit if any,
-     *         then casted to the descriptor parameterized type.
+     *         then cast to the descriptor parameterized type.
      * @throws InvalidParameterValueException if the parameter value is invalid.
      */
     static <T> T ensureValidValue(final ParameterDescriptor<T> descriptor, final Object value, final Unit<?> unit)

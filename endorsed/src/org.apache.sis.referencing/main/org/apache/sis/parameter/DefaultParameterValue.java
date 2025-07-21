@@ -363,7 +363,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Returns an ordered sequence of two or more integer values of this parameter, usually used for counts.
      *
      * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
-     * or throws an exception otherwise. If the value can be casted, then the array is cloned before
+     * or throws an exception otherwise. If the value can be cast, then the array is cloned before
      * to be returned.</p>
      *
      * @return a copy of the sequence of values represented by this parameter.
@@ -416,7 +416,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * where each value has the same associated unit of measure.
      *
      * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
-     * or throws an exception otherwise. If the value can be casted, then the array is cloned before
+     * or throws an exception otherwise. If the value can be cast, then the array is cloned before
      * to be returned.</p>
      *
      * @return a copy of the sequence of values represented by this parameter.

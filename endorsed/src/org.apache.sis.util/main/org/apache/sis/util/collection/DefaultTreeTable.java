@@ -539,7 +539,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * <p>For leaf nodes, this method returns an unmodifiable {@linkplain List#of() empty list}.</p>
          */
         /* NOTE: If a future version removes the "final" keyword, then search for calls to
-         * this method where the return value is casted to TreeNodeList. Any unconditional
+         * this method where the return value is cast to TreeNodeList. Any unconditional
          * cast will need to be replaced by an "instanceof" check.
          */
         @Override

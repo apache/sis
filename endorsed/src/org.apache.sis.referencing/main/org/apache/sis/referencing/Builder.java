@@ -250,7 +250,7 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Returns {@code this} casted to {@code <B>}. The cast is valid if the assertion performed
+     * Returns {@code this} cast to {@code <B>}. The cast is valid if the assertion performed
      * at construction time passes. Since the {@code <B>} type is hard-coded in the source code,
      * if the JUnit test passes then the cast should always be valid for all instances of the
      * same builder class.

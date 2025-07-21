@@ -205,7 +205,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     }
 
     /**
-     * Returns the given value casted to a {@code Set<CharSequence>}.
+     * Returns the given value cast to a {@code Set<CharSequence>}.
      */
     @SuppressWarnings("unchecked")
     private static Set<CharSequence> cast(final Object value) {

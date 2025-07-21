@@ -543,7 +543,7 @@ public class PixelIterator {
      * This method should be used instead of {@code instanceof} check because, for some implementations, being
      * an instance of {@code WritablePixelIterator} is not a sufficient condition.
      *
-     * @return {@code true} if this iterator can safely be casted to {@link WritablePixelIterator} and used for
+     * @return {@code true} if this iterator can safely be cast to {@link WritablePixelIterator} and used for
      *         writing pixel values.
      */
     public boolean isWritable() {

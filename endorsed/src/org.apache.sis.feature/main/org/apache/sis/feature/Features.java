@@ -68,7 +68,7 @@ public final class Features extends Static {
      * @param  <V>         the expected value class.
      * @param  type        the attribute type to cast, or {@code null}.
      * @param  valueClass  the expected value class.
-     * @return the attribute type casted to the given value class, or {@code null} if the given type was null.
+     * @return the attribute type cast to the given value class, or {@code null} if the given type was null.
      * @throws ClassCastException if the given attribute type does not have the expected value class.
      *
      * @category verification
@@ -100,7 +100,7 @@ public final class Features extends Static {
      * @param  <V>         the expected value class.
      * @param  attribute   the attribute instance to cast, or {@code null}.
      * @param  valueClass  the expected value class.
-     * @return the attribute instance casted to the given value class, or {@code null} if the given instance was null.
+     * @return the attribute instance cast to the given value class, or {@code null} if the given instance was null.
      * @throws ClassCastException if the given attribute instance does not have the expected value class.
      *
      * @category verification

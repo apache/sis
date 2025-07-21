@@ -152,7 +152,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
-     * Returns the value casted to a single-precision floating point number.
+     * Returns the value cast to a single-precision floating point number.
      */
     @Override
     public float floatValue() {
@@ -160,7 +160,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
-     * Returns the value rounded to nearest integer. {@link Double#NaN} are casted to 0 and values out of
+     * Returns the value rounded to nearest integer. {@link Double#NaN} are cast to 0 and values out of
      * {@code long} range are clamped to minimal or maximal representable numbers of {@code long} type.
      */
     @Override
@@ -169,7 +169,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
-     * Returns the value rounded to nearest integer. {@link Double#NaN} are casted to 0 and values out of
+     * Returns the value rounded to nearest integer. {@link Double#NaN} are cast to 0 and values out of
      * {@code int} range are clamped to minimal or maximal representable numbers of {@code int} type.
      */
     @Override
@@ -178,7 +178,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
-     * Returns the value rounded to nearest integer. {@link Double#NaN} are casted to 0 and values out of
+     * Returns the value rounded to nearest integer. {@link Double#NaN} are cast to 0 and values out of
      * {@code short} range are clamped to minimal or maximal representable numbers of {@code short} type.
      */
     @Override
@@ -187,7 +187,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
-     * Returns the value rounded to nearest integer. {@link Double#NaN} are casted to 0 and values out of
+     * Returns the value rounded to nearest integer. {@link Double#NaN} are cast to 0 and values out of
      * {@code byte} range are clamped to minimal or maximal representable numbers of {@code byte} type.
      */
     @Override

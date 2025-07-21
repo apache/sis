@@ -215,9 +215,9 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns the value mapped to the given key casted to the given type,
+     * Returns the value mapped to the given key cast to the given type,
      * or {@code null} if the map is null or does not contain a value for the key.
-     * If the mapped value is non-null but cannot be casted to the given type, then this
+     * If the mapped value is non-null but cannot be cast to the given type, then this
      * method throws an {@link IllegalArgumentException} with a message of the form
      * <q>Property ‘{@code key}’ does not accept instances of ‘{@code value.class}’.</q>.
      *
@@ -229,9 +229,9 @@ public final class Containers extends Static {
      * @param  properties  the map of properties from which to get a value, or {@code null} if none.
      * @param  key         the key of the property value to return. Can be {@code null} if the map supports null key.
      * @param  type        the expected type of the property value. Cannot be null.
-     * @return the property value for the given key casted to the given type, or {@code null} if none.
+     * @return the property value for the given key cast to the given type, or {@code null} if none.
      * @throws IllegalArgumentException if a non-null property value exists for the given key but can
-     *         not be casted to the given type.
+     *         not be cast to the given type.
      *
      * @see ArgumentChecks#ensureCanCast(String, Class, Object)
      */

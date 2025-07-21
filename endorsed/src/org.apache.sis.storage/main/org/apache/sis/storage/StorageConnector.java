@@ -356,7 +356,7 @@ public class StorageConnector implements Serializable {
          *       last resort because some SIS data stores will want to access the channel and buffer directly.</li>
          *
          *   <li>{@link ImageInputStream}:
-         *       Same as {@code DataInput} if it can be casted, or {@code null} otherwise.</li>
+         *       Same as {@code DataInput} if it can be cast, or {@code null} otherwise.</li>
          *
          *   <li>{@link InputStream}:
          *       If not explicitly provided, this is a wrapper around the above {@link ImageInputStream}.</li>
@@ -796,7 +796,7 @@ public class StorageConnector implements Serializable {
      *   </li>
      *   <li>{@link ImageInputStream}:
      *     <ul>
-     *       <li>If the above {@code DataInput} can be created and casted to {@code ImageInputStream}, returns it.</li>
+     *       <li>If the above {@code DataInput} can be created and cast to {@code ImageInputStream}, returns it.</li>
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
@@ -835,13 +835,13 @@ public class StorageConnector implements Serializable {
      *   </li>
      *   <li>{@link ImageOutputStream}:
      *     <ul>
-     *       <li>If the above {@code DataOutput} can be created and casted to {@code ImageOutputStream}, returns it.</li>
+     *       <li>If the above {@code DataOutput} can be created and cast to {@code ImageOutputStream}, returns it.</li>
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link OutputStream}:
      *     <ul>
-     *       <li>If the above {@code DataOutput} can be created and casted to {@code OutputStream}, returns it.</li>
+     *       <li>If the above {@code DataOutput} can be created and cast to {@code OutputStream}, returns it.</li>
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>

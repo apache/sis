@@ -131,7 +131,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * are copied in a new {@code MatrixSIS} object.
      *
      * @param  matrix  the matrix to cast or copy, or {@code null}.
-     * @return the matrix argument if it can be safely casted (including {@code null} argument),
+     * @return the matrix argument if it can be safely cast (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
      *
      * @see Matrices#copy(Matrix)

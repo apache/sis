@@ -230,7 +230,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
-     * Constructs a range with the same values as the specified range, casted to the specified type.
+     * Constructs a range with the same values as the specified range, cast to the specified type.
      *
      * @param  type   the element type, usually one of {@link Byte}, {@link Short},
      *                {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
@@ -325,7 +325,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      *
      * @param  type  the class to cast to. Must be one of {@link Byte}, {@link Short},
      *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @return the casted range, or {@code range} if no cast is needed.
+     * @return the cast range, or {@code range} if no cast is needed.
      */
     @Override
     <N extends Number & Comparable<? super N>>
@@ -349,7 +349,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  type  the class to cast to. Must be one of {@link Byte}, {@link Short},
      *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param  targetUnit the target unit, or {@code null} for no change.
-     * @return the casted range, or {@code this}.
+     * @return the cast range, or {@code this}.
      * @throws IncommensurableException if the given target unit is not compatible with the unit of this range.
      */
     @SuppressWarnings("unchecked")
