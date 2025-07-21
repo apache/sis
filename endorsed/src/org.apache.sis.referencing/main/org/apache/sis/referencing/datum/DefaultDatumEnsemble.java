@@ -53,6 +53,7 @@ import org.apache.sis.util.resources.Errors;
 
 // Specific to the main and geoapi-3.1 branches:
 import java.util.Date;
+import org.opengis.referencing.datum.VerticalDatumType;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.ParametricCRS;
@@ -332,6 +333,21 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
     }
 
     /**
+     * Returns an anchor point which is common to all members of the datum ensemble.
+     * If the value is not the same for all members, or if at least one member returned
+     * null, then this method returns null.
+     *
+     * @return the common anchor point, or null if there is no common value.
+     *
+     * @deprecated Renamed {@link #getAnchorDefinition()} for conformance with ISO 19111:2019 revision.
+     */
+    @Override
+    @Deprecated
+    public InternationalString getAnchorPoint() {
+        return getCommonValue(Datum::getAnchorPoint);
+    }
+
+    /**
      * Returns an anchor epoch which is common to all members of the datum ensemble.
      * If the value is not the same for all members, or if at least one member returned
      * an empty value, then this method returns an empty value.
@@ -341,6 +357,21 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
     @Override
     public Optional<Temporal> getAnchorEpoch() {
         return getCommonOptionalValue(Datum::getAnchorEpoch);
+    }
+
+    /**
+     * Returns a realization epoch which is common to all members of the datum ensemble.
+     * If the value is not the same for all members, or if at least one member returned
+     * null, then this method returns null.
+     *
+     * @return the common realization epoch, null if there is no common value.
+     *
+     * @deprecated Renamed {@link #getAnchorEpoch()} for conformance with ISO 19111:2019 revision.
+     */
+    @Override
+    @Deprecated
+    public Date getRealizationEpoch() {
+        return getCommonValue(Datum::getRealizationEpoch);
     }
 
     /**
@@ -366,6 +397,38 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
     @Override
     public Optional<IdentifiedObject> getConventionalRS() {
         return getCommonOptionalValue(Datum::getConventionalRS);
+    }
+
+    /*
+     * Do not override `getScope()` and other methods from `IdentifiedObject`.
+     * Inherit the properties specified to `AbstractIdentifiedObject` instead.
+     */
+
+    /**
+     * Returns a value which is common to all ensemble members.
+     * If all members do not have the same value, returns null.
+     *
+     * @param  <V>     type of value.
+     * @param  getter  method to invoke on each member for getting the value.
+     * @return a value common to all members, or null if there is no common value.
+     *
+     * @deprecated For implementation of deprecated methods only.
+     */
+    @Deprecated
+    final <V> V getCommonValue(final Function<D,V> getter) {
+        final Iterator<D> it = members.iterator();
+check:  if (it.hasNext()) {
+            final V value = getter.apply(it.next());
+            if (value != null) {
+                while (it.hasNext()) {
+                    if (!value.equals(getter.apply(it.next()))) {
+                        break check;
+                    }
+                }
+                return value;
+            }
+        }
+        return null;
     }
 
     /**
@@ -570,6 +633,21 @@ check:  if (it.hasNext()) {
         @Override
         public Optional<RealizationMethod> getRealizationMethod() {
             return getCommonOptionalValue(VerticalDatum::getRealizationMethod);
+        }
+
+        /**
+         * Returns a vertical datum type which is common to all members of the datum ensemble.
+         * If the value is not the same for all members, or if at least one member has a null value,
+         * then this method returns null.
+         *
+         * @return the common realization method, or null if there is no common value.
+         *
+         * @deprecated Replaced by {@link #getRealizationMethod()}.
+         */
+        @Override
+        @Deprecated
+        public VerticalDatumType getVerticalDatumType() {
+            return getCommonValue(VerticalDatum::getVerticalDatumType);
         }
     }
 
