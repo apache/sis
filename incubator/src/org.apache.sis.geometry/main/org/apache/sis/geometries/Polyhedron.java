@@ -18,6 +18,7 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 
+
 /**
  * A solid is defined by its bounding surfaces. Each bounding surface is a closed, simple surface, also called a shell.
  *

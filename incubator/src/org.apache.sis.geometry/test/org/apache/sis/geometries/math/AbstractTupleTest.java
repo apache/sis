@@ -16,8 +16,10 @@
  */
 package org.apache.sis.geometries.math;
 
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *

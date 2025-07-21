@@ -16,9 +16,6 @@
  */
 package org.apache.sis.geometries.mesh;
 
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
-import org.apache.sis.geometries.math.TupleArrays;
 import java.util.HashSet;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
@@ -26,6 +23,9 @@ import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.math.TupleArray;
+import org.apache.sis.geometries.math.TupleArrayCursor;
+import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.util.ArgumentChecks;
 
 

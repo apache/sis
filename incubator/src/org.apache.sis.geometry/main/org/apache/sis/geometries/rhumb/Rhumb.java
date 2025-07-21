@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometries.rhumb;
 
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Bearing;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
+
 
 /**
  *

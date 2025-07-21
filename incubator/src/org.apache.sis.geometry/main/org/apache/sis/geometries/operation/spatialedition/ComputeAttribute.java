@@ -16,13 +16,14 @@
  */
 package org.apache.sis.geometries.operation.spatialedition;
 
-import org.apache.sis.geometries.math.SampleSystem;
+import java.util.function.Function;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.operation.Operation;
+import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
-import java.util.function.Function;
+import org.apache.sis.geometries.operation.Operation;
+
 
 /**
  * Create a new attribute or update an existing one.

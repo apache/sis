@@ -16,17 +16,17 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.measure.NumberRange;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Static;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Static;
 
 
 /**

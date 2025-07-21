@@ -24,13 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.apache.sis.geometries.privy.AbstractGeometry;
-import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.GeometryCollection;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Utilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.privy.AbstractGeometry;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Utilities;
+
 
 /**
  * MultiPrimitive is a group of primitive defining a more complex geometry.

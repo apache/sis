@@ -19,6 +19,7 @@ package org.apache.sis.geometries.privy;
 import org.apache.sis.geometries.MultiPolygon;
 import org.apache.sis.geometries.Polygon;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

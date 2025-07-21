@@ -26,6 +26,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.Numerics;
 
+
 /**
  * Origin : Adapted from Unlicense-Lib
  *

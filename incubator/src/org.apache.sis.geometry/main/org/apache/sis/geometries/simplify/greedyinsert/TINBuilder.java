@@ -28,6 +28,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.PointSequence;
@@ -39,7 +40,7 @@ import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * Variant of progressive TIN creation until an error threshold is met.

@@ -16,13 +16,14 @@
  */
 package org.apache.sis.geometries.griddedsolid;
 
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.Solid;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Solid;
+
 
 /**
  *

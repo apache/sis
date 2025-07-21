@@ -19,10 +19,13 @@ package org.apache.sis.geometries.operation.spatialanalysis2d;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
+import org.locationtech.jts.geom.Coordinate;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.TupleArray;
@@ -31,9 +34,7 @@ import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.locationtech.jts.geom.Coordinate;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
+
 
 /**
  *

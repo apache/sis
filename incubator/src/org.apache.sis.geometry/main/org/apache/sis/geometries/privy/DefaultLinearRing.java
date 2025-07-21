@@ -19,6 +19,7 @@ package org.apache.sis.geometries.privy;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.PointSequence;
 
+
 /**
  * TODO : add linear ring constraints.
  *

@@ -61,6 +61,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -75,7 +76,6 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.privy.FunctionNames;
 import org.apache.sis.filter.privy.ListingPropertyVisitor;
-import org.apache.sis.geometry.wrapper.*;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
@@ -126,7 +126,7 @@ import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
-import org.opengis.metadata.Identifier;
+import org.apache.sis.geometry.wrapper.*;
 
 
 /**

@@ -21,8 +21,11 @@ import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.math.Vector2D;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *

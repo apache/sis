@@ -16,14 +16,15 @@
  */
 package org.apache.sis.geometries.privy;
 
-import org.apache.sis.geometries.math.Tuple;
 import java.util.Arrays;
 import java.util.List;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * Point sequence backed by a list of Point.

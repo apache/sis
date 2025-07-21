@@ -16,14 +16,15 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.privy.AbstractGeometry;
-import org.apache.sis.geometries.math.Tuple;
 import javax.measure.quantity.Length;
-import org.apache.sis.geometry.GeneralEnvelope;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.privy.AbstractGeometry;
+import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometry.GeneralEnvelope;
+
 
 /**
  * A LineString is a Curve with linear interpolation between Points.

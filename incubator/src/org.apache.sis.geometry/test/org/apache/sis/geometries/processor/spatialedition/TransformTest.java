@@ -16,18 +16,21 @@
  */
 package org.apache.sis.geometries.processor.spatialedition;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
 
 /**
  *

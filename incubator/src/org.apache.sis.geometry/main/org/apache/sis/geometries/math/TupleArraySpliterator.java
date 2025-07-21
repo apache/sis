@@ -19,6 +19,7 @@ package org.apache.sis.geometries.math;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

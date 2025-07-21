@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation.spatialrelations2d;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 
+
 /**
  * Returns a derived geometry collection value that matches the specified range of m coordinate values inclusively.
  * See Subclause 6.1.2.6 “Measures on Geometry” for more details.

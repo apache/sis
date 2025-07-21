@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.filter.DefaultFilterFactory;
@@ -50,7 +51,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.FilterFactory;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

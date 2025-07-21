@@ -24,6 +24,7 @@ import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vectors;
 
+
 /**
  * Distance 2D processors.
  *

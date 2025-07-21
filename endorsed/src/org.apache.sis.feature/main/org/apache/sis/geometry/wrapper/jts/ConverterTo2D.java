@@ -19,7 +19,6 @@ package org.apache.sis.geometry.wrapper.jts;
 import java.lang.reflect.Array;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
-import org.apache.sis.util.resources.Errors;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -31,6 +30,7 @@ import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

@@ -33,7 +33,6 @@ import org.apache.sis.filter.sqlmm.Registry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Strings;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Iterator;
@@ -42,6 +41,7 @@ import org.opengis.filter.*;
 import org.opengis.feature.Feature;
 import org.opengis.filter.capability.AvailableFunction;
 import org.opengis.filter.capability.FilterCapabilities;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.AbstractMap;
 
 

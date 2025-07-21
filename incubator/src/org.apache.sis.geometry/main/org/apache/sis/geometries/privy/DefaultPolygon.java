@@ -18,14 +18,15 @@ package org.apache.sis.geometries.privy;
 
 import java.util.Collections;
 import java.util.List;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
+
 
 /**
  *

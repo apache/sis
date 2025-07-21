@@ -30,6 +30,7 @@ import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrayCursor;
 import org.apache.sis.geometries.math.Vectors;
 
+
 /**
  * Constains 2D processors.
  *

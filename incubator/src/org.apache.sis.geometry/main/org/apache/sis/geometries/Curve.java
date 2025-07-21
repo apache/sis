@@ -16,12 +16,13 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.math.Vector;
 import java.util.List;
 import javax.measure.quantity.Length;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.geometries.math.Vector;
+
 
 /**
  * A Curve is a 1-dimensional geometric object usually stored as a sequence of Points, with the subtype of Curve

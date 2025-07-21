@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation.spatialanalysis2d;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 
+
 /**
  * Returns a geometric object that represents all Points whose distance from this geometric object is less than
  * or equal to distance. Calculations are in the spatial reference system of this geometric object. Because of the

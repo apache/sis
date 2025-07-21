@@ -31,6 +31,7 @@ import org.apache.sis.geometries.math.TupleArrayCursor;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.math.Vector1D;
 
+
 /**
  * Various algorithms to transform primitive indexes.
  *

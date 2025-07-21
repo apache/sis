@@ -27,7 +27,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 import javax.measure.Unit;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.IdentifiedObject;
+import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.datum.EngineeringDatum;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;
@@ -55,21 +70,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.IdentifiedObject;
-import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.datum.EngineeringDatum;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.util.FactoryException;
-import org.opengis.util.InternationalString;
+
 
 /**
  * Mesh geometry utilities.

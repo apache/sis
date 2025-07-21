@@ -16,8 +16,9 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.measure.NumberRange;
 import org.opengis.referencing.crs.SingleCRS;
+import org.apache.sis.measure.NumberRange;
+
 
 /**
  * A prism is defined by a base shape (e.g. Polygon or Circle) that is then extruded from some optional lower limit to an upper limit.

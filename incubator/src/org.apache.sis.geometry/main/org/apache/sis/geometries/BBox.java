@@ -18,12 +18,13 @@ package org.apache.sis.geometries;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometry.GeneralEnvelope;
+
 
 /**
  * A BBOx geometry defined by lower and upper corners.

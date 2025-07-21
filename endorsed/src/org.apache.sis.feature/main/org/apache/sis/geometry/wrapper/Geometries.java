@@ -41,7 +41,7 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 
-// Specific to the geoapi-3.1 and 4.0 branches:
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 
 // Specific to the geoapi-4.0 branch:

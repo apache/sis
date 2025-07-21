@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
-import java.time.temporal.Temporal;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -52,6 +50,8 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
+import java.time.temporal.Temporal;
 import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.datum.ParametricDatum;

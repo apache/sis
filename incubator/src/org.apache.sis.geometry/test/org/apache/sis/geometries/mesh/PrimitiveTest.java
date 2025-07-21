@@ -20,8 +20,11 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.math.TupleArrays;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *

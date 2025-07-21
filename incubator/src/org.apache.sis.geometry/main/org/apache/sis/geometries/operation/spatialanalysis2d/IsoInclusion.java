@@ -18,6 +18,7 @@ package org.apache.sis.geometries.operation.spatialanalysis2d;
 
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 
+
 /**
  * Enum used in {@linkplain ISOBand isoband computation} to manage the integration of
  * {@linkplain MeshPrimitive.Triangles triangles} whose vertices are all located at the intersection altitude of

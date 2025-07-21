@@ -28,6 +28,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.GeometryCollection;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -46,7 +47,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.geometry.wrapper.Geometries.LOGGER;
-import org.locationtech.jts.geom.GeometryCollection;
 
 
 /**

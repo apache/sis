@@ -50,8 +50,6 @@ import org.opengis.geometry.TransfiniteSet;
 import org.opengis.geometry.complex.Complex;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
-
-// Specific to the geoapi-4.0 branch:
 import org.opengis.coordinate.MismatchedDimensionException;
 
 

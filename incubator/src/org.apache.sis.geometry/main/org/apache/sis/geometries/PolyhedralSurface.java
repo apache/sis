@@ -19,6 +19,7 @@ package org.apache.sis.geometries;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
+
 /**
  * A PolyhedralSurface is a contiguous collection of polygons, which share common boundary segments.
  *

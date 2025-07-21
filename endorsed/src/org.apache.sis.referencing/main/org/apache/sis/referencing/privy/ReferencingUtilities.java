@@ -51,8 +51,6 @@ import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-
 
 /**
  * A set of static methods working on GeoAPI referencing objects.

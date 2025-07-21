@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.conicsurfaces;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

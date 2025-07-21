@@ -17,9 +17,10 @@
 package org.apache.sis.geometries.math;
 
 import java.util.Arrays;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

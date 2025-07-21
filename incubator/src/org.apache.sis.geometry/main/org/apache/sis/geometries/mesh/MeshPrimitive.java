@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
@@ -58,8 +60,7 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * A mesh geometry is a structure which mimics the natural primitives used

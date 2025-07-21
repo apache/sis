@@ -16,12 +16,13 @@
  */
 package org.apache.sis.geometries.spirals;
 
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.polynomials.RealFunction;
-import org.apache.sis.geometries.math.Vector;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.polynomials.RealFunction;
+import org.apache.sis.geometries.math.Vector;
+
 
 /**
  *

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+
 /**
  * A MultiSurface is a 2-dimensional GeometryCollection whose elements are Surfaces, all using coordinates from
  * the same coordinate reference system. The geometric interiors of any two Surfaces in a MultiSurface may not intersect

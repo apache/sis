@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.conics;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

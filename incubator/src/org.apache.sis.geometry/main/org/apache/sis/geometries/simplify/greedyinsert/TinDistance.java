@@ -23,6 +23,7 @@ import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -16,12 +16,15 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.geometry.GeneralEnvelope;
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.GeneralEnvelope;
+
+// Test dependencies
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 
 /**
  *

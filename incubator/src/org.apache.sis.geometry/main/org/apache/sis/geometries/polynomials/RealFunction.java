@@ -18,10 +18,11 @@ package org.apache.sis.geometries.polynomials;
 
 import java.net.URI;
 import java.util.List;
-import org.apache.sis.measure.Range;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.util.GenericName;
+import org.apache.sis.measure.Range;
+
 
 /**
  *

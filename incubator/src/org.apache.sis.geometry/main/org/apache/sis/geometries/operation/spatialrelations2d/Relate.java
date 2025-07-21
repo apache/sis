@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation.spatialrelations2d;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 
+
 /**
  * Returns TRUE if this geometric object is spatially related to anotherGeometry by testing for intersections between
  * the interior, boundary and exterior of the two geometric objects as specified by the values in the

@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometries.operation.spatialedition;
 
+import java.util.function.Consumer;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.Operation;
 import org.apache.sis.geometries.math.Tuple;
-import java.util.function.Consumer;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * Add a Z axis on the geometry and configure it's ordinates.

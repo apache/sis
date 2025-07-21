@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.privy.AbstractGeometry;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.coordinate.GriddedSurface;
+import org.apache.sis.geometries.privy.AbstractGeometry;
+
 
 /**
  * A Polygon is a planar Surface defined by 1 exterior boundary and 0 or more interior boundaries.

@@ -16,14 +16,15 @@
  */
 package org.apache.sis.geometries;
 
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * A sphere geometry defined by a center and a radius.

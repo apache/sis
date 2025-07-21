@@ -16,12 +16,15 @@
  */
 package org.apache.sis.geometries.math;
 
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  *

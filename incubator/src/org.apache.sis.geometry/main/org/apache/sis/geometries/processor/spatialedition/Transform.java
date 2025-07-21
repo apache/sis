@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.GeometryFactory;
@@ -34,7 +35,7 @@ import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.privy.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  *

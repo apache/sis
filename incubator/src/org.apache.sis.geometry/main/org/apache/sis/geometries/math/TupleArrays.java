@@ -22,6 +22,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.RecursiveAction;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
@@ -30,8 +32,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
+
 
 /**
  *

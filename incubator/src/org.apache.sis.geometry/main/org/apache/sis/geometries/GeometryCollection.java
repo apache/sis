@@ -17,10 +17,11 @@
 package org.apache.sis.geometries;
 
 import java.util.Set;
-import org.apache.sis.geometry.GeneralEnvelope;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometry.GeneralEnvelope;
+
 
 /**
  * A GeometryCollection is a geometric object that is a collection of some number of geometric objects.

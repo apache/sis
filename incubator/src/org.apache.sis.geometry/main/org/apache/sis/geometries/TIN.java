@@ -19,6 +19,7 @@ package org.apache.sis.geometries;
 import org.apache.sis.geometries.privy.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
 
+
 /**
  * A TIN (triangulated irregular network) is a PolyhedralSurface consisting only of Triangle patches.
  *

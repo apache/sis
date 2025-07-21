@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+
 /**
  * A multi-polyhedron is a collection of polyhedron objects. These are arbitrary aggregations.
  * There is no assumption regarding the topological relationships between the polyhedron objects,
