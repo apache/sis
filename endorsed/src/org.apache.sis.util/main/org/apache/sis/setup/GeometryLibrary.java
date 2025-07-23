@@ -105,6 +105,8 @@ public enum GeometryLibrary {
      *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code org.apache.sis.geometries.LineString}</td></tr>
      *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code org.apache.sis.geometries.Polygon}</td></tr>
      * </table>
+     *
+     * @since 2.0 (temporary version number until this branch is released)
      */
     SIS("SIS"),
 

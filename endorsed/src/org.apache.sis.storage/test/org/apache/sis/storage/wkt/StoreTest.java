@@ -88,7 +88,7 @@ public final class StoreTest extends TestCase {
      * reading from an {@link java.io.InputStream}. This method tests indirectly {@link StorageConnector}
      * capability to reset the {@code InputStream} to its original position after {@code probeContent(…)}.
      *
-     * @throws DataStoreException if en error occurred while reading the WKT.
+     * @throws DataStoreException if an error occurred while reading the WKT.
      */
     @Test
     public void testFromInputStream() throws DataStoreException {

@@ -49,7 +49,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geometries<Geometry>{
+public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geometries<Geometry> {
 
     public static GeometryFactory INSTANCE = new GeometryFactory();
 
