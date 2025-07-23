@@ -71,6 +71,7 @@ import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
@@ -88,7 +89,7 @@ import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.SignReversalComment;
 import org.apache.sis.referencing.internal.Resources;
-import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
+import org.apache.sis.referencing.internal.ServicesForMetadata;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.system.Loggers;
@@ -98,6 +99,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -108,8 +110,6 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.URLs;
-import static org.apache.sis.util.privy.Constants.UTC;
-import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
@@ -261,7 +261,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
 
     /**
      * Cache for axis names. This service is not provided by {@code ConcurrentAuthorityFactory}
-     * since {@link AxisName} objects are particular to the EPSG database.
+     * because {@link AxisName} objects are specific to the <abbr>EPSG</abbr> authority factory.
      *
      * @see #getAxisName(Integer)
      */
@@ -271,7 +271,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Cache of naming systems other than EPSG. There is usually few of them (at most 15).
      * This is used for aliases.
      *
-     * @see #createProperties(String, String, Integer, CharSequence, boolean)
+     * @see #createProperties(String, Integer, String, CharSequence, String, String, CharSequence, boolean)
      */
     private final Map<String,NameSpace> namingSystems = new HashMap<>();
 
@@ -381,7 +381,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     @SuppressWarnings("ReturnOfDateField")
     private Calendar getCalendar() {
         if (calendar == null) {
-            calendar = Calendar.getInstance(TimeZone.getTimeZone(UTC), Locale.CANADA);
+            calendar = Calendar.getInstance(TimeZone.getTimeZone(Constants.UTC), Locale.CANADA);
             // Canada locale is closer to ISO than US.
         }
         calendar.clear();
@@ -455,7 +455,7 @@ addURIs:    for (int i=0; ; i++) {
                     case 1: url = URLs.EPSG; function = OnLineFunction.DOWNLOAD; break;
                     case 2: {
                         url = SQLUtilities.getSimplifiedURL(metadata);
-                        function = OnLineFunction.valueOf(CONNECTION);
+                        function = OnLineFunction.valueOf(ServicesForMetadata.CONNECTION);
                         description = Resources.formatInternational(Resources.Keys.GeodeticDataBase_4,
                                 Constants.EPSG, version, metadata.getDatabaseProductName(),
                                 Version.valueOf(metadata.getDatabaseMajorVersion(),
@@ -639,7 +639,7 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Returns {@code true} if the specified code may be a primary key in some table.
+     * Returns {@code true} if the specified code may be a primary key in some tables.
      * This method does not need to check any entry in the database.
      * It should just check from the syntax if the code looks like a valid EPSG identifier.
      *
@@ -654,12 +654,14 @@ addURIs:    for (int i=0; ; i++) {
      *
      * <h4>Default implementation</h4>
      * The default implementation returns {@code true} if all characters are decimal digits 0 to 9.
+     * Currently, this default implementation cannot be overridden. But we may allow that in a future
+     * version if it appears to be useful.
      *
      * @param  code  the code the inspect.
      * @return {@code true} if the code is probably a primary key.
      * @throws FactoryException if an unexpected error occurred while inspecting the code.
      */
-    private boolean isPrimaryKey(final String code) throws FactoryException {
+    private static boolean isPrimaryKey(final String code) throws FactoryException {
         int i = code.length();
         if (i == 0) {
             return false;
@@ -901,11 +903,12 @@ codes:  for (int i=0; i<codes.length; i++) {
     /**
      * Formats an error message for an unexpected null value.
      */
+    @SuppressWarnings("ConvertToTryWithResources")
     private String nullValue(final ResultSet result, final int columnIndex, final Comparable<?> code) throws SQLException {
         final ResultSetMetaData metadata = result.getMetaData();
         final String column = metadata.getColumnName(columnIndex);
         final String table  = metadata.getTableName (columnIndex);
-        result.close();
+        result.close();     // Only an optimization. The actual try-with-resource is done by the caller.
         return error().getString(Errors.Keys.NullValueInTable_3, table, column, code);
     }
 
@@ -1094,15 +1097,25 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Returns the name and aliases for the {@link IdentifiedObject} to construct.
      *
      * @param  table       the table on which a query has been executed.
-     * @param  name        the name for the {@link IdentifiedObject} to construct.
      * @param  code        the EPSG code of the object to construct.
+     * @param  name        the name for the {@link IdentifiedObject} to construct.
+     * @param  description a description associated with the name, or {@code null} if none.
+     * @param  domainCode  the code for the domain of validity, or {@code null} if none.
+     * @param  scope       the scope, or {@code null} if none.
      * @param  remarks     remarks as a {@link String} or {@link InternationalString}, or {@code null} if none.
      * @param  deprecated  {@code true} if the object to create is deprecated.
      * @return the name together with a set of properties.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Object> createProperties(final String table, String name, final Integer code,
-            CharSequence remarks, final boolean deprecated) throws SQLException, FactoryException
+    private Map<String,Object> createProperties(final String       table,
+                                                final Integer      code,
+                                                      String       name,        // May be replaced by an alias.
+                                                final CharSequence description,
+                                                final String       domainCode,
+                                                      String       scope,       // May replace "?" by text.
+                                                final CharSequence remarks,
+                                                final boolean      deprecated)
+            throws SQLException, FactoryException
     {
         /*
          * Search for aliases. Note that searching for the object code is not sufficient. We also need to check if the
@@ -1138,7 +1151,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     }
                 }
                 if (CharSequences.toASCII(alias).toString().equals(name)) {
-                    name = alias;
+                    name = alias;   // Same name but with accented letters.
                 } else {
                     aliases.add(owner.nameFactory.createLocalName(ns, alias));
                 }
@@ -1156,9 +1169,10 @@ codes:  for (int i=0; i<codes.length; i++) {
         if (name != null) {
             gn = owner.nameFactory.createGenericName(namespace, Constants.EPSG, name);
             properties.put("name", gn);
-            properties.put(NamedIdentifier.CODE_KEY,      name);
-            properties.put(NamedIdentifier.VERSION_KEY,   version);
-            properties.put(NamedIdentifier.AUTHORITY_KEY, authority);
+            properties.put(NamedIdentifier.CODE_KEY,        name);
+            properties.put(NamedIdentifier.VERSION_KEY,     version);
+            properties.put(NamedIdentifier.AUTHORITY_KEY,   authority);
+            properties.put(NamedIdentifier.DESCRIPTION_KEY, description);
             properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
             final var id = new NamedIdentifier(properties);
             properties.clear();
@@ -1185,30 +1199,9 @@ codes:  for (int i=0; i<codes.length; i++) {
         properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
         properties.put(ReferencingFactoryContainer.MT_FACTORY, owner.mtFactory);
-        return properties;
-    }
-
-    /**
-     * Returns the name, aliases and domain of validity for the {@link IdentifiedObject} to construct.
-     *
-     * @param  table       the table on which a query has been executed.
-     * @param  name        the name for the {@link IdentifiedObject} to construct.
-     * @param  code        the EPSG code of the object to construct.
-     * @param  domainCode  the code for the domain of validity, or {@code null} if none.
-     * @param  scope       the scope, or {@code null} if none.
-     * @param  remarks     remarks, or {@code null} if none.
-     * @param  deprecated  {@code true} if the object to create is deprecated.
-     * @return the name together with a set of properties.
-     */
-    private Map<String,Object> createProperties(final String table, final String name, final Integer code,
-            final String domainCode, String scope, final String remarks, final boolean deprecated)
-            throws SQLException, FactoryException
-    {
         if ("?".equals(scope)) {                // EPSG sometimes uses this value for unspecified scope.
             scope = null;
         }
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
         if (domainCode != null) {
             properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(domainCode));
         }
@@ -1344,14 +1337,14 @@ codes:  for (int i=0; i<codes.length; i++) {
         try (ResultSet result = executeQuery("Coordinate Reference System", "COORD_REF_SYS_CODE", "COORD_REF_SYS_NAME",
                 "SELECT COORD_REF_SYS_CODE,"          +     // [ 1]
                       " COORD_REF_SYS_NAME,"          +     // [ 2]
-                      " AREA_OF_USE_CODE,"            +     // [ 3]
+                      " AREA_OF_USE_CODE,"            +     // [ 3] Deprecated since EPSG version 10 (always null)
                       " CRS_SCOPE,"                   +     // [ 4]
                       " REMARKS,"                     +     // [ 5]
                       " DEPRECATED,"                  +     // [ 6]
                       " COORD_REF_SYS_KIND,"          +     // [ 7]
                       " COORD_SYS_CODE,"              +     // [ 8] Null for CompoundCRS
                       " DATUM_CODE,"                  +     // [ 9] Null for ProjectedCRS
-                      " SOURCE_GEOGCRS_CODE,"         +     // [10] For ProjectedCRS
+                      " BASE_CRS_CODE,"               +     // [10] For ProjectedCRS
                       " PROJECTION_CONV_CODE,"        +     // [11] For ProjectedCRS
                       " CMPD_HORIZCRS_CODE,"          +     // [12] For CompoundCRS only
                       " CMPD_VERTCRS_CODE"            +     // [13] For CompoundCRS only
@@ -1390,7 +1383,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         }
                         final EllipsoidalCS cs = owner.createEllipsoidalCS(csCode.toString());
                         final String datumCode = getOptionalString(result, 9);
-                        final GeodeticDatum datum;
+                        GeodeticDatum datum;
                         if (datumCode != null) {
                             datum = owner.createGeodeticDatum(datumCode);
                         } else {
@@ -1403,8 +1396,10 @@ codes:  for (int i=0; i<codes.length; i++) {
                                 endOfRecursion(GeographicCRS.class, epsg);
                             }
                         }
+                        DatumEnsemble<GeodeticDatum> ensemble = tryAsEnsemble(datum, GeodeticDatum.class);
+                        if (ensemble != null) datum = null;
                         crs = crsFactory.createGeographicCRS(createProperties("Coordinate Reference System",
-                                name, epsg, area, scope, remarks, deprecated), datum, cs);
+                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
                         break;
                     }
                     /* ----------------------------------------------------------------------
@@ -1478,7 +1473,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                                  */
                                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                                 final Map<String,Object> properties = createProperties("Coordinate Reference System",
-                                                                        name, epsg, area, scope, remarks, deprecated);
+                                        epsg, name, null, area, scope, remarks, deprecated);
                                 if (baseCRS instanceof GeodeticCRS) {
                                     crs = crsFactory.createProjectedCRS(properties, (GeodeticCRS) baseCRS, op, cs);
                                 } else {
@@ -1496,10 +1491,12 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   VERTICAL CRS
                      * ---------------------------------------------------------------------- */
                     case "vertical": {
-                        final VerticalCS    cs    = owner.createVerticalCS   (getString(code, result, 8));
-                        final VerticalDatum datum = owner.createVerticalDatum(getString(code, result, 9));
+                        VerticalCS    cs    = owner.createVerticalCS   (getString(code, result, 8));
+                        VerticalDatum datum = owner.createVerticalDatum(getString(code, result, 9));
+                        DatumEnsemble<VerticalDatum> ensemble = tryAsEnsemble(datum, VerticalDatum.class);
+                        if (ensemble != null) datum = null;
                         crs = crsFactory.createVerticalCRS(createProperties("Coordinate Reference System",
-                                name, epsg, area, scope, remarks, deprecated), datum, cs);
+                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
                         break;
                     }
                     /* ----------------------------------------------------------------------
@@ -1510,10 +1507,12 @@ codes:  for (int i=0; i<codes.length; i++) {
                      * ---------------------------------------------------------------------- */
                     case "time":
                     case "temporal": {
-                        final TimeCS        cs    = owner.createTimeCS       (getString(code, result, 8));
-                        final TemporalDatum datum = owner.createTemporalDatum(getString(code, result, 9));
+                        TimeCS        cs    = owner.createTimeCS       (getString(code, result, 8));
+                        TemporalDatum datum = owner.createTemporalDatum(getString(code, result, 9));
+                        DatumEnsemble<TemporalDatum> ensemble = tryAsEnsemble(datum, TemporalDatum.class);
+                        if (ensemble != null) datum = null;
                         crs = crsFactory.createTemporalCRS(createProperties("Coordinate Reference System",
-                                name, epsg, area, scope, remarks, deprecated), datum, cs);
+                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
                         break;
                     }
                     /* ----------------------------------------------------------------------
@@ -1536,23 +1535,24 @@ codes:  for (int i=0; i<codes.length; i++) {
                         }
                         // Note: Do not invoke `createProperties` sooner.
                         crs  = crsFactory.createCompoundCRS(createProperties("Coordinate Reference System",
-                                name, epsg, area, scope, remarks, deprecated), crs1, crs2);
+                                epsg, name, null, area, scope, remarks, deprecated), crs1, crs2);
                         break;
                     }
                     /* ----------------------------------------------------------------------
                      *   GEOCENTRIC CRS
                      * ---------------------------------------------------------------------- */
                     case "geocentric": {
-                        final CoordinateSystem cs = owner.createCoordinateSystem(getString(code, result, 8));
-                        final GeodeticDatum datum = owner.createGeodeticDatum   (getString(code, result, 9));
-                        final DatumEnsemble<GeodeticDatum> datumEnsemble = null;  // TODO
+                        CoordinateSystem cs = owner.createCoordinateSystem(getString(code, result, 8));
+                        GeodeticDatum datum = owner.createGeodeticDatum   (getString(code, result, 9));
+                        DatumEnsemble<GeodeticDatum> ensemble = tryAsEnsemble(datum, GeodeticDatum.class);
+                        if (ensemble != null) datum = null;
                         @SuppressWarnings("LocalVariableHidesMemberVariable")
                         final Map<String,Object> properties = createProperties("Coordinate Reference System",
-                                                                name, epsg, area, scope, remarks, deprecated);
+                                epsg, name, null, area, scope, remarks, deprecated);
                         if (cs instanceof CartesianCS) {
-                            crs = crsFactory.createGeodeticCRS(properties, datum, datumEnsemble, (CartesianCS) cs);
+                            crs = crsFactory.createGeodeticCRS(properties, datum, ensemble, (CartesianCS) cs);
                         } else if (cs instanceof SphericalCS) {
-                            crs = crsFactory.createGeodeticCRS(properties, datum, datumEnsemble, (SphericalCS) cs);
+                            crs = crsFactory.createGeodeticCRS(properties, datum, ensemble, (SphericalCS) cs);
                         } else {
                             throw new FactoryDataException(error().getString(
                                     Errors.Keys.IllegalCoordinateSystem_1, cs.getName()));
@@ -1563,21 +1563,24 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   ENGINEERING CRS
                      * ---------------------------------------------------------------------- */
                     case "engineering": {
-                        final CoordinateSystem cs    = owner.createCoordinateSystem(getString(code, result, 8));
-                        final EngineeringDatum datum = owner.createEngineeringDatum(getString(code, result, 9));
+                        CoordinateSystem cs    = owner.createCoordinateSystem(getString(code, result, 8));
+                        EngineeringDatum datum = owner.createEngineeringDatum(getString(code, result, 9));
+                        DatumEnsemble<EngineeringDatum> ensemble = tryAsEnsemble(datum, EngineeringDatum.class);
+                        if (ensemble != null) datum = null;
                         crs = crsFactory.createEngineeringCRS(createProperties("Coordinate Reference System",
-                                name, epsg, area, scope, remarks, deprecated), datum, cs);
+                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
                         break;
                     }
                     /* ----------------------------------------------------------------------
                      *   PARAMETRIC CRS
                      * ---------------------------------------------------------------------- */
                     case "parametric": {
-                        final ParametricCS    cs    = owner.createParametricCS   (getString(code, result, 8));
-                        final ParametricDatum datum = owner.createParametricDatum(getString(code, result, 9));
-                        final DatumEnsemble<ParametricDatum> datumEnsemble = null;  // TODO
+                        ParametricCS    cs    = owner.createParametricCS   (getString(code, result, 8));
+                        ParametricDatum datum = owner.createParametricDatum(getString(code, result, 9));
+                        DatumEnsemble<ParametricDatum> ensemble = tryAsEnsemble(datum, ParametricDatum.class);
+                        if (ensemble != null) datum = null;
                         crs = crsFactory.createParametricCRS(createProperties("Coordinate Reference System",
-                                name, epsg, area, scope, remarks, deprecated), datum, datumEnsemble, cs);
+                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
                         break;
                     }
                     /* ----------------------------------------------------------------------
@@ -1594,11 +1597,36 @@ codes:  for (int i=0; i<codes.length; i++) {
             }
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateReferenceSystem.class, code, exception);
+        } catch (ClassCastException exception) {
+            throw new FactoryDataException(error().getString(exception.getLocalizedMessage()), exception);
         }
         if (returnValue == null) {
              throw noSuchAuthorityCode(CoordinateReferenceSystem.class, code);
         }
         return returnValue;
+    }
+
+    /**
+     * Returns the given datum as a datum ensemble if it should be considered as such.
+     * This method exists because the datum and datum ensemble are stored in the same table,
+     * and Apache <abbr>SIS</abbr> creates those two kinds of objects with the same method.
+     * The real type is resolved by inspection of the {@link #createDatum(String)} return value.
+     *
+     * <h4>Design restriction</h4>
+     * We cannot resolve the type with a private field which would be set by {@code #createDatumEnsemble(…)}
+     * because that method will not be invoked if the datum is fetched from the cache.
+     *
+     * @param  <D>         compile-time value of {@code memberType}.
+     * @param  datum       the datum to check if it is a datum ensemble.
+     * @param  memberType  the expected type of datum members.
+     * @return the given datum as an ensemble if it should be considered as such, or {@code null} otherwise.
+     * @throws ClassCastException if at least one member is not an instance of the specified type.
+     */
+    private static <D extends Datum> DatumEnsemble<D> tryAsEnsemble(final D datum, final Class<D> memberType) {
+        if (datum instanceof DatumEnsemble<?>) {
+            return DefaultDatumEnsemble.castOrCopy((DatumEnsemble<?>) datum).cast(memberType);
+        }
+        return null;
     }
 
     /**
@@ -1610,12 +1638,12 @@ codes:  for (int i=0; i<codes.length; i++) {
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
-     *   <tr><th>Code</th> <th>Type</th>        <th>Description</th></tr>
-     *   <tr><td>6326</td> <td>Geodetic</td>    <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>6322</td> <td>Geodetic</td>    <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>1027</td> <td>Vertical</td>    <td>EGM2008 geoid</td></tr>
-     *   <tr><td>5100</td> <td>Vertical</td>    <td>Mean Sea Level</td></tr>
-     *   <tr><td>9315</td> <td>Engineering</td> <td>Seismic bin grid datum</td></tr>
+     *   <tr><th>Code</th> <th>Type</th>            <th>Description</th></tr>
+     *   <tr><td>6326</td> <td>Datum ensemble</td>  <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>6322</td> <td>Dynamic geodetic</td><td>World Geodetic System 1972</td></tr>
+     *   <tr><td>1027</td> <td>Vertical</td>        <td>EGM2008 geoid</td></tr>
+     *   <tr><td>5100</td> <td>Vertical</td>        <td>Mean Sea Level</td></tr>
+     *   <tr><td>9315</td> <td>Engineering</td>     <td>Seismic bin grid datum</td></tr>
      * </table>
      *
      * @param  code  value allocated by EPSG.
@@ -1633,7 +1661,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " DATUM_TYPE," +
                       " ORIGIN_DESCRIPTION," +
                       " REALIZATION_EPOCH," +
-                      " AREA_OF_USE_CODE," +
+                      " AREA_OF_USE_CODE," +        // Deprecated since EPSG version 10 (always null)
                       " DATUM_SCOPE," +
                       " REMARKS," +
                       " DEPRECATED," +
@@ -1653,10 +1681,9 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final String  remarks    = getOptionalString (result, 8);
                 final boolean deprecated = getOptionalBoolean(result, 9);
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
-                Map<String,Object> properties = createProperties("Datum", name, epsg, area, scope, remarks, deprecated);
-                if (anchor != null) {
-                    properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
-                }
+                Map<String,Object> properties = createProperties("Datum",
+                        epsg, name, null, area, scope, remarks, deprecated);
+                properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
                 if (epoch != null) try {
                     /*
                      * Parse the date manually because it is declared as a VARCHAR instead of DATE in original
@@ -1696,6 +1723,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      * createEllipsoid(String) and createPrimeMeridian(String), so we must protect
                      * the properties map from changes.
                      */
+                    case "dynamic geodetic":
                     case "geodetic": {
                         properties = new HashMap<>(properties);         // Protect from changes
                         final Ellipsoid ellipsoid    = owner.createEllipsoid    (getString(code, result, 10));
@@ -1739,6 +1767,11 @@ codes:  for (int i=0; i<codes.length; i++) {
                         datum = datumFactory.createParametricDatum(properties);
                         break;
                     }
+                    case "ensemble": {
+                        properties = new HashMap<>(properties);         // Protect from changes
+                        datum = DefaultDatumEnsemble.castOrCopy(createDatumEnsemble(epsg, properties));
+                        break;
+                    }
                     default: {
                         throw new FactoryDataException(error().getString(Errors.Keys.UnknownType_1, type));
                     }
@@ -1755,6 +1788,44 @@ codes:  for (int i=0; i<codes.length; i++) {
             throw noSuchAuthorityCode(Datum.class, code);
         }
         return returnValue;
+    }
+
+    /**
+     * Creates an arbitrary datum ensemble from a code.
+     *
+     * @param  code        value allocated by EPSG.
+     * @param  properties  properties to assign to the datum ensemble.
+     * @return the datum ensemble for the given code, or {@code null} if not found.
+     */
+    private DatumEnsemble<?> createDatumEnsemble(final Integer code, final Map<String,Object> properties)
+            throws SQLException, FactoryException
+    {
+        double accuracy = Double.NaN;
+        try (ResultSet result = executeQuery("DatumEnsemble",
+                "SELECT ENSEMBLE_ACCURACY" +
+                " FROM \"DatumEnsemble\"" +
+                " WHERE DATUM_ENSEMBLE_CODE = ?", code))
+        {
+            // Should have exactly one value. The loop is a paranoiac safety.
+            while (result.next()) {
+                final double value = getDouble(code, result, 1);
+                if (Double.isNaN(accuracy) || value > accuracy) {
+                    accuracy = value;
+                }
+            }
+        }
+        final var members = new ArrayList<Datum>();
+        try (ResultSet result = executeQuery("DatumEnsembleMember",
+                "SELECT DATUM_CODE" +
+                " FROM \"DatumEnsembleMember\"" +
+                " WHERE DATUM_ENSEMBLE_CODE = ?" +
+                " ORDER BY DATUM_SEQUENCE", code))
+        {
+            while (result.next()) {
+                members.add(owner.createDatum(getInteger(code, result, 1).toString()));
+            }
+        }
+        return owner.datumFactory.createDatumEnsemble(properties, members, PositionalAccuracyConstant.ensemble(accuracy));
     }
 
     /**
@@ -1785,7 +1856,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 "SELECT COORD_OP_CODE," +
                       " COORD_OP_METHOD_CODE," +
                       " TARGET_CRS_CODE," +
-                      " AREA_OF_USE_CODE"+
+                      " AREA_OF_USE_CODE" +      // Deprecated since EPSG version 10 (always null).
                 " FROM \"Coordinate_Operation\"" +
                " WHERE DEPRECATED=0" +           // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                  " AND TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
@@ -1844,7 +1915,7 @@ codes:  for (int i=0; i<codes.length; i++) {
              * all datum seen by this method use Greenwich. But we nevertheless perform this check
              * as a safety for future evolution or customized EPSG dataset.
              */
-            if (!equalsIgnoreMetadata(meridian, datum.getPrimeMeridian())) {
+            if (!Utilities.equalsIgnoreMetadata(meridian, datum.getPrimeMeridian())) {
                 continue;
             }
             final var bwp = new BursaWolfParameters(datum, info.getDomainOfValidity(owner));
@@ -1931,17 +2002,17 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final boolean deprecated        = getOptionalBoolean(result, 8);
                 final Unit<Length> unit         = owner.createUnit(unitCode).asType(Length.class);
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
-                final Map<String,Object> properties = createProperties("Ellipsoid", name, epsg, remarks, deprecated);
+                final Map<String,Object> properties = createProperties("Ellipsoid",
+                        epsg, name, null, null, null, remarks, deprecated);
                 final Ellipsoid ellipsoid;
                 if (Double.isNaN(inverseFlattening)) {
                     if (Double.isNaN(semiMinorAxis)) {
                         // Both are null, which is not allowed.
                         final String column = result.getMetaData().getColumnName(3);
                         throw new FactoryDataException(error().getString(Errors.Keys.NullValueInTable_3, code, column));
-                    } else {
-                        // We only have semiMinorAxis defined. It is OK
-                        ellipsoid = owner.datumFactory.createEllipsoid(properties, semiMajorAxis, semiMinorAxis, unit);
                     }
+                    // We only have semiMinorAxis defined. It is OK
+                    ellipsoid = owner.datumFactory.createEllipsoid(properties, semiMajorAxis, semiMinorAxis, unit);
                 } else {
                     if (!Double.isNaN(semiMinorAxis)) {
                         // Both `inverseFlattening` and `semiMinorAxis` are defined.
@@ -2014,7 +2085,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final Unit<Angle> unit = owner.createUnit(unitCode).asType(Angle.class);
                 final PrimeMeridian primeMeridian = owner.datumFactory.createPrimeMeridian(
-                        createProperties("Prime Meridian", name, epsg, remarks, deprecated), longitude, unit);
+                        createProperties("Prime Meridian", epsg, name, null, null, null, remarks, deprecated),
+                        longitude, unit);
                 returnValue = ensureSingleton(primeMeridian, returnValue, code);
             }
         } catch (SQLException exception) {
@@ -2038,6 +2110,15 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>1262</td> <td>World</td></tr>
      *   <tr><td>3391</td> <td>World - between 80°S and 84°N</td></tr>
      * </table>
+     *
+     * <h4>History</h4>
+     * The table name was {@code "Area"} before version 10 of the <abbr>EPSG</abbr> geodetic dataset.
+     * Starting from <abbr>EPSG</abbr> version 10, the table name is {@code "Extent"} but the first 7
+     * columns are the same with different names and order. The last columns are news.
+     *
+     * <p>Before <abbr>EPSG</abbr> version 10, extents were referenced in columns named {@code AREA_OF_USE_CODE}.
+     * Starting with version 10, that column still exists but is deprecated and contains only {@code null} values.
+     * An {@code "Usage"} intersection table is used instead.</p>
      *
      * @param  code  value allocated by EPSG.
      * @return the extent for the given code.
@@ -2153,7 +2234,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
-                final Map<String,Object> properties = createProperties("Coordinate System", name, epsg, remarks, deprecated);   // Must be after axes.
+                final Map<String,Object> properties = createProperties("Coordinate System",
+                        epsg, name, null, null, null, remarks, deprecated);   // Must be after axes.
                 /*
                  * The following switch statement should have a case for all "epsg_cs_kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
@@ -2335,7 +2417,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 }
                 final AxisName an = getAxisName(nameCode);
                 final CoordinateSystemAxis axis = owner.csFactory.createCoordinateSystemAxis(
-                        createProperties("Coordinate Axis", an.name, epsg, an.description, false),
+                        createProperties("Coordinate Axis", epsg, an.name, an.description, null, null, an.remarks, false),
                         abbreviation, direction, owner.createUnit(unit));
                 returnValue = ensureSingleton(axis, returnValue, code);
             }
@@ -2365,12 +2447,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     final String name  = getString(code,   result, 1);
                     String description = getOptionalString(result, 2);
                     String remarks     = getOptionalString(result, 3);
-                    if (description == null) {
-                        description = remarks;
-                    } else if (remarks != null) {
-                        description += System.lineSeparator() + remarks;
-                    }
-                    final AxisName axis = new AxisName(name, description);
+                    final var axis = new AxisName(name, description, remarks);
                     returnValue = ensureSingleton(axis, returnValue, code);
                 }
             }
@@ -2597,8 +2674,8 @@ next:                   while (r.next()) {
                                     Double.POSITIVE_INFINITY, false, CollectionsExt.first(units)); break;
                 }
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
-                final Map<String,Object> properties =
-                        createProperties("Coordinate_Operation Parameter", name, epsg, isReversible, deprecated);
+                final Map<String,Object> properties = createProperties("Coordinate_Operation Parameter",
+                        epsg, name, null, null, null, isReversible, deprecated);
                 properties.put(Identifier.DESCRIPTION_KEY, description);
                 final var descriptor = new DefaultParameterDescriptor<>(properties, 1, 1, type, valueDomain, null, null);
                 returnValue = ensureSingleton(descriptor, returnValue, code);
@@ -2761,7 +2838,8 @@ next:                   while (r.next()) {
                 final boolean deprecated = getOptionalBoolean(result, 4);
                 final ParameterDescriptor<?>[] descriptors = createParameterDescriptors(epsg);
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
-                Map<String,Object> properties = createProperties("Coordinate_Operation Method", name, epsg, remarks, deprecated);
+                final Map<String,Object> properties = createProperties("Coordinate_Operation Method",
+                        epsg, name, null, null, null, remarks, deprecated);
                 /*
                  * Note: we do not store the formula at this time, because the text is very verbose and rarely used.
                  */
@@ -2816,7 +2894,7 @@ next:                   while (r.next()) {
                           " COORD_OP_METHOD_CODE," +
                           " COORD_TFM_VERSION," +
                           " COORD_OP_ACCURACY," +
-                          " AREA_OF_USE_CODE," +
+                          " AREA_OF_USE_CODE," +    // Deprecated since EPSG version 10 (always null)
                           " COORD_OP_SCOPE," +
                           " REMARKS," +
                           " DEPRECATED" +
@@ -2894,12 +2972,10 @@ next:                   while (r.next()) {
                      *       overwrite the properties map.
                      */
                     Map<String,Object> opProperties = createProperties("Coordinate_Operation",
-                            name, epsg, area, scope, remarks, deprecated);
+                            epsg, name, null, area, scope, remarks, deprecated);
                     opProperties.put(CoordinateOperation.OPERATION_VERSION_KEY, version);
-                    if (!Double.isNaN(accuracy)) {
-                        opProperties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                                         PositionalAccuracyConstant.create(accuracy));
-                    }
+                    opProperties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
+                                     PositionalAccuracyConstant.transformation(accuracy));
                     /*
                      * Creates the operation. Conversions should be the only operations allowed to have
                      * null source and target CRS. In such case, the operation is a defining conversion
@@ -3033,7 +3109,7 @@ next:                   while (r.next()) {
             do {
                 /*
                  * This `do` loop is executed twice: the first time for searching defining conversions, and the second
-                 * time for searching all other kind of operations. Defining conversions are searched first because
+                 * time for searching all other kinds of operations. Defining conversions are searched first because
                  * they are, by definition, the most accurate operations.
                  */
                 final String key, sql;
@@ -3053,7 +3129,7 @@ next:                   while (r.next()) {
                     key = "ConversionFromCRS";
                     sql = "SELECT PROJECTION_CONV_CODE" +
                           " FROM \"Coordinate Reference System\"" +
-                          " WHERE SOURCE_GEOGCRS_CODE = ?" +
+                          " WHERE BASE_CRS_CODE = ?" +
                             " AND COORD_REF_SYS_CODE = ?";
                 }
                 final Integer targetKey = searchTransformations ? null : pair[1];

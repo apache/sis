@@ -75,7 +75,7 @@ CREATE INDEX ix_alias               ON epsg_alias                     (object_ta
 -- Indexes used by EPSGDataAccess.Finder for reverse operation.            --
 -----------------------------------------------------------------------------
 CREATE INDEX ix_major_ellipsoid ON epsg_ellipsoid                 (semi_major_axis);
-CREATE INDEX ix_geogcrs_crs     ON epsg_coordinatereferencesystem (source_geogcrs_code);
+CREATE INDEX ix_geogcrs_crs     ON epsg_coordinatereferencesystem (base_crs_code);
 CREATE INDEX ix_ellipsoid_datum ON epsg_datum                     (ellipsoid_code);
 
 

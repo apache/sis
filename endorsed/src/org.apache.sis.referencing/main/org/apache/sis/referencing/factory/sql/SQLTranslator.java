@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.Function;
 import java.sql.DatabaseMetaData;
@@ -35,17 +36,17 @@ import org.apache.sis.referencing.internal.Resources;
 
 
 /**
- * Adapter of <abbr>SQL</abbr> statements for variations in syntax and table names.
+ * Translator of <abbr>SQL</abbr> statements for variations in schema, table and column names.
  * The {@link #apply(String)} method is invoked when a new {@link PreparedStatement}
  * is about to be created from a <abbr>SQL</abbr> string.
- * This class allows {@link EPSGFactory} to accept some variants of table names.
+ * That method can modify the string before execution.
  * For example, the following <abbr>SQL</abbr> query:
  *
  * <ul>
  *   <li>{@code SELECT * FROM "Coordinate Reference System"}</li>
  * </ul>
  *
- * may be converted to one of the following possibilities:
+ * can be translated to one of the following possibilities:
  *
  * <ul>
  *   <li>{@code SELECT * FROM "Coordinate Reference System"} (no change)</li>
@@ -53,55 +54,65 @@ import org.apache.sis.referencing.internal.Resources;
  *   <li>{@code SELECT * FROM epsg_coordinatereferencesystem}</li>
  * </ul>
  *
- * The mixed-case variant is used in the dataset distributed by <abbr>EPSG</abbr> in the MS-Access format,
- * while the lower-case variant is used in the <abbr>SQL</abbr> scripts distributed by <abbr>EPSG</abbr>.
- * By default, this class auto-detects which database schema contains the <abbr>EPSG</abbr> tables
- * and whether the database uses the lower-case or mixed-case variant of table names.
- * It is legal to use the mixed-case variant in a PostgreSQL database (for example)
- * even if <abbr>EPSG</abbr> distributes the PosthreSQL scripts in lower-case.
- * The following table gives the mapping between the two variants accepted by {@link EPSGFactory}:
+ * Above possibilities differ in the letter cases, spaces and {@code "epsg_"} prefix (non-exhaustive).
+ * Those differences exist between the <abbr>EPSG</abbr> databases distributed in MS-Access format or
+ * as <abbr>SQL</abbr> scripts. More differences may exist for handling the differences between version
+ * 9 and 10 of the <abbr>EPSG</abbr> database schema.
+ *
+ * <p>Apache <abbr>SIS</abbr> generally uses the naming convention found in the MS-Access database,
+ * because it provides more readable <abbr>SQL</abbr> statements. <abbr>SIS</abbr> also assumes an
+ * <abbr>EPSG</abbr> database schema version 10 or latter. If {@link EPSGFactory} is connected to
+ * a database which uses a different table naming convention, or to <abbr>EPSG</abbr> version 9,
+ * then this {@code SQLTranslator} class will translate the <abbr>SQL</abbr> statements on-the-fly.
+ * The following table gives the mapping between the two naming conventions:</p>
  *
  * <table class="sis">
  *   <caption>Table and column names</caption>
- *   <tr><th>Element</th><th>Name in MS-Access database</th>                    <th>Name in <abbr>SQL</abbr> scripts</th></tr>
- *   <tr><td>Table</td>  <td>{@code Alias}</td>                                 <td>{@code epsg_alias}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Area}</td>                                  <td>{@code epsg_area}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Change}</td>                                <td>{@code epsg_change}</td></tr>
- *   <tr><td>Table</td>  <td>{@code ConventionalRS}</td>                        <td>{@code epsg_conventionalrs}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate Axis}</td>                       <td>{@code epsg_coordinateaxis}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate Axis Name}</td>                  <td>{@code epsg_coordinateaxisname}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate_Operation}</td>                  <td>{@code epsg_coordoperation}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate_Operation Method}</td>           <td>{@code epsg_coordoperationmethod}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate_Operation Parameter}</td>        <td>{@code epsg_coordoperationparam}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate_Operation Parameter Usage}</td>  <td>{@code epsg_coordoperationparamusage}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate_Operation Parameter Value}</td>  <td>{@code epsg_coordoperationparamvalue}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate_Operation Path}</td>             <td>{@code epsg_coordoperationpath}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate Reference System}</td>           <td>{@code epsg_coordinatereferencesystem}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Coordinate System}</td>                     <td>{@code epsg_coordinatesystem}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Datum}</td>                                 <td>{@code epsg_datum}</td></tr>
- *   <tr><td>Table</td>  <td>{@code DatumEnsemble}</td>                         <td>{@code epsg_datumensemble}</td></tr>
- *   <tr><td>Table</td>  <td>{@code DatumEnsembleMember}</td>                   <td>{@code epsg_datumensemblemember}</td></tr>
- *   <tr><td>Table</td>  <td>{@code DatumRealizationMethod}</td>                <td>{@code epsg_datumrealizationmethod}</td></tr>
- *   <tr><td>Table</td>  <td>{@code DefiningOperation}</td>                     <td>{@code epsg_definingoperation}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Deprecation}</td>                           <td>{@code epsg_deprecation}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Ellipsoid}</td>                             <td>{@code epsg_ellipsoid}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Extent}</td>                                <td>{@code epsg_extent}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Naming System}</td>                         <td>{@code epsg_namingsystem}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Prime Meridian}</td>                        <td>{@code epsg_primemeridian}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Scope}</td>                                 <td>{@code epsg_scope}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Supersession}</td>                          <td>{@code epsg_supersession}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Unit of Measure}</td>                       <td>{@code epsg_unitofmeasure}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Version History}</td>                       <td>{@code epsg_versionhistory}</td></tr>
- *   <tr><td>Table</td>  <td>{@code Usage}</td>                                 <td>{@code epsg_usage}</td></tr>
- *   <tr><td>Column</td> <td>{@code ORDER}</td>                                 <td>{@code coord_axis_order}</td></tr>
+ *   <tr><th>Element</th>       <th>Name in MS-Access database</th>                    <th>Name in <abbr>SQL</abbr> scripts</th></tr>
+ *   <tr><td>Table</td>         <td>{@code Alias}</td>                                 <td>{@code epsg_alias}</td></tr>
+ *   <tr><td>Legacy table</td>  <td>{@code Area}</td>                                  <td>{@code epsg_area}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Change}</td>                                <td>{@code epsg_change}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code ConventionalRS}</td>                        <td>{@code epsg_conventionalrs}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate Axis}</td>                       <td>{@code epsg_coordinateaxis}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate Axis Name}</td>                  <td>{@code epsg_coordinateaxisname}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate_Operation}</td>                  <td>{@code epsg_coordoperation}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate_Operation Method}</td>           <td>{@code epsg_coordoperationmethod}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate_Operation Parameter}</td>        <td>{@code epsg_coordoperationparam}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate_Operation Parameter Usage}</td>  <td>{@code epsg_coordoperationparamusage}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate_Operation Parameter Value}</td>  <td>{@code epsg_coordoperationparamvalue}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate_Operation Path}</td>             <td>{@code epsg_coordoperationpath}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate Reference System}</td>           <td>{@code epsg_coordinatereferencesystem}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Coordinate System}</td>                     <td>{@code epsg_coordinatesystem}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Datum}</td>                                 <td>{@code epsg_datum}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code DatumEnsemble}</td>                         <td>{@code epsg_datumensemble}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code DatumEnsembleMember}</td>                   <td>{@code epsg_datumensemblemember}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code DatumRealizationMethod}</td>                <td>{@code epsg_datumrealizationmethod}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code DefiningOperation}</td>                     <td>{@code epsg_definingoperation}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Deprecation}</td>                           <td>{@code epsg_deprecation}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Ellipsoid}</td>                             <td>{@code epsg_ellipsoid}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Extent}</td>                                <td>{@code epsg_extent}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Naming System}</td>                         <td>{@code epsg_namingsystem}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Prime Meridian}</td>                        <td>{@code epsg_primemeridian}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Scope}</td>                                 <td>{@code epsg_scope}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Supersession}</td>                          <td>{@code epsg_supersession}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Unit of Measure}</td>                       <td>{@code epsg_unitofmeasure}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Version History}</td>                       <td>{@code epsg_versionhistory}</td></tr>
+ *   <tr><td>Table</td>         <td>{@code Usage}</td>                                 <td>{@code epsg_usage}</td></tr>
+ *   <tr><td>Column</td>        <td>{@code ORDER}</td>                                 <td>{@code coord_axis_order}</td></tr>
  * </table>
+ *
+ * Apache <abbr>SIS</abbr> automatically detects which convention is used, regardless the database engine.
+ * For example, it is legal to use the mixed-case variant in a PostgreSQL database
+ * even if <abbr>EPSG</abbr> distributes the PostgreSQL scripts in lower-case.
+ * The {@code "epsg_"} prefix is redundant with database schema and can be omitted.
+ * {@code SQLTranslator} automatically detects which database schema contains the <abbr>EPSG</abbr> tables.
  *
  * <h2>Thread safety</h2>
  * All {@code SQLTranslator} instances given to the {@link EPSGFactory} constructor
  * <strong>shall</strong> be immutable and thread-safe.
  *
  * @author  Rueben Schulz (UBC)
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Didier Richard (IGN)
  * @author  John Grange
  * @version 1.5
@@ -272,17 +283,21 @@ public class SQLTranslator implements Function<String,String> {
     }
 
     /**
-     * Sets the value of all non-final fields. This method performs two steps:
+     * Sets the value of all non-final fields. This method performs the following steps:
      *
      * <ol class="verbose">
-     *   <li>Find the schema that seems to contain the EPSG tables. If there is more than one schema containing the
-     *       tables, gives precedence to the schema named "EPSG" if one is found. If there is no schema named "EPSG",
-     *       take an arbitrary schema. It may be the empty string if the tables are not contained in a schema.</li>
+     *   <li>Find the schema that seems to contain the <abbr>EPSG</abbr> tables.
+     *       If there is more than one schema containing the tables, give precedence to the schema named
+     *       {@code "EPSG"} (ignoring case), or an arbitrary schema if none has been found with that name.
+     *       The schema name may be the empty string if the tables are not contained in a schema.</li>
+     *
+     *   <li>Determine whether the table names are prefixed by {@value #TABLE_PREFIX}
+     *       and whether table names are in lower-case or mixed-case.</li>
      *
      *   <li>Fill the {@link #tableRenaming} and {@link #columnRenaming} maps. These maps translate table
      *       and column names used in the <abbr>SQL</abbr> statements into the names used by the database.
      *       Two conventions are understood: the names used in the MS-Access database or the names used
-     *       in the <abbr>SQL</abbr> scripts. Both of them are distributed by <abbr>EPSG</abbr>.</li>
+     *       in the <abbr>SQL</abbr> scripts, potentially with {@linkplain #TABLE_PREFIX prefix} removed.</li>
      * </ol>
      */
     final void setup(final DatabaseMetaData md) throws SQLException {
@@ -317,31 +332,62 @@ public class SQLTranslator implements Function<String,String> {
         /*
          * At this point, the catalog and schema have been found or have been confirmed,
          * or are still null if we did not found the EPSG table used as a sentinel value.
+         * The following map contains renaming not covered by the generic algorithm
+         * implemented in `toActualTableName(…)`.
          */
         if (!useMixedCaseTableNames) {
             tableRenaming = Map.of("Coordinate_Operation", "coordoperation",
                                    "Parameter",            "param");
         }
         /*
+         * Column name patterns which will be used in the rest of this method.
+         * They need to be adapted to the letter case convention of the database.
+         */
+        String order       = "ORDER";
+        String baseCRS     = "%CRS_CODE";   // "BASE_CRS_CODE" or "SOURCE_GEOGCRS_CODE".
+        String deprecated  = "DEPRECATED";
+        String objectTable = ENUMERATION_COLUMN;
+        if (md.storesLowerCaseIdentifiers()) {
+            order       =       order.toLowerCase(Locale.US);
+            baseCRS     =     baseCRS.toLowerCase(Locale.US);
+            deprecated  =  deprecated.toLowerCase(Locale.US);
+            objectTable = objectTable.toLowerCase(Locale.US);
+        }
+        /*
          * MS-Access database uses a column named "ORDER" in the "Coordinate Axis" table.
          * This column has been renamed "coord_axis_order" in DLL scripts.
          * We need to check which name our current database uses.
          */
-        try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTableName("Coordinate Axis"), "ORDER")) {
+        try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTableName("Coordinate Axis"), order)) {
             if (result.next()) {
                 columnRenaming = Map.of("COORD_AXIS_ORDER", "ORDER");
+            }
+        }
+        /*
+         * A column named "BASE_CRS_CODE" in EPSG version 9 has been renamed "SOURCE_GEOGCRS_CODE" in version 10.
+         * Detects which name is used, with precedence to latest database version if the two columns are found.
+         */
+skip:   try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTableName("Coordinate Reference System"), baseCRS)) {
+            boolean isOldSchema = false;
+            while (result.next()) {
+                final String column = result.getString(Reflection.COLUMN_NAME);
+                if ("BASE_CRS_CODE".equalsIgnoreCase(column)) {
+                    break skip;     // Found the column of EPSG version 10.
+                }
+                if (!isOldSchema) {
+                    isOldSchema = "SOURCE_GEOGCRS_CODE".equalsIgnoreCase(column);
+                }
+            }
+            if (isOldSchema) {
+                columnRenaming = new HashMap<>(columnRenaming);
+                columnRenaming.put("BASE_CRS_CODE", "SOURCE_GEOGCRS_CODE");
+                columnRenaming = Map.copyOf(columnRenaming);
             }
         }
         /*
          * Detect if the database uses boolean types where applicable.
          * We arbitrarily use the Datum table as a representative value.
          */
-        String deprecated  = "DEPRECATED";
-        String objectTable = ENUMERATION_COLUMN;
-        if (md.storesLowerCaseIdentifiers()) {
-            deprecated  =  deprecated.toLowerCase(Locale.US);
-            objectTable = objectTable.toLowerCase(Locale.US);
-        }
         final String tablePattern = usePrefixedTableNames ? SQLUtilities.escape(TABLE_PREFIX, escape) + '%' : null;
         try (ResultSet result = md.getColumns(catalog, schemaPattern, tablePattern, deprecated)) {
             while (result.next()) {
@@ -436,13 +482,12 @@ public class SQLTranslator implements Function<String,String> {
     /**
      * Converts a mixed-case table name to the convention used in the database.
      * The names of the tables for the two conventions are listed in a table in the Javadoc of this class.
-     * The rreturned string does not include the identifier quotes.
+     * The returned string does not include the identifier quotes.
      *
      * @param  name  the mixed-case table name.
      * @return the name converted to the convention used by the database.
-     * @since 1.5
      */
-    public final String toActualTableName(String name) {
+    final String toActualTableName(String name) {
         if (useMixedCaseTableNames) {
             return name;
         }

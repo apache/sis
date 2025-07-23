@@ -310,7 +310,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             }
             /*
              * For Coordinate Reference System, the SQL statement may be something like below
-             * (with DATUM_CODE replaced by SOURCE_GEOGCRS_CODE in a projected CRS):
+             * (with DATUM_CODE replaced by BASE_CRS_CODE projected CRS):
              *
              *   SELECT COORD_REF_SYS_CODE FROM "Coordinate Reference System"
              *     WHERE CAST(COORD_REF_SYS_KIND AS VARCHAR(80)) LIKE 'geographic%'
@@ -319,7 +319,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              */
             final Condition filter;
             if (object instanceof DerivedCRS) {              // No need to use isInstance(Class, Object) from here.
-                filter = dependencies("SOURCE_GEOGCRS_CODE", SingleCRS.class, ((DerivedCRS) object).getBaseCRS(), true);
+                filter = dependencies("BASE_CRS_CODE", SingleCRS.class, ((DerivedCRS) object).getBaseCRS(), true);
             } else if (object instanceof GeodeticCRS) {
                 filter = dependencies("DATUM_CODE", GeodeticDatum.class, ((GeodeticCRS) object).getDatum(), true);
             } else if (object instanceof VerticalCRS) {

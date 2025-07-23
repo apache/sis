@@ -2315,7 +2315,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Map<String,Object>        properties       = parseParametersAndClose(element, name, method);
         if (accuracy != null) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                    PositionalAccuracyConstant.create(accuracy.pullDouble("accuracy")));
+                    PositionalAccuracyConstant.transformation(accuracy.pullDouble("accuracy")));
             accuracy.close(ignoredElements);
         }
         try {

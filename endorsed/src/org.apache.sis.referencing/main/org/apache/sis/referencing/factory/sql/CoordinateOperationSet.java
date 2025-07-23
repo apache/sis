@@ -44,7 +44,7 @@ import org.opengis.referencing.crs.DerivedCRS;
  *       one result, because {@code COORD_REF_SYS_CODE} is a primary key):
  *
  *       {@snippet lang="sql" :
- *         SELECT PROJECTION_CONV_CODE FROM "Coordinate Reference System" WHERE SOURCE_GEOGCRS_CODE = ? AND COORD_REF_SYS_CODE = ?
+ *         SELECT PROJECTION_CONV_CODE FROM "Coordinate Reference System" WHERE BASE_CRS_CODE = ? AND COORD_REF_SYS_CODE = ?
  *         }
  *   </li>
  *
