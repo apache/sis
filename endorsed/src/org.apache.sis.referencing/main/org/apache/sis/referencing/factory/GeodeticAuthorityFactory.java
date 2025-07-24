@@ -525,6 +525,46 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
+     * Creates an arbitrary datum ensemble from a code.
+     * A datum ensemble is a collection of datums which for low accuracy requirements
+     * may be considered to be insignificantly different from each other.
+     *
+     * <h4>Examples</h4>
+     * The {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:6326</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:6258</td> <td>European Terrestrial Reference System 1989</td></tr>
+     * </table>
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation delegates to {@link #createDatum(String)} and casts the result.
+     * If the result cannot be cast, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * This approach assumes that the datum ensemble implements also the {@link Datum} interface.
+     * It is the case of the {@link org.apache.sis.referencing.datum.DefaultDatumEnsemble} class.
+     *
+     * <p>This default implementation is unusual, but is convenient for the implementation strategy
+     * of Apache <abbr>SIS</abbr> and for the structure of the <abbr>EPSG</abbr> geodetic dataset,
+     * which uses the same {@code "Datum"} table for storing the properties of the two kinds of object.</p>
+     *
+     * @param  code  value allocated by authority.
+     * @return the datum ensemble for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultDatumEnsemble
+     *
+     * @since 1.5
+     */
+    public DatumEnsemble<?> createDatumEnsemble(final String code) throws NoSuchAuthorityCodeException, FactoryException {
+        return cast(DatumEnsemble.class, createDatum(code), code);
+    }
+
+    /**
      * Creates an arbitrary datum from a code. The returned object will typically be an
      * instance of {@link GeodeticDatum}, {@link VerticalDatum} or {@link TemporalDatum}.
      * If the datum is known at compile time, it is recommended to invoke the most precise method instead of this one.
@@ -706,45 +746,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     public EngineeringDatum createEngineeringDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(EngineeringDatum.class, createDatum(code), code);
-    }
-
-    /**
-     * Creates an arbitrary datum ensemble from a code.
-     * A datum ensemble is a collection of datums which for low accuracy requirements
-     * may be considered to be insignificantly different from each other.
-     *
-     * <h4>Examples</h4>
-     * The {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
-     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
-     * A frequently used authority is "EPSG", which includes the following codes:
-     *
-     * <table class="sis">
-     * <caption>Authority codes examples</caption>
-     *   <tr><th>Code</th>      <th>Description</th></tr>
-     *   <tr><td>EPSG:6326</td> <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG:6258</td> <td>European Terrestrial Reference System 1989</td></tr>
-     * </table>
-     *
-     * <h4>Default implementation</h4>
-     * The default implementation delegates to {@link #createDatum(String)} and casts the result.
-     * If the result cannot be cast, then a {@link NoSuchAuthorityCodeException} is thrown.
-     * Note that the delegation to {@code createDatum(…)} works only if the implementation
-     * stores datum and datum ensembles together. This is the case of the <abbr>EPSG</abbr>
-     * geodetic dataset for instance. In such case, the datum ensemble can be returned as an
-     * object that implements both the {@link Datum} and {@link DatumEnsemble} interfaces,
-     * such as the {@link org.apache.sis.referencing.datum.DefaultDatumEnsemble} class.
-     *
-     * @param  code  value allocated by authority.
-     * @return the datum for the given code.
-     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
-     * @throws FactoryException if the object creation failed for some other reason.
-     *
-     * @see org.apache.sis.referencing.datum.DefaultDatumEnsemble
-     *
-     * @since 1.5
-     */
-    public DatumEnsemble<?> createDatumEnsemble(final String code) throws NoSuchAuthorityCodeException, FactoryException {
-        return cast(DatumEnsemble.class, createDatum(code), code);
     }
 
     /**

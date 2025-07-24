@@ -259,6 +259,17 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private final Map<Integer, AxisName> axisNames = new HashMap<>();
 
     /**
+     * Cache for conventional reference systems, which are instances of the generic {@link IdentifiedObject} type.
+     * This is not cached by {@code ConcurrentAuthorityFactory} because there is not yet a specific type for that.
+     * Since we are not using the shared cache, there is a possibility that many objects are created for the same
+     * conventional <abbr>RS</abbr> code. However, this duplication should not happen if each instance appears in
+     * only one datum ensemble created by {@link #createDatumEnsemble(Integer, Map)}.
+     *
+     * @see #createConventionalRS(Integer)
+     */
+    private final Map<Integer, IdentifiedObject> conventionalRS = new HashMap<>();
+
+    /**
      * Cache for realization methods. This service is not provided by {@code ConcurrentAuthorityFactory}
      * because the realization method table is specific to the <abbr>EPSG</abbr> authority factory.
      *
@@ -1690,20 +1701,21 @@ codes:  for (int i=0; i<codes.length; i++) {
         ArgumentChecks.ensureNonNull("code", code);
         Datum returnValue = null;
         try (ResultSet result = executeQuery("Datum", "DATUM_CODE", "DATUM_NAME",
-                "SELECT DATUM_CODE,"             +  // [ 1]
-                      " DATUM_NAME,"             +  // [ 2]
-                      " DATUM_TYPE,"             +  // [ 3]
-                      " ORIGIN_DESCRIPTION,"     +  // [ 4]
-                      " ANCHOR_EPOCH,"           +  // [ 5]
-                      " FRAME_REFERENCE_EPOCH,"  +  // [ 6] — NULL for static datum, non-null if dynamic.
-                      " PUBLICATION_DATE,"       +  // [ 7] — Was REALIZATION_EPOCH in EPSG version 9.
-                      " AREA_OF_USE_CODE,"       +  // [ 8] — Deprecated since EPSG version 10 (always null)
-                      " DATUM_SCOPE,"            +  // [ 9]
-                      " REMARKS,"                +  // [10]
-                      " DEPRECATED,"             +  // [11]
-                      " ELLIPSOID_CODE,"         +  // [12] — Only for geodetic type
-                      " PRIME_MERIDIAN_CODE,"    +  // [13] — Only for geodetic type
-                      " REALIZATION_METHOD_CODE" +  // [14] — Only for vertical type
+                "SELECT DATUM_CODE,"              +  // [ 1]
+                      " DATUM_NAME,"              +  // [ 2]
+                      " DATUM_TYPE,"              +  // [ 3]
+                      " ORIGIN_DESCRIPTION,"      +  // [ 4]
+                      " ANCHOR_EPOCH,"            +  // [ 5]
+                      " FRAME_REFERENCE_EPOCH,"   +  // [ 6] — NULL for static datum, non-null if dynamic.
+                      " PUBLICATION_DATE,"        +  // [ 7] — Was REALIZATION_EPOCH in EPSG version 9.
+                      " AREA_OF_USE_CODE,"        +  // [ 8] — Deprecated since EPSG version 10 (always null)
+                      " DATUM_SCOPE,"             +  // [ 9]
+                      " REMARKS,"                 +  // [10]
+                      " DEPRECATED,"              +  // [11]
+                      " ELLIPSOID_CODE,"          +  // [12] — Only for geodetic type
+                      " PRIME_MERIDIAN_CODE,"     +  // [13] — Only for geodetic type
+                      " REALIZATION_METHOD_CODE," +  // [14] — Only for vertical type
+                      " CONVENTIONAL_RS_CODE"     +  // [15] — Only for members of an ensemble
                 " FROM \"Datum\"" +
                 " WHERE DATUM_CODE = ?", code))
         {
@@ -1725,6 +1737,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
                 properties.put(Datum.ANCHOR_EPOCH_KEY,      epoch);
                 properties.put(Datum.PUBLICATION_DATE_KEY,  publish);
+                properties.put(Datum.CONVENTIONAL_RS_KEY,   createConventionalRS(getOptionalInteger(result, 15)));
                 /*
                  * The following switch statement should have a case for all "epsg_datum_kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
@@ -1819,6 +1832,9 @@ codes:  for (int i=0; i<codes.length; i++) {
      * @param  code        value allocated by EPSG.
      * @param  properties  properties to assign to the datum ensemble.
      * @return the datum ensemble for the given code, or {@code null} if not found.
+     *
+     * @see #createDatum(String)
+     * @see #createDatumEnsemble(String)
      */
     private DatumEnsemble<?> createDatumEnsemble(final Integer code, final Map<String,Object> properties)
             throws SQLException, FactoryException
@@ -1849,6 +1865,41 @@ codes:  for (int i=0; i<codes.length; i++) {
             }
         }
         return owner.datumFactory.createDatumEnsemble(properties, members, PositionalAccuracyConstant.ensemble(accuracy));
+    }
+
+    /**
+     * Creates a conventional reference system from a code.
+     * All members of a datum ensemble shall have the same conventional reference system.
+     *
+     * @param  code  value allocated by EPSG, or {@code null} if none.
+     * @return the datum for the given code, or {@code null} if not found.
+     */
+    private IdentifiedObject createConventionalRS(final Integer code) throws SQLException, FactoryException {
+        assert Thread.holdsLock(this);
+        IdentifiedObject returnValue = conventionalRS.get(code);
+        if (returnValue == null && code != null) {
+            try (ResultSet result = executeQuery("ConventionalRS",
+                    "SELECT CONVENTIONAL_RS_CODE," +
+                          " CONVENTIONAL_RS_NAME," +
+                          " REMARKS," +
+                          " DEPRECATED" +
+                    " FROM \"ConventionalRS\"" +
+                    " WHERE CONVENTIONAL_RS_CODE = ?", code))
+            {
+                while (result.next()) {
+                    final Integer epsg       = getInteger   (code, result, 1);
+                    final String  name       = getString    (code, result, 2);
+                    final String  remarks    = getOptionalString  (result, 3);
+                    final boolean deprecated = getOptionalBoolean (result, 4);
+                    @SuppressWarnings("LocalVariableHidesMemberVariable")
+                    Map<String,Object> properties = createProperties("ConventionalRS",
+                            epsg, name, null, null, null, remarks, deprecated);
+                    returnValue = ensureSingleton(new AbstractIdentifiedObject(properties), returnValue, code);
+                }
+            }
+            conventionalRS.put(code, returnValue);
+        }
+        return returnValue;
     }
 
     /**

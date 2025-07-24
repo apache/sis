@@ -388,6 +388,7 @@ skip:   try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTa
             addMissingColumn  ("ANCHOR_EPOCH",            "DOUBLE PRECISION");      // In table "Datum".
             addMissingColumn  ("FRAME_REFERENCE_EPOCH",   "DOUBLE PRECISION");      // In table "Datum".
             addMissingColumn  ("REALIZATION_METHOD_CODE", "INTEGER");               // In table "Datum".
+            addMissingColumn  ("CONVENTIONAL_RS_CODE",    "INTEGER");               // In table "Datum".
             columnRenaming = Map.copyOf(columnRenaming);
         }
         /*
