@@ -31,6 +31,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.YearMonth;
+import java.time.Year;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
@@ -103,7 +105,7 @@ public final class LenientDateFormat extends DateFormat {
      * @see #parseInstantUTC(CharSequence, int, int)
      */
     private static TemporalQuery<?>[] QUERIES = {
-        Instant::from, LocalDateTime::from, LocalDate::from
+        Instant::from, LocalDateTime::from, LocalDate::from, YearMonth::from, Year::from
     };
 
     /**

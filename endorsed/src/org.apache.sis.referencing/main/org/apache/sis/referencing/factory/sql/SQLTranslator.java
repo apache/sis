@@ -383,8 +383,11 @@ skip:   try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTa
         }
         if (isOldSchema) {
             columnRenaming = new HashMap<>(columnRenaming);
-            columnRenaming.put("BASE_CRS_CODE", "SOURCE_GEOGCRS_CODE");     // In table "Coordinate Reference System".
-            addMissingColumn("REALIZATION_METHOD_CODE", "INTEGER");         // In table "Datum".
+            columnRenaming.put("BASE_CRS_CODE",           "SOURCE_GEOGCRS_CODE");   // In table "Coordinate Reference System".
+            columnRenaming.put("PUBLICATION_DATE",        "REALIZATION_EPOCH");     // In table "Datum".
+            addMissingColumn  ("ANCHOR_EPOCH",            "DOUBLE PRECISION");      // In table "Datum".
+            addMissingColumn  ("FRAME_REFERENCE_EPOCH",   "DOUBLE PRECISION");      // In table "Datum".
+            addMissingColumn  ("REALIZATION_METHOD_CODE", "INTEGER");               // In table "Datum".
             columnRenaming = Map.copyOf(columnRenaming);
         }
         /*

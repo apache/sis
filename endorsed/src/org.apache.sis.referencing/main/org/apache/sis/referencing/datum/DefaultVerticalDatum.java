@@ -283,7 +283,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
          */
         @Override
         public boolean equals(final Object object, final ComparisonMode mode) {
-            return super.equals(object) && (mode != ComparisonMode.STRICT ||
+            return super.equals(object, mode) && (mode != ComparisonMode.STRICT ||
                     frameReferenceEpoch.equals(((Dynamic) object).frameReferenceEpoch));
         }
 

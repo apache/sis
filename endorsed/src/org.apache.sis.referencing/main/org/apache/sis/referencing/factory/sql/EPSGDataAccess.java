@@ -24,10 +24,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -43,6 +41,7 @@ import java.sql.SQLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -228,15 +227,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private String lastTableForName;
 
     /**
-     * The calendar instance for creating {@link Date} objects from a year (the "epoch" in datum definition).
-     * We use the UTC timezone, which may not be quite accurate. But there is no obvious timezone for "epoch",
-     * and the "epoch" is an approximation anyway.
-     *
-     * @see #getCalendar()
-     */
-    private Calendar calendar;
-
-    /**
      * A pool of prepared statements. Keys are {@link String} objects related to their originating method
      * (for example "Ellipsoid" for {@link #createEllipsoid(String)}).
      */
@@ -382,19 +372,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     @Override
     public Locale getLocale() {
         return owner.getLocale();
-    }
-
-    /**
-     * Returns the calendar to use for reading dates in the database.
-     */
-    @SuppressWarnings("ReturnOfDateField")
-    private Calendar getCalendar() {
-        if (calendar == null) {
-            calendar = Calendar.getInstance(TimeZone.getTimeZone(Constants.UTC), Locale.CANADA);
-            // Canada locale is closer to ISO than US.
-        }
-        calendar.clear();
-        return calendar;
     }
 
     /**
@@ -855,6 +832,54 @@ codes:  for (int i=0; i<codes.length; i++) {
             statements.put(table, stmt);
         }
         return stmt;
+    }
+
+    /**
+     * Gets the local date or year from the specified {@link ResultSet}, or {@code null} if none.
+     * This method parses the date itself from the character string because the column type is sometime declared
+     * as {@code VARCHAR} instead of {@code DATE} in the <abbr>SQL</abbr> scripts distributed by <abbr>EPSG</abbr>.
+     * The Apache <abbr>SIS</abbr> installer replaces {@code VARCHAR} by {@code DATE}, but we have no guarantee
+     * that we are reading an <abbr>EPSG</abbr> database created by our installer. Furthermore, an older version
+     * of <abbr>EPSG</abbr> installer was using {@code SMALLINT} instead of {@code DATE},
+     * because scripts before <abbr>EPSG</abbr> 9.0 were reporting only the epoch year.
+     *
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @param  caller       the caller, used for reporting a warning in case of parsing error.
+     * @return the temporal at the specified column, or {@code null}.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private static Temporal getOptionalTemporal(final ResultSet result, final int columnIndex, final String caller)
+            throws SQLException
+    {
+        try {
+            return LenientDateFormat.parseBest(getOptionalString(result, columnIndex));
+        } catch (NumberFormatException exception) {
+            unexpectedException(caller, exception);          // Not a fatal error.
+        }
+        return null;
+    }
+
+    /**
+     * Gets the epoch from the specified {@link ResultSet}, or {@code null} if none.
+     * The column type should be a floating point number.
+     *
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @return the epoch at the specified column, or {@code null}.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private static Temporal getOptionalEpoch(final ResultSet result, final int columnIndex) throws SQLException {
+        final double epoch = getOptionalDouble(result, columnIndex);
+        if (Double.isNaN(epoch)) {
+            return null;
+        }
+        final var year = Year.of((int) epoch);
+        final long day = Math.round((epoch - year.getValue()) * year.length());
+        if (day == 0) {
+            return year;
+        }
+        return year.atMonth(year.atDay(Math.toIntExact(day)).getMonth());
     }
 
     /**
@@ -1669,58 +1694,37 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " DATUM_NAME,"             +  // [ 2]
                       " DATUM_TYPE,"             +  // [ 3]
                       " ORIGIN_DESCRIPTION,"     +  // [ 4]
-                      " REALIZATION_EPOCH,"      +  // [ 5]
-                      " AREA_OF_USE_CODE,"       +  // [ 6] — Deprecated since EPSG version 10 (always null)
-                      " DATUM_SCOPE,"            +  // [ 7]
-                      " REMARKS,"                +  // [ 8]
-                      " DEPRECATED,"             +  // [ 9]
-                      " ELLIPSOID_CODE,"         +  // [10] — Only for geodetic type
-                      " PRIME_MERIDIAN_CODE,"    +  // [11] — Only for geodetic type
-                      " REALIZATION_METHOD_CODE" +  // [12] — Only for vertical type
+                      " ANCHOR_EPOCH,"           +  // [ 5]
+                      " FRAME_REFERENCE_EPOCH,"  +  // [ 6] — NULL for static datum, non-null if dynamic.
+                      " PUBLICATION_DATE,"       +  // [ 7] — Was REALIZATION_EPOCH in EPSG version 9.
+                      " AREA_OF_USE_CODE,"       +  // [ 8] — Deprecated since EPSG version 10 (always null)
+                      " DATUM_SCOPE,"            +  // [ 9]
+                      " REMARKS,"                +  // [10]
+                      " DEPRECATED,"             +  // [11]
+                      " ELLIPSOID_CODE,"         +  // [12] — Only for geodetic type
+                      " PRIME_MERIDIAN_CODE,"    +  // [13] — Only for geodetic type
+                      " REALIZATION_METHOD_CODE" +  // [14] — Only for vertical type
                 " FROM \"Datum\"" +
                 " WHERE DATUM_CODE = ?", code))
         {
             while (result.next()) {
-                final Integer epsg       = getInteger  (code, result, 1);
-                final String  name       = getString   (code, result, 2);
-                final String  type       = getString   (code, result, 3);
-                final String  anchor     = getOptionalString (result, 4);
-                final String  epoch      = getOptionalString (result, 5);
-                final String  area       = getOptionalString (result, 6);
-                final String  scope      = getOptionalString (result, 7);
-                final String  remarks    = getOptionalString (result, 8);
-                final boolean deprecated = getOptionalBoolean(result, 9);
+                final Integer  epsg       = getInteger   (code, result,  1);
+                final String   name       = getString    (code, result,  2);
+                final String   type       = getString    (code, result,  3);
+                final String   anchor     = getOptionalString  (result,  4);
+                final Temporal epoch      = getOptionalEpoch   (result,  5);
+                final Temporal dynamic    = getOptionalEpoch   (result,  6);
+                final Temporal publish    = getOptionalTemporal(result,  7, "createDatum");
+                final String   area       = getOptionalString  (result,  8);
+                final String   scope      = getOptionalString  (result,  9);
+                final String   remarks    = getOptionalString  (result, 10);
+                final boolean  deprecated = getOptionalBoolean (result, 11);
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 Map<String,Object> properties = createProperties("Datum",
                         epsg, name, null, area, scope, remarks, deprecated);
                 properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
-                if (epoch != null) try {
-                    /*
-                     * Parse the date manually because it is declared as a VARCHAR instead of DATE in original
-                     * SQL scripts. Apache SIS installer replaces VARCHAR by DATE, but we have no guarantee that
-                     * we are reading an EPSG database created by our installer. Furthermore, an older version of
-                     * EPSG installer was using SMALLINT instead of DATE, because scripts before EPSG 9.0 were
-                     * reporting only the epoch year.
-                     */
-                    final CharSequence[] fields = CharSequences.split(epoch, '-');
-                    int year = 0, month = 0, day = 1;
-                    for (int i = Math.min(fields.length, 3); --i >= 0;) {
-                        final int f = Integer.parseInt(fields[i].toString());
-                        switch (i) {
-                            case 0: year  = f;   break;
-                            case 1: month = f-1; break;
-                            case 2: day   = f;   break;
-                        }
-                    }
-                    if (year != 0) {
-                        @SuppressWarnings("LocalVariableHidesMemberVariable")
-                        final Calendar calendar = getCalendar();
-                        calendar.set(year, month, day);
-                        properties.put(Datum.ANCHOR_EPOCH_KEY, calendar.getTime().toInstant());
-                    }
-                } catch (NumberFormatException exception) {
-                    unexpectedException("createDatum", exception);          // Not a fatal error.
-                }
+                properties.put(Datum.ANCHOR_EPOCH_KEY,      epoch);
+                properties.put(Datum.PUBLICATION_DATE_KEY,  publish);
                 /*
                  * The following switch statement should have a case for all "epsg_datum_kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
@@ -1736,18 +1740,26 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "dynamic geodetic":
                     case "geodetic": {
                         properties = new HashMap<>(properties);         // Protect from changes
-                        final Ellipsoid ellipsoid    = owner.createEllipsoid    (getString(code, result, 10));
-                        final PrimeMeridian meridian = owner.createPrimeMeridian(getString(code, result, 11));
+                        final Ellipsoid ellipsoid    = owner.createEllipsoid    (getString(code, result, 12));
+                        final PrimeMeridian meridian = owner.createPrimeMeridian(getString(code, result, 13));
                         final BursaWolfParameters[] param = createBursaWolfParameters(meridian, epsg);
                         if (param != null) {
                             properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, param);
                         }
-                        datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
+                        if (dynamic != null) {
+                            datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian, dynamic);
+                        } else {
+                            datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
+                        }
                         break;
                     }
                     case "vertical": {
-                        final RealizationMethod method = getRealizationMethod(getOptionalInteger(result, 12));
-                        datum = datumFactory.createVerticalDatum(properties, method);
+                        final RealizationMethod method = getRealizationMethod(getOptionalInteger(result, 14));
+                        if (dynamic != null) {
+                            datum = datumFactory.createVerticalDatum(properties, method, dynamic);
+                        } else {
+                            datum = datumFactory.createVerticalDatum(properties, method);
+                        }
                         break;
                     }
                     /*
@@ -1870,6 +1882,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " AREA_OF_USE_CODE" +      // Deprecated since EPSG version 10 (always null).
                 " FROM \"Coordinate_Operation\"" +
                " WHERE DEPRECATED=0" +           // Do not put spaces around "=" - SQLTranslator searches for this exact match.
+                 " AND AREA_OF_USE_CODE IS NOT NULL" +
                  " AND TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
                  " AND COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
                  " AND COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +

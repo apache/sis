@@ -19,6 +19,8 @@ package org.apache.sis.temporal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.Year;
 import java.util.Date;
 import java.text.ParseException;
 
@@ -99,6 +101,8 @@ public final class LenientDateFormatTest extends TestCase {
         assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        LenientDateFormat.parseBest("2016-06-27T16:48"));
         assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        LenientDateFormat.parseBest("2016-06-27 16:48"));
         assertEquals(LocalDate.of(2016, 6, 27),                                    LenientDateFormat.parseBest("2016-06-27"));
+        assertEquals(YearMonth.of(2016, 6),                                        LenientDateFormat.parseBest("2016-06"));
+        assertEquals(Year.of(2016),                                                LenientDateFormat.parseBest("2016"));
     }
 
     /**

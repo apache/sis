@@ -586,7 +586,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
          */
         @Override
         public boolean equals(final Object object, final ComparisonMode mode) {
-            return super.equals(object) && (mode != ComparisonMode.STRICT ||
+            return super.equals(object, mode) && (mode != ComparisonMode.STRICT ||
                     frameReferenceEpoch.equals(((Dynamic) object).frameReferenceEpoch));
         }
 
