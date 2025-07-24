@@ -1447,10 +1447,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         @SuppressWarnings("deprecation")
         RealizationMethod method = null;
         if (isWKT1) {
-            method = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
+            method = VerticalDatumTypes.fromLegacyCode(element.pullInteger("datum"));
         }
         if (method == null) {
-            method = VerticalDatumTypes.guess(name, null, null);
+            method = VerticalDatumTypes.fromDatum(name, null, null);
         }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
@@ -1936,7 +1936,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  */
                 if (datum.getRealizationMethod().isEmpty()) {
-                    var type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
+                    var type = VerticalDatumTypes.fromDatum(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
                     if (type != null) {
                         final DatumFactory datumFactory = factories.getDatumFactory();
                         datum = datumFactory.createVerticalDatum(IdentifiedObjects.getProperties(datum), type);

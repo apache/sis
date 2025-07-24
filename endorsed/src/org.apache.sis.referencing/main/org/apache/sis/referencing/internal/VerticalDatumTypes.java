@@ -24,6 +24,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -31,10 +32,14 @@ import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
- * Extensions to the standard set of {@link RealizationEpoch}.
+ * Extensions to the standard set of {@link RealizationMethod}.
  * Some of those constants are derived from a legacy {@code VerticalDatumType} code list.
  * Those constants are not in public API because they were intentionally omitted from ISO 19111,
  * and the ISO experts said that they should really not be public.
+ *
+ * <h2>Note on class naming</h2>
+ * {@code RealizationMethods} could have been a more appropriate name.
+ * For now we keep {@code VerticalDatumTypes} as a way to remind that this is currently only about vertical datum.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
@@ -72,6 +77,11 @@ public final class VerticalDatumTypes {
      * @see org.apache.sis.referencing.CommonCRS.Vertical#BAROMETRIC
      */
     static final String BAROMETRIC = "BAROMETRIC";
+
+    /**
+     * A value used in the <abbr>EPSG</abbr> database.
+     */
+    static final String LOCAL = "LOCAL";
 
     /**
      * Do not allow instantiation of this class.
@@ -113,7 +123,7 @@ public final class VerticalDatumTypes {
      * @param  code  the legacy vertical datum code.
      * @return the vertical datum type, or {@code null} if none.
      */
-    public static RealizationMethod fromLegacy(final int code) {
+    public static RealizationMethod fromLegacyCode(final int code) {
         switch (code) {
         //  case 2000: return null;                                     // CS_VD_Other
             case 2001: return RealizationMethod.valueOf(ORTHOMETRIC);   // CS_VD_Orthometric
@@ -132,7 +142,7 @@ public final class VerticalDatumTypes {
      * @param  method  the realization method, or {@code null} if unknown.
      * @return the legacy code for the given datum type, or 0 if unknown.
      */
-    public static int toLegacy(final RealizationMethod method) {
+    public static int toLegacyCode(final RealizationMethod method) {
         if (method != null) {
             switch (method.name().toUpperCase(Locale.US)) {
                 case ORTHOMETRIC: return 2001;      // CS_VD_Orthometric
@@ -154,7 +164,7 @@ public final class VerticalDatumTypes {
      * @param  method  the realization method, or {@code null}.
      * @return the vertical datum type name (never null).
      */
-    public static String toName(final RealizationMethod method) {
+    public static String toLegacyName(final RealizationMethod method) {
         if (method == RealizationMethod.GEOID) return "geoidal";
         if (method == RealizationMethod.TIDAL) return "depth";
         if (method != null) {
@@ -170,13 +180,34 @@ public final class VerticalDatumTypes {
      * @param  type  the vertical datum type, or {@code null}.
      * @return the realization method, or {@code null} if none.
      */
-    public static RealizationMethod fromName(final String type) {
-        if ("GEOIDAL"  .equalsIgnoreCase(type)) return RealizationMethod.GEOID;
-        if ("DEPTH"    .equalsIgnoreCase(type)) return RealizationMethod.TIDAL;
+    public static RealizationMethod fromLegacyName(final String type) {
+        if ("geoidal"  .equalsIgnoreCase(type)) return RealizationMethod.GEOID;
+        if ("depth"    .equalsIgnoreCase(type)) return RealizationMethod.TIDAL;
+        if (LOCAL      .equalsIgnoreCase(type)) return RealizationMethod.valueOf(LOCAL);
         if (BAROMETRIC .equalsIgnoreCase(type)) return RealizationMethod.valueOf(BAROMETRIC);
         if (ORTHOMETRIC.equalsIgnoreCase(type)) return RealizationMethod.valueOf(ORTHOMETRIC);
         if (ELLIPSOIDAL.equalsIgnoreCase(type)) return ellipsoidal();
         return null;
+    }
+
+    /**
+     * Returns the realization method from heuristic rules applied on the name.
+     *
+     * @param  name  the realization method name, or {@code null}.
+     * @return the realization method, or {@code null} if the given name was null.
+     */
+    public static RealizationMethod fromMethod(final String name) {
+        RealizationMethod method = fromLegacyName(name);
+        if (method == null && name != null && !name.isBlank()) {
+            final int s = name.lastIndexOf('-');
+            if (s >= 0 && name.substring(s+1).strip().equalsIgnoreCase("based")) {
+                method = CodeLists.forCodeName(RealizationMethod.class, name.substring(0, s));
+            }
+            if (method == null) {
+                method = RealizationMethod.valueOf(name);
+            }
+        }
+        return method;
     }
 
     /**
@@ -191,16 +222,16 @@ public final class VerticalDatumTypes {
      * @param  axis     the vertical axis for which to guess a type, or {@code null} if unknown.
      * @return a datum type, or {@code null} if none can be guessed.
      */
-    public static RealizationMethod guess(final String name, final Collection<? extends GenericName> aliases,
+    public static RealizationMethod fromDatum(final String name, final Collection<? extends GenericName> aliases,
             final CoordinateSystemAxis axis)
     {
-        RealizationMethod method = guess(name);
+        RealizationMethod method = fromDatum(name);
         if (method != null) {
             return method;
         }
         if (aliases != null) {
             for (final GenericName alias : aliases) {
-                method = guess(alias.tip().toString());
+                method = fromDatum(alias.tip().toString());
                 if (method != null) {
                     return method;
                 }
@@ -230,13 +261,13 @@ public final class VerticalDatumTypes {
     }
 
     /**
-     * Guesses the realization method of a datum of the given name. This method attempts to guess only if
-     * the given name contains at least one letter. If the type cannot be determined, returns {@code null}.
+     * Guesses the realization method of a datum of the given name.
+     * If the realization method cannot be determined, returns {@code null}.
      *
      * @param  name  name of the datum for which to guess a realization method, or {@code null}.
      * @return a realization method, or {@code null} if none can be guessed.
      */
-    private static RealizationMethod guess(final String name) {
+    private static RealizationMethod fromDatum(final String name) {
         if (name != null) {
             if (CharSequences.equalsFiltered("Mean Sea Level", name, Characters.Filter.LETTERS_AND_DIGITS, true)) {
                 return RealizationMethod.TIDAL;

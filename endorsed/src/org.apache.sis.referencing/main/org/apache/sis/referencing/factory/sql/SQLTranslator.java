@@ -366,9 +366,11 @@ public class SQLTranslator implements Function<String,String> {
         /*
          * A column named "BASE_CRS_CODE" in EPSG version 9 has been renamed "SOURCE_GEOGCRS_CODE" in version 10.
          * Detects which name is used, with precedence to latest database version if the two columns are found.
+         * Opportunistically use this detection for generating empty columns for fields that did not existed in
+         * the "Datum" table of EPSG version 9.
          */
+        boolean isOldSchema = false;
 skip:   try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTableName("Coordinate Reference System"), baseCRS)) {
-            boolean isOldSchema = false;
             while (result.next()) {
                 final String column = result.getString(Reflection.COLUMN_NAME);
                 if ("BASE_CRS_CODE".equalsIgnoreCase(column)) {
@@ -378,11 +380,12 @@ skip:   try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTa
                     isOldSchema = "SOURCE_GEOGCRS_CODE".equalsIgnoreCase(column);
                 }
             }
-            if (isOldSchema) {
-                columnRenaming = new HashMap<>(columnRenaming);
-                columnRenaming.put("BASE_CRS_CODE", "SOURCE_GEOGCRS_CODE");
-                columnRenaming = Map.copyOf(columnRenaming);
-            }
+        }
+        if (isOldSchema) {
+            columnRenaming = new HashMap<>(columnRenaming);
+            columnRenaming.put("BASE_CRS_CODE", "SOURCE_GEOGCRS_CODE");     // In table "Coordinate Reference System".
+            addMissingColumn("REALIZATION_METHOD_CODE", "INTEGER");         // In table "Datum".
+            columnRenaming = Map.copyOf(columnRenaming);
         }
         /*
          * Detect if the database uses boolean types where applicable.
@@ -418,6 +421,15 @@ skip:   try (ResultSet result = md.getColumns(catalog, schemaPattern, toActualTa
                 && columnRenaming.isEmpty()
                 && "\"".equals(identifierQuote)
                 && !useBoolean;
+    }
+
+    /**
+     * Declares that the column of the given name shall be replaced by a placeholder.
+     * This method is invoked for columns added in <abbr>EPSG</abbr> version 10 or later
+     * when we detected that the schema in use is <abbr>EPSG</abbr> version 8 or before;
+     */
+    private void addMissingColumn(final String column, final String type) {
+        columnRenaming.put(column, "CAST(NULL AS " + type + ") AS " + column);
     }
 
     /**

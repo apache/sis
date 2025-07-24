@@ -88,6 +88,7 @@ import org.apache.sis.referencing.internal.EPSGParameterDomain;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.SignReversalComment;
+import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.ServicesForMetadata;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
@@ -239,7 +240,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * A pool of prepared statements. Keys are {@link String} objects related to their originating method
      * (for example "Ellipsoid" for {@link #createEllipsoid(String)}).
      */
-    private final Map<String,PreparedStatement> statements = new HashMap<>();
+    private final Map<String, PreparedStatement> statements = new HashMap<>();
 
     /**
      * The set of authority codes for different types. This map is used by the {@link #getAuthorityCodes(Class)}
@@ -265,7 +266,15 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @see #getAxisName(Integer)
      */
-    private final Map<Integer,AxisName> axisNames = new HashMap<>();
+    private final Map<Integer, AxisName> axisNames = new HashMap<>();
+
+    /**
+     * Cache for realization methods. This service is not provided by {@code ConcurrentAuthorityFactory}
+     * because the realization method table is specific to the <abbr>EPSG</abbr> authority factory.
+     *
+     * @see #getRealizationMethod(Integer)
+     */
+    private final Map<Integer, RealizationMethod> realizationMethods = new HashMap<>();
 
     /**
      * Cache of naming systems other than EPSG. There is usually few of them (at most 15).
@@ -273,13 +282,13 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @see #createProperties(String, Integer, String, CharSequence, String, String, CharSequence, boolean)
      */
-    private final Map<String,NameSpace> namingSystems = new HashMap<>();
+    private final Map<String, NameSpace> namingSystems = new HashMap<>();
 
     /**
      * The properties to be given the objects to construct.
      * Reused every time {@code createProperties(…)} is invoked.
      */
-    private final Map<String,Object> properties = new HashMap<>();
+    private final Map<String, Object> properties = new HashMap<>();
 
     /**
      * A safety guard for preventing never-ending loops in recursive calls to some {@code createFoo(String)} methods.
@@ -293,7 +302,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * Keys are EPSG codes and values are the type of object being constructed (but those values are not yet used).
      */
-    private final Map<Integer,Class<?>> safetyGuard = new HashMap<>();
+    private final Map<Integer, Class<?>> safetyGuard = new HashMap<>();
 
     /**
      * {@code true} for disabling the logging of warnings when this factory creates deprecated objects.
@@ -1396,7 +1405,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                                 endOfRecursion(GeographicCRS.class, epsg);
                             }
                         }
-                        DatumEnsemble<GeodeticDatum> ensemble = tryAsEnsemble(datum, GeodeticDatum.class);
+                        DatumEnsemble<GeodeticDatum> ensemble = wasDatumEnsemble(datum, GeodeticDatum.class);
                         if (ensemble != null) datum = null;
                         crs = crsFactory.createGeographicCRS(createProperties("Coordinate Reference System",
                                 epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
@@ -1493,7 +1502,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "vertical": {
                         VerticalCS    cs    = owner.createVerticalCS   (getString(code, result, 8));
                         VerticalDatum datum = owner.createVerticalDatum(getString(code, result, 9));
-                        DatumEnsemble<VerticalDatum> ensemble = tryAsEnsemble(datum, VerticalDatum.class);
+                        DatumEnsemble<VerticalDatum> ensemble = wasDatumEnsemble(datum, VerticalDatum.class);
                         if (ensemble != null) datum = null;
                         crs = crsFactory.createVerticalCRS(createProperties("Coordinate Reference System",
                                 epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
@@ -1509,7 +1518,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "temporal": {
                         TimeCS        cs    = owner.createTimeCS       (getString(code, result, 8));
                         TemporalDatum datum = owner.createTemporalDatum(getString(code, result, 9));
-                        DatumEnsemble<TemporalDatum> ensemble = tryAsEnsemble(datum, TemporalDatum.class);
+                        DatumEnsemble<TemporalDatum> ensemble = wasDatumEnsemble(datum, TemporalDatum.class);
                         if (ensemble != null) datum = null;
                         crs = crsFactory.createTemporalCRS(createProperties("Coordinate Reference System",
                                 epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
@@ -1544,7 +1553,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "geocentric": {
                         CoordinateSystem cs = owner.createCoordinateSystem(getString(code, result, 8));
                         GeodeticDatum datum = owner.createGeodeticDatum   (getString(code, result, 9));
-                        DatumEnsemble<GeodeticDatum> ensemble = tryAsEnsemble(datum, GeodeticDatum.class);
+                        DatumEnsemble<GeodeticDatum> ensemble = wasDatumEnsemble(datum, GeodeticDatum.class);
                         if (ensemble != null) datum = null;
                         @SuppressWarnings("LocalVariableHidesMemberVariable")
                         final Map<String,Object> properties = createProperties("Coordinate Reference System",
@@ -1565,7 +1574,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "engineering": {
                         CoordinateSystem cs    = owner.createCoordinateSystem(getString(code, result, 8));
                         EngineeringDatum datum = owner.createEngineeringDatum(getString(code, result, 9));
-                        DatumEnsemble<EngineeringDatum> ensemble = tryAsEnsemble(datum, EngineeringDatum.class);
+                        DatumEnsemble<EngineeringDatum> ensemble = wasDatumEnsemble(datum, EngineeringDatum.class);
                         if (ensemble != null) datum = null;
                         crs = crsFactory.createEngineeringCRS(createProperties("Coordinate Reference System",
                                 epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
@@ -1577,7 +1586,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "parametric": {
                         ParametricCS    cs    = owner.createParametricCS   (getString(code, result, 8));
                         ParametricDatum datum = owner.createParametricDatum(getString(code, result, 9));
-                        DatumEnsemble<ParametricDatum> ensemble = tryAsEnsemble(datum, ParametricDatum.class);
+                        DatumEnsemble<ParametricDatum> ensemble = wasDatumEnsemble(datum, ParametricDatum.class);
                         if (ensemble != null) datum = null;
                         crs = crsFactory.createParametricCRS(createProperties("Coordinate Reference System",
                                 epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
@@ -1622,7 +1631,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      * @return the given datum as an ensemble if it should be considered as such, or {@code null} otherwise.
      * @throws ClassCastException if at least one member is not an instance of the specified type.
      */
-    private static <D extends Datum> DatumEnsemble<D> tryAsEnsemble(final D datum, final Class<D> memberType) {
+    private static <D extends Datum> DatumEnsemble<D> wasDatumEnsemble(final D datum, final Class<D> memberType) {
         if (datum instanceof DatumEnsemble<?>) {
             return DefaultDatumEnsemble.castOrCopy((DatumEnsemble<?>) datum).cast(memberType);
         }
@@ -1656,17 +1665,18 @@ codes:  for (int i=0; i<codes.length; i++) {
         ArgumentChecks.ensureNonNull("code", code);
         Datum returnValue = null;
         try (ResultSet result = executeQuery("Datum", "DATUM_CODE", "DATUM_NAME",
-                "SELECT DATUM_CODE," +
-                      " DATUM_NAME," +
-                      " DATUM_TYPE," +
-                      " ORIGIN_DESCRIPTION," +
-                      " REALIZATION_EPOCH," +
-                      " AREA_OF_USE_CODE," +        // Deprecated since EPSG version 10 (always null)
-                      " DATUM_SCOPE," +
-                      " REMARKS," +
-                      " DEPRECATED," +
-                      " ELLIPSOID_CODE," +          // Only for geodetic type
-                      " PRIME_MERIDIAN_CODE" +      // Only for geodetic type
+                "SELECT DATUM_CODE,"             +  // [ 1]
+                      " DATUM_NAME,"             +  // [ 2]
+                      " DATUM_TYPE,"             +  // [ 3]
+                      " ORIGIN_DESCRIPTION,"     +  // [ 4]
+                      " REALIZATION_EPOCH,"      +  // [ 5]
+                      " AREA_OF_USE_CODE,"       +  // [ 6] — Deprecated since EPSG version 10 (always null)
+                      " DATUM_SCOPE,"            +  // [ 7]
+                      " REMARKS,"                +  // [ 8]
+                      " DEPRECATED,"             +  // [ 9]
+                      " ELLIPSOID_CODE,"         +  // [10] — Only for geodetic type
+                      " PRIME_MERIDIAN_CODE,"    +  // [11] — Only for geodetic type
+                      " REALIZATION_METHOD_CODE" +  // [12] — Only for vertical type
                 " FROM \"Datum\"" +
                 " WHERE DATUM_CODE = ?", code))
         {
@@ -1736,7 +1746,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                         break;
                     }
                     case "vertical": {
-                        datum = datumFactory.createVerticalDatum(properties, null);
+                        final RealizationMethod method = getRealizationMethod(getOptionalInteger(result, 12));
+                        datum = datumFactory.createVerticalDatum(properties, method);
                         break;
                     }
                     /*
@@ -2455,6 +2466,34 @@ codes:  for (int i=0; i<codes.length; i++) {
                 throw noSuchAuthorityCode(AxisName.class, String.valueOf(code));
             }
             axisNames.put(code, returnValue);
+        }
+        return returnValue;
+    }
+
+    /**
+     * Returns the realization method for the specified code.
+     *
+     * @param  code  code of the realization method, or {@code null} if none.
+     * @return realization method, or {@code null} if the given code was null.
+     */
+    private RealizationMethod getRealizationMethod(final Integer code) throws FactoryException, SQLException {
+        assert Thread.holdsLock(this);
+        RealizationMethod returnValue = realizationMethods.get(code);
+        if (returnValue == null && code != null) {
+            try (ResultSet result = executeQuery("DatumRealizationMethod",
+                    "SELECT REALIZATION_METHOD_NAME" +
+                    " FROM \"DatumRealizationMethod\"" +
+                    " WHERE REALIZATION_METHOD_CODE = ?", code))
+            {
+                while (result.next()) {
+                    final String name = getString(code, result, 1);
+                    returnValue = ensureSingleton(VerticalDatumTypes.fromMethod(name), returnValue, code);
+                }
+            }
+            if (returnValue == null) {
+                throw noSuchAuthorityCode(RealizationMethod.class, String.valueOf(code));
+            }
+            realizationMethods.put(code, returnValue);
         }
         return returnValue;
     }

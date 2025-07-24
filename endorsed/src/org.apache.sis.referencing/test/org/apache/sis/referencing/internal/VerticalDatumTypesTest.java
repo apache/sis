@@ -33,7 +33,6 @@ import org.opengis.referencing.datum.RealizationMethod;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("deprecation")
 public final class VerticalDatumTypesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -53,23 +52,35 @@ public final class VerticalDatumTypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link VerticalDatumTypes#fromLegacy(int)} method.
+     * Tests the {@link VerticalDatumTypes#fromLegacyCode(int)} method.
      */
     @Test
-    public void testFromLegacy() {
-        assertEquals(VerticalDatumTypes.ellipsoidal(), VerticalDatumTypes.fromLegacy(2002));
-        assertEquals(RealizationMethod .GEOID,         VerticalDatumTypes.fromLegacy(2005));
-        assertEquals(RealizationMethod .TIDAL,         VerticalDatumTypes.fromLegacy(2006));
+    public void testFromLegacyCode() {
+        assertEquals(VerticalDatumTypes.ellipsoidal(), VerticalDatumTypes.fromLegacyCode(2002));
+        assertEquals(RealizationMethod .GEOID,         VerticalDatumTypes.fromLegacyCode(2005));
+        assertEquals(RealizationMethod .TIDAL,         VerticalDatumTypes.fromLegacyCode(2006));
     }
 
     /**
-     * Tests the {@link VerticalDatumTypes#toLegacy(RealizationMethod)} method.
+     * Tests the {@link VerticalDatumTypes#toLegacyCode(RealizationMethod)} method.
      */
     @Test
-    public void testToLegacy() {
-        assertEquals(2002, VerticalDatumTypes.toLegacy(VerticalDatumTypes.ellipsoidal()));
-        assertEquals(2005, VerticalDatumTypes.toLegacy(RealizationMethod .GEOID));
-        assertEquals(2006, VerticalDatumTypes.toLegacy(RealizationMethod .TIDAL));
+    public void testToLegacyCode() {
+        assertEquals(2002, VerticalDatumTypes.toLegacyCode(VerticalDatumTypes.ellipsoidal()));
+        assertEquals(2005, VerticalDatumTypes.toLegacyCode(RealizationMethod .GEOID));
+        assertEquals(2006, VerticalDatumTypes.toLegacyCode(RealizationMethod .TIDAL));
+    }
+
+    /**
+     * Tests the {@link VerticalDatumTypes#fromMethod(String)} method
+     * with names from the <abbr>EPSG</abbr> database.
+     */
+    @Test
+    public void testFromMethod() {
+        assertEquals(RealizationMethod .LEVELLING, VerticalDatumTypes.fromMethod("Levelling-based"));
+        assertEquals(RealizationMethod .GEOID,     VerticalDatumTypes.fromMethod("Geoid-based"));
+        assertEquals(RealizationMethod .TIDAL,     VerticalDatumTypes.fromMethod("Tidal"));
+        assertEquals(VerticalDatumTypes.LOCAL,     VerticalDatumTypes.fromMethod("Local").name());
     }
 
     /**

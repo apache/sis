@@ -98,6 +98,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
 
     /**
      * The realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
+     *
+     * @see #getRealizationMethod()
      */
     private RealizationMethod method;
 
@@ -366,7 +368,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
-            formatter.append(VerticalDatumTypes.toLegacy(method));
+            formatter.append(VerticalDatumTypes.toLegacyCode(method));
             return WKTKeywords.Vert_Datum;
         }
         return formatter.shortOrLong(WKTKeywords.VDatum, WKTKeywords.VerticalDatum);
@@ -408,7 +410,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         if (Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2)) {
             return null;
         }
-        return VerticalDatumTypes.toName(method);
+        return VerticalDatumTypes.toLegacyName(method);
     }
 
     /**
@@ -416,7 +418,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     private void setTypeElement(final String type) {
         if (method == null) {
-            method = VerticalDatumTypes.fromName(type);
+            method = VerticalDatumTypes.fromLegacyName(type);
         } else {
             ImplementationHelper.propertyAlreadySet(DefaultVerticalDatum.class, "setType", "verticalDatumType");
         }
