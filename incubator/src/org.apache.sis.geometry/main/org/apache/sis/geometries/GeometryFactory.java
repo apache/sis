@@ -130,6 +130,7 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
             case CLOTHOID : return Clothoid.class;
             case COMPOUNDCURVE : return CompoundCurve.class;
             case CURVE : return Curve.class;
+            case CURVEPOLYGON : return CurvePolygon.class;
             case GEOMETRY : return Geometry.class;
             case GEOMETRYCOLLECTION : return GeometryCollection.class;
             case LINESTRING : return LineString.class;
@@ -147,7 +148,6 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
             //todo
             case BREPSOLID :
             case COMPOUNDSURFACE :
-            case CURVEPOLYGON :
             case ELLIPTICALCURVE :
             case GEODESICSTRING :
             case NURBSCURVE :

@@ -34,8 +34,8 @@ import org.apache.sis.util.privy.UnmodifiableArrayList;
  */
 public class DefaultPolygon extends AbstractGeometry implements Polygon {
 
-    protected final Curve exterior;
-    protected final List<Curve> interiors;
+    protected final LinearRing exterior;
+    protected final List<LinearRing> interiors;
 
     public DefaultPolygon(LinearRing exterior) {
         this(exterior, null);
@@ -72,12 +72,12 @@ public class DefaultPolygon extends AbstractGeometry implements Polygon {
     }
 
     @Override
-    public Curve getExteriorRing() {
+    public LinearRing getExteriorRing() {
         return exterior;
     }
 
     @Override
-    public List<Curve> getInteriorRings() {
+    public List<LinearRing> getInteriorRings() {
         return interiors;
     }
 

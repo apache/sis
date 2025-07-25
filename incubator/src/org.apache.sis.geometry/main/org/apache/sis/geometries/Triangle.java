@@ -56,7 +56,7 @@ public interface Triangle extends Polygon {
     LinearRing getExteriorRing();
 
     @Override
-    default List<Curve> getInteriorRings() {
+    default List<LinearRing> getInteriorRings() {
         return Collections.emptyList();
     }
 

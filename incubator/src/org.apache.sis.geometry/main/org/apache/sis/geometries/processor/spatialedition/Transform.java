@@ -119,14 +119,14 @@ public final class Transform {
         public void process(org.apache.sis.geometries.operation.spatialedition.Transform operation) throws OperationException {
             final org.apache.sis.geometries.Polygon p = (org.apache.sis.geometries.Polygon) operation.geometry;
 
-            Curve exterior = (Curve) GeometryOperations.SpatialEdition.transform(p.getExteriorRing(), operation.crs, operation.transform);
+            org.apache.sis.geometries.LinearRing exterior = (org.apache.sis.geometries.LinearRing) GeometryOperations.SpatialEdition.transform(p.getExteriorRing(), operation.crs, operation.transform);
 
-            final List<Curve> interiors = new ArrayList<>(p.getInteriorRings());
+            final List<org.apache.sis.geometries.LinearRing> interiors = new ArrayList<>(p.getInteriorRings());
             for (int i = 0, n = interiors.size(); i < n; i++) {
-                interiors.set(i, (Curve) GeometryOperations.SpatialEdition.transform(interiors.get(i), operation.crs, operation.transform));
+                interiors.set(i, (org.apache.sis.geometries.LinearRing) GeometryOperations.SpatialEdition.transform(interiors.get(i), operation.crs, operation.transform));
             }
 
-            operation.result = GeometryFactory.createPolygon((org.apache.sis.geometries.LinearRing) exterior, (List) interiors);
+            operation.result = GeometryFactory.createPolygon(exterior, interiors);
         }
     }
 
