@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
@@ -67,6 +66,7 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -110,6 +110,7 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.URLs;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
@@ -172,12 +173,11 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     /**
      * EPSG codes of parameters containing the EPSG code of another object.
      * Those parameters are integers (stored as {@code double} in the database)
-     * without unit (associated to {@link Units#UNITY} in the database).
+     * without unit (i.e., associated to {@link Units#UNITY} in the database).
      */
-    private static final int[] EPSG_CODE_PARAMETERS = {
-        1048,       // EPSG code for Interpolation CRS
-        1062        // EPSG code for "standard" CT
-    };
+    private static final Set<Integer> EPSG_CODE_PARAMETERS = Set.of(
+        1048,   // The EPSG code for the CRS that should be used to interpolate gridded data.
+        1062);  // The EPSG code for the coordinate transformation that may be used to avoid iteration in geocentric translation by grid interpolation methods.
 
     /**
      * The deprecated ellipsoidal coordinate systems and their replacements. Those coordinate systems are deprecated
@@ -189,27 +189,16 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * <p>We perform those replacements for avoiding a "Unit conversion from “DMS” to “°” is non-linear" exception
      * at projected CRS creation time.</p>
      *
+     * @param  code  <abbr>EPSG</abbr> code of a coordinate system to potentially replace.
+     * @return <abbr>EPSG</abbr> code of the replacement, or {@code code} if there is no replacement to apply.
+     *
      * @see #replaceDeprecatedCS
      */
     @Workaround(library = "EPSG:6401-6420", version = "8.9")        // Deprecated in 2002 but still present in 2016.
-    private static final Map<Integer,Integer> DEPRECATED_CS = deprecatedCS();
-    static Map<Integer,Integer> deprecatedCS() {
-        final var m = new HashMap<Integer,Integer>(24);
-
-        // Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree
-        Integer replacement = 6422;
-        m.put(6402, replacement);
-        for (int code = 6405; code <= 6412; code++) {
-            m.put(code, replacement);
-        }
-
-        // Ellipsoidal 3D CS. Axes: latitude, longitude, ellipsoidal height. Orientations: north, east, up. UoM: degree, degree, metre.
-        replacement = 6423;
-        m.put(6401, replacement);
-        for (int code = 6413; code <= 6420; code++) {
-            m.put(code, replacement);
-        }
-        return m;
+    static int replaceDeprecatedCS(final int code) {
+        if (code == 6402 || (code >= 6405 && code <= 6412)) return 6422;    // Ellipsoidal 2D CS in degrees.
+        if (code == 6401 || (code >= 6413 && code <= 6420)) return 6423;    // Ellipsoidal 3D CS in degrees and metres.
+        return code;
     }
 
     /**
@@ -251,39 +240,45 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private final Map<Class<?>, CloseableReference> authorityCodes = new HashMap<>();
 
     /**
-     * Cache for axis names. This service is not provided by {@code ConcurrentAuthorityFactory}
-     * because {@link AxisName} objects are specific to the <abbr>EPSG</abbr> authority factory.
+     * Cache for axis names, conventional reference systems, realization methods or naming systems.
+     * We do not use the shared cache provided by {@code ConcurrentAuthorityFactory} for the following reasons:
+     *
+     * <ol>
+     *   <li>{@link InternationalString} for scopes are read from a table specific to the <abbr>EPSG</abbr> database.</li>
+     *   <li>{@link RealizationMethod} codes are read from a table specific to the <abbr>EPSG</abbr> database.</li>
+     *   <li>{@link AxisName} objects are specific to the <abbr>EPSG</abbr> authority factory.</li>
+     *   <li>Conventional Reference Systems (<abbr>RS</abbr>) do not have a specific GeoAPI type
+     *       that we could use in the shared cache. Conventional <abbr>RS</abbr> are represented
+     *       in ISO 19111 by instances of the generic {@link IdentifiedObject} type.</li>
+     *   <li></li>
+     *   <li>{@link NameSpace} objects are read from a table specific to the <abbr>EPSG</abbr> database.</li>
+     * </ol>
+     *
+     * Since we are not using the shared cache, there is a possibility that many objects are created for the same code.
+     * However, this duplication should not happen often. For example, each conventional <abbr>RS</abbr> should appears
+     * in only one datum ensemble created by {@link #createDatumEnsemble(Integer, Map)}.
+     *
+     * <p>Keys are {@link Long} except the keys for naming systems which are {@link String}.</p>
      *
      * @see #getAxisName(Integer)
-     */
-    private final Map<Integer, AxisName> axisNames = new HashMap<>();
-
-    /**
-     * Cache for conventional reference systems, which are instances of the generic {@link IdentifiedObject} type.
-     * This is not cached by {@code ConcurrentAuthorityFactory} because there is not yet a specific type for that.
-     * Since we are not using the shared cache, there is a possibility that many objects are created for the same
-     * conventional <abbr>RS</abbr> code. However, this duplication should not happen if each instance appears in
-     * only one datum ensemble created by {@link #createDatumEnsemble(Integer, Map)}.
-     *
-     * @see #createConventionalRS(Integer)
-     */
-    private final Map<Integer, IdentifiedObject> conventionalRS = new HashMap<>();
-
-    /**
-     * Cache for realization methods. This service is not provided by {@code ConcurrentAuthorityFactory}
-     * because the realization method table is specific to the <abbr>EPSG</abbr> authority factory.
-     *
      * @see #getRealizationMethod(Integer)
-     */
-    private final Map<Integer, RealizationMethod> realizationMethods = new HashMap<>();
-
-    /**
-     * Cache of naming systems other than EPSG. There is usually few of them (at most 15).
-     * This is used for aliases.
-     *
+     * @see #createConventionalRS(Integer)
      * @see #createProperties(String, Integer, String, CharSequence, String, String, CharSequence, boolean)
      */
-    private final Map<String, NameSpace> namingSystems = new HashMap<>();
+    private final Map<Object, Object> localCache = new HashMap<>();
+
+    /**
+     * Returns a key for use in {@link #localCache}. The {@code type} argument can have any value,
+     * provided that all types of object stored in {@link #localCache} use a distinct {@code type}.
+     * Usually, all invocations of this method should use its own unique {@code type} value.
+     *
+     * @param  type  an arbitrary value that identify the type of object.
+     * @param  code  <abbr>EPSG</code> code.
+     * @return key to use in {@link #localCache}.
+     */
+    private static Long cacheKey(final int type, final int code) {
+        return (((long) type) << Integer.SIZE) | Integer.toUnsignedLong(code);
+    }
 
     /**
      * The properties to be given the objects to construct.
@@ -318,7 +313,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * coordinate system at CRS creation time. This flag should be set to {@code true} only when creating
      * the base CRS of a projected or derived CRS.
      *
-     * @see #DEPRECATED_CS
+     * @see #replaceDeprecatedCS(int)
      */
     private transient boolean replaceDeprecatedCS;
 
@@ -782,8 +777,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     {
         assert Thread.holdsLock(this);
         assert sql.contains('"' + table + '"') : table;
-        assert (codeColumn == null) || sql.contains(codeColumn) || table.equals("Area") : codeColumn;
-        assert (nameColumn == null) || sql.contains(nameColumn) || table.equals("Area") : nameColumn;
+        assert (codeColumn == null) || sql.contains(codeColumn) || table.equals("Extent") : codeColumn;
+        assert (nameColumn == null) || sql.contains(nameColumn) || table.equals("Extent") : nameColumn;
         return executeQuery(table, sql, toPrimaryKeys(table, codeColumn, nameColumn, codes));
     }
 
@@ -1089,53 +1084,100 @@ codes:  for (int i=0; i<codes.length; i++) {
     }
 
     /**
+     * Get all domains for the object identified by the given code.
+     * If found, the domains are added in the {@link #properties} map.
+     * The table used by this method is new in version 10 of EPSG database.
+     *
+     * @param  table   the table of the object for which to get usage.
+     * @param  code    the code for the object in the given table.
+     */
+    private void addDomainProperty(final String table, final Integer code) throws SQLException, FactoryException {
+        final var domains = new ArrayList<ObjectDomain>();
+        try (ResultSet result = executeMetadataQuery("Usage",
+                "SELECT EXTENT_CODE, SCOPE_CODE FROM \"Usage\"" +
+                " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
+                translator.toActualTableName(table), code))
+        {
+            while (result.next()) {
+                final Extent extent = createExtent(getString(code, result, 1));
+                final InternationalString scope = getScope(getInteger(code, result, 2));
+                if (scope != null || extent != null) {
+                    domains.add(new DefaultObjectDomain(scope, extent));
+                }
+            }
+        }
+        if (!domains.isEmpty()) {
+            properties.put(IdentifiedObject.DOMAINS_KEY, domains.toArray(ObjectDomain[]::new));
+        }
+    }
+
+    /**
+     * Returns the scope from the given authority code.
+     *
+     * @param  code  the <abbr>EPSG</code> code.
+     * @return the scope, or {@code null} if none.
+     */
+    private InternationalString getScope(final Integer code) throws SQLException, FactoryDataException {
+        final Long cacheKey = cacheKey(1, code);
+        var scope = (InternationalString) localCache.get(cacheKey);
+        if (scope == null) {
+            try (ResultSet rs = executeQuery("Scope", "SELECT SCOPE FROM \"Scope\" WHERE SCOPE_CODE=?", code)) {
+                while (rs.next()) {
+                    scope = ensureSingleton(Types.toInternationalString(rs.getString(1)), scope, code);
+                }
+            }
+            localCache.put(cacheKey, scope);
+        }
+        return scope;
+    }
+
+    /**
      * Logs a warning saying that the given code is deprecated and returns the code of the proposed replacement.
      *
      * @param  table   the table of the deprecated code.
      * @param  code    the deprecated code.
-     * @return the proposed replacement (may be the "(none)" text).
+     * @return the proposed replacement (may be the "(none)" text). Never empty.
      */
     private String getSupersession(final String table, final Integer code, final Locale locale) throws SQLException {
         String reason = null;
-        Object replacedBy = null;
-        try (ResultSet result = executeMetadataQuery("Deprecation",
+        String replacedBy;
+search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 "SELECT DEPRECATION_REASON, REPLACED_BY FROM \"Deprecation\"" +
                 " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
                 translator.toActualTableName(table), code))
         {
             while (result.next()) {
-                reason     = getOptionalString (result, 1);
-                replacedBy = getOptionalInteger(result, 2);
-                if (replacedBy != null) break;                  // Prefer the first record providing a replacement.
+                reason    = getOptionalString (result, 1);
+                Integer r = getOptionalInteger(result, 2);
+                if (r != null) {
+                    replacedBy = r.toString();
+                    break search;                   // Prefer the first record providing a replacement.
+                }
             }
-        }
-        if (replacedBy == null) {
             replacedBy = '(' + Vocabulary.forLocale(locale).getString(Vocabulary.Keys.None).toLowerCase(locale) + ')';
-        } else {
-            replacedBy = replacedBy.toString();
         }
         /*
          * Try to infer the method name from the table name. For example, if the deprecated code was found in
          * the "Coordinate Reference System" table, then we declare `createCoordinateReferenceSystem(String)`
          * as the source of the log message.
          */
-        String method = "create";
-        for (final TableInfo info : TableInfo.EPSG) {
-            if (info.tableMatches(table)) {
-                method += info.type.getSimpleName();
-                break;
-            }
-        }
         if (!quiet) {
-            LogRecord record = Resources.forLocale(locale).createLogRecord(
-                    Level.WARNING,
-                    Resources.Keys.DeprecatedCode_3,
-                    Constants.EPSG + Constants.DEFAULT_SEPARATOR + code,
-                    replacedBy,
-                    reason);
-            Logging.completeAndLog(LOGGER, EPSGDataAccess.class, method, record);
+            String method = "create";
+            for (final TableInfo info : TableInfo.EPSG) {
+                if (info.tableMatches(table)) {
+                    method += info.type.getSimpleName();
+                    break;
+                }
+            }
+            Logging.completeAndLog(LOGGER, EPSGDataAccess.class, method,
+                    Resources.forLocale(locale).createLogRecord(
+                            Level.WARNING,
+                            Resources.Keys.DeprecatedCode_3,
+                            Constants.EPSG + Constants.DEFAULT_SEPARATOR + code,
+                            replacedBy,
+                            reason));
         }
-        return (String) replacedBy;
+        return replacedBy;
     }
 
     /**
@@ -1145,8 +1187,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * @param  code        the EPSG code of the object to construct.
      * @param  name        the name for the {@link IdentifiedObject} to construct.
      * @param  description a description associated with the name, or {@code null} if none.
-     * @param  domainCode  the code for the domain of validity, or {@code null} if none.
-     * @param  scope       the scope, or {@code null} if none.
+     * @param  extent      extent code, or {@code null} if none. This is a legacy of <abbr>EPSG</abbr> version 9.
+     * @param  scope       the scope, or {@code null} if none. This is a legacy of <abbr>EPSG</abbr> version 9.
      * @param  remarks     remarks as a {@link String} or {@link InternationalString}, or {@code null} if none.
      * @param  deprecated  {@code true} if the object to create is deprecated.
      * @return the name together with a set of properties.
@@ -1156,8 +1198,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                                                 final Integer      code,
                                                       String       name,        // May be replaced by an alias.
                                                 final CharSequence description,
-                                                final String       domainCode,
-                                                      String       scope,       // May replace "?" by text.
+                                                final String       extent,      // Legacy from EPSG version 9.
+                                                final String       scope,       // Legacy from EPSG version 9.
                                                 final CharSequence remarks,
                                                 final boolean      deprecated)
             throws SQLException, FactoryException
@@ -1189,10 +1231,10 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final String alias  = getString(code,   result, 2);
                 NameSpace ns = null;
                 if (naming != null) {
-                    ns = namingSystems.get(naming);
+                    ns = (NameSpace) localCache.get(naming);
                     if (ns == null) {
                         ns = owner.nameFactory.createNameSpace(owner.nameFactory.createLocalName(null, naming), null);
-                        namingSystems.put(naming, ns);
+                        localCache.put(naming, ns);
                     }
                 }
                 if (CharSequences.toASCII(alias).toString().equals(name)) {
@@ -1203,54 +1245,63 @@ codes:  for (int i=0; i<codes.length; i++) {
             }
         }
         /*
-         * At this point we can fill the properties map.
+         * Creates the primary name as an object which is both a name (like aliases) and an identifier.
+         * The identifier type is necessary because ISO 19111 defines the object names as identifiers.
+         * We put all information that we have, such as version and object description, in that name.
+         */
+        final Locale      locale     = getLocale();
+        final Citation    authority  = owner.getAuthority();
+        final String      version    = Types.toString(authority.getEdition(), locale);
+        final GenericName scopedName = owner.nameFactory.createGenericName(namespace, Constants.EPSG, name);
+        properties.clear();
+        properties.put("name",                          scopedName);
+        properties.put(NamedIdentifier.CODE_KEY,        name);
+        properties.put(NamedIdentifier.VERSION_KEY,     version);
+        properties.put(NamedIdentifier.AUTHORITY_KEY,   authority);
+        properties.put(NamedIdentifier.DESCRIPTION_KEY, description);
+        properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
+        final var nameAsIdentifier = new NamedIdentifier(properties);
+        /*
+         * At this point, we can fill the map of object properties.
+         * We store the deprecation flag in the object identifier.
          */
         properties.clear();
-        GenericName gn = null;
-        final Locale locale = getLocale();
-        final Citation authority = owner.getAuthority();
-        final InternationalString edition = authority.getEdition();
-        final String version = (edition != null) ? edition.toString() : null;
-        if (name != null) {
-            gn = owner.nameFactory.createGenericName(namespace, Constants.EPSG, name);
-            properties.put("name", gn);
-            properties.put(NamedIdentifier.CODE_KEY,        name);
-            properties.put(NamedIdentifier.VERSION_KEY,     version);
-            properties.put(NamedIdentifier.AUTHORITY_KEY,   authority);
-            properties.put(NamedIdentifier.DESCRIPTION_KEY, description);
-            properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
-            final var id = new NamedIdentifier(properties);
-            properties.clear();
-            properties.put(IdentifiedObject.NAME_KEY, id);
-        }
+        properties.put(IdentifiedObject.NAME_KEY, nameAsIdentifier);
         if (!aliases.isEmpty()) {
             properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(GenericName[]::new));
         }
-        if (code != null) {
-            final String codeString = code.toString();
-            final ImmutableIdentifier identifier;
-            if (deprecated) {
-                final String replacedBy = getSupersession(table, code, locale);
-                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version,
-                        Character.isDigit(replacedBy.charAt(0)) ? replacedBy : null,
-                        Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy));
-                properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
-            } else {
-                identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
-                                    (gn != null) ? gn.toInternationalString() : null);
-            }
-            properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
+        final ImmutableIdentifier identifier;
+        if (deprecated) {
+            properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
+            final String replacedBy = getSupersession(table, code, locale);
+            identifier = new DeprecatedCode(
+                    authority,
+                    Constants.EPSG,
+                    code.toString(),
+                    version,
+                    Character.isDigit(replacedBy.charAt(0)) ? replacedBy : null,
+                    Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy));
+        } else {
+            identifier = new ImmutableIdentifier(
+                    authority,
+                    Constants.EPSG,
+                    code.toString(),
+                    version,
+                    scopedName.toInternationalString());
         }
+        properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
         properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
         properties.put(ReferencingFactoryContainer.MT_FACTORY, owner.mtFactory);
-        if ("?".equals(scope)) {                // EPSG sometimes uses this value for unspecified scope.
-            scope = null;
+        if (translator.isUsageTableFound()) {
+            addDomainProperty(table, code);                 // Intersection table new since EPSG version 10.
         }
-        if (domainCode != null) {
-            properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(domainCode));
+        if (scope != null && !scope.equals("?")) {          // Should be always null since EPSG version 10.
+            properties.put(ObjectDomain.SCOPE_KEY, scope);
         }
-        properties.put(ObjectDomain.SCOPE_KEY, scope);
+        if (extent != null) {                               // Should be always null since EPSG version 10.
+            properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(extent));
+        }
         return properties;
     }
 
@@ -1279,8 +1330,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         final boolean isPrimaryKey = isPrimaryKey(code);
-        final StringBuilder query  = new StringBuilder("SELECT ");
-        final int queryStart       = query.length();
+        final var query = new StringBuilder("SELECT ");
+        final int queryStart = query.length();
         int found = -1;
         try {
             final int pk = isPrimaryKey ? toPrimaryKeys(null, null, null, code)[0] : 0;
@@ -1383,7 +1434,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 "SELECT COORD_REF_SYS_CODE,"          +     // [ 1]
                       " COORD_REF_SYS_NAME,"          +     // [ 2]
                       " AREA_OF_USE_CODE,"            +     // [ 3] Deprecated since EPSG version 10 (always null)
-                      " CRS_SCOPE,"                   +     // [ 4]
+                      " CRS_SCOPE,"                   +     // [ 4] Deprecated since EPSG version 10 (always null)
                       " REMARKS,"                     +     // [ 5]
                       " DEPRECATED,"                  +     // [ 6]
                       " COORD_REF_SYS_KIND,"          +     // [ 7]
@@ -1424,7 +1475,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "geographic 3d": {
                         Integer csCode = getInteger(code, result, 8);
                         if (replaceDeprecatedCS) {
-                            csCode = DEPRECATED_CS.getOrDefault(csCode, csCode);
+                            csCode = replaceDeprecatedCS(csCode);
                         }
                         final EllipsoidalCS cs = owner.createEllipsoidalCS(csCode.toString());
                         final String datumCode = getOptionalString(result, 9);
@@ -1709,7 +1760,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                       " FRAME_REFERENCE_EPOCH,"   +  // [ 6] — NULL for static datum, non-null if dynamic.
                       " PUBLICATION_DATE,"        +  // [ 7] — Was REALIZATION_EPOCH in EPSG version 9.
                       " AREA_OF_USE_CODE,"        +  // [ 8] — Deprecated since EPSG version 10 (always null)
-                      " DATUM_SCOPE,"             +  // [ 9]
+                      " DATUM_SCOPE,"             +  // [ 9] — Deprecated since EPSG version 10 (always null)
                       " REMARKS,"                 +  // [10]
                       " DEPRECATED,"              +  // [11]
                       " ELLIPSOID_CODE,"          +  // [12] — Only for geodetic type
@@ -1861,7 +1912,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 " ORDER BY DATUM_SEQUENCE", code))
         {
             while (result.next()) {
-                members.add(owner.createDatum(getInteger(code, result, 1).toString()));
+                members.add(owner.createDatum(getString(code, result, 1)));
             }
         }
         return owner.datumFactory.createDatumEnsemble(properties, members, PositionalAccuracyConstant.ensemble(accuracy));
@@ -1876,8 +1927,12 @@ codes:  for (int i=0; i<codes.length; i++) {
      */
     private IdentifiedObject createConventionalRS(final Integer code) throws SQLException, FactoryException {
         assert Thread.holdsLock(this);
-        IdentifiedObject returnValue = conventionalRS.get(code);
-        if (returnValue == null && code != null) {
+        if (code == null) {
+            return null;
+        }
+        final Long cacheKey = cacheKey(4, code);
+        var returnValue = (IdentifiedObject) localCache.get(cacheKey);
+        if (returnValue == null) {
             try (ResultSet result = executeQuery("ConventionalRS",
                     "SELECT CONVENTIONAL_RS_CODE," +
                           " CONVENTIONAL_RS_NAME," +
@@ -1897,7 +1952,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     returnValue = ensureSingleton(new AbstractIdentifiedObject(properties), returnValue, code);
                 }
             }
-            conventionalRS.put(code, returnValue);
+            localCache.put(cacheKey, returnValue);
         }
         return returnValue;
     }
@@ -2210,14 +2265,14 @@ codes:  for (int i=0; i<codes.length; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         Extent returnValue = null;
-        try (ResultSet result = executeQuery("Area", "AREA_CODE", "AREA_NAME",
-                "SELECT AREA_OF_USE," +
-                      " AREA_SOUTH_BOUND_LAT," +
-                      " AREA_NORTH_BOUND_LAT," +
-                      " AREA_WEST_BOUND_LON," +
-                      " AREA_EAST_BOUND_LON" +
-                " FROM \"Area\"" +
-                " WHERE AREA_CODE = ?", code))
+        try (ResultSet result = executeQuery("Extent", "EXTENT_CODE", "EXTENT_NAME",
+                "SELECT EXTENT_DESCRIPTION," +
+                      " BBOX_SOUTH_BOUND_LAT," +
+                      " BBOX_NORTH_BOUND_LAT," +
+                      " BBOX_WEST_BOUND_LON," +
+                      " BBOX_EAST_BOUND_LON" +
+                " FROM \"Extent\"" +
+                " WHERE EXTENT_CODE = ?", code))
         {
             while (result.next()) {
                 final String description = getOptionalString(result, 1);
@@ -2511,7 +2566,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      */
     private AxisName getAxisName(final Integer code) throws FactoryException, SQLException {
         assert Thread.holdsLock(this);
-        AxisName returnValue = axisNames.get(code);
+        final Long cacheKey = cacheKey(3, code);
+        var returnValue = (AxisName) localCache.get(cacheKey);
         if (returnValue == null) {
             try (ResultSet result = executeQuery("Coordinate Axis Name",
                     "SELECT COORD_AXIS_NAME, DESCRIPTION, REMARKS" +
@@ -2529,7 +2585,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             if (returnValue == null) {
                 throw noSuchAuthorityCode(AxisName.class, String.valueOf(code));
             }
-            axisNames.put(code, returnValue);
+            localCache.put(cacheKey, returnValue);
         }
         return returnValue;
     }
@@ -2542,7 +2598,11 @@ codes:  for (int i=0; i<codes.length; i++) {
      */
     private RealizationMethod getRealizationMethod(final Integer code) throws FactoryException, SQLException {
         assert Thread.holdsLock(this);
-        RealizationMethod returnValue = realizationMethods.get(code);
+        if (code == null) {
+            return null;
+        }
+        final Long cacheKey = cacheKey(2, code);
+        var returnValue = (RealizationMethod) localCache.get(cacheKey);
         if (returnValue == null && code != null) {
             try (ResultSet result = executeQuery("DatumRealizationMethod",
                     "SELECT REALIZATION_METHOD_NAME" +
@@ -2557,7 +2617,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             if (returnValue == null) {
                 throw noSuchAuthorityCode(RealizationMethod.class, String.valueOf(code));
             }
-            realizationMethods.put(code, returnValue);
+            localCache.put(cacheKey, returnValue);
         }
         return returnValue;
     }
@@ -2687,7 +2747,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                  */
                 Class<?> type;
                 final Set<Unit<?>> units;
-                if (epsg != null && Arrays.binarySearch(EPSG_CODE_PARAMETERS, epsg) >= 0) {
+                if (epsg != null && EPSG_CODE_PARAMETERS.contains(epsg)) {
                     type  = Integer.class;
                     units = Set.of();
                 } else {
@@ -2998,7 +3058,7 @@ next:                   while (r.next()) {
                           " COORD_TFM_VERSION," +
                           " COORD_OP_ACCURACY," +
                           " AREA_OF_USE_CODE," +    // Deprecated since EPSG version 10 (always null)
-                          " COORD_OP_SCOPE," +
+                          " COORD_OP_SCOPE," +      // Deprecated since EPSG version 10 (always null)
                           " REMARKS," +
                           " DEPRECATED" +
                     " FROM \"Coordinate_Operation\"" +

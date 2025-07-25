@@ -177,6 +177,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Returns an object of the specified type from a code. This implementation forwards
      * the method call to the most specialized methods determined by the given type.
+     * For example, a call to {@code createObject(GeodeticCRS.class, code)} delegates
+     * to <code>{@linkplain #createGeodeticCRS(String) createGeodeticCRS}(code)</code>.
      *
      * @param  <T>   the compile-time value of the {@code type} argument.
      * @param  type  the type of object to create.

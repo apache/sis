@@ -234,10 +234,25 @@ public class SQLTranslator implements UnaryOperator<String> {
     /**
      * Whether the sentinel table "Coordinate_Operation" or a variant has been found.
      * If {@code false}, then {@link EPSGInstaller} needs to be run.
+     * Note that the {@linkplain #schema} may be {@code null}.
      *
-     * @see #isTableFound()
+     * @see #isSchemaFound()
      */
-    private boolean isTableFound;
+    private boolean isSchemaFound;
+
+    /**
+     * Whether the "Usage" table has been found.
+     * That table has been added in version 10 of <abbr>EPSG</abbr> database.
+     *
+     * @see #isUsageTableFound()
+     */
+    private boolean isUsageTableFound;
+
+    /**
+     * Whether the table names in the hard-coded <abbr>SQL</abbr> queries and in the actual database are the same.
+     * If {@code true}, then the renaming of tables can be skipped.
+     */
+    private boolean sameTableNames;
 
     /**
      * Whether the <abbr>SQL</abbr> queries hard-coded in {@link EPSGDataAccess} can be used verbatim
@@ -316,7 +331,7 @@ public class SQLTranslator implements UnaryOperator<String> {
             }
             try (ResultSet result = md.getTables(catalog, schemaPattern, table, null)) {
                 while (result.next()) {
-                    isTableFound = true;
+                    isSchemaFound = true;
                     catalog = result.getString(Reflection.TABLE_CAT);
                     schema  = result.getString(Reflection.TABLE_SCHEM);
                     if (result.wasNull()) schema = "";
@@ -325,7 +340,7 @@ public class SQLTranslator implements UnaryOperator<String> {
                     }
                 }
             }
-        } while (!isTableFound);
+        } while (!isSchemaFound);
         /*
          * At this point, we found the EPSG sentinel table and we identified the
          * naming convention (unquoted or mixed-case, prefixed by "epsg_" or not).
@@ -333,7 +348,7 @@ public class SQLTranslator implements UnaryOperator<String> {
         UnaryOperator<String> toNativeCase = UnaryOperator.identity();
         schemaPattern  = SQLUtilities.escape(schema, escape);
         columnRenaming = new HashMap<>();
-        tableRewording = Map.of();
+        tableRewording = new HashMap<>();
         /*
          * Special cases not covered by the generic algorithm implemented in `toActualTableName(…)`.
          * The entries are actually not full table names, but words separated by space. For example,
@@ -341,8 +356,8 @@ public class SQLTranslator implements UnaryOperator<String> {
          * (note that this renaming combines the two entries of the map).
          */
         if (!useMixedCaseTableNames) {
-            tableRewording = Map.of("Coordinate_Operation", "coordoperation",
-                                    "Parameter",            "param");
+            tableRewording.put("Coordinate_Operation", "coordoperation");
+            tableRewording.put("Parameter",            "param");
             if (md.storesLowerCaseIdentifiers()) {
                 toNativeCase = (table) -> table.toLowerCase(Locale.US);
             } else if (md.storesUpperCaseIdentifiers()) {
@@ -361,9 +376,13 @@ public class SQLTranslator implements UnaryOperator<String> {
         final var missingColumns   = new HashMap<String, String>();
         final var mayRenameColumns = new HashMap<String, String>();
         final var brokenTargetCols = new HashSet<String>();
+        boolean isExtentTableFound = false;
         tableIndex = 0;
 check:  for (;;) {
             String table;
+            boolean isUsage  = false;   // "Usage"  is a new table in EPSG version 19.
+            boolean isArea   = false;   // "Area"   was a table name used in EPSG version 9.
+            boolean isExtent = false;   // "Extent" is the new name for "Area" in EPSG version 10.
             switch (tableIndex++) {
                 case 0: {
                     table = "Coordinate Axis";
@@ -384,16 +403,40 @@ check:  for (;;) {
                     mayRenameColumns.put("PUBLICATION_DATE", "REALIZATION_EPOCH");   // EPSG version 10 → version 9.
                     break;
                 }
+                case 4:
+                    if (isExtentTableFound) continue;
+                    isArea = true;
+                    // Fallthrough for testing "Area" if and only if "Extent" has not been found.
                 case 3: {
-                    table = "Alias";
+                    isExtent = !isArea;
+                    table = isExtent ? "Extent" : "Area";                            // "Area" in 9, "Extent" in 10.
+                    mayRenameColumns.put("EXTENT_CODE",          "AREA_CODE");       // EPSG version 10 → version 9.
+                    mayRenameColumns.put("EXTENT_NAME",          "AREA_NAME");
+                    mayRenameColumns.put("EXTENT_DESCRIPTION",   "AREA_OF_USE");
+                    mayRenameColumns.put("BBOX_SOUTH_BOUND_LAT", "AREA_SOUTH_BOUND_LAT");
+                    mayRenameColumns.put("BBOX_NORTH_BOUND_LAT", "AREA_NORTH_BOUND_LAT");
+                    mayRenameColumns.put("BBOX_WEST_BOUND_LON",  "AREA_WEST_BOUND_LON");
+                    mayRenameColumns.put("BBOX_EAST_BOUND_LON",  "AREA_EAST_BOUND_LON");
+                    break;
+                }
+                case 5: {
+                    isUsage = true;
+                    table = "Usage";
+                    break;
+                }
+                case 6: {
+                    if (isUsageTableFound) continue;    // The check of `ENUMERATION_COLUMN` is already done.
+                    table = "Alias";                    // For checking the type of the `ENUMERATION_COLUMN`.
                     break;
                 }
                 default: break check;
             }
+            boolean isTableFound = false;
             brokenTargetCols.addAll(mayRenameColumns.values());
             table = toNativeCase.apply(toActualTableName(table));
             try (ResultSet result = md.getColumns(catalog, schemaPattern, SQLUtilities.escape(table, escape), "%")) {
                 while (result.next()) {
+                    isTableFound = true;          // Assuming that all tables contain at least one column.
                     final String column = result.getString(Reflection.COLUMN_NAME).toUpperCase(Locale.US);
                     missingColumns.remove(column);
                     if (mayRenameColumns.remove(column) == null) {  // Do not rename if the new column exists.
@@ -419,21 +462,26 @@ check:  for (;;) {
                     }
                 }
             }
-            missingColumns.forEach((column, type) -> {
-                columnRenaming.put(column, "CAST(NULL AS " + type + ") AS " + column);
-            });
-            mayRenameColumns.values().removeAll(brokenTargetCols);  // For renaming only when the old name has been found.
-            columnRenaming.putAll(mayRenameColumns);
-            mayRenameColumns.clear();
-            brokenTargetCols.clear();
-            missingColumns.clear();
+            if (isTableFound) {
+                isUsageTableFound  |= isUsage;
+                isExtentTableFound |= isExtent;
+                missingColumns.forEach((column, type) -> {
+                    columnRenaming.put(column, "CAST(NULL AS " + type + ") AS " + column);
+                });
+                mayRenameColumns.values().removeAll(brokenTargetCols);  // For renaming only when the old name has been found.
+                columnRenaming.putAll(mayRenameColumns);
+                mayRenameColumns.clear();
+                brokenTargetCols.clear();
+                missingColumns.clear();
+                if (isArea) {
+                    tableRewording.put("Extent", "Area");
+                }
+            }
         }
+        tableRewording = Map.copyOf(tableRewording);
         columnRenaming = Map.copyOf(columnRenaming);
-        sameQueries = (tableNameEnum == null)
-                && tableRewording.isEmpty()
-                && columnRenaming.isEmpty()
-                && "\"".equals(identifierQuote)
-                && !useBoolean;
+        sameTableNames = useMixedCaseTableNames && "\"".equals(identifierQuote) && tableRewording.isEmpty();
+        sameQueries    = sameTableNames && (tableNameEnum == null) && columnRenaming.isEmpty() && !useBoolean;
     }
 
     /**
@@ -465,9 +513,18 @@ check:  for (;;) {
     /**
      * Returns whether the <abbr>EPSG</abbr> tables have been found.
      * If {@code false}, then {@link EPSGInstaller} needs to be run.
+     * Note that the {@linkplain #getSchema() schema} may be {@code null}.
      */
-    final boolean isTableFound() {
-        return isTableFound;
+    final boolean isSchemaFound() {
+        return isSchemaFound;
+    }
+
+    /**
+     * Returns whether the "Usage" table has been found.
+     * That table has been added in version 10 of <abbr>EPSG</abbr> database.
+     */
+    final boolean isUsageTableFound() {
+        return isUsageTableFound;
     }
 
     /**
@@ -520,7 +577,9 @@ check:  for (;;) {
      */
     private void toActualTableName(final String name, final StringBuilder buffer) {
         if (useMixedCaseTableNames) {
-            buffer.append(identifierQuote).append(name).append(identifierQuote);
+            buffer.append(identifierQuote)
+                  .append(tableRewording.getOrDefault(name, name))
+                  .append(identifierQuote);
         } else {
             if (usePrefixedTableNames) {
                 buffer.append(TABLE_PREFIX);
@@ -548,7 +607,7 @@ check:  for (;;) {
         }
         final var buffer = new StringBuilder(sql.length() + 16);
         int end = 0;
-        if (!(useMixedCaseTableNames && "\"".equals(identifierQuote))) {
+        if (!sameTableNames) {
             int start;
             while ((start = sql.indexOf('"', end)) >= 0) {
                 /*

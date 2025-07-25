@@ -64,9 +64,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.xml.XML;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.DynamicReferenceFrame;
-
 
 /**
  * Creates Coordinate Reference System (CRS) implementations, with their Coordinate System (CS) and Datum components.

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.Locale;
@@ -426,10 +425,15 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     @Test
     public void testDeprecatedCoordinateSystems() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
-        for (final Map.Entry<Integer,Integer> entry : EPSGDataAccess.deprecatedCS().entrySet()) {
-            final CoordinateSystem expected = factory.createEllipsoidalCS(entry.getValue().toString());
+        for (int deprecatedCode = 6401; deprecatedCode <= 6420; deprecatedCode++) {
+            final int replacementCode = EPSGDataAccess.replaceDeprecatedCS(deprecatedCode);
+            if (replacementCode == deprecatedCode) {
+                assertTrue(deprecatedCode >= 6403 && deprecatedCode <= 6404);
+                continue;   // Non-deprecated code.
+            }
+            final CoordinateSystem expected = factory.createEllipsoidalCS(Integer.toString(replacementCode));
             loggings.assertNoUnexpectedLog();
-            final String code = entry.getKey().toString();
+            final String code = Integer.toString(deprecatedCode);
             final CoordinateSystem deprecated;
             try {
                 deprecated = factory.createEllipsoidalCS(code);
