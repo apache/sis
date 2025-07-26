@@ -49,6 +49,7 @@ import javax.measure.format.MeasurementParseException;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.util.Factory;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.extent.Extent;
@@ -116,6 +117,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
@@ -200,6 +203,12 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         if (code == 6401 || (code >= 6413 && code <= 6420)) return 6423;    // Ellipsoidal 3D CS in degrees and metres.
         return code;
     }
+
+    /**
+     * String sometime used in the <abbr>EPSG</abbr> database for unknown scope.
+     * If Apache <abbr>SIS</abbr>, this is replaced by {@code null}.
+     */
+    private static final String UNKNOWN_SCOPE = "?";
 
     /**
      * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
@@ -288,15 +297,27 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
 
     /**
      * A safety guard for preventing never-ending loops in recursive calls to some {@code createFoo(String)} methods.
-     * Recursion may happen while creating Bursa-Wolf parameters, projected CRS if the database has erroneous data,
-     * compound CRS if there is cycles, or coordinate operations.
+     * Recursion may theoretically happen during the creation of the following objects:
      *
-     * <h4>Example</h4>
-     * {@link #createDatum(String)} invokes {@link #createBursaWolfParameters(PrimeMeridian, Integer)}, which creates
-     * a target datum. The target datum could have its own Bursa-Wolf parameters, with one of them pointing again to
-     * the source datum.
+     * <ul>
+     *   <li>Bursa-Wolf parameters, as they can be created with a datum and reference another datum.</li>
+     *   <li>projected <abbr>CRS</abbr> if the database contains cycles (it would be an error in the database).</li>
+     *   <li>Compound <abbr>CRS</abbr> if the database contains cycles (it would be an error in the database).</li>
+     *   <li>Coordinate operations if the database contains cycles (it would be an error in the database).</li>
+     *   <li>Extent created by a <abbr>CRS</abbr> as the extent may itself reference a vertical <abbr>CRS</abbr>.</li>
+     * </ul>
      *
-     * Keys are EPSG codes and values are the type of object being constructed (but those values are not yet used).
+     * The database distributed by <abbr>EPSG</abbr> avoids the above-cited cycles, for example by setting
+     * the <abbr>CRS</abbr> code to {@code null} instead of putting a value that would create a cycle.
+     * Apache <abbr>SIS</abbr> nevertheless check by safety, since the database can be user-provided.
+     *
+     * <p>Keys are <abbr>EPSG</abbr> codes and each value is the type of the object identified by the code.
+     * The values are currently used only for consistency checks. There is a risk of key collision because
+     * the same <abbr>EPSG</abbr> code can be used for different types of objects. But for this algorithm,
+     * key collision is a problem only if it happens in a cycle. We presume that it does not happen.</p>
+     *
+     * @see #ensureNoCycle(Class, Integer)
+     * @see #endOfCycleCheck(Class, Integer)
      */
     private final Map<Integer, Class<?>> safetyGuard = new HashMap<>();
 
@@ -948,7 +969,6 @@ codes:  for (int i=0; i<codes.length; i++) {
         final ResultSetMetaData metadata = result.getMetaData();
         final String column = metadata.getColumnName(columnIndex);
         final String table  = metadata.getTableName (columnIndex);
-        result.close();     // Only an optimization. The actual try-with-resource is done by the caller.
         return error().getString(Errors.Keys.NullValueInTable_3, table, column, code);
     }
 
@@ -1064,50 +1084,26 @@ codes:  for (int i=0; i<codes.length; i++) {
      *     try {
      *         ...
      *     } finally {
-     *         endOfRecursive(type, code);
+     *         endOfCycleCheck(type, code);
      *     }
      *     }
+     *
+     * @param  type  the type of object identified by the given code.
+     * @param  code  <abbr>EPSG</abbr> code of the object of the specified type.
+     * @throws FactoryDataException if recursive construction has been detected.
      */
-    private void ensureNoCycle(final Class<?> type, final Integer code) throws FactoryException {
+    private void ensureNoCycle(final Class<?> type, final Integer code) throws FactoryDataException {
         if (safetyGuard.putIfAbsent(code, type) != null) {
-            throw new FactoryException(resources().getString(Resources.Keys.RecursiveCreateCallForCode_2, type, code));
+            throw new FactoryDataException(resources().getString(Resources.Keys.RecursiveCreateCallForCode_2, type, code));
         }
     }
 
     /**
      * Invoked after the block protected against infinite recursion.
      */
-    private void endOfRecursion(final Class<?> type, final Integer code) throws FactoryException {
+    private void endOfCycleCheck(final Class<?> type, final Integer code) throws FactoryException {
         if (safetyGuard.remove(code) != type) {
             throw new FactoryException(String.valueOf(code));   // Would be an EPSGDataAccess bug if it happen.
-        }
-    }
-
-    /**
-     * Get all domains for the object identified by the given code.
-     * If found, the domains are added in the {@link #properties} map.
-     * The table used by this method is new in version 10 of EPSG database.
-     *
-     * @param  table   the table of the object for which to get usage.
-     * @param  code    the code for the object in the given table.
-     */
-    private void addDomainProperty(final String table, final Integer code) throws SQLException, FactoryException {
-        final var domains = new ArrayList<ObjectDomain>();
-        try (ResultSet result = executeMetadataQuery("Usage",
-                "SELECT EXTENT_CODE, SCOPE_CODE FROM \"Usage\"" +
-                " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
-                translator.toActualTableName(table), code))
-        {
-            while (result.next()) {
-                final Extent extent = createExtent(getString(code, result, 1));
-                final InternationalString scope = getScope(getInteger(code, result, 2));
-                if (scope != null || extent != null) {
-                    domains.add(new DefaultObjectDomain(scope, extent));
-                }
-            }
-        }
-        if (!domains.isEmpty()) {
-            properties.put(IdentifiedObject.DOMAINS_KEY, domains.toArray(ObjectDomain[]::new));
         }
     }
 
@@ -1121,9 +1117,12 @@ codes:  for (int i=0; i<codes.length; i++) {
         final Long cacheKey = cacheKey(1, code);
         var scope = (InternationalString) localCache.get(cacheKey);
         if (scope == null) {
-            try (ResultSet rs = executeQuery("Scope", "SELECT SCOPE FROM \"Scope\" WHERE SCOPE_CODE=?", code)) {
-                while (rs.next()) {
-                    scope = ensureSingleton(Types.toInternationalString(rs.getString(1)), scope, code);
+            try (ResultSet result = executeQuery("Scope", "SELECT SCOPE FROM \"Scope\" WHERE SCOPE_CODE=?", code)) {
+                while (result.next()) {
+                    String s = result.getString(1);
+                    if (!UNKNOWN_SCOPE.equals(s)) {
+                        scope = ensureSingleton(Types.toInternationalString(s), scope, code);
+                    }
                 }
             }
             localCache.put(cacheKey, scope);
@@ -1183,11 +1182,25 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     /**
      * Returns the name and aliases for the {@link IdentifiedObject} to construct.
      *
+     * <h4>Possible recursive calls</h4>
+     * Invoking this method may cause a recursive call to {@link #createCoordinateReferenceSystem(String)}
+     * because this method may create a vertical extent, which may contain a {@link VerticalCRS} property.
+     * A recursive <abbr>CRS</abbr> creation may cause some {@link ResultSet}s to be closed when the cached
+     * {@link PreparedStatement}s are reused. Callers should use a loop like below:
+     *
+     * {@snippet lang="java" :
+     *     while (result.next()) {   // Expect a singleton, but loop as a safety.
+     *         // Get values of columns, then invoke `createProperties(…)` last.
+     *         returnValue = ensureSingleton(currentValue, returnValue, code);
+     *         if (result.isClosed()) break;
+     *     }
+     *     }
+     *
      * @param  table       the table on which a query has been executed.
      * @param  code        the EPSG code of the object to construct.
      * @param  name        the name for the {@link IdentifiedObject} to construct.
      * @param  description a description associated with the name, or {@code null} if none.
-     * @param  extent      extent code, or {@code null} if none. This is a legacy of <abbr>EPSG</abbr> version 9.
+     * @param  extentCode  extent code, or {@code null} if none. This is a legacy of <abbr>EPSG</abbr> version 9.
      * @param  scope       the scope, or {@code null} if none. This is a legacy of <abbr>EPSG</abbr> version 9.
      * @param  remarks     remarks as a {@link String} or {@link InternationalString}, or {@code null} if none.
      * @param  deprecated  {@code true} if the object to create is deprecated.
@@ -1198,12 +1211,44 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                                                 final Integer      code,
                                                       String       name,        // May be replaced by an alias.
                                                 final CharSequence description,
-                                                final String       extent,      // Legacy from EPSG version 9.
+                                                final String       extentCode,  // Legacy from EPSG version 9.
                                                 final String       scope,       // Legacy from EPSG version 9.
                                                 final CharSequence remarks,
                                                 final boolean      deprecated)
             throws SQLException, FactoryException
     {
+        /*
+         * Request for extent may cause a recursive call to `createCoordinateReferenceSystem(…)`,
+         * se we need to fetch and store the extent before to populate the `properties` map.
+         */
+        final Extent extent = (extentCode == null) ? null : createExtent(extentCode);
+        /*
+         * Get all domains for the object identified by the given code.
+         * The table used nere is new in version 10 of EPSG database.
+         * We have to create the extents outside the `while` loop for
+         * the same reason as above for `extent`.
+         */
+        ObjectDomain[] domains = null;
+        if (translator.isUsageTableFound()) {
+            final var extents = new ArrayList<String>();
+            final var scopes  = new ArrayList<InternationalString>();
+            try (ResultSet result = executeMetadataQuery("Usage",
+                    "SELECT EXTENT_CODE, SCOPE_CODE FROM \"Usage\"" +
+                    " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
+                    translator.toActualTableName(table), code))
+            {
+                while (result.next()) {
+                    extents.add(getString(code, result, 1));
+                    scopes .add(getScope(getInteger(code, result, 2)));
+                }
+            }
+            if (!extents.isEmpty()) {
+                domains = new ObjectDomain[extents.size()];
+                for (int i=0; i<domains.length; i++) {
+                    domains[i] = new DefaultObjectDomain(scopes.get(i), owner.createExtent(extents.get(i)));
+                }
+            }
+        }
         /*
          * Search for aliases. Note that searching for the object code is not sufficient. We also need to check if the
          * record is really from the table we are looking for since different tables may have objects with the same ID.
@@ -1293,14 +1338,14 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
         properties.put(ReferencingFactoryContainer.MT_FACTORY, owner.mtFactory);
-        if (translator.isUsageTableFound()) {
-            addDomainProperty(table, code);                 // Intersection table new since EPSG version 10.
+        if (domains != null) {
+            properties.put(IdentifiedObject.DOMAINS_KEY, domains);
         }
-        if (scope != null && !scope.equals("?")) {          // Should be always null since EPSG version 10.
+        if (scope != null && !scope.equals(UNKNOWN_SCOPE)) {    // Should be always null since EPSG version 10.
             properties.put(ObjectDomain.SCOPE_KEY, scope);
         }
-        if (extent != null) {                               // Should be always null since EPSG version 10.
-            properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(extent));
+        if (extent != null) {                                   // Should be always null since EPSG version 10.
+            properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, extent);
         }
         return properties;
     }
@@ -1399,6 +1444,23 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     }
 
     /**
+     * The {@code CRSFactory.createFoo(…)} or {@code DatumFactory.createFoo(…)} method to invoke.
+     * This is a convenience used by some {@link EPSGDataAccess} {@code createFoo(String)} methods when
+     * the factory method to invoke has been decided but the properties map has not yet been populated.
+     */
+    private interface FactoryCall<F extends Factory, R extends IdentifiedObject> {
+        /**
+         * Creates a <abbr>CRS</abbr> or datum.
+         *
+         * @param  factory     the factory to use for creating the object.
+         * @param  properties  the properties to give to the object.
+         * @return the object created from the given properties.
+         * @throws FactoryException if the factory cannot create the object.
+         */
+        R create(F factory, Map<String, Object> properties) throws FactoryException;
+    }
+
+    /**
      * Creates an arbitrary coordinate reference system from a code.
      * The returned object will typically be an instance of {@link GeographicCRS}, {@link ProjectedCRS},
      * {@link VerticalCRS} or {@link CompoundCRS}.
@@ -1424,7 +1486,6 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
      * @throws FactoryException if the object creation failed for some other reason.
      */
     @Override
-    @SuppressWarnings("try")    // Explicit call to close() on an auto-closeable resource.
     public synchronized CoordinateReferenceSystem createCoordinateReferenceSystem(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
@@ -1456,76 +1517,102 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final String  type       = getString   (code, result, 7);
                 /*
-                 * Note: Do not invoke `createProperties` now, even if we have all required information,
-                 *       because the `properties` map is going to overwritten by calls to `createDatum`, etc.
-                 *
+                 * Do not invoke `createProperties` now, even if we have all required information,
+                 * because the `properties` map will be overwritten by calls to `createDatum` and
+                 * similar methods. Instead, remember the constructor to invoke later.
+                 */
+                final FactoryCall<CRSFactory, CoordinateReferenceSystem> constructor;
+                /*
                  * The following switch statement should have a case for all "epsg_crs_kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
                  */
-                final CRSFactory crsFactory = owner.crsFactory;
-                final CoordinateReferenceSystem crs;
                 switch (type.toLowerCase(Locale.US)) {
-                    /* ----------------------------------------------------------------------
-                     *   GEOGRAPHIC CRS
+                    /* ──────────────────────────────────────────────────────────────────────
+                     *   GEOCENTRIC CRS
                      *
-                     *   NOTE: `createProperties` MUST be invoked after any call to another
-                     *         `createFoo` method. Consequently, do not factor out.
-                     * ---------------------------------------------------------------------- */
-                    case "geographic 2d":
-                    case "geographic 3d": {
-                        Integer csCode = getInteger(code, result, 8);
-                        if (replaceDeprecatedCS) {
-                            csCode = replaceDeprecatedCS(csCode);
+                     *   NOTE: all values must be extracted from the `ResultSet`
+                     *         before to invoke any `owner.createFoo(…)` method.
+                     * ────────────────────────────────────────────────────────────────────── */
+                    case "geocentric": {
+                        final CoordinateSystem cs;
+                        final GeodeticDatum datumOrEnsemble;
+                        ensureNoCycle(GeodeticCRS.class, epsg);
+                        try {
+                            String csCode    = getString(code, result, 8);
+                            String datumCode = getString(code, result, 9);
+                            cs = owner.createCoordinateSystem(csCode);  // Do not inline the `getString(…)` calls.
+                            datumOrEnsemble = owner.createGeodeticDatum(datumCode);
+                        } finally {
+                            endOfCycleCheck(GeodeticCRS.class, epsg);
                         }
-                        final EllipsoidalCS cs = owner.createEllipsoidalCS(csCode.toString());
-                        final String datumCode = getOptionalString(result, 9);
-                        GeodeticDatum datum;
-                        if (datumCode != null) {
-                            datum = owner.createGeodeticDatum(datumCode);
+                        final DatumEnsemble<GeodeticDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, GeodeticDatum.class);
+                        final GeodeticDatum datum = (ensemble == null) ? datumOrEnsemble : null;
+                        if (cs instanceof CartesianCS) {
+                            final var c = (CartesianCS) cs;
+                            constructor = (factory, metadata) -> factory.createGeodeticCRS(metadata, datum, ensemble, c);
+                        } else if (cs instanceof SphericalCS) {
+                            final var c = (SphericalCS) cs;
+                            constructor = (factory, metadata) -> factory.createGeodeticCRS(metadata, datum, ensemble, c);
                         } else {
-                            final String geoCode = getString(code, result, 10, 9);
-                            result.close();     // Must be closed before call to createGeographicCRS(String)
-                            ensureNoCycle(GeographicCRS.class, epsg);
-                            try {
-                                datum = owner.createGeographicCRS(geoCode).getDatum();
-                            } finally {
-                                endOfRecursion(GeographicCRS.class, epsg);
-                            }
+                            throw new FactoryDataException(error().getString(
+                                    Errors.Keys.IllegalCoordinateSystem_1, cs.getName()));
                         }
-                        DatumEnsemble<GeodeticDatum> ensemble = wasDatumEnsemble(datum, GeodeticDatum.class);
-                        if (ensemble != null) datum = null;
-                        crs = crsFactory.createGeographicCRS(createProperties("Coordinate Reference System",
-                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
                         break;
                     }
-                    /* ----------------------------------------------------------------------
+                    /* ──────────────────────────────────────────────────────────────────────
+                     *   GEOGRAPHIC CRS
+                     * ────────────────────────────────────────────────────────────────────── */
+                    case "geographic 2d":
+                    case "geographic 3d": {
+                        final EllipsoidalCS cs;
+                        final GeodeticDatum datumOrEnsemble;
+                        ensureNoCycle(GeographicCRS.class, epsg);
+                        try {
+                            Integer csCode    = getInteger(code,  result, 8);
+                            String  datumCode = getOptionalString(result, 9);
+                            if (datumCode == null) {
+                                String baseCode = getString(code, result, 10, 9);
+                                datumOrEnsemble = owner.createGeographicCRS(baseCode).getDatum();
+                            } else {
+                                datumOrEnsemble = owner.createGeodeticDatum(datumCode);
+                            }
+                            if (replaceDeprecatedCS) {
+                                csCode = replaceDeprecatedCS(csCode);
+                            }
+                            cs = owner.createEllipsoidalCS(csCode.toString());
+                        } finally {
+                            endOfCycleCheck(GeographicCRS.class, epsg);
+                        }
+                        final DatumEnsemble<GeodeticDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, GeodeticDatum.class);
+                        final GeodeticDatum datum = (ensemble == null) ? datumOrEnsemble : null;
+                        constructor = (factory, metadata) -> factory.createGeographicCRS(metadata, datum, ensemble, cs);
+                        break;
+                    }
+                    /* ──────────────────────────────────────────────────────────────────────
                      *   PROJECTED CRS
                      *
-                     *   NOTE: This method invokes itself indirectly, through createGeographicCRS.
-                     *         Consequently, we cannot use `result` anymore after this block.
-                     * ---------------------------------------------------------------------- */
+                     *   NOTE: This method may invoke itself for creating the base CRS,
+                     *         in which case the `ResultSet` will be closed. Therefore,
+                     *         all values must be extracted from the `ResultSet` before
+                     *         to invoke any `owner.createFoo(…)` method.
+                     * ────────────────────────────────────────────────────────────────────── */
                     case "projected": {
-                        final String csCode  = getString(code, result,  8);
-                        final String geoCode = getString(code, result, 10);
-                        final String opCode  = getString(code, result, 11);
-                        result.close();      // Must be closed before call to createFoo(String)
+                        final CartesianCS cs;
+                        final Conversion fromBase;
+                        final CoordinateReferenceSystem baseCRS;
                         ensureNoCycle(ProjectedCRS.class, epsg);
                         try {
-                            final CartesianCS cs = owner.createCartesianCS(csCode);
-                            final Conversion op;
+                            final String csCode   = getString(code, result,  8);
+                            final String baseCode = getString(code, result, 10);
+                            final String opCode   = getString(code, result, 11);
                             try {
-                                op = (Conversion) owner.createCoordinateOperation(opCode);
+                                fromBase = (Conversion) owner.createCoordinateOperation(opCode);
                             } catch (ClassCastException e) {
                                 // Should never happen in a well-formed EPSG database.
                                 // If happen anyway, the ClassCastException cause will give more hints than just the message.
                                 throw (NoSuchAuthorityCodeException) noSuchAuthorityCode(Conversion.class, opCode).initCause(e);
                             }
-                            final CoordinateReferenceSystem baseCRS;
-                            final boolean suspendParamChecks;
-                            if (!deprecated) {
-                                baseCRS = owner.createCoordinateReferenceSystem(geoCode);
-                                suspendParamChecks = true;
-                            } else {
+                            if (deprecated) {
                                 /*
                                  * If the ProjectedCRS is deprecated, one reason among others may be that it uses one of
                                  * the deprecated coordinate systems. Those deprecated CS used non-linear units like DMS.
@@ -1540,21 +1627,27 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                                 try {
                                     quiet = true;
                                     replaceDeprecatedCS = true;
-                                    baseCRS = createCoordinateReferenceSystem(geoCode);         // Do not cache that CRS.
+                                    baseCRS = createCoordinateReferenceSystem(baseCode);         // Do not cache that CRS.
                                 } finally {
                                     replaceDeprecatedCS = false;
                                     quiet = old;
                                 }
-                                /*
-                                 * The crsFactory method calls will indirectly create a parameterized MathTransform.
-                                 * Their constructor will try to verify the parameter validity. But some deprecated
-                                 * CRS had invalid parameter values (they were deprecated precisely for that reason).
-                                 * If and only if we are creating a deprecated CRS, temporarily suspend the parameter
-                                 * checks.
-                                 */
-                                suspendParamChecks = Semaphores.queryAndSet(Semaphores.SUSPEND_PARAMETER_CHECK);
-                                // Try block must be immediately after above line (do not insert any code between).
+                            } else {
+                                baseCRS = owner.createCoordinateReferenceSystem(baseCode);      // Use the cache.
                             }
+                            cs = owner.createCartesianCS(csCode);
+                        } finally {
+                            endOfCycleCheck(ProjectedCRS.class, epsg);
+                        }
+                        constructor = (factory, metadata) -> {
+                            /*
+                             * The crsFactory method calls will indirectly create a parameterized MathTransform.
+                             * Their constructor will try to verify the parameter validity. But some deprecated
+                             * CRS had invalid parameter values (they were deprecated precisely for that reason).
+                             * If and only if we are creating a deprecated CRS, temporarily suspend the parameter
+                             * checks.
+                             */
+                            final boolean old = !deprecated || Semaphores.queryAndSet(Semaphores.SUSPEND_PARAMETER_CHECK);
                             try {
                                 /*
                                  * For a ProjectedCRS, the baseCRS is always geodetic. So in theory we would not
@@ -1567,129 +1660,117 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                                  * We need to check if EPSG database 10+ has more specific information.
                                  * See https://issues.apache.org/jira/browse/SIS-518
                                  */
-                                @SuppressWarnings("LocalVariableHidesMemberVariable")
-                                final Map<String,Object> properties = createProperties("Coordinate Reference System",
-                                        epsg, name, null, area, scope, remarks, deprecated);
                                 if (baseCRS instanceof GeodeticCRS) {
-                                    crs = crsFactory.createProjectedCRS(properties, (GeodeticCRS) baseCRS, op, cs);
+                                    return factory.createProjectedCRS(metadata, (GeodeticCRS) baseCRS, fromBase, cs);
                                 } else {
-                                    crs = crsFactory.createDerivedCRS(properties, baseCRS, op, cs);
+                                    return factory.createDerivedCRS(metadata, baseCRS, fromBase, cs);
                                 }
                             } finally {
-                                Semaphores.clear(Semaphores.SUSPEND_PARAMETER_CHECK, suspendParamChecks);
+                                Semaphores.clear(Semaphores.SUSPEND_PARAMETER_CHECK, old);
                             }
-                        } finally {
-                            endOfRecursion(ProjectedCRS.class, epsg);
-                        }
+                        };
                         break;
                     }
-                    /* ----------------------------------------------------------------------
+                    /* ──────────────────────────────────────────────────────────────────────
                      *   VERTICAL CRS
-                     * ---------------------------------------------------------------------- */
+                     * ────────────────────────────────────────────────────────────────────── */
                     case "vertical": {
-                        VerticalCS    cs    = owner.createVerticalCS   (getString(code, result, 8));
-                        VerticalDatum datum = owner.createVerticalDatum(getString(code, result, 9));
-                        DatumEnsemble<VerticalDatum> ensemble = wasDatumEnsemble(datum, VerticalDatum.class);
-                        if (ensemble != null) datum = null;
-                        crs = crsFactory.createVerticalCRS(createProperties("Coordinate Reference System",
-                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
+                        final VerticalCS cs;
+                        final VerticalDatum datumOrEnsemble;
+                        ensureNoCycle(VerticalCRS.class, epsg);
+                        try {
+                            final String csCode    = getString(code, result, 8);
+                            final String datumCode = getString(code, result, 9);
+                            cs = owner.createVerticalCS(csCode);    // Do not inline the `getString(…)` calls.
+                            datumOrEnsemble = owner.createVerticalDatum(datumCode);
+                        } finally {
+                            endOfCycleCheck(VerticalCRS.class, epsg);
+                        }
+                        final DatumEnsemble<VerticalDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, VerticalDatum.class);
+                        final VerticalDatum datum = (ensemble == null) ? datumOrEnsemble : null;
+                        constructor = (factory, metadata) -> factory.createVerticalCRS(metadata, datum, ensemble, cs);
                         break;
                     }
-                    /* ----------------------------------------------------------------------
+                    /* ──────────────────────────────────────────────────────────────────────
                      *   TEMPORAL CRS
                      *
-                     *   NOTE : The original EPSG database does not define any temporal CRS.
-                     *          This block is a SIS-specific extension.
-                     * ---------------------------------------------------------------------- */
+                     *   NOTE : As of version 12, the EPSG database does not define temporal CRS.
+                     *          This block is a SIS─specific extension.
+                     * ────────────────────────────────────────────────────────────────────── */
                     case "time":
                     case "temporal": {
-                        TimeCS        cs    = owner.createTimeCS       (getString(code, result, 8));
-                        TemporalDatum datum = owner.createTemporalDatum(getString(code, result, 9));
-                        DatumEnsemble<TemporalDatum> ensemble = wasDatumEnsemble(datum, TemporalDatum.class);
-                        if (ensemble != null) datum = null;
-                        crs = crsFactory.createTemporalCRS(createProperties("Coordinate Reference System",
-                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
+                        final String csCode    = getString(code, result, 8);
+                        final String datumCode = getString(code, result, 9);
+                        final TimeCS cs = owner.createTimeCS(csCode);    // Do not inline the `getString(…)` calls.
+                        final TemporalDatum datumOrEnsemble = owner.createTemporalDatum(datumCode);
+                        final DatumEnsemble<TemporalDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, TemporalDatum.class);
+                        final TemporalDatum datum = (ensemble == null) ? datumOrEnsemble : null;
+                        constructor = (factory, metadata) -> factory.createTemporalCRS(metadata, datum, ensemble, cs);
                         break;
                     }
-                    /* ----------------------------------------------------------------------
+                    /* ──────────────────────────────────────────────────────────────────────
+                     *   ENGINEERING CRS
+                     * ────────────────────────────────────────────────────────────────────── */
+                    case "engineering": {
+                        final String csCode    = getString(code, result, 8);
+                        final String datumCode = getString(code, result, 9);
+                        final CoordinateSystem cs = owner.createCoordinateSystem(csCode);    // Do not inline the `getString(…)` calls.
+                        final EngineeringDatum datumOrEnsemble = owner.createEngineeringDatum(datumCode);
+                        final DatumEnsemble<EngineeringDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, EngineeringDatum.class);
+                        final EngineeringDatum datum = (ensemble == null) ? datumOrEnsemble : null;
+                        constructor = (factory, metadata) -> factory.createEngineeringCRS(metadata, datum, ensemble, cs);
+                        break;
+                    }
+                    /* ──────────────────────────────────────────────────────────────────────
+                     *   PARAMETRIC CRS
+                     * ────────────────────────────────────────────────────────────────────── */
+                    case "parametric": {
+                        final String csCode    = getString(code, result, 8);
+                        final String datumCode = getString(code, result, 9);
+                        final ParametricCS cs = owner.createParametricCS(csCode);    // Do not inline the `getString(…)` calls.
+                        final ParametricDatum datumOrEnsemble = owner.createParametricDatum(datumCode);
+                        final DatumEnsemble<ParametricDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, ParametricDatum.class);
+                        final ParametricDatum datum = (ensemble == null) ? datumOrEnsemble : null;
+                        constructor = (factory, metadata) -> factory.createParametricCRS(metadata, datum, ensemble, cs);
+                        break;
+                    }
+                    /* ──────────────────────────────────────────────────────────────────────
                      *   COMPOUND CRS
                      *
                      *   NOTE: This method invokes itself recursively.
                      *         Consequently, we cannot use `result` anymore.
-                     * ---------------------------------------------------------------------- */
+                     * ────────────────────────────────────────────────────────────────────── */
                     case "compound": {
                         final String code1 = getString(code, result, 12);
                         final String code2 = getString(code, result, 13);
-                        result.close();
-                        final CoordinateReferenceSystem crs1, crs2;
-                        ensureNoCycle(CompoundCRS.class, epsg);
-                        try {
-                            crs1 = owner.createCoordinateReferenceSystem(code1);
-                            crs2 = owner.createCoordinateReferenceSystem(code2);
-                        } finally {
-                            endOfRecursion(CompoundCRS.class, epsg);
-                        }
-                        // Note: Do not invoke `createProperties` sooner.
-                        crs  = crsFactory.createCompoundCRS(createProperties("Coordinate Reference System",
-                                epsg, name, null, area, scope, remarks, deprecated), crs1, crs2);
+                        final CoordinateReferenceSystem crs1 = owner.createCoordinateReferenceSystem(code1);
+                        final CoordinateReferenceSystem crs2 = owner.createCoordinateReferenceSystem(code2);
+                        constructor = (factory, metadata) -> factory.createCompoundCRS(metadata, crs1, crs2);
                         break;
                     }
-                    /* ----------------------------------------------------------------------
-                     *   GEOCENTRIC CRS
-                     * ---------------------------------------------------------------------- */
-                    case "geocentric": {
-                        CoordinateSystem cs = owner.createCoordinateSystem(getString(code, result, 8));
-                        GeodeticDatum datum = owner.createGeodeticDatum   (getString(code, result, 9));
-                        DatumEnsemble<GeodeticDatum> ensemble = wasDatumEnsemble(datum, GeodeticDatum.class);
-                        if (ensemble != null) datum = null;
-                        @SuppressWarnings("LocalVariableHidesMemberVariable")
-                        final Map<String,Object> properties = createProperties("Coordinate Reference System",
-                                epsg, name, null, area, scope, remarks, deprecated);
-                        if (cs instanceof CartesianCS) {
-                            crs = crsFactory.createGeodeticCRS(properties, datum, ensemble, (CartesianCS) cs);
-                        } else if (cs instanceof SphericalCS) {
-                            crs = crsFactory.createGeodeticCRS(properties, datum, ensemble, (SphericalCS) cs);
-                        } else {
-                            throw new FactoryDataException(error().getString(
-                                    Errors.Keys.IllegalCoordinateSystem_1, cs.getName()));
-                        }
-                        break;
-                    }
-                    /* ----------------------------------------------------------------------
-                     *   ENGINEERING CRS
-                     * ---------------------------------------------------------------------- */
-                    case "engineering": {
-                        CoordinateSystem cs    = owner.createCoordinateSystem(getString(code, result, 8));
-                        EngineeringDatum datum = owner.createEngineeringDatum(getString(code, result, 9));
-                        DatumEnsemble<EngineeringDatum> ensemble = wasDatumEnsemble(datum, EngineeringDatum.class);
-                        if (ensemble != null) datum = null;
-                        crs = crsFactory.createEngineeringCRS(createProperties("Coordinate Reference System",
-                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
-                        break;
-                    }
-                    /* ----------------------------------------------------------------------
-                     *   PARAMETRIC CRS
-                     * ---------------------------------------------------------------------- */
-                    case "parametric": {
-                        ParametricCS    cs    = owner.createParametricCS   (getString(code, result, 8));
-                        ParametricDatum datum = owner.createParametricDatum(getString(code, result, 9));
-                        DatumEnsemble<ParametricDatum> ensemble = wasDatumEnsemble(datum, ParametricDatum.class);
-                        if (ensemble != null) datum = null;
-                        crs = crsFactory.createParametricCRS(createProperties("Coordinate Reference System",
-                                epsg, name, null, area, scope, remarks, deprecated), datum, ensemble, cs);
-                        break;
-                    }
-                    /* ----------------------------------------------------------------------
+                    /* ──────────────────────────────────────────────────────────────────────
                      *   UNKNOWN CRS
-                     * ---------------------------------------------------------------------- */
+                     * ────────────────────────────────────────────────────────────────────── */
                     default: {
                         throw new FactoryDataException(error().getString(Errors.Keys.UnknownType_1, type));
                     }
                 }
-                returnValue = ensureSingleton(crs, returnValue, code);
-                if (result.isClosed()) {
-                    return returnValue;
+                /*
+                 * Map of properties should be populated only after we extracted all
+                 * information needed from the `ResultSet`, because it may be closed.
+                 */
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                final Map<String,Object> properties;
+                ensureNoCycle(CoordinateReferenceSystem.class, epsg);
+                try {
+                    properties = createProperties("Coordinate Reference System",
+                            epsg, name, null, area, scope, remarks, deprecated);
+                } finally {
+                    endOfCycleCheck(CoordinateReferenceSystem.class, epsg);
                 }
+                final CoordinateReferenceSystem crs = constructor.create(owner.crsFactory, properties);
+                returnValue = ensureSingleton(crs, returnValue, code);
+                if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateReferenceSystem.class, code, exception);
@@ -1709,7 +1790,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
      * The real type is resolved by inspection of the {@link #createDatum(String)} return value.
      *
      * <h4>Design restriction</h4>
-     * We cannot resolve the type with a private field which would be set by {@code #createDatumEnsemble(…)}
+     * We cannot resolve the type with a private field which would be set by {@link #createDatumEnsemble(String)}
      * because that method will not be invoked if the datum is fetched from the cache.
      *
      * @param  <D>         compile-time value of {@code memberType}.
@@ -1782,48 +1863,51 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final String   scope      = getOptionalString  (result,  9);
                 final String   remarks    = getOptionalString  (result, 10);
                 final boolean  deprecated = getOptionalBoolean (result, 11);
-                @SuppressWarnings("LocalVariableHidesMemberVariable")
-                Map<String,Object> properties = createProperties("Datum",
-                        epsg, name, null, area, scope, remarks, deprecated);
-                properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
-                properties.put(Datum.ANCHOR_EPOCH_KEY,      epoch);
-                properties.put(Datum.PUBLICATION_DATE_KEY,  publish);
-                properties.put(Datum.CONVENTIONAL_RS_KEY,   createConventionalRS(getOptionalInteger(result, 15)));
+                final Integer  convRSCode = getOptionalInteger (result, 15);
+                /*
+                 * Do not invoke `createProperties` now, even if we have all required information,
+                 * because the `properties` map will be overwritten by calls to `createEllipsoid`
+                 * and similar methods. Instead, remember the constructor to invoke later.
+                 */
+                final FactoryCall<DatumFactory, ? extends Datum> constructor;
+                BursaWolfParameters[] param = null;
                 /*
                  * The following switch statement should have a case for all "epsg_datum_kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
                  */
-                final DatumFactory datumFactory = owner.datumFactory;
-                final Datum datum;
                 switch (type.toLowerCase(Locale.US)) {
-                    /*
-                     * The "geodetic" case invokes createProperties(…) indirectly through calls to
-                     * createEllipsoid(String) and createPrimeMeridian(String), so we must protect
-                     * the properties map from changes.
-                     */
                     case "dynamic geodetic":
                     case "geodetic": {
-                        properties = new HashMap<>(properties);         // Protect from changes
-                        final Ellipsoid ellipsoid    = owner.createEllipsoid    (getString(code, result, 12));
-                        final PrimeMeridian meridian = owner.createPrimeMeridian(getString(code, result, 13));
-                        final BursaWolfParameters[] param = createBursaWolfParameters(meridian, epsg);
-                        if (param != null) {
-                            properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, param);
+                        final Ellipsoid ellipsoid;
+                        final PrimeMeridian meridian;
+                        ensureNoCycle(GeodeticDatum.class, epsg);
+                        try {
+                            String ellipsoidCode = getString(code, result, 12);
+                            String meridianCode  = getString(code, result, 13);
+                            ellipsoid = owner.createEllipsoid(ellipsoidCode);  // Do not inline the `getString(…)` calls.
+                            meridian  = owner.createPrimeMeridian(meridianCode);
+                            param     = createBursaWolfParameters(meridian, epsg);
+                        } finally {
+                            endOfCycleCheck(GeodeticDatum.class, epsg);
                         }
-                        if (dynamic != null) {
-                            datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian, dynamic);
-                        } else {
-                            datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
-                        }
+                        constructor = (factory, metadata) -> {
+                            if (dynamic != null) {
+                                return factory.createGeodeticDatum(metadata, ellipsoid, meridian, dynamic);
+                            } else {
+                                return factory.createGeodeticDatum(metadata, ellipsoid, meridian);
+                            }
+                        };
                         break;
                     }
                     case "vertical": {
                         final RealizationMethod method = getRealizationMethod(getOptionalInteger(result, 14));
-                        if (dynamic != null) {
-                            datum = datumFactory.createVerticalDatum(properties, method, dynamic);
-                        } else {
-                            datum = datumFactory.createVerticalDatum(properties, method);
-                        }
+                        constructor = (factory, metadata) -> {
+                            if (dynamic != null) {
+                                return factory.createVerticalDatum(metadata, method, dynamic);
+                            } else {
+                                return factory.createVerticalDatum(metadata, method);
+                            }
+                        };
                         break;
                     }
                     /*
@@ -1840,33 +1924,40 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         } catch (RuntimeException e) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate), e);
                         }
-                        datum = datumFactory.createTemporalDatum(properties, originDate);
+                        constructor = (factory, metadata) -> factory.createTemporalDatum(metadata, originDate);
                         break;
                     }
                     /*
-                     * Straightforward case.
+                     * Straightforward cases.
                      */
-                    case "engineering": {
-                        datum = datumFactory.createEngineeringDatum(properties);
-                        break;
-                    }
-                    case "parametric": {
-                        datum = datumFactory.createParametricDatum(properties);
-                        break;
-                    }
-                    case "ensemble": {
-                        properties = new HashMap<>(properties);         // Protect from changes
-                        datum = DefaultDatumEnsemble.castOrCopy(createDatumEnsemble(epsg, properties));
-                        break;
-                    }
-                    default: {
-                        throw new FactoryDataException(error().getString(Errors.Keys.UnknownType_1, type));
-                    }
+                    case "engineering": constructor = DatumFactory::createEngineeringDatum; break;
+                    case "parametric":  constructor = DatumFactory::createParametricDatum;  break;
+                    case "ensemble":    constructor = createDatumEnsemble(epsg); break;
+                    default: throw new FactoryDataException(error().getString(Errors.Keys.UnknownType_1, type));
                 }
+                /*
+                 * Map of properties should be populated only after we extracted all
+                 * information needed from the `ResultSet`, because it may be closed.
+                 */
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                final Map<String,Object> properties;
+                final IdentifiedObject conventionalRS;
+                ensureNoCycle(Datum.class, epsg);
+                try {
+                    conventionalRS = createConventionalRS(convRSCode);  // Must be before `createProperties(…)`.
+                    properties = createProperties("Datum", epsg, name, null, area, scope, remarks, deprecated);
+                } finally {
+                    endOfCycleCheck(Datum.class, epsg);
+                }
+                properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
+                properties.put(Datum.ANCHOR_EPOCH_KEY,      epoch);
+                properties.put(Datum.PUBLICATION_DATE_KEY,  publish);
+                properties.put(Datum.CONVENTIONAL_RS_KEY, conventionalRS);
+                properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, param);
+                properties.values().removeIf(Objects::isNull);
+                final Datum datum = constructor.create(owner.datumFactory, properties);
                 returnValue = ensureSingleton(datum, returnValue, code);
-                if (result.isClosed()) {
-                    break;                  // Because of the recursive call done by createBursaWolfParameters(…).
-                }
+                if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
             throw databaseFailure(Datum.class, code, exception);
@@ -1878,19 +1969,20 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     }
 
     /**
-     * Creates an arbitrary datum ensemble from a code.
+     * Creates an arbitrary datum ensemble from a code. The datum ensemble is returned as a lambda function
+     * because the metadata need to be provided by the caller, but only after this method fetched the members.
      *
      * @param  code        value allocated by EPSG.
      * @param  properties  properties to assign to the datum ensemble.
-     * @return the datum ensemble for the given code, or {@code null} if not found.
+     * @return provider of the datum ensemble for the given code.
      *
      * @see #createDatum(String)
      * @see #createDatumEnsemble(String)
      */
-    private DatumEnsemble<?> createDatumEnsemble(final Integer code, final Map<String,Object> properties)
+    private FactoryCall<DatumFactory, DefaultDatumEnsemble<?>> createDatumEnsemble(final Integer code)
             throws SQLException, FactoryException
     {
-        double accuracy = Double.NaN;
+        double max = Double.NaN;
         try (ResultSet result = executeQuery("DatumEnsemble",
                 "SELECT ENSEMBLE_ACCURACY" +
                 " FROM \"DatumEnsemble\"" +
@@ -1899,11 +1991,12 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             // Should have exactly one value. The loop is a paranoiac safety.
             while (result.next()) {
                 final double value = getDouble(code, result, 1);
-                if (Double.isNaN(accuracy) || value > accuracy) {
-                    accuracy = value;
+                if (Double.isNaN(max) || value > max) {
+                    max = value;
                 }
             }
         }
+        final var accuracy = PositionalAccuracyConstant.ensemble(max);
         final var members = new ArrayList<Datum>();
         try (ResultSet result = executeQuery("DatumEnsembleMember",
                 "SELECT DATUM_CODE" +
@@ -1915,7 +2008,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 members.add(owner.createDatum(getString(code, result, 1)));
             }
         }
-        return owner.datumFactory.createDatumEnsemble(properties, members, PositionalAccuracyConstant.ensemble(accuracy));
+        return (factory, metadata) -> DefaultDatumEnsemble.castOrCopy(factory.createDatumEnsemble(metadata, members, accuracy));
     }
 
     /**
@@ -1946,10 +2039,15 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     final String  name       = getString    (code, result, 2);
                     final String  remarks    = getOptionalString  (result, 3);
                     final boolean deprecated = getOptionalBoolean (result, 4);
+                    /*
+                     * Map of properties should be populated only after we extracted all
+                     * information needed from the `ResultSet`, because it may be closed.
+                     */
                     @SuppressWarnings("LocalVariableHidesMemberVariable")
                     Map<String,Object> properties = createProperties("ConventionalRS",
                             epsg, name, null, null, null, remarks, deprecated);
                     returnValue = ensureSingleton(new AbstractIdentifiedObject(properties), returnValue, code);
+                    if (result.isClosed()) break;   // See createProperties(…) for explanation.
                 }
             }
             localCache.put(cacheKey, returnValue);
@@ -2031,13 +2129,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         int count = 0;
         for (int i=0; i<size; i++) {
             final BursaWolfInfo info = bwInfos.get(i);
-            final GeodeticDatum datum;
-            ensureNoCycle(BursaWolfParameters.class, code);    // See comment at the begining of this method.
-            try {
-                datum = owner.createGeodeticDatum(String.valueOf(info.target));
-            } finally {
-                endOfRecursion(BursaWolfParameters.class, code);
-            }
+            final GeodeticDatum datum = owner.createGeodeticDatum(String.valueOf(info.target));
             /*
              * Accept only Bursa-Wolf parameters between datum that use the same prime meridian.
              * This is for avoiding ambiguity about whether longitude rotation should be applied
@@ -2131,16 +2223,21 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final String  remarks           = getOptionalString (result, 7);
                 final boolean deprecated        = getOptionalBoolean(result, 8);
                 final Unit<Length> unit         = owner.createUnit(unitCode).asType(Length.class);
+                final boolean useSemiMinor      = Double.isNaN(inverseFlattening);
+                if (useSemiMinor && Double.isNaN(semiMinorAxis)) {
+                    // Both are null, which is not allowed.
+                    final String column = result.getMetaData().getColumnName(3);
+                    throw new FactoryDataException(error().getString(Errors.Keys.NullValueInTable_3, code, column));
+                }
+                /*
+                 * Map of properties should be populated only after we extracted all
+                 * information needed from the `ResultSet`, because it may be closed.
+                 */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties("Ellipsoid",
                         epsg, name, null, null, null, remarks, deprecated);
                 final Ellipsoid ellipsoid;
-                if (Double.isNaN(inverseFlattening)) {
-                    if (Double.isNaN(semiMinorAxis)) {
-                        // Both are null, which is not allowed.
-                        final String column = result.getMetaData().getColumnName(3);
-                        throw new FactoryDataException(error().getString(Errors.Keys.NullValueInTable_3, code, column));
-                    }
+                if (useSemiMinor) {
                     // We only have semiMinorAxis defined. It is OK
                     ellipsoid = owner.datumFactory.createEllipsoid(properties, semiMajorAxis, semiMinorAxis, unit);
                 } else {
@@ -2156,6 +2253,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     ellipsoid = owner.datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
                 }
                 returnValue = ensureSingleton(ellipsoid, returnValue, code);
+                if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
             throw databaseFailure(Ellipsoid.class, code, exception);
@@ -2214,10 +2312,15 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final String  remarks    = getOptionalString (result, 5);
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final Unit<Angle> unit = owner.createUnit(unitCode).asType(Angle.class);
+                /*
+                 * Map of properties should be populated only after we extracted all
+                 * information needed from the `ResultSet`, because it may be closed.
+                 */
                 final PrimeMeridian primeMeridian = owner.datumFactory.createPrimeMeridian(
                         createProperties("Prime Meridian", epsg, name, null, null, null, remarks, deprecated),
                         longitude, unit);
                 returnValue = ensureSingleton(primeMeridian, returnValue, code);
+                if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
             throw databaseFailure(PrimeMeridian.class, code, exception);
@@ -2264,24 +2367,34 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ArgumentChecks.ensureNonNull("code", code);
-        Extent returnValue = null;
+        DefaultExtent returnValue = null;
+        final var deferred = new ArrayList<Map.Entry<DefaultVerticalExtent, Integer>>();
         try (ResultSet result = executeQuery("Extent", "EXTENT_CODE", "EXTENT_NAME",
                 "SELECT EXTENT_DESCRIPTION," +
                       " BBOX_SOUTH_BOUND_LAT," +
                       " BBOX_NORTH_BOUND_LAT," +
                       " BBOX_WEST_BOUND_LON," +
-                      " BBOX_EAST_BOUND_LON" +
+                      " BBOX_EAST_BOUND_LON," +
+                      " VERTICAL_EXTENT_MIN," +
+                      " VERTICAL_EXTENT_MAX," +
+                      " VERTICAL_EXTENT_CRS_CODE," +
+                      " TEMPORAL_EXTENT_BEGIN," +
+                      " TEMPORAL_EXTENT_END" +
                 " FROM \"Extent\"" +
                 " WHERE EXTENT_CODE = ?", code))
         {
             while (result.next()) {
                 final String description = getOptionalString(result, 1);
-                double ymin = getOptionalDouble(result, 2);
-                double ymax = getOptionalDouble(result, 3);
-                double xmin = getOptionalDouble(result, 4);
-                double xmax = getOptionalDouble(result, 5);
+                double   ymin = getOptionalDouble  (result,  2);
+                double   ymax = getOptionalDouble  (result,  3);
+                double   xmin = getOptionalDouble  (result,  4);
+                double   xmax = getOptionalDouble  (result,  5);
+                double   zmin = getOptionalDouble  (result,  6);
+                double   zmax = getOptionalDouble  (result,  7);
+                Temporal tmin = getOptionalTemporal(result,  9, "createExtent");
+                Temporal tmax = getOptionalTemporal(result, 10, "createExtent");
                 DefaultGeographicBoundingBox bbox = null;
-                if (!Double.isNaN(ymin) || !Double.isNaN(ymax) || !Double.isNaN(xmin) || !Double.isNaN(xmax)) {
+                if (!(Double.isNaN(ymin) && Double.isNaN(ymax) && Double.isNaN(xmin) && Double.isNaN(xmax))) {
                     /*
                      * Fix an error found in EPSG:3790 New Zealand - South Island - Mount Pleasant mc
                      * for older database (this error is fixed in EPSG database 8.2).
@@ -2296,18 +2409,37 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     }
                     bbox = new DefaultGeographicBoundingBox(xmin, xmax, ymin, ymax);
                 }
-                if (description != null || bbox != null) {
-                    var extent = new DefaultExtent(description, bbox, null, null);
-                    extent.transitionTo(DefaultExtent.State.FINAL);
+                DefaultVerticalExtent vertical = null;
+                if (!(Double.isNaN(zmin) && Double.isNaN(zmax))) {
+                    vertical = new DefaultVerticalExtent(zmin, zmax, null);
+                    Integer crs = getOptionalInteger(result, 8);
+                    if (crs != null && !safetyGuard.containsKey(crs)) {
+                        deferred.add(Map.entry(vertical, crs));
+                    }
+                }
+                DefaultTemporalExtent temporal = null;
+                if (tmin != null || tmax != null) {
+                    temporal = new DefaultTemporalExtent(tmin, tmax);
+                }
+                var extent = new DefaultExtent(description, bbox, vertical, temporal);
+                if (!extent.isEmpty()) {
                     returnValue = ensureSingleton(extent, returnValue, code);
                 }
             }
         } catch (SQLException exception) {
             throw databaseFailure(Extent.class, code, exception);
         }
+        /*
+         * Resolve CRS only after we finished the loop, because there is a risk of recursive call,
+         * which would have closed the `ResultSet` for creating a new one.
+         */
+        for (Map.Entry<DefaultVerticalExtent, Integer> entry : deferred) {
+            entry.getKey().setVerticalCRS(owner.createVerticalCRS(entry.getValue().toString()));
+        }
         if (returnValue == null) {
             throw noSuchAuthorityCode(Extent.class, code);
         }
+        returnValue.transitionTo(DefaultExtent.State.FINAL);
         return returnValue;
     }
 
@@ -2363,6 +2495,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final String  remarks    = getOptionalString (result, 5);
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
+                /*
+                 * Map of properties should be populated only after we extracted all
+                 * information needed from the `ResultSet`, because it may be closed.
+                 */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties("Coordinate System",
                         epsg, name, null, null, null, remarks, deprecated);   // Must be after axes.
@@ -2447,6 +2583,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     throw new FactoryDataException(resources().getString(Resources.Keys.UnexpectedDimensionForCS_1, type));
                 }
                 returnValue = ensureSingleton(cs, returnValue, code);
+                if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateSystem.class, code, exception);
@@ -2546,10 +2683,15 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     throw new FactoryDataException(exception.getLocalizedMessage(), exception);
                 }
                 final AxisName an = getAxisName(nameCode);
+                /*
+                 * Map of properties should be populated only after we extracted all
+                 * information needed from the `ResultSet`, because it may be closed.
+                 */
                 final CoordinateSystemAxis axis = owner.csFactory.createCoordinateSystemAxis(
                         createProperties("Coordinate Axis", epsg, an.name, an.description, null, null, an.remarks, false),
                         abbreviation, direction, owner.createUnit(unit));
                 returnValue = ensureSingleton(axis, returnValue, code);
+                if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateSystemAxis.class, code, exception);
@@ -2836,12 +2978,17 @@ next:                   while (r.next()) {
                     case 1:  valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
                                     Double.POSITIVE_INFINITY, false, CollectionsExt.first(units)); break;
                 }
+                /*
+                 * Map of properties should be populated only after we extracted all
+                 * information needed from the `ResultSet`, because it may be closed.
+                 */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties("Coordinate_Operation Parameter",
                         epsg, name, null, null, null, isReversible, deprecated);
                 properties.put(Identifier.DESCRIPTION_KEY, description);
                 final var descriptor = new DefaultParameterDescriptor<>(properties, 1, 1, type, valueDomain, null, null);
                 returnValue = ensureSingleton(descriptor, returnValue, code);
+                if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
             throw databaseFailure(OperationMethod.class, code, exception);
@@ -3000,6 +3147,10 @@ next:                   while (r.next()) {
                 final String  remarks    = getOptionalString (result, 3);
                 final boolean deprecated = getOptionalBoolean(result, 4);
                 final ParameterDescriptor<?>[] descriptors = createParameterDescriptors(epsg);
+                /*
+                 * Map of properties should be populated only after we extracted all
+                 * information needed from the `ResultSet`, because it may be closed.
+                 */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties("Coordinate_Operation Method",
                         epsg, name, null, null, null, remarks, deprecated);
@@ -3009,6 +3160,7 @@ next:                   while (r.next()) {
                 final var params = new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors);
                 final var method = new DefaultOperationMethod(properties, params);
                 returnValue = ensureSingleton(method, returnValue, code);
+                if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
             throw databaseFailure(OperationMethod.class, code, exception);
@@ -3041,7 +3193,6 @@ next:                   while (r.next()) {
      * @throws FactoryException if the object creation failed for some other reason.
      */
     @Override
-    @SuppressWarnings("try")    // Explicit call to close() on an auto-closeable resource.
     public synchronized CoordinateOperation createCoordinateOperation(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
@@ -3152,10 +3303,9 @@ next:                   while (r.next()) {
                         operation = copFactory.createDefiningConversion(opProperties, method, parameters);
                     } else if (isConcatenated) {
                         /*
-                         * Concatenated operation: we need to close the current result set, because
+                         * Concatenated operation: the current `ResulSet` may be closed, because
                          * we are going to invoke this method recursively in the following lines.
                          */
-                        result.close();
                         opProperties = new HashMap<>(opProperties);         // Because this class uses a shared map.
                         final var codes = new ArrayList<String>();
                         try (ResultSet cr = executeQuery("Coordinate_Operation Path",
@@ -3175,7 +3325,7 @@ next:                   while (r.next()) {
                                 operations[i] = owner.createCoordinateOperation(codes.get(i));
                             }
                         } finally {
-                            endOfRecursion(CoordinateOperation.class, epsg);
+                            endOfCycleCheck(CoordinateOperation.class, epsg);
                         }
                         return copFactory.createConcatenatedOperation(opProperties, operations);
                     } else {
@@ -3229,9 +3379,7 @@ next:                   while (r.next()) {
                                 .createSingleOperation(opProperties, sourceCRS, targetCRS, null, method, mt);
                     }
                     returnValue = ensureSingleton(operation, returnValue, code);
-                    if (result.isClosed()) {
-                        return returnValue;
-                    }
+                    if (result.isClosed()) break;   // See createProperties(…) for explanation.
                 }
             }
         } catch (SQLException exception) {

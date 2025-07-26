@@ -575,7 +575,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      */
     @Override
     public void replaceAll(final BiFunction<? super K, ? super V, ? extends V> remapping) {
-        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        final var adapter = new ReplaceAdapter(remapping);
         map.replaceAll(adapter);
         Deferred.notifyChanges(this, adapter.changes);
     }
@@ -596,7 +596,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      */
     @Override
     public V computeIfPresent(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
-        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        final var adapter = new ReplaceAdapter(remapping);
         final Object value = map.computeIfPresent(key, adapter);
         Deferred.notifyChanges(this, adapter.changes);
         return valueOf(value);
@@ -620,7 +620,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      */
     @Override
     public V compute(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
-        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        final var adapter = new ReplaceAdapter(remapping);
         final Object value = map.compute(key, adapter);
         Deferred.notifyChanges(this, adapter.changes);
         return valueOf(value);
@@ -811,7 +811,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         }
         if (value instanceof Reference<?>) {
             @SuppressWarnings("unchecked")
-            final Reference<V> ref = (Reference<V>) value;
+            final var ref = (Reference<V>) value;
             final V result = ref.get();
             if (result != null && map.replace(key, ref, result)) {
                 ref.clear();                        // Prevents the reference from being enqueued.
@@ -896,7 +896,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
                     break;
                 }
                 @SuppressWarnings("unchecked")
-                final Reference<V> ref = (Reference<V>) value;
+                final var ref = (Reference<V>) value;
                 final V result = ref.get();
                 if (result != null) {
                     /*
@@ -1094,6 +1094,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
          * This method should be invoked only from another thread than the one doing the computation.
          */
         @Override
+        @SuppressWarnings("LockAcquiredButNotSafelyReleased")
         public V get() {
             if (lock.isHeldByCurrentThread()) {
                 return null;

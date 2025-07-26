@@ -376,13 +376,12 @@ public class SQLTranslator implements UnaryOperator<String> {
         final var missingColumns   = new HashMap<String, String>();
         final var mayRenameColumns = new HashMap<String, String>();
         final var brokenTargetCols = new HashSet<String>();
-        boolean isExtentTableFound = false;
         tableIndex = 0;
 check:  for (;;) {
             String table;
             boolean isUsage  = false;   // "Usage"  is a new table in EPSG version 19.
             boolean isArea   = false;   // "Area"   was a table name used in EPSG version 9.
-            boolean isExtent = false;   // "Extent" is the new name for "Area" in EPSG version 10.
+            boolean mayReuse = false;   // If true, do not clear the maps if the table was not found.
             switch (tableIndex++) {
                 case 0: {
                     table = "Coordinate Axis";
@@ -396,27 +395,34 @@ check:  for (;;) {
                 }
                 case 2: {
                     table = "Datum";
-                    missingColumns.put("ANCHOR_EPOCH",            "DOUBLE PRECISION");
-                    missingColumns.put("FRAME_REFERENCE_EPOCH",   "DOUBLE PRECISION");
-                    missingColumns.put("REALIZATION_METHOD_CODE", "INTEGER");
-                    missingColumns.put("CONVENTIONAL_RS_CODE",    "INTEGER");
-                    mayRenameColumns.put("PUBLICATION_DATE", "REALIZATION_EPOCH");   // EPSG version 10 → version 9.
+                    mayRenameColumns.put("PUBLICATION_DATE",        "REALIZATION_EPOCH"); // EPSG version 10 → version 9.
+                    missingColumns  .put("ANCHOR_EPOCH",            "DOUBLE PRECISION");
+                    missingColumns  .put("FRAME_REFERENCE_EPOCH",   "DOUBLE PRECISION");
+                    missingColumns  .put("REALIZATION_METHOD_CODE", "INTEGER");
+                    missingColumns  .put("CONVENTIONAL_RS_CODE",    "INTEGER");
                     break;
                 }
-                case 4:
-                    if (isExtentTableFound) continue;
-                    isArea = true;
-                    // Fallthrough for testing "Area" if and only if "Extent" has not been found.
                 case 3: {
-                    isExtent = !isArea;
-                    table = isExtent ? "Extent" : "Area";                            // "Area" in 9, "Extent" in 10.
-                    mayRenameColumns.put("EXTENT_CODE",          "AREA_CODE");       // EPSG version 10 → version 9.
-                    mayRenameColumns.put("EXTENT_NAME",          "AREA_NAME");
-                    mayRenameColumns.put("EXTENT_DESCRIPTION",   "AREA_OF_USE");
-                    mayRenameColumns.put("BBOX_SOUTH_BOUND_LAT", "AREA_SOUTH_BOUND_LAT");
-                    mayRenameColumns.put("BBOX_NORTH_BOUND_LAT", "AREA_NORTH_BOUND_LAT");
-                    mayRenameColumns.put("BBOX_WEST_BOUND_LON",  "AREA_WEST_BOUND_LON");
-                    mayRenameColumns.put("BBOX_EAST_BOUND_LON",  "AREA_EAST_BOUND_LON");
+                    table = "Extent";                                                // "Area" in 9, "Extent" in 10.
+                    mayRenameColumns.put("EXTENT_CODE",              "AREA_CODE");   // EPSG version 10 → version 9.
+                    mayRenameColumns.put("EXTENT_NAME",              "AREA_NAME");
+                    mayRenameColumns.put("EXTENT_DESCRIPTION",       "AREA_OF_USE");
+                    mayRenameColumns.put("BBOX_SOUTH_BOUND_LAT",     "AREA_SOUTH_BOUND_LAT");
+                    mayRenameColumns.put("BBOX_NORTH_BOUND_LAT",     "AREA_NORTH_BOUND_LAT");
+                    mayRenameColumns.put("BBOX_WEST_BOUND_LON",      "AREA_WEST_BOUND_LON");
+                    mayRenameColumns.put("BBOX_EAST_BOUND_LON",      "AREA_EAST_BOUND_LON");
+                    missingColumns  .put("VERTICAL_EXTENT_MIN",      "DOUBLE PRECISION");
+                    missingColumns  .put("VERTICAL_EXTENT_MAX",      "DOUBLE PRECISION");
+                    missingColumns  .put("VERTICAL_EXTENT_CRS_CODE", "INTEGER");
+                    missingColumns  .put("TEMPORAL_EXTENT_BEGIN",    "VARCHAR(254)");
+                    missingColumns  .put("TEMPORAL_EXTENT_END",      "VARCHAR(254)");
+                    mayReuse = true;
+                    break;
+                }
+                case 4: {
+                    if (mayRenameColumns.isEmpty()) continue;   // "Extent" table has been found.
+                    isArea = true;
+                    table = "Area";
                     break;
                 }
                 case 5: {
@@ -425,7 +431,7 @@ check:  for (;;) {
                     break;
                 }
                 case 6: {
-                    if (isUsageTableFound) continue;    // The check of `ENUMERATION_COLUMN` is already done.
+                    if (isUsageTableFound) break check; // The check of `ENUMERATION_COLUMN` is already done.
                     table = "Alias";                    // For checking the type of the `ENUMERATION_COLUMN`.
                     break;
                 }
@@ -464,18 +470,20 @@ check:  for (;;) {
             }
             if (isTableFound) {
                 isUsageTableFound  |= isUsage;
-                isExtentTableFound |= isExtent;
+                if (isArea) {
+                    tableRewording.put("Extent", "Area");
+                }
                 missingColumns.forEach((column, type) -> {
                     columnRenaming.put(column, "CAST(NULL AS " + type + ") AS " + column);
                 });
                 mayRenameColumns.values().removeAll(brokenTargetCols);  // For renaming only when the old name has been found.
                 columnRenaming.putAll(mayRenameColumns);
+                mayReuse = false;
+            }
+            if (!mayReuse) {
                 mayRenameColumns.clear();
                 brokenTargetCols.clear();
                 missingColumns.clear();
-                if (isArea) {
-                    tableRewording.put("Extent", "Area");
-                }
             }
         }
         tableRewording = Map.copyOf(tableRewording);
