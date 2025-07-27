@@ -153,7 +153,7 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
                 return MetadataFormat.INSTANCE.format(this);
             }
         } finally {
-            Semaphores.clear(Semaphores.NULL_COLLECTION, allowNull);
+            Semaphores.clearIfFalse(Semaphores.NULL_COLLECTION, allowNull);
         }
     }
 

@@ -266,7 +266,7 @@ final class Reader extends IOBase {
         nextIFD = 0;               // Prevent trying other IFD if we fail to read this one.
         /*
          * Design note: we parse the Image File Directory entry now because even if we were
-         * not interrested in that IFD, we need to go anyway after its last record in order
+         * not interested in that IFD, we need to go anyway after its last record in order
          * to get the pointer to the next IFD.
          */
         final int offsetSize = Integer.BYTES << intSizeExpansion;

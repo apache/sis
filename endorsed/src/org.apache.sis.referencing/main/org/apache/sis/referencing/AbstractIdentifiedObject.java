@@ -1169,7 +1169,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                      * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
                      * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
                      * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
-                     * who are not interrested in XML) and it may actually be less efficient for the vast
+                     * who are not interested in XML) and it may actually be less efficient for the vast
                      * majority of cases where there is less than 3 aliases.
                      */
                     final int size = alias.size();

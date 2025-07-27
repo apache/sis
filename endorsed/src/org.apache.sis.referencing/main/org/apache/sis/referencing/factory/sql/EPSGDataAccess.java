@@ -1666,7 +1666,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                                     return factory.createDerivedCRS(metadata, baseCRS, fromBase, cs);
                                 }
                             } finally {
-                                Semaphores.clear(Semaphores.SUSPEND_PARAMETER_CHECK, old);
+                                Semaphores.clearIfFalse(Semaphores.SUSPEND_PARAMETER_CHECK, old);
                             }
                         };
                         break;

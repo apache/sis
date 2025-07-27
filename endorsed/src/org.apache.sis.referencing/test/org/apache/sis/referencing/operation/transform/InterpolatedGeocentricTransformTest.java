@@ -79,7 +79,7 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
      */
     @Test
     public void testForwardTransform() throws FactoryException, TransformException {
-        createGeodeticTransformation();   // Create the inverse of the transform we are interrested in.
+        createGeodeticTransformation();   // Create the inverse of the transform we are interested in.
         transform = transform.inverse();
         isInverseTransformSupported = false;
         verifyTransform(FranceGeocentricInterpolationTest.samplePoint(3),

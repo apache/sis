@@ -252,7 +252,7 @@ public final class DecimalFunctions extends Static {
         double cs = Math.scalb(pow10(e10 - 1), e + PRECISION);    // Range: (0.1 × 2^56  …  2^56) exclusive.
         /*
          * This is where magic happen: the following multiplication overflow (we would need a 128 bits integer
-         * for representing it), but we don't care because we are interrested only in the fraction digits (the
+         * for representing it), but we don't care because we are interested only in the fraction digits (the
          * 56 lower bits because of the scaling discussed in previous comment). In integer arithmetic, the low
          * bits are always valid even if the multiplication overflow.
          */
