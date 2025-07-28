@@ -248,13 +248,18 @@ public class HyperRectangleWriter {
                 regionLower[0] = Math.floorDiv(regionLower[0] * pixelBitStride, dataSize);
                 regionUpper[0] = JDK18.ceilDiv(regionUpper[0] * pixelBitStride, dataSize);
             }
-            var subset = new Region(sourceSize, regionLower, regionUpper, new long[] {1,1});
+            final var subset = new Region(sourceSize, regionLower, regionUpper, new long[] {1,1});
             length = subset.length;
-            if (bandOffsets == null || (bandOffsets.length == pixelStride && ArraysExt.isRange(0, bandOffsets))) {
-                return new HyperRectangleWriter(subset);
-            } else {
-                return new SubsampledRectangleWriter(subset, bandOffsets, pixelStride);
+            if (bandOffsets != null) {
+                final int numBands = bandOffsets.length;
+                if (numBands != pixelStride || !ArraysExt.isRange(0, bandOffsets)) {
+                    if (numBands != 1) {
+                        ArgumentChecks.ensureBetween("pixelStride", numBands, scanlineStride, pixelStride);
+                    }
+                    return new SubsampledRectangleWriter(subset, bandOffsets, pixelStride);
+                }
             }
+            return new HyperRectangleWriter(subset);
         }
 
         /**

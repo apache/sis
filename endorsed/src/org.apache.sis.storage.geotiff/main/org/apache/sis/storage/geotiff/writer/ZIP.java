@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.zip.Deflater;
 import org.apache.sis.io.stream.ChannelDataOutput;
+import org.apache.sis.storage.geotiff.base.Resources;
 
 
 /**
@@ -74,15 +75,34 @@ final class ZIP extends CompressionChannel {
          * But providing this information in advance may hopefully help the deflater. The condition
          * can be true when raster data are sent directly to this compressor, without `this.buffer`.
          */
-        if (deflater.getBytesRead() >= length - remaining) {
+        final long numBytes = deflater.getBytesRead() + remaining;
+        if (numBytes >= length) {
+            /*
+             * To be strict, we shoud raise an exception if `deflater.finished()` is true.
+             * But it is safer to do this check indirectly in the following loop instead.
+             */
             deflater.finish();
         }
         while (remaining > 0) {
             assert !deflater.needsInput();
             output.ensureBufferAccepts(Math.min(remaining, target.capacity()));
             target.limit(target.capacity());        // Allow the use of all available space.
-            deflater.deflate(target);
-            target.limit(target.position());        // Bytes after the position are not valid.
+            try {
+                if (deflater.deflate(target) == 0) {
+                    /*
+                     * According Javadoc, it may occur if `deflater.needsInput()` needs to be checked.
+                     * But we already know that its value should be `false`. The other possibility is
+                     * that `deflater.finished()` is true. The latter may happen if we determined that
+                     * a call to this `write(…)` should be the last one, but this method is nevertheless
+                     * invoked again. It may happen when there is inconsistency in the computation using
+                     * pixel stride and scanline stride, sometime because of malformed sample model.
+                     */
+                    throw new IOException(Resources.forLocale(null)
+                            .getString(Resources.Keys.UnexpectedTileLength_2, length, numBytes));
+                }
+            } finally {
+                target.limit(target.position());        // Bytes after the position are not valid.
+            }
             remaining = source.remaining();
         }
         return source.position() - start;   // Number from caller's perspective (it doesn't know about compression).
