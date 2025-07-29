@@ -70,9 +70,7 @@ import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
-import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
@@ -100,9 +98,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -300,7 +296,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Recursion may theoretically happen during the creation of the following objects:
      *
      * <ul>
-     *   <li>Bursa-Wolf parameters, as they can be created with a datum and reference another datum.</li>
      *   <li>projected <abbr>CRS</abbr> if the database contains cycles (it would be an error in the database).</li>
      *   <li>Compound <abbr>CRS</abbr> if the database contains cycles (it would be an error in the database).</li>
      *   <li>Coordinate operations if the database contains cycles (it would be an error in the database).</li>
@@ -1870,7 +1865,6 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  * and similar methods. Instead, remember the constructor to invoke later.
                  */
                 final FactoryCall<DatumFactory, ? extends Datum> constructor;
-                BursaWolfParameters[] param = null;
                 /*
                  * The following switch statement should have a case for all "epsg_datum_kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
@@ -1886,7 +1880,6 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                             String meridianCode  = getString(code, result, 13);
                             ellipsoid = owner.createEllipsoid(ellipsoidCode);  // Do not inline the `getString(…)` calls.
                             meridian  = owner.createPrimeMeridian(meridianCode);
-                            param     = createBursaWolfParameters(meridian, epsg);
                         } finally {
                             endOfCycleCheck(GeodeticDatum.class, epsg);
                         }
@@ -1953,7 +1946,6 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 properties.put(Datum.ANCHOR_EPOCH_KEY,      epoch);
                 properties.put(Datum.PUBLICATION_DATE_KEY,  publish);
                 properties.put(Datum.CONVENTIONAL_RS_KEY, conventionalRS);
-                properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, param);
                 properties.values().removeIf(Objects::isNull);
                 final Datum datum = constructor.create(owner.datumFactory, properties);
                 returnValue = ensureSingleton(datum, returnValue, code);
@@ -2053,117 +2045,6 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             localCache.put(cacheKey, returnValue);
         }
         return returnValue;
-    }
-
-    /**
-     * Returns Bursa-Wolf parameters for a geodetic reference frame.
-     * If the specified datum has no conversion information, then this method returns {@code null}.
-     *
-     * <p>This method is for compatibility with <i>Well Known Text</i> (WKT) version 1 formatting.
-     * That legacy format had a {@code TOWGS84} element which needs the information provided by this method.
-     * Note that {@code TOWGS84} is a deprecated element as of WKT 2 (ISO 19162).</p>
-     *
-     * @param  meridian  the source datum prime meridian, used for discarding any target datum using a different meridian.
-     * @param  code      the EPSG code of the source {@link GeodeticDatum}.
-     * @return an array of Bursa-Wolf parameters, or {@code null}.
-     */
-    private BursaWolfParameters[] createBursaWolfParameters(final PrimeMeridian meridian, final Integer code)
-            throws SQLException, FactoryException
-    {
-        /*
-         * We do not provide TOWGS84 information for WGS84 itself or for any other datum on our list of target datum,
-         * in order to avoid infinite recursion. The `ensureNonRecursive` call is an extra safety check which should
-         * never fail, unless TARGET_CRS and TARGET_DATUM values do not agree with database content.
-         */
-        if (code == BursaWolfInfo.TARGET_DATUM) {
-            return null;
-        }
-        final var bwInfos = new ArrayList<BursaWolfInfo>();
-        try (ResultSet result = executeQuery("BursaWolfParametersSet",
-                "SELECT COORD_OP_CODE," +
-                      " COORD_OP_METHOD_CODE," +
-                      " TARGET_CRS_CODE," +
-                      " AREA_OF_USE_CODE" +      // Deprecated since EPSG version 10 (always null).
-                " FROM \"Coordinate_Operation\"" +
-               " WHERE DEPRECATED=0" +           // Do not put spaces around "=" - SQLTranslator searches for this exact match.
-                 " AND AREA_OF_USE_CODE IS NOT NULL" +
-                 " AND TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
-                 " AND COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
-                 " AND COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +
-                 " AND SOURCE_CRS_CODE IN " +
-               "(SELECT COORD_REF_SYS_CODE FROM \"Coordinate Reference System\" WHERE DATUM_CODE = ?)" +
-            " ORDER BY TARGET_CRS_CODE, COORD_OP_ACCURACY, COORD_OP_CODE DESC", code))
-        {
-            while (result.next()) {
-                final var info = new BursaWolfInfo(
-                        getInteger(code, result, 1),                // Operation
-                        getInteger(code, result, 2),                // Method
-                        getInteger(code, result, 3),                // Target datum
-                        getInteger(code, result, 4));               // Domain of validity
-                if (info.target != code) {                          // Paranoiac check.
-                    bwInfos.add(info);
-                }
-            }
-        }
-        int size = bwInfos.size();
-        if (size == 0) {
-            return null;
-        }
-        /*
-         * Sort the infos in preference order. The "ORDER BY" clause above was not enough;
-         * we also need to take the "Supersession" table in account. Once the sorting is done,
-         * keep only one Bursa-Wolf parameters for each datum.
-         */
-        if (size > 1) {
-            final BursaWolfInfo[] codes = bwInfos.toArray(new BursaWolfInfo[size]);
-            sort("Coordinate_Operation", codes);
-            bwInfos.clear();
-            BursaWolfInfo.filter(owner, codes, bwInfos);
-            size = bwInfos.size();
-        }
-        /*
-         * Now, iterate over the results and fetch the parameter values for each BursaWolfParameters object.
-         */
-        final var parameters = new BursaWolfParameters[size];
-        final Locale locale = getLocale();
-        int count = 0;
-        for (int i=0; i<size; i++) {
-            final BursaWolfInfo info = bwInfos.get(i);
-            final GeodeticDatum datum = owner.createGeodeticDatum(String.valueOf(info.target));
-            /*
-             * Accept only Bursa-Wolf parameters between datum that use the same prime meridian.
-             * This is for avoiding ambiguity about whether longitude rotation should be applied
-             * before or after the datum change. This check is useless for EPSG dataset 8.9 since
-             * all datum seen by this method use Greenwich. But we nevertheless perform this check
-             * as a safety for future evolution or customized EPSG dataset.
-             */
-            if (!Utilities.equalsIgnoreMetadata(meridian, datum.getPrimeMeridian())) {
-                continue;
-            }
-            final var bwp = new BursaWolfParameters(datum, info.getDomainOfValidity(owner));
-            try (ResultSet result = executeQuery("BursaWolfParameters",
-                "SELECT PARAMETER_CODE," +
-                      " PARAMETER_VALUE," +
-                      " UOM_CODE" +
-                " FROM \"Coordinate_Operation Parameter Value\"" +
-                " WHERE COORD_OP_CODE = ?" +
-                  " AND COORD_OP_METHOD_CODE = ?", info.operation, info.method))
-            {
-                while (result.next()) {
-                    BursaWolfInfo.setBursaWolfParameter(bwp,
-                            getInteger(info.operation, result, 1),
-                            getDouble (info.operation, result, 2),
-                            owner.createUnit(getString(info.operation, result, 3)), locale);
-                }
-            }
-            if (info.isFrameRotation()) {
-                // Coordinate frame rotation (9607): same as 9606,
-                // except for the sign of rotation parameters.
-                bwp.reverseRotation();
-            }
-            parameters[count++] = bwp;
-        }
-        return ArraysExt.resize(parameters, count);
     }
 
     /**

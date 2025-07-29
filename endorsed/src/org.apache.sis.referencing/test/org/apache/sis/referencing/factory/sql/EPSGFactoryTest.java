@@ -47,8 +47,6 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
-import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -120,9 +118,6 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, crs.getDatum());
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
-        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
-        assertEquals(0, bwp.length, "Expected no Bursa-Wolf parameters.");
-
         assertSame(crs, factory.createCoordinateReferenceSystem("4326"), "CRS shall be cached.");
         assertSame(crs, factory.createGeographicCRS("EPSG::4326"), "Shall accept \"::\"");
         loggings.assertNoUnexpectedLog();
@@ -140,9 +135,6 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertEpsgNameAndIdentifierEqual("Datum 73", 4274, crs);
         assertEpsgNameAndIdentifierEqual("Datum 73", 6274, crs.getDatum());
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
-
-        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
-        assertTrue(bwp.length >= 1, "Expected a transformation to WGS84.");
 
         assertSame(crs, factory.createCoordinateReferenceSystem("4274"), "CRS shall be cached.");
         loggings.assertNoUnexpectedLog();

@@ -58,6 +58,7 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
@@ -1407,7 +1408,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             meridian = CommonCRS.WGS84.primeMeridian();
         }
         if (toWGS84 != null) {
-            properties.put(CoordinateOperations.BURSA_WOLF_KEY, toWGS84);
+            properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, toWGS84);
         }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {

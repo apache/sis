@@ -151,8 +151,15 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * The <code>{@value #BURSA_WOLF_KEY}</code> property for
      * {@linkplain #getBursaWolfParameters() Bursa-Wolf parameters}.
+     *
+     * <h4>Possible evolution</h4>
+     * This is a legacy parameter from the Well-Known Text (<abbr>WKT</abbr>) 1 format
+     * and may be deprecated in a future Apache <abbr>SIS</abbr> version.
+     * It should be replaced by the use of geodetic registries such as the <abbr>EPSG</abbr> database.
+     *
+     * @see #getBursaWolfParameters()
      */
-    public static final String BURSA_WOLF_KEY = CoordinateOperations.BURSA_WOLF_KEY;
+    public static final String BURSA_WOLF_KEY = "bursaWolf";
 
     /**
      * The array to be returned by {@link #getBursaWolfParameters()} when there is no Bursa-Wolf parameters.
@@ -348,6 +355,11 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Returns all Bursa-Wolf parameters specified in the {@code properties} map at construction time.
      * See class javadoc for a discussion about Bursa-Wolf parameters.
+     *
+     * <h4>Possible evolution</h4>
+     * This is a legacy parameter from the Well-Known Text (<abbr>WKT</abbr>) 1 format
+     * and may be deprecated in a future Apache <abbr>SIS</abbr> version.
+     * It should be replaced by the use of geodetic registries such as the <abbr>EPSG</abbr> database.
      *
      * @return the Bursa-Wolf parameters, or an empty array if none.
      */
