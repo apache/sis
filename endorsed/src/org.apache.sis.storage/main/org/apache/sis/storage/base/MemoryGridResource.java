@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
 import java.awt.image.RenderedImage;
+import java.util.Optional;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
@@ -29,7 +30,9 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.storage.AbstractGridCoverageResource;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -53,6 +56,11 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     private final GridCoverageProcessor processor;
 
     /**
+     * The resource identifier, may be null.
+     */
+    private final GenericName identifer;
+
+    /**
      * Creates a new coverage stored in memory.
      *
      * @param  parent     listeners of the parent resource, or {@code null} if none.
@@ -60,9 +68,27 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
      * @param  processor  the grid coverage processor for selecting bands, or {@code null} for default.
      */
     public MemoryGridResource(final StoreListeners parent, final GridCoverage coverage, final GridCoverageProcessor processor) {
+        this(parent, null, coverage, processor);
+    }
+
+    /**
+     * Creates a new coverage stored in memory.
+     *
+     * @param  parent     listeners of the parent resource, or {@code null} if none.
+     * @param  identifier resource identifier or {@code null} if none.
+     * @param  coverage   stored coverage retained as-is (not copied). Cannot be null.
+     * @param  processor  the grid coverage processor for selecting bands, or {@code null} for default.
+     */
+    public MemoryGridResource(final StoreListeners parent, GenericName identifier, final GridCoverage coverage, final GridCoverageProcessor processor) {
         super(parent, false);
+        this.identifer = identifier;
         this.coverage  = Objects.requireNonNull(coverage);
         this.processor = (processor != null) ? processor : new GridCoverageProcessor();
+    }
+
+    @Override
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        return Optional.ofNullable(identifer);
     }
 
     /**
@@ -196,6 +222,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
         if (obj instanceof MemoryGridResource) {
             final var other = (MemoryGridResource) obj;
             return coverage.equals(other.coverage)   &&
+                   Objects.equals(identifer, other.identifer) &&
                    processor.equals(other.processor) &&
                    listeners.equals(other.listeners);
         }
@@ -209,7 +236,10 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
      */
     @Override
     public int hashCode() {
-        return coverage.hashCode() + 31*processor.hashCode() + 37*listeners.hashCode();
+        return coverage.hashCode()
+                + 17*Objects.hashCode(identifer)
+                + 31*processor.hashCode()
+                + 37*listeners.hashCode();
     }
 
     /**
