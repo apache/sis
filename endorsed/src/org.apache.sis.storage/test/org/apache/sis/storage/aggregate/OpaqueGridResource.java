@@ -38,7 +38,7 @@ final class OpaqueGridResource extends GridResourceWrapper {
      * Creates a new wrapper for the given coverage.
      */
     OpaqueGridResource(final GridCoverage source) {
-        this.source = new MemoryGridResource(null, source, null);
+        this.source = new MemoryGridResource(null, null, source, null);
     }
 
     /**

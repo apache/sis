@@ -70,7 +70,7 @@ public final class CoverageSubsetTest extends TestCase {
         final var domain = new GridGeometry(extent, region, GridOrientation.HOMOTHETY);
         final var band   = new SampleDimension.Builder().addQuantitative("101-based row-major order pixel number", 101, 105, 1, 0, Units.UNITY).build();
         final var buffer = new DataBufferInt(values(), WIDTH * HEIGHT);
-        return new MemoryGridResource(null, new BufferedGridCoverage(domain, List.of(band), buffer), null);
+        return new MemoryGridResource(null, null, new BufferedGridCoverage(domain, List.of(band), buffer), null);
     }
 
     /**

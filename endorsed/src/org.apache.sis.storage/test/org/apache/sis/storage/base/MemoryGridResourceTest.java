@@ -67,7 +67,7 @@ public final class MemoryGridResourceTest extends TestCase {
         gridToCRS = new AffineTransform2D(2, 0, 0, 3, 0, 0);
         final GridGeometry grid = new GridGeometry(new GridExtent(WIDTH, HEIGHT), PixelInCell.CELL_CENTER, gridToCRS, crs);
         final BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_BINARY);
-        resource = new MemoryGridResource(null, new GridCoverage2D(grid, null, image), null);
+        resource = new MemoryGridResource(null, null, new GridCoverage2D(grid, null, image), null);
     }
 
     /**

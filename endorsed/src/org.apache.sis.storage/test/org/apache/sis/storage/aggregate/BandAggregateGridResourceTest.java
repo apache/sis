@@ -200,7 +200,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
             System.arraycopy(bandValues, 0, data, i, numBands);
         }
         final var values = new DataBufferInt(data, data.length);
-        final var r = new MemoryGridResource(null, new BufferedGridCoverage(domain, samples, values), null);
+        final var r = new MemoryGridResource(null, null, new BufferedGridCoverage(domain, samples, values), null);
         return opaque ? new OpaqueGridResource(r) : r;
     }
 
