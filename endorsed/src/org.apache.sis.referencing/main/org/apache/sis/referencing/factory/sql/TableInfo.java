@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Optional;
 import javax.measure.Unit;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
@@ -247,24 +248,26 @@ final class TableInfo {
     }
 
     /**
-     * Returns {@code true} if the given table {@code name} matches the name expected by {@code this}.
-     * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
+     * Returns the class of objects created from the given table. The given table name should be one of
+     * the values enumerated in the {@code epsg_table_name} types of the {@code EPSG_Prepare.sql} file.
+     * The name may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example, {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
      *
-     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} types of the
-     * {@code EPSG_Prepare.sql} file.</p>
-     *
-     * @param  name  the table name to test.
-     * @return whether the given {@code name} is considered to match the expected name.
+     * @param  table  mixed-case name of an <abbr>EPSG</abbr> table.
+     * @return name of the class of objects created from the given table.
      */
-    final boolean tableMatches(String name) {
-        if (name == null) {
-            return false;
+    static Optional<String> getObjectClassName(String table) {
+        if (table != null) {
+            if (table.startsWith(SQLTranslator.TABLE_PREFIX)) {
+                table = table.substring(SQLTranslator.TABLE_PREFIX.length());
+            }
+            for (final TableInfo info : EPSG) {
+                if (CharSequences.isAcronymForWords(table, info.unquoted())) {
+                    return Optional.of(info.type.getSimpleName());
+                }
+            }
         }
-        if (name.startsWith(SQLTranslator.TABLE_PREFIX)) {
-            name = name.substring(SQLTranslator.TABLE_PREFIX.length());
-        }
-        return CharSequences.isAcronymForWords(name, unquoted());
+        return Optional.empty();
     }
 
     /**

@@ -31,7 +31,7 @@ import org.apache.sis.util.privy.Strings;
 
 
 /**
- * A map of EPSG authority codes as keys and object names as values.
+ * A map of <abbr>EPSG</abbr> authority codes as keys and object names as values.
  * This map requires a living connection to the EPSG database.
  *
  * <h2>Serialization</h2>
@@ -130,7 +130,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
          *
          *     SELECT code FROM table ORDER BY code;
          */
-        final StringBuilder buffer = new StringBuilder(100);
+        final var buffer = new StringBuilder(100);
         final int columnNameStart = buffer.append("SELECT ").length();
         final int columnNameEnd = buffer.append(table.codeColumn).length();
         buffer.append(" FROM ").append(table.table);
@@ -256,7 +256,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
             }
             try {
                 synchronized (factory) {
-                    PreparedStatement statement = (PreparedStatement) statements[ONE];
+                    var statement = (PreparedStatement) statements[ONE];
                     if (statement == null) {
                         statements[ONE] = statement = factory.connection.prepareStatement(sql[ONE]);
                         sql[ONE] = null;    // Not needed anymore.

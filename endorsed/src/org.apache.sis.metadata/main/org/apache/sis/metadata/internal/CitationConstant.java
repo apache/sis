@@ -237,7 +237,7 @@ public class CitationConstant extends SimpleCitation {
         final Citation c = Citations.fromName(title);
         return (c instanceof CitationConstant) ? c : this;
         /*
-         * Returns 'this' should happen only if the Citation has been serialized
+         * Returns `this` should happen only if the Citation has been serialized
          * on a more recent version of Apache SIS than the current version.
          */
     }
