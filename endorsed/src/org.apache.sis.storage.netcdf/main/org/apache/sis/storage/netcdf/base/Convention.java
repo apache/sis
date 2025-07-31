@@ -18,7 +18,6 @@ package org.apache.sis.storage.netcdf.base;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.ServiceLoader;
@@ -487,12 +486,12 @@ public class Convention {
         if (method == null) {
             return null;
         }
-        final var definition = new HashMap<String,Object>();
+        final var definition = new LinkedHashMap<String,Object>();
         definition.put(CF.GRID_MAPPING_NAME, method);
         for (final String name : node.getAttributeNames()) try {
-            final String ln = name.toLowerCase(Decoder.DATA_LOCALE);
+            final String nameLC = name.toLowerCase(Decoder.DATA_LOCALE);
             Object value;
-            switch (ln) {
+            switch (nameLC) {
                 case CF.GRID_MAPPING_NAME: continue;        // Already stored.
                 case TOWGS84: {
                     /*
@@ -508,23 +507,24 @@ public class Convention {
                     break;
                 }
                 default: {
-                    if (ln.endsWith(NAME_SUFFIX)) {
+                    if (nameLC.endsWith(NAME_SUFFIX)) {
                         value = node.getAttributeAsString(name);
                         if (value == null) continue;
-                    }
-                    /*
-                     * Assume that all map projection parameters in netCDF files are numbers or array of numbers.
-                     * If values are array, then they are converted to an array of {@code double[]} type.
-                     */
-                    value = node.getAttributeValue(name);
-                    if (value == null) continue;
-                    if (value instanceof Vector) {
-                        value = ((Vector) value).doubleValues();
+                    } else {
+                        /*
+                         * Assume that all map projection parameters in netCDF files are numbers or array of numbers.
+                         * If values are array, then they are converted to an array of {@code double[]} type.
+                         */
+                        value = node.getAttributeValue(name);
+                        if (value == null) continue;
+                        if (value instanceof Vector) {
+                            value = ((Vector) value).doubleValues();
+                        }
                     }
                     break;
                 }
             }
-            if (definition.putIfAbsent(name, value) != null) {
+            if (definition.putIfAbsent(nameLC, value) != null) {
                 node.error(Convention.class, "projection", null, Errors.Keys.DuplicatedIdentifier_1, name);
             }
         } catch (NumberFormatException e) {

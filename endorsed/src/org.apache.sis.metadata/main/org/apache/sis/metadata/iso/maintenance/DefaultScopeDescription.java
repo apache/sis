@@ -157,7 +157,6 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
         if (object != null) {
             for (byte i=DATASET; i<=OTHER; i++) {
                 Collection<? extends CharSequence> props = null;
-                Object value = null;
                 switch (i) {
                     case DATASET:             value = object.getDataset();            break;
                     case FEATURES:            props = object.getFeatures();           break;
@@ -171,8 +170,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
                     value = copySet(props, CharSequence.class);
                 }
                 if (value != null) {
-                    this.value = value;
-                    this.property = i;
+                    property = i;
                     break;
                 }
             }
@@ -219,6 +217,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * or an unmodifiable empty set if another value is defined.
      */
     private Set<CharSequence> getProperty(final byte code) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Object value = this.value;
         if (value != null) {
             if (property == code) {

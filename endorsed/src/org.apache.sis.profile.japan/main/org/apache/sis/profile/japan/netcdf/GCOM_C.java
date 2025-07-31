@@ -345,7 +345,7 @@ public final class GCOM_C extends Convention {
      */
     @Override
     public Set<String> nameOfMappingNode(final Variable data) {
-        final Set<String> names = new LinkedHashSet<>(4);
+        final var names = new LinkedHashSet<String>(4);
         names.add(GEOMETRY_DATA);
         names.addAll(super.nameOfMappingNode(data));            // Fallback if geometry data does not exist.
         return names;
@@ -390,7 +390,7 @@ public final class GCOM_C extends Convention {
         } else {
             return super.projection(node);
         }
-        final Map<String,Object> definition = new HashMap<>(4);
+        final var definition = new HashMap<String,Object>(4);
         definition.put(CF.GRID_MAPPING_NAME, method);
         definition.put(CONVERSION_NAME, name);
         return definition;

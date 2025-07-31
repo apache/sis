@@ -59,17 +59,20 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.provider.PseudoPlateCarree;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.system.Modules;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
@@ -89,8 +92,9 @@ import org.opengis.referencing.datum.DatumEnsemble;
 
 /**
  * Helper object for creating a {@link GridGeometry} instance defined by attributes on a variable.
- * Those attributes are defined by CF-conventions, but some other non-CF attributes are also in usage
- * (e.g. GDAL or ESRI conventions). This class uses a different approach than {@link CRSBuilder},
+ * Those attributes are defined by <abbr>CF</abbr>-conventions, but some other non-<abbr>CF</abbr>
+ * attributes are also recognized (e.g. <abbr>GDAL</abbr> and <abbr>ESRI</abbr> conventions).
+ * This class uses a different approach than {@link CRSBuilder},
  * which creates Coordinate Reference Systems by inspecting coordinate system axes.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -98,6 +102,12 @@ import org.opengis.referencing.datum.DatumEnsemble;
  * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
  */
 final class GridMapping {
+    /**
+     * Names of some (not all) attributes where the <abbr>CRS</abbr> may be encoded in <abbr>WKT</abbr> format.
+     * Values must be in lower-cases because {@link Convention#projection(Node)} converts names to lower cases.
+     */
+    private static final String CRS_WKT = "crs_wkt", SPATIAL_REF = "spatial_ref";
+
     /**
      * The variable on which projection parameters are defined as attributes.
      * This is typically an empty variable referenced by the value of the
@@ -109,8 +119,8 @@ final class GridMapping {
 
     /**
      * The Coordinate Reference System inferred from grid mapping attribute values, or {@code null} if none.
-     * This CRS may have been constructed from Well Known Text or EPSG codes declared in {@code "spatial_ref"},
-     * {@code "ESRI_pe_string"} or {@code "EPSG_code"} attributes.
+     * This <abbr>CRS</abbr> may have been constructed from Well Known Text or <abbr>EPSG</abbr> codes
+     * declared in {@value #SPATIAL_REF}, {@code "ESRI_pe_string"} or {@code "EPSG_code"} attributes.
      *
      * <h4>Usage note</h4>
      * This is built from different information than the one used by {@link CRSBuilder},
@@ -121,8 +131,9 @@ final class GridMapping {
     private CoordinateReferenceSystem crs;
 
     /**
-     * The <i>grid to CRS</i> transform, or {@code null} if none. This information is usually not specified
-     * except when using GDAL conventions. If {@code null}, then the transform should be inferred by {@link Grid}.
+     * The <i>grid to CRS</i> transform, or {@code null} if none.
+     * This information is usually not specified except when using <abbr>GDAL</abbr> conventions.
+     * If {@code null}, then the transform should be inferred by {@link Grid}.
      */
     private MathTransform gridToCRS;
 
@@ -185,8 +196,8 @@ final class GridMapping {
 
     /**
      * Parses the map projection parameters defined as attribute associated to the given variable.
-     * This method tries to parse CF-compliant attributes first. If none are found, non-standard
-     * extensions (for example GDAL usage) are tried next.
+     * This method tries to parse <abbr>CF</abbr>-compliant attributes, potentially mixed with
+     * non-standard extensions (for example <abbr>GDAL</abbr>).
      */
     private static GridMapping parse(final Node mapping) {
         final var gm = new GridMapping(mapping);
@@ -228,7 +239,21 @@ final class GridMapping {
                     if (value instanceof Number || value instanceof double[] || value instanceof float[]) {
                         it.remove();
                         parameters.parameter(name).setValue(value);
-                    } else if (value instanceof String && !name.endsWith(Convention.NAME_SUFFIX)) {
+                    } else if (value instanceof String) {
+                        final var text = (String) value;
+                        if (name.endsWith(Convention.NAME_SUFFIX)) {
+                            continue;
+                        }
+                        switch (name) {
+                            case CRS_WKT:
+                            case SPATIAL_REF: continue;     // Will be parsed after this loop.
+                            case "geotransform": {          // "GeoTransform" made lower-case.
+                                if (parseGeoTransform(null, text)) {
+                                    it.remove();
+                                }
+                                continue;
+                            }
+                        }
                         /*
                          * In principle we should ignore non-numeric parameters. But in practice, some badly encoded
                          * netCDF files store parameters as strings instead of numbers. If the parameter name is
@@ -243,15 +268,22 @@ final class GridMapping {
                         final Class<?> type = parameter.getDescriptor().getValueClass();
                         if (Numbers.isNumber(type)) {
                             it.remove();
-                            parameter.setValue(Double.parseDouble((String) value));
+                            parameter.setValue(Double.parseDouble(text));
                         } else if (Numbers.isNumber(type.getComponentType())) {
                             it.remove();
-                            parameter.setValue(parseDoubles((String) value), null);
+                            parameter.setValue(parseDoubles(text), null);
                         }
                     }
-                } catch (IllegalArgumentException ex) {                     // Includes NumberFormatException.
-                    warning(mapping, ex, null, Resources.Keys.CanNotSetProjectionParameter_5,
-                            mapping.decoder.getFilename(), mapping.getName(), name, value, ex.getLocalizedMessage());
+                } catch (IllegalArgumentException ex) {     // Includes NumberFormatException.
+                    warning(mapping,
+                            ex,
+                            null,       // Default to `Resources` bundle.
+                            Resources.Keys.CanNotSetProjectionParameter_5,
+                            mapping.decoder.getFilename(),
+                            mapping.getName(),
+                            name,
+                            value,
+                            ex.getLocalizedMessage());
                 }
             }
             /*
@@ -282,8 +314,8 @@ final class GridMapping {
              * obvious (except for CompoundCRS).
              */
             final var done = new ArrayList<String>(2);
-            setOrVerifyWKT(definition, "crs_wkt", done);
-            setOrVerifyWKT(definition, "spatial_ref", done);
+            setOrVerifyWKT(definition, CRS_WKT, done);
+            setOrVerifyWKT(definition, SPATIAL_REF, done);
             /*
              * Report all projection parameters that have not been used. If the map is not rendered
              * at expected location, it may be because we have ignored some important parameters.
@@ -297,7 +329,11 @@ final class GridMapping {
              * Build the "grid to CRS" if present. This is not defined by CF-convention,
              * but may be present in some non-CF conventions.
              */
-            gridToCRS = mapping.decoder.convention().gridToCRS(mapping, baseToCRS);
+            if (gridToCRS == null) {
+                gridToCRS = mapping.decoder.convention().gridToCRS(mapping, baseToCRS);
+            } else {
+                gridToCRS = MathTransforms.concatenate(gridToCRS, baseToCRS);
+            }
             return true;
         } catch (ClassCastException | IllegalArgumentException | FactoryException | TransformException e) {
             warningInMapping(mapping, e, Resources.Keys.CanNotCreateCRS_3, null);
@@ -400,7 +436,10 @@ final class GridMapping {
          */
         if (isSpecified) {
             final Map<String,?> properties = properties(definition, Convention.GEOGRAPHIC_CRS_NAME, main, datum);
-            return decoder.getCRSFactory().createGeographicCRS(properties, datum, ensemble,
+            return decoder.getCRSFactory().createGeographicCRS(
+                    properties,
+                    datum,
+                    ensemble,
                     defaultDefinitions.geographic().getCoordinateSystem());
         } else {
             return defaultDefinitions.geographic();
@@ -471,9 +510,13 @@ final class GridMapping {
             }
             if (crs == null) {
                 crs = check;
-            } else if (!Utilities.equalsIgnoreMetadata(crs, check)) {
-                warning(mapping, null, null, Resources.Keys.InconsistentCRS_2,
-                        mapping.decoder.getFilename(), mapping.getName());
+            } else if (!Utilities.deepEquals(crs, check, ComparisonMode.ALLOW_VARIANT)) {
+                warning(mapping,        // Node
+                        null,           // Exception
+                        null,           // Resources
+                        Resources.Keys.InconsistentCRS_2,
+                        mapping.decoder.getFilename(),
+                        mapping.getName());
             }
         }
     }
@@ -492,8 +535,14 @@ final class GridMapping {
      * @return whether this method found grid geometry attributes.
      */
     private boolean parseGeoTransform() {
-        final String wkt = mapping.getAttributeAsString("spatial_ref");
-        final String gtr = mapping.getAttributeAsString("GeoTransform");
+        return parseGeoTransform(mapping.getAttributeAsString(SPATIAL_REF),
+                                 mapping.getAttributeAsString("GeoTransform"));
+    }
+
+    /**
+     * Implementation of {@link #parseGeoTransform()} with given attribute values.
+     */
+    private boolean parseGeoTransform(final String wkt, final String gtr) {
         short message = Resources.Keys.CanNotCreateCRS_3;
         boolean done = false;
         try {
@@ -617,19 +666,41 @@ final class GridMapping {
     }
 
     /**
-     * Creates a new grid geometry with the extent of the given variable and a potentially null CRS.
+     * Creates a new grid geometry with the extent of the given variable and a potentially null <abbr>CRS</abbr>.
      * This method should be invoked only as a fallback when no existing {@link GridGeometry} can be used.
      * The CRS and "grid to CRS" transform are null, unless some partial information was found for example
      * as WKT string.
      */
     final GridGeometry createGridCRS(final Variable variable) {
         final List<Dimension> dimensions = variable.getGridDimensions();
-        final long[] upper = new long[dimensions.size()];
-        for (int i=0; i<upper.length; i++) {
-            final int d = (upper.length - 1) - i;           // Convert CRS dimension to netCDF dimension.
+        final int srcDim = dimensions.size();
+        final long[] upper = new long[srcDim];
+        for (int i=0; i<srcDim; i++) {
+            final int d = (srcDim - 1) - i;         // Convert CRS dimension to netCDF dimension.
             upper[i] = dimensions.get(d).length();
         }
-        return new GridGeometry(new GridExtent(null, null, upper, false), PixelInCell.CELL_CENTER, gridToCRS, crs);
+        MathTransform implicitG2C = gridToCRS;
+        CoordinateReferenceSystem implicitCRS = crs;
+        if (implicitG2C != null) {
+            implicitG2C = MathTransforms.concatenate(
+                    changeOfDimension(srcDim, implicitG2C.getSourceDimensions()),
+                    implicitG2C,
+                    changeOfDimension(implicitG2C.getTargetDimensions(),
+                                      ReferencingUtilities.getDimension(implicitCRS)));
+        }
+        final var extent = new GridExtent(null, null, upper, false);
+        return new GridGeometry(extent, PixelInCell.CELL_CENTER, implicitG2C, implicitCRS);
+    }
+
+    /**
+     * Returns a transform for changing the number of dimensions of a math transform.
+     * For convenience, a target number of dimensions of 0 means no change.
+     */
+    private static MathTransform changeOfDimension(final int srcDim, final int tgtDim) {
+        if (tgtDim == srcDim || tgtDim == 0) {
+            return MathTransforms.identity(srcDim);
+        }
+        return MathTransforms.linear(Matrices.createDimensionSelect(srcDim, ArraysExt.range(0, tgtDim)));
     }
 
     /**
@@ -674,7 +745,7 @@ final class GridMapping {
                     if (firstAffectedCoordinate < 0) {
                         firstAffectedCoordinate = 0;
                         if (isWKT && crs != null) {
-                            explicitCRS = crs;                         // If specified by WKT, use the CRS verbatim.
+                            explicitCRS = crs;          // If specified by WKT, use the CRS verbatim.
                         }
                     }
                 }
@@ -691,13 +762,13 @@ final class GridMapping {
                 }
                 isSameGrid = implicitCRS.equals(explicitCRS);
                 if (isSameGrid) {
-                    explicitCRS = implicitCRS;                                 // Keep existing instance if appropriate.
+                    explicitCRS = implicitCRS;          // Keep existing instance if appropriate.
                 }
             }
         }
         /*
          * Perform the same substitution as above, but in the "grid to CRS" transform. Note that the "grid to CRS"
-         * is usually not specified, so the block performing substitution will rarely be executed. If executed, then
+         * is usually not specified, so the block performing substitution will rarely be executed. If executed,
          * then we need to perform selection in target dimensions (not source dimensions) because the first affected
          * coordinate computed above is in CRS dimension, which is the target of "grid to CRS" transform.
          */
@@ -725,7 +796,7 @@ final class GridMapping {
                 components = ArraysExt.resize(components, count);
                 explicitG2C = MathTransforms.compound(components);
                 if (implicitG2C.equals(explicitG2C)) {
-                    explicitG2C = implicitG2C;                                 // Keep using existing instance if appropriate.
+                    explicitG2C = implicitG2C;          // Keep using existing instance if appropriate.
                 } else {
                     isSameGrid = false;
                 }
