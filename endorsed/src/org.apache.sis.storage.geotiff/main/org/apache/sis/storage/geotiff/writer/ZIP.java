@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff.writer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.zip.Deflater;
+import java.util.zip.ZipException;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.storage.geotiff.base.Resources;
 
@@ -77,10 +78,14 @@ final class ZIP extends CompressionChannel {
          */
         final long numBytes = deflater.getBytesRead() + remaining;
         if (numBytes >= length) {
-            /*
-             * To be strict, we shoud raise an exception if `deflater.finished()` is true.
-             * But it is safer to do this check indirectly in the following loop instead.
-             */
+            if (deflater.finished()) {
+                /*
+                 * May happen if there is an inconsistency in the computation using pixel
+                 * stride and scanline stride, sometime because of malformed sample model.
+                 */
+                throw new IOException(Resources.forLocale(null)
+                        .getString(Resources.Keys.UnexpectedTileLength_2, length, numBytes));
+            }
             deflater.finish();
         }
         while (remaining > 0) {
@@ -88,16 +93,13 @@ final class ZIP extends CompressionChannel {
             output.ensureBufferAccepts(Math.min(remaining, target.capacity()));
             target.limit(target.capacity());        // Allow the use of all available space.
             try {
-                if (deflater.deflate(target) == 0) {
+                if (deflater.deflate(target) == 0 && source.hasRemaining()) {
                     /*
                      * According Javadoc, it may occur if `deflater.needsInput()` needs to be checked.
                      * But we already know that its value should be `false`. The other possibility is
-                     * that `deflater.finished()` is true. The latter may happen if we determined that
-                     * a call to this `write(…)` should be the last one, but this method is nevertheless
-                     * invoked again. It may happen when there is inconsistency in the computation using
-                     * pixel stride and scanline stride, sometime because of malformed sample model.
+                     * that `deflater.finished()` is true but the deflater did not write all bytes.
                      */
-                    throw new IOException(Resources.forLocale(null)
+                    throw new ZipException(Resources.forLocale(null)
                             .getString(Resources.Keys.UnexpectedTileLength_2, length, numBytes));
                 }
             } finally {
