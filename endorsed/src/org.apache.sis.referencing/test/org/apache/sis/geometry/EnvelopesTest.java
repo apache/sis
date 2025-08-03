@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.measure.Range;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -309,7 +310,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
     }
 
     /**
-     * Tests {@link Envelopes#wraparound(MathTransform, Envelope)}.
+     * Tests {@link Envelopes#transformWithWraparound(MathTransform, Envelope)}.
      *
      * @throws TransformException if a coordinate transformation failed.
      */
@@ -320,10 +321,11 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
         envelope.setRange(1, 5, 9);
         final MathTransform tr = WraparoundTransform.create(2, 0, 360, -180, 0);
         assertTrue(tr instanceof WraparoundTransform);
-        final GeneralEnvelope[] results = Envelopes.wraparound(tr, envelope);
-        assertEquals(2, results.length);
-        assertEnvelopeEquals(new GeneralEnvelope(new double[] {-200, 5}, new double[] {-100, 9}), results[0]);
-        assertEnvelopeEquals(new GeneralEnvelope(new double[] { 160, 5}, new double[] { 260, 9}), results[1]);
+        final Map<Parameters, GeneralEnvelope> results = Envelopes.transformWithWraparound(tr, envelope);
+        assertEquals(2, results.size());
+        final GeneralEnvelope[] envelopes = results.values().toArray(GeneralEnvelope[]::new);
+        assertEnvelopeEquals(new GeneralEnvelope(new double[] {-200, 5}, new double[] {-100, 9}), envelopes[0]);
+        assertEnvelopeEquals(new GeneralEnvelope(new double[] { 160, 5}, new double[] { 260, 9}), envelopes[1]);
     }
 
     /**

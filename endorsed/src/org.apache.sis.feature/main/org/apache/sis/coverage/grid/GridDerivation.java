@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Map;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
@@ -40,6 +41,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.WraparoundAdjustment;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -612,26 +614,30 @@ public class GridDerivation {
                 }
                 nowraparound = finder.gridToGrid();
                 /*
-                 * Converts the grid extent of the area of interest to the grid coordinates of the base.
-                 * We may get one or two envelopes, depending on whether there is a longitude wraparound.
-                 * If the area of interest has less dimensions than the base grid, we may need to compute
-                 * more envelopes for enclosing the full span of dimensions that are not in `areaOfInterest`.
+                 * At this point, the transform between the coordinate systems of the two grids is known.
+                 * The `gridToGrid` transform is the main one. If the user did not specified an AOI for
+                 * all dimensions, then `gridToGrid` is for low coordinates and `gridToGridHigh` is for
+                 * high coordinates.
                  */
                 final GeneralEnvelope[] envelopes;
                 if (gridToGrid.isIdentity() && (gridToGridHigh == null || gridToGridHigh.isIdentity())) {
                     envelopes = new GeneralEnvelope[] {domain.toEnvelope(tight)};
                 } else {
-                    envelopes = domain.toEnvelopes(gridToGrid, tight, nowraparound, null);
+                    /*
+                     * Converts the grid extent of the area of interest to the grid coordinates of the base.
+                     * We may get one or two envelopes, depending on whether there is a longitude wraparound.
+                     * If the area of interest has less dimensions than the base grid, we may need to compute
+                     * more envelopes for enclosing the full span of dimensions that are not in `areaOfInterest`.
+                     */
+                    final Map<Parameters, GeneralEnvelope> transformed =
+                            domain.toEnvelopes(gridToGrid, tight, nowraparound, null);
                     if (gridToGridHigh != null) {
-                        final GeneralEnvelope[] high = domain.toEnvelopes(gridToGridHigh, tight, nowraparoundHigh, null);
-                        for (int i = Math.min(envelopes.length, high.length); --i >= 0;) {
-                            /*
-                             * TODO: actually, we have no guarantee that the envelopes at the same index match.
-                             * We need to find a more reliable algorithm, maybe by checking intersection first.
-                             */
-                            envelopes[i].add(high[i]);
-                        }
+                        domain.toEnvelopes(gridToGridHigh, tight, nowraparoundHigh, null).forEach((key, value) -> {
+                            GeneralEnvelope previous = transformed.putIfAbsent(key, value);
+                            if (previous != null) previous.add(value);
+                        });
                     }
+                    envelopes = transformed.values().toArray(GeneralEnvelope[]::new);
                 }
                 setBaseExtentClipped(tight, envelopes);
                 if (baseExtent != base.extent && baseExtent.equals(domain)) {

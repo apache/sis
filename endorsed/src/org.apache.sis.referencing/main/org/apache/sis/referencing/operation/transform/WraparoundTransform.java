@@ -68,7 +68,7 @@ import org.apache.sis.parameter.Parameters;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  *
- * @see org.apache.sis.geometry.Envelopes#wraparound(MathTransform, Envelope)
+ * @see org.apache.sis.geometry.Envelopes#transformWithWraparound(MathTransform, Envelope)
  *
  * @since 1.1
  */
@@ -108,7 +108,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * then {@code sourceMedian} should be 180° (the value at the center of [0 … 360]° range).
      * The value may be {@link Double#NaN} if unknown.
      *
-     * <p>This field is used for inverse transforms only; it has no effect on the forward transforms.
+     * <p>This field is used for inverse transforms only. It has no effect on the forward transforms.
      * If not NaN, this value is used for building the transform returned by {@link #inverse()}.</p>
      *
      * <h4>Design note</h4>
