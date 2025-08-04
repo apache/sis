@@ -44,6 +44,9 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Names;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.IdentifiedType;
+
 
 /**
  * Describes the data values in a coverage (the range). For a raster, a sample dimension is a band.
@@ -75,13 +78,13 @@ import org.apache.sis.util.iso.Names;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.5
  *
  * @see org.opengis.metadata.content.SampleDimension
  *
  * @since 1.0
  */
-public class SampleDimension implements Serializable {
+public class SampleDimension implements IdentifiedType, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -212,8 +215,28 @@ public class SampleDimension implements Serializable {
      *
      * @see org.opengis.metadata.content.RangeDimension#getSequenceIdentifier()
      */
+    @Override
     public GenericName getName() {
         return name;
+    }
+
+    /**
+     * Returns a concise definition of this sample dimensions.
+     * This definition may be shown in user interfaces and should be considered as indicative only.
+     * The default implementation may change between different versions of Apache <abbr>SIS</abbr>.
+     *
+     * @return concise definition of the sample dimension.
+     *
+     * @since 1.5
+     */
+    @Override
+    public InternationalString getDefinition() {
+        for (Category category : categories) {
+            if (category.isQuantitative()) {
+                return category.getName();
+            }
+        }
+        return getName().toInternationalString();
     }
 
     /**
