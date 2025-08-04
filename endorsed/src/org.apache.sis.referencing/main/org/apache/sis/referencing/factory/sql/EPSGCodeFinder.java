@@ -42,6 +42,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
@@ -465,16 +466,11 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     result.add(r.getString(1));
                 }
             }
-            result.remove(null);                    // Should not have null element, but let be safe.
-            if (result.size() > 1) {
-                final Object[] id = result.toArray();
-                if (dao.sort(table.unquoted(), id)) {
-                    result.clear();
-                    for (final Object c : id) {
-                        result.add((String) c);
-                    }
-                }
-            }
+            result.remove(null);    // Should not have null element, but let be safe.
+            dao.sort(table.unquoted(), result).ifPresent((sorted) -> {
+                result.clear();
+                result.addAll(JDK16.toList(sorted));
+            });
             return result;
         } catch (SQLException exception) {
             throw dao.databaseFailure(Identifier.class, String.valueOf(CollectionsExt.first(filters[0].values)), exception);

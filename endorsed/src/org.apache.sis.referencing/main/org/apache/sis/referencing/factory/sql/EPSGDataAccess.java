@@ -24,11 +24,13 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -81,7 +83,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
-import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.referencing.internal.EPSGParameterDomain;
@@ -1129,6 +1130,8 @@ next:   for (int i=0; i<codes.length; i++) {
 
     /**
      * Returns the scope from the given authority code.
+     * The given code is a value of the {@code scopes} list
+     * after a call to {@link #getUsages getUsages(…)}.
      *
      * @param  code  the <abbr>EPSG</code> code.
      * @return the scope, or {@code null} if none.
@@ -1151,13 +1154,41 @@ next:   for (int i=0; i<codes.length; i++) {
     }
 
     /**
+     * Gets the codes of extents and scopes of the object identified by the given code in the given table.
+     * The {@code actualTable} argument must be the result of {@code translator.toActualTableName(table)}.
+     * The {@code extents} and {@code scopes} collections should be initially empty and will be filled by
+     * this method. The same number of codes will be added in both of them.
+     *
+     * @param  actualTable  actual name of the table of the object for which to get the usages.
+     * @param  code         <abbr>EPSG</abbr> code of the object for which to get the usages.
+     * @param  extents      where to store extent codes, or {@code null} for ignoring extents.
+     * @param  scopes       where to store usage codes, or {@code null} for ignoring scopes.
+     */
+    private void getUsages(final String actualTable,
+                           final int code,
+                           final Collection<String>  extents,
+                           final Collection<Integer> scopes) throws SQLException, FactoryDataException
+    {
+        try (ResultSet result = executeMetadataQuery("Usage",
+                "SELECT EXTENT_CODE, SCOPE_CODE FROM \"Usage\""
+                        + " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
+                actualTable, code))
+        {
+            while (result.next()) {
+                if (extents != null) extents.add(getString (code, result, 1));
+                if (scopes  != null) scopes .add(getInteger(code, result, 2));
+            }
+        }
+    }
+
+    /**
      * Logs a warning saying that the given code is deprecated and returns the code of the proposed replacement.
      *
      * @param  table   the table of the deprecated code.
      * @param  code    the deprecated code.
      * @return the proposed replacement (may be the "(none)" text). Never empty.
      */
-    private String getSupersession(final String table, final Integer code, final Locale locale) throws SQLException {
+    private String getReplacement(final String table, final Integer code, final Locale locale) throws SQLException {
         String reason = null;
         String replacedBy;
 search: try (ResultSet result = executeMetadataQuery("Deprecation",
@@ -1239,6 +1270,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
          * se we need to fetch and store the extent before to populate the `properties` map.
          */
         final Extent extent = (extentCode == null) ? null : createExtent(extentCode);
+        final String actualTable = translator.toActualTableName(table);
         /*
          * Get all domains for the object identified by the given code.
          * The table used nere is new in version 10 of EPSG database.
@@ -1248,21 +1280,14 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         ObjectDomain[] domains = null;
         if (translator.isUsageTableFound()) {
             final var extents = new ArrayList<String>();
-            final var scopes  = new ArrayList<InternationalString>();
-            try (ResultSet result = executeMetadataQuery("Usage",
-                    "SELECT EXTENT_CODE, SCOPE_CODE FROM \"Usage\""
-                            + " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
-                    translator.toActualTableName(table), code))
-            {
-                while (result.next()) {
-                    extents.add(getString(code, result, 1));
-                    scopes .add(getScope(getInteger(code, result, 2)));
-                }
-            }
+            final var scopes  = new ArrayList<Integer>();
+            getUsages(actualTable, code, extents, scopes);
             if (!extents.isEmpty()) {
                 domains = new ObjectDomain[extents.size()];
                 for (int i=0; i<domains.length; i++) {
-                    domains[i] = new DefaultObjectDomain(scopes.get(i), owner.createExtent(extents.get(i)));
+                    domains[i] = new DefaultObjectDomain(
+                            getScope(scopes.get(i)),
+                            owner.createExtent(extents.get(i)));
                 }
             }
         }
@@ -1285,7 +1310,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         + " FROM \"Alias\" INNER JOIN \"Naming System\""
                         + " ON \"Alias\".NAMING_SYSTEM_CODE = \"Naming System\".NAMING_SYSTEM_CODE"
                         + " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?",
-                translator.toActualTableName(table), code))
+                actualTable, code))
         {
             while (result.next()) {
                 final String naming = getOptionalString(result, 1);
@@ -1334,7 +1359,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         final ImmutableIdentifier identifier;
         if (deprecated) {
             properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
-            final String replacedBy = getSupersession(table, code, locale);
+            final String replacedBy = getReplacement(table, code, locale);
             identifier = new DeprecatedCode(
                     authority,
                     Constants.EPSG,
@@ -3342,15 +3367,11 @@ next:                   while (r.next()) {
                 if (searchTransformations) {
                     key = "TransformationFromCRS";
                     sql = "SELECT COORD_OP_CODE"
-                            + " FROM \"Coordinate_Operation\" AS CO"
-                            + " JOIN \"Area\" ON AREA_OF_USE_CODE = AREA_CODE"
-                            + " WHERE CO.DEPRECATED=0"   // Do not put spaces around "=" - SQLTranslator searches for this exact match.
+                            + " FROM \"Coordinate_Operation\""
+                            + " WHERE DEPRECATED=0"  // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                             + " AND SOURCE_CRS_CODE = ?"
                             + " AND TARGET_CRS_CODE = ?"
-                            + " ORDER BY COORD_OP_ACCURACY ASC NULLS LAST, "
-                            + " (AREA_EAST_BOUND_LON - AREA_WEST_BOUND_LON + CASE WHEN AREA_EAST_BOUND_LON < AREA_WEST_BOUND_LON THEN 360 ELSE 0 END)"
-                            + " * (AREA_NORTH_BOUND_LAT - AREA_SOUTH_BOUND_LAT)"
-                            + " * COS(RADIANS(AREA_NORTH_BOUND_LAT + AREA_SOUTH_BOUND_LAT)/2) DESC";
+                            + " ORDER BY COORD_OP_ACCURACY ASC NULLS LAST";
                 } else {
                     key = "ConversionFromCRS";
                     sql = "SELECT PROJECTION_CONV_CODE"
@@ -3368,12 +3389,13 @@ next:                   while (r.next()) {
             /*
              * Search finished. We may have a lot of coordinate operations
              * (e.g. about 40 for "ED50" (EPSG:4230) to "WGS 84" (EPSG:4326)).
-             * Alter the ordering using the information supplied in the supersession table.
+             * Alter the ordering using the information supplied in the extents
+             * and supersession tables.
              */
-            final String[] codes = set.getAuthorityCodes();
-            if (codes.length > 1 && sort("Coordinate_Operation", codes)) {
-                set.setAuthorityCodes(codes);
-            }
+            List<String> codes = Arrays.asList(set.getAuthorityCodes());
+            sort("Coordinate_Operation", codes).ifPresent((sorted) -> {
+                set.setAuthorityCodes(sorted.toArray(String[]::new));
+            });
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateOperation.class, label, exception);
         }
@@ -3408,60 +3430,92 @@ next:                   while (r.next()) {
     }
 
     /**
-     * Sorts an array of codes in preference order. This method orders pairwise the codes according the information
-     * provided in the supersession table. If the same object is superseded by more than one object, then the most
-     * recent one is inserted first. Except for the codes moved as a result of pairwise ordering, this method tries
-     * to preserve the old ordering of the supplied codes (since deprecated operations should already be last).
-     * The ordering is performed in place.
+     * Sorts a collection of codes in preference order.
+     * This method orders pairwise the codes according the information provided in the supersession table.
+     * If the same object is superseded by more than one object, then the most recent one is inserted first.
+     * Except for the codes moved as a result of pairwise ordering, this method tries to preserve the old
+     * ordering of the supplied codes (since deprecated operations should already be last).
      *
-     * @param table  the table of the objects for which to check for supersession.
-     * @param codes  the codes, usually as an array of {@link String}. If the array do not contains string objects,
-     *               then the {@link Object#toString()} method must return the code for each element.
-     * @return {@code true} if the array changed as a result of this method call.
+     * @param  table  the table of the objects for which to check for supersession.
+     * @param  codes  the codes to sort. This collection will not be modified by this method.
+     * @return codes of sorted elements, or empty if this method did not changed the codes order.
      */
-    final synchronized boolean sort(final String table, final Object[] codes) throws SQLException, FactoryException {
-        int iteration = 0;
-        do {
-            boolean changed = false;
-            for (int i=0; i<codes.length; i++) {
-                final int code;
+    final synchronized Optional<Stream<String>> sort(final String table, final Collection<String> codes)
+            throws SQLException, FactoryException
+    {
+        final int size = codes.size();
+        if (size > 1) try {
+            final var elements = new ObjectPertinence[size];
+            final var extents = new ArrayList<String>();
+            final String actualTable = translator.toActualTableName(table);
+            int count = 0;
+            for (final String code : codes) {
+                final int key;
                 try {
-                    code = Integer.parseInt(codes[i].toString());
+                    key = Integer.parseInt(code);
                 } catch (NumberFormatException e) {
                     unexpectedException("sort", e);
                     continue;
                 }
+                if (translator.isUsageTableFound()) {
+                    getUsages(actualTable, key, extents, null);
+                } else {
+                    /*
+                     * For compatibility with EPSG database before version 10.
+                     * We may delete this block in a future Apache SIS version.
+                     * Note: if this block is deleted, consider deleting also
+                     * the finally block and the `TableInfo.areaOfUse` flag.
+                     */
+                    for (final TableInfo info : TableInfo.EPSG) {
+                        if (table.equals(info.unquoted())) {
+                            if (info.areaOfUse) {
+                                try (ResultSet result = executeQueryForCodes(
+                                        "Area",     // Table from EPSG version 9. Does not exist anymore in version 10.
+                                        "SELECT AREA_OF_USE_CODE FROM \"" + table + "\" WHERE " + info.codeColumn + "=?",
+                                        key))
+                                {
+                                    while (result.next()) {
+                                        extents.add(getString(code, result, 1));
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                final ObjectPertinence element = new ObjectPertinence(key, extents, owner);
+                extents.clear();
                 try (ResultSet result = executeMetadataQuery(
                         "Supersession",
                         "SELECT SUPERSEDED_BY FROM \"Supersession\""
                                 + " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?"
                                 + " ORDER BY SUPERSESSION_YEAR DESC",
-                        translator.toActualTableName(table), code))
+                        actualTable, key))
                 {
                     while (result.next()) {
-                        final String replacement = result.getString(1);
-                        if (replacement != null) {
-                            for (int j=i+1; j<codes.length; j++) {
-                                final Object candidate = codes[j];
-                                if (replacement.equals(candidate.toString())) {
-                                    /*
-                                     * Found a code to move in front of the superceded one.
-                                     */
-                                    System.arraycopy(codes, i, codes, i+1, j-i);
-                                    codes[i++] = candidate;
-                                    changed = true;
-                                }
-                            }
+                        final int replacement = result.getInt(1);
+                        if (!result.wasNull()) {
+                            element.replacedBy.add(replacement);
                         }
                     }
                 }
+                elements[count++] = element;
             }
-            if (!changed) {
-                return iteration != 0;
+            if (ObjectPertinence.sort(elements)) {
+                return Optional.of(Arrays.stream(elements).map(ObjectPertinence::code));
+            }
+        } finally {
+            /*
+             * Remove from the cache because the table name may change.
+             * Note: this is for compatibility with EPSG before version 10.
+             * This block may be deleted in a future Apache SIS version.
+             */
+            PreparedStatement stmt = statements.remove("Area");
+            if (stmt != null) {
+                stmt.close();
             }
         }
-        while (++iteration < Formulas.MAXIMUM_ITERATIONS);      // Arbitrary limit for avoiding never-ending loop.
-        return true;
+        return Optional.empty();
     }
 
     /**

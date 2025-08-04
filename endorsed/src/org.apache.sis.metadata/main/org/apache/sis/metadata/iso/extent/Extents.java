@@ -681,9 +681,9 @@ public final class Extents extends Static {
     }
 
     /**
-     * Returns the union of the given geographic bounding boxes. If any of the arguments is {@code null},
-     * then this method returns the other argument (which may be null). Otherwise this method returns a box
-     * which is the union of the two given boxes.
+     * Returns the union of the given geographic bounding boxes.
+     * If any of the arguments is {@code null}, then this method returns the other argument (which may be null).
+     * Otherwise, this method returns a box which is the union of the two given boxes.
      *
      * <p>This method never modify the given boxes, but may return directly one of the given arguments
      * if it already represents the union result.</p>

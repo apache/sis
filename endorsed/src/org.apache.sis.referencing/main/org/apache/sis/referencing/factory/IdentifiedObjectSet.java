@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,26 +52,28 @@ import org.apache.sis.util.collection.CheckedContainer;
  * {@linkplain #createObject(String) object creation}, or to {@link #add(IdentifiedObject)} for objects
  * that are already instantiated. This collection cannot contain two {@code IdentifiedObject} instances
  * having the same identifier. However, the identifiers used by this class can be controlled by overriding
- * {@link #getAuthorityCode(IdentifiedObject)}.</p>
+ * the {@link #getAuthorityCode(IdentifiedObject)} method.</p>
  *
  * <p>Iterations over elements in this collection preserve insertion order.</p>
  *
  * <h2>Purpose</h2>
- * {@code IdentifiedObjectSet} can be used as the set returned by implementations of the
- * {@link GeodeticAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)} method.
- * Deferred creation can have great performance impact since some set may contain as much as 40 entries
- * (e.g. transformations from <q>ED50</q> (EPSG:4230) to <q>WGS 84</q> (EPSG:4326))
- * while some users only want to look for the first entry.
+ * {@code IdentifiedObjectSet} is useful mostly for implementers of authority factories rather than users.
+ * When used as the implementation of the
+ * {@linkplain GeodeticAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)
+ * set of coordinate operations between a pair of <abbr>CRS</abbr>}, {@code IdentifiedObjectSet}
+ * can improve significantly the performances because some sets contain tens of entries
+ * (e.g., transformations from <q>ED50</q> (EPSG:4230) to <q>WGS 84</q> (EPSG:4326)),
+ * while users typically want to look for only the first entry.
  *
  * <h2>Exception handling</h2>
  * If the underlying factory failed to creates an object because of an unsupported operation method
- * ({@link NoSuchIdentifierException}), the exception is logged at {@link Level#WARNING} and the iteration continue.
+ * ({@link NoSuchIdentifierException}), the exception is logged at {@link Level#WARNING} and the iteration continues.
  * If the operation creation failed for any other kind of reason ({@link FactoryException}), then the exception is
  * re-thrown as an unchecked {@link BackingStoreException}. This default behavior can be changed by overriding
  * the {@link #isRecoverableFailure(FactoryException)} method.
  *
  * <h2>Thread safety</h2>
- * This class is thread-safe is the underlying {@linkplain #factory} is also thread-safe.
+ * This class is thread-safe if the underlying {@linkplain #factory} is also thread-safe.
  * However, implementers are encouraged to wrap in {@linkplain java.util.Collections#unmodifiableSet unmodifiable set}
  * if they intent to cache {@code IdentifiedObjectSet} instances.
  *
@@ -91,14 +92,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * <p><b>Note:</b> using {@code ConcurrentHahMap} would be more efficient.
      * But the latter does not support null values and does not preserve insertion order.</p>
      */
-    final Map<String,T> objects = new LinkedHashMap<>();
-
-    /**
-     * The {@link #objects} keys, created for iteration purpose when first needed and cleared when the map is modified.
-     * We need to use such array as a snapshot of the map state at the time the iterator was created because the map
-     * may be modified during iteration or by concurrent threads.
-     */
-    private transient String[] codes;
+    final Map<String,T> objects;
 
     /**
      * The factory to use for creating {@code IdentifiedObject}s when first needed.
@@ -131,6 +125,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
         this.factory = Objects.requireNonNull(factory);
         this.type    = Objects.requireNonNull(type);
         this.proxy   = AuthorityFactoryProxy.getInstance(type);
+        this.objects = new LinkedHashMap<>();
     }
 
     /**
@@ -160,7 +155,6 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     @Override
     public void clear() {
         synchronized (objects) {
-            codes = null;
             objects.clear();
         }
     }
@@ -185,27 +179,15 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * @return the authority codes in iteration order.
      */
     public String[] getAuthorityCodes() {
-        return codes().clone();
-    }
-
-    /**
-     * Returns the {@code codes} array, creating it if needed. This method does not clone the array.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final String[] codes() {
         synchronized (objects) {
-            if (codes == null) {
-                final Set<String> keys = objects.keySet();
-                codes = keys.toArray(String[]::new);
-            }
-            return codes;
+            return objects.keySet().toArray(String[]::new);
         }
     }
 
     /**
      * Sets the content of this collection to the object identified by the given codes.
      * For any code in the given sequence, this method will preserve the corresponding {@code IdentifiedObject}
-     * instance if it was already created. Otherwise objects will be {@linkplain #createObject(String) created}
+     * instance if it was already created. Otherwise, objects will be {@linkplain #createObject(String) created}
      * only when first needed.
      *
      * <h4>Use case</h4>
@@ -220,8 +202,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      */
     public void setAuthorityCodes(final String... codes) {
         synchronized (objects) {
-            this.codes = null;
-            final Map<String,T> copy = new HashMap<>(objects);
+            final var copy = new HashMap<String,T>(objects);
             objects.clear();
             for (final String code : codes) {
                 objects.put(code, copy.get(code));
@@ -233,15 +214,13 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Ensures that this collection contains an object for the specified authority code.
      * If this collection does not contain any element for the given code, then this method
      * will instantiate an {@code IdentifiedObject} for the given code only when first needed.
-     * Otherwise this collection is unchanged.
+     * Otherwise, this collection is unchanged.
      *
      * @param  code  the code authority code of the {@code IdentifiedObject} to include in this set.
      */
     public void addAuthorityCode(final String code) {
         synchronized (objects) {
-            if (objects.putIfAbsent(code, null) == null) {
-                codes = null;
-            }
+            objects.putIfAbsent(code, null);
         }
     }
 
@@ -261,7 +240,6 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
         final String code = getAuthorityCode(object);
         final T previous;
         synchronized (objects) {
-            codes = null;
             previous = objects.put(code, object);
         }
         return !Objects.equals(previous, object);
@@ -274,7 +252,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *
      * @see #createObject(String)
      */
-    final T get(final String code) throws BackingStoreException {
+    private T get(final String code) throws BackingStoreException {
         T object;
         boolean success;
         synchronized (objects) {
@@ -304,7 +282,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                      * The check for `containsKey` is a paranoiac check in case the element has been removed
                      * in another thread while we were creating the object. This is likely to be unnecessary
                      * in the vast majority of cases where the set of codes is never modified after this set
-                     * has been published. However if someone decided to do such concurrent modifications,
+                     * has been published. However, if someone decided to do such concurrent modifications,
                      * not checking for concurrent removal could be a subtle and hard-to-find bug, so we are
                      * better to be safe. Note that if a concurrent removal happened, we still return the non-null
                      * object but we do not put it in this IdentifiedObjectSet. This behavior is as if this method
@@ -316,8 +294,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                             object = c;                     // The object has been created concurrently.
                         }
                     }
-                } else if (objects.remove(code, null)) {    // Do not remove if a concurrent thread succeeded.
-                    codes = null;
+                } else {                                    // Do not remove if a concurrent thread succeeded.
+                    objects.remove(code, null);
                 }
             }
         }
@@ -329,6 +307,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *
      * @param  object  the {@code IdentifiedObject} to test for presence in this set.
      * @return {@code true} if the given object is presents in this set.
+     * @throws ClassCastException if the given object is non-null and not an instance of {@code <T>}.
      */
     @Override
     public boolean contains(final Object object) {
@@ -340,10 +319,9 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *
      * @param  code  the code of the object to remove.
      */
-    final void removeAuthorityCode(final String code) {
+    private void removeAuthorityCode(final String code) {
         synchronized (objects) {
             objects.remove(code);
-            codes = null;
         }
     }
 
@@ -352,6 +330,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *
      * @param  object  the {@code IdentifiedObject} to remove from this set.
      * @return {@code true} if this set changed as a result of this call.
+     * @throws ClassCastException if the given object is non-null and not an instance of {@code <T>}.
      */
     @Override
     public boolean remove(final Object object) {
@@ -361,7 +340,6 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
             if (object.equals(current)) {
                 synchronized (objects) {
                     objects.remove(code);
-                    codes = null;
                 }
                 return true;
             }
@@ -374,8 +352,10 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *
      * @param  collection  the {@code IdentifiedObject}s to remove from this set.
      * @return {@code true} if this set changed as a result of this call.
+     * @throws ClassCastException if the given collection contains an object which is not an instance of {@code <T>}.
      */
     @Override
+    @SuppressWarnings("element-type-mismatch")
     public boolean removeAll(final Collection<?> collection) {
         boolean modified = false;
         for (final Object object : collection) {
@@ -403,7 +383,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
              * We need to take a snapshot because the underlying {@link IdentifiedObjectSet#objects} map may be
              * modified concurrently in other threads.
              */
-            private final String[] keys = codes();
+            private final String[] keys = getAuthorityCodes();
 
             /**
              * Index of the next element to obtain by a call to {@link IdentifiedObjectSet#get(String)}.
@@ -524,6 +504,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * @param  code  the code for which to create the identified object.
      * @return the identified object created from the given code.
      * @throws FactoryException if the object creation failed.
+     * @throws ClassCastException if the object created from the given object is not an instance of {@code <T>}.
      */
     protected T createObject(final String code) throws FactoryException {
         return type.cast(proxy.createFromAPI(factory, code));
@@ -563,7 +544,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      */
     private static String getCause(Throwable cause) {
         final String lineSeparator = System.lineSeparator();
-        final StringBuilder trace = new StringBuilder(180);
+        final var trace = new StringBuilder(180);
         while (cause != null) {
             trace.append(lineSeparator).append("  • ").append(Classes.getShortClassName(cause));
             final String message = cause.getMessage();      // Prefer the local of system administrator.
