@@ -158,7 +158,7 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
      *
      * @param  effective  the expression to cast.
      * @return an expression that can be used with this temporal filter.
-     * @throws ClassCastException if the expression cannot be casted.
+     * @throws ClassCastException if the expression cannot be cast.
      */
     protected final Expression<R, ? extends T> cast(final Expression<R,?> effective) {
         return effective.toValueType(operation.comparators.type);

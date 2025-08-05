@@ -445,9 +445,9 @@ asLong: if (mapping != null) {
      *
      * <ul>
      *   <li>If the given value is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given value cannot be casted from {@code double} to another type
+     *   <li>Otherwise if the given value cannot be cast from {@code double} to another type
      *       without precision lost, return {@code Double.class}.</li>
-     *   <li>Otherwise if the given value cannot be casted from {@code float} to another type
+     *   <li>Otherwise if the given value cannot be cast from {@code float} to another type
      *       without precision lost, return {@code Float.class}.</li>
      *   <li>Otherwise if the given value is between {@value java.lang.Byte#MIN_VALUE} and
      *       {@value java.lang.Byte#MAX_VALUE}, then this method returns {@code Byte.class};</li>
@@ -599,7 +599,7 @@ asLong: if (mapping != null) {
      * @param  <N>     the class to cast to.
      * @param  number  the number to cast, or {@code null}.
      * @param  type    the destination type.
-     * @return the number casted to the given type, or {@code null} if the given value was null.
+     * @return the number cast to the given type, or {@code null} if the given value was null.
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
      *         or the number cannot be converted to the specified type (e.g. {@link Double#NaN} cannot
      *         be converted to {@link BigDecimal}).

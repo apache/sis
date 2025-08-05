@@ -32,6 +32,9 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
 
+// Specific to the main branch:
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
+
 
 /**
  * Delegates object creations to one of the {@code create} methods in a backing {@code AuthorityFactory}.
@@ -196,6 +199,20 @@ abstract class AuthorityFactoryProxy<T> {
         new AuthorityFactoryProxy<IdentifiedObject>(IdentifiedObject.class, AuthorityFactoryIdentifier.Type.ANY) {
             @Override IdentifiedObject createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                 return factory.createObject(code);
+            }
+    };
+
+    @SuppressWarnings("unchecked")
+    static final AuthorityFactoryProxy<DefaultDatumEnsemble<?>> ENSEMBLE =
+        new AuthorityFactoryProxy<DefaultDatumEnsemble<?>>((Class) DefaultDatumEnsemble.class, AuthorityFactoryIdentifier.Type.DATUM) {
+            @Override DefaultDatumEnsemble<?> create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
+                return factory.createDatumEnsemble(code);
+            }
+            @Override DefaultDatumEnsemble<?> createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                if (factory instanceof GeodeticAuthorityFactory) {
+                    return ((GeodeticAuthorityFactory) factory).createDatumEnsemble(code);
+                }
+                throw new FactoryException("Unsupported factory.");
             }
     };
 

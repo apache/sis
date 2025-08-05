@@ -127,6 +127,12 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     public static final PositionalAccuracy SAME_DATUM_ENSEMBLE;
 
     /**
+     * Name for accuracy metadata of datum ensemble.
+     */
+    private static final DefaultMeasureReference ENSEMBLE_REFERENCE =
+            new DefaultMeasureReference(Vocabulary.formatInternational(Vocabulary.Keys.EnsembleAccuracy));
+
+    /**
      * Name for accuracy metadata of coordinate transformations.
      */
     private static final DefaultMeasureReference TRANSFORMATION_REFERENCE =
@@ -138,13 +144,14 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * compared by the database maintainers against some results taken as true. By contrast, the accuracies that
      * we have set to conservative values are considered "direct internal".
      */
-    private static final DefaultEvaluationMethod TRANSFORMATION_METHOD =
+    private static final DefaultEvaluationMethod EVALUATION_METHOD =
             new DefaultEvaluationMethod(EvaluationMethodType.DIRECT_EXTERNAL,
                     Resources.formatInternational(Resources.Keys.AccuracyFromGeodeticDatase));
 
     static {
+        ENSEMBLE_REFERENCE      .transitionTo(DefaultMeasureReference.State.FINAL);
         TRANSFORMATION_REFERENCE.transitionTo(DefaultMeasureReference.State.FINAL);
-        TRANSFORMATION_METHOD   .transitionTo(DefaultEvaluationMethod.State.FINAL);
+        EVALUATION_METHOD       .transitionTo(DefaultEvaluationMethod.State.FINAL);
         final var desc   = Resources.formatInternational(Resources.Keys.ConformanceMeansDatumShift);
         final var method = new DefaultEvaluationMethod(EvaluationMethodType.DIRECT_INTERNAL, desc);
         final var pass   = new DefaultConformanceResult(Citations.SIS, desc, true);
@@ -193,27 +200,38 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     }
 
     /**
-     * Creates a positional accuracy for a value specified in the EPSG database.
-     *
-     * @param  accuracy  the linear accuracy in metres.
-     */
-    private PositionalAccuracyConstant(final Double accuracy) {
-        this(TRANSFORMATION_REFERENCE, TRANSFORMATION_METHOD, null, accuracy);
-    }
-
-    /**
-     * Creates a positional accuracy for the given value, in metres.
+     * Creates a transformation accuracy for the given value, in metres.
      * This method may return a cached value.
      *
      * @param  accuracy  the accuracy in metres.
-     * @return a positional accuracy with the given value.
+     * @return a positional accuracy with the given value, or {@code null} if the value is not positive.
      */
-    public static PositionalAccuracy create(final Double accuracy) {
-        return CACHE.computeIfAbsent(accuracy, PositionalAccuracyConstant::new);
+    public static PositionalAccuracy transformation(final double accuracy) {
+        if (accuracy >= 0) {
+            return CACHE.computeIfAbsent(Math.abs(accuracy),    // For making sure that we have positive zero.
+                    (key) -> new PositionalAccuracyConstant(TRANSFORMATION_REFERENCE, EVALUATION_METHOD, null, key));
+        }
+        return null;
     }
 
     /**
-     * Cache the positional accuracies of coordinate transformations.
+     * Creates a datum ensemble accuracy for the given value, in metres.
+     * This method may return a cached value.
+     *
+     * @param  accuracy  the accuracy in metres.
+     * @return a positional accuracy with the given value, or {@code null} if the value is not positive.
+     */
+    public static PositionalAccuracy ensemble(final double accuracy) {
+        if (accuracy >= 0) {
+            return CACHE.computeIfAbsent(-Math.abs(accuracy),    // For making sure that we have negative zero.
+                    (key) -> new PositionalAccuracyConstant(ENSEMBLE_REFERENCE, EVALUATION_METHOD, null, -key));
+        }
+        return null;
+    }
+
+    /**
+     * Cache of positional accuracies of coordinate transformations (positive) or datum ensembles (negative).
+     * The sign is used for differentiating whether the cache value is for an ensemble or a transformation.
      * Most coordinate operations use a small set of accuracy values.
      */
     private static final WeakValueHashMap<Double,PositionalAccuracy> CACHE = new WeakValueHashMap<>(Double.class);

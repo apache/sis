@@ -218,7 +218,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         VerticalDatumType t = type;
         if (t == null) {
             final ReferenceIdentifier name = super.getName();
-            type = t = VerticalDatumTypes.guess(name != null ? name.getCode() : null, super.getAlias(), null);
+            type = t = VerticalDatumTypes.fromDatum(name != null ? name.getCode() : null, super.getAlias(), null);
         }
         return t;
     }
@@ -309,7 +309,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
          */
         @Override
         public boolean equals(final Object object, final ComparisonMode mode) {
-            return super.equals(object) && (mode != ComparisonMode.STRICT ||
+            return super.equals(object, mode) && (mode != ComparisonMode.STRICT ||
                     frameReferenceEpoch.equals(((Dynamic) object).frameReferenceEpoch));
         }
 
@@ -394,7 +394,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
-            formatter.append(VerticalDatumTypes.toLegacy(type()));
+            formatter.append(VerticalDatumTypes.toLegacyCode(type()));
             return WKTKeywords.Vert_Datum;
         }
         return formatter.shortOrLong(WKTKeywords.VDatum, WKTKeywords.VerticalDatum);

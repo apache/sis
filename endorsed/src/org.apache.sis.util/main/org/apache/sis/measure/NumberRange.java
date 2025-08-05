@@ -312,7 +312,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     /**
      * Constructs a range using the smallest type of {@link Number} that can hold the given values.
      * The given numbers do not need to be of the same type since they will
-     * be {@linkplain Numbers#cast(Number, Class) casted} as needed.
+     * be {@linkplain Numbers#cast(Number, Class) cast} as needed.
      * More specifically this method returns:
      *
      * <ul>
@@ -324,7 +324,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *       {@value java.lang.Integer#MIN_VALUE} and {@value java.lang.Integer#MAX_VALUE} inclusive.</li>
      *   <li>{@code NumberRange<Long>} if the given values are integers between
      *       {@value java.lang.Long#MIN_VALUE} and {@value java.lang.Long#MAX_VALUE} inclusive.</li>
-     *   <li>{@code NumberRange<Float>} if the given values can be casted to {@code float} values without data lost.</li>
+     *   <li>{@code NumberRange<Float>} if the given values can be cast to {@code float} values without data lost.</li>
      *   <li>{@code NumberRange<Double>} if none of the above types is suitable.</li>
      * </ul>
      *
@@ -348,7 +348,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * If {@code asFloat} is {@code false}, then the returned range can use any wrapper type and this method behaves
      * as described in {@linkplain #createBestFit(java.lang.Number, boolean, java.lang.Number, boolean) above method}.
      * If {@code asFloat} is {@code true}, then the returned range is restricted to {@link Float} and {@link Double}
-     * number types; integer types are casted to one of the floating point types.
+     * number types; integer types are cast to one of the floating point types.
      *
      * @param  asFloat        whether to restrict the returned range to floating point types.
      * @param  minValue       the minimal value, or {@code null} if none.
@@ -399,7 +399,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Returns {@code true} if the given value can be casted to the {@code Float} type.
+     * Returns {@code true} if the given value can be cast to the {@code Float} type.
      */
     private static boolean isFloat(final Number value) {
         return (value == null) ||
@@ -492,7 +492,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs a range with the same values as the specified range, casted to the specified type.
+     * Constructs a range with the same values as the specified range, cast to the specified type.
      *
      * @param  type   the element type, usually one of {@link Byte}, {@link Short},
      *                {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
@@ -524,7 +524,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  type  the class to cast to. Must be one of {@link Byte}, {@link Short},
      *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @return the casted range, or {@code range} if no cast is needed.
+     * @return the cast range, or {@code range} if no cast is needed.
      * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types.
      */
     @SuppressWarnings("unchecked")
@@ -544,7 +544,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  <N>   the class to cast to.
      * @param  type  the class to cast to. Must be one of {@link Byte}, {@link Short},
      *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @return the casted range, or {@code this} if this range already uses the specified type.
+     * @return the cast range, or {@code this} if this range already uses the specified type.
      * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types.
      */
     @SuppressWarnings("unchecked")

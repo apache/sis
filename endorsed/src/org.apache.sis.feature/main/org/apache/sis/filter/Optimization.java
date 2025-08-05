@@ -233,11 +233,11 @@ public class Optimization {
         }
 
         /**
-         * If the given predicate can be casted to a filter of the same parameterized type as this,
-         * returns {@code other} casted to that type. Otherwise returns {@code null}.
+         * If the given predicate can be cast to a filter of the same parameterized type as this,
+         * returns {@code other} cast to that type. Otherwise returns {@code null}.
          *
          * @param  other  the predicate to cast to a filter compatible with this.
-         * @return the casted predicate, or {@code null} if it cannot be casted.
+         * @return the cast predicate, or {@code null} if it cannot be cast.
          */
         @SuppressWarnings("unchecked")
         private Filter<R> castOrNull(final Predicate<? super R> other) {

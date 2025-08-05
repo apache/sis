@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Optional;
 import javax.measure.Unit;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
@@ -79,7 +80,7 @@ final class TableInfo {
                 new String[]   {"projected",          "geographic",          "geocentric",
                                 "vertical",           "compound",            "engineering",
                                 "derived",            "temporal",            "parametric"},             // See comment below
-                "SHOW_CRS"),
+                "SHOW_CRS", true),
                 /*
                  * Above declaration could omit Derived, Temporal and Parametric cases because they are not defined
                  * by the EPSG repository (at least as of version 8.9). In particular we are not sure if EPSG would
@@ -98,14 +99,14 @@ final class TableInfo {
                 new String[]   {WKTKeywords.Cartesian,  WKTKeywords.ellipsoidal,  WKTKeywords.vertical,  WKTKeywords.linear,
                                 WKTKeywords.spherical,  WKTKeywords.polar,        WKTKeywords.cylindrical,
                                 WKTKeywords.temporal,   WKTKeywords.parametric,   WKTKeywords.affine},      // Same comment as in the CRS case above.
-                null),
+                null, false),
 
         new TableInfo(CoordinateSystemAxis.class,
                 "\"Coordinate Axis\" AS CA INNER JOIN \"Coordinate Axis Name\" AS CAN " +
                                     "ON CA.COORD_AXIS_NAME_CODE=CAN.COORD_AXIS_NAME_CODE",
                 "COORD_AXIS_CODE",
                 "COORD_AXIS_NAME",
-                null, null, null, null),
+                null, null, null, null, false),
 
         DATUM = new TableInfo(Datum.class,
                 "\"Datum\"",
@@ -116,19 +117,19 @@ final class TableInfo {
                                  TemporalDatum.class,  DefaultParametricDatum.class},
                 new String[]   {"geodetic",           "vertical",            "engineering",
                                 "temporal",           "parametric"},         // Same comment as in the CRS case above.
-                null),
+                null, true),
 
         ELLIPSOID = new TableInfo(Ellipsoid.class,
                 "\"Ellipsoid\"",
                 "ELLIPSOID_CODE",
                 "ELLIPSOID_NAME",
-                null, null, null, null),
+                null, null, null, null, false),
 
         new TableInfo(PrimeMeridian.class,
                 "\"Prime Meridian\"",
                 "PRIME_MERIDIAN_CODE",
                 "PRIME_MERIDIAN_NAME",
-                null, null, null, null),
+                null, null, null, null, false),
 
         new TableInfo(CoordinateOperation.class,
                 "\"Coordinate_Operation\"",
@@ -137,25 +138,25 @@ final class TableInfo {
                 "COORD_OP_TYPE",
                 new Class<?>[] { Conversion.class, Transformation.class},
                 new String[]   {"conversion",     "transformation"},
-                "SHOW_OPERATION"),
+                "SHOW_OPERATION", true),
 
         new TableInfo(OperationMethod.class,
                 "\"Coordinate_Operation Method\"",
                 "COORD_OP_METHOD_CODE",
                 "COORD_OP_METHOD_NAME",
-                null, null, null, null),
+                null, null, null, null, false),
 
         new TableInfo(ParameterDescriptor.class,
                 "\"Coordinate_Operation Parameter\"",
                 "PARAMETER_CODE",
                 "PARAMETER_NAME",
-                null, null, null, null),
+                null, null, null, null, false),
 
         new TableInfo(Unit.class,
                 "\"Unit of Measure\"",
                 "UOM_CODE",
                 "UNIT_OF_MEAS_NAME",
-                null, null, null, null),
+                null, null, null, null, false),
     };
 
     /**
@@ -209,6 +210,12 @@ final class TableInfo {
     final String showColumn;
 
     /**
+     * Whether the table had an {@code "AREA_OF_USE_CODE"} column
+     * in the legacy versions (before version 10) of the <abbr>EPSG</abbr> database.
+     */
+    final boolean areaOfUse;
+
+    /**
      * Stores information about a specific table.
      *
      * @param type        the class of object to be created (usually a GeoAPI interface).
@@ -219,11 +226,12 @@ final class TableInfo {
      * @param subTypes    sub-interfaces of {@link #type} to handle, or {@code null} if none.
      * @param typeNames   names of {@code subTypes} in the database, or {@code null} if none.
      * @param showColumn  the column that specify if the object should be shown, or {@code null} if none.
+     * @param areaOfUse   whether the table had an {@code "AREA_OF_USE_CODE"} column in the legacy versions.
      */
     private TableInfo(final Class<?> type,
                       final String table, final String codeColumn, final String nameColumn,
                       final String typeColumn, final Class<?>[] subTypes, final String[] typeNames,
-                      final String showColumn)
+                      final String showColumn, final boolean areaOfUse)
     {
         this.type       = type;
         this.table      = table;
@@ -233,6 +241,7 @@ final class TableInfo {
         this.subTypes   = subTypes;
         this.typeNames  = typeNames;
         this.showColumn = showColumn;
+        this.areaOfUse  = areaOfUse;
     }
 
     /**
@@ -243,24 +252,26 @@ final class TableInfo {
     }
 
     /**
-     * Returns {@code true} if the given table {@code name} matches the name expected by {@code this}.
-     * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
+     * Returns the class of objects created from the given table. The given table name should be one of
+     * the values enumerated in the {@code epsg_table_name} types of the {@code EPSG_Prepare.sql} file.
+     * The name may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example, {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
      *
-     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} types of the
-     * {@code EPSG_Prepare.sql} file.</p>
-     *
-     * @param  name  the table name to test.
-     * @return whether the given {@code name} is considered to match the expected name.
+     * @param  table  mixed-case name of an <abbr>EPSG</abbr> table.
+     * @return name of the class of objects created from the given table.
      */
-    final boolean tableMatches(String name) {
-        if (name == null) {
-            return false;
+    static Optional<String> getObjectClassName(String table) {
+        if (table != null) {
+            if (table.startsWith(SQLTranslator.TABLE_PREFIX)) {
+                table = table.substring(SQLTranslator.TABLE_PREFIX.length());
+            }
+            for (final TableInfo info : EPSG) {
+                if (CharSequences.isAcronymForWords(table, info.unquoted())) {
+                    return Optional.of(info.type.getSimpleName());
+                }
+            }
         }
-        if (name.startsWith(SQLTranslator.TABLE_PREFIX)) {
-            name = name.substring(SQLTranslator.TABLE_PREFIX.length());
-        }
-        return CharSequences.isAcronymForWords(name, unquoted());
+        return Optional.empty();
     }
 
     /**

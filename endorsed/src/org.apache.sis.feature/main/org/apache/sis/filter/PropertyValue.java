@@ -407,7 +407,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
 
     /**
      * An expression fetching property values as an object of specified type.
-     * The value is first casted from {@link Object} to the expected source type,
+     * The value is first cast from {@link Object} to the expected source type,
      * then converted to the specified target type.
      *
      * @param  <S>  the type of source value before conversion.

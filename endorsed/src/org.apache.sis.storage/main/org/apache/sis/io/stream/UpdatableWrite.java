@@ -284,7 +284,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     public abstract void setAsLong(long value);
 
     /**
-     * Verifies if the given value can be casted to an unsigned number of the given number of bits.
+     * Verifies if the given value can be cast to an unsigned number of the given number of bits.
      *
      * @param  size   number of bits of the destination.
      * @param  value  the value to validate.

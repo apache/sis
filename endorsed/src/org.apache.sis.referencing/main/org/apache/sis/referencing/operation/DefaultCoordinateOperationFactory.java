@@ -735,20 +735,16 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
             handler = null;
             op = null;
         }
+        boolean canStoreInCache = true;
         try {
             if (handler == null || (op = handler.peek()) == null) {
-                CoordinateOperationAuthorityFactory registry = null;
-                if (USE_EPSG_FACTORY) {
-                    final AuthorityFactory candidate = CRS.getAuthorityFactory(Constants.EPSG);
-                    if (candidate instanceof CoordinateOperationAuthorityFactory) {
-                        registry = (CoordinateOperationAuthorityFactory) candidate;
-                    }
-                }
-                op = createOperationFinder(registry, context).createOperation(sourceCRS, targetCRS);
+                final CoordinateOperationFinder finder = createOperationFinder(getFactorySIS(), context);
+                op = finder.createOperation(sourceCRS, targetCRS);
+                canStoreInCache = finder.canStoreInCache();
             }
         } finally {
             if (handler != null) {
-                handler.putAndUnlock(op);
+                handler.putAndUnlock(canStoreInCache ? op : null);
             }
         }
         return op;
@@ -787,9 +783,20 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
                                                       final CoordinateOperationContext context)
             throws OperationNotFoundException, FactoryException
     {
-        final AuthorityFactory registry = USE_EPSG_FACTORY ? CRS.getAuthorityFactory(Constants.EPSG) : null;
-        return createOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
-                (CoordinateOperationAuthorityFactory) registry : null, context).createOperations(sourceCRS, targetCRS);
+        return createOperationFinder(getFactorySIS(), context).createOperations(sourceCRS, targetCRS);
+    }
+
+    /**
+     * Returns the Apache <abbr>SIS</abbr> implementation of the <abbr>EPSG</abbr> factory, or {@code null} if none.
+     */
+    private static CoordinateOperationAuthorityFactory getFactorySIS() throws FactoryException {
+        if (USE_EPSG_FACTORY) {
+            AuthorityFactory registry = CRS.getAuthorityFactory(Constants.EPSG);
+            if (registry instanceof CoordinateOperationAuthorityFactory) {
+                return (CoordinateOperationAuthorityFactory) registry;
+            }
+        }
+        return null;
     }
 
     /**

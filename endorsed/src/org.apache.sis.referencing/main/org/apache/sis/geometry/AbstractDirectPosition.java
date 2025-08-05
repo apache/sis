@@ -342,7 +342,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * (WKT) format.
      *
      * @param  position           the position to format.
-     * @param  isSinglePrecision  {@code true} if every coordinate values can be casted to {@code float}.
+     * @param  isSinglePrecision  {@code true} if every coordinate values can be cast to {@code float}.
      * @return the point as a {@code POINT} in WKT format.
      *
      * @see ArraysExt#isSinglePrecision(double[])

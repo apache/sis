@@ -212,7 +212,7 @@ public abstract class Node extends NamedElement {
 
     /**
      * Returns the value of the given attribute as a number, or {@link Double#NaN}.
-     * If the number is stored with single-precision, it is assumed casted from a
+     * If the number is stored with single-precision, it is assumed cast from a
      * representation in base 10.
      *
      * @param  attributeName  the name of the attribute for which to get the value.
@@ -233,7 +233,7 @@ public abstract class Node extends NamedElement {
 
     /**
      * Returns the values of the given attribute as a vector of numbers, or {@code null} if none.
-     * If the numbers are stored with single-precision, they are assumed casted from a representation in base 10.
+     * If the numbers are stored with single-precision, they are assumed cast from a representation in base 10.
      *
      * @param  attributeName  the name of the attribute for which to get the values.
      * @return the attribute values, or {@code null} if none, ambiguous or not a vector.

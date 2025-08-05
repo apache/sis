@@ -82,6 +82,11 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
     static final String BAROMETRIC = "BAROMETRIC";
 
     /**
+     * A value used in the <abbr>EPSG</abbr> database.
+     */
+    static final String LOCAL = "LOCAL";
+
+    /**
      * Returns a pseudo-realization method for ellipsoidal heights.
      * <strong>The use of this method is deprecated</strong> as ellipsoidal height
      * should never be separated from the horizontal components according ISO 19111.
@@ -115,7 +120,7 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
      * @param  code  the legacy vertical datum code.
      * @return the vertical datum type, or {@code null} if none.
      */
-    public static VerticalDatumType fromLegacy(final int code) {
+    public static VerticalDatumType fromLegacyCode(final int code) {
         switch (code) {
         //  case 2000: return null;                                     // CS_VD_Other
             case 2001: return VerticalDatumType.valueOf(ORTHOMETRIC);   // CS_VD_Orthometric
@@ -131,13 +136,12 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
      * Returns the legacy code for the datum type, or 2000 (other surface) if unknown.
      * This method is used for WKT 1 formatting.
      *
-     * @param  type  the vertical datum type, or {@code null} if unknown.
+     * @param  method  the vertical datum type, or {@code null} if unknown.
      * @return the legacy code for the given datum type, or 0 if unknown.
      */
-    @SuppressWarnings("deprecation")
-    public static int toLegacy(final VerticalDatumType type) {
-        if (type != null) {
-            switch (type.name().toUpperCase(Locale.US)) {
+    public static int toLegacyCode(final VerticalDatumType method) {
+        if (method != null) {
+            switch (method.name().toUpperCase(Locale.US)) {
                 case ORTHOMETRIC: return 2001;      // CS_VD_Orthometric
                 case ELLIPSOIDAL: return 2002;      // CS_VD_Ellipsoidal
                 case BAROMETRIC:  return 2003;      // CS_VD_AltitudeBarometric
@@ -146,6 +150,28 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
             }
         }
         return 2000;
+    }
+
+    /**
+     * Returns the realization method from heuristic rules applied on the name.
+     *
+     * <p>Note: this is {@code fromMethod(String)} on the GeoAPI 4.0 branch.</p>
+     *
+     * @param  name  the realization method name, or {@code null}.
+     * @return the realization method, or {@code null} if the given name was null.
+     */
+    public static VerticalDatumType fromMethod(final String name) {
+        VerticalDatumType method = fromDatum(name);
+        if (method == null && name != null && !name.isBlank()) {
+            final int s = name.lastIndexOf('-');
+            if (s >= 0 && name.substring(s+1).strip().equalsIgnoreCase("based")) {
+                method = fromDatum(name.substring(0, s));
+            }
+            if (method == null) {
+                method = VerticalDatumType.valueOf(name);
+            }
+        }
+        return method;
     }
 
     /**
@@ -160,16 +186,16 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
      * @param  axis     the vertical axis for which to guess a type, or {@code null} if unknown.
      * @return a datum type, or {@link VerticalDatumType#OTHER_SURFACE} if none can be guessed.
      */
-    public static VerticalDatumType guess(final String name, final Collection<? extends GenericName> aliases,
+    public static VerticalDatumType fromDatum(final String name, final Collection<? extends GenericName> aliases,
             final CoordinateSystemAxis axis)
     {
-        VerticalDatumType method = guess(name);
+        VerticalDatumType method = fromDatum(name);
         if (method != null) {
             return method;
         }
         if (aliases != null) {
             for (final GenericName alias : aliases) {
-                method = guess(alias.tip().toString());
+                method = fromDatum(alias.tip().toString());
                 if (method != null) {
                     return method;
                 }
@@ -199,16 +225,22 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
     }
 
     /**
-     * Guesses the realization method of a datum of the given name. This method attempts to guess only if
-     * the given name contains at least one letter. If the type cannot be determined, returns {@code null}.
+     * Guesses the realization method of a datum of the given name.
+     * If the realization method cannot be determined, returns {@code null}.
      *
      * @param  name  name of the datum for which to guess a realization method, or {@code null}.
      * @return a realization method, or {@code null} if none can be guessed.
      */
-    private static VerticalDatumType guess(final String name) {
+    private static VerticalDatumType fromDatum(final String name) {
         if (name != null) {
             if (CharSequences.equalsFiltered("Mean Sea Level", name, Characters.Filter.LETTERS_AND_DIGITS, true)) {
                 return VerticalDatumType.GEOIDAL;
+            }
+            if (name.regionMatches(true, 0, "geoid", 0, 5)) {
+                return VerticalDatumType.GEOIDAL;
+            }
+            if (name.equalsIgnoreCase("Tidal")) {
+                return VerticalDatumType.DEPTH;
             }
             for (int i=0; i<name.length();) {
                 final int c = name.codePointAt(i);

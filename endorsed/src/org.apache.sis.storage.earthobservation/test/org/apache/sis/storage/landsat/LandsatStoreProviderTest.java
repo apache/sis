@@ -43,7 +43,7 @@ public final class LandsatStoreProviderTest extends TestCase {
     /**
      * Tests {@link LandsatStoreProvider#probeContent(StorageConnector)} method.
      *
-     * @throws DataStoreException if en error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while reading the test file.
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {

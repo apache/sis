@@ -89,11 +89,13 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     private Double maximumValue;
 
     /**
-     * Provides information about the vertical coordinate reference system to
-     * which the maximum and minimum elevation values are measured. The CRS
-     * identification includes unit of measure.
+     * Provides information about the vertical coordinate reference system
+     * to which the maximum and minimum elevation values are measured.
+     * The <abbr>CRS</abbr> identification includes unit of measure.
+     *
+     * @see #getVerticalCRS()
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings("serial")     // Apache SIS implementations are serializable.
     private VerticalCRS verticalCRS;
 
     /**
@@ -206,11 +208,11 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     }
 
     /**
-     * Provides information about the vertical coordinate reference system to
-     * which the maximum and minimum elevation values are measured.
-     * The CRS identification includes unit of measure.
+     * Provides information about the vertical coordinate reference system
+     * to which the maximum and minimum elevation values are measured.
+     * The <abbr>CRS</abbr> identification includes unit of measure.
      *
-     * @return the vertical CRS, or {@code null}.
+     * @return the vertical <abbr>CRS</abbr>, or {@code null}.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-397">SIS-397</a>
      */

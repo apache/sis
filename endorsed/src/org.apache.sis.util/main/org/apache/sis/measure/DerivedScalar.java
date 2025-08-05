@@ -130,7 +130,7 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
     }
 
     /**
-     * Returns the value casted to a single-precision floating point number.
+     * Returns the value cast to a single-precision floating point number.
      */
     @Override
     public final float floatValue() {
@@ -138,7 +138,7 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
     }
 
     /**
-     * Returns the value rounded to nearest integer. {@link Double#NaN} are casted to 0 and values out of
+     * Returns the value rounded to nearest integer. {@link Double#NaN} are cast to 0 and values out of
      * {@code long} range are clamped to minimal or maximal representable numbers of {@code long} type.
      */
     @Override

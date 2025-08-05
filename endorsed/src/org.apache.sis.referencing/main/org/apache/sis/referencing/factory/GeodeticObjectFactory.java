@@ -657,6 +657,10 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * Creates a datum ensemble from a collection of members and an ensemble accuracy.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code DatumEnsemble} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).</div>
+     *
      * @param  <D>         the type of datum contained in the ensemble.
      * @param  properties  name and other properties to give to the new object.
      * @param  members     datum or reference frames which are members of the datum ensemble.

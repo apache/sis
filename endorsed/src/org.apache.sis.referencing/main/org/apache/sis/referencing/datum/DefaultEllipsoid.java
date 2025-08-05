@@ -564,7 +564,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     final Map<String,?> properties(final Unit<Length> target) {
         return Map.of(NAME_KEY, '“' + getName().getCode() + "” converted to " + target,
-                      "domains", getDomains());
+                      DOMAINS_KEY, getDomains());
     }
 
     /**

@@ -100,6 +100,30 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Key for the <code>{@value}</code> property to be given to the
      * {@code DatumFactory.createFoo(Map, ...)} methods.
+     * This is used for setting the value to be returned by {@link #getAnchorDefinition()}.
+     *
+     * @see DatumFactory
+     * @see #getAnchorDefinition()
+     *
+     * @since 1.5
+     */
+    public static final String ANCHOR_DEFINITION_KEY = "anchorDefinition";
+
+    /**
+     * Key for the <code>{@value}</code> property to be given to the
+     * {@code DatumFactory.createFoo(Map, ...)} methods.
+     * This is used for setting the value to be returned by {@link #getAnchorEpoch()}.
+     *
+     * @see DatumFactory
+     * @see #getAnchorEpoch()
+     *
+     * @since 1.5
+     */
+    public static final String ANCHOR_EPOCH_KEY = "anchorEpoch";
+
+    /**
+     * Key for the <code>{@value}</code> property to be given to the
+     * {@code DatumFactory.createFoo(Map, ...)} methods.
      * This is used for setting the value to be returned by {@link #getPublicationDate()}.
      *
      * @since 1.5
@@ -172,7 +196,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getAnchorDefinition()}</td>
      *   </tr><tr>
-     *     <td>{@code "anchorEpoch"}</td>
+     *     <td>{@value #ANCHOR_EPOCH_KEY}</td>
      *     <td>{@link Temporal}</td>
      *     <td>{@link #getAnchorEpoch()}</td>
      *   </tr><tr>
@@ -212,11 +236,11 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     public AbstractDatum(final Map<String,?> properties) {
         super(properties);
-        anchorDefinition = Types.toInternationalString(properties, "anchorDefinition");
+        anchorDefinition = Types.toInternationalString(properties, ANCHOR_DEFINITION_KEY);
         if (anchorDefinition == null) {
             anchorDefinition = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
         }
-        anchorEpoch = property(properties, "anchorEpoch", Temporal.class);
+        anchorEpoch = property(properties, ANCHOR_EPOCH_KEY, Temporal.class);
         if (anchorEpoch == null) {
             Date date = property(properties, REALIZATION_EPOCH_KEY, Date.class);
             if (date != null) {

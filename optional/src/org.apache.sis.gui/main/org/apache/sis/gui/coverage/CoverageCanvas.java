@@ -77,6 +77,7 @@ import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.io.TableAppender;
@@ -656,8 +657,13 @@ public class CoverageCanvas extends MapCanvasAWT {
                  */
                 @Override protected void succeeded() {
                     runAfterRendering(() -> {
-                        setNewSource(getValue(), ranges, zoom);
-                        requestRepaint();                   // Cause `Worker` class to be executed.
+                        try {
+                            setNewSource(getValue(), ranges, zoom);
+                            requestRepaint();                   // Cause `Worker` class to be executed.
+                        } catch (RuntimeException ex) {         // Mostly for `BackingStoreException`.
+                            clear();
+                            ExceptionReporter.canNotUseResource(fixedPane, Exceptions.unwrap(ex));
+                        }
                     });
                 }
 

@@ -147,7 +147,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         /*
          * Associate two BursaWolfParameters, one valid only in a local area and the other one
          * valid globaly.  Note that we are building an invalid set of parameters, because the
-         * source datum are not the same in both case. But for this test we are not interrested
+         * source datum are not the same in both case. But for this test we are not interested
          * in datum consistency - we only want any Bursa-Wolf parameters having different area
          * of validity.
          */

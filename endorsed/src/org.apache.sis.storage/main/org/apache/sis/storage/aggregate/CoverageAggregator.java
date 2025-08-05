@@ -197,7 +197,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      */
     public void add(final GridCoverage coverage) {
         try {
-            add(new MemoryGridResource(listeners, coverage, processor));
+            add(new MemoryGridResource(listeners, null, coverage, processor));
         } catch (DataStoreException e) {
             /*
              * `DataStoreException` are never thrown by `MemoryGridResource`.

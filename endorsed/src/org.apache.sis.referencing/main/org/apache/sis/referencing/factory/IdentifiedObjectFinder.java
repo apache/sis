@@ -526,7 +526,7 @@ public class IdentifiedObjectFinder {
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(FactoryException.class);
         } finally {
-            Semaphores.clear(Semaphores.FINER_OBJECT_CREATION_LOGS, finer);
+            Semaphores.clearIfFalse(Semaphores.FINER_OBJECT_CREATION_LOGS, finer);
         }
         return result;
     }

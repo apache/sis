@@ -187,8 +187,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Key for the <code>{@value}</code> property to be given to the
      * {@code ObjectFactory.createFoo(Map, ...)} methods.
      * This is used for setting the value to be returned by {@link #getDomains()}.
+     *
+     * @since 1.5
      */
-    static final String DOMAINS_KEY = "domains";
+    public static final String DOMAINS_KEY = "domains";
 
     /**
      * The name for this object or code. Shall never be {@code null}.
@@ -601,6 +603,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @since 0.6
      */
     public Optional<InternationalString> getDescription() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ReferenceIdentifier name = getName();
         if (name instanceof ImmutableIdentifier) {
             return Optional.ofNullable(((ImmutableIdentifier) name).getDescription());
@@ -1190,7 +1193,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                      * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
                      * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
                      * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
-                     * who are not interrested in XML) and it may actually be less efficient for the vast
+                     * who are not interested in XML) and it may actually be less efficient for the vast
                      * majority of cases where there is less than 3 aliases.
                      */
                     final int size = alias.size();

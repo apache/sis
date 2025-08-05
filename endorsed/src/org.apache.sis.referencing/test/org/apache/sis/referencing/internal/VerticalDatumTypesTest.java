@@ -52,23 +52,35 @@ public final class VerticalDatumTypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link VerticalDatumTypes#fromLegacy(int)} method.
+     * Tests the {@link VerticalDatumTypes#fromLegacyCode(int)} method.
      */
     @Test
-    public void testFromLegacy() {
-        assertEquals(VerticalDatumTypes.ellipsoidal(), VerticalDatumTypes.fromLegacy(2002));
-        assertEquals(VerticalDatumType .GEOIDAL,       VerticalDatumTypes.fromLegacy(2005));
-        assertEquals(VerticalDatumType .DEPTH,         VerticalDatumTypes.fromLegacy(2006));
+    public void testFromLegacyCode() {
+        assertEquals(VerticalDatumTypes.ellipsoidal(), VerticalDatumTypes.fromLegacyCode(2002));
+        assertEquals(VerticalDatumType .GEOIDAL,       VerticalDatumTypes.fromLegacyCode(2005));
+        assertEquals(VerticalDatumType .DEPTH,         VerticalDatumTypes.fromLegacyCode(2006));
     }
 
     /**
-     * Tests the {@link VerticalDatumTypes#toLegacy(VerticalDatumType)} method.
+     * Tests the {@link VerticalDatumTypes#toLegacyCode(VerticalDatumType)} method.
      */
     @Test
-    public void testToLegacy() {
-        assertEquals(2002, VerticalDatumTypes.toLegacy(VerticalDatumType.valueOf("ELLIPSOIDAL")));
-        assertEquals(2005, VerticalDatumTypes.toLegacy(VerticalDatumType.GEOIDAL));
-        assertEquals(2006, VerticalDatumTypes.toLegacy(VerticalDatumType.DEPTH));
+    @SuppressWarnings("deprecation")
+    public void testToLegacyCode() {
+        assertEquals(2002, VerticalDatumTypes.toLegacyCode(VerticalDatumType.valueOf("ELLIPSOIDAL")));
+        assertEquals(2005, VerticalDatumTypes.toLegacyCode(VerticalDatumType.GEOIDAL));
+        assertEquals(2006, VerticalDatumTypes.toLegacyCode(VerticalDatumType.DEPTH));
+    }
+
+    /**
+     * Tests the {@link VerticalDatumTypes#fromMethod(String)} method
+     * with names from the <abbr>EPSG</abbr> database.
+     */
+    @Test
+    public void testFromMethod() {
+        assertEquals(VerticalDatumType.GEOIDAL, VerticalDatumTypes.fromMethod("Geoid-based"));
+        assertEquals(VerticalDatumType.DEPTH,   VerticalDatumTypes.fromMethod("Tidal"));
+        assertTrue(VerticalDatumTypes.LOCAL.equalsIgnoreCase(VerticalDatumTypes.fromMethod("Local").name()));
     }
 
     /**

@@ -172,7 +172,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * Verifies that the given value can be casted to the expected type.
+     * Verifies that the given value can be cast to the expected type.
      * The expected type must be one of the {@link Numbers} constants.
      */
     void verifyType(final Number value, final byte expected) {
@@ -230,7 +230,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /**
-         * Returns the value casted as a {@code float}, since we may loose precision but the
+         * Returns the value cast as a {@code float}, since we may loose precision but the
          * result of the cast is not completely wrong (at worst we get zero of infinity values
          * if the magnitude of the {@code double} value was too small or too large).
          */

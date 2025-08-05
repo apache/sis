@@ -51,13 +51,13 @@ public final class Constants extends Static {
 
     /**
      * The length of a day in number of seconds.
-     * Can be casted to {@code float} with exact precision.
+     * Can be cast to {@code float} with exact precision.
      */
     public static final int SECONDS_PER_DAY = 24*60*60;
 
     /**
      * The length of a day in number of milliseconds.
-     * Can be casted to {@code float} with exact precision.
+     * Can be cast to {@code float} with exact precision.
      */
     public static final int MILLISECONDS_PER_DAY = SECONDS_PER_DAY * 1000;
 
@@ -68,19 +68,19 @@ public final class Constants extends Static {
 
     /**
      * Number of milliseconds in one second.
-     * Can be casted to {@code float} with exact precision.
+     * Can be cast to {@code float} with exact precision.
      */
     public static final int MILLIS_PER_SECOND = 1000;
 
     /**
      * Number of nanoseconds in one millisecond.
-     * Can be casted to {@code float} with exact precision.
+     * Can be cast to {@code float} with exact precision.
      */
     public static final int NANOS_PER_MILLISECOND = 1000_000;
 
     /**
      * Number of nanoseconds in one second.
-     * Can be casted to {@code float} with exact precision.
+     * Can be cast to {@code float} with exact precision.
      */
     public static final int NANOS_PER_SECOND = 1000_000_000;
 

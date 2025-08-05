@@ -76,6 +76,7 @@ Open the `Tables.sql` file for edition:
 * Change the type of `coord_ref_sys_kind` column from `VARCHAR(24)` to `epsg_crs_kind`.
 * Change the type of `coord_sys_type` column from `VARCHAR(24)` to `epsg_cs_kind`.
 * Change the type of `datum_type` column from `VARCHAR(24)` to `epsg_datum_kind`.
+* Change the type of `supersession_type` column from `VARCHAR(50)` to `epsg_supersession_type`.
 * Suppress trailing spaces and save.
 
 Then open the `FKeys.sql` file for edition:

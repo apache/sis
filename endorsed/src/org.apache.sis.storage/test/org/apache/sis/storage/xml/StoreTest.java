@@ -93,7 +93,7 @@ public final class StoreTest extends TestCase {
      * Tests {@link Store#getMetadata()}.
      *
      * @throws URISyntaxException if an error occurred while normalizing the URI.
-     * @throws DataStoreException if en error occurred while reading the XML.
+     * @throws DataStoreException if an error occurred while reading the XML.
      */
     @Test
     public void testMetadata() throws URISyntaxException, DataStoreException {

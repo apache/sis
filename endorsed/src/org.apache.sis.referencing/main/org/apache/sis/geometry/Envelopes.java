@@ -22,10 +22,10 @@ package org.apache.sis.geometry;
  * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
+import java.util.Map;
 import java.util.Set;
-import java.util.List;
 import java.util.Optional;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.logging.Logger;
 import java.time.Instant;
@@ -44,10 +44,12 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
-import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.DirectPositionView;
 import org.apache.sis.referencing.privy.TemporalAccessor;
@@ -368,8 +370,8 @@ public final class Envelopes extends Static {
     }
 
     /**
-     * Shared implementation of {@link #transform(MathTransform, Envelope)}
-     * and {@link #wraparound(MathTransform, Envelope)} public methods.
+     * Shared implementation of {@link #transform(MathTransform, Envelope)} and
+     * {@link #transformWithWraparound(MathTransform, Envelope)} public methods.
      * Offers also the opportunity to save the transformed center coordinates.
      *
      * @param  transform  the transform to use.
@@ -382,7 +384,7 @@ public final class Envelopes extends Static {
      * @return the transformed envelope. May be {@code null} if {@code results} was non-null.
      */
     private static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope,
-            double[] targetPt, final List<GeneralEnvelope> results) throws TransformException
+            double[] targetPt, final Map<Parameters, GeneralEnvelope> results) throws TransformException
     {
         if (transform.isIdentity()) {
             /*
@@ -580,7 +582,8 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
              * `GridExtent` have algorithms for completing empty envelopes.
              */
             if (results != null) {
-                results.add(transformed);
+                final GeneralEnvelope e = results.putIfAbsent(wc.state(), transformed);
+                if (e != null) e.add(transformed);    // Should never happen, but let be safe.
                 transformed = null;
             }
         } while (wc.translate());
@@ -954,9 +957,8 @@ poles:  for (int i=0; i<dimension; i++) {
      *
      * <h4>Limitation</h4>
      * This method cannot handle the case where the envelope contains the North or South pole.
-     * Envelopes crossing the ±180° longitude are handled only if the given transform contains
-     * {@link org.apache.sis.referencing.operation.transform.WraparoundTransform} steps;
-     * this method does not add such steps itself.
+     * Furthermore, envelopes crossing the ±180° longitude are handled only if the given transform
+     * contains {@link WraparoundTransform} steps, as this method does not add such steps itself.
      * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.
      *
      * @param  transform  the transform to use.
@@ -977,38 +979,84 @@ poles:  for (int i=0; i<dimension; i++) {
 
     /**
      * Transforms potentially many times an envelope using the given math transform.
-     * If the given envelope is {@code null}, then this method returns an empty envelope.
-     * Otherwise, if the transform does not contain any
-     * {@link org.apache.sis.referencing.operation.transform.WraparoundTransform} step,
-     * then this method is equivalent to {@link #transform(MathTransform, Envelope)} returned in an array of length 1.
-     * Otherwise, this method returns many transformed envelopes where each envelope describes approximately the same region.
-     * If the envelope CRS is geographic, the many envelopes are the same envelope shifted by 360° of longitude.
-     * If the envelope CRS is projected, then the 360° shifts are applied before the map projection.
-     * It may result in very different coordinates.
+     * If the given envelope is {@code null}, then this method returns an empty map.
+     * Otherwise, if the given transform does not contain any {@link WraparoundTransform} step,
+     * then this method is equivalent to {@link #transform(MathTransform, Envelope)} returned in a singleton map.
+     * Otherwise, this method returns many transformed envelopes where each envelope describes approximately the
+     * same region. For example:
+     *
+     * <ul>
+     *   <li>If the envelope <abbr>CRS</abbr> is geographic,
+     *       the map values are the same envelope shifted by 360° of longitude.</li>
+     *   <li>If the envelope <abbr>CRS</abbr> is projected, then the 360° shifts are applied
+     *       before the map projection. It may result in very different coordinates.</li>
+     * </ul>
+     *
+     * The keys identify which translations were applied on wraparound axes for computing the associated envelope.
+     * For example, a key may identify an envelope computed with a shift of 360° of longitude on some coordinates,
+     * and another key may identify the same envelope but computed with a shift of −360° of longitude.
+     * The content of those keys is implementation dependent and users should not rely on the exact parameters.
+     * The main contract is that, for envelopes computed with the same transform,
+     * the values that are associated with {@linkplain Object#equals(Object) equal} keys
+     * were computed with wraparounds applied in the same way (e.g. +360° versus −360°).
+     *
+     * <p><b>Example:</b> the union of two envelopes taking in account wraparounds can be computed as below:</p>
+     *
+     * {@snippet lang="java" :
+     *     MathTransform transform = ...;
+     *     Map<Parameters, GeneralEnvelope> result = Envelopes.transformWithWraparound(transform, envelope1);
+     *     Envelopes.transformWithWraparound(transform, envelope2).forEach((key, value) -> {
+     *         GeneralEnvelope previous = result.putIfAbsent(key, value);
+     *         if (previous != null) previous.add(value);   // Envelope union.
+     *     });
+     * }
+     *
+     * Note that the key may be {@code null} if the given transform
+     * does not contain any {@link WraparoundTransform} step.
+     *
+     * @param  transform  the transform to use.
+     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
+     * @return the transformed envelopes, or an empty map if {@code envelope} was null.
+     * @throws TransformException if a transform failed.
+     *
+     * @see #transform(MathTransform, Envelope)
+     * @see WraparoundTransform
+     *
+     * @since 1.5
+     */
+    public static Map<Parameters, GeneralEnvelope> transformWithWraparound(
+            final MathTransform transform, final Envelope envelope) throws TransformException
+    {
+        ArgumentChecks.ensureNonNull("transform", transform);
+        if (envelope == null) {
+            return Map.of();
+        }
+        final var results = new LinkedHashMap<Parameters, GeneralEnvelope>(4);
+        final GeneralEnvelope transformed = transform(transform, envelope, null, results);
+        if (results.isEmpty() && transformed != null) {
+            results.put(null, transformed);
+        }
+        return results;
+    }
+
+    /**
+     * Transforms potentially many times an envelope using the given math transform.
+     * If the given envelope is {@code null}, then this method returns an empty array.
      *
      * @param  transform  the transform to use.
      * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
      * @return the transformed envelopes, or an empty array if {@code envelope} was null.
      * @throws TransformException if a transform failed.
      *
-     * @see #transform(MathTransform, Envelope)
-     * @see org.apache.sis.referencing.operation.transform.WraparoundTransform
-     *
      * @since 1.3
+     *
+     * @deprecated Replaced by {@link #transformWithWraparound(MathTransform, Envelope)}.
      */
+    @Deprecated(since = "1.5", forRemoval = true)
     public static GeneralEnvelope[] wraparound(final MathTransform transform, final Envelope envelope)
             throws TransformException
     {
-        ArgumentChecks.ensureNonNull("transform", transform);
-        if (envelope == null) {
-            return new GeneralEnvelope[0];
-        }
-        final var results = new ArrayList<GeneralEnvelope>(4);
-        final GeneralEnvelope transformed = transform(transform, envelope, null, results);
-        if (results.isEmpty() && transformed != null) {
-            return new GeneralEnvelope[] {transformed};
-        }
-        return results.toArray(GeneralEnvelope[]::new);
+        return transformWithWraparound(transform, envelope).values().toArray(GeneralEnvelope[]::new);
     }
 
     /**

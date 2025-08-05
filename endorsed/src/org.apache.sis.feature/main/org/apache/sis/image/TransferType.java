@@ -70,7 +70,7 @@ public final class TransferType<T extends Buffer> implements Serializable {
 
     /**
      * Specifies that sample values are transferred as 32 bits signed integer.
-     * If the raster stores sample values as {@code byte} or {@code short}, the values are casted by a widening
+     * If the raster stores sample values as {@code byte} or {@code short}, the values are cast by a widening
      * conversion before to be transferred. If the raster stores sample values as {@code float} or {@code double},
      * the values are rounded toward 0 before to be transferred.
      *
@@ -81,7 +81,7 @@ public final class TransferType<T extends Buffer> implements Serializable {
 
     /**
      * Specifies that sample values are transferred as single-precision floating point number.
-     * Values of other types are casted as needed.
+     * Values of other types are cast as needed.
      *
      * @see PixelIterator#getSampleFloat(int)
      * @see PixelIterator#getPixel(float[])
@@ -90,7 +90,7 @@ public final class TransferType<T extends Buffer> implements Serializable {
 
     /**
      * Specifies that sample values are transferred as double-precision floating point number.
-     * Values of other types are casted as needed. This is the safest transfer type to use
+     * Values of other types are cast as needed. This is the safest transfer type to use
      * when wanting to avoid any precision lost.
      *
      * @see PixelIterator#getSampleDouble(int)

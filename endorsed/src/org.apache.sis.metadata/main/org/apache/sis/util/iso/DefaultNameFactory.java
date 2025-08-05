@@ -371,7 +371,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *
      * <p>Allowed types or element types are:</p>
      * <ul>
-     *   <li>{@link GenericName}, to be casted and returned as-is.</li>
+     *   <li>{@link GenericName}, to be cast and returned as-is.</li>
      *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}),
      *       to be parsed as a generic name using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
      *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
@@ -383,8 +383,8 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *
      * @param  value  the object to cast into an array of generic names, or {@code null}.
      * @return the generic names, or {@code null} if the given {@code value} was null.
-     *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
-     * @throws ClassCastException if {@code value} cannot be casted.
+     *         Note that it may be the {@code value} reference itself cast to {@code GenericName[]}.
+     * @throws ClassCastException if {@code value} cannot be cast.
      *
      * @since 0.5
      */

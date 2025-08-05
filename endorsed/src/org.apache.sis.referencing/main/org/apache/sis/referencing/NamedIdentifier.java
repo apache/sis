@@ -161,7 +161,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *   </tr><tr>
      *     <td>{@code "name"}</td>
      *     <td>{@link GenericName}</td>
-     *     <td>(none)</td>
+     *     <td>(many)</td>
      *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
      *   </tr><tr>

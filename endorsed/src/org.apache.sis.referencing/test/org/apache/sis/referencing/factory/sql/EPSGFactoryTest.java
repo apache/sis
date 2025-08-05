@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.Locale;
@@ -46,13 +45,13 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
-import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;
@@ -121,9 +120,6 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, crs.getDatum());
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
-        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
-        assertEquals(0, bwp.length, "Expected no Bursa-Wolf parameters.");
-
         assertSame(crs, factory.createCoordinateReferenceSystem("4326"), "CRS shall be cached.");
         assertSame(crs, factory.createGeographicCRS("EPSG::4326"), "Shall accept \"::\"");
         loggings.assertNoUnexpectedLog();
@@ -141,9 +137,6 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertEpsgNameAndIdentifierEqual("Datum 73", 4274, crs);
         assertEpsgNameAndIdentifierEqual("Datum 73", 6274, crs.getDatum());
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
-
-        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
-        assertTrue(bwp.length >= 1, "Expected a transformation to WGS84.");
 
         assertSame(crs, factory.createCoordinateReferenceSystem("4274"), "CRS shall be cached.");
         loggings.assertNoUnexpectedLog();
@@ -426,10 +419,15 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     @Test
     public void testDeprecatedCoordinateSystems() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
-        for (final Map.Entry<Integer,Integer> entry : EPSGDataAccess.deprecatedCS().entrySet()) {
-            final CoordinateSystem expected = factory.createEllipsoidalCS(entry.getValue().toString());
+        for (int deprecatedCode = 6401; deprecatedCode <= 6420; deprecatedCode++) {
+            final int replacementCode = EPSGDataAccess.replaceDeprecatedCS(deprecatedCode);
+            if (replacementCode == deprecatedCode) {
+                assertTrue(deprecatedCode >= 6403 && deprecatedCode <= 6404);
+                continue;   // Non-deprecated code.
+            }
+            final CoordinateSystem expected = factory.createEllipsoidalCS(Integer.toString(replacementCode));
             loggings.assertNoUnexpectedLog();
-            final String code = entry.getKey().toString();
+            final String code = Integer.toString(deprecatedCode);
             final CoordinateSystem deprecated;
             try {
                 deprecated = factory.createEllipsoidalCS(code);
@@ -860,7 +858,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertEquals(1.0, AbstractCoordinateOperation.castOrCopy(operation3).getLinearAccuracy());
         /*
          * Creates from CRS codes. There is 40 such operations in EPSG version 6.7.
-         * The preferred one (according the "supersession" table) is EPSG:1612.
+         * The one with the largest domain of validity is EPSG:1133.
          */
         final Set<CoordinateOperation> all = factory.createFromCoordinateReferenceSystemCodes("4230", "4326");
         assertTrue(all.size() >= 3, "Number of coordinate operations.");
@@ -869,14 +867,22 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertTrue(all.contains(operation3), "contains(“EPSG::1989”)");
 
         int count = 0;
+        boolean found1590 = false;  // In Norway, superseded by 1612.
+        boolean found1612 = false;  // Replacement for 1590.
         for (final CoordinateOperation tr : all) {
             assertSame(sourceCRS, tr.getSourceCRS());
             assertSame(targetCRS, tr.getTargetCRS());
             if (count == 0) {   // Preferred transformation (see above comment).
-                assertEpsgNameAndIdentifierEqual("ED50 to WGS 84 (23)", 1612, tr);
+                assertEpsgNameAndIdentifierEqual("ED50 to WGS 84 (1)", 1133, tr);
+            }
+            switch (Integer.parseInt(IdentifiedObjects.getIdentifier(tr, Citations.EPSG).getCode())) {
+                case 1612: found1612 = true; assertFalse(found1590); break;     // Should be find first.
+                case 1590: found1590 = true; assertTrue (found1612); break;     // Should be after 1612.
             }
             count++;
         }
+        assertTrue(found1612);
+        assertFalse(found1590);                 // TODO `assertTrue` if we support "Norway Offshore Interpolation".
         assertEquals(count, all.size());        // Size may have been modified after above loop.
         loggings.clear();                       // Too installation-dependent for testing them.
     }
@@ -981,8 +987,8 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
          * not be selected in this test.
          */
         final Iterator<IdentifiedObject> it = find.iterator();
-        assertEpsgNameAndIdentifierEqual("Beijing 1954 / 3-degree Gauss-Kruger CM 135E",  2442, it.next());
         assertEpsgNameAndIdentifierEqual("Beijing 1954 / Gauss-Kruger CM 135E", 21463, it.next());
+        assertEpsgNameAndIdentifierEqual("Beijing 1954 / 3-degree Gauss-Kruger CM 135E", 2442, it.next());
         assertFalse(it.hasNext());
         loggings.assertNoUnexpectedLog();
     }

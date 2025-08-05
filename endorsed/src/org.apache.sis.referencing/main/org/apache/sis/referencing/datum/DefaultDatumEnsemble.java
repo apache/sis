@@ -45,6 +45,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.metadata.privy.SecondaryTrait;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
@@ -143,8 +144,8 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      * @param  properties  the properties to be given to the identified object.
      * @param  members     datum or reference frames which are members of this ensemble.
      * @param  accuracy    inaccuracy introduced through use of this ensemble (mandatory).
-     * @param  type        the base type of datum members contained in this ensemble.
-     * @throws ClassCastException if a member is not an instance of {@code type}.
+     * @param  memberType  the base type of datum members contained in this ensemble.
+     * @throws ClassCastException if a member is not an instance of {@code memberType}.
      * @throws IllegalArgumentException if a member is an instance of {@code DatumEnsemble}, of if at least two
      *         different {@linkplain AbstractDatum#getConventionalRS() conventional reference systems} are found.
      *
@@ -153,13 +154,13 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
     protected DefaultDatumEnsemble(final Map<String,?> properties,
                                    final Collection<? extends D> members,
                                    final PositionalAccuracy accuracy,
-                                   final Class<? super D> type)
+                                   final Class<D> memberType)
     {
         super(properties);
         ArgumentChecks.ensureNonNull("accuracy", accuracy);
         ensembleAccuracy = accuracy;
         this.members = List.copyOf(members);
-        validate(type);
+        validate(memberType);
     }
 
     /**
@@ -169,38 +170,38 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param  ensemble  the ensemble to copy.
-     * @param  type      the base type of datum members contained in this ensemble.
-     * @throws ClassCastException if a member is not an instance of {@code type}.
+     * @param  ensemble    the ensemble to copy.
+     * @param  memberType  the base type of datum members contained in this ensemble.
+     * @throws ClassCastException if a member is not an instance of {@code memberType}.
      * @throws IllegalArgumentException if a member is an instance of {@code DatumEnsemble}, of if at least two
      *         different {@linkplain AbstractDatum#getConventionalRS() conventional reference systems} are found.
      */
-    protected DefaultDatumEnsemble(final DefaultDatumEnsemble<? extends D> ensemble, final Class<? super D> type) {
+    protected DefaultDatumEnsemble(final DefaultDatumEnsemble<? extends D> ensemble, final Class<D> memberType) {
         super(ensemble);
         members = List.copyOf(ensemble.getMembers());
         ensembleAccuracy = Objects.requireNonNull(ensemble.getEnsembleAccuracy());
-        validate(type);
+        validate(memberType);
     }
 
     /**
      * Verifies this ensemble. All members shall be instances of the specified type and shall have
      * the same conventional reference system. No member can be an instance of {@code DatumEnsemble}.
      *
-     * @param  type  the base type of datum members contained in this ensemble.
-     * @throws ClassCastException if a member is not an instance of {@code type}.
+     * @param  memberType  the base type of datum members contained in this ensemble.
+     * @throws ClassCastException if a member is not an instance of {@code memberType}.
      * @throws IllegalArgumentException if a member is an instance of {@code DatumEnsemble}, of if at least two
      *         different {@linkplain AbstractDatum#getConventionalRS() conventional reference systems} are found.
      */
-    private void validate(final Class<? super D> type) {
+    private void validate(final Class<D> memberType) {
         IdentifiedObject rs = null;
         for (final D datum : members) {
             if (datum instanceof DefaultDatumEnsemble<?>) {
                 throw new IllegalArgumentException(
                         Errors.format(Errors.Keys.IllegalPropertyValueClass_2, "members", DefaultDatumEnsemble.class));
             }
-            if (!type.isInstance(datum)) {
+            if (!memberType.isInstance(datum)) {
                 throw new ClassCastException(
-                        Errors.format(Errors.Keys.IllegalClass_2, type, datum.getClass()));
+                        Errors.format(Errors.Keys.IllegalClass_2, memberType, Classes.getClass(datum)));
             }
             if (!(datum instanceof AbstractDatum)) continue;
             final IdentifiedObject dr = ((AbstractDatum) datum).getConventionalRS().orElse(null);
@@ -233,7 +234,36 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
             final Collection<? extends D> members,
             final PositionalAccuracy accuracy)
     {
-        return Factory.forMemberType(null, properties, List.copyOf(members), accuracy);
+        return Factory.forMemberType(Datum.class, null, properties, List.copyOf(members), accuracy);
+    }
+
+    /**
+     * Returns this datum ensemble as a collection of datum of the given type.
+     * This method casts the datum members, it does not copy or rewrite them.
+     * However, the returned {@code DatumEnsemble} may be a different instance.
+     *
+     * @param  <N>         compile-time value of {@code memberType}.
+     * @param  memberType  the new desired type of datum members.
+     * @return an ensemble of datum of the given type.
+     * @throws ClassCastException if at least one member is not an instance of the specified type.
+     */
+    public <N extends Datum> DefaultDatumEnsemble<N> cast(final Class<N> memberType) {
+        for (final D member : members) {
+            if (!memberType.isInstance(member)) {
+                throw new ClassCastException(Errors.format(Errors.Keys.IllegalClass_2, memberType, Classes.getClass(member)));
+            }
+        }
+        /*
+         * At this point, we verified that all members are of the requested type.
+         * Now verify if the ensemble as a whole is also of the requested type.
+         * This part is not mandatory however.
+         */
+        @SuppressWarnings("unchecked")
+        DefaultDatumEnsemble<N> ensemble = (DefaultDatumEnsemble<N>) this;
+        if (!memberType.isInstance(ensemble)) {
+            ensemble = Factory.forMemberType(memberType, ensemble, null, ensemble.members, ensemble.ensembleAccuracy);
+        }
+        return ensemble;
     }
 
     /*
@@ -249,11 +279,12 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
 
     /**
      * Returns the datum or reference frames which are members of this ensemble.
+     * The returned list is immutable.
      *
      * @return datum or reference frames which are members of this ensemble.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Collection is unmodifiable.
-    public Collection<D> getMembers() {
+    public final Collection<D> getMembers() {               // Must be final for type safety. See `forMemberType(…)`
         return members;
     }
 
@@ -603,15 +634,15 @@ check:  if (it.hasNext()) {
         /**
          * Base type of all members in the ensembles constructed by this factory instance.
          */
-        private final Class<D> type;
+        private final Class<D> memberType;
 
         /**
          * Creates a new factory for ensembles in which all members are instances of the given type.
          *
-         * @param  type  base type of all members in the ensembles constructed by this factory instance.
+         * @param  memberType  base type of all members in the ensembles constructed by this factory instance.
          */
-        private Factory(final Class<D> type) {
-            this.type = type;
+        private Factory(final Class<D> memberType) {
+            this.memberType = memberType;
         }
 
         /**
@@ -621,12 +652,14 @@ check:  if (it.hasNext()) {
          *
          * <ul>
          *   <li>{@link #getMembers()}, which is a read-only collection (it is safe to cast {@code List<? extends D>}
-         *       as {@code List<D>} when no write operation is allowed).</li>
+         *       as {@code List<D>} when no write operation is allowed). That method is made final for enforcing this
+         *       assumption.</li>
          * </ul>
          *
          * Exactly one of {@code object} and {@code properties} should be non-null.
          *
          * @param  <D>          base type of all members in the ensembles to create.
+         * @param  memberType   the base class of datum type to take in account.
          * @param  object       the source ensemble to copy, or {@code null} if none.
          * @param  properties   the properties of the ensemble to create, or {@code null}.
          * @param  members      members of the ensemble to copy or create.
@@ -636,35 +669,40 @@ check:  if (it.hasNext()) {
          *         Should never happen if the parameterized type of {@code members} is respected.
          */
         static <D extends Datum> DefaultDatumEnsemble<D> forMemberType(
+                final Class<? extends Datum> memberType,
                 final DefaultDatumEnsemble<? extends D> object,
                 final Map<String,?> properties,
                 final List<? extends D> members,
                 final PositionalAccuracy accuracy)
         {
+            Object illegal = null;
 nextType:   for (final Factory<?> factory : FACTORIES) {
-                for (final Object member : members) {
-                    if (!factory.type.isInstance(member)) {
-                        continue nextType;
+                if (memberType.isAssignableFrom(factory.memberType)) {
+                    for (final Object member : members) {
+                        if (!factory.memberType.isInstance(member)) {
+                            illegal = member;
+                            continue nextType;
+                        }
+                    }
+                    /*
+                     * A more correct type would be `Factory<? super D>` because of the use of `isInstance(member)`
+                     * instead of strict class equality. However, even `? super D` is not guaranteed to be correct,
+                     * because nothing prevent a member from implementing two interfaces. In such case, the type of
+                     * the first matching factory could be unrelated to `D` (e.g., `D` is `ParametricDatum` but all
+                     * members also implement `VerticalDatum`). However, despite this uncertainty, the cast is okay
+                     * because `D` appears only in `getMembers()` which returns a read-only collection. There is no
+                     * method returning `Class<D>` and no guarantees that the returned object will implement `D`.
+                     */
+                    @SuppressWarnings("unchecked")
+                    final var selected = (Factory<D>) factory;      // See above comment.
+                    if (object != null) {
+                        return selected.copy(object);
+                    } else {
+                        return selected.create(properties, members, accuracy);
                     }
                 }
-                /*
-                 * A more correct type would be `Factory<? super D>` because of the use of `isInstance(member)`
-                 * instead of strict class equality. However, even `? super D` is not guaranteed to be correct,
-                 * because nothing prevent a member from implementing two interfaces. In such case, the type of
-                 * the first matching factory could be unrelated to `D` (e.g., `D` is `ParametricDatum` but all
-                 * members also implement `VerticalDatum`). However, despite this uncertainty, the cast is okay
-                 * because `D` appears only in `getMembers()` which returns a read-only collection. There is no
-                 * method returning `Class<D>` and no guarantees that the returned object will implement `D`.
-                 */
-                @SuppressWarnings("unchecked")
-                final var selected = (Factory<D>) factory;      // See above comment.
-                if (object != null) {
-                    return selected.copy(object);
-                } else {
-                    return selected.create(properties, members, accuracy);
-                }
             }
-            throw new ClassCastException();
+            throw new ClassCastException(Errors.format(Errors.Keys.IllegalClass_2, Datum.class, Classes.getClass(illegal)));
         }
 
         /**

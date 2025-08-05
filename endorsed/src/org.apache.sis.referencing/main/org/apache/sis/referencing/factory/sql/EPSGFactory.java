@@ -457,7 +457,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                     if (tr == null) {
                         tr = new SQLTranslator(connection.getMetaData(), catalog, schema);
                         try {
-                            if (!tr.isTableFound()) {
+                            if (!tr.isSchemaFound()) {
                                 install(connection);
                                 tr.setup(connection.getMetaData());         // Set only on success.
                             }
@@ -467,7 +467,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                     }
                 }
             }
-            if (tr.isTableFound()) {
+            if (tr.isSchemaFound()) {
                 return newDataAccess(connection, tr);
             } else {
                 String cause;

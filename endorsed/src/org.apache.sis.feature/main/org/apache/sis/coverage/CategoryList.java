@@ -359,7 +359,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
          * Note that the background value given in argument is a sample value, so it can be
          * used only for the "unit to sample" conversion. If that background value is zero,
          * it will be interpreted as "let NaN values propagate" but it should be okay since
-         * NaN casted to integers become 0.
+         * NaN cast to integers become 0.
          */
         fallback = (!isSampleToUnit && background != null) ? background.doubleValue() : Double.NaN;
     }

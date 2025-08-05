@@ -490,6 +490,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Engineering = 77;
 
         /**
+         * Ensemble accuracy
+         */
+        public static final short EnsembleAccuracy = 278;
+
+        /**
          * {0} entr{0,choice,0#y|2#ies}
          */
         public static final short EntryCount_1 = 78;

@@ -62,6 +62,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.system.Modules;
@@ -1246,12 +1247,12 @@ public class GridExtent implements Serializable, LenientComparable {
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
      * @see GridGeometry#getEnvelope(CoordinateReferenceSystem)
      */
-    final GeneralEnvelope[] toEnvelopes(final MathTransform gridToCRS, final boolean isCenter,
-                                        final MathTransform specified, final Envelope fallback)
+    final Map<Parameters, GeneralEnvelope> toEnvelopes(final MathTransform gridToCRS, final boolean isCenter,
+                                                       final MathTransform specified, final Envelope fallback)
             throws TransformException
     {
-        final GeneralEnvelope[] envelopes = Envelopes.wraparound(gridToCRS, toEnvelope(isCenter));
-        for (final GeneralEnvelope envelope : envelopes) {
+        final Map<Parameters, GeneralEnvelope> envelopes = Envelopes.transformWithWraparound(gridToCRS, toEnvelope(isCenter));
+        for (final GeneralEnvelope envelope : envelopes.values()) {
             complete(envelope, specified, (specified == gridToCRS) == isCenter, fallback);
         }
         return envelopes;

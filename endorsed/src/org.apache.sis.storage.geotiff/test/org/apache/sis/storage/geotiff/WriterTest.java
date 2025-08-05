@@ -71,6 +71,11 @@ public final class WriterTest extends TestCase {
     private static final int TILE_WIDTH = 7, TILE_HEIGHT = 5;
 
     /**
+     * Minimal buffer size. Shall be smaller than {@code TILE_WIDTH * TILE_HEIGHT}.
+     */
+    private static final int MIN_BUFFER_SIZE = 20;
+
+    /**
      * The image to write.
      */
     private TiledImageMock image;
@@ -111,7 +116,7 @@ public final class WriterTest extends TestCase {
     /**
      * Initializes the test with a tiled image and a GeoTIFF writer.
      * The image is created with some random properties (pixel and tile coordinates) but verifiable pixel values.
-     * The writer uses a buffer of random size.
+     * The writer uses a buffer of random size, potentially smaller than the tile size but not always.
      *
      * @param  dataType  sample data type as one of the {@link java.awt.image.DataBuffer} constants.
      * @param  order     whether to use little endian or big endian byte order.
@@ -142,11 +147,11 @@ public final class WriterTest extends TestCase {
         image.validate();
         image.initializeAllTiles();
         output = new ByteArrayChannel(new byte[image.getWidth() * image.getHeight() * numBands * type.bytes() + 800], false);
-        var d = new ChannelDataOutput("TIFF", output, ByteBuffer.allocate(random.nextInt(128) + 20).order(order));
-        var c = new StorageConnector(d);
-        c.setOption(FormatModifier.OPTION_KEY, options);
-        c.setOption(Compression.OPTION_KEY, Compression.NONE);
-        store = new GeoTiffStore(null, c);
+        final var buffer = ByteBuffer.allocate(random.nextInt(128) + MIN_BUFFER_SIZE).order(order);
+        final var connector = new StorageConnector(new ChannelDataOutput("TIFF", output, buffer));
+        connector.setOption(FormatModifier.OPTION_KEY, options);
+        connector.setOption(Compression.OPTION_KEY, Compression.NONE);
+        store = new GeoTiffStore(null, connector);
         data  = output.toBuffer().order(order);
     }
 
@@ -231,7 +236,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * Tests the writing an RGB image made of a single tile with pixels on (8,8,8) bits.
+     * Tests the writing an <abbr>RGB</abbr> image made of a single tile with pixels on (8,8,8) bits.
      *
      * @throws IOException should never happen since the tests are writing in memory.
      * @throws DataStoreException if the image is incompatible with writer capability.
@@ -247,6 +252,19 @@ public final class WriterTest extends TestCase {
                                  new short[] {Byte.SIZE, Byte.SIZE, Byte.SIZE}, false);
         verifySampleValues(3);
         store.close();
+    }
+
+    /**
+     * Tests the writing an RGB image made of a single tile with pixels on (8,8,8) bits.
+     *
+     * @throws IOException should never happen since the tests are writing in memory.
+     * @throws DataStoreException if the image is incompatible with writer capability.
+     */
+    @Test
+    public void testUntiledMultiBandsOfDoubles() throws IOException, DataStoreException {
+        initialize(DataType.DOUBLE, ByteOrder.LITTLE_ENDIAN, false, 2, 1, 1, FormatModifier.ANY_TILE_SIZE);
+        writeImage();
+        verifyHeader(false, IOBase.LITTLE_ENDIAN);
     }
 
     /**
@@ -408,7 +426,11 @@ public final class WriterTest extends TestCase {
      * This is necessary for allowing the {@code isShort & isBigEndian} test to work.
      */
     private static Object compact(final short[] array) {
-        return (array.length == 1) ? array[0] : array;
+        switch (array.length) {
+            default: return array;
+            case 1:  return array[0];
+            case 2:  throw new UnsupportedOperationException("Not supported by current tests.");
+        }
     }
 
     /**
@@ -454,8 +476,9 @@ public final class WriterTest extends TestCase {
     /**
      * Verifies the sample values. Expected values are of the form "BTYX" where B is the band (starting with 1),
      * T is the tile index (starting with 1), and X and Y are pixel coordinates starting with 0.
+     * This method assumes that the sample values are stored as bytes.
      *
-     * @param  numBands     number of bands in each tile.
+     * @param  numBands  number of bands in each tile.
      */
     private void verifySampleValues(final int numBands) {
         @SuppressWarnings("LocalVariableHidesMemberVariable")

@@ -231,7 +231,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns 1 if the {@linkplain #getDenominator() denominator} is equal to 1, or 0 otherwise.
-     * This method is implemented that way because scales smaller than 1 can only be casted to 0,
+     * This method is implemented that way because scales smaller than 1 can only be cast to 0,
      * and NaN values are also represented by 0.
      *
      * @return 1 if the denominator is 1, or 0 otherwise.
@@ -243,7 +243,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns 1 if the {@linkplain #getDenominator() denominator} is equal to 1, or 0 otherwise.
-     * This method is implemented that way because scales smaller than 1 can only be casted to 0,
+     * This method is implemented that way because scales smaller than 1 can only be cast to 0,
      * and NaN values are also represented by 0.
      *
      * @return 1 if the denominator is 1, or 0 otherwise.

@@ -33,6 +33,7 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -223,18 +224,19 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
         formatter.newLine();
         formatter.append(WKTUtilities.toFormattable(datum));
         formatter.newLine();
-        final PrimeMeridian pm = datum.getPrimeMeridian();
         final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(cs, null);
-        if (convention != Convention.WKT2_SIMPLIFIED ||     // Really this specific enum, not Convention.isSimplified().
-                ReferencingUtilities.getGreenwichLongitude(pm, Units.DEGREE) != 0)
-        {
-            final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
-            formatter.indent(1);
-            formatter.append(WKTUtilities.toFormattable(pm));
-            formatter.indent(-1);
-            formatter.newLine();
-            formatter.restoreContextualUnit(angularUnit, oldUnit);
-        }
+        DatumOrEnsemble.getPrimeMeridian(this).ifPresent((PrimeMeridian pm) -> {
+            if (convention != Convention.WKT2_SIMPLIFIED ||     // Really this specific enum, not Convention.isSimplified().
+                    ReferencingUtilities.getGreenwichLongitude(pm, Units.DEGREE) != 0)
+            {
+                final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
+                formatter.indent(1);
+                formatter.append(WKTUtilities.toFormattable(pm));
+                formatter.indent(-1);
+                formatter.newLine();
+                formatter.restoreContextualUnit(angularUnit, oldUnit);
+            }
+        });
         /*
          * Get the coordinate system to format. This will also determine the units to write and the keyword to
          * return in WKT 1 format. Note that for the WKT 1 format, we need to replace the coordinate system by

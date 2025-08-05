@@ -75,7 +75,7 @@ import org.apache.sis.util.iso.Names;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.5
  * @since 1.0
  */
 public class SampleDimension implements Serializable {
@@ -211,6 +211,24 @@ public class SampleDimension implements Serializable {
      */
     public GenericName getName() {
         return name;
+    }
+
+    /**
+     * Returns a concise definition of this sample dimensions.
+     * This definition may be shown in user interfaces and should be considered as indicative only.
+     * The default implementation may change between different versions of Apache <abbr>SIS</abbr>.
+     *
+     * @return concise definition of the sample dimension.
+     *
+     * @since 1.5
+     */
+    public InternationalString getDefinition() {
+        for (Category category : categories) {
+            if (category.isQuantitative()) {
+                return category.getName();
+            }
+        }
+        return getName().toInternationalString();
     }
 
     /**

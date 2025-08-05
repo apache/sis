@@ -743,9 +743,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 reader.offsetOfWrittenIFD(offsetIFD);
             }
             index = writer.imageIndex++;
-        } catch (RasterFormatException | ArithmeticException e) {
+        } catch (RasterFormatException | ArithmeticException | IllegalArgumentException e) {
             throw new IncompatibleResourceException(cannotWrite(), e).addAspect("raster");
-        } catch (IOException e) {
+        } catch (RuntimeException | IOException e) {
             throw new DataStoreException(cannotWrite(), e);
         }
         if (components != null) {

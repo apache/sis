@@ -1097,7 +1097,7 @@ public class MetadataStandard implements Serializable {
                 return accessor.equals(metadata1, metadata2, mode);
             } finally {
                 inProgress.remove(pair);
-                Semaphores.clear(Semaphores.NULL_COLLECTION, allowNull);
+                Semaphores.clearIfFalse(Semaphores.NULL_COLLECTION, allowNull);
             }
         } else {
             /*

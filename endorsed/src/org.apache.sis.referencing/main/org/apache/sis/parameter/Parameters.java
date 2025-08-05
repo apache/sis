@@ -221,7 +221,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @param  <T>         the expected value class.
      * @param  descriptor  the descriptor to cast, or {@code null}.
      * @param  valueClass  the expected value class.
-     * @return the descriptor casted to the given value class, or {@code null} if the given descriptor was null.
+     * @return the descriptor cast to the given value class, or {@code null} if the given descriptor was null.
      * @throws ClassCastException if the given descriptor does not have the expected value class.
      *
      * @see Class#cast(Object)
@@ -254,7 +254,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * @param  <T>         the expected value class.
      * @param  parameter   the parameter to cast, or {@code null}.
      * @param  valueClass  the expected value class.
-     * @return the value casted to the given type, or {@code null} if the given value was null.
+     * @return the value cast to the given type, or {@code null} if the given value was null.
      * @throws ClassCastException if the given value doesn't have the expected value class.
      *
      * @see Class#cast(Object)

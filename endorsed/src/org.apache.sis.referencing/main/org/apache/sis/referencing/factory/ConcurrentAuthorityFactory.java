@@ -65,6 +65,9 @@ import org.apache.sis.system.Shutdown;
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.util.collection.BackingStoreException;
 
+// Specific to the main branch:
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
+
 
 /**
  * A concurrent authority factory that caches all objects created by another factory.
@@ -1101,7 +1104,37 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an arbitrary datum from a code. The returned object will typically be an
+     * Returns an arbitrary datum ensemble from a code.
+     * The default implementation performs the following steps:
+     * <ul>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createDatumEnsemble(String)}
+     *       method, invoke that method and cache the result for future use.</li>
+     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createDatumEnsemble(String)}
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
+     * </ul>
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code DatumEnsemble} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).</div>
+     *
+     * @return the datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @since 1.5
+     */
+    @Override
+    public DefaultDatumEnsemble<?> createDatumEnsemble(final String code) throws FactoryException {
+        if (isDefault(DefaultDatumEnsemble.class)) {
+            return super.createDatumEnsemble(code);
+        }
+        return create(AuthorityFactoryProxy.ENSEMBLE, code);
+    }
+
+    /**
+     * Returns an arbitrary datum from a code. The returned object will typically be a
+     * {@link GeodeticDatum}, {@link VerticalDatum}, {@link TemporalDatum} or {@link EngineeringDatum}.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
