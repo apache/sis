@@ -1506,6 +1506,30 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     }
 
     /**
+     * Invokes the {@code create(…)} method of the given constructor in a block which ensures that recursive method
+     * calls will be redirected to this factory. This is needed only when the constructor may indirectly invoke the
+     * {@link org.apache.sis.referencing.CRS#getAuthorityFactory(String)} method.
+     */
+    private <F extends Factory, R extends IdentifiedObject> R create(
+            final FactoryCall<F, R> constructor,
+            final F factory,
+            final Map<String, Object> properties) throws FactoryException
+    {
+        final ThreadLocal<CRSAuthorityFactory> caller = ParameterizedTransformBuilder.CREATOR;
+        final CRSAuthorityFactory old = caller.get();
+        caller.set(owner);
+        try {
+            return constructor.create(factory, properties);
+        } finally {
+            if (old != null) {
+                caller.set(old);
+            } else {
+                caller.remove();
+            }
+        }
+    }
+
+    /**
      * Creates an arbitrary coordinate reference system from a code.
      * The returned object will typically be an instance of {@link GeographicCRS}, {@link ProjectedCRS},
      * {@link VerticalCRS} or {@link CompoundCRS}.
@@ -1785,7 +1809,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
                         "Coordinate Reference System", epsg, name, null, area, scope, remarks, deprecated);
-                final CoordinateReferenceSystem crs = constructor.create(owner.crsFactory, properties);
+                final CoordinateReferenceSystem crs = create(constructor, owner.crsFactory, properties);
                 returnValue = ensureSingleton(crs, returnValue, code);
                 if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
@@ -3316,7 +3340,7 @@ next:                   while (r.next()) {
                 properties.put(CoordinateOperation .OPERATION_VERSION_KEY, version);
                 properties.put(CoordinateOperation .COORDINATE_OPERATION_ACCURACY_KEY,
                                PositionalAccuracyConstant.transformation(accuracy));
-                CoordinateOperation operation = constructor.create(owner.copFactory, properties);
+                CoordinateOperation operation = create(constructor, owner.copFactory, properties);
                 returnValue = ensureSingleton(operation, returnValue, code);
                 if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }

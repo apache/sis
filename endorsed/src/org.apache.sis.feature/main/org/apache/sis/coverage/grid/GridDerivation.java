@@ -615,7 +615,7 @@ public class GridDerivation {
                 nowraparound = finder.gridToGrid();
                 /*
                  * At this point, the transform between the coordinate systems of the two grids is known.
-                 * The `gridToGrid` transform is the main one. If the user did not specified an AOI for
+                 * The `gridToGrid` transform is the main one. If the user did not specify an AOI for
                  * all dimensions, then `gridToGrid` is for low coordinates and `gridToGridHigh` is for
                  * high coordinates.
                  */
