@@ -1226,7 +1226,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * methods for formatting a {@code BOX} element from an envelope.
      *
      * @param  envelope           the envelope to format.
-     * @param  isSinglePrecision  {@code true} if every lower and upper corner values can be casted to {@code float}.
+     * @param  isSinglePrecision  {@code true} if every lower and upper corner values can be cast to {@code float}.
      * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see GeneralEnvelope#GeneralEnvelope(CharSequence)

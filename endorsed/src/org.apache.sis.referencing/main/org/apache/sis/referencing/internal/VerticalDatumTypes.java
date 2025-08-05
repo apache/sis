@@ -24,6 +24,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.measure.Units;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -34,7 +35,7 @@ import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
- * Extensions to the standard set of {@link RealizationEpoch}.
+ * Extensions to the standard set of {@link RealizationMethod}.
  * Some of those constants are derived from a legacy {@link VerticalDatumType} code list.
  * Those constants are not in public API because they were intentionally omitted from ISO 19111,
  * and the ISO experts said that they should really not be public.
@@ -77,6 +78,11 @@ public final class VerticalDatumTypes {
     static final String BAROMETRIC = "BAROMETRIC";
 
     /**
+     * A value used in the <abbr>EPSG</abbr> database.
+     */
+    static final String LOCAL = "LOCAL";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private VerticalDatumTypes() {
@@ -116,7 +122,7 @@ public final class VerticalDatumTypes {
      * @param  code  the legacy vertical datum code.
      * @return the vertical datum type, or {@code null} if none.
      */
-    public static RealizationMethod fromLegacy(final int code) {
+    public static RealizationMethod fromLegacyCode(final int code) {
         switch (code) {
         //  case 2000: return null;                                     // CS_VD_Other
             case 2001: return RealizationMethod.valueOf(ORTHOMETRIC);   // CS_VD_Orthometric
@@ -132,13 +138,13 @@ public final class VerticalDatumTypes {
      * Returns the legacy code for the datum type, or 2000 (other surface) if unknown.
      * This method is used for WKT 1 formatting.
      *
-     * @param  type  the vertical datum type, or {@code null} if unknown.
+     * @param  method  the vertical datum type, or {@code null} if unknown.
      * @return the legacy code for the given datum type, or 0 if unknown.
      */
     @SuppressWarnings("deprecation")
-    public static int toLegacy(final VerticalDatumType type) {
-        if (type != null) {
-            switch (type.name().toUpperCase(Locale.US)) {
+    public static int toLegacyCode(final VerticalDatumType method) {
+        if (method != null) {
+            switch (method.name().toUpperCase(Locale.US)) {
                 case ORTHOMETRIC: return 2001;      // CS_VD_Orthometric
                 case ELLIPSOIDAL: return 2002;      // CS_VD_Ellipsoidal
                 case BAROMETRIC:  return 2003;      // CS_VD_AltitudeBarometric
@@ -154,6 +160,8 @@ public final class VerticalDatumTypes {
      * If the given method cannot be mapped to a legacy type, then this method returns "other surface".
      * This is because the vertical datum type was a mandatory property in legacy OGC/ISO standards.
      * This method is used for writing GML documents older than GML 3.2.
+     *
+     * <p>Note: this is renamed {@code toLegacyName(RealizationMethod)} on the GeoAPI 4.0 branch.</p>
      *
      * @param  method  the realization method, or {@code null}.
      * @return the vertical datum type (never null).
@@ -172,19 +180,53 @@ public final class VerticalDatumTypes {
      * Returns the realization method from a vertical datum type.
      * This method is used for reading GML documents older than GML 3.2.
      *
+     * <p>Note: this is renamed {@code fromLegacyName(String)} on the GeoAPI 4.0 branch.</p>
+     *
      * @param  type  the vertical datum type, or {@code null}.
      * @return the realization method, or {@code null} if none.
      */
     @SuppressWarnings("deprecation")
     public static RealizationMethod toMethod(final VerticalDatumType type) {
-        if (type != null) {
-            if (type == VerticalDatumType.GEOIDAL)         return RealizationMethod.GEOID;
-            if (type == VerticalDatumType.DEPTH)           return RealizationMethod.TIDAL;
-            if (type == VerticalDatumType.BAROMETRIC)      return RealizationMethod.valueOf(BAROMETRIC);
-            if (ORTHOMETRIC.equalsIgnoreCase(type.name())) return RealizationMethod.valueOf(ORTHOMETRIC);
-            if (ELLIPSOIDAL.equalsIgnoreCase(type.name())) return ellipsoidal();
-        }
+        return (type != null) ? fromLegacyName(type.name()) : null;
+    }
+
+    /**
+     * Returns the realization method from a vertical datum type.
+     * This method is used for reading GML documents older than GML 3.2.
+     *
+     * @param  type  the vertical datum type, or {@code null}.
+     * @return the realization method, or {@code null} if none.
+     */
+    public static RealizationMethod fromLegacyName(final String type) {
+        if ("geoidal"  .equalsIgnoreCase(type)) return RealizationMethod.GEOID;
+        if ("depth"    .equalsIgnoreCase(type)) return RealizationMethod.TIDAL;
+        if (LOCAL      .equalsIgnoreCase(type)) return RealizationMethod.valueOf(LOCAL);
+        if (BAROMETRIC .equalsIgnoreCase(type)) return RealizationMethod.valueOf(BAROMETRIC);
+        if (ORTHOMETRIC.equalsIgnoreCase(type)) return RealizationMethod.valueOf(ORTHOMETRIC);
+        if (ELLIPSOIDAL.equalsIgnoreCase(type)) return ellipsoidal();
         return null;
+    }
+
+    /**
+     * Returns the realization method from heuristic rules applied on the name.
+     *
+     * <p>Note: this is {@code fromMethod(String)} on the GeoAPI 4.0 branch.</p>
+     *
+     * @param  name  the realization method name, or {@code null}.
+     * @return the realization method, or {@code null} if the given name was null.
+     */
+    public static RealizationMethod fromMethod(final String name) {
+        RealizationMethod method = fromLegacyName(name);
+        if (method == null && name != null && !name.isBlank()) {
+            final int s = name.lastIndexOf('-');
+            if (s >= 0 && name.substring(s+1).strip().equalsIgnoreCase("based")) {
+                method = CodeLists.forCodeName(RealizationMethod.class, name.substring(0, s));
+            }
+            if (method == null) {
+                method = RealizationMethod.valueOf(name);
+            }
+        }
+        return method;
     }
 
     /**
@@ -199,16 +241,16 @@ public final class VerticalDatumTypes {
      * @param  axis     the vertical axis for which to guess a type, or {@code null} if unknown.
      * @return a datum type, or {@code null} if none can be guessed.
      */
-    public static RealizationMethod guess(final String name, final Collection<? extends GenericName> aliases,
+    public static RealizationMethod fromDatum(final String name, final Collection<? extends GenericName> aliases,
             final CoordinateSystemAxis axis)
     {
-        RealizationMethod method = guess(name);
+        RealizationMethod method = fromDatum(name);
         if (method != null) {
             return method;
         }
         if (aliases != null) {
             for (final GenericName alias : aliases) {
-                method = guess(alias.tip().toString());
+                method = fromDatum(alias.tip().toString());
                 if (method != null) {
                     return method;
                 }
@@ -238,13 +280,13 @@ public final class VerticalDatumTypes {
     }
 
     /**
-     * Guesses the realization method of a datum of the given name. This method attempts to guess only if
-     * the given name contains at least one letter. If the type cannot be determined, returns {@code null}.
+     * Guesses the realization method of a datum of the given name.
+     * If the realization method cannot be determined, returns {@code null}.
      *
      * @param  name  name of the datum for which to guess a realization method, or {@code null}.
      * @return a realization method, or {@code null} if none can be guessed.
      */
-    private static RealizationMethod guess(final String name) {
+    private static RealizationMethod fromDatum(final String name) {
         if (name != null) {
             if (CharSequences.equalsFiltered("Mean Sea Level", name, Characters.Filter.LETTERS_AND_DIGITS, true)) {
                 return RealizationMethod.TIDAL;

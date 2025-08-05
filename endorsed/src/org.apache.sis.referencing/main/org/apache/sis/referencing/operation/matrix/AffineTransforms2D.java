@@ -55,8 +55,8 @@ public final class AffineTransforms2D extends Static {
      * Returns the given transform as a Java2D affine transform.
      *
      * @param  transform  the transform to convert, or {@code null}.
-     * @return the transform argument if it can be safely casted (including {@code null} argument) or converted.
-     * @throws IllegalArgumentException if the given transform cannot be casted or converted.
+     * @return the transform argument if it can be safely cast (including {@code null} argument) or converted.
+     * @throws IllegalArgumentException if the given transform cannot be cast or converted.
      *
      * @see #toMathTransform(AffineTransform)
      */
@@ -76,7 +76,7 @@ public final class AffineTransforms2D extends Static {
      * Otherwise the values are copied in a new {@code AffineTransform} instance.
      *
      * @param  matrix  the matrix to return as an affine transform, or {@code null}.
-     * @return the matrix argument if it can be safely casted (including {@code null} argument),
+     * @return the matrix argument if it can be safely cast (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
      * @throws IllegalArgumentException if the given matrix size is not 3×3 or if the matrix is not affine.
      *

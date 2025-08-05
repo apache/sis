@@ -116,13 +116,19 @@ final class SubOperationInfo {
     final int targetComponentIndex;
 
     /**
+     * Whether this operation can be cached. This flag shall be {@code false} if
+     * the operation depends on parameters that may vary between two executions.
+     */
+    final boolean canStoreInCache;
+
+    /**
      * Creates a new instance wrapping the given coordinate operation or coordinate constants.
      * Exactly one of {@code operation} or {@code constants} shall be non-null.
      */
     private SubOperationInfo(final CoordinateOperation operation, final double[] constants,
                              final int sourceLowerDimension, final int sourceUpperDimension,
                              final int targetLowerDimension, final int targetUpperDimension,
-                             final int targetComponentIndex)
+                             final int targetComponentIndex, final boolean canStoreInCache)
     {
         this.operation            = operation;
         this.constants            = constants;
@@ -131,6 +137,7 @@ final class SubOperationInfo {
         this.targetLowerDimension = targetLowerDimension;
         this.targetUpperDimension = targetUpperDimension;
         this.targetComponentIndex = targetComponentIndex;
+        this.canStoreInCache      = canStoreInCache;
         assert (operation == null) != (constants == null);
     }
 
@@ -215,7 +222,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
                                             operation, null,
                                             sourceLowerDimension, sourceUpperDimension,
                                             targetLowerDimension, targetUpperDimension,
-                                            targetComponentIndex);
+                                            targetComponentIndex, true);
 
                                     if (failure != null) {
                                         CoordinateOperationRegistry.recoverableException("decompose", failure);
@@ -252,7 +259,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
                     null, constants,
                     sourceUpperDimension, sourceUpperDimension,
                     targetLowerDimension, targetUpperDimension,
-                    targetComponentIndex);
+                    targetComponentIndex, false);
         }
         return infos;
     }

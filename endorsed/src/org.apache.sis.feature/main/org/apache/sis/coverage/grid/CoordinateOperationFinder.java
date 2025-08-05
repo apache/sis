@@ -225,6 +225,15 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     private boolean isWraparoundDisabled;
 
     /**
+     * Whether the {@link #get()} method should accept dimensions that are not slices in a multi-dimensional cube.
+     * If 0 (the default), the dimensions are required to be slices. If non-zero, the requirement is relaxed, with
+     * -1 meaning to use the low grid coordinate and +1 meaning to use the high grid coordinate.
+     *
+     * @see #relaxSliceRequirement(byte)
+     */
+    private byte relaxSliceRequirement;
+
+    /**
      * Creates a new finder initialized to {@link PixelInCell#CELL_CORNER} anchor.
      *
      * @param  source  the grid geometry which is the source of the coordinate operation to find.
@@ -268,13 +277,25 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
         anchor = newValue;
         gridToCRS = null;
         crsToGrid = null;
-        if (coordinates != null) {
+        if (hasUsedConstantValues()) {
             coordinates        = null;
             changeOfCRS        = null;
             forwardChangeOfCRS = null;
             inverseChangeOfCRS = null;
             knowChangeOfCRS    = false;
             // Do not clear `isWraparoundNeeded`; its value is still valid.
+        }
+    }
+
+    /**
+     * Sets whether the {@link #get()} method should accept dimensions that are not slices in a multi-dimensional cube.
+     *
+     * @param  mode  0 to require slices, -1 for using low grid coordinates, or +1 for high grid coordinates.
+     */
+    final void relaxSliceRequirement(final byte mode) {
+        relaxSliceRequirement = mode;
+        if (hasUsedConstantValues()) {
+            setAnchor(anchor);          // For cleaning the cache.
         }
     }
 
@@ -720,7 +741,7 @@ apply:          if (forwardChangeOfCRS == null) {
      * be given to the missing dimensions, then those values are returned.
      * Otherwise this method returns {@code null}.
      *
-     * <p>The returned array has a length equals to the number of dimensions in the target CRS.
+     * <p>The returned array has a length equals to the number of dimensions in the target <abbr>CRS</abbr>.
      * Only coordinates in dimensions without source (<var>t</var> in the above example) will be used.
      * All other coordinate values will be ignored.</p>
      *
@@ -736,10 +757,17 @@ apply:          if (forwardChangeOfCRS == null) {
             Arrays.fill(gc, Double.NaN);
             final GridExtent extent = target.getExtent();
             for (int i=0; i<gc.length; i++) {
-                final long low = extent.getLow(i);
-                if (low == extent.getHigh(i)) {
+                long low  = extent.getLow (i);
+                long high = extent.getHigh(i);
+                if (low == high || relaxSliceRequirement < 0) {
                     gc[i] = low;
+                } else if (relaxSliceRequirement > 0) {
+                    if (anchor != PixelInCell.CELL_CENTER) {
+                        high++;     // From inclusive to exclusive.
+                    }
+                    gc[i] = high;
                 }
+                // Otherwise keep the NaN value.
             }
             /*
              * At this point, the only grid coordinates with finite values are the ones where the
@@ -755,6 +783,13 @@ apply:          if (forwardChangeOfCRS == null) {
             }
         }
         return coordinates;
+    }
+
+    /**
+     * Returns {@code true} if {@link #get()} has been invoked and computed coordinates.
+     */
+    final boolean hasUsedConstantValues() {
+        return coordinates != null;
     }
 
     /**

@@ -23,8 +23,10 @@ import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
+import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.util.ArraysExt;
@@ -248,19 +250,35 @@ public class HyperRectangleWriter {
                 regionLower[0] = Math.floorDiv(regionLower[0] * pixelBitStride, dataSize);
                 regionUpper[0] = JDK18.ceilDiv(regionUpper[0] * pixelBitStride, dataSize);
             }
-            var subset = new Region(sourceSize, regionLower, regionUpper, new long[] {1,1});
+            final var subset = new Region(sourceSize, regionLower, regionUpper, new long[] {1,1});
             length = subset.length;
-            if (bandOffsets == null || (bandOffsets.length == pixelStride && ArraysExt.isRange(0, bandOffsets))) {
-                return new HyperRectangleWriter(subset);
-            } else {
-                return new SubsampledRectangleWriter(subset, bandOffsets, pixelStride);
+            if (bandOffsets != null) {
+                final int numBands = bandOffsets.length;
+                if (numBands != pixelStride || !ArraysExt.isRange(0, bandOffsets)) {
+                    if (numBands != 1) {
+                        ArgumentChecks.ensureBetween("pixelStride", numBands, scanlineStride, pixelStride);
+                    }
+                    return new SubsampledRectangleWriter(subset, bandOffsets, pixelStride);
+                }
             }
+            return new HyperRectangleWriter(subset);
         }
 
         /**
          * Creates a new writer for raster data described by the given sample model.
          * The returned writer will need to be applied repetitively for each bank
-         * if {@link #bankIndices()} returns an array with a length greater than one.
+         * if {@link #numBanks()} returns a value greater than one.
+         *
+         * <h4>Banded versus interleaved</h4>
+         * If the given sample model is an instance of {@link BandedSampleModel},
+         * then this method will unconditionally handle each band as if it was stored in a separated bank,
+         * even if it would be more efficient to handle the data as a {@link PixelInterleavedSampleModel}.
+         * For example, the GeoTIFF writer does its own analysis of the sample model for deciding whether
+         * to declare in <abbr>TIFF</abbr> tags that the data are in  "planar" or "chunky" configuration.
+         * The {@code HyperRectangleWriter} must follow that configuration.
+         *
+         * <p>If the given sample model is the generic {@link ComponentSampleModel}, then this method decides
+         * automatically whether the banded or pixel interleaved sample model is the best match for the data.</p>
          *
          * @param  sm  the sample model of the rasters to write.
          * @return writer for rasters using the specified sample model (never {@code null}).
@@ -271,7 +289,23 @@ public class HyperRectangleWriter {
             scanlineStride = sm.getScanlineStride();
             bankIndices    = sm.getBankIndices();
             bandOffsets    = sm.getBandOffsets();
-            if (ArraysExt.allEquals(bankIndices, bankIndices[0])) {
+            boolean isInterleaved = (sm instanceof PixelInterleavedSampleModel);
+            if (!(isInterleaved  ||  sm instanceof BandedSampleModel)) {
+                /*
+                 * Generic `ComponentSampleModel`. Detect whether it can be handled as interleaved.
+                 * The sample model shall use only one bank (actually, that condition is true even
+                 * for `PixelInterleavedSampleModel`). Furthermore, the index of each sample value
+                 * (relative to the base index) should be inside a pixel stride.
+                 */
+                int min = Integer.MAX_VALUE;
+                int max = Integer.MIN_VALUE;    // (max - min) defaut to 1 if `bandOffsets` is empty.
+                for (int b : bandOffsets) {
+                    if (b < min) min = b;
+                    if (b > max) max = b;
+                }
+                isInterleaved = (max - min) < pixelStride;
+            }
+            if (isInterleaved && ArraysExt.allEquals(bankIndices, bankIndices[0])) {
                 /*
                  * PixelInterleavedSampleModel (at least conceptually, no matter the actual type).
                  * The returned `HyperRectangleWriter` instance may write all sample values in a
@@ -425,7 +459,7 @@ public class HyperRectangleWriter {
         /**
          * Creates a new writer for raster data described by the given sample model.
          * The returned writer will need to be applied repetitively for each bank
-         * if {@link #bankIndices()} returns an array with a length greater than one.
+         * if {@link #numBanks()} returns a value greater than one.
          *
          * @param  sm  the sample model of the rasters to write.
          * @return writer for rasters using the specified sample model (never {@code null}).
@@ -443,7 +477,7 @@ public class HyperRectangleWriter {
         /**
          * Creates a new writer for data of the specified raster.
          * The returned writer will need to be applied repetitively for each bank
-         * if {@link #bankIndices()} returns an array with a length greater than one.
+         * if {@link #numBanks()} returns a value greater than one.
          *
          * <h4>Tile size</h4>
          * Many formats such as GeoTIFF require that all tiles have the same size,
@@ -515,7 +549,7 @@ public class HyperRectangleWriter {
          * Returns the offset to add to a bank to write with {@code HyperRectangleWriter}.
          * This is in addition of offsets declared in {@link DataBuffer#getOffsets()}.
          *
-         * @param  i  index from 0 inclusive to {@link #numBanks()} exclusive.
+         * @param  i             index from 0 inclusive to {@link #numBanks()} exclusive.
          * @param  bufferOffset  the value of <code>{@link DataBuffer#getOffsets()}[bankIndex(i)]</code>.
          * @return offset of a banks to write with {@code HyperRectangleWriter}.
          */

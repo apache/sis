@@ -215,7 +215,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     }
 
     /**
-     * Returns the given value casted to a {@code Set} of elements of the given type.
+     * Returns the given value cast to a {@code Set} of elements of the given type.
      * It is caller responsibility to ensure that the cast is valid, as element type
      * is verified only when assertions are enabled.
      */
@@ -231,13 +231,14 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * or an unmodifiable empty set if another value is defined.
      */
     private <E> Set<E> getProperty(final Class<E> type, final byte code) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Object value = this.value;
         if (value != null) {
             if (property == code) {
                 return cast(value, type);
             } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
                 return Semaphores.query(Semaphores.NULL_COLLECTION)
-                       ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
+                       ? null : new ExcludedSet<>(NAMES[code-1], NAMES[property-1]);
             }
         }
         /*
@@ -562,6 +563,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @since 1.0
      */
+    @SuppressWarnings("deprecation")
     public void setLevelDescription(final ScopeCode level, final Set<? extends CharSequence> newValues) {
         if (level == ScopeCode.DATASET) {
             String description = null;

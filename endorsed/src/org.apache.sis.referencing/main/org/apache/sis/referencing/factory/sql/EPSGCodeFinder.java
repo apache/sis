@@ -42,6 +42,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
@@ -310,7 +311,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             }
             /*
              * For Coordinate Reference System, the SQL statement may be something like below
-             * (with DATUM_CODE replaced by SOURCE_GEOGCRS_CODE in a projected CRS):
+             * (with DATUM_CODE replaced by BASE_CRS_CODE projected CRS):
              *
              *   SELECT COORD_REF_SYS_CODE FROM "Coordinate Reference System"
              *     WHERE CAST(COORD_REF_SYS_KIND AS VARCHAR(80)) LIKE 'geographic%'
@@ -319,7 +320,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              */
             final Condition filter;
             if (object instanceof GeneralDerivedCRS) {              // No need to use isInstance(Class, Object) from here.
-                filter = dependencies("SOURCE_GEOGCRS_CODE", CoordinateReferenceSystem.class, ((GeneralDerivedCRS) object).getBaseCRS(), true);
+                filter = dependencies("BASE_CRS_CODE", CoordinateReferenceSystem.class, ((GeneralDerivedCRS) object).getBaseCRS(), true);
             } else if (object instanceof GeodeticCRS) {
                 filter = dependencies("DATUM_CODE", GeodeticDatum.class, ((GeodeticCRS) object).getDatum(), true);
             } else if (object instanceof VerticalCRS) {
@@ -465,16 +466,11 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     result.add(r.getString(1));
                 }
             }
-            result.remove(null);                    // Should not have null element, but let be safe.
-            if (result.size() > 1) {
-                final Object[] id = result.toArray();
-                if (dao.sort(table.unquoted(), id)) {
-                    result.clear();
-                    for (final Object c : id) {
-                        result.add((String) c);
-                    }
-                }
-            }
+            result.remove(null);    // Should not have null element, but let be safe.
+            dao.sort(table.unquoted(), result).ifPresent((sorted) -> {
+                result.clear();
+                result.addAll(JDK16.toList(sorted));
+            });
             return result;
         } catch (SQLException exception) {
             throw dao.databaseFailure(Identifier.class, String.valueOf(CollectionsExt.first(filters[0].values)), exception);

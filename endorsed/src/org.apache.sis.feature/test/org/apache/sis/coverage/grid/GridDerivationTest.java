@@ -386,6 +386,55 @@ public final class GridDerivationTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridDerivation#subgrid(GridGeometry)} using a grid with less dimensions
+     * than the source grid geometry when the extra dimensions are not a slice.
+     *
+     * <h4>Note on cache dependency</h4>
+     * Another difference between this test and {@link #testSubgridWithLessDimensions()} is that
+     * this test uses a geographic area covering the world. It has subtile implications in the way
+     * that {@link org.apache.sis.referencing.operation.CoordinateOperationFinder} uses its cache.
+     * See in particular the {@code canStoreInCache} flag of the latter class.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-610">SIS-610</a>
+     */
+    @Test
+    public void testSubgridWithLessDimensionsNoSlice() {
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84_4D);
+        envelope.setRange(0, -180, 180);
+        envelope.setRange(1,  -90,  90);
+        envelope.setRange(2,  100, 300);
+        envelope.setRange(3,    3,   6);
+        final var extent = new GridExtent(null, null, new long[] {2, 2, 3, 3}, false);
+        final var grid   = new GridGeometry(extent, envelope, GridOrientation.DISPLAY);
+        final var env2D  = new GeneralEnvelope(HardCodedCRS.WGS84);
+        env2D.setRange(0, -51, 153);
+        env2D.setRange(1,  68,  89);
+        final var aoi = new GridGeometry(new GridExtent(100, 100), env2D, GridOrientation.HOMOTHETY);
+        /*
+         * Test with rounding to nearest grid coordinates. The AOI has a range of latitude values which
+         * is fully enclosed in the voxel at index y=1, while the range of longitude values intersects
+         * voxels at indexes x=[0…1]. However, because the rounding mode is nearest and the lower bound
+         * is closer to x=1, the result is x=[1].
+         */
+        GridGeometry slice = grid.derive().subgrid(aoi).build();
+        assertEquals(grid.getGridToCRS(PixelInCell.CELL_CENTER),
+                    slice.getGridToCRS(PixelInCell.CELL_CENTER));
+        assertExtentEquals(new long[] {1, 0, 0, 0},
+                           new long[] {1, 0, 2, 2},
+                           slice.getExtent());
+        /*
+         * Same as above but with rounding mode to "enclosed".
+         * The range in dimension of longitude become x=[0…1].
+         */
+        slice = grid.derive().rounding(GridRoundingMode.ENCLOSING).subgrid(aoi).build();
+        assertEquals(grid.getGridToCRS(PixelInCell.CELL_CENTER),
+                    slice.getGridToCRS(PixelInCell.CELL_CENTER));
+        assertExtentEquals(new long[] {0, 0, 0, 0},
+                           new long[] {1, 0, 2, 2},
+                           slice.getExtent());
+    }
+
+    /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} on a grid using a polar projection.
      * The test also uses a geographic envelope with more dimensions than the source grid geometry.
      * The difficulty is that axis directions do not match directly: the source grid has directions

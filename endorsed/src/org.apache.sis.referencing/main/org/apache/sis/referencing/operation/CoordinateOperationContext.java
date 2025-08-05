@@ -23,6 +23,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.OperationNotFoundException;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -225,16 +226,17 @@ public class CoordinateOperationContext implements Serializable {
     }
 
     /**
-     * Invoked when some coordinates in the target CRS cannot be computed from coordinates in the source CRS.
-     * For example if the source CRS has (<var>x</var>, <var>y</var>) axes and the target CRS has (<var>x</var>,
-     * <var>y</var>, <var>t</var>) axes, then this method is invoked for determining which value to assign to the
-     * <var>t</var> coordinate. In some cases the user can tell that the coordinate should be set to a constant value.
+     * Invoked when at least one coordinate in the target <abbr>CRS</abbr> cannot be computed from the coordinates in
+     * the source <abbr>CRS</abbr>. For example, if the source <abbr>CRS</abbr> has (<var>x</var>, <var>y</var>) axes
+     * and the target <abbr>CRS</abbr> has (<var>x</var>, <var>y</var>, <var>t</var>) axes,
+     * then this method is invoked for determining which value to assign to the <var>t</var> coordinate.
+     * In some cases, the user can tell that the coordinate should be set to a constant value.
      *
-     * <p>If this method returns {@code null} (which is the default), then the {@link CoordinateOperationFinder} caller
-     * will throw an {@link org.opengis.referencing.operation.OperationNotFoundException}. Otherwise the returned array
-     * should have a length equals to the number of dimensions in the full (usually compound) target CRS.
-     * Only coordinate values in dimensions without source (the <var>t</var> dimension in the above example) will be used.
-     * All other coordinate values will be ignored.
+     * <p>If this method returns {@code null}, then the {@link CoordinateOperationFinder} caller will throw an
+     * {@link OperationNotFoundException}. Otherwise, the returned array should have a length equals to the number
+     * of dimensions in the full (usually compound) target <abbr>CRS</abbr>. Only coordinate values in dimensions
+     * without source (the <var>t</var> dimension in the above example) will be used.
+     * All other coordinate values will be ignored.</p>
      *
      * @return coordinate values to take as constants for the specified target component, or {@code null} if none.
      * @throws TransformException if the coordinates cannot be computed. This exception may occur when the constant
@@ -250,5 +252,13 @@ public class CoordinateOperationContext implements Serializable {
             throw e.unwrapOrRethrow(TransformException.class);
         }
         return null;
+    }
+
+    /**
+     * Returns whether it is safe to use cached operation.
+     * This is {@code false} if the operation result may depend on external configuration.
+     */
+    static boolean canReadFromCache() {
+        return CoordinateOperations.CONSTANT_COORDINATES.get() == null;
     }
 }

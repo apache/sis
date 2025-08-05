@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Map;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
@@ -40,6 +41,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.WraparoundAdjustment;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -569,14 +571,15 @@ public class GridDerivation {
             final MathTransform nowraparound;
             final var finder = new CoordinateOperationFinder(areaOfInterest, base);
             finder.verifyPresenceOfCRS(false);
+            finder.relaxSliceRequirement((byte) -1);
             final GridExtent domain = areaOfInterest.extent;
             if (domain == null) {
                 finder.setAnchor(PixelInCell.CELL_CENTER);
                 finder.nowraparound();
-                nowraparound = finder.gridToGrid();
+                nowraparound = finder.gridToGrid();     // We will use only the scale factors.
             } else {
                 /*
-                 * Get the transform from the base grid to the grid of `areaOfInterest`.
+                 * Get the transform from the grid of `areaOfInterest` to the base grid.
                  * There is two variants, depending on whether the user wants tight box:
                  *
                  * - Default:   map pixel corners with exclusive upper grid coordinate value.
@@ -587,14 +590,54 @@ public class GridDerivation {
                     finder.setAnchor(PixelInCell.CELL_CENTER);
                 } // Else default value is PixelInCell.CELL_CORNER.
                 final MathTransform gridToGrid = finder.gridToGrid();
+                final MathTransform gridToGridHigh;
+                if (finder.hasUsedConstantValues()) {
+                    finder.relaxSliceRequirement((byte) +1);
+                    gridToGridHigh = finder.gridToGrid();
+                } else {
+                    gridToGridHigh = null;
+                }
+                /*
+                 * Compute again the transform from `areaOfInterest` grid to base grid,
+                 * but this time with no special treatment for longitude wraparound.
+                 * The main intent is to get the scale factors, which are hidden when
+                 * a wraparound shift is bundled in the transform.
+                 */
                 finder.setAnchor(tight ? PixelInCell.CELL_CORNER : PixelInCell.CELL_CENTER);
                 finder.nowraparound();
-                nowraparound = finder.gridToGrid();   // We will use only the scale factors.
+                final MathTransform nowraparoundHigh;
+                if (gridToGridHigh != null) {
+                    nowraparoundHigh = finder.gridToGrid();
+                    finder.relaxSliceRequirement((byte) -1);
+                } else {
+                    nowraparoundHigh = null;
+                }
+                nowraparound = finder.gridToGrid();
+                /*
+                 * At this point, the transform between the coordinate systems of the two grids is known.
+                 * The `gridToGrid` transform is the main one. If the user did not specify an AOI for
+                 * all dimensions, then `gridToGrid` is for low coordinates and `gridToGridHigh` is for
+                 * high coordinates.
+                 */
                 final GeneralEnvelope[] envelopes;
-                if (gridToGrid.isIdentity()) {
+                if (gridToGrid.isIdentity() && (gridToGridHigh == null || gridToGridHigh.isIdentity())) {
                     envelopes = new GeneralEnvelope[] {domain.toEnvelope(tight)};
                 } else {
-                    envelopes = domain.toEnvelopes(gridToGrid, tight, nowraparound, null);
+                    /*
+                     * Converts the grid extent of the area of interest to the grid coordinates of the base.
+                     * We may get one or two envelopes, depending on whether there is a longitude wraparound.
+                     * If the area of interest has less dimensions than the base grid, we may need to compute
+                     * more envelopes for enclosing the full span of dimensions that are not in `areaOfInterest`.
+                     */
+                    final Map<Parameters, GeneralEnvelope> transformed =
+                            domain.toEnvelopes(gridToGrid, tight, nowraparound, null);
+                    if (gridToGridHigh != null) {
+                        domain.toEnvelopes(gridToGridHigh, tight, nowraparoundHigh, null).forEach((key, value) -> {
+                            GeneralEnvelope previous = transformed.putIfAbsent(key, value);
+                            if (previous != null) previous.add(value);
+                        });
+                    }
+                    envelopes = transformed.values().toArray(GeneralEnvelope[]::new);
                 }
                 setBaseExtentClipped(tight, envelopes);
                 if (baseExtent != base.extent && baseExtent.equals(domain)) {

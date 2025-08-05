@@ -707,7 +707,7 @@ public final class Citations extends Static {
              * If there is no identifier in both citations, fallback on title comparisons.
              * If there is identifiers in only one citation, make sure that this citation
              * is the second one (c2) in order to allow at least one call to
-             * 'identifierMatches(c1, String)'.
+             * `identifierMatches(c1, String)`.
              */
             Iterator<? extends Identifier> iterator = nonEmptyIterator(c2.getIdentifiers());
             if (iterator == null) {

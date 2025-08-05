@@ -283,7 +283,7 @@ final class Dispatcher implements InvocationHandler {
                     }
                 }
             } finally {
-                Semaphores.clear(Semaphores.NULL_COLLECTION, allowNull);
+                Semaphores.clearIfFalse(Semaphores.NULL_COLLECTION, allowNull);
             }
         }
         if (value == null) {

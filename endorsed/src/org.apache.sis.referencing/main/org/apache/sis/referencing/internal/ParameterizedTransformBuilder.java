@@ -39,6 +39,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.ArgumentChecks;
@@ -90,6 +91,14 @@ import org.opengis.util.UnimplementedServiceException;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public class ParameterizedTransformBuilder extends MathTransformBuilder implements MathTransformProvider.Context {
+    /**
+     * The factory which is creating the coordinate operation.
+     * The value is read indirectly by {@link #getMatrix(ContextualParameters.MatrixRole)}
+     * when normalizing axes, because it invokes a method that may search for the authority
+     * codes of normalized coordinate systems.
+     */
+    public static final ThreadLocal<CRSAuthorityFactory> CREATOR = new ThreadLocal<>();
+
     /**
      * Minimal precision of ellipsoid semi-major and semi-minor axis lengths, in metres.
      * If the length difference between the axis of two ellipsoids is greater than this threshold,

@@ -421,8 +421,8 @@ public final class Extents extends Static {
         RealizationMethod selectedMethod = null;
         if (extent != null) try {
             for (final VerticalExtent element : nonNull(extent.getVerticalElements())) {
-                double min = element.getMinimumValue();
-                double max = element.getMaximumValue();
+                Double min = element.getMinimumValue();
+                Double max = element.getMaximumValue();
                 final VerticalCRS crs = element.getVerticalCRS();
                 RealizationMethod method = null;
                 Unit<?> unit = null;
@@ -434,11 +434,13 @@ public final class Extents extends Static {
                     final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
                     unit = axis.getUnit();
                     if (axis.getDirection() == AxisDirection.DOWN) {
-                        final double tmp = min;
+                        final Double tmp = min;
                         min = -max;
                         max = -tmp;
                     }
                 }
+                if (min == null) min = Double.NEGATIVE_INFINITY;
+                if (max == null) max = Double.POSITIVE_INFINITY;
                 if (range != null) {
                     /*
                      * If the new range does not specify any realization method or unit, we do not know how
@@ -679,9 +681,9 @@ public final class Extents extends Static {
     }
 
     /**
-     * Returns the union of the given geographic bounding boxes. If any of the arguments is {@code null},
-     * then this method returns the other argument (which may be null). Otherwise this method returns a box
-     * which is the union of the two given boxes.
+     * Returns the union of the given geographic bounding boxes.
+     * If any of the arguments is {@code null}, then this method returns the other argument (which may be null).
+     * Otherwise, this method returns a box which is the union of the two given boxes.
      *
      * <p>This method never modify the given boxes, but may return directly one of the given arguments
      * if it already represents the union result.</p>

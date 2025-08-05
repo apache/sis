@@ -861,7 +861,7 @@ public final class Types extends Static {
      * If the given array is null or an instance of {@code InternationalString[]}, then this method
      * returns it unchanged. Otherwise a new array of type {@code InternationalString[]} is created
      * and every elements from the given array is copied or
-     * {@linkplain #toInternationalString(CharSequence) casted} in the new array.
+     * {@linkplain #toInternationalString(CharSequence) cast} in the new array.
      *
      * <p>If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
      * if the returned array is the same instance as the one given in argument to this method.</p>

@@ -55,7 +55,7 @@ public interface MultiPolygon extends MultiSurface<Polygon> {
             for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
                 if (i != 0) sb.append(',');
                 sb.append('(');
-                AbstractGeometry.toText(sb, polygon.getInteriorRingN(i).asLine(null, null).getPoints());
+                AbstractGeometry.toText(sb, polygon.getInteriorRingN(i).getPoints());
                 sb.append(')');
             }
             sb.append(')');

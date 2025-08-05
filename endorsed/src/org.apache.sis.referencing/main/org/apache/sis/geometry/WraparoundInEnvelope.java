@@ -16,10 +16,22 @@
  */
 package org.apache.sis.geometry;
 
+import java.util.List;
 import java.util.function.UnaryOperator;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.operation.provider.Wraparound;
+import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 
 
 /**
@@ -74,12 +86,16 @@ final class WraparoundInEnvelope extends WraparoundTransform {
     /**
      * Number of cycles at the {@linkplain #sourceMedian} position. This is the minimum or maximum number
      * of cycles to remove to a coordinate, depending if that coordinate is before or after the median.
+     *
+     * <p>This value is an integer, but stored as a {@code double} for avoiding type conversions.
+     * This is initialized at construction time, then changed when {@link #translate()} is invoked.</p>
      */
     private double limit;
 
     /**
      * The minimum and maximum number of {@linkplain #period period}s that {@link #shift(double)} wanted
      * to add to the coordinate before to be constrained to the {@link #limit}.
+     * This value is an integer, but stored as a {@code double} for avoiding type conversions.
      */
     private double minCycles, maxCycles;
 
@@ -197,7 +213,7 @@ final class WraparoundInEnvelope extends WraparoundTransform {
             if (!Double.isFinite(transform.sourceMedian)) {
                 return transform;
             }
-            final WraparoundInEnvelope w = new WraparoundInEnvelope(transform);
+            final var w = new WraparoundInEnvelope(transform);
             if (wraparounds == null) {
                 wraparounds = new WraparoundInEnvelope[] {w};
             } else {
@@ -225,6 +241,157 @@ final class WraparoundInEnvelope extends WraparoundTransform {
                 }
             }
             return modified;
+        }
+
+        /**
+         * Returns a snapshot of the state of the wraparound transform.
+         * This state can change when {@link #translate()} is invoked.
+         * It may be used as a key in a map.
+         *
+         * @return a snapshot of the state of the wraparound transform.
+         */
+        final Parameters state() {
+            State state = null;
+            if (wraparounds != null) {
+                for (final WraparoundInEnvelope tr : wraparounds) {
+                    state = new State(tr, state);
+                }
+            }
+            return state;
+        }
+    }
+
+    /**
+     * A semi-opaque object that describes the state of the wraparound transform.
+     * The parameters published by this object are not committed API and may change in any version.
+     * The current implementation is a linked list, but this list usually contains only one element.
+     *
+     * <p>The purpose of this class is to be used as keys in a hash map. Therefore, the only important
+     * methods are {@link #hashCode()} and {@link #equals(Object)}. The other methods are defined for
+     * compliance with the {@link Parameters} contract, but should not be used.</p>
+     */
+    private static final class State extends Parameters {
+        /** The group of parameters published by the public methods. */
+        private static volatile ParameterDescriptorGroup parameters;
+
+        /** Copy of a value from the enclosing wraparound transform. */
+        private final int wraparoundDimension;
+
+        /** Copies of values from the enclosing wraparound transform. */
+        private final double period, limit;
+
+        /** State of the wraparound transform executed before this one. */
+        private final State previous;
+
+        /** Creates a snapshot of the state of the given transforms. */
+        State(final WraparoundInEnvelope tr, final State previous) {
+            wraparoundDimension = tr.wraparoundDimension;
+            this.period   = tr.period;
+            this.limit    = tr.limit;
+            this.previous = previous;
+        }
+
+        /**
+         * Returns a hash code value for this state.
+         * It includes the hash code of previous {@code State} instances in the linked list.
+         */
+        @Override
+        public int hashCode() {
+            int hash = wraparoundDimension;
+            State s1 = this;
+            do hash = 37*hash + (31*Double.hashCode(s1.limit) + Double.hashCode(s1.period));
+            while ((s1 = s1.previous) != null);
+            return hash;
+        }
+
+        /**
+         * Compares this state with the given object for equality.
+         * The previous elements of the linked list are also compared.
+         */
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof State) {
+                State s1 = this;
+                State s2 = (State) obj;
+                while (Numerics.equals(s1.limit,  s2.limit)  &&
+                       Numerics.equals(s1.period, s2.period) &&
+                       s1.wraparoundDimension == s2.wraparoundDimension)
+                {
+                    s1 = s1.previous;
+                    s2 = s2.previous;
+                    if (s1 == s2) return true;  // We are mostly interrested the case when both are null.
+                    if (s1 == null || s2 == null) break;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Returns the group of parameters published by the object.
+         * Provided for compliance with the interface contract, but
+         * not useful for the purpose of the {@code State} object.
+         */
+        @Override
+        public ParameterDescriptorGroup getDescriptor() {
+            ParameterDescriptorGroup p = parameters;
+            if (p == null) {
+                final var builder = new ParameterBuilder().setCodeSpace(Citations.SIS, "SIS");
+                final ParameterDescriptor<Double> shift = builder.addName("shift").create(Double.NaN, null);
+                parameters = p = builder.addName("Wraparound state").createGroup(Wraparound.WRAPAROUND_DIMENSION, shift);
+            }
+            return p;
+        }
+
+        /**
+         * Returns the values of all parameters defined by {@link #getDescriptor()}.
+         * Provided for compliance with the interface contract, but* not useful for
+         * the purpose of the {@code State} object.
+         */
+        @Override
+        public List<GeneralParameterValue> values() {
+            return List.of(parameter("wraparound_dim"), parameter("shift"));
+        }
+
+        /**
+         * Returns the value of the parameter of the given name.
+         * Provided for compliance with the interface contract,
+         * but* not useful for the purpose of {@code State}.
+         */
+        @Override
+        public ParameterValue<?> parameter(String name) {
+            switch (name) {
+                case "wraparound_dim": {
+                    ParameterValue<Integer> p = Wraparound.WRAPAROUND_DIMENSION.createValue();
+                    p.setValue(wraparoundDimension);
+                    return p;
+                }
+                case "shift": {
+                    var p = (ParameterValue<?>) getDescriptor().descriptors().get(1).createValue();
+                    p.setValue(period * limit);
+                    return p;
+                }
+                default: throw new ParameterNotFoundException(null, name);
+            }
+        }
+
+        /**
+         * Unsupported operation. Actually, we could return the parameters of a previous element
+         * of the linked list. But this is not implemented yet because we have no known usage.
+         */
+        @Override
+        public List<ParameterValueGroup> groups(String name) {
+            throw new ParameterNotFoundException(null, name);
+        }
+
+        /**
+         * Unsupported operation as this parameter group is unmodifiable.
+         */
+        @Override
+        public ParameterValueGroup addGroup(String name) {
+            throw new ParameterNotFoundException(null, name);
         }
     }
 }

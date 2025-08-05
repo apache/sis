@@ -333,7 +333,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
     }
 
     /**
-     * Returns {@code this} casted to the given type, after verification that those types are valid.
+     * Returns {@code this} cast to the given type, after verification that those types are valid.
      * This method is invoked after NADCON, NTv2 or other providers got an existing {@code LoadedGrid}
      * instance from the {@link #CACHE}.
      *

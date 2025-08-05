@@ -35,8 +35,6 @@ import org.apache.sis.util.privy.Constants;
  * This is a temporary object used for Well-Known Text formatting.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
- * @since   1.5
  */
 public final class Epoch extends FormattableObject {
     /**

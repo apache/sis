@@ -1988,10 +1988,10 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns a copy of the given array where each value has been casted to the {@code long} type.
+     * Returns a copy of the given array where each value has been cast to the {@code long} type.
      *
      * @param  data  the array to copy, or {@code null}.
-     * @return a copy of the given array with values casted to the {@code long} type,
+     * @return a copy of the given array with values cast to the {@code long} type,
      *         or {@code null} if the given array was null.
      *
      * @since 1.1
@@ -2006,11 +2006,11 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns a copy of the given array where each value has been casted to the {@code double} type.
+     * Returns a copy of the given array where each value has been cast to the {@code double} type.
      * This method does not verify if the casts would cause data loss.
      *
      * @param  data  the array to copy, or {@code null}.
-     * @return a copy of the given array with values casted to the {@code double} type,
+     * @return a copy of the given array with values cast to the {@code double} type,
      *         or {@code null} if the given array was null.
      *
      * @since 1.5
@@ -2025,11 +2025,11 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns a copy of the given array where each value has been casted to the {@code float} type.
+     * Returns a copy of the given array where each value has been cast to the {@code float} type.
      * This method does not verify if the casts would cause data loss.
      *
      * @param  data  the array to copy, or {@code null}.
-     * @return a copy of the given array with values casted to the {@code float} type,
+     * @return a copy of the given array with values cast to the {@code float} type,
      *         or {@code null} if the given array was null.
      *
      * @since 1.0
@@ -2044,7 +2044,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns a copy of the given array where each value has been casted to the {@code float} type,
+     * Returns a copy of the given array where each value has been cast to the {@code float} type,
      * but only if all casts are lossless. If any cast causes data loss, then this method returns {@code null}.
      * This method is equivalent to the following code, but potentially more efficient:
      *
@@ -2057,7 +2057,7 @@ public final class ArraysExt extends Static {
      *     }
      *
      * @param  data  the array to copy, or {@code null}.
-     * @return a copy of the given array with values casted to the {@code float} type, or
+     * @return a copy of the given array with values cast to the {@code float} type, or
      *         {@code null} if the given array was null or if a cast would cause data lost.
      *
      * @since 1.0
@@ -2097,14 +2097,14 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns {@code true} if every values in the given {@code double} array could be casted to the
+     * Returns {@code true} if every values in the given {@code double} array could be cast to the
      * {@code float} type without data lost. If this method returns {@code true}, then the array can
      * be converted to the {@code float[]} type with {@link #copyAsFloats(double[])} and the exact
      * same {@code double} values can still be obtained by casting back each {@code float} value
      * to {@code double}.
      *
      * @param  values  the values to test for their precision, or {@code null}.
-     * @return {@code true} if every values can be casted to the {@code float} type without data lost.
+     * @return {@code true} if every values can be cast to the {@code float} type without data lost.
      *
      * @since 1.0
      */

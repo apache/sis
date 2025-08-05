@@ -140,7 +140,7 @@ public final class Semaphores {
      * @param  flag      one of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
      * @param  previous  value returned by {@link #queryAndSet(int)}.
      */
-    public static void clear(final int flag, final boolean previous) {
+    public static void clearIfFalse(final int flag, final boolean previous) {
         if (!previous) {
             clear(flag);
         }

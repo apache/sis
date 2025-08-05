@@ -48,7 +48,7 @@ public final class Matrix2D extends Matrix2{
      * verifies the matrix size, then copies all elements in a new {@code Matrix2D} object.
      *
      * @param  matrix  the matrix to cast or copy, or {@code null}.
-     * @return the matrix argument if it can be safely casted (including {@code null} argument),
+     * @return the matrix argument if it can be safely cast (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
      * @throws IllegalArgumentException if the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
      */

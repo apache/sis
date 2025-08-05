@@ -97,6 +97,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
 
     /**
      * The realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
+     *
+     * @see #getRealizationMethod()
      */
     private RealizationMethod method;
 
@@ -341,7 +343,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
          */
         @Override
         public boolean equals(final Object object, final ComparisonMode mode) {
-            return super.equals(object) && (mode != ComparisonMode.STRICT ||
+            return super.equals(object, mode) && (mode != ComparisonMode.STRICT ||
                     frameReferenceEpoch.equals(((Dynamic) object).frameReferenceEpoch));
         }
 
@@ -428,7 +430,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
-            formatter.append(VerticalDatumTypes.toLegacy(getVerticalDatumType()));
+            formatter.append(VerticalDatumTypes.toLegacyCode(getVerticalDatumType()));
             return WKTKeywords.Vert_Datum;
         }
         return formatter.shortOrLong(WKTKeywords.VDatum, WKTKeywords.VerticalDatum);

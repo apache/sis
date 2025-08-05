@@ -1907,7 +1907,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Adds a warning for for an exception that occurred while fetching an optional property.
+     * Adds a warning for an exception that occurred while fetching an optional property.
      *
      * @param e        the exception that occurred.
      * @param element  WKT keyword of the element where the exception occurred.

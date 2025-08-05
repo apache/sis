@@ -142,7 +142,15 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**
      * Whether this finder instance is allowed to use {@link DefaultCoordinateOperationFactory#cache}.
      */
-    private final boolean useCache;
+    private final boolean canReadFromCache;
+
+    /**
+     * Whether the operation can be cached. This flag shall be {@code false} if
+     * the operation depends on parameters that may vary between two executions.
+     *
+     * @see #canStoreInCache()
+     */
+    private boolean canStoreInCache;
 
     /**
      * Creates a new instance for the given factory and context.
@@ -161,7 +169,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         super(registry, factory, context);
         identifierOfStepCRS = new HashMap<>(8);
         previousSearches    = new HashMap<>(8);
-        useCache = (context == null) && (factory == factorySIS);
+        canReadFromCache    = (context == null) && (factory == factorySIS) && CoordinateOperationContext.canReadFromCache();
+        canStoreInCache     = (context == null);
     }
 
     /**
@@ -247,7 +256,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * is not in the cache, store the key in our internal map for preventing infinite recursion.
          */
         final CRSPair key = new CRSPair(sourceCRS, targetCRS);
-        if (useCache && stopAtFirst && !previousSearches.isEmpty()) {
+        if (canReadFromCache && stopAtFirst && !previousSearches.isEmpty()) {
             final CoordinateOperation op = factorySIS.cache.peek(key);
             if (op != null) return asList(op);      // Must be a modifiable list as per this method contract.
         }
@@ -867,6 +876,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             final SubOperationInfo          info   = infos[i];
             final CoordinateReferenceSystem source = stepComponents[i];
             final CoordinateReferenceSystem target = targetComponents.get(info.targetComponentIndex);
+            canStoreInCache &= info.canStoreInCache;
             /*
              * In order to compute `stepTargetCRS`, replace in-place a single element in `stepComponents`.
              * For each step except the last one, `stepTargetCRS` is a mix of target CRS and source CRS.
@@ -934,6 +944,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                     stepSourceCRS.getCoordinateSystem().getDimension(),
                         targetCRS.getCoordinateSystem().getDimension());
             operation = concatenate(operation, createFromAffineTransform(CONSTANTS, stepSourceCRS, targetCRS, null, m));
+            for (int i = stepComponents.length; i < infos.length; i++) {
+                canStoreInCache &= infos[i].canStoreInCache;
+            }
         } catch (TransformException e) {
             throw new FactoryException(notFoundMessage(sourceCRS, targetCRS), e);
         }
@@ -1196,5 +1209,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     @SuppressWarnings("deprecation")
     private String canNotInvert(final GeneralDerivedCRS crs) {
         return resources().getString(Resources.Keys.NonInvertibleOperation_1, label(crs.getConversionFromBase()));
+    }
+
+    /**
+     * Returns whether the operation can be cached. This is {@code false} if
+     * the operation depends on parameters that may vary between two executions.
+     */
+    final boolean canStoreInCache() {
+        return canStoreInCache;
     }
 }

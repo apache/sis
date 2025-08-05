@@ -190,7 +190,7 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
         if (count != 0) {
             coverages     = ArraysExt.resize(coverages,     count);
             coverageBands = ArraysExt.resize(coverageBands, count);
-            var aggregate = new MemoryGridResource(parentListeners, processor.aggregateRanges(coverages, coverageBands), processor);
+            var aggregate = new MemoryGridResource(parentListeners, null, processor.aggregateRanges(coverages, coverageBands), processor);
             for (int i=0; i<sources.length; i++) {
                 if (sources[i] == null) {
                     sources[i] = aggregate;

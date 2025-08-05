@@ -19,7 +19,9 @@ package org.apache.sis.storage.base;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.awt.image.RenderedImage;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
@@ -53,16 +55,33 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     private final GridCoverageProcessor processor;
 
     /**
+     * The resource identifier, may be null.
+     */
+    private final GenericName identifer;
+
+    /**
      * Creates a new coverage stored in memory.
      *
      * @param  parent     listeners of the parent resource, or {@code null} if none.
+     * @param  identifier resource identifier or {@code null} if none.
      * @param  coverage   stored coverage retained as-is (not copied). Cannot be null.
      * @param  processor  the grid coverage processor for selecting bands, or {@code null} for default.
      */
-    public MemoryGridResource(final StoreListeners parent, final GridCoverage coverage, final GridCoverageProcessor processor) {
+    public MemoryGridResource(final StoreListeners parent, final GenericName identifier,
+                              final GridCoverage coverage, final GridCoverageProcessor processor)
+    {
         super(parent, false);
+        this.identifer = identifier;
         this.coverage  = Objects.requireNonNull(coverage);
         this.processor = (processor != null) ? processor : new GridCoverageProcessor();
+    }
+
+    /**
+     * Returns the resource identifier specified at construction time, if any.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() {
+        return Optional.ofNullable(identifer);
     }
 
     /**
@@ -195,7 +214,8 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     public boolean equals(final Object obj) {
         if (obj instanceof MemoryGridResource) {
             final var other = (MemoryGridResource) obj;
-            return coverage.equals(other.coverage)   &&
+            return Objects.equals(identifer, other.identifer) &&
+                   coverage.equals(other.coverage)   &&
                    processor.equals(other.processor) &&
                    listeners.equals(other.listeners);
         }
@@ -209,7 +229,10 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
      */
     @Override
     public int hashCode() {
-        return coverage.hashCode() + 31*processor.hashCode() + 37*listeners.hashCode();
+        return coverage.hashCode()
+                + 17 * Objects.hashCode(identifer)
+                + 31 * processor.hashCode()
+                + 37 * listeners.hashCode();
     }
 
     /**

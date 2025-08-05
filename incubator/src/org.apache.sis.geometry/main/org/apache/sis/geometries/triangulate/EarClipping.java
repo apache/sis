@@ -110,12 +110,12 @@ public class EarClipping {
 
         final SimplePolygon part = new SimplePolygon();
         //copy collection to avoid modifications
-        part.outter = (LineString) ((Polygon)geometry).getExteriorRing();
+        part.outter = geometry.getExteriorRing();
 
-        final int nbHole = ((Polygon)geometry).getNumInteriorRing();
+        final int nbHole = geometry.getNumInteriorRing();
 
         for(int i=0;i<nbHole;i++){
-            final LineString inner = (LineString) ((Polygon)geometry).getInteriorRingN(i);
+            final LineString inner = geometry.getInteriorRingN(i);
             part.inners.add(inner);
         }
 
@@ -157,7 +157,7 @@ public class EarClipping {
             //we must find the minimum x coordinate in the inner loop
             final List<Tuple> loop = part.inners.get(i).getPoints().getAttributeArray(AttributesType.ATT_POSITION).stream(false).toList();
             int index = 0;
-            Tuple min = (Tuple) loop.get(index);
+            Tuple min = loop.get(index);
             for(int k=1,p=loop.size();k<p;k++){
                 Tuple candidate = (Tuple) loop.get(1);
                 if (candidate.get(0) < min.get(0)) {
@@ -192,9 +192,9 @@ public class EarClipping {
         }
 
         //remove any neighor points overlaping
-        Tuple t = (Tuple) borderCoords.get(0);
+        Tuple t = borderCoords.get(0);
         for(int i=1,n=borderCoords.size();i<n;i++){
-            Tuple candidate = (Tuple) borderCoords.get(i);
+            Tuple candidate = borderCoords.get(i);
             if(candidate.equals(t)){
                 borderCoords.remove(i);
                 i--;
@@ -210,7 +210,7 @@ public class EarClipping {
 
         nbCoords = borderCoords.size();
         coordType = new int[nbCoords];
-        coords = borderCoords.toArray(new Tuple[0]);
+        coords = borderCoords.toArray(Tuple[]::new);
 
         //flip coordinates if not clockwise
         if(!clockwise){

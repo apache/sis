@@ -48,6 +48,9 @@ module org.apache.sis.feature {
             org.apache.sis.cql,                     // In the "incubator" sub-project.
             org.apache.sis.portrayal.map;           // In the "incubator" sub-project.
 
+    exports org.apache.sis.filter.sqlmm to
+            org.apache.sis.geometry;                // In the "incubator" sub-project.
+
     exports org.apache.sis.feature.privy to
             org.apache.sis.storage,
             org.apache.sis.storage.xml,

@@ -70,11 +70,6 @@ public final class CoordinateOperations extends Static {
     public static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
 
     /**
-     * The {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#BURSA_WOLF_KEY} value.
-     */
-    public static final String BURSA_WOLF_KEY = "bursaWolf";
-
-    /**
      * The key for specifying explicitly the value to be returned by
      * {@link org.apache.sis.referencing.operation.DefaultConversion#getParameterValues()}.
      * It is usually not necessary to specify those parameters because they are inferred either from the

@@ -65,7 +65,7 @@ public final class WorldFileStoreTest extends TestCase {
     /**
      * Tests {@link WorldFileStoreProvider#probeContent(StorageConnector)} method.
      *
-     * @throws DataStoreException if en error occurred while reading the CSV file.
+     * @throws DataStoreException if an error occurred while reading the CSV file.
      */
     @Test
     public void testProbeContent() throws DataStoreException {

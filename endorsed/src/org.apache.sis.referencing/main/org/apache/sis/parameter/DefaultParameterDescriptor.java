@@ -395,6 +395,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     @Override
     @SuppressWarnings("unchecked")
     public Comparable<T> getMinimumValue() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Range<?> valueDomain = this.valueDomain;
         return (valueDomain != null && valueDomain.getElementType() == valueClass)
                ? (Comparable<T>) valueDomain.getMinValue() : null;
@@ -414,6 +415,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     @Override
     @SuppressWarnings("unchecked")
     public Comparable<T> getMaximumValue() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Range<?> valueDomain = this.valueDomain;
         return (valueDomain != null && valueDomain.getElementType() == valueClass)
                ? (Comparable<T>) valueDomain.getMaxValue() : null;

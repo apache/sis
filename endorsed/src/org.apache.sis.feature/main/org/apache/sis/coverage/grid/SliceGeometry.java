@@ -316,7 +316,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         }
         numRow += derivative.getNumRow();
         if (dimCRS < 0) {
-            dimCRS = gridDimensions.length + (gridToCRS.getTargetDimensions() - gridToCRS.getSourceDimensions());
+            dimCRS = Math.min(gridDimensions.length, gridToCRS.getTargetDimensions());
         }
         /*
          * Search for the greatest scale coefficient. For the greatest value, take the row as the target

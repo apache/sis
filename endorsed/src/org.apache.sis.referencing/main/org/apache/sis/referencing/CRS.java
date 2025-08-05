@@ -81,6 +81,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
@@ -88,6 +89,7 @@ import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
@@ -1567,18 +1569,20 @@ check:  while (lower != 0 || upper != dimension) {
     }
 
     /**
-     * Returns the system-wide authority factory used by {@link #forCode(String)} and other SIS methods.
+     * Returns the system-wide authority factory used by {@link #forCode(String)} and other <abbr>SIS</abbr> methods.
      * If the given authority is non-null, then this method returns a factory specifically for that authority.
      * Otherwise, this method returns the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
      * instance that manages all other factories.
      *
-     * <p>The {@code authority} argument can be {@code "EPSG"}, {@code "OGC"} or any other authority found
-     * on the module path. In the {@code "EPSG"} case, whether the full set of EPSG codes is supported or not
+     * <p>The {@code authority} argument can be {@code "EPSG"}, {@code "OGC"}
+     * or any other authority found on the module path.
+     * In the {@code "EPSG"} case, whether the full set of <abbr>EPSG</abbr> codes is supported or not
      * depends on whether a {@linkplain org.apache.sis.referencing.factory.sql connection to the database}
      * can be established. If no connection can be established, then this method returns a small embedded
-     * EPSG factory containing at least the CRS defined in the {@link #forCode(String)} method javadoc.</p>
+     * <abbr>EPSG</abbr> factory containing at least the <abbr>CRS</abbr>s defined in the
+     * {@link #forCode(String)} method javadoc.</p>
      *
-     * <p>User-defined authorities can be added to the SIS environment by creating a {@code CRSAuthorityFactory}
+     * <p>User-defined authorities can be added to the <abbr>SIS</abbr> environment by creating a {@code CRSAuthorityFactory}
      * implementation with a public no-argument constructor or a public static {@code provider()} method,
      * and declaring the name of that class in the {@code module-info.java} file as a provider of the
      * {@code org.opengis.referencing.crs.CRSAuthorityFactory} service.</p>
@@ -1586,7 +1590,7 @@ check:  while (lower != 0 || upper != dimension) {
      * @param  authority  the authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
      *         instance that manage all factories.
-     * @return the system-wide authority factory used by SIS for the given authority.
+     * @return the system-wide authority factory used by <abbr>SIS</abbr> for the given authority.
      * @throws FactoryException if no factory can be returned for the given authority.
      *
      * @see MultiRegisterOperations
@@ -1596,6 +1600,12 @@ check:  while (lower != 0 || upper != dimension) {
     public static CRSAuthorityFactory getAuthorityFactory(final String authority) throws FactoryException {
         if (authority == null) {
             return AuthorityFactories.ALL;
+        }
+        if (authority.equalsIgnoreCase(Constants.EPSG)) {
+            CRSAuthorityFactory factory = ParameterizedTransformBuilder.CREATOR.get();
+            if (factory != null) {
+                return factory;
+            }
         }
         return AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, authority, null);
     }

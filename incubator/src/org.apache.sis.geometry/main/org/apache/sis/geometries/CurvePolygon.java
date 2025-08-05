@@ -24,29 +24,21 @@ import org.apache.sis.geometries.privy.AbstractGeometry;
 
 
 /**
- * A Polygon is a planar Surface defined by 1 exterior boundary and 0 or more interior boundaries.
- * Each interior boundary defines a hole in the Polygon. A Triangle is a polygon with 3 distinct, non-collinear
- * vertices and no interior boundary.
+ * A curve polygon is a surface where each ring is a closed line string, circular string, or compound curve.
+ * The first ring is the exterior boundary and, all other rings are interior boundaries.
  *
- * The exterior boundary LinearRing defines the “top” of the surface which is the side of the surface from which
- * the exterior boundary appears to traverse the boundary in a counter clockwise direction.
- * The interior LinearRings will have the opposite orientation, and appear as clockwise when viewed from the “top”,
- *
- * The assertions for Polygons (the rules that define valid Polygons) are as follows:
- *
- * a) Polygons are topologically closed;
- * b) The boundary of a Polygon consists of a set of LinearRings that make up its exterior and interior boundaries;
- * c) No two Rings in the boundary cross and the Rings in the boundary of a Polygon may intersect at a Point but only as a tangent.
- * d) A Polygon may not have cut lines, spikes or punctures
- * e) The interior of every Polygon is a connected point set;
- * f) The exterior of a Polygon with 1 or more holes is not connected. Each hole defines a connected component of the exterior.
+ * @todo is Polygon a subclass of CurvePolygon ?
+ * ISO-19107 use the name Polygon for CurvePolygon
+ * OGC Features and Geometries JSON separates them
+ * In practice most geometry library have only polygon with straight lines
  *
  * @author Johann Sorel (Geomatys)
+ * @see https://docs.ogc.org/DRAFTS/21-045r1.html#curve_polygon
  */
 @UML(identifier="Polygon", specification=ISO_19107) // section 8.1.2
-public interface Polygon extends Surface {
+public interface CurvePolygon extends Surface {
 
-    public static final String TYPE = "POLYGON";
+    public static final String TYPE = "CURVEPOLYGON";
 
     @Override
     public default String getGeometryType() {
@@ -59,7 +51,7 @@ public interface Polygon extends Surface {
     }
 
     @UML(identifier="rings", specification=ISO_19107) // section 8.1 figure 28
-    List<LinearRing> getInteriorRings();
+    List<Curve> getInteriorRings();
 
     /**
      * Returns the exterior ring of this Polygon.
@@ -68,7 +60,7 @@ public interface Polygon extends Surface {
      * @return exterior ring of this Polygon.
      */
     @UML(identifier="exteriorRing", specification=ISO_19107) // section 8.1 figure 28
-    LinearRing getExteriorRing();
+    Curve getExteriorRing();
 
     /**
      * Returns the number of interior rings in this Polygon.
@@ -89,7 +81,7 @@ public interface Polygon extends Surface {
      * @return interior ring for this Polygon.
      */
     @UML(identifier="interiorRingN", specification=ISO_19107) // section 8.1 figure 28
-    default LinearRing getInteriorRingN(int n) {
+    default Curve getInteriorRingN(int n) {
         return getInteriorRings().get(n);
     }
 
@@ -107,7 +99,7 @@ public interface Polygon extends Surface {
         for (int i = 0, n = getNumInteriorRing(); i < n; i++) {
             if (i != 0) sb.append(',');
             sb.append('(');
-            AbstractGeometry.toText(sb, getInteriorRingN(i).getPoints());
+            AbstractGeometry.toText(sb, getInteriorRingN(i).asLine(null, null).getPoints());
             sb.append(')');
         }
         sb.append(')');

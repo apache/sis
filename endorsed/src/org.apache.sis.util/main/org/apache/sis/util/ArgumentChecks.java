@@ -306,7 +306,7 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the specified value is null or an instance assignable to the given type.
-     * If this method does not thrown an exception, then the value can be casted to the class
+     * If this method does not thrown an exception, then the value can be cast to the class
      * represented by {@code expectedType} without throwing a {@link ClassCastException}.
      *
      * @param  name          the name of the argument to be checked, used only if an exception is thrown.

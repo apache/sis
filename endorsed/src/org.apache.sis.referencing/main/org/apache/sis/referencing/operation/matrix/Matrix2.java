@@ -119,7 +119,7 @@ public class Matrix2 extends MatrixSIS {
      * verifies the matrix size, then copies all elements in a new {@code Matrix2} object.
      *
      * @param  matrix  the matrix to cast or copy, or {@code null}.
-     * @return the matrix argument if it can be safely casted (including {@code null} argument),
+     * @return the matrix argument if it can be safely cast (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
      * @throws MismatchedMatrixSizeException if the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
      */

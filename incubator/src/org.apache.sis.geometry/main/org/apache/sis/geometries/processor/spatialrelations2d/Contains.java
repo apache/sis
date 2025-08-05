@@ -110,7 +110,7 @@ public final class Contains {
 
 
             { //check exterior
-                final TupleArray coords = asLineString(polygon.getExteriorRing()).getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                final TupleArray coords = polygon.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
                 if (!contains(coords, candidate.getPosition())) {
                     //point is outside the exterior ring
                     operation.result = false;
@@ -120,7 +120,7 @@ public final class Contains {
 
             { //check holes
                 for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
-                    final LineString hole = asLineString(polygon.getInteriorRingN(i));
+                    final LineString hole = polygon.getInteriorRingN(i);
                     final TupleArray coords = hole.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
                     if (contains(coords, candidate.getPosition())) {
                         //point is within a hole
@@ -133,13 +133,6 @@ public final class Contains {
             //point is inside polygon
             operation.result = true;
         }
-    }
-
-    private static LineString asLineString(Curve curve) {
-        if (curve instanceof LineString ls) {
-            return ls;
-        }
-        throw new OperationException("Curve type not supported");
     }
 
 }

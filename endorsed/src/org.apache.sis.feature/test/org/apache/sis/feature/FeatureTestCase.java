@@ -294,14 +294,14 @@ public abstract class FeatureTestCase extends TestCase {
         feature = createFeature(DefaultFeatureTypeTest.city());
         final var wrong  = SingletonAttributeTest.parliament();
         final var city   = assertInstanceOf(AttributeType.class, feature.getType().getProperty("city"));
-        final var casted = new CustomAttribute<>(Features.cast(city, String.class));
+        final var cast   = new CustomAttribute<>(Features.cast(city, String.class));
 
-        feature.setProperty(casted);
+        feature.setProperty(cast);
         setAttributeValue("city", "Utopia", "Atlantide");
 
         var exception = assertThrows(IllegalArgumentException.class, () -> feature.setProperty(wrong));
         assertMessageContains(exception, "parliament", "City");
-        if (assertSameProperty("city", casted, true)) {
+        if (assertSameProperty("city", cast, true)) {
             /*
              * The quality report is expected to contains a custom element.
              */

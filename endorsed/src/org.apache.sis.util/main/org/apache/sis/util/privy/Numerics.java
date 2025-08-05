@@ -109,7 +109,7 @@ public final class Numerics extends Static {
 
     /**
      * Mask for the highest 32 bits of a long integers.
-     * It can be used for checking if a {@code long} can be casted as an unsigned integer.
+     * It can be used for checking if a {@code long} can be cast as an unsigned integer.
      */
     public static final long HIGH_BITS_MASK = ~((1L << Integer.SIZE) - 1);
 

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Objects;
+import org.apache.sis.pending.jdk.Record;
 
 
 /**
@@ -24,7 +25,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD)
  */
-final class AxisName {
+final class AxisName extends Record {
     /**
      * The coordinate system axis name (never {@code null}).
      */
@@ -32,15 +33,22 @@ final class AxisName {
 
     /**
      * The coordinate system axis description, or {@code null} if none.
+     * Example: "Angle from the equatorial plane to the perpendicular to the ellipsoid".
      */
     final String description;
 
     /**
+     * The remarks. Example: "Used in geographic 2D and geographic 3D coordinate reference systems".
+     */
+    final String remarks;
+
+    /**
      * Creates a new coordinate system axis name.
      */
-    AxisName(final String name, final String description) {
+    AxisName(final String name, final String description, final String remarks) {
         this.name = name;
         this.description = description;
+        this.remarks = remarks;
     }
 
     /**
@@ -57,8 +65,10 @@ final class AxisName {
     @Override
     public boolean equals(final Object object) {
         if (object instanceof AxisName) {
-            final AxisName that = (AxisName) object;
-            return name.equals(that.name) && Objects.equals(description, that.description);
+            final var that = (AxisName) object;
+            return name.equals(that.name) &&
+                    Objects.equals(description, that.description) &&
+                    Objects.equals(remarks, that.remarks);
         }
         return false;
     }

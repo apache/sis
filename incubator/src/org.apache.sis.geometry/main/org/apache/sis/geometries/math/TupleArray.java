@@ -137,7 +137,7 @@ public interface TupleArray {
     }
 
     /**
-     * @return this array tuples as an interleaved array casted to bytes.
+     * @return this array tuples as an interleaved array cast to bytes.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default byte[] toArrayByte() {
@@ -145,7 +145,7 @@ public interface TupleArray {
     }
 
     /**
-     * @return this array tuples as an interleaved array casted to shorts.
+     * @return this array tuples as an interleaved array cast to shorts.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default short[] toArrayShort() {
@@ -153,7 +153,7 @@ public interface TupleArray {
     }
 
     /**
-     * @return this array tuples as an interleaved array casted to integers.
+     * @return this array tuples as an interleaved array cast to integers.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default int[] toArrayInt() {
@@ -161,7 +161,7 @@ public interface TupleArray {
     }
 
     /**
-     * @return this array tuples as an interleaved array casted to floats.
+     * @return this array tuples as an interleaved array cast to floats.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default float[] toArrayFloat() {
@@ -169,7 +169,7 @@ public interface TupleArray {
     }
 
     /**
-     * @return this array tuples as an interleaved array casted to doubles.
+     * @return this array tuples as an interleaved array cast to doubles.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default double[] toArrayDouble() {
@@ -179,7 +179,7 @@ public interface TupleArray {
     /**
      * @param offset index of the first tuple to copy
      * @param nbTuple number of tuples to copy
-     * @return this array tuples as an interleaved array casted to bytes.
+     * @return this array tuples as an interleaved array cast to bytes.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default byte[] toArrayByte(int offset, int nbTuple) {
@@ -196,7 +196,7 @@ public interface TupleArray {
     /**
      * @param offset index of the first tuple to copy
      * @param nbTuple number of tuples to copy
-     * @return this array tuples as an interleaved array casted to shorts.
+     * @return this array tuples as an interleaved array cast to shorts.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default short[] toArrayShort(int offset, int nbTuple) {
@@ -213,7 +213,7 @@ public interface TupleArray {
     /**
      * @param offset index of the first tuple to copy
      * @param nbTuple number of tuples to copy
-     * @return this array tuples as an interleaved array casted to integers.
+     * @return this array tuples as an interleaved array cast to integers.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default int[] toArrayInt(int offset, int nbTuple) {
@@ -230,7 +230,7 @@ public interface TupleArray {
     /**
      * @param offset index of the first tuple to copy
      * @param nbTuple number of tuples to copy
-     * @return this array tuples as an interleaved array casted to floats.
+     * @return this array tuples as an interleaved array cast to floats.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default float[] toArrayFloat(int offset, int nbTuple) {
@@ -247,7 +247,7 @@ public interface TupleArray {
     /**
      * @param offset index of the first tuple to copy
      * @param nbTuple number of tuples to copy
-     * @return this array tuples as an interleaved array casted to doubles.
+     * @return this array tuples as an interleaved array cast to doubles.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default double[] toArrayDouble(int offset, int nbTuple) {

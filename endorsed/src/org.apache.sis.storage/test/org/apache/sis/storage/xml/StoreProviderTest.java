@@ -41,7 +41,7 @@ public final class StoreProviderTest extends TestCase {
     /**
      * Tests {@link StoreProvider#probeContent(StorageConnector)} method from a {@link java.io.Reader} object.
      *
-     * @throws DataStoreException if en error occurred while reading the XML.
+     * @throws DataStoreException if an error occurred while reading the XML.
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {

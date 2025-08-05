@@ -38,6 +38,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
 /**
@@ -60,18 +61,13 @@ final class Verifier {
     private final boolean internal;
 
     /**
-     * {@code true} if the last element in {@link #arguments} shall be set to the erroneous value.
-     */
-    private final boolean needsValue;
-
-    /**
      * The arguments to be used with the error message to format.
      * The current implementation relies on the following invariants:
      *
      * <ul>
      *   <li>The first element in this array will be the parameter name. Before the name is known,
      *       this element is either {@code null} or the index to append to the name.</li>
-     *   <li>The last element shall be set to the erroneous value if {@link #needsValue} is {@code true}.</li>
+     *   <li>The last element may be set to the erroneous value.</li>
      * </ul>
      */
     private final Object[] arguments;
@@ -79,11 +75,10 @@ final class Verifier {
     /**
      * Stores information about an error.
      */
-    private Verifier(final boolean internal, final short errorKey, final boolean needsValue, final Object... arguments) {
-        this.errorKey   = errorKey;
-        this.internal   = internal;
-        this.needsValue = needsValue;
-        this.arguments  = arguments;
+    private Verifier(final boolean internal, final short errorKey, final Object... arguments) {
+        this.errorKey  = errorKey;
+        this.internal  = internal;
+        this.arguments = arguments;
     }
 
     /**
@@ -104,7 +99,7 @@ final class Verifier {
      * @param  value       the value to check, or {@code null}.
      * @param  unit        the unit of the value to check, or {@code null}.
      * @return the given value converted to the descriptor unit if any,
-     *         then casted to the descriptor parameterized type.
+     *         then cast to the descriptor parameterized type.
      * @throws InvalidParameterValueException if the parameter value is invalid.
      */
     static <T> T ensureValidValue(final ParameterDescriptor<T> descriptor, final Object value, final Unit<?> unit)
@@ -257,7 +252,7 @@ final class Verifier {
                     final Object[] arguments;
                     final Object minValue = valueDomain.getMinValue();
                     if ((minValue instanceof Number) && ((Number) minValue).doubleValue() == 0 && !valueDomain.isMinIncluded()
-                        && (value instanceof Number) && ((Number) value).doubleValue() < 0)
+                        && (value instanceof Number) && ((Number) value).doubleValue() <= 0)
                     {
                         errorKey     = Errors.Keys.ValueNotGreaterThanZero_2;
                         arguments    = new Object[2];
@@ -266,10 +261,10 @@ final class Verifier {
                         arguments    = new Object[4];
                         arguments[1] = minValue;
                         arguments[2] = valueDomain.getMaxValue();
-                    }
+                   }
                     if (isArray) arguments[0] = i;
                     arguments[arguments.length - 1] = value;
-                    return new Verifier(false, errorKey, true, arguments);
+                    return new Verifier(false, errorKey, arguments);
                 }
             }
         }
@@ -288,27 +283,30 @@ final class Verifier {
      * @param convertedValue  the value <em>converted to the units specified by the descriptor</em>.
      *        This is not necessarily the user-provided value.
      */
-    @SuppressWarnings("unchecked")
-    private static <T> Verifier ensureValidValue(final Class<T> valueClass, final Set<T> validValues,
-            final Comparable<T> minimum, final Comparable<T> maximum, final Object convertedValue)
+    @SuppressWarnings({"unchecked", "element-type-mismatch"})
+    private static <T> Verifier ensureValidValue(final Class<T> valueClass,
+                                                 final Set<T> validValues,
+                                                 final Comparable<T> minimum,
+                                                 final Comparable<T> maximum,
+                                                 final Object convertedValue)
     {
         if (!valueClass.isInstance(convertedValue)) {
             return new Verifier(true, Resources.Keys.IllegalParameterValueClass_3,
-                    false, null, valueClass, convertedValue.getClass());
+                    null, valueClass, convertedValue.getClass());
         }
         if (validValues != null && !validValues.contains(convertedValue)) {
-            return new Verifier(true, Resources.Keys.IllegalParameterValue_2, true, null, convertedValue);
+            return new Verifier(true, Resources.Keys.IllegalParameterValue_2, null, convertedValue);
         }
         if ((minimum != null && minimum.compareTo((T) convertedValue) > 0) ||
             (maximum != null && maximum.compareTo((T) convertedValue) < 0))
         {
-            return new Verifier(false, Errors.Keys.ValueOutOfRange_4, true, null, minimum, maximum, convertedValue);
+            return new Verifier(false, Errors.Keys.ValueOutOfRange_4, null, minimum, maximum, convertedValue);
         }
         return null;
     }
 
     /**
-     * Converts the information about an "value out of range" error. The range in the error message will be formatted
+     * Converts the information about a "value out of range" error. The range in the error message will be formatted
      * in the unit given by the user, which is not necessarily the same as the unit of the parameter descriptor.
      *
      * @param converter  the conversion from user unit to descriptor unit, or {@code null} if none.
@@ -317,12 +315,12 @@ final class Verifier {
     private void convertRange(UnitConverter converter) {
         if (converter != null && !internal && errorKey == Errors.Keys.ValueOutOfRange_4) {
             converter = converter.inverse();
-            Object minimumValue = arguments[1];
-            Object maximumValue = arguments[2];
-            minimumValue = (minimumValue != null) ? converter.convert(((Number) minimumValue).doubleValue()) : "−∞";
-            maximumValue = (maximumValue != null) ? converter.convert(((Number) maximumValue).doubleValue()) :  "∞";
-            arguments[1] = minimumValue;
-            arguments[2] = maximumValue;
+            for (int i=1; i<=2; i++) {
+                Object value = arguments[i];
+                if (value instanceof Number) {
+                    arguments[i] = converter.convert(((Number) value).doubleValue());
+                }
+            }
         }
     }
 
@@ -356,10 +354,31 @@ final class Verifier {
             value = Array.get(value, (Integer) index);
         }
         arguments[0] = name;
-        if (needsValue) {
-            arguments[arguments.length - 1] = value;
+        final IndexedResourceBundle resources;
+        if (internal) {
+            resources = Resources.forProperties(properties);
+            switch (errorKey) {
+                case Resources.Keys.IllegalParameterValue_2: {
+                    arguments[1] = value;
+                    break;
+                }
+            }
+        } else {
+            resources =  Errors.forProperties(properties);
+            switch (errorKey) {
+                case Errors.Keys.ValueOutOfRange_4: {
+                    if (arguments[1] == null) arguments[1] = "−∞";
+                    if (arguments[2] == null) arguments[2] =  "∞";
+                    arguments[3] = value;
+                    break;
+                }
+                case Errors.Keys.ValueNotGreaterThanZero_2: {
+                    arguments[1] = value;
+                    break;
+                }
+            }
         }
-        return (internal ? Resources.forProperties(properties) : Errors.forProperties(properties)).getString(errorKey, arguments);
+        return resources.getString(errorKey, arguments);
     }
 
     /**

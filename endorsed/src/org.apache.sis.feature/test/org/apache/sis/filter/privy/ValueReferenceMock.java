@@ -76,7 +76,7 @@ final class ValueReferenceMock<V> implements ValueReference<Map<String,?>, V> {
     }
 
     /**
-     * Returns a reference to the same value but casted to a different type.
+     * Returns a reference to the same value but cast to a different type.
      */
     @Override
     public <N> Expression<Map<String,?>, N> toValueType(final Class<N> target) {

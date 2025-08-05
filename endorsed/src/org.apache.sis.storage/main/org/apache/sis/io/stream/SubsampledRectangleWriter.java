@@ -48,7 +48,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
      * @param  pixelStride  number of bands in a pixel.
      * @throws ArithmeticException if the region is too large.
      */
-    public SubsampledRectangleWriter(final Region region, final int[] bandOffsets, final int pixelStride) {
+    SubsampledRectangleWriter(final Region region, final int[] bandOffsets, final int pixelStride) {
         super(region);
         this.bandOffsets = bandOffsets;
         this.pixelStride = pixelStride;
@@ -142,7 +142,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
     public void write(final ChannelDataOutput output, final byte[] data, int offset, final boolean direct) throws IOException {
         if (direct) throw new UnsupportedOperationException();
         write(output, offset, Byte.BYTES, new Data() {
-            /** Fill the buffer with pixels made of a single sample value. */
+            /** Fills the buffer with pixels made of a single sample value. */
             @Override int fill(final ByteBuffer target, int index, final int stride) {
                 while (target.hasRemaining()) {
                     target.put(data[index]);
@@ -151,7 +151,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
                 return index;
             }
 
-            /** Fill the buffer with pixels made of multiple sample values. */
+            /** Fills the buffer with pixels made of multiple sample values. */
             @Override int fill(final ByteBuffer target, int index, final int[] bands, final int stride) {
                 while (target.hasRemaining()) {
                     for (int b : bands) {
@@ -175,7 +175,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
     @Override
     public void write(final ChannelDataOutput output, final short[] data, int offset) throws IOException {
         write(output, offset, Short.BYTES, new Data() {
-            /** Fill the buffer with pixels made of a single sample value. */
+            /** Fills the buffer with pixels made of a single sample value. */
             @Override int fill(final ByteBuffer target, int index, final int stride) {
                 while (target.hasRemaining()) {
                     target.putShort(data[index]);
@@ -184,7 +184,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
                 return index;
             }
 
-            /** Fill the buffer with pixels made of multiple sample values. */
+            /** Fills the buffer with pixels made of multiple sample values. */
             @Override int fill(final ByteBuffer target, int index, final int[] bands, final int stride) {
                 while (target.hasRemaining()) {
                     for (int b : bands) {
@@ -208,7 +208,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
     @Override
     public void write(final ChannelDataOutput output, final int[] data, int offset) throws IOException {
         write(output, offset, Integer.BYTES, new Data() {
-            /** Fill the buffer with pixels made of a single sample value. */
+            /** Fills the buffer with pixels made of a single sample value. */
             @Override int fill(final ByteBuffer target, int index, final int stride) {
                 while (target.hasRemaining()) {
                     target.putInt(data[index]);
@@ -217,7 +217,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
                 return index;
             }
 
-            /** Fill the buffer with pixels made of multiple sample values. */
+            /** Fills the buffer with pixels made of multiple sample values. */
             @Override int fill(final ByteBuffer target, int index, final int[] bands, final int stride) {
                 while (target.hasRemaining()) {
                     for (int b : bands) {
@@ -241,7 +241,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
     @Override
     public void write(final ChannelDataOutput output, final long[] data, int offset) throws IOException {
         write(output, offset, Long.BYTES, new Data() {
-            /** Fill the buffer with pixels made of a single sample value. */
+            /** Fills the buffer with pixels made of a single sample value. */
             @Override int fill(final ByteBuffer target, int index, final int stride) {
                 while (target.hasRemaining()) {
                     target.putLong(data[index]);
@@ -250,7 +250,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
                 return index;
             }
 
-            /** Fill the buffer with pixels made of multiple sample values. */
+            /** Fills the buffer with pixels made of multiple sample values. */
             @Override int fill(final ByteBuffer target, int index, final int[] bands, final int stride) {
                 while (target.hasRemaining()) {
                     for (int b : bands) {
@@ -274,7 +274,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
     @Override
     public void write(final ChannelDataOutput output, final float[] data, int offset) throws IOException {
         write(output, offset, Float.BYTES, new Data() {
-            /** Fill the buffer with pixels made of a single sample value. */
+            /** Fills the buffer with pixels made of a single sample value. */
             @Override int fill(final ByteBuffer target, int index, final int stride) {
                 while (target.hasRemaining()) {
                     target.putFloat(data[index]);
@@ -283,7 +283,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
                 return index;
             }
 
-            /** Fill the buffer with pixels made of multiple sample values. */
+            /** Fills the buffer with pixels made of multiple sample values. */
             @Override int fill(final ByteBuffer target, int index, final int[] bands, final int stride) {
                 while (target.hasRemaining()) {
                     for (int b : bands) {
@@ -307,7 +307,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
     @Override
     public void write(final ChannelDataOutput output, final double[] data, int offset) throws IOException {
         write(output, offset, Double.BYTES, new Data() {
-            /** Fill the buffer with pixels made of a single sample value. */
+            /** Fills the buffer with pixels made of a single sample value. */
             @Override int fill(final ByteBuffer target, int index, final int stride) {
                 while (target.hasRemaining()) {
                     target.putDouble(data[index]);
@@ -316,7 +316,7 @@ final class SubsampledRectangleWriter extends HyperRectangleWriter {
                 return index;
             }
 
-            /** Fill the buffer with pixels made of multiple sample values. */
+            /** Fills the buffer with pixels made of multiple sample values. */
             @Override int fill(final ByteBuffer target, int index, final int[] bands, final int stride) {
                 while (target.hasRemaining()) {
                     for (int b : bands) {

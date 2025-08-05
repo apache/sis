@@ -346,7 +346,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
          * Prepare two affine transforms to be executed before and after the MolodenskyTransform:
          *
          *   - A "normalization" transform for converting degrees to radians,
-         *   - A "denormalization" transform for for converting radians to degrees.
+         *   - A "denormalization" transform for converting radians to degrees.
          */
         context.normalizeGeographicInputs(0);
         context.denormalizeGeographicOutputs(0);

@@ -34,22 +34,21 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 
 /**
- * A lazy set of {@link CoordinateOperation} objects to be returned by the
- * {@link EPSGDataAccess#createFromCoordinateReferenceSystemCodes(String, String)} method.
- * There are two different ways in which {@link EPSGDataAccess} get coordinate operations:
+ * A lazy set of coordinate operations identified by their <abbr>EPSG</abbr> codes.
+ * There are two different ways in which {@link EPSGDataAccess} gets coordinate operations:
  *
  * <ol>
- *   <li>The coordinate operation may be the <i>conversion from base</i> property of a projected CRS.
- *       Those conversions are obtained by a SQL query like below (note that this query can return at most
- *       one result, because {@code COORD_REF_SYS_CODE} is a primary key):
+ *   <li>The coordinate operation may be the <i>conversion from base</i> property of a projected <abbr>CRS</abbr>.
+ *       Those conversions are obtained by a <abbr>SQL</abbr> query like below (note that this query can return at
+ *       most one result, because {@code COORD_REF_SYS_CODE} is a primary key):
  *
  *       {@snippet lang="sql" :
- *         SELECT PROJECTION_CONV_CODE FROM "Coordinate Reference System" WHERE SOURCE_GEOGCRS_CODE = ? AND COORD_REF_SYS_CODE = ?
+ *         SELECT PROJECTION_CONV_CODE FROM "Coordinate Reference System" WHERE BASE_CRS_CODE = ? AND COORD_REF_SYS_CODE = ?
  *         }
  *   </li>
  *
  *   <li>The coordinate operation may be standalone. This is the case of coordinate transformations having stochastic errors.
- *       Those transformations are obtained by a SQL query like below (note that this query can return many results):
+ *       Those transformations are obtained by a <abbr>SQL</abbr> query like below (note that it may return many results):
  *
  *       {@snippet lang="sql" :
  *         SELECT COORD_OP_CODE FROM "Coordinate_Operation" … WHERE … AND SOURCE_CRS_CODE = ? AND TARGET_CRS_CODE = ?
@@ -60,6 +59,8 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
  * We distinguish those two cases by the presence or absence of a coordinate operation code in the {@link #projections} map.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ *
+ * @see EPSGDataAccess#createFromCoordinateReferenceSystemCodes(String, String)
  */
 final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperation> {
     /**
@@ -73,7 +74,7 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
      * </ul>
      *
      * This map does <strong>not</strong> contain all operations to be returned by this {@code CoordinateOperationSet},
-     * but only the ones to be returned by the first SQL query documented in the class Javadoc.
+     * but only the ones to be returned by the first <abbr>SQL</abbr> query documented in the class Javadoc.
      */
     private final Map<String,Integer> projections;
 
@@ -109,7 +110,7 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
     }
 
     /**
-     * Creates a coordinate operation for the specified EPSG code.
+     * Creates a coordinate operation for the specified <abbr>EPSG</abbr> code.
      */
     @Override
     @SuppressWarnings("deprecation")

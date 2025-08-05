@@ -93,6 +93,24 @@ public enum GeometryLibrary {
     JTS("JTS"),
 
     /**
+     * The SIS library. This open source library provides an object model
+     * for a large set of geometry types but has limited geometric functions.
+     * The library is available under Apache 2 license.
+     *
+     * <table class="sis">
+     *   <caption>Implementation classes</caption>
+     *   <tr><th>Geometry type</th>               <th>Class name</th></tr>
+     *   <tr><td>Root geometry class</td>         <td>{@code org.apache.sis.geometries.Geometry}</td></tr>
+     *   <tr><td>{@link GeometryType#POINT}</td>  <td>{@code org.apache.sis.geometries.Point}</td></tr>
+     *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code org.apache.sis.geometries.LineString}</td></tr>
+     *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code org.apache.sis.geometries.Polygon}</td></tr>
+     * </table>
+     *
+     * @since 2.0 (temporary version number until this branch is released)
+     */
+    SIS("SIS"),
+
+    /**
      * The GeoAPI geometry interfaces.
      * Since GeoAPI interfaces are implementation neutral, the actual implementation is currently unspecified
      * (a future Apache SIS version may provide some control on that).

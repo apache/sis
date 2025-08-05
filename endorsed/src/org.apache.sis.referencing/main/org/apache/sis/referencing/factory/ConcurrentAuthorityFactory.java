@@ -1143,7 +1143,33 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an arbitrary datum from a code. The returned object will typically be an
+     * Returns an arbitrary datum ensemble from a code.
+     * The default implementation performs the following steps:
+     * <ul>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createDatumEnsemble(String)}
+     *       method, invoke that method and cache the result for future use.</li>
+     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createDatumEnsemble(String)}
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
+     * </ul>
+     *
+     * @return the datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @since 1.5
+     */
+    @Override
+    public DatumEnsemble<?> createDatumEnsemble(final String code) throws FactoryException {
+        if (isDefault(DatumEnsemble.class)) {
+            return super.createDatumEnsemble(code);
+        }
+        return create(AuthorityFactoryProxy.ENSEMBLE, code);
+    }
+
+    /**
+     * Returns an arbitrary datum from a code. The returned object will typically be a
+     * {@link GeodeticDatum}, {@link VerticalDatum}, {@link TemporalDatum} or {@link EngineeringDatum}.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>

@@ -197,6 +197,17 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
+    @SuppressWarnings("unchecked")
+    static final AuthorityFactoryProxy<DatumEnsemble<?>> ENSEMBLE =
+        new AuthorityFactoryProxy<DatumEnsemble<?>>((Class) DatumEnsemble.class, AuthorityFactoryIdentifier.Type.DATUM) {
+            @Override DatumEnsemble<?> create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
+                return factory.createDatumEnsemble(code);
+            }
+            @Override DatumEnsemble<?> createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                return datumFactory(factory).createDatumEnsemble(code);
+            }
+    };
+
     static final AuthorityFactoryProxy<Datum> DATUM =
         new AuthorityFactoryProxy<Datum>(Datum.class, AuthorityFactoryIdentifier.Type.DATUM) {
             @Override Datum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {

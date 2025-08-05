@@ -162,7 +162,7 @@ public interface Tuple<T extends Tuple <T>> {
     /**
      * Tuple to array.
      *
-     * @return values as casted byte array
+     * @return values as cast byte array
      */
     default byte[] toArrayByte() {
         byte[] buffer = new byte[getDimension()];
@@ -173,7 +173,7 @@ public interface Tuple<T extends Tuple <T>> {
     /**
      * Tuple to array.
      *
-     * @return values as casted short array
+     * @return values as cast short array
      */
     default short[] toArrayShort() {
         short[] buffer = new short[getDimension()];
@@ -184,7 +184,7 @@ public interface Tuple<T extends Tuple <T>> {
     /**
      * Tuple to array.
      *
-     * @return values as casted integer array
+     * @return values as cast integer array
      */
     default int[] toArrayInt() {
         int[] buffer = new int[getDimension()];
@@ -195,7 +195,7 @@ public interface Tuple<T extends Tuple <T>> {
     /**
      * Tuple to array.
      *
-     * @return values as casted float array
+     * @return values as cast float array
      */
     default float[] toArrayFloat() {
         float[] buffer = new float[getDimension()];

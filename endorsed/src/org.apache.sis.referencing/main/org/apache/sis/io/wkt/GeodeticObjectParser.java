@@ -58,6 +58,7 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
@@ -1406,7 +1407,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             meridian = CommonCRS.WGS84.primeMeridian();
         }
         if (toWGS84 != null) {
-            properties.put(CoordinateOperations.BURSA_WOLF_KEY, toWGS84);
+            properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, toWGS84);
         }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
@@ -1445,10 +1446,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final String name = element.pullString("name");
         RealizationMethod method = null;
         if (isWKT1) {
-            method = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
+            method = VerticalDatumTypes.fromLegacyCode(element.pullInteger("datum"));
         }
         if (method == null) {
-            method = VerticalDatumTypes.guess(name, null, null);
+            method = VerticalDatumTypes.fromDatum(name, null, null);
         }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
@@ -1939,7 +1940,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  */
                 if (datum.getRealizationMethod().isEmpty()) {
-                    var type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
+                    var type = VerticalDatumTypes.fromDatum(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
                     if (type != null) {
                         final DatumFactory datumFactory = factories.getDatumFactory();
                         datum = datumFactory.createVerticalDatum(IdentifiedObjects.getProperties(datum), type);
@@ -2318,7 +2319,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Map<String,Object>        properties       = parseParametersAndClose(element, name, method);
         if (accuracy != null) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                    PositionalAccuracyConstant.create(accuracy.pullDouble("accuracy")));
+                    PositionalAccuracyConstant.transformation(accuracy.pullDouble("accuracy")));
             accuracy.close(ignoredElements);
         }
         try {

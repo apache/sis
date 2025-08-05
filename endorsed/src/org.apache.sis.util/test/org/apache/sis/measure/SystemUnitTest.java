@@ -281,7 +281,7 @@ public final class SystemUnitTest extends TestCase {
         assertSame(Units.METRE, anonymous.asType(Length.class));
         assertSame(otherName,   otherName.asType(Length.class));
         /*
-         * Verify that the unit cannot be casted to an incompatible units.
+         * Verify that the unit cannot be cast to an incompatible units.
          */
         for (final Unit<Length> unit : List.of(Units.METRE, anonymous, otherName)) {
             var e = assertThrows(ClassCastException.class, () -> unit.asType(Time.class));
