@@ -498,6 +498,34 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
+     * Returns the intersection of the given coverage with the given extent.
+     * The extent shall have the same number of dimensions than the coverage.
+     * The "grid to <abbr>CRS</abbr>" transform is unchanged.
+     *
+     * <p>This method is useful for taking a slice of a multi-dimensional grid.
+     * Having a slice allows to invoke {@link GridCoverage#render(GridExtent)}
+     * with a null argument value.</p>
+     *
+     * @param  source  the grid coverage to clip.
+     * @param  clip    the clip to apply in units of source grid coordinates.
+     * @return a coverage with grid coordinates contained inside the given clip.
+     * @throws IncompleteGridGeometryException if the given coverage has no grid extent.
+     * @throws DisjointExtentException if the given extent does not intersect the given coverage.
+     * @throws IllegalArgumentException if axes of the given extent are inconsistent with the axes of the grid of the given coverage.
+     *
+     * @since 1.5
+     */
+    public GridCoverage clip(final GridCoverage source, final GridExtent clip) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("clip",   clip);
+        final boolean allowSourceReplacement;
+        synchronized (this) {
+            allowSourceReplacement = optimizations.contains(Optimization.REPLACE_SOURCE);
+        }
+        return ClippedGridCoverage.create(source, clip, allowSourceReplacement);
+    }
+
+    /**
      * Creates a new coverage with a different grid extent, resolution or coordinate reference system.
      * The desired properties are specified by the {@link GridGeometry} argument, which may be incomplete.
      * The missing grid geometry components are completed as below:
@@ -967,10 +995,12 @@ public class GridCoverageProcessor implements Cloneable {
     @Override
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final GridCoverageProcessor other = (GridCoverageProcessor) object;
+            final var other = (GridCoverageProcessor) object;
             if (imageProcessor.equals(other.imageProcessor)) {
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final EnumSet<?> optimizations;
                 synchronized (this) {
+                    // Clone for allowing comparison outside the synchronized block.
                     optimizations = (EnumSet<?>) this.optimizations.clone();
                 }
                 synchronized (other) {
@@ -999,7 +1029,7 @@ public class GridCoverageProcessor implements Cloneable {
     @Override
     public GridCoverageProcessor clone() {
         try {
-            final GridCoverageProcessor clone = (GridCoverageProcessor) super.clone();
+            final var clone = (GridCoverageProcessor) super.clone();
             final Field f = GridCoverageProcessor.class.getDeclaredField("imageProcessor");
             f.setAccessible(true);      // Caller sensitive: must be invoked in same module.
             f.set(clone, imageProcessor.clone());

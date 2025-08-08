@@ -575,10 +575,11 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
                 /*
                  * Above block tried to compute a "CRS to grid" transform in the most direct way.
                  * It covers the usual case where the point has the required number of dimensions,
-                 * and works better if the point has more dimensions (extra dimensions are ignored).
+                 * and fixes the case when the point has more dimensions (extra dimensions are ignored).
                  * The following block covers the opposite case, where the point does not have enough
                  * dimensions. We try to fill missing dimensions with the help of the `slice` map.
                  */
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<Integer,Long> slice = getDefaultSlice();
                 try {
                     CoordinateOperation op = CRS.findOperation(stepCRS, crs, areaOfInterest);

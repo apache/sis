@@ -93,7 +93,7 @@ abstract class DerivedGridCoverage extends GridCoverage {
      *
      * <h4>Differences with usual behavior</h4>
      * The evaluator returned by the default implementation has two methods with a behavior different
-     * than the intuitively expected ones. Howerver those differences are allowed by methods contract.
+     * than the intuitively expected ones. However, those differences are allowed by methods contract.
      *
      * <ul>
      *   <li>{@link GridCoverage.Evaluator#getCoverage()} returns an instance which is not {@code this}.</li>
