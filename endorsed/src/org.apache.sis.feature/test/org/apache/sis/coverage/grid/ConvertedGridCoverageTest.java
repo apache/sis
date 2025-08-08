@@ -23,10 +23,10 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -82,9 +82,10 @@ public final class ConvertedGridCoverageTest extends TestCase {
      */
     private static RenderedImage render(final GridCoverage coverage) {
         final RenderedImage image = coverage.render(null);
-        final Object bands = image.getProperty(SAMPLE_DIMENSIONS_KEY);
-        final var sd = assertInstanceOf(SampleDimension[].class, bands);
-        assertArrayEquals(coverage.getSampleDimensions().toArray(SampleDimension[]::new), sd);
+        assertArrayEquals(coverage.getSampleDimensions().toArray(SampleDimension[]::new),
+                          assertInstanceOf(SampleDimension[].class, image.getProperty(PlanarImage.SAMPLE_DIMENSIONS_KEY)));
+        assertArrayEquals(new int[] {0, 1},
+                          assertInstanceOf(int[].class, image.getProperty(PlanarImage.XY_DIMENSIONS_KEY)));
         return image;
     }
 

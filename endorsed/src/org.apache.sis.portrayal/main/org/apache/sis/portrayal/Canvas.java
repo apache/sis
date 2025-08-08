@@ -1055,7 +1055,7 @@ public class Canvas extends Observable implements Localized {
              */
             final GridExtent extent = newValue.getExtent();
             final int[] displayDimensions = extent.getSubspaceDimensions(getDisplayDimensions());
-            final GeneralEnvelope newBounds = new GeneralEnvelope(getDisplayCRS());
+            final var newBounds = new GeneralEnvelope(getDisplayCRS());
             for (int i=0; i<displayDimensions.length; i++) {
                 final int s = displayDimensions[i];
                 newBounds.setRange(i, extent.getLow(s), Math.incrementExact(extent.getHigh(s)));

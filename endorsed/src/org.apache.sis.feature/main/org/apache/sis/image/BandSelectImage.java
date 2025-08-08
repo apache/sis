@@ -47,21 +47,23 @@ import org.apache.sis.image.privy.ObservableImage;
  */
 class BandSelectImage extends SourceAlignedImage {
     /**
-     * Properties to inherit from the source images, after bands reduction if applicable.
-     *
-     * @see #getProperty(String)
-     */
-    private static final Set<String> INHERITED_PROPERTIES = Set.of(
-            GRID_GEOMETRY_KEY, POSITIONAL_ACCURACY_KEY,                         // Properties to forward as-is.
-            SAMPLE_DIMENSIONS_KEY, SAMPLE_RESOLUTIONS_KEY, STATISTICS_KEY);     // Properties to forward after band reduction.
-
-    /**
      * Inherited properties that require band reduction.
      * Shall be a subset of {@link #INHERITED_PROPERTIES}.
      * All values must be arrays.
      */
     static final Set<String> REDUCED_PROPERTIES = Set.of(
-            SAMPLE_DIMENSIONS_KEY, SAMPLE_RESOLUTIONS_KEY, STATISTICS_KEY);
+            SAMPLE_DIMENSIONS_KEY,
+            SAMPLE_RESOLUTIONS_KEY,
+            STATISTICS_KEY);
+
+    /**
+     * Properties to inherit from the source images, after bands reduction if applicable.
+     *
+     * @see #getProperty(String)
+     */
+    private static final Set<String> INHERITED_PROPERTIES = Set.of(
+            ArraysExt.concatenate(POSITIONAL_PROPERTIES.toArray(String[]::new),     // Properties to forward as-is.
+                                     REDUCED_PROPERTIES.toArray(String[]::new)));   // Properties to forward after band reduction.
 
     /**
      * The selected bands.

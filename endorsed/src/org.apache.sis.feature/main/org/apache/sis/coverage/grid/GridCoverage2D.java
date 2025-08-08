@@ -191,7 +191,7 @@ public class GridCoverage2D extends GridCoverage {
         final GridExtent extent = gridGeometry.getExtent();
         final int[] imageAxes;
         if (source instanceof GridCoverage2D) {
-            final GridCoverage2D gs = (GridCoverage2D) source;
+            final var gs = (GridCoverage2D) source;
             xDimension     = gs.xDimension;
             yDimension     = gs.yDimension;
             gridToImageX   = gs.gridToImageX;

@@ -112,6 +112,23 @@ import org.apache.sis.pending.jdk.JDK18;
  */
 public abstract class PlanarImage implements RenderedImage {
     /**
+     * Key for a property identifying the grid dimensions that are represented as a two-dimensional image.
+     * For an image which is the result of {@linkplain org.apache.sis.coverage.grid.GridCoverage#render
+     * rendering a two-dimensional slice} of a multi-dimensional grid coverage, this property maps the
+     * <var>x</var> and <var>y</var> axes of this image to the dimensions of the grid of the source coverage.
+     *
+     * <p>The property value is an {@code int[]} array of length 2.
+     * The value at array index 0 identifies the source grid dimension of the <var>x</var> image axis, which is usually 0.
+     * The value at array index 1 identifies the source grid dimension of the <var>y</var> image axis, which is usually 1.</p>
+     *
+     * @see org.apache.sis.coverage.grid.ImageRenderer#getXYDimensions()
+     * @see org.apache.sis.coverage.grid.GridExtent#getSubspaceDimensions(int)
+     *
+     * @since 1.5
+     */
+    public static final String XY_DIMENSIONS_KEY = "org.apache.sis.XYDimensions";
+
+    /**
      * Key for a property defining a conversion from pixel coordinates to "real world" coordinates.
      * Other information include an envelope in "real world" coordinates and an estimation of pixel resolution.
      * The value is a {@link GridGeometry} instance with following properties:
@@ -129,8 +146,9 @@ public abstract class PlanarImage implements RenderedImage {
     public static final String GRID_GEOMETRY_KEY = "org.apache.sis.GridGeometry";
 
     /**
-     * Estimation of positional accuracy, typically in metres or pixel units. Pixel positions may have limited accuracy
-     * in they are computed by {@linkplain org.opengis.referencing.operation.Transformation coordinate transformations}.
+     * Key for a property giving an estimation of positional accuracy, typically in metres or pixel units.
+     * Pixel positions may have limited accuracy when they are computed by
+     * {@linkplain org.opengis.referencing.operation.Transformation coordinate transformations}.
      * The position may also be inaccurate because of approximation applied for faster rendering.
      *
      * <p>Values should be instances of <code>{@link javax.measure.Quantity[]}</code>. The array length
@@ -248,6 +266,9 @@ public abstract class PlanarImage implements RenderedImage {
      *   <tr>
      *     <th>Keys</th>
      *     <th>Values</th>
+     *   </tr><tr>
+     *     <td>{@value #XY_DIMENSIONS_KEY}</td>
+     *     <td>Indexes of the dimensions of the source grid which are represented as a rendered image.</td>
      *   </tr><tr>
      *     <td>{@value #GRID_GEOMETRY_KEY}</td>
      *     <td>Conversion from pixel coordinates to "real world" coordinates.</td>

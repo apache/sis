@@ -55,8 +55,11 @@ abstract class SourceAlignedImage extends ComputedImage {
      * May be used as the {@code inherit} argument in {@link #filterPropertyNames(String[], Set, String[])}.
      * Inheriting those properties make sense for operations that do not change pixel coordinates.
      */
-    static final Set<String> POSITIONAL_PROPERTIES = Set.of(GRID_GEOMETRY_KEY,
-            POSITIONAL_ACCURACY_KEY, ResampledImage.POSITIONAL_CONSISTENCY_KEY);
+    static final Set<String> POSITIONAL_PROPERTIES = Set.of(
+            XY_DIMENSIONS_KEY,
+            GRID_GEOMETRY_KEY,
+            POSITIONAL_ACCURACY_KEY,
+            ResampledImage.POSITIONAL_CONSISTENCY_KEY);
 
     /**
      * The color model for this image. May be {@code null}.
