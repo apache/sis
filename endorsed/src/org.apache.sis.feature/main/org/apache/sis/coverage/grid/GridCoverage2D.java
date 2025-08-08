@@ -647,7 +647,7 @@ public class GridCoverage2D extends GridCoverage {
              * may force data loading earlier than desired.
              */
             final var result = new ReshapedImage(data, xmin, ymin, xmax, ymax);
-            return result.isIdentity() ? data : result;
+            return result.isIdentity() ? result.source : result;
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }
