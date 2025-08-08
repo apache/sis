@@ -272,7 +272,7 @@ public final class VerticalDatumTypes {
             if (CharSequences.equalsFiltered("Mean Sea Level", name, Characters.Filter.LETTERS_AND_DIGITS, true)) {
                 return RealizationMethod.TIDAL;
             }
-            if (name.contains("geoid")) {
+            if (name.regionMatches(true, 0, "geoid", 0, 5)) {
                 return RealizationMethod.GEOID;
             }
         }
