@@ -198,8 +198,8 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             }
         }
         GridExtent extent = gridGeometry.getExtent();
-        if (extent.getDimension()    < GridCoverage2D.BIDIMENSIONAL ||
-            extent.getSubDimension() > GridCoverage2D.BIDIMENSIONAL)
+        if (extent.getDimension()        < GridCoverage2D.BIDIMENSIONAL ||
+            extent.getDegreesOfFreedom() > GridCoverage2D.BIDIMENSIONAL)
         {
             return this;
         }

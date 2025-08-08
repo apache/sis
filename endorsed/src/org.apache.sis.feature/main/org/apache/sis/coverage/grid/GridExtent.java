@@ -724,8 +724,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return the number of dimensions where this grid extent has a size greater than 1.
      *
      * @see #getSubspaceDimensions(int)
+     *
+     * @since 1.5
      */
-    final int getSubDimension() {
+    public int getDegreesOfFreedom() {
         int n = 0;
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
@@ -1035,6 +1037,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return indices of sub-space dimensions, in increasing order in an array of length {@code numDim}.
      * @throws SubspaceNotSpecifiedException if there is more than {@code numDim} dimensions having a size greater than 1.
      * @throws CannotEvaluateException if this grid extent does not have at least {@code numDim} dimensions.
+     *
+     * @see #getDegreesOfFreedom()
      */
     public int[] getSubspaceDimensions(final int numDim) {
         final int m = ensureValidDimension(numDim);

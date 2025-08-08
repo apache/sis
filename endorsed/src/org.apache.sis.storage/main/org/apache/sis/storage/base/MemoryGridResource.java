@@ -31,7 +31,9 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.storage.AbstractGridCoverageResource;
+import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
+import static org.apache.sis.storage.base.TiledGridCoverage.BIDIMENSIONAL;
 
 
 /**
@@ -42,7 +44,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class MemoryGridResource extends AbstractGridCoverageResource {
+public class MemoryGridResource extends AbstractGridCoverageResource {
     /**
      * The grid coverage specified at construction time.
      */
@@ -55,17 +57,24 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     private final GridCoverageProcessor processor;
 
     /**
-     * The resource identifier, may be null.
+     * The resource identifier, or {@code null} if none.
      */
     private final GenericName identifer;
 
     /**
+     * Whether to defer the calls to {@link GridCoverage#render(GridExtent)}.
+     * If {@code false}, the calls will be done sooner (if possible)
+     * as if data were read from a file immediately.
+     */
+    private boolean deferredRendering;
+
+    /**
      * Creates a new coverage stored in memory.
      *
-     * @param  parent     listeners of the parent resource, or {@code null} if none.
-     * @param  identifier resource identifier or {@code null} if none.
-     * @param  coverage   stored coverage retained as-is (not copied). Cannot be null.
-     * @param  processor  the grid coverage processor for selecting bands, or {@code null} for default.
+     * @param  parent      listeners of the parent resource, or {@code null} if none.
+     * @param  identifier  resource identifier, or {@code null} if none.
+     * @param  coverage    stored coverage retained as-is (not copied). Cannot be null.
+     * @param  processor   the grid coverage processor for selecting bands, or {@code null} for default.
      */
     public MemoryGridResource(final StoreListeners parent, final GenericName identifier,
                               final GridCoverage coverage, final GridCoverageProcessor processor)
@@ -105,10 +114,28 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     }
 
     /**
+     * Returns an indication about whether {@code read(…)} tries to force the loading of data.
+     */
+    @Override
+    public RasterLoadingStrategy getLoadingStrategy() {
+        return deferredRendering ? RasterLoadingStrategy.AT_RENDER_TIME
+                                 : RasterLoadingStrategy.AT_READ_TIME;
+    }
+
+    /**
+     * Sets the preference about whether {@code read(…)} should try to force the loading of data.
+     */
+    @Override
+    public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
+        deferredRendering = !strategy.equals(RasterLoadingStrategy.AT_READ_TIME);
+        return strategy == getLoadingStrategy();
+    }
+
+    /**
      * Returns a subset of the wrapped grid coverage. If a non-null grid geometry is specified, then
      * this method tries to return a grid coverage matching the given grid geometry on a best-effort basis.
-     * In current implementation this is either a {@link org.apache.sis.coverage.grid.GridCoverage2D} or
-     * the original grid coverage.
+     * In the current implementation, this is either a {@link org.apache.sis.coverage.grid.GridCoverage2D}
+     * or the original grid coverage.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for the whole domain.
      * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
@@ -126,6 +153,9 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
         if (ranges != null && ranges.length != 0) {
             subset = processor.selectSampleDimensions(subset, ranges);
         }
+        if (domain == null) {
+            return subset;
+        }
         /*
          * The given `domain` may use arbitrary `gridToCRS` and `CRS` properties.
          * For this simple implementation we need the same `gridToCRS` and `CRS`
@@ -136,66 +166,60 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
          * TODO: a future implementation may apply subsampling efficiently,
          *       by adjusting the pixel stride in SampleModel.
          */
-        GridExtent intersection = null;
         final GridGeometry source = subset.getGridGeometry();
-        if (domain == null) {
-            domain = source;
-        } else {
-            intersection = source.derive()
-                    .rounding(GridRoundingMode.ENCLOSING)
-                    .subgrid(domain).getIntersection();             // Take in account the change of CRS if needed.
-            if (intersection.contains(source.getExtent())) {
-                intersection = null;                                // Will request the whole image.
-                domain = source;
-            }
+        GridExtent intersection = source.derive()
+                .rounding(GridRoundingMode.ENCLOSING)
+                .subgrid(domain).getIntersection();             // Take in account the change of CRS if needed.
+        if (deferredRendering || intersection.getDegreesOfFreedom() > BIDIMENSIONAL) {
+            return processor.clip(subset, intersection);
         }
         /*
-         * Quick check before to invoke the potentially costly `coverage.render(…)` method.
+         * Invoke `GridCoverage.render(GridExtent)- immediately. It simulates a "load data at `read(…)` invocation time" strategy.
+         * Note: we would consider to remove all the remaining code in this method and unconditionally rely on above clipping.
          */
-        if (intersection == null) {
+        if (intersection.contains(source.getExtent())) {
             return subset;
+        }
+        final int dimX, dimY;
+        {   // For local scope of `gridDimensions`.
+            int[] gridDimensions = intersection.getSubspaceDimensions(BIDIMENSIONAL);
+            dimX = gridDimensions[0];
+            dimY = gridDimensions[1];
         }
         /*
          * After `render(…)` execution, the (minX, minY) image coordinates are the differences between
-         * the extent that we requested and the one that we got. If that differences is not zero, then
+         * the extent that we requested and the one that we got. If these differences are not zero,
          * we need to translate the `GridExtent` in order to make it matches what we got. But before to
          * apply that translation, we adjust the grid size (because it may add another translation).
          */
-        RenderedImage data = subset.render(intersection);
-        if (intersection != null) {
-            final int[]  sd      = intersection.getSubspaceDimensions(2);
-            final int    dimX    = sd[0];
-            final int    dimY    = sd[1];
-            final long   ox      = intersection.getLow(dimX);
-            final long   oy      = intersection.getLow(dimY);
-            final long[] changes = new long[Math.max(dimX, dimY) + 1];
-            for (int i = changes.length; --i >= 0;) {
-                changes[i] = intersection.getSize(i);       // We need only the dimensions that may change.
-            }
-            changes[dimX] = data.getWidth();
-            changes[dimY] = data.getHeight();
-            intersection  = intersection.resize(changes);
-            /*
-             * Apply the translation after we resized the grid extent, because the resize operation
-             * may have caused an additional translation. We cancel that translation with terms that
-             * restore the (ox,oy) lower coordinates before to add the data minimum X,Y.
-             */
-            Arrays.fill(changes, 0);
-            changes[dimX] = Math.addExact(ox - intersection.getLow(dimX), data.getMinX());
-            changes[dimY] = Math.addExact(oy - intersection.getLow(dimY), data.getMinX());
-            intersection  = intersection.translate(changes);
-            /*
-             * If the result is the same intersection as the source coverage,
-             * we can return that coverage directly.
-             */
-            if (intersection.equals(source.getExtent())) {
-                return subset;
-            } else {
-                var crs = source.isDefined(GridGeometry.CRS) ? source.getCoordinateReferenceSystem() : null;
-                domain = new GridGeometry(intersection, PixelInCell.CELL_CORNER,
-                        source.getGridToCRS(PixelInCell.CELL_CORNER), crs);
-            }
+        final RenderedImage data = subset.render(intersection);
+        final long ox = intersection.getLow(dimX);
+        final long oy = intersection.getLow(dimY);
+        final var changes = new long[Math.max(dimX, dimY) + 1];
+        for (int i = changes.length; --i >= 0;) {
+            changes[i] = intersection.getSize(i);       // We need only the dimensions that may change.
         }
+        changes[dimX] = data.getWidth();
+        changes[dimY] = data.getHeight();
+        intersection  = intersection.resize(changes);
+        /*
+         * Apply the translation after we resized the grid extent, because the resize operation
+         * may have caused an additional translation. We cancel that translation with terms that
+         * restore the (ox,oy) lower coordinates before to add the data minimum X,Y.
+         */
+        Arrays.fill(changes, 0);
+        changes[dimX] = Math.addExact(ox - intersection.getLow(dimX), data.getMinX());
+        changes[dimY] = Math.addExact(oy - intersection.getLow(dimY), data.getMinX());
+        intersection  = intersection.translate(changes);
+        /*
+         * If the result is the same intersection as the source coverage,
+         * we can return that coverage directly.
+         */
+        if (intersection.equals(source.getExtent())) {
+            return subset;
+        }
+        var crs = source.isDefined(GridGeometry.CRS) ? source.getCoordinateReferenceSystem() : null;
+        domain = new GridGeometry(intersection, PixelInCell.CELL_CORNER, source.getGridToCRS(PixelInCell.CELL_CORNER), crs);
         return new GridCoverageBuilder()
                 .setValues(data)
                 .setDomain(domain)
@@ -212,7 +236,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (obj instanceof MemoryGridResource) {
+        if (obj != null && obj.getClass() == getClass()) {
             final var other = (MemoryGridResource) obj;
             return Objects.equals(identifer, other.identifer) &&
                    coverage.equals(other.coverage)   &&
@@ -236,9 +260,10 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Returns the string representation of the wrapped coverage.
+     * Returns a string representation of this resource.
+     * The default implementation returns the string representation of the wrapped coverage.
      *
-     * @return the string representation of the wrapped coverage.
+     * @return the string representation of this resource.
      */
     @Override
     public String toString() {
