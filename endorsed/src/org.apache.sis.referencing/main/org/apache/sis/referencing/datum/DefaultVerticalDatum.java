@@ -38,7 +38,6 @@ import org.opengis.referencing.datum.VerticalDatumType;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.pending.geoapi.referencing.DynamicReferenceFrame;
 
 
 /**

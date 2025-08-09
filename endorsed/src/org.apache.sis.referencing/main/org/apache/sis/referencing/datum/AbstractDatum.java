@@ -50,7 +50,6 @@ import static org.apache.sis.util.collection.Containers.property;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.referencing.internal.Legacy;
-import org.apache.sis.pending.geoapi.referencing.DynamicReferenceFrame;
 
 
 /**

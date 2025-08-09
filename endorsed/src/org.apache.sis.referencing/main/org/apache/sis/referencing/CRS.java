@@ -97,8 +97,9 @@ import org.apache.sis.util.logging.Logging;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 // Specific to the main branch:
-import org.apache.sis.pending.geoapi.referencing.DynamicReferenceFrame;
 import org.apache.sis.coordinate.DefaultCoordinateMetadata;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
 
 
@@ -910,6 +911,20 @@ public final class CRS extends Static {
     }
 
     /**
+     * Returns the frame reference epoch of the given datum,
+     * or {@code null} if the datum is not dynamic.
+     */
+    private static Temporal getFrameReferenceEpoch(final Datum datum) {
+        if (datum instanceof DefaultGeodeticDatum.Dynamic) {
+            return ((DefaultGeodeticDatum.Dynamic) datum).getFrameReferenceEpoch();
+        }
+        if (datum instanceof DefaultVerticalDatum.Dynamic) {
+            return ((DefaultVerticalDatum.Dynamic) datum).getFrameReferenceEpoch();
+        }
+        return null;
+    }
+
+    /**
      * Returns the epoch to which the coordinates of stations defining the dynamic CRS are referenced.
      * If the CRS is associated to a dynamic datum, then the epoch
      * of that datum is returned. Otherwise if the CRS is {@linkplain CompoundCRS compound}, then this
@@ -925,14 +940,12 @@ public final class CRS extends Static {
         Temporal epoch = null;
         if (crs instanceof SingleCRS) {
             final Datum datum = ((SingleCRS) crs).getDatum();
-            if (datum instanceof DynamicReferenceFrame) {
-                epoch = ((DynamicReferenceFrame) datum).getFrameReferenceEpoch();
-            }
+            epoch = getFrameReferenceEpoch(datum);
         } else if (crs instanceof CompoundCRS) {
             for (SingleCRS component : getSingleComponents(crs)) {
                 final Datum datum = component.getDatum();
-                if (datum instanceof DynamicReferenceFrame) {
-                    final Temporal t = ((DynamicReferenceFrame) datum).getFrameReferenceEpoch();
+                {   // For keeping the same indentation than on the `geoapi-3.1` branch.
+                    final Temporal t = getFrameReferenceEpoch(datum);
                     if (t != null) {
                         if (epoch == null) epoch = t;
                         else if (!epoch.equals(t)) {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.pending.geoapi.referencing;
+package org.apache.sis.referencing.datum;
 
 import java.time.temporal.Temporal;
 import org.opengis.referencing.datum.Datum;
@@ -26,7 +26,7 @@ import static org.opengis.annotation.Specification.*;
 /**
  * Placeholder for an interface that may be added in GeoAPI 3.1.
  */
-public interface DynamicReferenceFrame extends Datum {
+interface DynamicReferenceFrame extends Datum {
     /**
      * {@return the epoch to which the coordinates of stations defining the dynamic datum are referenced}.
      */
