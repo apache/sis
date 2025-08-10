@@ -134,7 +134,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         final int columnNameStart = buffer.append("SELECT ").length();
         final int columnNameEnd = buffer.append(table.codeColumn).length();
         buffer.append(" FROM ").append(table.table);
-        final Class<?> tableType = table.where(type, buffer);
+        final Class<?> tableType = table.where(factory, type, buffer);
         final int conditionStart = buffer.length();
         if (table.showColumn != null) {
             buffer.append(table.showColumn).append("<>0 AND ");

@@ -6,12 +6,9 @@
 
 --
 -- Creates views for manual inspections of EPSG dataset. This script can be executed after EPSG database
--- installation on PostgreSQL. This file is never read by Apache SIS; it is provided only as a debugging
+-- installation on PostgreSQL. This file is never read by Apache SIS. It is provided only as a debugging
 -- tool when the developer is looking for some information about the EPSG dataset.
 --
-
-SET client_encoding = 'UTF8';
-SET search_path = 'EPSG';
 
 
 --
@@ -24,13 +21,13 @@ CREATE VIEW "CRS dimension" AS
  RIGHT JOIN "Coordinate Reference System" AS CRS ON CA.COORD_SYS_CODE = CRS.COORD_SYS_CODE
  GROUP BY COORD_REF_SYS_CODE, COORD_REF_SYS_NAME ORDER BY COORD_REF_SYS_CODE;
 
-COMMENT ON VIEW "CRS dimension" IS 'Dimensions of all Coordinate Reference Systems.';
+COMMENT ON VIEW "CRS dimension" IS 'Number of dimensions of all Coordinate Reference Systems.';
 
 
 --
 -- The source and target dimensions of all Operation Methods found in the EPSG database.
 --
-CREATE VIEW "OperationMethod dimension" AS
+CREATE VIEW "Operation Method dimension" AS
  SELECT COM.COORD_OP_METHOD_CODE, COORD_OP_METHOD_NAME, COORD_OP_TYPE, IS_CONVERSION,
         SOURCE_MIN_DIM, SOURCE_MAX_DIM, TARGET_MIN_DIM, TARGET_MAX_DIM
  FROM
@@ -53,20 +50,20 @@ CREATE VIEW "OperationMethod dimension" AS
  RIGHT JOIN "Coordinate_Operation Method" AS COM ON COM.COORD_OP_METHOD_CODE = DIM.COORD_OP_METHOD_CODE
  ORDER BY COM.COORD_OP_METHOD_CODE;
 
-COMMENT ON VIEW "OperationMethod dimension" IS 'Dimensions of most Operation Methods.';
+COMMENT ON VIEW "Operation Method dimension" IS 'Number of dimensions of most Operation Methods.';
 
 
 --
 -- Summary of Operation Method dimensions, grouped by types (projection or not).
 --
-CREATE VIEW "OperationMethodType dimension" AS
+CREATE VIEW "Operation Method Type dimension" AS
  SELECT COORD_OP_TYPE, IS_CONVERSION,
     MIN(OD.SOURCE_MIN_DIM) AS SOURCE_MIN_DIM,
     MAX(OD.SOURCE_MAX_DIM) AS SOURCE_MAX_DIM,
     MIN(OD.TARGET_MIN_DIM) AS TARGET_MIN_DIM,
     MAX(OD.TARGET_MAX_DIM) AS TARGET_MAX_DIM
- FROM "OperationMethod dimension" AS OD
+ FROM "Operation Method dimension" AS OD
  GROUP BY COORD_OP_TYPE, IS_CONVERSION
  ORDER BY IS_CONVERSION;
 
-COMMENT ON VIEW "OperationMethodType dimension" IS 'Dimensions of Operation Methods types.';
+COMMENT ON VIEW "Operation Method Type dimension" IS 'Number of dimensions of Operation Method types.';

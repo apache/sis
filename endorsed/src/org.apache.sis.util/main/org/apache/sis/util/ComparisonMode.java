@@ -41,7 +41,7 @@ package org.apache.sis.util;
  * {@link #IGNORE_METADATA} level but not necessarily at the {@link #STRICT} level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @see LenientComparable#equals(Object, ComparisonMode)
  * @see Utilities#deepEquals(Object, Object, ComparisonMode)
@@ -115,13 +115,15 @@ public enum ComparisonMode {
      * A <q>Mercator (variant B)</q> projection with a <i>standard parallel</i> value of 60° produces the
      * same results as a <q>Mercator (variant A)</q> projection with a <i>scale factor</i> value of 0.5.
      *
+     * @see #isIgnoringMetadata()
      * @see org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)
      */
     IGNORE_METADATA,
 
     /**
-     * Only the attributes relevant to the object functionality are compared, with some tolerance
-     * threshold on numerical values.
+     * Only the attributes relevant to the object functionality are compared, with some tolerance* threshold on numerical values.
+     * The threshold is implementation dependent, but the current <abbr>SIS</abbr> implementation generally aims for a precision
+     * of 1 centimeter in the linear and angular parameter values for a planet of the size of Earth.
      *
      * <h4>Application to coordinate operations</h4>
      * If two {@link org.opengis.referencing.operation.MathTransform} objects are considered equal according this mode,
@@ -131,6 +133,8 @@ public enum ComparisonMode {
      * How small is “small” is implementation dependent — the threshold cannot be specified in the current
      * implementation, because of the non-linear nature of map projections.
      *
+     * @see #isApproximate()
+     *
      * @since 1.0
      */
     APPROXIMATE,
@@ -138,17 +142,30 @@ public enum ComparisonMode {
     /**
      * Most but not all attributes relevant to the object functionality are compared.
      * This comparison mode is equivalent to {@link #APPROXIMATE}, except that it
-     * ignores some attributes that may differ between objects not equal but related.
+     * ignores some aspects that may differ between objects not equal but related.
+     * Below is a list of examples where the objects being compared would be
+     * considered different according the other modes such as {@link #APPROXIMATE},
+     * but are considered equivalent according this {@code ALLOW_VARIANT} mode.
      *
-     * <p>The main purpose of this method is to verify if two Coordinate Reference Systems (CRS)
-     * are approximately equal ignoring axis order.</p>
+     * <ul class="verbose">
+     *   <li>Two Coordinate Reference Systems (<abbr>CRS</abbr>) with the same axes but in different order.
+     *       <b>Example:</b> two geographic <abbr>CRS</abbr>s with the same attributes but with
+     *       (<var>latitude</var>, <var>longitude</var>) axes in one case and
+     *       (<var>longitude</var>, <var>latitude</var>) axes in the other case.</li>
+     *   <li>Two Coordinate Reference Systems where one is associated to a datum and the other to a datum ensemble,
+     *       but the datum and the ensemble share a common authority code or have an
+     *       {@link org.apache.sis.referencing.IdentifiedObjects#isHeuristicMatchForName equivalent name}.
+     *       <b>Example:</b> {@code EPSG:9:4326} and {@code EPSG:10:4326}, which are both the same (at least conceptually)
+     *       geographic <abbr>CRS</abbr> associated to the authority code 4326 in the <abbr>EPSG</abbr> geodetic dataset,
+     *       but as defined in version 9 and 10 respectively of the <abbr>EPSG</abbr> database.
+     *       They are the <abbr>CRS</abbr> definitions before and after the introduction of datum ensemble in the schema.</li>
+     *   <li>Two Reference Frames which share a common authority code or have an
+     *       {@link org.apache.sis.referencing.IdentifiedObjects#isHeuristicMatchForName equivalent name},
+     *       despite one frame being static and the other frame being dynamic.
+     *       <b>Example:</b> the "WGS 1972" reference frame as defined in versions 9 and 10 of <abbr>EPSG</abbr> database.</li>
+     * </ul>
      *
-     * <h4>Example</h4>
-     * Consider two geographic coordinate reference systems with the same attributes except axis order,
-     * where one CRS uses (<var>latitude</var>, <var>longitude</var>) axes
-     * and the other CRS uses (<var>longitude</var>, <var>latitude</var>) axes.
-     * All comparison modes (even {@code APPROXIMATE}) will consider those two CRS as different,
-     * except this {@code ALLOW_VARIANT} mode which will consider one CRS to be a variant of the other.
+     * @see #allowsVariant()
      *
      * @since 0.7
      */
@@ -172,8 +189,8 @@ public enum ComparisonMode {
 
     /**
      * Returns {@code true} if this comparison ignores metadata.
-     * This method currently returns {@code true} for {@code IGNORE_METADATA}, {@code APPROXIMATE}
-     * or {@code DEBUG} only, but this list may be extended in future SIS versions.
+     * This method currently returns {@code true} for {@link #IGNORE_METADATA}, {@link #APPROXIMATE},
+     * {@link #ALLOW_VARIANT} or {@link #DEBUG}, but this list may be extended in future <abbr>SIS</abbr> versions.
      *
      * @return whether this comparison ignore metadata.
      *
@@ -185,8 +202,8 @@ public enum ComparisonMode {
 
     /**
      * Returns {@code true} if this comparison uses a tolerance threshold.
-     * This method currently returns {@code true} for {@code APPROXIMATE} or {@code DEBUG} only,
-     * but this list may be extended in future SIS versions.
+     * This method currently returns {@code true} for {@link #APPROXIMATE}, {@link #ALLOW_VARIANT}
+     * or {@link #DEBUG}, but this list may be extended in future <abbr>SIS</abbr> versions.
      *
      * @return whether this comparison uses a tolerance threshold.
      *
@@ -194,6 +211,19 @@ public enum ComparisonMode {
      */
     public boolean isApproximate() {
         return ordinal() >= APPROXIMATE.ordinal();
+    }
+
+    /**
+     * Returns {@code true} if this comparison allow variants.
+     * This method currently returns {@code true} for {@link #ALLOW_VARIANT}
+     * or {@link #DEBUG}, but this list may be extended in future <abbr>SIS</abbr> versions.
+     *
+     * @return whether this comparison allows variants.
+     *
+     * @since 1.5
+     */
+    public boolean allowsVariant() {
+        return ordinal() >= ALLOW_VARIANT.ordinal();
     }
 
     /**

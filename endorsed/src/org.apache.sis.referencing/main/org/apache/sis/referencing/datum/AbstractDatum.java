@@ -451,7 +451,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                  * and parameters. We extend this rule to datum as well.
                  */
                 final var that = (Datum) object;
-                if (!compareDynamicReferenceFrames(that, mode)) {
+                if (!(mode.allowsVariant() || compareDynamicReferenceFrames(that, mode))) {
                     return false;
                 }
                 final Boolean match = Identifiers.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());

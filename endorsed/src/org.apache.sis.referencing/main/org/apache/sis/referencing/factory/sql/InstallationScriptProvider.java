@@ -41,6 +41,7 @@ import org.apache.sis.system.Fallback;
 import org.apache.sis.system.DataDirectory;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.pending.jdk.JDK22;
 
 
 /**
@@ -107,7 +108,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      *   </tr><tr>
      *     <td>{@code EPSG}</td>
      *     <td class="sep"><code>
-     *       {{@linkplain #PREPARE}, "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #FINISH}}
+     *       {{@linkplain #PREPARE}, "Tables.sql", "Data.sql", "FKeys.sql", {@linkplain #FINISH}}
      *     </code></td>
      *   </tr>
      * </table>
@@ -273,14 +274,14 @@ public abstract class InstallationScriptProvider extends InstallationResources {
 
 
     /**
-     * The default implementation which uses the scripts in the {@code $SIS_DATA/Databases/ExternalSources}
+     * The default implementation which uses the scripts in the {@code $SIS_DATA/Databases/ExternalSources/EPSG}
      * directory, if present. This class expects the files to have those exact names where {@code *} stands
      * for any characters provided that there is no ambiguity:
      *
      * <ul>
-     *   <li>{@code EPSG_*Tables.sql}</li>
-     *   <li>{@code EPSG_*Data.sql}</li>
-     *   <li>{@code EPSG_*FKeys.sql}</li>
+     *   <li>{@code *Tables*.sql}</li>
+     *   <li>{@code *Data*.sql}</li>
+     *   <li>{@code *FKeys*.sql}</li>
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
@@ -309,8 +310,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
             final String[] found = new String[resources.length - (FIRST_FILE + 1)];   // +1 is for omitting `FINISH`.
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             Path directory = DataDirectory.DATABASES.getDirectory();
-            if (directory != null && Files.isDirectory(directory = directory.resolve("ExternalSources"))) {
-                try (DirectoryStream<Path> content = Files.newDirectoryStream(directory, "EPSG_*.sql")) {
+            if (directory != null && Files.isDirectory(directory = JDK22.resolve(directory, "ExternalSources", Constants.EPSG))) {
+                try (DirectoryStream<Path> content = Files.newDirectoryStream(directory, "*.sql")) {
                     for (final Path path : content) {
                         final String name = path.getFileName().toString();
                         for (int i=0; i<found.length; i++) {
@@ -319,6 +320,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                                 if (found[i] == null) {
                                     found[i] = name;
                                 } else {
+                                    directory = null;
                                     log(Errors.forLocale(locale).createLogRecord(Level.WARNING,
                                             Errors.Keys.DuplicatedFileReference_1, part));
                                 }
@@ -330,27 +332,18 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                 directory = null;       // Does not exist or is not a directory.
             }
             this.directory = directory;
-            /*
-             * Store the actual file names including the target database. Example:
-             *
-             *   - PostgreSQL_Table_Script.sql
-             *   - PostgreSQL_Data_Script.sql
-             *   - PostgreSQL_FKey_Script.sql
-             *
-             * If a file was not found, use the "EPSG_Foo_Script.sql" name pattern for giving some hints
-             * to users about which file was expected. This filename will appear in the exception message.
-             */
             for (int i=0; i<found.length; i++) {
                 String file = found[i];
                 if (file == null) {
-                    file = "EPSG_" + resources[FIRST_FILE + i] + "_Script.sql";
+                    // File not found. Create a default name which will appear in the exception to be thrown.
+                    file = resources[FIRST_FILE + i] + ".sql";
                 }
                 resources[FIRST_FILE + i] = file;
             }
         }
 
         /**
-         * Returns {@code "EPSG"} if the scripts exist in the {@code ExternalSources} subdirectory,
+         * Returns {@code "EPSG"} if the scripts exist in the {@code ExternalSources/EPSG} subdirectory,
          * or an empty set otherwise.
          *
          * @return {@code "EPSG"} if the SQL scripts for installing the EPSG dataset are available,

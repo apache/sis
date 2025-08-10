@@ -14,42 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.pending.jdk;
+package org.apache.sis.metadata.sql.privy;
 
-import java.io.Console;
-import java.nio.file.Path;
+import java.lang.reflect.Field;
+
+// Test dependencies
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 
 
 /**
- * Place holder for some functionalities defined in a JDK more recent than Java 11.
+ * Verifies the constants declared in {@link Supports}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class JDK22 {
+public final class SupportsTest extends TestCase {
     /**
-     * Do not allow instantiation of this class.
+     * Creates a new test case.
      */
-    private JDK22() {
+    public SupportsTest() {
     }
 
     /**
-     * Placeholder for {@code Path.resolve(String, String...)}.
+     * Verifies that there is no collision between the constant values.
+     *
+     * @throws IllegalAccessException if a field is not public.
      */
-    public static Path resolve(Path path, String... more) {
-        for (String p : more) {
-            path = path.resolve(p);
+    @Test
+    public void ensureNoCollision() throws IllegalAccessException {
+        int allFlags = 0;
+        for (Field field : Supports.class.getFields()) {
+            final int flag = field.getInt(null);
+            assertEquals(1, Integer.bitCount(flag));
+            assertNotEquals(allFlags, allFlags |= flag);
         }
-        return path;
-    }
-
-    /**
-     * Placeholder for {@code Console.isTerminal()}.
-     */
-    public static boolean isTerminal(Console c) {
-        try {
-            return (Boolean) Console.class.getMethod("isTerminal").invoke(c);
-        } catch (ReflectiveOperationException e) {
-            return true;
-        }
+        assertNotEquals(0, allFlags);
     }
 }

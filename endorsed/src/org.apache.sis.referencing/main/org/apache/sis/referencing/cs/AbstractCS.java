@@ -586,7 +586,7 @@ next:   for (final CoordinateSystemAxis axis : axes) {
                 if (dimension != that.getDimension()) {
                     return false;
                 }
-                if (mode != ComparisonMode.ALLOW_VARIANT) {
+                if (!mode.allowsVariant()) {
                     for (int i=0; i<dimension; i++) {
                         if (!Utilities.deepEquals(getAxis(i), that.getAxis(i), mode)) {
                             return false;

@@ -418,7 +418,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          * It may be absent (typically, only datums or reference frames have that condition).
          */
         buffer.append("SELECT ").append(table.codeColumn).append(" FROM ").append(table.table);
-        table.where(object, buffer);                // Unconditionally append a "WHERE" clause.
+        table.where(dao, object, buffer);           // Unconditionally append a "WHERE" clause.
         boolean isNext = false;
         for (final Condition filter : filters) {
             isNext |= filter.appendToWhere(buffer, isNext);
