@@ -29,11 +29,11 @@ import org.apache.sis.metadata.sql.TestDatabase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Updater {
+public final class DataScriptUpdater {
     /**
      * Do not allow instantiation of this class.
      */
-    private Updater() {
+    private DataScriptUpdater() {
     }
 
     /**
@@ -54,7 +54,7 @@ public final class Updater {
      *   <li>{@code $NON_FREE_DIR/epsg/Data.sql}</li>
      * </ol>
      *
-     * @param  arguments  the source files and the destination file.
+     * @param  arguments  the source file and the destination file.
      * @throws Exception if an error occurred while reading of writing the file.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")

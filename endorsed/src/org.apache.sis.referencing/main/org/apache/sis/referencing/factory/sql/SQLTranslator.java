@@ -596,10 +596,12 @@ check:  for (;;) {
      * The names of the tables for the two conventions are listed in a table in the Javadoc of this class.
      * The returned string does not include the identifier quotes.
      *
-     * @param  name  the mixed-case table name.
+     * @param  name  the mixed-case table name, without quotes.
      * @return the name converted to the convention used by the database.
+     *
+     * @since 1.5
      */
-    final String toActualTableName(String name) {
+    public final String toActualTableName(String name) {
         if (useMixedCaseTableNames) {
             return name;
         }

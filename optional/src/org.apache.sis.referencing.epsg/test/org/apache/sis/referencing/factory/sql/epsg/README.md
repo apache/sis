@@ -22,6 +22,9 @@ The compact form is about half the size of the original files. Compaction is ach
 This conversion applies only to the data types, the integrity constraints and the way that the SQL scripts are written.
 No data value should be altered, accept for accented letters in some names. Steps to follow:
 
+
+### Get the new EPSG scripts
+
 Download the latest SQL scripts for PostgreSQL from https://epsg.org/ (require registration).
 Unzip in the directory of your choice and remember the path to that directory:
 
@@ -29,6 +32,10 @@ Unzip in the directory of your choice and remember the path to that directory:
 unzip EPSG-<version>-PostgreSQL.zip
 export EPSG_SCRIPTS=$PWD
 ```
+
+Execute the scripts in the `public` schema of a PostgreSQL database on the local host.
+This page assumes that the database name is "Referencing", but any other name can be used
+if the argument given to `TableScriptUpdater` (later in this page) is adjusted accordingly.
 
 If a copy of the original SQL scripts (as downloaded from EPSG) for the previous version is still available,
 and if the following commands report no difference, then jump to "execute main" step.
@@ -53,6 +60,9 @@ Do not overwrite `Data.sql` yet:
 cp $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql Tables.sql
 cp $EPSG_SCRIPTS/PostgreSQL_FKey_Script.sql  FKeys.sql
 ```
+
+
+### Manual checks and editions
 
 Open the `Tables.sql` file for edition:
 
@@ -92,7 +102,10 @@ in which case the maintainer can just revert the changes in order to preserve th
 However, if some changes are found in the schema, then hard-coded values in the `DataScriptFormatter` class may need
 to be modified, in particular the `booleanColumnIndicesForTables` and `doubleColumnIndicesForTables` collections.
 
-Execute the `main` method of the `org.apache.sis.referencing.factory.sql.epsg.Updater` class
+
+### Automatic updates after the manual checks
+
+Execute the `main` method of the `org.apache.sis.referencing.factory.sql.epsg.*Updater` classes
 located in the test directory of the `org.apache.sis.non-free:sis-epsg` Maven sub-project.
 Adjust version numbers as needed in the following commands:
 
@@ -110,8 +123,12 @@ export CLASSPATH=$PWD/endorsed/build/classes/java/test/org.apache.sis.metadata:$
 export CLASSPATH=$PWD/optional/build/classes/java/test/org.apache.sis.referencing.epsg:$CLASSPATH
 
 # From any directory
-java org.apache.sis.referencing.factory.sql.epsg.Updater $EPSG_SCRIPTS/PostgreSQL_Data_Script.sql $NON_FREE_DIR/Data.sql
+java org.apache.sis.referencing.factory.sql.epsg.TableScriptUpdater $NON_FREE_DIR/Tables.sql Referencing
+java org.apache.sis.referencing.factory.sql.epsg.DataScriptUpdater  $EPSG_SCRIPTS/PostgreSQL_Data_Script.sql $NON_FREE_DIR/Data.sql
 ```
+
+
+### Finalize
 
 Run the tests. It it convenient to run `org.apache.sis.referencing.factory.sql.EPSGInstallerTest`
 in an IDE first, for easier debugging if some changes in database structure or content broke some code.

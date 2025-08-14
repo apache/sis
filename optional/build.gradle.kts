@@ -72,6 +72,7 @@ dependencies {
     api           (drivers.derby.tools)
 
     // Test dependencies
+    testImplementation(drivers.postgres)
     testImplementation(tests.junit5)
     testRuntimeOnly   (tests.jupiter)
     testRuntimeOnly   (libs.jts.core)
@@ -133,6 +134,7 @@ fun patchForTests(args : MutableList<String>) {
     patchModuleWithTests(args, "org.apache.sis.feature")
 
     addRead(args, "org.apache.sis.referencing.database", "org.apache.sis.referencing.epsg");
+    addRead(args, "org.apache.sis.referencing.epsg",     "org.postgresql.jdbc");
 
     // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
     addExport(args, "org.apache.sis.util",              "org.apache.sis.test",

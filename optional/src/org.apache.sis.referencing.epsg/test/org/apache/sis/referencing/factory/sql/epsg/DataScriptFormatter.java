@@ -91,7 +91,9 @@ final class DataScriptFormatter extends ScriptRunner {
      *
      * <p>The following columns are deprecated for other reasons:</p>
      * <ul>
-     *   <li>{@code realization_epoch}: is replaced by {@code publication_date}.</li>
+     *   <li>{@code realization_epoch}: replaced by {@code publication_date}.</li>
+     *   <li>{@code area_polygon_file_ref}: replaced by the {@code "Area Polygon"} table.
+     *       The latter is not included in the downloaded files.</li>
      * </ul>
      *
      * <p>The following columns contains <abbr>EPSG</abbr> metadata not used by Apache<abbr>SIS</abbr>.
@@ -99,6 +101,7 @@ final class DataScriptFormatter extends ScriptRunner {
      * <ul>
      *   <li>{@code information_source}, {@code data_source} and {@code revision_date}: appeared in almost all tables.</li>
      *   <li>{@code change_id}: appeared in almost all tables. Required by the removal of the {@code "Change"} table.</li>
+     *   <li>{@code example}: appeared in {@code "Coordinate_Operation Method"}.</li>
      * </ul>
      */
     private final Set<String> excludedColumns;
@@ -131,7 +134,7 @@ final class DataScriptFormatter extends ScriptRunner {
         doubleColumns   = Set.of("parameter_value");
         excludedColumns = Set.of("area_of_use_code", "crs_scope", "coord_op_scope", "datum_scope",    // Replaced by "Usage" table.
                                  "information_source", "data_source", "revision_date", "change_id",   // Unused EPSG metadata.
-                                 "realization_epoch");
+                                 "realization_epoch", "example", "area_polygon_file_ref");
 
         toOriginalTableNames = Map.ofEntries(
                 Map.entry("epsg_alias",                      "Alias"),
