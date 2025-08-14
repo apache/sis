@@ -230,6 +230,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      * Non-null if the {@value #ENUMERATION_COLUMN} column in {@code "Alias"} table uses enumeration instead
      * than character varying. In such case, this field contains the enumeration type. If {@code null}, then
      * then column type is {@code VARCHAR} and the cast can be omitted.
+     * If non-null, this string should contain the identifier quotes.
      *
      * @see #useEnumerations()
      */
@@ -483,8 +484,11 @@ check:  for (;;) {
                      * Enumerations appear in various tables, including in a WHERE clause for the Alias table.
                      */
                     if (ENUMERATION_COLUMN.equals(column)) {
-                        final String type = result.getString(Reflection.TYPE_NAME);
+                        String type = result.getString(Reflection.TYPE_NAME);
                         if (!CharSequences.startsWith(type, "VARCHAR", true)) {
+                            if (!type.contains(identifierQuote)) {
+                                type = identifierQuote + type + identifierQuote;
+                            }
                             tableNameEnum = type;
                         }
                     }
@@ -697,7 +701,7 @@ check:  for (;;) {
             int w = buffer.lastIndexOf(ENUMERATION_COLUMN + "=?");
             if (w >= 0) {
                 w += ENUMERATION_COLUMN.length() + 1;
-                buffer.replace(w, w+1, "CAST(? AS \"" + tableNameEnum + "\")");
+                buffer.replace(w, w+1, "CAST(? AS " + tableNameEnum + ')');
             }
         }
         return buffer.toString();
