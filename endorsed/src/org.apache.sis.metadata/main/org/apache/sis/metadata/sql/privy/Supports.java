@@ -27,7 +27,7 @@ final class Supports {
     /**
      * Whether this dialect support table inheritance.
      */
-    static final int TABLE_INHERITANCE = 1;
+    public static final int TABLE_INHERITANCE = 0x001;
 
     /**
      * Whether child tables inherit the index of their parent tables.
@@ -35,7 +35,7 @@ final class Supports {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-358">SIS-358</a>
      */
-    static final int INDEX_INHERITANCE = 2;
+    public static final int INDEX_INHERITANCE = 0x002;
 
     /**
      * Whether this dialect support adding table constraints after creation.
@@ -43,7 +43,33 @@ final class Supports {
      *
      * @see DatabaseMetaData#supportsAlterTableWithAddColumn()
      */
-    static final int ALTER_TABLE_WITH_ADD_CONSTRAINT = 4;
+    public static final int ALTER_TABLE_WITH_ADD_CONSTRAINT = 0x004;
+
+    /**
+     * Whether the database supports {@code "GRANT USAGE ON SCHEMA …"}.
+     */
+    public static final int GRANT_USAGE_ON_SCHEMA = 0x008;
+
+    /**
+     * Whether the database supports {@code "GRANT SELECT ON TABLE …"}.
+     */
+    public static final int GRANT_SELECT_ON_TABLE = 0x010;
+
+    /**
+     * Whether the database supports {@code "COMMENT ON …"}.
+     */
+    public static final int COMMENT = 0x020;
+
+    /**
+     * Whether the JDBC driver supports configuring readOnly mode on connection instances.
+     * This feature is not supported in SQLite.
+     */
+    public static final int READ_ONLY_UPDATE = 0x040;
+
+    /**
+     * Whether the JDBC driver supports concurrent transactions.
+     */
+    public static final int CONCURRENCY = 0x080;
 
     /**
      * Whether the JDBC driver supports conversions from objects to {@code java.time} API.
@@ -53,23 +79,12 @@ final class Supports {
      *
      * @see <a href="https://jcp.org/aboutJava/communityprocess/maintenance/jsr221/JDBC4.2MR-January2014.pdf">JDBC Maintenance Release 4.2</a>
      */
-    static final int JAVA_TIME = 8;
-
-    /**
-     * Whether the JDBC driver supports configuring readOnly mode on connection instances.
-     * This feature is not supported in SQLite.
-     */
-    static final int READ_ONLY_UPDATE = 16;
-
-    /**
-     * Whether the JDBC driver supports concurrent transactions.
-     */
-    static final int CONCURRENCY = 32;
+    public static final int JAVA_TIME = 0x100;
 
     /**
      * Whether the spatial extension supports <abbr>SRID</abbr> in {@code ST_*} functions.
      */
-    static final int SRID = 64;
+    public static final int SRID = 0x200;
 
     /**
      * Do not allow instantiation of this class.

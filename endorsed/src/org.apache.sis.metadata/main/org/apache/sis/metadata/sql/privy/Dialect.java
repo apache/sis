@@ -36,9 +36,9 @@ public enum Dialect {
      * @see DatabaseMetaData#supportsANSI92EntryLevelSQL()
      */
     ANSI(null, Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
-             | Supports.JAVA_TIME
              | Supports.READ_ONLY_UPDATE
              | Supports.CONCURRENCY
+             | Supports.JAVA_TIME
              | Supports.SRID),
 
     /**
@@ -57,9 +57,9 @@ public enum Dialect {
      * It also have a {@code SHUTDOWN} command which is specific to HSQLDB.
      */
     HSQL("hsqldb", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
-                 | Supports.JAVA_TIME
                  | Supports.READ_ONLY_UPDATE
-                 | Supports.CONCURRENCY),
+                 | Supports.CONCURRENCY
+                 | Supports.JAVA_TIME),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
@@ -67,18 +67,21 @@ public enum Dialect {
      */
     POSTGRESQL("postgresql", Supports.TABLE_INHERITANCE
                            | Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
-                           | Supports.JAVA_TIME
+                           | Supports.GRANT_USAGE_ON_SCHEMA
+                           | Supports.GRANT_SELECT_ON_TABLE
+                           | Supports.COMMENT
                            | Supports.READ_ONLY_UPDATE
                            | Supports.CONCURRENCY
+                           | Supports.JAVA_TIME
                            | Supports.SRID),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
      */
     ORACLE("oracle", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
-                   | Supports.JAVA_TIME
                    | Supports.READ_ONLY_UPDATE
                    | Supports.CONCURRENCY
+                   | Supports.JAVA_TIME
                    | Supports.SRID),
 
     /**
@@ -133,7 +136,7 @@ public enum Dialect {
     }
 
     /**
-     * Whether this dialect support table inheritance.
+     * Whether this dialect supports table inheritance.
      */
     public final boolean supportsTableInheritance() {
         return (flags & Supports.TABLE_INHERITANCE) != 0;
@@ -150,7 +153,7 @@ public enum Dialect {
     }
 
     /**
-     * Whether this dialect support adding table constraints after creation.
+     * Whether this dialect supports adding table constraints after creation.
      * This feature is not yet supported in SQLite.
      *
      * @see DatabaseMetaData#supportsAlterTableWithAddColumn()
@@ -160,15 +163,50 @@ public enum Dialect {
     }
 
     /**
-     * Whether the JDBC driver supports conversions from objects to {@code java.time} API.
-     * The JDBC 4.2 specification provides a mapping from {@link java.sql.Types} to temporal objects.
-     * The specification suggests that {@link java.sql.ResultSet#getObject(int, Class)} should accept
-     * those temporal types in the {@link Class} argument, but not all drivers support that.
+     * {@code true} if the database supports {@code "GRANT USAGE ON SCHEMA"} statements.
+     * Read-only permissions are typically granted to {@code PUBLIC}.
+     * Example:
      *
-     * @see <a href="https://jcp.org/aboutJava/communityprocess/maintenance/jsr221/JDBC4.2MR-January2014.pdf">JDBC Maintenance Release 4.2</a>
+     * {@snippet lang="sql" :
+     *     GRANT USAGE ON SCHEMA metadata TO PUBLIC;
+     *     }
      */
-    public final boolean supportsJavaTime() {
-        return (flags & Supports.JAVA_TIME) != 0;
+    public final boolean supportsGrantUsageOnSchema() {
+        return (flags & Supports.GRANT_USAGE_ON_SCHEMA) != 0;
+    }
+
+    /**
+     * {@code true} if the database supports {@code "GRANT SELECT ON TABLE"} statements.
+     * Read-only permissions are typically granted to {@code PUBLIC}.
+     * Example:
+     *
+     * {@snippet lang="sql" :
+     *     GRANT SELECT ON TABLE "Coordinate Reference System" TO PUBLIC;
+     *     }
+     *
+     */
+    public final boolean supportsGrantSelectOnTable() {
+        return (flags & Supports.GRANT_SELECT_ON_TABLE) != 0;
+    }
+
+    /**
+     * Whether this dialect supports all the {@code "GRANT … ON …"} features documented in this class.
+     */
+    public final boolean supportsAllGrants() {
+        return (flags & (Supports.GRANT_USAGE_ON_SCHEMA | Supports.GRANT_SELECT_ON_TABLE))
+                     == (Supports.GRANT_USAGE_ON_SCHEMA | Supports.GRANT_SELECT_ON_TABLE);
+    }
+
+    /**
+     * {@code true} if the database supports the {@code COMMENT} statement.
+     * Example:
+     *
+     * {@snippet lang="sql" :
+     *     COMMENT ON SCHEMA metadata IS 'ISO 19115 metadata';
+     *     }
+     */
+    public final boolean supportsComment() {
+        return (flags & Supports.COMMENT) != 0;
     }
 
     /**
@@ -185,6 +223,18 @@ public enum Dialect {
      */
     public final boolean supportsConcurrency() {
         return (flags & Supports.CONCURRENCY) != 0;
+    }
+
+    /**
+     * Whether the JDBC driver supports conversions from objects to {@code java.time} API.
+     * The JDBC 4.2 specification provides a mapping from {@link java.sql.Types} to temporal objects.
+     * The specification suggests that {@link java.sql.ResultSet#getObject(int, Class)} should accept
+     * those temporal types in the {@link Class} argument, but not all drivers support that.
+     *
+     * @see <a href="https://jcp.org/aboutJava/communityprocess/maintenance/jsr221/JDBC4.2MR-January2014.pdf">JDBC Maintenance Release 4.2</a>
+     */
+    public final boolean supportsJavaTime() {
+        return (flags & Supports.JAVA_TIME) != 0;
     }
 
     /**

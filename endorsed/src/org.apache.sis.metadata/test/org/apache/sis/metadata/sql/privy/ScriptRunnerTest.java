@@ -50,7 +50,7 @@ public final class ScriptRunnerTest extends TestCase {
         try (TestDatabase db = TestDatabase.create("ScriptRunner");
              Connection c = db.source.getConnection())
         {
-            final ScriptRunner sr = new ScriptRunner(c, 3);
+            final ScriptRunner sr = new ScriptRunner(c, null, 3);
             testSupportedFlags(sr);
             testRegularExpressions(sr);
         }
@@ -63,12 +63,7 @@ public final class ScriptRunnerTest extends TestCase {
      */
     @TestStep
     public static void testSupportedFlags(final ScriptRunner sr) {
-        assertFalse(sr.isCatalogSupported);
-        assertTrue (sr.isSchemaSupported);
-        assertFalse(sr.isGrantOnSchemaSupported);
-        assertFalse(sr.isGrantOnTableSupported);
         assertFalse(sr.isEnumTypeSupported);
-        assertFalse(sr.isCommentSupported);
     }
 
     /**
@@ -83,7 +78,7 @@ public final class ScriptRunnerTest extends TestCase {
         assertFalse(sr.isSupported("CREATE CAST (VARCHAR AS CI_DateTypeCode) WITH INOUT AS ASSIGNMENT"));
         assertTrue (sr.isSupported("CREATE TABLE CI_Citation (…)"));
         assertFalse(sr.isSupported("GRANT USAGE ON SCHEMA metadata TO PUBLIC"));
-        assertFalse(sr.isSupported("GRANT SELECT ON TABLE epsg_coordinatereferencesystem TO PUBLIC"));
+        assertFalse(sr.isSupported("GRANT SELECT ON TABLE \"Coordinate Reference System\" TO PUBLIC"));
         assertFalse(sr.isSupported("COMMENT ON SCHEMA metadata IS 'ISO 19115 metadata'"));
     }
 }

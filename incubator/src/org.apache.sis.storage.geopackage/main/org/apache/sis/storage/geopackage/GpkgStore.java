@@ -226,7 +226,7 @@ public class GpkgStore extends SQLStore implements WritableAggregate {
         assert Thread.holdsLock(this) && userContents.isEmpty();
         if (create) try {
             cnx.setAutoCommit(false);
-            try (ScriptRunner runner = new ScriptRunner(cnx, 100)) {
+            try (ScriptRunner runner = new ScriptRunner(cnx, null, 100)) {
                 runner.run("PRAGMA main.application_id = " + GpkgStoreProvider.APPLICATION_ID + ';'
                          + "PRAGMA main.user_version = " + GpkgStoreProvider.VERSION + ';');
                 runner.run("Core.sql", GpkgStore.class.getResourceAsStream("Core.sql"));

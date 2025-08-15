@@ -329,7 +329,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * <h4>Multi-threading</h4>
      * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
      * a new {@code Evaluator} instance should be created for each thread by invoking this
-     * method multiply times.
+     * method multiple times.
      *
      * @return a new function for computing or interpolating sample values.
      *
@@ -382,7 +382,7 @@ public abstract class GridCoverage extends BandedCoverage {
          * Keys are dimensions from 0 inclusive to {@link GridGeometry#getDimension()} exclusive,
          * and values are the grid coordinates of the slice in the dimension specified by the key.
          *
-         * <p>This information allows to invoke {@link #apply(DirectPosition)} with for example
+         * <p>This information allows to invoke {@link #apply(DirectPosition)} with, for example,
          * two-dimensional points even if the underlying coverage is three-dimensional.
          * The missing coordinate values are replaced by the values provided in the map.</p>
          *

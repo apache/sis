@@ -19,7 +19,6 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 import java.io.IOException;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -53,9 +52,10 @@ import org.apache.sis.metadata.sql.TestDatabase;
  * so we want to opportunistically verify the result immediately after database creation
  * by using the {@code EPSGFactory} for creating a few CRS.
  *
- * <p>This test requires that {@code $SIS_DATA/Databases/ExternalSources} directory contains
- * the {@code EPSG_Tables.sql}, {@code EPSG_Data.sql} and {@code EPSG_FKeys.sql} files.
- * Those files can be <a href="https://epsg.org/">downloaded from the source</a> or from
+ * <p>This test requires that the {@code $SIS_DATA/Databases/ExternalSources/EPSG} directory
+ * contains the {@code Tables.sql}, {@code Data.sql} and {@code FKeys.sql} files.
+ * An easy setup is to set the above-cited {@code EPSG} directory as a symbolic link
+ * to the {@code EPSG} directory of the
  * <a href="https://sis.apache.org/source.html#non-free">SIS non-free directory</a>.</p>
  *
  * <p>Every databases created by this test suite exist only in memory.
@@ -72,34 +72,6 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     }
 
     /**
-     * Tests the {@link EPSGInstaller#REPLACE_STATEMENT} pattern.
-     */
-    @Test
-    public void testReplacePattern() {
-        // Statement as in the EPSG scripts since EPSG version 7.06.
-        assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
-                "UPDATE epsg_datum\n" +
-                "SET datum_name = replace(datum_name, CHR(182), CHR(10))"));
-
-        // Statement as in the EPSG scripts prior to EPSG version 7.06.
-        assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
-                "UPDATE epsg_datum\n" +
-                "SET datum_name = replace(datum_name, CHAR(182), CHAR(10))"));
-
-        // Modified statement with mixed-case table name in a schema.
-        assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
-                "UPDATE epsg.\"Alias\"\n" +
-                "SET object_table_name = replace(object_table_name, CHR(182), CHR(10))"));
-
-        // Like above, but the table name contains a space.
-        assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
-                "UPDATE epsg.\"Coordinate Axis\"\n" +
-                "SET coord_axis_orientation = replace(coord_axis_orientation, CHR(182), CHR(10))"));
-
-        loggings.assertNoUnexpectedLog();
-    }
-
-    /**
      * Returns the SQL scripts needed for testing the database creation,
      * or skip the JUnit test if those scripts are not found.
      *
@@ -109,7 +81,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     private static InstallationScriptProvider getScripts() throws IOException {
         final var scripts = new InstallationScriptProvider.Default(null);
         assumeTrue(scripts.getAuthorities().contains(Constants.EPSG),
-                "EPSG scripts not found in the \"Databases/ExternalSources\" directory.");
+                "Scripts not found in the \"Databases/ExternalSources/EPSG\" directory.");
         return scripts;
     }
 
@@ -257,7 +229,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     }
 
     /**
-     * Verifies some parameter values in the database. We perform this check on a parameter which are known
+     * Verifies some parameter values in the database. We perform this check on parameters which are known
      * to have small values, in order to make sure that the values have not been truncated to zero.
      */
     private static void verifyParameterValues(final DataSource ds) throws SQLException {

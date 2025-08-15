@@ -262,8 +262,8 @@ public class GridCoverage2DTest extends TestCase {
          */
         final var singleRow = new GridExtent(GRID_SIZE, 1).translate(0, 1);
         result = coverage.render(singleRow);
-            assertInstanceOf(BufferedImage.class, result);
-            assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1), result, null);
+        assertInstanceOf(BufferedImage.class, result);
+        assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1), result, null);
         /*
          * Column extraction:
          *   - Expected size (1,2) is verified by `assertPixelsEqual(…)`.

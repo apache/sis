@@ -29,6 +29,13 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * A tuple array is fixed size array of tuples.
  *
+ * @todo add an implementation based on MemorySegment
+ * @todo add support for very large arrays, replace int indexing by long values, splitting in multiple tables
+ * @todo add multi dimension support
+ * @todo This class will be expected to provide efficient support for parallal processing used in API when they will available :
+ * - Vector API (https://openjdk.org/jeps/426)
+ * - GPGPU / Babylon (https://www.youtube.com/watch?v=qkr3E27XYbY)
+ *
  * @author Johann Sorel (Geomatys)
  */
 public interface TupleArray {

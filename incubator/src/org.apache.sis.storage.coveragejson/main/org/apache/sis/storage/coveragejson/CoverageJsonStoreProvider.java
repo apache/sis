@@ -26,6 +26,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.URIDataStoreProvider;
@@ -44,8 +45,8 @@ import org.apache.sis.util.Version;
  */
 @StoreMetadata(formatName    = CoverageJsonStoreProvider.NAME,
                fileSuffixes  = {"covjson"},
-               capabilities  = Capability.READ,
-               resourceTypes = {Aggregate.class, GridCoverageResource.class})
+               capabilities  = {Capability.READ, Capability.CREATE, Capability.WRITE},
+               resourceTypes = {WritableAggregate.class, GridCoverageResource.class})
 public class CoverageJsonStoreProvider extends DataStoreProvider {
 
     public static final String NAME = "CoverageJSON";

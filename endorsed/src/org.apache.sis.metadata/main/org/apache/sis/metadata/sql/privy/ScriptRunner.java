@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.util.function.BiFunction;
 import java.io.FileNotFoundException;
 import java.io.EOFException;
 import java.io.IOException;
@@ -57,14 +56,6 @@ import org.apache.sis.util.resources.Errors;
  */
 public class ScriptRunner implements AutoCloseable {
     /**
-     * The database user having read (not write) permissions.
-     *
-     * @see #isGrantOnSchemaSupported
-     * @see #isGrantOnTableSupported
-     */
-    protected static final String PUBLIC = "PUBLIC";
-
-    /**
      * The sequence for SQL comments. Leading lines starting by those characters will be ignored.
      */
     private static final String COMMENT = "--";
@@ -88,16 +79,6 @@ public class ScriptRunner implements AutoCloseable {
     private static final char END_OF_STATEMENT = ';';
 
     /**
-     * The characters for escaping a portion of the SQL script. This is used by PostgreSQL
-     * for the definition of triggers. Those characters should appear at the beginning of
-     * a line (ignoring whitespaces), because the text before it will not be parsed.
-     *
-     * <p>This string shall not begin with a whitespace or
-     * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier part}.</p>
-     */
-    private static final String ESCAPE = "$BODY$";
-
-    /**
      * The presumed dialect spoken by the database.
      */
     private final Dialect dialect;
@@ -108,7 +89,7 @@ public class ScriptRunner implements AutoCloseable {
      *
      * @see #addReplacement(String, String)
      */
-    private final Map<String,String> replacements = new HashMap<>();
+    private final Map<String,String> replacements;
 
     /**
      * The quote character for identifiers actually used in the database,
@@ -137,73 +118,6 @@ public class ScriptRunner implements AutoCloseable {
     protected final boolean isEnumTypeSupported;
 
     /**
-     * {@code true} if the database supports catalogs.
-     */
-    protected final boolean isCatalogSupported;
-
-    /**
-     * {@code true} if the database supports schemas.
-     */
-    protected final boolean isSchemaSupported;
-
-    /**
-     * {@code true} if the database supports {@code "GRANT USAGE ON SCHEMA"} statements.
-     * Read-only permissions are typically granted to {@link #PUBLIC}.
-     * Example:
-     *
-     * {@snippet lang="sql" :
-     *     GRANT USAGE ON SCHEMA metadata TO PUBLIC;
-     *     }
-     *
-     * @see #statementsToSkip
-     */
-    protected final boolean isGrantOnSchemaSupported;
-
-    /**
-     * {@code true} if the database supports {@code "GRANT SELECT ON TABLE"} statements.
-     * Read-only permissions are typically granted to {@link #PUBLIC}.
-     * Example:
-     *
-     * {@snippet lang="sql" :
-     *     GRANT SELECT ON TABLE epsg_coordinatereferencesystem TO PUBLIC;
-     *     }
-     *
-     * @see #statementsToSkip
-     */
-    protected final boolean isGrantOnTableSupported;
-
-    /**
-     * {@code true} if the database supports the {@code COMMENT} statement.
-     * Example:
-     *
-     * {@snippet lang="sql" :
-     *     COMMENT ON SCHEMA metadata IS 'ISO 19115 metadata';
-     *     }
-     *
-     * @see #statementsToSkip
-     */
-    protected final boolean isCommentSupported;
-
-    /**
-     * {@code true} if the following instruction shall be executed
-     * (assuming that the PostgreSQL {@code "plpgsql"} language is desired):
-     *
-     * {@code sql
-     *   CREATE TRUSTED PROCEDURAL LANGUAGE 'plpgsql'
-     *     HANDLER plpgsql_call_handler
-     *     VALIDATOR plpgsql_validator;
-     * }
-     *
-     * <p>Notes per database product:</p>
-     * <ul>
-     *   <li><b>PostgreSQL:</b> {@code true} only for database prior to version 9.
-     *       Starting at version 9, the language is installed by default.</li>
-     *   <li><b>Other databases:</b> {@code false} because not supported.</li>
-     * </ul>
-     */
-    protected final boolean isCreateLanguageRequired;
-
-    /**
      * The maximum number of rows allowed per {@code "INSERT"} statement.
      * This is 1 if the database does not support multi-rows insertion.
      * For other database, this is set to an arbitrary "reasonable" value since attempts to insert
@@ -223,9 +137,9 @@ public class ScriptRunner implements AutoCloseable {
      *
      * <ul>
      *   <li>{@link #isEnumTypeSupported} for {@code "CREATE TYPE …"} or {@code "CREATE CAST …"} statements.</li>
-     *   <li>{@link #isGrantOnSchemaSupported} for {@code "GRANT USAGE ON SCHEMA …"} statements.</li>
-     *   <li>{@link #isGrantOnTableSupported} for {@code "GRANT SELECT ON TABLE …"} statements.</li>
-     *   <li>{@link #isCommentSupported} for {@code "COMMENT ON …"} statements.</li>
+     *   <li>{@link Dialect#supportsGrantUsageOnSchema} for {@code "GRANT USAGE ON SCHEMA …"} statements.</li>
+     *   <li>{@link Dialect#supportsGrantSelectOnTable} for {@code "GRANT SELECT ON TABLE …"} statements.</li>
+     *   <li>{@link Dialect#supportsComment} for {@code "COMMENT ON …"} statements.</li>
      * </ul>
      */
     private Matcher statementsToSkip;
@@ -260,52 +174,50 @@ public class ScriptRunner implements AutoCloseable {
      *
      * <p>Some {@code maxRowsPerInsert} parameter values of interest:</p>
      * <ul>
-     *   <li>A value of 0 means to create only the schemas without inserting any data in them.</li>
+     *   <li>A value of 0 means to create only the schema without inserting any data in them.</li>
      *   <li>A value of 1 means to use one separated {@code INSERT INTO} statement for each row, which may be slow.</li>
      *   <li>A value of 100 is a value which have been found empirically as giving good results.</li>
      *   <li>A value of {@link Integer#MAX_VALUE} means to not perform any attempt to limit the number of rows in an
      *       {@code INSERT INTO} statement. Note that this causes {@link StackOverflowError} in some JDBC driver.</li>
      * </ul>
      *
+     * The {@code schemaToCreate} argument is ignored if not supported by the database.
+     *
      * @param  connection        the connection to the database.
+     * @param  schemaToCreate    schema to create and set as the default schema, or {@code null} if none.
      * @param  maxRowsPerInsert  maximum number of rows per {@code "INSERT INTO"} statement.
      * @throws SQLException if an error occurred while creating a SQL statement.
      */
-    public ScriptRunner(final Connection connection, final int maxRowsPerInsert) throws SQLException {
+    public ScriptRunner(final Connection connection, final String schemaToCreate, final int maxRowsPerInsert) throws SQLException {
         ArgumentChecks.ensurePositive("maxRowsPerInsert", maxRowsPerInsert);
-        final DatabaseMetaData metadata = connection.getMetaData();
-        this.maxRowsPerInsert   = maxRowsPerInsert;
-        this.dialect            = Dialect.guess(metadata);
-        this.identifierQuote    = metadata.getIdentifierQuoteString();
-        this.isSchemaSupported  = metadata.supportsSchemasInTableDefinitions() &&
-                                  metadata.supportsSchemasInDataManipulation();
-        this.isCatalogSupported = metadata.supportsCatalogsInTableDefinitions() &&
-                                  metadata.supportsCatalogsInDataManipulation();
-        this.statement          = connection.createStatement();
+        final DatabaseMetaData metadata;
+        this.maxRowsPerInsert = maxRowsPerInsert;
+        replacements     = new HashMap<>();
+        metadata         = connection.getMetaData();
+        dialect          = Dialect.guess(metadata);
+        identifierQuote  = metadata.getIdentifierQuoteString();
+        if (schemaToCreate != null && metadata.supportsSchemasInTableDefinitions()) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.executeUpdate("CREATE SCHEMA " + identifierQuote + schemaToCreate + identifierQuote);
+                if (dialect.supportsGrantUsageOnSchema()) {
+                    stmt.executeUpdate("GRANT USAGE ON SCHEMA " + identifierQuote + schemaToCreate + identifierQuote + " TO PUBLIC");
+                }
+            }
+            connection.setSchema(schemaToCreate);   // Must be set before the next call to `createStatement()` below.
+        }
+        statement = connection.createStatement();
         switch (dialect) {
             default: {
-                isEnumTypeSupported      = false;
-                isGrantOnSchemaSupported = false;
-                isGrantOnTableSupported  = false;
-                isCreateLanguageRequired = false;
-                isCommentSupported       = false;
+                isEnumTypeSupported = false;
                 break;
             }
             case POSTGRESQL: {
                 final int version = metadata.getDatabaseMajorVersion();
-                isEnumTypeSupported      = (version == 8) ? metadata.getDatabaseMinorVersion() >= 4 : version >= 8;
-                isGrantOnSchemaSupported = true;
-                isGrantOnTableSupported  = true;
-                isCreateLanguageRequired = (version < 9);
-                isCommentSupported       = true;
+                isEnumTypeSupported = (version == 8) ? metadata.getDatabaseMinorVersion() >= 4 : version >= 8;
                 break;
             }
             case HSQL: {
-                isEnumTypeSupported      = false;
-                isGrantOnSchemaSupported = false;
-                isGrantOnTableSupported  = false;
-                isCreateLanguageRequired = false;
-                isCommentSupported       = false;
+                isEnumTypeSupported = false;
                 /*
                  * HSQLDB stores tables in memory by default. For storing the tables on files, we have to
                  * use "CREATE CACHED TABLE" statement, which is HSQL-specific. For avoiding SQL dialect,
@@ -325,18 +237,18 @@ public class ScriptRunner implements AutoCloseable {
         if (!isEnumTypeSupported) {
             addStatementToSkip("CREATE\\s+(?:TYPE|CAST)\\s+.*");
         }
-        if (!isGrantOnSchemaSupported || !isGrantOnTableSupported) {
+        if (!dialect.supportsAllGrants()) {
             addStatementToSkip("GRANT\\s+\\w+\\s+ON\\s+");
-            if (isGrantOnSchemaSupported) {
+            if (dialect.supportsGrantUsageOnSchema()) {
                 regexOfStmtToSkip.append("TABLE");
-            } else if (isGrantOnTableSupported) {
+            } else if (dialect.supportsGrantSelectOnTable()) {
                 regexOfStmtToSkip.append("SCHEMA");
             } else {
                 regexOfStmtToSkip.append("(?:TABLE|SCHEMA)");
             }
             regexOfStmtToSkip.append("\\s+.*");
         }
-        if (!isCommentSupported) {
+        if (!dialect.supportsComment()) {
             addStatementToSkip("COMMENT\\s+ON\\s+.*");
         }
         if (!dialect.supportsAlterTableWithAddConstraint()) {
@@ -359,9 +271,9 @@ public class ScriptRunner implements AutoCloseable {
      *
      * <ul>
      *   <li>{@code "CREATE TYPE …"} or {@code "CREATE CAST …"} if {@link #isEnumTypeSupported} is {@code false}.</li>
-     *   <li>{@code "GRANT USAGE ON SCHEMA …"} if {@link #isGrantOnSchemaSupported} is {@code false}.</li>
-     *   <li>{@code "GRANT SELECT ON TABLE …"} if {@link #isGrantOnTableSupported} is {@code false}.</li>
-     *   <li>{@code "COMMENT ON …"} if {@link #isCommentSupported} is {@code false}.</li>
+     *   <li>{@code "GRANT USAGE ON SCHEMA …"} if {@link Dialect#supportsGrantUsageOnSchema} is {@code false}.</li>
+     *   <li>{@code "GRANT SELECT ON TABLE …"} if {@link Dialect#supportsGrantSelectOnTable} is {@code false}.</li>
+     *   <li>{@code "COMMENT ON …"} if {@link Dialect#supportsComment} is {@code false}.</li>
      * </ul>
      *
      * This method can be invoked for ignoring some additional statements.
@@ -380,8 +292,10 @@ public class ScriptRunner implements AutoCloseable {
     }
 
     /**
-     * Declares that a word in the SQL script needs to be replaced by the given word.
-     * The replacement is performed only for occurrences outside identifiers or texts.
+     * Declares that a word in the <abbr>SQL</abbr> script needs to be replaced by the given word.
+     * The replacement is performed only for occurrences outside quoted identifiers or texts.
+     * For replacement of texts or identifiers, see {@link #editText(StringBuilder, int, int)}
+     * and {@link #editQuotedIdentifier(StringBuilder, int, int)} instead.
      *
      * <h4>Example</h4>
      * This is used for mapping the <abbr>EPSG</abbr> table names from the mixed-cases convention used in
@@ -393,7 +307,7 @@ public class ScriptRunner implements AutoCloseable {
      * understood by the database. For example, if a database does not support the {@code "TEXT"} data type,
      * this method can be used for replacing {@code "TEXT"} by {@code "LONG VARCHAR"}.</p>
      *
-     * <h4>Limitation</h3>
+     * <h4>Limitation</h4>
      * The {@code inScript} word to replace must be a single word with no space.
      * If the text to replace contains two words (for example {@code "CREATE TABLE"}), then revert
      * commit {@code bceb569558bfb7e3cf1a14aaf9261e786db06856} for bringing back this functionality.
@@ -416,16 +330,6 @@ public class ScriptRunner implements AutoCloseable {
      */
     protected final String getReplacement(final String inScript) {
         return replacements.getOrDefault(inScript, inScript);
-    }
-
-    /**
-     * For every entries in the replacements map, replaces the entry value by the value returned by
-     * {@code function(key, value)}.
-     *
-     * @param function  the function that modify the replacement mapping.
-     */
-    protected final void modifyReplacements(final BiFunction<String,String,String> function) {
-        replacements.replaceAll(function);
     }
 
     /**
@@ -486,12 +390,14 @@ public class ScriptRunner implements AutoCloseable {
     public final int run(final String filename, final BufferedReader in) throws IOException, SQLException {
         currentFile = filename;
         currentLine = 0;
-        int     statementCount     = 0;         // For informative purpose only.
-        int     posOpeningQuote    = -1;        // -1 if we are not inside a text.
-        boolean isInsideIdentifier = false;
+        int statementCount            =  0;     // For informative purpose only.
+        int posOpeningTextQuote       = -1;     // -1 if we are not inside a text.
+        int posOpeningIdentifierQuote = -1;
         final var buffer = new StringBuilder();
+        final boolean hasReplacements = !replacements.isEmpty();
         String line;
         while ((line = in.readLine()) != null) {
+            currentLine++;
             /*
              * Ignore empty lines and comment lines, but only if they appear at the begining of the SQL statement.
              */
@@ -507,43 +413,22 @@ public class ScriptRunner implements AutoCloseable {
                 buffer.append('\n');
             }
             /*
-             * If we find the "$BODY$" string, copy verbatism (without any attempt to parse the lines) until
-             * the next occurrence of "$BODY$".  This simple algorithm does not allow more than one block of
-             * "$BODY$ ... $BODY$" on the same statement and presumes that the text before "$BODY$" contains
-             * nothing that need to be parsed.
-             */
-            int pos = line.indexOf(ESCAPE);
-            if (pos >= 0) {
-                pos += ESCAPE.length();
-                while ((pos = line.indexOf(ESCAPE, pos)) < 0) {
-                    buffer.append(line).append('\n');
-                    line = in.readLine();
-                    if (line == null) {
-                        throw new EOFException();
-                    }
-                    pos = 0;
-                }
-                pos += ESCAPE.length();
-                buffer.append(line, 0, pos);
-                line = line.substring(pos);
-            }
-            /*
              * Copy the current line in the buffer. Then, the loop will search for words or characters to replace
              * (for example replacements of IDENTIFIER_QUOTE character by the database-specific quote character).
              * Replacements (if any) will be performed in-place in the buffer. Concequently the buffer length may
              * vary during the loop execution.
              */
-            pos = buffer.length();
+            int pos = buffer.length();
             int length = buffer.append(line).length();
 parseLine:  while (pos < length) {
                 int c = buffer.codePointAt(pos);
                 int n = Character.charCount(c);
-                if (posOpeningQuote < 0 && !isInsideIdentifier) {
+                if ((posOpeningTextQuote & posOpeningIdentifierQuote) < 0) {    // True if both positions are -1.
                     int start = pos;
                     while (Character.isUnicodeIdentifierStart(c)) {
                         /*
-                         * 'start' is the position of the first character of a Unicode identifier. Following loop
-                         * sets 'pos' to the end (exclusive) of that Unicode identifier. Variable 'c' will be set
+                         * `start` is the position of the first character of a Unicode identifier. Following loop
+                         * sets `pos` to the end (exclusive) of that Unicode identifier. Variable `c` will be set
                          * to the character after the Unicode identifier, provided that we have not reached EOL.
                          */
                         while ((pos += n) < length) {
@@ -553,17 +438,19 @@ parseLine:  while (pos < length) {
                         }
                         /*
                          * Perform in-place replacement if the Unicode identifier is one of the keys listed
-                         * in the 'replacements' map. This operation may change the buffer length. The 'pos'
+                         * in the `replacements` map. This operation may change the buffer length. The `pos`
                          * must be updated if needed for staying at position after the Unicode identifier.
                          */
-                        final String word = buffer.substring(start, pos);
-                        final String replace = replacements.get(word);
-                        if (replace != null) {
-                            length = buffer.replace(start, pos, replace).length();
-                            pos = start + replace.length();
+                        if (hasReplacements) {
+                            final String word = buffer.substring(start, pos);
+                            final String replace = replacements.get(word);
+                            if (replace != null) {
+                                length = buffer.replace(start, pos, replace).length();
+                                pos = start + replace.length();
+                            }
                         }
                         /*
-                         * Skip whitespaces and set the 'c' variable to the next character, which may be either
+                         * Skip whitespaces and set the `c` variable to the next character, which may be either
                          * another Unicode start (to be processed by the enclosing loop) or another character
                          * (to be processed by the switch statement after the enclosing loop).
                          */
@@ -583,10 +470,17 @@ parseLine:  while (pos < length) {
                      * replace the standard quote character by the database-specific one.
                      */
                     case IDENTIFIER_QUOTE: {
-                        if (posOpeningQuote < 0) {
-                            isInsideIdentifier = !isInsideIdentifier;
+                        if (posOpeningTextQuote < 0) {
                             length = buffer.replace(pos, pos + n, identifierQuote).length();
                             n = identifierQuote.length();
+                            if (posOpeningIdentifierQuote < 0) {
+                                posOpeningIdentifierQuote = pos;
+                            } else {
+                                editQuotedIdentifier(buffer, posOpeningIdentifierQuote, pos += n);
+                                pos -= length - (length = buffer.length());
+                                posOpeningIdentifierQuote = -1;
+                                continue;   // Because we already skipped the " character.
+                            }
                         }
                         break;
                     }
@@ -595,13 +489,13 @@ parseLine:  while (pos < length) {
                      * found the opening or closing character, ignoring the '' escape sequence.
                      */
                     case QUOTE: {
-                        if (!isInsideIdentifier) {
-                            if (posOpeningQuote < 0) {
-                                posOpeningQuote = pos;
+                        if (posOpeningIdentifierQuote < 0) {
+                            if (posOpeningTextQuote < 0) {
+                                posOpeningTextQuote = pos;
                             } else if ((pos += n) >= length || buffer.codePointAt(pos) != QUOTE) {
-                                editText(buffer, posOpeningQuote, pos);
+                                editText(buffer, posOpeningTextQuote, pos);
                                 pos -= length - (length = buffer.length());
-                                posOpeningQuote = -1;
+                                posOpeningTextQuote = -1;
                                 continue;   // Because we already skipped the ' character.
                             } // else found a double ' character, which means to escape it.
                         }
@@ -612,7 +506,7 @@ parseLine:  while (pos < length) {
                      * since SQL statement in JDBC are not expected to contain it.
                      */
                     case END_OF_STATEMENT: {
-                        if (posOpeningQuote < 0 && !isInsideIdentifier) {
+                        if ((posOpeningTextQuote & posOpeningIdentifierQuote) < 0) {    // True if both are -1.
                             if (CharSequences.skipLeadingWhitespaces(buffer, pos + n, length) >= length) {
                                 buffer.setLength(pos);
                             }
@@ -635,7 +529,8 @@ parseLine:  while (pos < length) {
     }
 
     /**
-     * Invoked for each text found in a SQL statement. The text, <em>including its quote characters</em>,
+     * Invoked for each single-quoted text found in a <abbr>SQL</abbr> statement.
+     * The text, <em>including its single quote characters</em>,
      * is the {@code sql} substring from index {@code lower} inclusive to {@code upper} exclusive.
      * Subclasses can override this method if they wish to modify the text content.
      * Modifications are applied directly in the given {@code sql} buffer.
@@ -645,6 +540,20 @@ parseLine:  while (pos < length) {
      * @param  upper  index after the closing quote character ({@code '}) of the text in {@code sql}.
      */
     protected void editText(final StringBuilder sql, final int lower, final int upper) {
+    }
+
+    /**
+     * Invoked for each double-quoted identifier found in a <abbr>SQL</abbr> statement.
+     * The identifier, <em>including its double quote characters</em>,
+     * is the {@code sql} substring from index {@code lower} inclusive to {@code upper} exclusive.
+     * Subclasses can override this method if they wish to modify the identifier.
+     * Modifications are applied directly in the given {@code sql} buffer.
+     *
+     * @param  sql    the whole SQL statement.
+     * @param  lower  index of the opening quote character (usually {@code "}) of the identifier in {@code sql}.
+     * @param  upper  index after the closing quote character (usually {@code "}) of the identifier in {@code sql}.
+     */
+    protected void editQuotedIdentifier(final StringBuilder sql, final int lower, final int upper) {
     }
 
     /**
@@ -763,7 +672,7 @@ parseLine:  while (pos < length) {
                         int nrows = maxRowsPerInsert;
                         int begin = endOfLine + 1;
                         while ((endOfLine = subSQL.indexOf('\n', ++endOfLine)) >= 0) {
-                            if (--nrows == 0) {    // Extract lines until we have reached the 'maxRowsPerInsert' amount.
+                            if (--nrows == 0) {    // Extract lines until we have reached the `maxRowsPerInsert` amount.
                                 int end = endOfLine;
                                 if (subSQL.charAt(end - 1) == ',') {
                                     end--;
@@ -810,8 +719,7 @@ parseLine:  while (pos < length) {
     public String status(final Locale locale) {
         String position = null;
         if (currentFile != null) {
-            position = Errors.forLocale(locale).getString(Errors.Keys.ErrorInFileAtLine_2, currentFile,
-                    (currentLine != 0) ? currentLine : '?');
+            position = Errors.forLocale(locale).getString(Errors.Keys.ErrorInFileAtLine_2, currentFile, currentLine);
         }
         if (currentSQL != null) {
             final var buffer = new StringBuilder();

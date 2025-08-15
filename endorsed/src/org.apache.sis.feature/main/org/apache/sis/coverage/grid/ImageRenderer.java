@@ -57,6 +57,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
+import static org.apache.sis.image.PlanarImage.XY_DIMENSIONS_KEY;
 import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 
@@ -416,6 +417,8 @@ public class ImageRenderer {
      *
      * @return indices of <var>x</var> and <var>y</var> coordinate values in a grid coordinate tuple.
      *
+     * @see org.apache.sis.image.PlanarImage#XY_DIMENSIONS_KEY
+     *
      * @since 1.3
      */
     public final int[] getXYDimensions() {
@@ -469,6 +472,7 @@ public class ImageRenderer {
      * The properties recognized by current implementation are:
      *
      * <ul>
+     *   <li>{@value org.apache.sis.image.PlanarImage#XY_DIMENSIONS_KEY}.</li>
      *   <li>{@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}.</li>
      *   <li>{@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY}.</li>
      *   <li>Any property added by calls to {@link #addProperty(String, Object)}.</li>
@@ -481,6 +485,7 @@ public class ImageRenderer {
      */
     public Object getProperty(final String key) {
         switch (key) {
+            case XY_DIMENSIONS_KEY:     return getXYDimensions();
             case GRID_GEOMETRY_KEY:     return getImageGeometry(GridCoverage2D.BIDIMENSIONAL);
             case SAMPLE_DIMENSIONS_KEY: return bands.clone();
         }
@@ -501,12 +506,17 @@ public class ImageRenderer {
     public void addProperty(final String key, final Object value) {
         ArgumentChecks.ensureNonNull("key",   key);
         ArgumentChecks.ensureNonNull("value", value);
-        if (!(GRID_GEOMETRY_KEY.equals(key) || SAMPLE_DIMENSIONS_KEY.equals(key))) {
-            if (properties == null) {
-                properties = new Hashtable<>();
-            }
-            if (properties.putIfAbsent(key, value) == null) {
-                return;
+        switch (key) {
+            case XY_DIMENSIONS_KEY:
+            case GRID_GEOMETRY_KEY:
+            case SAMPLE_DIMENSIONS_KEY: break;
+            default: {
+                if (properties == null) {
+                    properties = new Hashtable<>();
+                }
+                if (properties.putIfAbsent(key, value) == null) {
+                    return;
+                }
             }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
@@ -596,7 +606,7 @@ public class ImageRenderer {
      */
     public void setData(final Vector... data) {
         ensureExpectedBandCount(data.length, true);
-        final Buffer[] buffers = new Buffer[data.length];
+        final var buffers = new Buffer[data.length];
         DataType dataType = null;
         for (int i=0; i<data.length; i++) {
             final Vector v = data[i];
@@ -733,6 +743,8 @@ public class ImageRenderer {
      * The image upper-left corner is located at the position given by {@link #getBounds()}.
      * The two-dimensional {@linkplain #getImageGeometry(int) image geometry} is stored as
      * a property associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
+     * The dimensions of the source grid that are represented in the image are associated to the
+     * {@value org.apache.sis.image.PlanarImage#XY_DIMENSIONS_KEY} key.
      * The sample dimensions are stored as a property associated to the
      * {@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
      *
@@ -769,11 +781,12 @@ public class ImageRenderer {
         }
         final WritableRaster wr = (raster instanceof WritableRaster) ? (WritableRaster) raster : null;
         if (wr != null && cm != null && (imageX | imageY) == 0) {
-            return new Untiled(cm, wr, properties, imageGeometry, supplier, bands);
+            return new Untiled(cm, wr, properties, gridDimensions, imageGeometry, supplier, bands);
         }
         if (properties == null) {
             properties = new Hashtable<>();
         }
+        properties.putIfAbsent(XY_DIMENSIONS_KEY, gridDimensions);
         properties.putIfAbsent(GRID_GEOMETRY_KEY, (supplier != null) ? new DeferredProperty(supplier) : imageGeometry);
         properties.putIfAbsent(SAMPLE_DIMENSIONS_KEY, bands);
         if (wr != null) {
@@ -791,6 +804,11 @@ public class ImageRenderer {
      * in the form {@code if (image instanceof BufferedImage)}.
      */
     private static final class Untiled extends ObservableImage {
+        /**
+         * The value associated to the {@value org.apache.sis.image.PlanarImage#XY_DIMENSIONS_KEY} key.
+         */
+        private final int[] gridDimensions;
+
         /**
          * The value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key,
          * or {@code null} if not yet computed.
@@ -813,12 +831,13 @@ public class ImageRenderer {
          */
         @SuppressWarnings("UseOfObsoleteCollectionType")
         Untiled(final ColorModel colors, final WritableRaster raster, final Hashtable<?,?> properties,
-                final GridGeometry geometry, final SliceGeometry supplier, final SampleDimension[] bands)
+                final int[] gridDimensions, final GridGeometry geometry, final SliceGeometry supplier, final SampleDimension[] bands)
         {
             super(colors, raster, false, properties);
-            this.geometry = geometry;
-            this.supplier = supplier;
-            this.bands    = bands;
+            this.gridDimensions = gridDimensions;
+            this.geometry       = geometry;
+            this.supplier       = supplier;
+            this.bands          = bands;
         }
 
         /**
@@ -826,8 +845,10 @@ public class ImageRenderer {
          */
         @Override
         public String[] getPropertyNames() {
-            return ArraysExt.concatenate(super.getPropertyNames(),
-                    new String[] {GRID_GEOMETRY_KEY, SAMPLE_DIMENSIONS_KEY});
+            return ArraysExt.concatenate(super.getPropertyNames(), new String[] {
+                    XY_DIMENSIONS_KEY,
+                    GRID_GEOMETRY_KEY,
+                    SAMPLE_DIMENSIONS_KEY});
         }
 
         /**
@@ -842,6 +863,7 @@ public class ImageRenderer {
             switch (key) {
                 default: return super.getProperty(key);
                 case SAMPLE_DIMENSIONS_KEY: return bands.clone();
+                case XY_DIMENSIONS_KEY: return gridDimensions.clone();
                 case GRID_GEOMETRY_KEY: {
                     synchronized (this) {
                         if (geometry == null) {

@@ -73,7 +73,7 @@ public final class TranslatedGridCoverageTest extends TestCase {
      */
     @Test
     public void testUsingProcessor() {
-        final GridCoverageProcessor processor = new GridCoverageProcessor();
+        final var processor = new GridCoverageProcessor();
         final GridCoverage source = createCoverage();
         final GridCoverage target = processor.shiftGrid(source, 30, -5);
         assertExtentStarts(source.getGridGeometry().getExtent(), -20, -10);
@@ -81,7 +81,7 @@ public final class TranslatedGridCoverageTest extends TestCase {
         /*
          * The result for identical "real world" coordinates should be the same for both coverages.
          */
-        final DirectPosition2D p = new DirectPosition2D(HardCodedCRS.WGS84, -75, -18);
+        final var p = new DirectPosition2D(HardCodedCRS.WGS84, -75, -18);
         assertArrayEquals(source.evaluator().apply(p),
                           target.evaluator().apply(p));
     }
