@@ -299,7 +299,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
                     offset += values.length;
                 } else {
                     for (int b : bands) {
-                        values[offset++] = values[b];
+                        aggregate[offset++] = values[b];
                     }
                 }
             }

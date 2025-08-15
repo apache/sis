@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
  * the <i>Basic Multilingual Plane</i> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @see CharSequences
  *
@@ -54,6 +54,27 @@ public final class StringBuilders extends Static {
      * Do not allow instantiation of this class.
      */
     private StringBuilders() {
+    }
+
+    /**
+     * Removes leading and trailing whitespace characters in a subregion of the specified buffer.
+     * Space characters are identified by the {@link Character#isWhitespace(int)} method.
+     *
+     * @param  buffer  the buffer where to remove leading and trailing white spaces.
+     * @param  lower   index of the first character of the subregion where to remove leading spaces.
+     * @param  upper   index after the last character of the subregion where to remove trailing spaces.
+     * @return number of characters removed.
+     *
+     * @see CharSequences#trimWhitespaces(CharSequence, int, int)
+     *
+     * @since 1.5
+     */
+    public static int trimWhitespaces(final StringBuilder buffer, final int lower, final int upper) {
+        ArgumentChecks.ensureNonNull("buffer", buffer);
+        int i = CharSequences.skipTrailingWhitespaces(buffer, lower, upper);
+        final int length = buffer.length();
+        buffer.delete(i, upper).delete(lower, CharSequences.skipLeadingWhitespaces(buffer, lower, i));
+        return length - buffer.length();
     }
 
     /**

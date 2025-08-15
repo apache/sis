@@ -51,7 +51,7 @@ final class Installer extends ScriptRunner {
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     Installer(final Connection connection) throws SQLException {
-        super(connection, 100);
+        super(connection, null, 100);
         if (isEnumTypeSupported) {
             enumTypes = null;
         } else {

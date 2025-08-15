@@ -963,7 +963,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     if (deepEquals(crs1, crs2, mode)) {
                         MathTransform tr1 = this.getMathTransform();
                         MathTransform tr2 = that.getMathTransform();
-                        if (mode == ComparisonMode.ALLOW_VARIANT) try {
+                        if (mode.allowsVariant()) try {
                             final MathTransform before = MathTransforms.linear(
                                     CoordinateSystems.swapAndScaleAxes(crs1.getCoordinateSystem(),
                                                                        crs2.getCoordinateSystem()));

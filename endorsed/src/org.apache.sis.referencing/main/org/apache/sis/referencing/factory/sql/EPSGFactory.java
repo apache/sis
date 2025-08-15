@@ -19,7 +19,6 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -146,8 +145,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     /**
      * The name of the schema that contains the EPSG tables, or {@code null} or an empty string.
      * <ul>
-     *   <li>The {@code ""} value retrieves the EPSG tables without a schema.
-     *       In such case, table names are prefixed by {@value SQLTranslator#TABLE_PREFIX}.</li>
+     *   <li>The {@code ""} value retrieves the EPSG tables without a schema.</li>
      *   <li>The {@code null} value means that the schema name should not be used to narrow the search.
      *       In such case, {@link SQLTranslator} will tries to automatically detect the schema.</li>
      * </ul>
@@ -354,8 +352,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *     If no provider is specified, then this method searches on the module path (with {@link java.util.ServiceLoader})
      *     for user-provided implementations of {@code InstallationScriptProvider}.
      *     If no user-specified provider is found, then this method will search for
-     *     {@code "EPSG_*Tables.sql"}, {@code "EPSG_*Data.sql"} and {@code "EPSG_*FKeys.sql"} files in the
-     *     {@code $SIS_DATA/Databases/ExternalSources} directory where {@code *} stands for any characters
+     *     {@code "*Tables*.sql"}, {@code "*Data*.sql"} and {@code "*FKeys*.sql"} files in the
+     *     {@code $SIS_DATA/Databases/ExternalSources/EPSG} directory where {@code *} stands for any characters
      *     provided that there is no ambiguity.</li>
      * </ul>
      *
@@ -378,36 +376,38 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         String    message = null;
         Exception failure = null;
         boolean   success = false;
-        try (EPSGInstaller installer = new EPSGInstaller(Objects.requireNonNull(connection))) {
-            final boolean ac = connection.getAutoCommit();
-            if (ac) {
+        try {
+            if (catalog != null) {
+                connection.setCatalog(catalog);
+            }
+            final boolean autoCommit = connection.getAutoCommit();
+            if (autoCommit) {
                 connection.setAutoCommit(false);
             }
-            try {
+            try (EPSGInstaller installer = new EPSGInstaller(connection, schema)) {
                 try {
-                    if (!"".equals(schema)) {                                           // Schema may be null.
-                        installer.setSchema(schema != null ? schema : Constants.EPSG);
-                        if (catalog != null && !catalog.isEmpty()) {
-                            installer.prependNamespace(catalog);
-                        }
-                    }
                     success = installer.run(scriptProvider, locale);
-                } finally {
-                    if (ac) {
-                        if (success) {
-                            connection.commit();
-                        } else {
-                            connection.rollback();
-                        }
-                        connection.setAutoCommit(true);
-                    }
+                } catch (IOException | SQLException e) {
+                    message = installer.failure(locale);
+                    failure = e;
                 }
-            } catch (IOException | SQLException e) {
-                message = installer.failure(locale);
-                failure = e;
+            } finally {
+                if (autoCommit) {
+                    if (success) {
+                        connection.commit();
+                    } else {
+                        connection.rollback();
+                    }
+                    connection.setAutoCommit(true);
+                }
             }
         } catch (SQLException e) {
-            failure = e;
+            if (failure != null) {
+                failure.addSuppressed(e);
+            } else {
+                failure = e;
+            }
+            success = false;
         }
         if (!success) {
             if (message == null) {

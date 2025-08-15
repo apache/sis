@@ -191,7 +191,7 @@ public class GridCoverage2D extends GridCoverage {
         final GridExtent extent = gridGeometry.getExtent();
         final int[] imageAxes;
         if (source instanceof GridCoverage2D) {
-            final GridCoverage2D gs = (GridCoverage2D) source;
+            final var gs = (GridCoverage2D) source;
             xDimension     = gs.xDimension;
             yDimension     = gs.yDimension;
             gridToImageX   = gs.gridToImageX;
@@ -646,7 +646,7 @@ public class GridCoverage2D extends GridCoverage {
              * may force data loading earlier than desired.
              */
             final var result = new ReshapedImage(data, xmin, ymin, xmax, ymax);
-            return result.isIdentity() ? data : result;
+            return result.isIdentity() ? result.source : result;
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }

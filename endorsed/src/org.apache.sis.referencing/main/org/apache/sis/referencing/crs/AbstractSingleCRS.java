@@ -31,6 +31,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 
 // Specific to the main branch:
@@ -210,6 +211,22 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
     }
 
     /**
+     * Returns whether the given datum may be considered as equivalent to the given datum ensemble.
+     * Used for comparisons with {@link ComparisonMode#APPROXIMATE} for interoperability between
+     * the legacy and the new definition of EPSG:4326.
+     */
+    private static boolean isHeuristicMatchForName(final DefaultDatumEnsemble<?> ensemble, final Datum datum, final ComparisonMode mode) {
+        if (ensemble == null || datum == null) {
+            return false;
+        }
+        final Boolean match = Identifiers.hasCommonIdentifier(ensemble.getIdentifiers(), datum.getIdentifiers());
+        if (match != null) {
+            return match;
+        }
+        return IdentifiedObjects.isHeuristicMatchForName(datum, ensemble.getName().getCode());
+    }
+
+    /**
      * Compares this coordinate reference system with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
@@ -219,7 +236,7 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
      * @hidden because nothing new to said.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
+    public boolean equals(final Object object, ComparisonMode mode) {
         if (super.equals(object, mode)) {
             switch (mode) {
                 case STRICT: {
@@ -228,8 +245,17 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
                 }
                 default: {
                     final var that = (SingleCRS) object;
-                    return Utilities.deepEquals(getDatum(), that.getDatum(), mode) &&
-                           Utilities.deepEquals(getDatumEnsemble(), MissingMethods.getDatumEnsemble(that), mode);
+                    final var d1   = this.getDatum();
+                    final var d2   = that.getDatum();
+                    if (mode == ComparisonMode.DEBUG) {
+                        mode = ComparisonMode.ALLOW_VARIANT;    // For avoiding too early `AssertionError`.
+                    }
+                    if (Utilities.deepEquals(d1, d2, mode)) {
+                        return mode.allowsVariant() || Utilities.deepEquals(getDatumEnsemble(), MissingMethods.getDatumEnsemble(that), mode);
+                    } else if (mode.allowsVariant()) {
+                        return isHeuristicMatchForName(this.getDatumEnsemble(), d2, mode) ||
+                               isHeuristicMatchForName(MissingMethods.getDatumEnsemble(that), d1, mode);
+                    }
                 }
             }
         }

@@ -183,16 +183,9 @@ final class TableInfo {
     final String nameColumn;
 
     /**
-     * Column type for the type (usually with the {@code "_TYPE"} suffix), or {@code null}.
-     * {@link EPSGDataAccess} and {@link AuthorityCodes} assume that values in this column
-     * are not longer than the maximal length specified in {@value #ENUM_REPLACEMENT}.
+     * Column name for the type (usually with the {@code "_TYPE"} suffix), or {@code null}.
      */
     private final String typeColumn;
-
-    /**
-     * The SQL type to use as a replacement for enumerated values on databases that do not support enumerations.
-     */
-    static final String ENUM_REPLACEMENT = "VARCHAR(80)";
 
     /**
      * Sub-interfaces of {@link #type} to handle, or {@code null} if none.
@@ -253,7 +246,7 @@ final class TableInfo {
 
     /**
      * Returns the class of objects created from the given table. The given table name should be one of
-     * the values enumerated in the {@code epsg_table_name} types of the {@code EPSG_Prepare.sql} file.
+     * the values enumerated in the {@code "Table Name"} types of the {@code EPSG_Prepare.sql} file.
      * The name may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example, {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
      *
@@ -276,13 +269,14 @@ final class TableInfo {
 
     /**
      * Appends a {@code WHERE} clause together with a condition for searching the specified object.
-     * This method delegates to {@link #where(Class, StringBuilder)} with the type of the given object,
-     * except that some object properties may be inspected for resolving ambiguities.
+     * This method delegates to {@link #where(EPSGDataAccess, Class, StringBuilder)} with the type
+     * of the given object, except that some object properties may be inspected for resolving ambiguities.
      *
-     * @param  object  the object to search in the database.
-     * @param  buffer  where to append the {@code WHERE} clause.
+     * @param  factory  the factory which is writing a <abbr>SQL</abbr> statement.
+     * @param  object   the object to search in the database.
+     * @param  buffer   where to append the {@code WHERE} clause.
      */
-    final void where(final IdentifiedObject object, final StringBuilder buffer) {
+    final void where(final EPSGDataAccess factory, final IdentifiedObject object, final StringBuilder buffer) {
         Class<?> userType = object.getClass();
         if (object instanceof GeodeticCRS) {
             final CoordinateSystem cs = ((GeodeticCRS) object).getCoordinateSystem();
@@ -292,7 +286,7 @@ final class TableInfo {
                 userType = GeocentricCRS.class;
             }
         }
-        where(userType, buffer);
+        where(factory, userType, buffer);
     }
 
     /**
@@ -306,18 +300,20 @@ final class TableInfo {
      *
      * The caller shall add at least one condition after this method call.
      *
+     * @param  factory   the factory which is writing a <abbr>SQL</abbr> statement.
      * @param  userType  the type specified by the user.
      * @param  buffer    where to append the {@code WHERE} clause.
      * @return the subtype, or {@link #type} if no subtype was found.
      */
-    final Class<?> where(final Class<?> userType, final StringBuilder buffer) {
+    final Class<?> where(final EPSGDataAccess factory, final Class<?> userType, final StringBuilder buffer) {
         buffer.append(" WHERE ");
         if (typeColumn != null) {
             for (int i=0; i<subTypes.length; i++) {
                 final Class<?> candidate = subTypes[i];
                 if (candidate.isAssignableFrom(userType)) {
-                    if (ENUM_REPLACEMENT != null) {
-                        buffer.append("CAST(").append(typeColumn).append(" AS ").append(ENUM_REPLACEMENT).append(')');
+                    if (factory.translator.useEnumerations()) {
+                        buffer.append("CAST(").append(typeColumn).append(" AS ")
+                                .append(EPSGInstaller.ENUM_REPLACEMENT).append(')');
                     } else {
                         buffer.append(typeColumn);
                     }

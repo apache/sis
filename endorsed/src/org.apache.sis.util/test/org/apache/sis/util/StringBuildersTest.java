@@ -38,11 +38,24 @@ public final class StringBuildersTest extends TestCase {
     }
 
     /**
+     * Tests the {@link StringBuilders#trimWhitespaces(StringBuilder, int, int)} method.
+     */
+    @Test
+    public void testTrimWhitespaces() {
+        final var buffer = new StringBuilder("   Foo bar ");
+        int expected = 4;
+        do {
+            assertEquals(expected, StringBuilders.trimWhitespaces(buffer, 0, buffer.length()));
+            assertEquals("Foo bar", buffer.toString());
+        } while ((expected ^= 4) == 0);
+    }
+
+    /**
      * Tests the {@link StringBuilders#replace(StringBuilder, String, String)} method.
      */
     @Test
     public void testReplace() {
-        final StringBuilder buffer = new StringBuilder("One two three two one");
+        final var buffer = new StringBuilder("One two three two one");
         replace(buffer, "two", "zero");
         assertEquals("One zero three zero one", buffer.toString());
         replace(buffer, "zero", "ten");
@@ -54,7 +67,7 @@ public final class StringBuildersTest extends TestCase {
      */
     @Test
     public void testReplaceChar() {
-        final StringBuilder buffer = new StringBuilder("ABCDEFBCD");
+        final var buffer = new StringBuilder("ABCDEFBCD");
         replace(buffer, 'B', '*');
         assertEquals("A*CDEF*CD", buffer.toString());
     }
@@ -64,7 +77,7 @@ public final class StringBuildersTest extends TestCase {
      */
     @Test
     public void testReplaceChars() {
-        final StringBuilder buffer = new StringBuilder("ABCD1234EFGH");
+        final var buffer = new StringBuilder("ABCD1234EFGH");
         replace(buffer, 4, 8, new char[] {'5','6','7','8'});
         assertEquals("ABCD5678EFGH", buffer.toString());
         replace(buffer, 4, 6, new char[] {'1','2','3','4'});
@@ -78,7 +91,7 @@ public final class StringBuildersTest extends TestCase {
      */
     @Test
     public void testRemove() {
-        final StringBuilder buffer = new StringBuilder("EPSG.6.7");
+        final var buffer = new StringBuilder("EPSG.6.7");
         remove(buffer, ".");
         assertEquals("EPSG67", buffer.toString());
     }
@@ -88,7 +101,7 @@ public final class StringBuildersTest extends TestCase {
      */
     @Test
     public void testRepeat() {
-        final StringBuilder buffer = new StringBuilder("AB12");
+        final var buffer = new StringBuilder("AB12");
         repeat(buffer, 2, 'C', 0);
         assertEquals("AB12", buffer.toString());
         repeat(buffer, 2, 'C', 1);
@@ -106,7 +119,7 @@ public final class StringBuildersTest extends TestCase {
      */
     @Test
     public void testTrimFractionalPart() {
-        final StringBuilder buffer = new StringBuilder("4.10");
+        final var buffer = new StringBuilder("4.10");
         trimFractionalPart(buffer);
         assertEquals("4.10", buffer.toString());
         buffer.setCharAt(2, '0');                                   // Replace the '1' by '0'.
@@ -121,7 +134,7 @@ public final class StringBuildersTest extends TestCase {
      */
     @Test
     public void testToASCII() {
-        final StringBuilder s = new StringBuilder(
+        final var s = new StringBuilder(
                 "mètres" + Characters.PARAGRAPH_SEPARATOR +
                 " ‘single’, “double”, \"ascii' 30°20′10″.");
         toASCII(s);

@@ -1610,7 +1610,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  */
                 final FactoryCall<CRSFactory, CoordinateReferenceSystem> constructor;
                 /*
-                 * The following switch statement should have a case for all "epsg_crs_kind" values enumerated
+                 * The following switch statement should have a case for all "CRS Kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
                  */
                 switch (type.toLowerCase(Locale.US)) {
@@ -1944,7 +1944,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  */
                 final FactoryCall<DatumFactory, ? extends Datum> constructor;
                 /*
-                 * The following switch statement should have a case for all "epsg_datum_kind" values enumerated
+                 * The following switch statement should have a case for all "Datum Kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
                  */
                 switch (type.toLowerCase(Locale.US)) {
@@ -2035,9 +2035,9 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     {
         double max = Double.NaN;
         try (ResultSet result = executeQueryForCodes(
-                "DatumEnsemble",
+                "Datum Ensemble",
                 "SELECT ENSEMBLE_ACCURACY"
-                        + " FROM \"DatumEnsemble\""
+                        + " FROM \"Datum Ensemble\""
                         + " WHERE DATUM_ENSEMBLE_CODE = ?", code))
         {
             // Should have exactly one value. The loop is a paranoiac safety.
@@ -2051,9 +2051,9 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         final var accuracy = PositionalAccuracyConstant.ensemble(max);
         final List<Datum> members = createComponents(
                 GeodeticAuthorityFactory::createDatum,
-                "DatumEnsembleMember",
+                "Datum Ensemble Member",
                 "SELECT DATUM_CODE"
-                        + " FROM \"DatumEnsembleMember\""
+                        + " FROM \"Datum Ensemble Member\""
                         + " WHERE DATUM_ENSEMBLE_CODE = ?"
                         + " ORDER BY DATUM_SEQUENCE", code);
         return (factory, metadata) -> extended(factory).createDatumEnsemble(metadata, members, accuracy);
@@ -2130,12 +2130,12 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         var returnValue = (IdentifiedObject) localCache.get(cacheKey);
         if (returnValue == null) {
             try (ResultSet result = executeQueryForCodes(
-                    "ConventionalRS",
+                    "Conventional RS",
                     "SELECT"+ /* column 1 */ " CONVENTIONAL_RS_CODE,"
                             + /* column 2 */ " CONVENTIONAL_RS_NAME,"
                             + /* column 3 */ " REMARKS,"
                             + /* column 4 */ " DEPRECATED"
-                            + " FROM \"ConventionalRS\""
+                            + " FROM \"Conventional RS\""
                             + " WHERE CONVENTIONAL_RS_CODE = ?", code))
             {
                 while (result.next()) {
@@ -2149,7 +2149,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                      */
                     @SuppressWarnings("LocalVariableHidesMemberVariable")
                     final Map<String,Object> properties = createProperties(
-                            "ConventionalRS", epsg, name, null, null, null, remarks, deprecated);
+                            "Conventional RS", epsg, name, null, null, null, remarks, deprecated);
                     returnValue = ensureSingleton(new AbstractIdentifiedObject(properties), returnValue, code);
                     if (result.isClosed()) break;   // See createProperties(…) for explanation.
                 }
@@ -2532,7 +2532,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final Map<String,Object> properties = createProperties(
                         "Coordinate System", epsg, name, null, null, null, remarks, deprecated);
                 /*
-                 * The following switch statement should have a case for all "epsg_cs_kind" values enumerated
+                 * The following switch statement should have a case for all "CS Kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
                  */
                 final CSFactory csFactory = owner.csFactory;
@@ -2751,9 +2751,9 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         var returnValue = (VerticalDatumType) localCache.get(cacheKey);
         if (returnValue == null && code != null) {
             try (ResultSet result = executeQueryForCodes(
-                    "DatumRealizationMethod",
+                    "Datum Realization Method",
                     "SELECT REALIZATION_METHOD_NAME"
-                            + " FROM \"DatumRealizationMethod\""
+                            + " FROM \"Datum Realization Method\""
                             + " WHERE REALIZATION_METHOD_CODE = ?", code))
             {
                 while (result.next()) {
@@ -3420,7 +3420,7 @@ next:                   while (r.next()) {
                     key = "TransformationFromCRS";
                     sql = "SELECT COORD_OP_CODE"
                             + " FROM \"Coordinate_Operation\""
-                            + " WHERE DEPRECATED=0"  // Do not put spaces around "=" - SQLTranslator searches for this exact match.
+                            + " WHERE DEPRECATED=FALSE"  // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                             + " AND SOURCE_CRS_CODE = ?"
                             + " AND TARGET_CRS_CODE = ?"
                             + " ORDER BY COORD_OP_ACCURACY ASC NULLS LAST";

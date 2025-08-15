@@ -18,9 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.awt.image.RenderedImage;
 
-// Specific to the main branch:
-import org.apache.sis.coverage.CannotEvaluateException;
-
 
 /**
  * A grid coverage with the same data as the source coverage,
@@ -68,7 +65,7 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
     {
         if (allowSourceReplacement) {
             while (source instanceof TranslatedGridCoverage) {
-                final TranslatedGridCoverage tc = (TranslatedGridCoverage) source;
+                final var tc = (TranslatedGridCoverage) source;
                 final long[] shifted = tc.translation.clone();
                 long tm = 0;
                 for (int i = Math.min(shifted.length, translation.length); --i >= 0;) {
@@ -83,7 +80,7 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
         final GridGeometry gridGeometry = source.getGridGeometry();
         if (domain == null) {
             domain = gridGeometry.shiftGrid(translation);
-        } else if (!domain.extent.isSameSize(gridGeometry.extent)) {
+        } else if (!domain.getExtent().isSameSize(gridGeometry.extent)) {
             return null;
         }
         if (domain.equals(gridGeometry)) {
@@ -110,7 +107,7 @@ final class TranslatedGridCoverage extends DerivedGridCoverage {
      * the rendered image shall not be translated.
      */
     @Override
-    public RenderedImage render(GridExtent sliceExtent) throws CannotEvaluateException {
+    public RenderedImage render(GridExtent sliceExtent) {
         if (sliceExtent == null) {
             sliceExtent = gridGeometry.extent;
         }

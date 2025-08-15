@@ -398,17 +398,21 @@ public class RenderingData implements CloneAccess {
         final GridGeometry old = dataGeometry;
         final List<SampleDimension> ranges = coverage.getSampleDimensions();
         final RenderedImage image = coverage.render(sliceExtent);
-        final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
         final GridGeometry domain;
         final int[] xyDims;
-        if (value instanceof GridGeometry) {
-            domain = (GridGeometry) value;
-            xyDims = (sliceExtent == null) ? ArraysExt.range(0, BIDIMENSIONAL)
-                     : sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
-        } else {
-            var r = new ImageRenderer(coverage, sliceExtent);
-            domain = r.getImageGeometry(BIDIMENSIONAL);
-            xyDims = r.getXYDimensions();
+        {   // For local scope of image properties.
+            Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
+            if (value instanceof GridGeometry) {
+                domain = (GridGeometry) value;
+                value  = image.getProperty(PlanarImage.XY_DIMENSIONS_KEY);
+                xyDims = (value instanceof int[]) ? (int[]) value
+                        : (sliceExtent != null) ? sliceExtent.getSubspaceDimensions(BIDIMENSIONAL)
+                        : ArraysExt.range(0, BIDIMENSIONAL);
+            } else {
+                var r = new ImageRenderer(coverage, sliceExtent);
+                domain = r.getImageGeometry(BIDIMENSIONAL);
+                xyDims = r.getXYDimensions();
+            }
         }
         setImageSpace(domain, ranges, xyDims);      // Implies `dataGeometry = domain`.
         currentSlice = sliceExtent;

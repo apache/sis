@@ -672,7 +672,13 @@ final class CoverageResource extends AbstractGridCoverageResource {
         while (ite.next()) {
             ite.getPixel(pixel);
             for (int i = 0; i < nbSample; i++) {
-                arrays[i].values.add(pixel[i]);
+                double v = pixel[i];
+                if (!Double.isFinite(v)) {
+                    //json do not want infinite or NaN
+                    arrays[i].values.add(null);
+                } else {
+                    arrays[i].values.add(v);
+                }
             }
         }
 

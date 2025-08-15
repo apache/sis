@@ -237,6 +237,7 @@ final class ImageOverlay extends MultiSourceImage {
                      * we count their occurrences.
                      */
                     switch (name) {
+                        case XY_DIMENSIONS_KEY:
                         case GRID_GEOMETRY_KEY:
                         case SAMPLE_DIMENSIONS_KEY:
                         case POSITIONAL_ACCURACY_KEY: count.put(name, n); break;
@@ -267,6 +268,7 @@ final class ImageOverlay extends MultiSourceImage {
     @Override
     public Object getProperty(final String key) {
         switch (key) {
+            case XY_DIMENSIONS_KEY:
             case GRID_GEOMETRY_KEY:       // Fall through
             case SAMPLE_DIMENSIONS_KEY:   return getConstantProperty(key);
             case POSITIONAL_ACCURACY_KEY: return getCombinedProperty(key, Quantity[].class,   (q) -> q.clone(),            ImageOverlay::combine, false);

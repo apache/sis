@@ -39,7 +39,10 @@ final class PositionalConsistencyImage extends SourceAlignedImage {
      * @see #getPropertyNames()
      */
     private static final Set<String> INHERITED_PROPERTIES = Set.of(
-            GRID_GEOMETRY_KEY, POSITIONAL_ACCURACY_KEY, MASK_KEY);
+            XY_DIMENSIONS_KEY,
+            GRID_GEOMETRY_KEY,
+            POSITIONAL_ACCURACY_KEY,
+            MASK_KEY);
 
     /**
      * Properties added by this image, no matter if present in source image or not. Must be consistent with
@@ -83,6 +86,7 @@ final class PositionalConsistencyImage extends SourceAlignedImage {
             }
             case POSITIONAL_ACCURACY_KEY:
             case GRID_GEOMETRY_KEY:
+            case XY_DIMENSIONS_KEY:
             case MASK_KEY: {
                 return getSource().getProperty(key);
             }

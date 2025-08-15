@@ -310,7 +310,7 @@ public class TestDatabase implements AutoCloseable {
      * @throws ClassCastException if an element of the list is not a {@code String} or a {@code Supplier<InputStream>}.
      */
     public final void executeSQL(final List<?> scripts) throws IOException, SQLException {
-        try (Connection c = source.getConnection(); ScriptRunner r = new ScriptRunner(c, 1000)) {
+        try (Connection c = source.getConnection(); ScriptRunner r = new ScriptRunner(c, null, 1000)) {
             for (final Object sql : scripts) {
                 if (sql instanceof String s) {
                     r.run(s);

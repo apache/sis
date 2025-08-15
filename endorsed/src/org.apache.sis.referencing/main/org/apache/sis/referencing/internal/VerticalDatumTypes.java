@@ -155,8 +155,6 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
     /**
      * Returns the realization method from heuristic rules applied on the name.
      *
-     * <p>Note: this is {@code fromMethod(String)} on the GeoAPI 4.0 branch.</p>
-     *
      * @param  name  the realization method name, or {@code null}.
      * @return the realization method, or {@code null} if the given name was null.
      */
