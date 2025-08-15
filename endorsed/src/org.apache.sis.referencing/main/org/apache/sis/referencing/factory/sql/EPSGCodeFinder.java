@@ -296,7 +296,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     if (n == 2) {
                         filters = new Condition[2];
                         for (int i=0; i<=1; i++) {
-                            if ((filters[i] = dependencies((i==0) ? "CMPD_HORIZCRS_CODE" : "CMPD_VERTCRS_CODE",
+                            if ((filters[i] = dependencies((i == 0) ? "CMPD_HORIZCRS_CODE" : "CMPD_VERTCRS_CODE",
                                     CoordinateReferenceSystem.class, components.get(i), false)) == null)
                             {
                                 return Set.of();
@@ -315,7 +315,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              *
              *   SELECT COORD_REF_SYS_CODE FROM "Coordinate Reference System"
              *     WHERE CAST(COORD_REF_SYS_KIND AS VARCHAR(80)) LIKE 'geographic%'
-             *       AND DATUM_CODE IN (?,…) AND DEPRECATED=0
+             *       AND DATUM_CODE IN (?,…) AND DEPRECATED=FALSE
              *     ORDER BY COORD_REF_SYS_CODE
              */
             final Condition filter;
@@ -449,9 +449,15 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                 }
                 if (isNext) buffer.append(')');
             }
-            buffer.append(getSearchDomain() == Domain.ALL_DATASET
-                          ? " ORDER BY ABS(DEPRECATED), "
-                          : " AND DEPRECATED=0 ORDER BY ");     // Do not put spaces around "=" - SQLTranslator searches for this exact match.
+            final boolean all = (getSearchDomain() == Domain.ALL_DATASET);
+            if (!all) {
+                buffer.append(" AND DEPRECATED=FALSE");
+                // Do not put spaces around "=" because SQLTranslator searches for this exact match.
+            }
+            buffer.append(" ORDER BY ");
+            if (all) {
+                buffer.append(dao.translator.useBoolean() ? "DEPRECATED" : "ABS(DEPRECATED)").append(", ");
+            }
             for (final Condition filter : filters) {
                 filter.appendToOrderBy(buffer);
             }

@@ -137,11 +137,11 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         final Class<?> tableType = table.where(factory, type, buffer);
         final int conditionStart = buffer.length();
         if (table.showColumn != null) {
-            buffer.append(table.showColumn).append("<>0 AND ");
+            buffer.append(table.showColumn).append("=TRUE AND ");
             // Do not put spaces around "<>" - SQLTranslator searches for this exact match.
         }
         // Do not put spaces around "=" - SQLTranslator searches for this exact match.
-        buffer.append("DEPRECATED=0 ORDER BY ").append(table.codeColumn);
+        buffer.append("DEPRECATED=FALSE ORDER BY ").append(table.codeColumn);
         sql[ALL] = factory.translator.apply(buffer.toString());
         /*
          * Build the SQL query for fetching the name of a single object for a given code.

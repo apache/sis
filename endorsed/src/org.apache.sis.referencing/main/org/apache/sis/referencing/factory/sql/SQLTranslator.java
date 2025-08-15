@@ -140,15 +140,6 @@ public class SQLTranslator implements UnaryOperator<String> {
     static final String TABLE_PREFIX = "epsg_";
 
     /**
-     * The columns that may be of {@code BOOLEAN} type instead of {@code SMALLINT}.
-     */
-    private static final String[] BOOLEAN_COLUMNS = {
-        "SHOW_CRS",
-        "SHOW_OPERATION",
-        "DEPRECATED"
-    };
-
-    /**
      * The column where {@code VARCHAR} value may need to be cast to an enumeration.
      * With PostgreSQL, only columns in the {@code WHERE} part of the <abbr>SQL</abbr> statement
      * needs an explicit cast, as the columns in the {@code SELECT} part are implicitly cast.
@@ -214,11 +205,13 @@ public class SQLTranslator implements UnaryOperator<String> {
     private Map<String,String> tableRewording;
 
     /**
-     * Mapping from column names used by {@link EPSGDataAccess} to the names actually used by the database.
-     * The {@code COORD_AXIS_ORDER} column may be {@code ORDER} in the MS-Access database.
-     * This map is rarely non-empty.
+     * Replacements to perform on <abbr>SQL</abbr> statements before execution. Some entries are the replacements
+     * of column names used by {@link EPSGDataAccess} to the names actually used in the target database. The main
+     * case is the {@code COORD_AXIS_ORDER} column which may be named {@code ORDER} in the dataset for MS-Access.
+     * Other entries are replacements of missing columns by {@code CAST(NULL AS …)} expressions and replacements
+     * of {@code BOOLEAN} comparator operands by {@code SMALLINT}.
      */
-    private Map<String,String> columnRenaming;
+    private Map<String,String> replacements;
 
     /**
      * The characters used for quoting identifiers, or a whitespace if none.
@@ -307,7 +300,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      *   <li>Determine whether the table names are prefixed by {@value #TABLE_PREFIX}
      *       and whether table names are in lower-case or mixed-case.</li>
      *
-     *   <li>Fill the {@link #tableRewording} and {@link #columnRenaming} maps. These maps translate table
+     *   <li>Fill the {@link #tableRewording} and {@link #replacements} maps. These maps translate table
      *       and column names used in the <abbr>SQL</abbr> statements into the names used by the database.
      *       Two conventions are understood: the names used in the MS-Access database or the names used
      *       in the <abbr>SQL</abbr> scripts, potentially with {@linkplain #TABLE_PREFIX prefix} removed.</li>
@@ -360,8 +353,8 @@ public class SQLTranslator implements UnaryOperator<String> {
          */
         UnaryOperator<String> toNativeCase = UnaryOperator.identity();
         schemaPattern  = SQLUtilities.escape(schema, escape);
-        columnRenaming = new HashMap<>();
         tableRewording = new HashMap<>();
+        replacements   = new HashMap<>();
         /*
          * Special cases not covered by the generic algorithm implemented in `toActualTableName(…)`.
          * The entries are actually not full table names, but words separated by space. For example,
@@ -500,10 +493,10 @@ check:  for (;;) {
                     tableRewording.put("Extent", "Area");
                 }
                 missingColumns.forEach((column, type) -> {
-                    columnRenaming.put(column, "CAST(NULL AS " + type + ") AS " + column);
+                    replacements.put(column, "CAST(NULL AS " + type + ") AS " + column);
                 });
                 mayRenameColumns.values().removeAll(brokenTargetCols);  // For renaming only when the old name has been found.
-                columnRenaming.putAll(mayRenameColumns);
+                replacements.putAll(mayRenameColumns);
                 mayReuse = false;
             }
             if (!mayReuse) {
@@ -512,10 +505,18 @@ check:  for (;;) {
                 missingColumns.clear();
             }
         }
+        /*
+         * If the database uses the SMALLINT type instead of BOOLEAN, replace `DEPRECATED=FALSE` by `DEPRECATED=0`.
+         * Note: is does not cover all cases. Some more complex cases are handled in `if (useBoolean())` blocks.
+         */
+        if (!useBoolean) {
+            replacements.put("=FALSE", "=0");
+            replacements.put("=TRUE", "<>0");
+        }
+        replacements   = Map.copyOf(replacements);
         tableRewording = Map.copyOf(tableRewording);
-        columnRenaming = Map.copyOf(columnRenaming);
         sameTableNames = useMixedCaseTableNames && "\"".equals(identifierQuote) && tableRewording.isEmpty();
-        sameQueries    = sameTableNames && (tableNameEnum == null) && columnRenaming.isEmpty() && !useBoolean;
+        sameQueries    = sameTableNames && useBoolean && (tableNameEnum == null) && replacements.isEmpty();
     }
 
     /**
@@ -669,30 +670,7 @@ check:  for (;;) {
             }
         }
         buffer.append(sql, end, sql.length());
-        columnRenaming.forEach((toSearch, replaceBy) -> StringBuilders.replace(buffer, toSearch, replaceBy));
-        /*
-         * If the database use the BOOLEAN type instead of SMALLINT, replaces "deprecated=0' by "deprecated=false".
-         */
-        if (useBoolean) {
-            int w = buffer.indexOf("WHERE");
-            if (w >= 0) {
-                w += 5;
-                for (final String field : BOOLEAN_COLUMNS) {
-                    int p = buffer.indexOf(field, w);
-                    if (p >= 0) {
-                        p += field.length();
-                        if (!replaceIfEquals(buffer, p, "=0", "=FALSE") &&
-                            !replaceIfEquals(buffer, p, "<>0", "=TRUE"))
-                        {
-                            // Remove "ABS" in "ABS(DEPRECATED)" or "ABS(CO.DEPRECATED)".
-                            if ((p = buffer.lastIndexOf("(", p)) > w) {
-                                replaceIfEquals(buffer, p-3, "ABS", "");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        replacements.forEach((toSearch, replaceBy) -> StringBuilders.replace(buffer, toSearch, replaceBy));
         /*
          * If the database uses enumeration, we need an explicit cast with PostgreSQL.
          * The enumeration type is typically "EPSG"."Table Name".
@@ -705,18 +683,5 @@ check:  for (;;) {
             }
         }
         return buffer.toString();
-    }
-
-    /**
-     * Replaces the text at the given position in the buffer if it is equal to the {@code expected} text.
-     */
-    private static boolean replaceIfEquals(final StringBuilder buffer, final int pos,
-            final String expected, final String replacement)
-    {
-        if (CharSequences.regionMatches(buffer, pos, expected)) {
-            buffer.replace(pos, pos + expected.length(), replacement);
-            return true;
-        }
-        return false;
     }
 }

@@ -3392,7 +3392,7 @@ next:                   while (r.next()) {
                     key = "TransformationFromCRS";
                     sql = "SELECT COORD_OP_CODE"
                             + " FROM \"Coordinate_Operation\""
-                            + " WHERE DEPRECATED=0"  // Do not put spaces around "=" - SQLTranslator searches for this exact match.
+                            + " WHERE DEPRECATED=FALSE"  // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                             + " AND SOURCE_CRS_CODE = ?"
                             + " AND TARGET_CRS_CODE = ?"
                             + " ORDER BY COORD_OP_ACCURACY ASC NULLS LAST";
