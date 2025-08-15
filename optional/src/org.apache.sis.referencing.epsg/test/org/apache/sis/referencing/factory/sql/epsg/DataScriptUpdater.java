@@ -67,7 +67,27 @@ public final class DataScriptUpdater {
              Connection c = db.source.getConnection())
         {
             final var formatter = new DataScriptFormatter(c);
+            /*
+             * The version number noted in the history table is a copy-and-paste error.
+             */
+            formatter.addSpellingChange("Version History", "'8.9'",
+                    "Version 8.8 full release of Dataset.",
+                    "Version 8.9 full release of Dataset.");
+            /*
+             * Add missing accents on some letters of texts in non-English languages.
+             */
+            formatter.addAccentedCharacters("Ancienne Triangulation Française");
+            formatter.addAccentedCharacters("Nouvelle Triangulation Française");
+            formatter.addAccentedCharacters("Nivellement Général de la Corse");
+            formatter.addAccentedCharacters("Nivellement Général de la France");
+            formatter.addAccentedCharacters("Nivellement Général de Nouvelle Calédonie");
+            formatter.addAccentedCharacters("Nivellement Général de Polynésie Française");
+            formatter.addAccentedCharacters("Nivellement Général Guyanais");
+            formatter.addAccentedCharacters("Réseau Géodésique de Nouvelle Calédonie");
+            formatter.addAccentedCharacters("Réseau National Belge");
+            formatter.addAccentedCharacters("Posiciones Geodésicas Argentinas");
             formatter.run(Path.of(arguments[0]), Path.of(arguments[1]));
+            formatter.printSpellingChangeCount(System.out);
         }
     }
 }
