@@ -249,8 +249,8 @@ final class TableInfo {
     }
 
     /**
-     * Returns the class of objects created from the given table. The given table name should be one of
-     * the values enumerated in the {@code "Table Name"} types of the {@code EPSG_Prepare.sql} file.
+     * Returns the class of objects created from the given table. The given table name should be one
+     * of the values enumerated in the {@code "Table Name"} types of the {@code Prepare.sql} file.
      * The name may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example, {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
      *

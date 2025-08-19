@@ -1597,7 +1597,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final FactoryCall<CRSFactory, CoordinateReferenceSystem> constructor;
                 /*
                  * The following switch statement should have a case for all "CRS Kind" values enumerated
-                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 * in the `Prepare.sql` file, except that the values in this Java code are in lower cases.
                  */
                 switch (type.toLowerCase(Locale.US)) {
                     /* ──────────────────────────────────────────────────────────────────────
@@ -1919,7 +1919,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final FactoryCall<DatumFactory, ? extends Datum> constructor;
                 /*
                  * The following switch statement should have a case for all "Datum Kind" values enumerated
-                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 * in the `Prepare.sql` file, except that the values in this Java code are in lower cases.
                  */
                 switch (type.toLowerCase(Locale.US)) {
                     case "dynamic geodetic":
@@ -2507,7 +2507,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         "Coordinate System", epsg, name, null, null, null, remarks, deprecated);
                 /*
                  * The following switch statement should have a case for all "CS Kind" values enumerated
-                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 * in the `Prepare.sql` file, except that the values in this Java code are in lower cases.
                  */
                 final CSFactory csFactory = owner.csFactory;
                 CoordinateSystem cs = null;
