@@ -16,15 +16,15 @@
  */
 
 /**
- * Provides non-free data, including the EPSG geodetic dataset, in a single read-only JAR file.
- * This module contains a copy of EPSG geodetic dataset in an embedded Apache Derby database.
+ * Provides data, including the non-free <abbr>EPSG</abbr> geodetic dataset, in a single read-only <abbr>JAR</abbr> file.
+ * This module contains a copy of the <abbr>EPSG</abbr> geodetic dataset in an embedded Apache Derby database.
  * Having this module on the module-path avoid the need to set the {@code SIS_DATA} environment variable
- * for using the Coordinate Reference Systems (<abbr>CRS</abbr>) and Coordinate Operations defined by EPSG.
+ * for using the Coordinate Reference Systems (<abbr>CRS</abbr>) and Coordinate Operations defined by <abbr>EPSG</abbr>.
  *
  * <h2>Licensing</h2>
- * EPSG is maintained by the <a href="https://www.iogp.org/">International Association of Oil and Gas Producers</a>
- * (IOGP) Surveying &amp; Positioning Committee and is subject to <a href="https://epsg.org/terms-of-use.html">EPSG
- * terms of use</a>. This module is not included in the Apache <abbr>SIS</abbr> distribution of convenience binaries,
+ * <abbr>EPSG</abbr> is maintained by the <a href="https://www.iogp.org/">International Association of Oil and Gas Producers</a> (<abbr>IOGP</abbr>)
+ * Surveying &amp; Positioning Committee and is subject to <a href="https://epsg.org/terms-of-use.html"><abbr>EPSG</abbr> terms of use</a>.
+ * This module is not included in the Apache <abbr>SIS</abbr> distribution of convenience binaries,
  * and the source code contains only the Java classes without the <abbr>EPSG</abbr> data. For use in an application,
  * see <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> on the <abbr>SIS</abbr> web site.
  *
