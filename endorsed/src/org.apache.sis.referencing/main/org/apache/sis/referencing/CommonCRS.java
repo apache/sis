@@ -1149,9 +1149,10 @@ public enum CommonCRS {
             if (cs == null) {
                 if (this != DEFAULT) {
                     cs = DEFAULT.universal(latitude, longitude).getCoordinateSystem();
+                } else if (isUTM) {
+                    cs = StandardDefinitions.defaultCartesianCS();
                 } else {
                     cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(
-                            isUTM   ? StandardDefinitions.CARTESIAN_2D :
                             isSouth ? StandardDefinitions.UPS_SOUTH
                                     : StandardDefinitions.UPS_NORTH, true);
                 }
@@ -2055,17 +2056,12 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the EPSG factory to use for creating CRS, or {@code null} if none.
+     * Returns the <abbr>EPSG</abbr> factory to use for creating <abbr>CRS</abbr>s, or {@code null} if none.
      * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
      */
     private static GeodeticAuthorityFactory factory() {
-        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            final GeodeticAuthorityFactory factory = AuthorityFactories.getEPSG();
-            if (!(factory instanceof EPSGFactoryFallback)) {
-                return factory;
-            }
-        }
-        return null;
+        final GeodeticAuthorityFactory factory = AuthorityFactories.getEPSG(false);
+        return (factory instanceof EPSGFactoryFallback) ? null : factory;
     }
 
     /**

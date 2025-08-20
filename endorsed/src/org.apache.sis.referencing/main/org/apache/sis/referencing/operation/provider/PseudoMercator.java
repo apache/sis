@@ -40,13 +40,18 @@ public final class PseudoMercator extends AbstractMercator {
     public static final String IDENTIFIER = "1024";
 
     /**
+     * The {@value} string, which is the <abbr>EPSG</abbr> name for this projection.
+     */
+    public static final String NAME = "Popular Visualisation Pseudo Mercator";
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
                 .addIdentifier(IDENTIFIER)
-                .addName("Popular Visualisation Pseudo Mercator")
+                .addName(NAME)
                 .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors(), 0));
     }
 

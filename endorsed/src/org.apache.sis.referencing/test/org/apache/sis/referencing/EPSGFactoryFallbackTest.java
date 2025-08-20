@@ -256,7 +256,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
      */
     @Test
     public void compareAllCodes() throws FactoryException {
-        final GeodeticAuthorityFactory EPSG = AuthorityFactories.getEPSG();
+        final GeodeticAuthorityFactory EPSG = AuthorityFactories.getEPSG(false);
         try {
             setEPSGFactory(EPSGFactoryFallback.INSTANCE);
             final var codes = new ArrayList<String>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));

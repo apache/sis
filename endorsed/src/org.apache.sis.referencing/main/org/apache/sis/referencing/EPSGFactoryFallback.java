@@ -45,7 +45,6 @@ import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.MetadataServices;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.URLs;
@@ -71,14 +70,6 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
         implements CRSAuthorityFactory, CSAuthorityFactory, DatumAuthorityFactory
 {
     /**
-     * Whether to disallow {@code CommonCRS} to use {@link org.apache.sis.referencing.factory.sql.EPSGFactory}
-     * (in which case {@code CommonCRS} will fallback on hard-coded values).
-     * This field should always be {@code false}, except for debugging purposes.
-     */
-    @Debug
-    static final boolean FORCE_HARDCODED = false;
-
-    /**
      * The singleton instance.
      */
     static final EPSGFactoryFallback INSTANCE = new EPSGFactoryFallback();
@@ -93,9 +84,15 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
     private String installationURL;
 
     /**
+     * Cache of <abbr>CRS</abbr>s other than the one cached by {@link CommonCRS}.
+     */
+    private final ProjectedCRS[] cache;
+
+    /**
      * Constructor for the singleton instance.
      */
     private EPSGFactoryFallback() {
+        cache = new ProjectedCRS[2];
     }
 
     /**
@@ -135,7 +132,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
         final boolean geographic = type.isAssignableFrom(GeographicCRS.class);
         final boolean geodetic   = type.isAssignableFrom(GeodeticCRS  .class);
         final boolean projected  = type.isAssignableFrom(ProjectedCRS .class);
-        final Set<String> codes = new LinkedHashSet<>();
+        final var codes = new LinkedHashSet<String>();
         if (pm) codes.add(StandardDefinitions.GREENWICH);
         for (final CommonCRS crs : CommonCRS.values()) {
             if (ellipsoid) add(codes, crs.ellipsoid);
@@ -291,6 +288,30 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
             final int s = Math.max(code.lastIndexOf(Constants.DEFAULT_SEPARATOR), code.lastIndexOf('#'));
             code = CharSequences.trimWhitespaces(code, s + 1, code.length()).toString();
             final short n = Short.parseShort(code);
+            /*
+             * Special case for CRSs which do not have a convenience method in `CommonCRS`.
+             * The absence of convenience method is because those projections may not be reasonable with all datums.
+             * For example, Pseudo-Mercator is used with WGS 84 only. While it would be technically possible to apply
+             * it on any datum, this is not something that we want to encourage.
+             */
+            if ((kind & CRS) != 0) {
+                final boolean pseudo = (n == 3857);     // Pseudo-Mercator
+                if (pseudo || n == 3395) {              // or World Mercator
+                    final int index = pseudo ? 1 : 0;
+                    ProjectedCRS crs;
+                    synchronized (cache) {
+                        crs = cache[index];
+                        if (crs == null) {
+                            crs = StandardDefinitions.createMercator(n, CommonCRS.WGS84.geographic(), pseudo);
+                            cache[index] = crs;
+                        }
+                    }
+                    return crs;
+                }
+            }
+            /*
+             * Cases that we can delegate to `CommonCRS`. That enumeration have its own cache.
+             */
             if ((kind & (ELLIPSOID | DATUM | CRS)) != 0) {
                 for (final CommonCRS crs : CommonCRS.values()) {
                     /*

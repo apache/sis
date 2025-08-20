@@ -46,6 +46,11 @@ public final class Mercator1SP extends AbstractMercator {
     public static final String IDENTIFIER = "9804";
 
     /**
+     * The {@value} string, which is the <abbr>EPSG</abbr> name for this projection.
+     */
+    public static final String NAME = "Mercator (variant A)";
+
+    /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * In theory, this parameter should not be used and its value should be 0 in all cases.
      * This parameter is included in the EPSG dataset for completeness in CRS labeling only.
@@ -128,7 +133,7 @@ public final class Mercator1SP extends AbstractMercator {
 
         PARAMETERS = builder
                 .addIdentifier(              IDENTIFIER)                    // The ellipsoidal case
-                .addName(                    "Mercator (variant A)")        // Starting from EPSG version 7.6
+                .addName(                    NAME)                          // Starting from EPSG version 7.6
                 .addName(                    "Mercator (1SP)")              // Prior to EPSG version 7.6
                 .addName(Citations.OGC,      "Mercator_1SP")
                 .addName(Citations.GEOTIFF,  "CT_Mercator")

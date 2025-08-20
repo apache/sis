@@ -179,6 +179,8 @@ public final class CRS extends Static {
      *   <tr><td>CRS:83</td>        <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:84</td>        <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:88</td>        <td>{@link CommonCRS.Vertical#NAVD88 NAVD88}</td><td>Vertical</td><td>North American Vertical Datum 1988 height</td></tr>
+     *   <tr><td>EPSG:3395</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / World Mercator</td></tr>
+     *   <tr><td>EPSG:3857</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / Pseudo-Mercator</td></tr>
      *   <tr><td>EPSG:4230</td>     <td>{@link CommonCRS#ED50   ED50}</td>   <td>Geographic</td>      <td>European Datum 1950</td></tr>
      *   <tr><td>EPSG:4258</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference System 1989</td></tr>
      *   <tr><td>EPSG:4267</td>     <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>North American Datum 1927</td></tr>
