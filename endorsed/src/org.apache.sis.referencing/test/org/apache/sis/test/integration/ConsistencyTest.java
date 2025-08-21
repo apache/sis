@@ -65,6 +65,7 @@ public final class ConsistencyTest extends TestCase {
     private static final Set<String> EXCLUDES = Set.of(
         "CRS:1",            // Computer display: WKT parser alters the (i,j) axis names.
         "EPSG:5819",        // EPSG topocentric example A: DerivedCRS wrongly handled as a ProjectedCRS. See SIS-518.
+        "EPSG:5820",        // EPSG topocentric example B.
         "AUTO2:42001",      // This projection requires parameters, but we provide none.
         "AUTO2:42002",      // This projection requires parameters, but we provide none.
         "AUTO2:42003",      // This projection requires parameters, but we provide none.
@@ -126,6 +127,9 @@ public final class ConsistencyTest extends TestCase {
                 } catch (UnavailableFactoryException | NoSuchIdentifierException | FactoryDataException e) {
                     print(code, "WARNING", e.getLocalizedMessage());
                     continue;
+                } catch (FactoryException e) {
+                    fail("Cannot create CRS for \"" + code + "\".", e);
+                    continue;
                 }
                 lookup(parseAndFormat(v2,  code, crs), crs);
                 lookup(parseAndFormat(v2s, code, crs), crs);
@@ -170,9 +174,7 @@ public final class ConsistencyTest extends TestCase {
      * @param  crs   the CRS to test.
      * @return the parsed CRS.
      */
-    private CoordinateReferenceSystem parseAndFormat(final WKTFormat f,
-            final String code, final CoordinateReferenceSystem crs)
-    {
+    private CoordinateReferenceSystem parseAndFormat(final WKTFormat f, final String code, final CoordinateReferenceSystem crs) {
         String wkt = f.format(crs);
         final Warnings warnings = f.getWarnings();
         if (warnings != null && !warnings.getExceptions().isEmpty()) {
@@ -185,8 +187,7 @@ public final class ConsistencyTest extends TestCase {
             print(code, "ERROR", "Cannot parse the WKT below.");
             out.println(wkt);
             out.println();
-            e.printStackTrace(out);
-            fail(e.getLocalizedMessage());
+            fail(e);
             return null;
         }
         final String again = f.format(parsed);

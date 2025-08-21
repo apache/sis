@@ -25,7 +25,10 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.privy.LegacyNamespaces;
@@ -216,6 +219,21 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
+     * Returns the realization method if it was explicitly specified, or otherwise tries to guess it.
+     * This method may return {@code null} if it cannot guess the method. This is used for compatibility
+     * with legacy formats such as WKT 1 or GML 3.1, before realization method became a formal property.
+     */
+    private RealizationMethod getOrGuessMethod(final FormattableObject parent) {
+        return getRealizationMethod().orElseGet(() -> {
+            CoordinateSystemAxis axis = null;
+            if (parent instanceof CoordinateReferenceSystem) {
+                axis = ((CoordinateReferenceSystem) parent).getCoordinateSystem().getAxis(0);
+            }
+            return VerticalDatumTypes.fromDatum(getName().getCode(), getAlias(), axis);
+        });
+    }
+
+    /**
      * A vertical reference frame in which some of the defining parameters have time dependency.
      * The parameter values are valid at the time given by the
      * {@linkplain #getFrameReferenceEpoch() frame reference epoch}.
@@ -368,7 +386,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
-            formatter.append(VerticalDatumTypes.toLegacyCode(method));
+            formatter.append(VerticalDatumTypes.toLegacyCode(getOrGuessMethod(formatter.getEnclosingElement(1))));
             return WKTKeywords.Vert_Datum;
         }
         return formatter.shortOrLong(WKTKeywords.VDatum, WKTKeywords.VerticalDatum);
@@ -410,7 +428,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         if (Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2)) {
             return null;
         }
-        return VerticalDatumTypes.toLegacyName(method);
+        return VerticalDatumTypes.toLegacyName(getOrGuessMethod(null));
     }
 
     /**

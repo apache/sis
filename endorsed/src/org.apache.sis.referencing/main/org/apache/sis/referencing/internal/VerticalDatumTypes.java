@@ -246,6 +246,7 @@ public final class VerticalDatumTypes {
                     switch (abbreviation.charAt(0)) {
                         case 'h': method = ellipsoidal(); break;
                         case 'H': method = RealizationMethod.GEOID; break;
+                        case 'd': // Fall through
                         case 'D': method = RealizationMethod.TIDAL; dir = AxisDirection.DOWN; break;
                         default:  return null;
                     }
@@ -272,9 +273,13 @@ public final class VerticalDatumTypes {
             if (CharSequences.equalsFiltered("Mean Sea Level", name, Characters.Filter.LETTERS_AND_DIGITS, true)) {
                 return RealizationMethod.TIDAL;
             }
-            if (name.regionMatches(true, 0, "geoid", 0, 5)) {
-                return RealizationMethod.GEOID;
-            }
+            int i = 0;
+            do {
+                if (name.regionMatches(true, i, "geoid", 0, 5)) {
+                    return RealizationMethod.GEOID;
+                }
+                i = name.indexOf(' ', i) + 1;
+            } while (i > 0);
         }
         return null;
     }

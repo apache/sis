@@ -113,7 +113,8 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
                 "    PARAMETER[“Central parallel”, 41.75]],\n" +       // Wrong parameter.
                 "  CS[Cartesian, 2],\n" +
                 "    AXIS[“(Y)”, north],\n" +
-                "    AXIS[“(X)”, east]]"),
+                "    AXIS[“(X)”, east],\n" +
+                "  UNIT[“metre”, 1]]"),
                 "Should not have parsed a WKT with wrong projection parameter.");
         assertMessageContains(e, "Central parallel");
     }

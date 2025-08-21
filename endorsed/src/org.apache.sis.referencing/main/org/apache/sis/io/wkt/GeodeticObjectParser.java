@@ -683,13 +683,16 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  dimension    the minimal number of dimensions. Can be 1 if unknown.
      * @param  isWKT1       {@code true} if the parent element is an element from the WKT 1 standard.
      * @param  defaultUnit  the contextual unit (usually {@code Units.METRE} or {@code Units.RADIAN}), or {@code null} if unknown.
-     * @param  datum        the datum of the enclosing CRS, or {@code null} if unknown.
+     * @param  geodetic     whether the datum of the enclosing <abbr>CRS</abbr> is geodetic.
+     * @param  vertical     the realization method (formally known as vertical datum type), or {@code null} if unknown or not applicable.
      * @return the {@code "CS"}, {@code "UNIT"} and/or {@code "AXIS"} elements as a Coordinate System, or {@code null}.
      * @throws ParseException if an element cannot be parsed.
      * @throws FactoryException if the factory cannot create the coordinate system.
      */
     private CoordinateSystem parseCoordinateSystem(final Element parent, String type, int dimension,
-            final boolean isWKT1, final Unit<?> defaultUnit, final Datum datum) throws ParseException, FactoryException
+                                                   final boolean isWKT1, final Unit<?> defaultUnit,
+                                                   final boolean geodetic, final RealizationMethod vertical)
+            throws ParseException, FactoryException
     {
         axisOrder.clear();
         final boolean is3D = (dimension >= 3);
@@ -774,7 +777,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * are for two- or three-dimensional Projected or three-dimensional Geocentric CRS.
                  */
                 case WKTKeywords.Cartesian: {
-                    if (datum != null && !(datum instanceof GeodeticDatum)) {
+                    if (!geodetic) {
                         throw parent.missingComponent(WKTKeywords.Axis);
                     }
                     if (defaultUnit == null) {
@@ -829,20 +832,17 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     z         = "h";
                     nz        = "Height";
                     direction = AxisDirection.UP;
-                    if (datum instanceof VerticalDatum) {
-                        final RealizationMethod vt = ((VerticalDatum) datum).getRealizationMethod().orElse(null);
-                        if (vt == RealizationMethod.GEOID) {
-                            nz = AxisNames.GRAVITY_RELATED_HEIGHT;
-                            z  = "H";
-                        } else if (vt == RealizationMethod.TIDAL) {
-                            direction = AxisDirection.DOWN;
-                            nz = AxisNames.DEPTH;
-                            z  = "D";
-                        } else if (VerticalDatumTypes.ellipsoidal(vt)) {
-                            // Not allowed by ISO 19111 as a standalone axis, but SIS is
-                            // tolerant to this case since it is sometimes hard to avoid.
-                            nz = AxisNames.ELLIPSOIDAL_HEIGHT;
-                        }
+                    if (vertical == RealizationMethod.GEOID) {
+                        nz = AxisNames.GRAVITY_RELATED_HEIGHT;
+                        z  = "H";
+                    } else if (vertical == RealizationMethod.TIDAL) {
+                        direction = AxisDirection.DOWN;
+                        nz = AxisNames.DEPTH;
+                        z  = "D";
+                    } else if (VerticalDatumTypes.ellipsoidal(vertical)) {
+                        // Not allowed by ISO 19111 as a standalone axis, but SIS is
+                        // tolerant to this case since it is sometimes hard to avoid.
+                        nz = AxisNames.ELLIPSOIDAL_HEIGHT;
                     }
                     break;
                 }
@@ -894,7 +894,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (type != null && !type.isEmpty()) {
                 final int c = type.codePointAt(0);
                 buffer.appendCodePoint(Character.toUpperCase(c))
-                        .append(type, Character.charCount(c), type.length()).append(' ');
+                      .append(type, Character.charCount(c), type.length())
+                      .append(' ');
             }
             name = AxisDirections.appendTo(buffer.append("CS"), axes);
         }
@@ -1643,7 +1644,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final CRSFactory crsFactory = factories.getCRSFactory();
         try {
-            final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, datum);
+            final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, false, null);
             final Map<String,Object> properties = parseMetadataAndClose(element, name, datum);
             if (baseCRS != null) {
                 properties.put(Legacy.DERIVED_TYPE_KEY, EngineeringCRS.class);
@@ -1675,7 +1676,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Unit<?> unit  = parseUnit(element);
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, false, unit, datum);
+            cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, false, unit, false, null);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof AffineCS) {
                 return new DefaultImageCRS(properties, datum, (AffineCS) cs);
@@ -1824,7 +1825,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final CRSFactory crsFactory = factories.getCRSFactory();
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, csType, dimension, isWKT1, csUnit, null);
+            cs = parseCoordinateSystem(element, csType, dimension, isWKT1, csUnit, true, null);
             if (baseCRS != null) {
                 final Map<String,?> properties = parseMetadataAndClose(element, name, null);
                 return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
@@ -1924,7 +1925,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, unit, datum);
+            cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, unit, false, datum.getRealizationMethod().orElse(null));
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof VerticalCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
@@ -2005,7 +2006,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, WKTKeywords.temporal, 1, false, unit, datum);
+            cs = parseCoordinateSystem(element, WKTKeywords.temporal, 1, false, unit, false, null);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof TimeCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
@@ -2067,7 +2068,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, WKTKeywords.parametric, 1, false, unit, datum);
+            cs = parseCoordinateSystem(element, WKTKeywords.parametric, 1, false, unit, false, null);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof ParametricCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
@@ -2111,55 +2112,49 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (element == null) {
             return null;
         }
-        final boolean   isWKT1 = element.getKeywordIndex() == 2;                // Index of "ProjCS" above.
-        final String    name   = element.pullString("name");
-        final SingleCRS geoCRS = parseGeodeticCRS(MANDATORY, element, 2, WKTKeywords.ellipsoidal);
-        if (!(geoCRS instanceof GeodeticCRS)) {
-            throw new UnparsableObjectException(errorLocale, Errors.Keys.IllegalCRSType_1,
-                    new Object[] {geoCRS.getClass()}, element.offset);
-        }
-        /*
-         * Parse the projection parameters. If a default linear unit is specified, it will apply to
-         * all parameters that do not specify explicitly a LengthUnit. If no such crs-wide unit was
-         * specified, then the default will be degrees.
-         *
-         * More specifically §9.3.4 in the specification said about the default units:
-         *
-         *    - lengths shall be given in the unit for the projected CRS axes.
-         *    - angles shall be given in the unit for the base geographic CRS of the projected CRS.
-         */
-        Unit<Length> csUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
-        final Unit<Length> linearUnit;
-        final Unit<Angle>  angularUnit;
-        if (isWKT1 && usesCommonUnits) {
-            linearUnit  = Units.METRE;
-            angularUnit = Units.DEGREE;
-        } else {
-            linearUnit  = csUnit;
-            angularUnit = AxisDirections.getAngularUnit(geoCRS.getCoordinateSystem(), Units.DEGREE);
-        }
-        final Conversion conversion = parseDerivingConversion(MANDATORY, element,
-                isWKT1 ? null : WKTKeywords.Conversion, linearUnit, angularUnit);
-        /*
-         * Parse the coordinate system. The linear unit must be specified somewhere, either explicitly in each axis
-         * or for the whole CRS with the above `csUnit` value. If `csUnit` is null, then an exception will be thrown
-         * with a message like "A LengthUnit component is missing in ProjectedCRS".
-         *
-         * However, we make an exception if we are parsing a BaseProjCRS, since the coordinate system is unspecified
-         * in the WKT of base CRS. In this case only, we will default to metre.
-         */
+        final boolean isWKT1 = element.getKeywordIndex() == 2;                  // Index of "ProjCS" above.
+        final String  name   = element.pullString("name");
+        Unit<Length>  csUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
         if (csUnit == null && isBaseCRS) {
             csUnit = Units.METRE;
+            /*
+             * Except when parsing a BaseProjCRS, the linear unit must be specified somewhere,
+             * either explicitly in each axis or for the whole CRS with the `csUnit` value.
+             * If `csUnit` is null, an exception will be thrown by `parseCoordinateSystem(…)`
+             * with a message like "A LengthUnit component is missing in ProjectedCRS".
+             */
         }
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, isWKT1, csUnit, geoCRS.getDatum());
-            final Map<String,?> properties = parseMetadataAndClose(element, name, conversion);
+            cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, isWKT1, csUnit, true, null);
             if (cs instanceof CartesianCS) {
+                final SingleCRS geoCRS = parseGeodeticCRS(MANDATORY, element, cs.getDimension(), WKTKeywords.ellipsoidal);
+                if (!(geoCRS instanceof GeodeticCRS)) {
+                    throw new UnparsableObjectException(errorLocale, Errors.Keys.IllegalCRSType_1,
+                            new Object[] {geoCRS.getClass()}, element.offset);
+                }
                 /*
-                 * TODO: if the CartesianCS is three-dimensional, we need to ensure that the base CRS is also
-                 * three-dimensional. We could do that by parsing the CS before to invoke `parseGeodeticCRS`.
+                 * Parse the projection parameters. If a default linear unit is specified, it will apply to
+                 * all parameters that do not specify explicitly a LengthUnit. If no such crs-wide unit was
+                 * specified, then the default will be degrees.
+                 *
+                 * More specifically §9.3.4 in the specification said about the default units:
+                 *
+                 *    - lengths shall be given in the unit for the projected CRS axes.
+                 *    - angles shall be given in the unit for the base geographic CRS of the projected CRS.
                  */
+                final Unit<Length> linearUnit;
+                final Unit<Angle>  angularUnit;
+                if (isWKT1 && usesCommonUnits) {
+                    linearUnit  = Units.METRE;
+                    angularUnit = Units.DEGREE;
+                } else {
+                    linearUnit  = csUnit;
+                    angularUnit = AxisDirections.getAngularUnit(geoCRS.getCoordinateSystem(), Units.DEGREE);
+                }
+                final Conversion conversion = parseDerivingConversion(MANDATORY, element,
+                        isWKT1 ? null : WKTKeywords.Conversion, linearUnit, angularUnit);
+                final Map<String,?> properties = parseMetadataAndClose(element, name, conversion);
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 return crsFactory.createProjectedCRS(properties, (GeodeticCRS) geoCRS, conversion, (CartesianCS) cs);
             }

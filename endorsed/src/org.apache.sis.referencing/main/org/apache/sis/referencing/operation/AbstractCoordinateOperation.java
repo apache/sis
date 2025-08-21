@@ -830,7 +830,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     public boolean equals(final Object object, ComparisonMode mode) {
         if (super.equals(object, mode)) {
             if (mode == ComparisonMode.STRICT) {
-                final AbstractCoordinateOperation that = (AbstractCoordinateOperation) object;
+                final var that = (AbstractCoordinateOperation) object;
                 if (Objects.equals(sourceCRS,                   that.sourceCRS)        &&
                     Objects.equals(interpolationCRS,            that.interpolationCRS) &&
                     Objects.equals(transform,                   that.transform)        &&
@@ -854,7 +854,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                  *   - Scope, domain and accuracy properties only if NOT in "ignore metadata" mode.
                  *   - Interpolation CRS in all cases (regardless if ignoring metadata or not).
                  */
-                final CoordinateOperation that = (CoordinateOperation) object;
+                final var that = (CoordinateOperation) object;
                 if ((mode.isIgnoringMetadata() ||
                     (deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))) &&
                      deepEquals(getInterpolationCRS(),            that.getInterpolationCRS(), mode))

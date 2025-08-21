@@ -253,7 +253,7 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
         /*
          * Format the coordinate system, except if this CRS is the base CRS of an AbstractDerivedCRS in WKT 2 format.
          * This is because ISO 19162 omits the coordinate system definition of enclosed base CRS in order to simplify
-         * the WKT. The 'formatCS(…)' method may write axis unit before or after the axes depending on whether we are
+         * the WKT. The `formatCS(…)` method may write axis unit before or after the axes depending on whether we are
          * formatting WKT version 1 or 2 respectively.
          *
          * Note that even if we do not format the CS, we may still write the units if we are formatting in "simplified"

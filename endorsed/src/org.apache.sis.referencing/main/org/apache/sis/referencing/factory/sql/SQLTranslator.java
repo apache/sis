@@ -475,10 +475,12 @@ check:  for (;;) {
                     /*
                      * Detect if the tables use enumeration (on PostgreSQL database) instead of VARCHAR.
                      * Enumerations appear in various tables, including in a WHERE clause for the Alias table.
+                     * Note: we cannot rely on `result.getInt(Reflection.DATA_TYPE)` because the declared type
+                     * of enumeration is `Types.VARCHAR` (at least on PostgresSQL)`.
                      */
                     if (ENUMERATION_COLUMN.equals(column)) {
                         String type = result.getString(Reflection.TYPE_NAME);
-                        if (!CharSequences.startsWith(type, "VARCHAR", true)) {
+                        if (!(CharSequences.startsWith(type, "VARCHAR", true) || CharSequences.startsWith(type, "CHARACTER", true))) {
                             if (!type.contains(identifierQuote)) {
                                 type = identifierQuote + type + identifierQuote;
                             }

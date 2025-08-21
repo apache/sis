@@ -567,9 +567,7 @@ next:       for (int i=0; i <= limit; i++) {
     public static AxisDirection find(final String name, final AxisDirection[] directions) {
         for (final AxisDirection candidate : directions) {
             final String identifier = candidate.name();
-            if (equalsFiltered(name, identifier, Characters.Filter.LETTERS_AND_DIGITS, true)
-                    || isAcronymForWords(name, identifier))
-            {
+            if (equalsFiltered(name, identifier, Characters.Filter.LETTERS_AND_DIGITS, true) || isAcronymForWords(name, identifier)) {
                 return candidate;
             }
         }
