@@ -149,6 +149,7 @@ public final class VerticalDatumTypes {
                 case ELLIPSOIDAL: return 2002;      // CS_VD_Ellipsoidal
                 case BAROMETRIC:  return 2003;      // CS_VD_AltitudeBarometric
                 case "GEOID":     return 2005;      // CS_VD_GeoidModelDerived
+                case "LEVELLING": // From ISO: "adjustment of a levelling network fixed to one or more tide gauges".
                 case "TIDAL":     return 2006;      // CS_VD_Depth
             }
         }

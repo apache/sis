@@ -798,6 +798,7 @@ public final class CRS extends Static {
      * @return the accuracy estimation (always in meters), or NaN if unknown.
      *
      * @see #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
+     * @see DatumOrEnsemble#getAccuracy(IdentifiedObject)
      *
      * @since 0.7
      */

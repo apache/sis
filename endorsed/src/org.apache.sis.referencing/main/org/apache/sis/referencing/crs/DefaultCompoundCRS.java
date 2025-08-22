@@ -313,7 +313,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Compound CRS do not have datum.
      */
     @Override
-    final Datum getDatum() {
+    final Datum getDatumOrEnsemble(final boolean legacy) {
         return null;
     }
 

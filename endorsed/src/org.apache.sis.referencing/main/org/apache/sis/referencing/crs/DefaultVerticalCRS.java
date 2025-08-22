@@ -26,6 +26,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -217,6 +218,15 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
     @Override
     public DatumEnsemble<VerticalDatum> getDatumEnsemble() {
         return super.getDatumEnsemble();
+    }
+
+    /**
+     * Returns the datum or a view of the ensemble as a datum.
+     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
+     */
+    @Override
+    final VerticalDatum getDatumOrEnsemble(final boolean legacy) {
+        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
     }
 
     /**

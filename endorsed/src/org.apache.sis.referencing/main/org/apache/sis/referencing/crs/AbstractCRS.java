@@ -33,6 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
@@ -282,20 +283,31 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns the datum, or {@code null} if none.
+     * Returns the datum or a view of the ensemble as a datum, or {@code null} if none.
+     * The {@code legacy} argument is usually {@code false}, except when formatting in a legacy <abbr>WKT</abbr> format.
      *
-     * This property does not exist in {@code CoordinateReferenceSystem} interface — it is defined in the
-     * {@link SingleCRS} sub-interface instead. This method is defined here for the convenience of the
-     * {@link #formatTo(Formatter)} method implementation.
-     *
+     * @param  legacy  whether to allow a view of the ensemble as a datum for interoperability with legacy standards.
      * @return the datum, or {@code null} if none.
      */
-    Datum getDatum() {
+    Datum getDatumOrEnsemble(final boolean legacy) {
         /*
          * User could provide his own CRS implementation outside this SIS package, so we have
          * to check for SingleCRS interface. But all SIS classes override this implementation.
          */
-        return (this instanceof SingleCRS) ? ((SingleCRS) this).getDatum() : null;
+        if (this instanceof SingleCRS) {
+            final var crs = (SingleCRS) this;
+            final Datum datum = crs.getDatum();
+            if (datum != null) {
+                return datum;
+            }
+            if (legacy) {
+                final var ensemble = crs.getDatumEnsemble();
+                if (ensemble instanceof Datum) {
+                    return (Datum) ensemble;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -454,7 +466,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     protected String formatTo(final Formatter formatter) {
         final String keyword = super.formatTo(formatter);
         formatter.newLine();
-        formatter.append(WKTUtilities.toFormattable(getDatum()));
+        formatter.append(AbstractDatum.castOrCopy(getDatumOrEnsemble(true)));     // For the conversion of ensemble to datum.
         formatter.newLine();
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;

@@ -99,7 +99,7 @@ public final class ConsistencyTest extends TestCase {
         final CoordinateReferenceSystem crs = CRS.forCode(code);
         final var format = new WKTFormat();
         format.setConvention(Convention.WKT2);
-        lookup(parseAndFormat(format, code, crs), crs);
+        lookup(parseAndFormat(format, code, crs), crs, true);
     }
 
     /**
@@ -131,8 +131,8 @@ public final class ConsistencyTest extends TestCase {
                     fail("Cannot create CRS for \"" + code + "\".", e);
                     continue;
                 }
-                lookup(parseAndFormat(v2,  code, crs), crs);
-                lookup(parseAndFormat(v2s, code, crs), crs);
+                lookup(parseAndFormat(v2,  code, crs), crs, false);
+                lookup(parseAndFormat(v2s, code, crs), crs, false);
                 /*
                  * There is more information lost in WKT 1 than in WKT 2, so we cannot test everything.
                  * For example, we cannot format fully three-dimensional geographic CRS because the unit
@@ -254,7 +254,7 @@ public final class ConsistencyTest extends TestCase {
     /**
      * Verifies that {@code IdentifiedObjects.lookupURN(…)} on the parsed CRS can find back the original CRS.
      */
-    private void lookup(final CoordinateReferenceSystem parsed, final CoordinateReferenceSystem crs) throws FactoryException {
+    private void lookup(final CoordinateReferenceSystem parsed, final CoordinateReferenceSystem crs, final boolean lossless) throws FactoryException {
         final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
         final String urn = IdentifiedObjects.toURN(crs.getClass(), id);
         assertNotNull(urn, crs.getName().getCode());
@@ -270,6 +270,13 @@ public final class ConsistencyTest extends TestCase {
             toStandardUnit(parsed.getCoordinateSystem().getAxis(0).getUnit())))
         {
             assertTrue(Utilities.deepEquals(crs, parsed, ComparisonMode.DEBUG), urn);
+            /*
+             * The lookup operaiton may fail if the CRS has a vertical component parsed from
+             * a format older than ISO 19162:2019, because of missing "realization method".
+             */
+            if (!lossless) {
+                if (CRS.getVerticalComponent(crs, false) != null) return;
+            }
             /*
              * Now test the lookup operation. Since the parsed CRS has an identifier,
              * that lookup operation should not do a lot of work actually.

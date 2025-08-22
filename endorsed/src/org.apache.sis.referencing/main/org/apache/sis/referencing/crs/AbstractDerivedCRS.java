@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -175,14 +174,6 @@ abstract class AbstractDerivedCRS extends AbstractCRS implements DerivedCRS {
                     Errors.Keys.IllegalArgumentValue_2, "conversion", conversion.getName()), e);
         }
     }
-
-    /**
-     * Returns the datum of the base CRS.
-     *
-     * @return the datum of the base CRS.
-     */
-    @Override
-    public abstract Datum getDatum();
 
     /**
      * Returns the conversion from the base CRS to this CRS.
