@@ -477,7 +477,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
             } else if (ArraysExt.contains(defaultToStandardParallel1, param)) {
                 return "Standard parallel 1";
             } else if (ArraysExt.contains(defaultToAzimuth, param)) {
-                return "Azimuth of initial line";
+                return "Azimuth at projection centre";
             } else if (param.getValueClass() == Boolean.class) {
                 defaultValue = Boolean.FALSE;
             }

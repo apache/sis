@@ -292,12 +292,12 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         }
         switch (mode) {
             case STRICT: {
-                final AbstractSingleOperation that = (AbstractSingleOperation) object;
+                final var that = (AbstractSingleOperation) object;
                 return Objects.equals(method,     that.method) &&
                        Objects.equals(parameters, that.parameters);
             }
             case BY_CONTRACT: {
-                final SingleOperation that = (SingleOperation) object;
+                final var that = (SingleOperation) object;
                 return deepEquals(getMethod(),          that.getMethod(),          mode) &&
                        deepEquals(getParameterValues(), that.getParameterValues(), mode);
             }

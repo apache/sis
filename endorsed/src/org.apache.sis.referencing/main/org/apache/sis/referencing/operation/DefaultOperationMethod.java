@@ -414,7 +414,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             switch (mode) {
                 case STRICT: {
                     // Name and identifiers have been compared by super.equals(object, mode).
-                    final DefaultOperationMethod that = (DefaultOperationMethod) object;
+                    final var that = (DefaultOperationMethod) object;
                     return Objects.equals(this.formula,    that.formula) &&
                            Objects.equals(this.parameters, that.parameters);
                 }
@@ -434,7 +434,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                      * identifiers shall have precedence over name at least in the case of operation methods
                      * and parameters.
                      */
-                    final OperationMethod that = (OperationMethod) object;
+                    final var that = (OperationMethod) object;
                     final Boolean match = Identifiers.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
                     if (match != null) {
                         if (!match) {
@@ -448,7 +448,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                     break;
                 }
             }
-            final OperationMethod that = (OperationMethod) object;
+            final var that = (OperationMethod) object;
             return Utilities.deepEquals(getParameters(), that.getParameters(), mode);
         }
         return false;

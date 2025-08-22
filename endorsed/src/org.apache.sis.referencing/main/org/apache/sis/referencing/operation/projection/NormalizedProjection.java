@@ -300,6 +300,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * <p>Some common names for this parameter are:</p>
          * <ul>
          *   <li>Scale factor at natural origin</li>
+         *   <li>Scale factor at projection centre</li>
          *   <li>Scale factor on initial line</li>
          *   <li>Scale factor on pseudo standard parallel</li>
          * </ul>
