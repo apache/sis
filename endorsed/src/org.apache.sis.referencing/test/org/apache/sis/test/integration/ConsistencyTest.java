@@ -22,6 +22,7 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import org.opengis.metadata.Identifier;
+import org.opengis.util.CodeList;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -33,12 +34,15 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.UnformattableObjectException;
-import org.apache.sis.util.iso.DefaultNameSpace;
+
+// Specific to the geoapi-3.1 and 4.0 branches:
+import org.opengis.referencing.crs.VerticalCRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;
@@ -62,7 +66,7 @@ public final class ConsistencyTest extends TestCase {
     /**
      * Codes to exclude for now.
      */
-    private static final Set<String> EXCLUDES = Set.of(
+    private final Set<String> EXCLUDES = Set.of(
         "CRS:1",            // Computer display: WKT parser alters the (i,j) axis names.
         "EPSG:5819",        // EPSG topocentric example A: DerivedCRS wrongly handled as a ProjectedCRS. See SIS-518.
         "EPSG:5820",        // EPSG topocentric example B.
@@ -71,6 +75,16 @@ public final class ConsistencyTest extends TestCase {
         "AUTO2:42003",      // This projection requires parameters, but we provide none.
         "AUTO2:42004",      // This projection requires parameters, but we provide none.
         "AUTO2:42005");     // This projection requires parameters, but we provide none.
+
+    /**
+     * Elements to ignore when comparing the <abbr>WKT</abbr> strings.
+     * We ignore the vertical extent because in the current <abbr>SIS</abbr> implementation,
+     * the unit of measurement is inferred from the <abbr>CRS</abbr> and there is no east way
+     * to rebuild the <abbr>CRS</abbr> at parsing time.
+     */
+    private final String[] WKT_TO_IGNORE = {
+        "VERTICALEXTENT"
+    };
 
     /**
      * Width of the code columns in the warnings formatted by {@link #print(String, String, Object)}.
@@ -99,7 +113,27 @@ public final class ConsistencyTest extends TestCase {
         final CoordinateReferenceSystem crs = CRS.forCode(code);
         final var format = new WKTFormat();
         format.setConvention(Convention.WKT2);
-        lookup(parseAndFormat(format, code, crs), crs, true);
+        lookup(parseAndFormat(format, code, crs), crs);
+    }
+
+    /**
+     * Returns whether testing the given <abbr>CRS</abbr> requires the 2019 version of <abbr>WKT</abbr> format.
+     * We skip the vertical datum having the "local" realization method because this information is lost during
+     * the roundtrip with WKT or WKT 2 version 2015, and the WKT parser tries to guess the method from the axis
+     * abbreviation "d" which result in "tidal".
+     */
+    private static boolean requiresWKT2019(final CoordinateReferenceSystem crs) {
+        final VerticalCRS c = CRS.getVerticalComponent(crs, false);
+        if (c != null) {
+            final var datum = c.getDatum();
+            if (datum != null) {
+                final String method = datum.getRealizationMethod().map(CodeList::name).orElse("");
+                if (method.equalsIgnoreCase("local")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -131,13 +165,16 @@ public final class ConsistencyTest extends TestCase {
                     fail("Cannot create CRS for \"" + code + "\".", e);
                     continue;
                 }
-                lookup(parseAndFormat(v2,  code, crs), crs, false);
-                lookup(parseAndFormat(v2s, code, crs), crs, false);
+                lookup(parseAndFormat(v2,  code, crs), crs);
+                lookup(parseAndFormat(v2s, code, crs), crs);
                 /*
                  * There is more information lost in WKT 1 than in WKT 2, so we cannot test everything.
                  * For example, we cannot format fully three-dimensional geographic CRS because the unit
                  * is not the same for all axes. We cannot format neither some axis directions.
                  */
+                if (requiresWKT2019(crs)) {
+                    continue;
+                }
                 try {
                     parseAndFormat(v1, code, crs);
                 } catch (UnformattableObjectException e) {
@@ -226,8 +263,15 @@ public final class ConsistencyTest extends TestCase {
          */
         final int length = StrictMath.min(expectedLines.length, actualLines.length);
         try {
-            for (int i=0; i<length; i++) {
-                assertEquals(expectedLines[i], actualLines[i], code);
+skip:       for (int i=0; i<length; i++) {
+                final CharSequence expected = expectedLines[i];
+                final CharSequence actual   = actualLines[i];
+                for (final String ignore : WKT_TO_IGNORE) {
+                    if (expected.toString().contains(ignore) && actual.toString().contains(ignore)) {
+                        continue skip;
+                    }
+                }
+                assertEquals(expected, actual, code);
             }
         } catch (AssertionError e) {
             print(code, "ERROR", "WKT are not equal.");
@@ -254,7 +298,7 @@ public final class ConsistencyTest extends TestCase {
     /**
      * Verifies that {@code IdentifiedObjects.lookupURN(…)} on the parsed CRS can find back the original CRS.
      */
-    private void lookup(final CoordinateReferenceSystem parsed, final CoordinateReferenceSystem crs, final boolean lossless) throws FactoryException {
+    private void lookup(final CoordinateReferenceSystem parsed, final CoordinateReferenceSystem crs) throws FactoryException {
         final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
         final String urn = IdentifiedObjects.toURN(crs.getClass(), id);
         assertNotNull(urn, crs.getName().getCode());
@@ -270,13 +314,6 @@ public final class ConsistencyTest extends TestCase {
             toStandardUnit(parsed.getCoordinateSystem().getAxis(0).getUnit())))
         {
             assertTrue(Utilities.deepEquals(crs, parsed, ComparisonMode.DEBUG), urn);
-            /*
-             * The lookup operaiton may fail if the CRS has a vertical component parsed from
-             * a format older than ISO 19162:2019, because of missing "realization method".
-             */
-            if (!lossless) {
-                if (CRS.getVerticalComponent(crs, false) != null) return;
-            }
             /*
              * Now test the lookup operation. Since the parsed CRS has an identifier,
              * that lookup operation should not do a lot of work actually.

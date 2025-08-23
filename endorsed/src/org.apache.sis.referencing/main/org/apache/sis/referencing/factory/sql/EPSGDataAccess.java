@@ -43,6 +43,7 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.temporal.Temporal;
@@ -929,6 +930,7 @@ next:   for (int i=0; i<codes.length; i++) {
      * @param  caller       the caller, used for reporting a warning in case of parsing error.
      * @return the temporal at the specified column, or {@code null}.
      * @throws SQLException if an error occurred while querying the database.
+     * @throws DateTimeException if the date cannot be parsed.
      */
     private static Temporal getOptionalTemporal(final ResultSet result, final int columnIndex, final String caller)
             throws SQLException
@@ -1816,7 +1818,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateReferenceSystem.class, code, exception);
         } catch (ClassCastException exception) {
-            throw new FactoryDataException(error().getString(exception.getLocalizedMessage()), exception);
+            throw new FactoryDataException(exception.getLocalizedMessage(), exception);
         } finally {
             currentSingletonQuery = previousSingletonQuery;
         }
@@ -1984,6 +1986,8 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             }
         } catch (SQLException exception) {
             throw databaseFailure(Datum.class, code, exception);
+        } catch (DateTimeException exception) {
+            throw new FactoryDataException(exception.getLocalizedMessage(), exception);
         } finally {
             currentSingletonQuery = previousSingletonQuery;
         }
@@ -2414,6 +2418,8 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             }
         } catch (SQLException exception) {
             throw databaseFailure(Extent.class, code, exception);
+        } catch (DateTimeException exception) {
+            throw new FactoryDataException(exception.getLocalizedMessage(), exception);
         } finally {
             currentSingletonQuery = previousSingletonQuery;
         }
