@@ -85,6 +85,7 @@ import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
@@ -417,8 +418,8 @@ public final class CRS extends Static {
      *     {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCoordinateReferenceSystem(String) create a CRS}
      *     for that identifier, then:
      *     <ul>
-     *       <li>If the CRS defined by the authority is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
-     *         to the given CRS, then this method returns silently the <em>authoritative</em> CRS.</li>
+     *       <li>If the CRS defined by the authority is {@linkplain #equivalent equivalent} to the given CRS,
+     *         then this method returns silently the <em>authoritative</em> CRS.</li>
      *       <li>Otherwise if the CRS defined by the authority is equal, ignoring axis order and units, to the given CRS,
      *         then this method returns a <em>new</em> CRS derived from the authoritative one but with same
      *         {@linkplain org.apache.sis.referencing.cs.AxesConvention axes convention} than the given CRS.
@@ -431,8 +432,8 @@ public final class CRS extends Static {
      *       {@linkplain org.apache.sis.referencing.factory.IdentifiedObjectFinder searches for an equivalent CRS}
      *       defined by the authority factory. If such CRS is found, then:
      *     <ul>
-     *       <li>If the CRS defined by the authority is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
-     *         to the given CRS, then this method returns silently the <em>authoritative</em> CRS.</li>
+     *       <li>If the CRS defined by the authority is {@linkplain #equivalent equivalent} to the given CRS,
+     *         then this method returns silently the <em>authoritative</em> CRS.</li>
      *       <li>Otherwise if the CRS defined by the authority is equal, ignoring axis order and units, to the given CRS,
      *         then this method returns silently a <em>new</em> CRS derived from the authoritative one but with same
      *         {@linkplain org.apache.sis.referencing.cs.AxesConvention axes convention} than the given CRS.</li>
@@ -478,6 +479,31 @@ public final class CRS extends Static {
             }
         }
         return crs;
+    }
+
+    /**
+     * Returns whether the given Coordinate Reference Systems can be considered as equivalent.
+     * Two <abbr>CRS</abbr>s are considered equivalent if they may have some differences in metadata or data structure,
+     * but replacing one <abbr>CRS</abbr> by the other should not change the input and output coordinate values in operations.
+     *
+     * <h4>Implementation note</h4>
+     * This is a convenience method for the following method call:
+     *
+     * {@snippet lang="java" :
+     *     return deepEquals(object1, object2, ComparisonMode.IGNORE_METADATA);
+     *     }
+     *
+     * @param  object1  the first object to compare (may be null).
+     * @param  object2  the second object to compare (may be null).
+     * @return {@code true} if both objects are equivalent.
+     *
+     * @see ComparisonMode#COMPATIBILITY
+     * @see Utilities#equalsIgnoreMetadata(Object, Object)
+     *
+     * @since 1.5
+     */
+    public static boolean equivalent(final CoordinateReferenceSystem object1, final CoordinateReferenceSystem object2) {
+        return Utilities.deepEquals(object1, object2, ComparisonMode.COMPATIBILITY);
     }
 
     /**
@@ -900,7 +926,7 @@ public final class CRS extends Static {
                                 final Envelope candidate = geometry.getEnvelope();
                                 if (candidate != null) {
                                     final CoordinateReferenceSystem sourceCRS = candidate.getCoordinateReferenceSystem();
-                                    if (sourceCRS == null || Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+                                    if (sourceCRS == null || equivalent(sourceCRS, crs)) {
                                         if (envelope == null) {
                                             envelope = candidate;
                                         } else {

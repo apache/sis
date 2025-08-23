@@ -34,9 +34,9 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.filter.privy.WarningEvent;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -150,7 +150,7 @@ public final class SelectionClause extends SQLBuilder implements Consumer<Warnin
             final Optional<CoordinateReferenceSystem> crs = c.getDefaultCRS();
             if (columnCRS == null) {
                 columnCRS = crs;    // May be empty, which is not the same as null for this class.
-            } else if (!Utilities.equalsIgnoreMetadata(columnCRS.orElse(null), crs.orElse(null))) {
+            } else if (!CRS.equivalent(columnCRS.orElse(null), crs.orElse(null))) {
                 clearColumnCRS();
                 return true;
             }

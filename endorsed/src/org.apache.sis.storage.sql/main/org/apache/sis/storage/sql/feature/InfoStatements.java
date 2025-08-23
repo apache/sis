@@ -423,7 +423,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                     if (crs != null) {
                         if (first == null) {
                             first = crs;
-                        } else if (!Utilities.equalsIgnoreMetadata(first, crs)) {
+                        } else if (!CRS.equivalent(first, crs)) {
                             return null;
                         }
                     }
@@ -995,7 +995,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                  */
                 try {
                     final CoordinateReferenceSystem candidate = fetchCRS(srid);
-                    if (Utilities.equalsIgnoreMetadata(search.crs, candidate)) {
+                    if (CRS.equivalent(search.crs, candidate)) {
                         return srid;
                     }
                 } catch (Exception f) {

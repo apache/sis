@@ -553,15 +553,12 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      * Compares the specified object with this coordinate system for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @hidden because nothing new to said.
      */
     @Override
-    @SuppressWarnings({"AssertWithSideEffects", "fallthrough"})
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;                                            // Slight optimization.
@@ -574,23 +571,22 @@ next:   for (final CoordinateSystemAxis axis : axes) {
                 // No need to check the class - this check has been done by super.equals(…).
                 return Arrays.equals(axes, ((AbstractCS) object).axes);
             }
-            case DEBUG: {
-                final int d1, d2;
-                assert (d1 = axes.length) == (d2 = ((CoordinateSystem) object).getDimension())
-                        : Errors.format(Errors.Keys.MismatchedDimension_2, d1, d2);
-                // Fall through
+            case DEBUG:
+            case ALLOW_VARIANT: {
+                final int dimension = getDimension();
+                final int that = ((CoordinateSystem) object).getDimension();
+                assert dimension == that || mode != ComparisonMode.DEBUG : Errors.format(Errors.Keys.MismatchedDimension_2, dimension, that);
+                return dimension == that;
             }
             default: {
-                final CoordinateSystem that = (CoordinateSystem) object;
+                final var that = (CoordinateSystem) object;
                 final int dimension = getDimension();
                 if (dimension != that.getDimension()) {
                     return false;
                 }
-                if (!mode.allowsVariant()) {
-                    for (int i=0; i<dimension; i++) {
-                        if (!Utilities.deepEquals(getAxis(i), that.getAxis(i), mode)) {
-                            return false;
-                        }
+                for (int i=0; i<dimension; i++) {
+                    if (!Utilities.deepEquals(getAxis(i), that.getAxis(i), mode)) {
+                        return false;
                     }
                 }
                 return true;

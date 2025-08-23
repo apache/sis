@@ -318,14 +318,12 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      * In addition to the metadata documented in the
      * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#equals(Object, ComparisonMode) parent class},
      * this method considers coordinate system axes of the {@linkplain #getBaseCRS() base CRS} as metadata.
-     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or {@code APPROXIMATE},
-     * then axis order of the base geographic CRS are ignored
+     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or more permissive,
+     * then axis order of the base geodetic <abbr>CRS</abbr> is ignored
      * (but <strong>not</strong> axis order of <strong>this</strong> projected CRS).
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override

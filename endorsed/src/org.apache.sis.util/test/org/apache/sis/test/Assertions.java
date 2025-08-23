@@ -69,6 +69,7 @@ public final class Assertions extends Static {
         assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.STRICT),          "deepEquals(STRICT)");
         assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.BY_CONTRACT),     "deepEquals(BY_CONTRACT)");
         assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.IGNORE_METADATA), "deepEquals(IGNORE_METADATA)");
+        assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.COMPATIBILITY),   "deepEquals(COMPATIBILITY)");
         assertFalse(Utilities.deepEquals(o1, o2, ComparisonMode.APPROXIMATE),     "deepEquals(APPROXIMATE)");
     }
 
@@ -76,7 +77,7 @@ public final class Assertions extends Static {
      * Asserts that the two given objects are approximately equal, while slightly different.
      * More specifically, this method asserts that the given objects are equal according the
      * {@link ComparisonMode#APPROXIMATE} criterion, but not equal according the
-     * {@link ComparisonMode#IGNORE_METADATA} criterion.
+     * {@link ComparisonMode#COMPATIBILITY} criterion.
      *
      * @param  expected  the expected object.
      * @param  actual    the actual object.
@@ -84,6 +85,7 @@ public final class Assertions extends Static {
     public static void assertAlmostEquals(final Object expected, final Object actual) {
         assertFalse(Utilities.deepEquals(expected, actual, ComparisonMode.STRICT),          "Shall not be strictly equal.");
         assertFalse(Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA), "Shall be slightly different.");
+        assertFalse(Utilities.deepEquals(expected, actual, ComparisonMode.COMPATIBILITY),   "Shall be slightly different.");
         assertTrue (Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG),           "Shall be approximately equal.");
         assertTrue (Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATE),     "DEBUG inconsistent with APPROXIMATE.");
     }

@@ -498,7 +498,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                      * except the name. We do not perform this comparison if the user asked for metadata
                      * comparison, because in such case the names have already been compared by the super-class.
                      */
-                    final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
+                    final var that = (ParameterDescriptor<?>) object;
                     return getValueClass() == that.getValueClass() &&
                            Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
                            Utilities.deepEquals(getUnit(), that.getUnit(), mode) &&
@@ -506,7 +506,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                             IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode()));
                 }
                 case BY_CONTRACT: {
-                    final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
+                    final var that = (ParameterDescriptor<?>) object;
                     return getMinimumOccurs() == that.getMinimumOccurs() &&
                            getMaximumOccurs() == that.getMaximumOccurs() &&
                            getValueClass()    == that.getValueClass()    &&
@@ -518,7 +518,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                            Utilities.deepEquals(getUnit(),         that.getUnit(), mode);
                 }
                 case STRICT: {
-                    final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;
+                    final var that = (DefaultParameterDescriptor<?>) object;
                     return                    valueClass == that.valueClass   &&
                            Objects.    equals(validValues,  that.validValues) &&
                            Objects.    equals(valueDomain,  that.valueDomain) &&

@@ -62,10 +62,9 @@ final class CRSPair extends org.apache.sis.pending.jdk.Record {
     /**
      * Compares this pair to the specified object for equality.
      *
-     * {@note We perform the CRS comparison using strict equality, not using
-     *        <code>equalsIgnoreMetadata</code>, because metadata matter since
-     *        they are attributes of the <code>CoordinateOperation</code>
-     *        object to be created.}
+     * <h4>Implementation note</h4>
+     * We perform the CRS comparison using strict equality, not using {@code equalsIgnoreMetadata(…)},
+     * because metadata matter since they are attributes of the {@code CoordinateOperation} object to be created.
      */
     @Override
     public boolean equals(final Object object) {

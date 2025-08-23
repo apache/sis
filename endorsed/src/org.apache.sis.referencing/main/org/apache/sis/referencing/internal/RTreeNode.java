@@ -24,7 +24,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.Utilities;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -250,7 +250,7 @@ detach: for (RTreeNode next; node != null; node = next) {
                 final CoordinateReferenceSystem crs = node.getCoordinateReferenceSystem();
                 if (common == null) {
                     common = crs;
-                } else if (crs != null && !Utilities.equalsIgnoreMetadata(common, crs)) {
+                } else if (crs != null && !CRS.equivalent(common, crs)) {
                     throw new MismatchedCoordinateMetadataException(Errors.format(Errors.Keys.MismatchedCRS));
                 }
             }

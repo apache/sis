@@ -37,7 +37,7 @@ package org.apache.sis.util;
  *           in the GeoAPI interfaces are compared. The above-cited identifiers and {@code xlinks}
  *           attributes are ignored.</li>
  *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
- *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
+ *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependent)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
  *   </li>
@@ -56,8 +56,10 @@ package org.apache.sis.util;
  *           are ignored because they have no incidence on the coordinate values to be computed by
  *           {@linkplain org.opengis.referencing.operation.ConcatenatedOperation coordinate operations}.
  *           All other attributes that are relevant to coordinate calculations, must be equal.</li>
+ *       <li>{@link ComparisonMode#COMPATIBILITY COMPATIBILITY} – The same attributes as the above
+ *           {@code IGNORE_METADATA} mode are compared, but some structural changes are accepted for historical reasons.</li>
  *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
- *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
+ *           {@code COMPATIBILITY} mode are compared, but a slight (implementation dependent)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
  *   </li>
@@ -75,22 +77,22 @@ package org.apache.sis.util;
  *           value of 60° produces the same results as a <q>Mercator (1SP)</q> projection on the same sphere
  *           with a <i>scale factor</i> value of 0.5.</li>
  *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
- *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
+ *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependent)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
  *   </li>
  *   <li>{@link org.apache.sis.referencing.operation.matrix.MatrixSIS} and
  *       {@link org.apache.sis.referencing.operation.transform.LinearTransform} implementations
  *     <ol>
- *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class, matrixes
+ *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class, matrices
  *           must have the same size and all matrix elements must be equal.</li>
- *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – Matrixes must have the same size
- *           and all matrix elements must be equal, but the matrixes are not required to be the
+ *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – Matrices must have the same size
+ *           and all matrix elements must be equal, but the matrices are not required to be the
  *           same implementation class (any {@link org.opengis.referencing.operation.Matrix} is okay).</li>
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Synonymous to the
- *           {@code BY_CONTRACT} mode, because matrixes don't have metadata.</li>
+ *           {@code BY_CONTRACT} mode, because matrices don't have metadata.</li>
  *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
- *           {@code BY_CONTRACT} mode are compared, but a slight (implementation dependant)
+ *           {@code BY_CONTRACT} mode are compared, but a slight (implementation dependent)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
  *   </li>

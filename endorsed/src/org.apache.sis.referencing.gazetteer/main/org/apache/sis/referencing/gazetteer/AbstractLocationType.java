@@ -109,9 +109,7 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
      * including the {@linkplain #getTheme() theme} and the {@linkplain #getOwner() owner}.</p>
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to location identifications.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override

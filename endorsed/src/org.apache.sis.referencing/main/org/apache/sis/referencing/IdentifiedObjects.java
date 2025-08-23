@@ -36,7 +36,6 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
-import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.CharSequences;
@@ -46,7 +45,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.DefinitionURI;
-import static org.apache.sis.util.privy.CollectionsExt.nonNull;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.privy.Identifiers;
@@ -217,7 +216,7 @@ public final class IdentifiedObjects extends Static {
              * If we do not found a primary name for the specified authority,
              * or if the user requested all names, search among aliases.
              */
-            for (final GenericName alias : nonNull(object.getAlias())) {
+            for (final GenericName alias : CollectionsExt.nonNull(object.getAlias())) {
                 if (alias != null) {
                     final String name;
                     if (alias instanceof Identifier) {
@@ -271,7 +270,7 @@ public final class IdentifiedObjects extends Static {
             if (authority instanceof IdentifierSpace<?>) {
                 cs = ((IdentifierSpace<?>) authority).getName();
             }
-            for (final Identifier identifier : nonNull(object.getIdentifiers())) {
+            for (final Identifier identifier : CollectionsExt.nonNull(object.getIdentifiers())) {
                 if (identifier != null) {                       // Paranoiac check.
                     if (cs != null && cs.equalsIgnoreCase(identifier.getCodeSpace())) {
                         return identifier;      // Match based on codespace.
@@ -310,7 +309,7 @@ public final class IdentifiedObjects extends Static {
         if (object == null) {
             return null;
         }
-        for (final Identifier id : nonNull(object.getIdentifiers())) {
+        for (final Identifier id : CollectionsExt.nonNull(object.getIdentifiers())) {
             final String code = toString(id);
             if (code != null) {                                 // Paranoiac check.
                 return code;
@@ -353,7 +352,7 @@ public final class IdentifiedObjects extends Static {
                     return code;
                 }
             }
-            for (GenericName alias : nonNull(object.getAlias())) {
+            for (GenericName alias : CollectionsExt.nonNull(object.getAlias())) {
                 if (alias != null && (alias = alias.tip()) != null) {
                     final String code = alias.toString();
                     if (CharSequences.isUnicodeIdentifier(code)) {
@@ -361,7 +360,7 @@ public final class IdentifiedObjects extends Static {
                     }
                 }
             }
-            for (final Identifier id : nonNull(object.getIdentifiers())) {
+            for (final Identifier id : CollectionsExt.nonNull(object.getIdentifiers())) {
                 if (id != null) {                                           // Paranoiac check.
                     final String code = id.getCode();
                     if (CharSequences.isUnicodeIdentifier(code)) {
@@ -418,7 +417,7 @@ public final class IdentifiedObjects extends Static {
             return null;
         }
         String name = toString(object.getName(), locale);
-        for (final GenericName c : nonNull(object.getAlias())) {
+        for (final GenericName c : CollectionsExt.nonNull(object.getAlias())) {
             final String alias = toString(c, locale);
             if (alias != null) {
                 if (name == null || CharSequences.isAcronymForWords(name, alias)) {
@@ -431,7 +430,7 @@ public final class IdentifiedObjects extends Static {
             }
         }
         if (name == null) {
-            for (final Identifier id : nonNull(object.getIdentifiers())) {
+            for (final Identifier id : CollectionsExt.nonNull(object.getIdentifiers())) {
                 name = toString(id, locale);
                 if (name != null) break;
             }
@@ -548,8 +547,8 @@ public final class IdentifiedObjects extends Static {
         } else if (object instanceof ConcatenatedOperation) {
             final var cop = (ConcatenatedOperation) object;
             final List<? extends CoordinateOperation> steps = cop.getOperations();
-            if (equalsIgnoreMetadata(cop.getSourceCRS(), JDK21.getFirst(steps).getSourceCRS()) &&
-                equalsIgnoreMetadata(cop.getTargetCRS(), JDK21.getLast (steps).getTargetCRS()))
+            if (CRS.equivalent(cop.getSourceCRS(), JDK21.getFirst(steps).getSourceCRS()) &&
+                CRS.equivalent(cop.getTargetCRS(), JDK21.getLast (steps).getTargetCRS()))
             {
                 components = steps;
             } else {

@@ -40,7 +40,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -219,7 +218,7 @@ public final class JTS extends Static {
         if (geometry != null && targetCRS != null) {
             final CoordinateReferenceSystem sourceCRS = getCoordinateReferenceSystem(geometry);
             if (sourceCRS != null) {
-                if (!Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
+                if (!CRS.equivalent(sourceCRS, targetCRS)) {
                     geometry = transform(geometry, findOperation(sourceCRS, targetCRS, geometry), false);
                 }
             }
@@ -250,7 +249,7 @@ public final class JTS extends Static {
                 final CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
                 if (sourceCRS != null) {
                     final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(geometry);
-                    if (crs != null && !Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+                    if (crs != null && !CRS.equivalent(sourceCRS, crs)) {
                         operation = findOperation(crs, operation.getTargetCRS(), geometry);
                     }
                 }

@@ -232,11 +232,11 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
                 mode = ComparisonMode.ALLOW_VARIANT;    // For avoiding too early `AssertionError`.
             }
             if (Utilities.deepEquals(d1, d2, mode)) {
-                if (d1 != null && d2 != null && mode.allowsVariant()) {
+                if (d1 != null && d2 != null && mode.isCompatibility()) {
                     return true;
                 }
                 return Utilities.deepEquals(getDatumEnsemble(), that.getDatumEnsemble(), mode);
-            } else if (mode.allowsVariant()) {
+            } else if (mode.isCompatibility()) {
                 return DatumOrEnsemble.isLegacyDatum(this.getDatumEnsemble(), d2, mode) ||
                        DatumOrEnsemble.isLegacyDatum(that.getDatumEnsemble(), d1, mode);
             }

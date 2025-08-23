@@ -19,7 +19,7 @@ package org.apache.sis.geometries.math;
 import java.util.Arrays;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Utilities;
+import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -86,7 +86,7 @@ abstract class AbstractTuple<T extends AbstractTuple<T>> implements Tuple<T> {
             }
         }
         //checking crs is expensive, do it last
-        if (!Utilities.equalsIgnoreMetadata(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem())) {
+        if (!CRS.equivalent(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem())) {
             return false;
         }
         return true;

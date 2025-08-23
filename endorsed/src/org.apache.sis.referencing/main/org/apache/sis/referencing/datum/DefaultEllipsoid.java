@@ -595,9 +595,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Compares this ellipsoid with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @hidden because nothing new to said.
@@ -630,6 +628,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                 }
                 // Fall through
             }
+            case COMPATIBILITY:
             case IGNORE_METADATA: {
                 /*
                  * "Inverse flattening factor" and "semi-minor axis length" are computed from each other,
@@ -643,7 +642,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             }
             default: {
                 /*
-                 * Note: DefaultPrimeMeridian.equals(object, IGNORE_METADATA) ignores the unit.
+                 * Note: `DefaultPrimeMeridian.equals(object, IGNORE_METADATA)` ignores the unit.
                  * But we do not perform the same relaxation here because the ellipsoid unit will
                  * become the linear unit of map projections if the user does not overwrite them
                  * with an explicit CoordinateSystem declaration.
@@ -670,8 +669,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                         return true;
                     }
                 }
-                assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
-                        isMinor ? "semiMinorAxis" : "semiMajorAxis", v1, v2);
+                assert (mode != ComparisonMode.DEBUG)
+                        : Numerics.messageForDifference(isMinor ? "semiMinorAxis" : "semiMajorAxis", v1, v2);
                 return false;
             }
         }

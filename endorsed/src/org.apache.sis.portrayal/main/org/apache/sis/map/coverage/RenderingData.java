@@ -61,7 +61,6 @@ import org.apache.sis.referencing.privy.WraparoundApplicator;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.CloneAccess;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
@@ -292,7 +291,7 @@ public class RenderingData implements CloneAccess {
      * @return whether the data are valid for the given objective CRS.
      */
     public final boolean validateCRS(final CoordinateReferenceSystem objectiveCRS) {
-        if (changeOfCRS != null && !Utilities.equalsIgnoreMetadata(objectiveCRS, changeOfCRS.getTargetCRS())) {
+        if (changeOfCRS != null && !CRS.equivalent(objectiveCRS, changeOfCRS.getTargetCRS())) {
             clearCRS();
             return false;
         }

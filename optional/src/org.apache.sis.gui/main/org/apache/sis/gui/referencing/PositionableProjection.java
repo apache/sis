@@ -32,7 +32,6 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
@@ -194,7 +193,7 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
         if (normalizedCRS == null) {
             normalizedCRS = CommonCRS.WGS84.geographic();
         }
-        if (!Utilities.equalsIgnoreMetadata(normalizedCRS, inherit)) {
+        if (!CRS.equivalent(normalizedCRS, inherit)) {
             center = CRS.findOperation(inherit, normalizedCRS, null).getMathTransform().transform(center, null);
         }
         return createProjectedCRS(normalizedCRS,

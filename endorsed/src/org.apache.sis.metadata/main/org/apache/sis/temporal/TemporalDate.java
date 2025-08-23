@@ -240,7 +240,7 @@ public final class TemporalDate extends Date implements LenientComparable {     
      */
     @Override
     public boolean equals(final Object other, final ComparisonMode mode) {
-        if (other instanceof TemporalDate && mode.allowsVariant()) {
+        if (mode.isCompatibility() && other instanceof TemporalDate) {
             /*
              * The number of milliseconds may differ when comparing two local dates,
              * depending on which timezone was assumed when `Date` has been constructed.

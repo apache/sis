@@ -38,8 +38,8 @@ import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Utilities;
 
 
 /**
@@ -158,7 +158,7 @@ public final class TINBuilder {
         final Set<Point2D.Double> set = new HashSet<>(pts.size());
         final List<Tuple> uniques = new ArrayList<>();
         for (Tuple t : pts) {
-            if (!Utilities.equalsIgnoreMetadata(crs, t.getCoordinateReferenceSystem())) {
+            if (!CRS.equivalent(crs, t.getCoordinateReferenceSystem())) {
                 throw new OperationException("Points must have the same crs avec corner points");
             }
             if (set.add(new Point2D.Double(t.get(0), t.get(1)))) {

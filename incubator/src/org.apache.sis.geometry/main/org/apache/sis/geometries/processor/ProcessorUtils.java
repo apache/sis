@@ -23,8 +23,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.Utilities;
 
 
 /**
@@ -41,7 +41,7 @@ public final class ProcessorUtils extends Static {
     public static void ensureSameCRS(Geometry geom1, Geometry geom2) {
         final CoordinateReferenceSystem crs1 = geom1.getCoordinateReferenceSystem();
         final CoordinateReferenceSystem crs2 = geom2.getCoordinateReferenceSystem();
-        if (!Utilities.equalsIgnoreMetadata(crs1, crs2)) {
+        if (!CRS.equivalent(crs1, crs2)) {
             throw new OperationException("Geometries do not have the same CRS");
         }
     }
@@ -60,11 +60,11 @@ public final class ProcessorUtils extends Static {
             throw new OperationException("Geometries CRS must be at least 2D");
         }
 
-        if (!Utilities.equalsIgnoreMetadata(crs1, crs2)) {
+        if (!CRS.equivalent(crs1, crs2)) {
             if (dim1 != 2 || dim2 != 2) {
                 CoordinateReferenceSystem subcrs1 = getCrs2d(crs1);
                 CoordinateReferenceSystem subcrs2 = getCrs2d(crs2);
-                if (subcrs1 == null || !Utilities.equalsIgnoreMetadata(subcrs1, subcrs2)) {
+                if (subcrs1 == null || !CRS.equivalent(subcrs1, subcrs2)) {
                     throw new OperationException("Geometries do not have the same CRS 2D");
                 }
             }

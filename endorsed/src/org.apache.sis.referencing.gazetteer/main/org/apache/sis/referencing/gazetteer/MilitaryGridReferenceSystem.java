@@ -62,7 +62,6 @@ import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
@@ -1230,7 +1229,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              * we need the 'optimize' flag to have the value that we get after 'trySplit()' execution. This implies
              * that invoking 'trySplit()' is mandatory before using this iterator, but IteratorAllZones ensures that.
              */
-            optimize = !isSpecialCase && Utilities.equalsIgnoreMetadata(geographicArea.getCoordinateReferenceSystem(), sourceCRS);
+            optimize = !isSpecialCase && CRS.equivalent(geographicArea.getCoordinateReferenceSystem(), sourceCRS);
         }
 
         /**
@@ -1557,7 +1556,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                  * longitude (in that order) in degrees. We can get this transform directly from the
                  * projected CRS if its base CRS already has the expected axis orientations and units.
                  */
-                if (crs == horizontal && Utilities.equalsIgnoreMetadata(projCRS.getBaseCRS(), datum.geographic())) {
+                if (crs == horizontal && CRS.equivalent(projCRS.getBaseCRS(), datum.geographic())) {
                     toGeographic = projection.getMathTransform().inverse();
                     return;
                 }

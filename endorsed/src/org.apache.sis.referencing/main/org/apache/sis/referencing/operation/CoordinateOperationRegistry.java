@@ -299,7 +299,7 @@ class CoordinateOperationRegistry {
             codeFinder.setIgnoringAxes(false);
             codeFinder.setSearchDomain(IdentifiedObjectFinder.Domain.VALID_DATASET);
             final IdentifiedObject candidate = codeFinder.findSingleton(object);
-            if (Utilities.equalsIgnoreMetadata(object, candidate)) {
+            if (Utilities.deepEquals(object, candidate, ComparisonMode.COMPATIBILITY)) {
                 return type.cast(candidate);
             }
         }

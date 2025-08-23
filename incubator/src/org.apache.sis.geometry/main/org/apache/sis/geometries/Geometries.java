@@ -69,7 +69,6 @@ import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.Utilities;
 
 
 /**
@@ -442,7 +441,7 @@ public final class Geometries extends Static {
             if (!primitive.getType().equals(type)) {
                 throw new IllegalArgumentException("All primitives must have the same type");
             }
-            if (!Utilities.equalsIgnoreMetadata(crs, primitive.getCoordinateReferenceSystem())) {
+            if (!CRS.equivalent(crs, primitive.getCoordinateReferenceSystem())) {
                 throw new IllegalArgumentException("All primitives must have the same CRS, found \n" + crs +"\n and \n" + primitive.getCoordinateReferenceSystem());
             }
             if (resultAttributes.size() != primitive.getAttributesType().getAttributeNames().size()) {

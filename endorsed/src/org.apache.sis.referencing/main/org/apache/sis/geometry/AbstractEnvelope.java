@@ -1109,7 +1109,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         final int dimension = getDimension();
         if (other.getDimension() != dimension ||
                 !equals(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem(),
-                        (eps == 0) ? ComparisonMode.IGNORE_METADATA : ComparisonMode.APPROXIMATE))
+                        (eps == 0) ? ComparisonMode.COMPATIBILITY : ComparisonMode.APPROXIMATE))
         {
             return false;
         }

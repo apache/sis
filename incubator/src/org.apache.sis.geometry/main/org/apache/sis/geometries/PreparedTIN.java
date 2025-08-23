@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.locationtech.jts.index.quadtree.Quadtree;
 import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -38,7 +37,6 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Utilities;
 
 
 /**
@@ -105,8 +103,8 @@ public interface PreparedTIN extends TIN {
             } else {
                 final CoordinateReferenceSystem envCrs = env.getCoordinateReferenceSystem();
                 final org.locationtech.jts.geom.Envelope e;
-                if (Utilities.equalsIgnoreMetadata(envCrs, crs)
-                 || Utilities.equalsIgnoreMetadata(envCrs, crs2d)) {
+                if (CRS.equivalent(envCrs, crs)
+                 || CRS.equivalent(envCrs, crs2d)) {
                     //compatible crs
                 } else {
                     env = Envelopes.transform(env, crs2d);
@@ -199,8 +197,8 @@ public interface PreparedTIN extends TIN {
             } else {
                 final CoordinateReferenceSystem envCrs = env.getCoordinateReferenceSystem();
                 final org.locationtech.jts.geom.Envelope e;
-                if (Utilities.equalsIgnoreMetadata(envCrs, base[0].crs)
-                 || Utilities.equalsIgnoreMetadata(envCrs, base[0].crs2d)) {
+                if (CRS.equivalent(envCrs, base[0].crs)
+                 || CRS.equivalent(envCrs, base[0].crs2d)) {
                     //compatible crs
                 } else {
                     env = Envelopes.transform(env, base[0].crs2d);
@@ -305,7 +303,7 @@ public interface PreparedTIN extends TIN {
                 if (Geometries.isUndefined(dpCrs)) {
                     //expecting the same crs as the surface, no transform
                     lastTransform = null;
-                } else if (Utilities.equalsIgnoreMetadata(tincrs, dpCrs)) {
+                } else if (CRS.equivalent(tincrs, dpCrs)) {
                     //equivalent crs, no transform
                     lastTransform = null;
                 } else {

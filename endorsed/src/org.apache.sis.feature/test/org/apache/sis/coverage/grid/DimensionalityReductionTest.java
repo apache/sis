@@ -194,7 +194,7 @@ public final class DimensionalityReductionTest extends TestCase {
          * CRS should have different axis order.
          */
         var sourceCRS = reduction.getSourceGridGeometry().getCoordinateReferenceSystem();
-        assertFalse(Utilities.equalsIgnoreMetadata(sourceCRS, crs));
+        assertFalse(CRS.equivalent(sourceCRS, crs));
         assertTrue(Utilities.deepEquals(test, test, ComparisonMode.ALLOW_VARIANT));     // Ignore axis order.
         testPosition(reduction, new double[] {100, 101, 102, 103}, new double[] {100, 101});
     }

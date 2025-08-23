@@ -81,6 +81,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     private static final ComparisonMode[] CRS_ORDER_CRITERIA = {
         ComparisonMode.BY_CONTRACT,
         ComparisonMode.IGNORE_METADATA,
+        ComparisonMode.COMPATIBILITY,
         ComparisonMode.APPROXIMATE
     };
 

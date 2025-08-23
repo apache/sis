@@ -29,8 +29,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.privy.AbstractGeometry;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Utilities;
 
 
 /**
@@ -118,7 +118,7 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
      */
     public void append(Collection<? extends MeshPrimitive> other) {
         for (MeshPrimitive p : other) {
-            if (!Utilities.equalsIgnoreMetadata(crs, p.getCoordinateReferenceSystem())) {
+            if (!CRS.equivalent(crs, p.getCoordinateReferenceSystem())) {
                 throw new IllegalArgumentException("Primitives must have the same CRS as the MultiPrimitive.");
             }
         }

@@ -409,14 +409,14 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * <h4>Static versus dynamic datum</h4>
      * If this datum implements the {@link DynamicReferenceFrame} interface, then the given object needs
-     * to also implement that interfaces and provide the same reference epoch for being considered equal.
+     * to also implement that interface and provide the same reference epoch for being considered equal.
      * Conversely, if this datum does not implement {@link DynamicReferenceFrame}, then the given object
      * also need to <em>not</em> implement that interface for being considered equal.
+     * This condition is relaxed with {@link ComparisonMode#COMPATIBILITY} if the two reference frames have a common identifier
+     * or an {@linkplain org.apache.sis.referencing.IdentifiedObjects#isHeuristicMatchForName equivalent name}.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -451,7 +451,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                  * and parameters. We extend this rule to datum as well.
                  */
                 final var that = (Datum) object;
-                if (!(mode.allowsVariant() || compareDynamicReferenceFrames(that, mode))) {
+                if (!(mode.isCompatibility() || compareDynamicReferenceFrames(that, mode))) {
                     return false;
                 }
                 final Boolean match = Identifiers.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
