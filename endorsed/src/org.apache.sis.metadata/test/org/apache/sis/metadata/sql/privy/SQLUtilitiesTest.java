@@ -55,7 +55,7 @@ public final class SQLUtilitiesTest extends TestCase {
         assertEquals("WGS%84",                      toLikePattern(buffer, "WGS 84"));
         assertEquals("A%text%with%random%symbols%", toLikePattern(buffer, "A text !* with_random:/symbols;+"));
         assertEquals("*%With%non%letter%start",     toLikePattern(buffer, "*_+%=With non-letter  start"));
-        assertEquals("_Special%case",               toLikePattern(buffer, "%Special_case"));
+        assertEquals("\\%Special%case",             toLikePattern(buffer, "%Special_case"));
     }
 
     /**
@@ -63,7 +63,7 @@ public final class SQLUtilitiesTest extends TestCase {
      */
     private static String toLikePattern(final StringBuilder buffer, final String identifier) {
         buffer.setLength(0);
-        SQLUtilities.toLikePattern(identifier, 0, identifier.length(), false, false, buffer);
+        SQLUtilities.toLikePattern(identifier, 0, identifier.length(), false, false, "\\", buffer);
         return buffer.toString();
     }
 }

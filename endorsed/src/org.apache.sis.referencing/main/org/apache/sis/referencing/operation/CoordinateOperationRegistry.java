@@ -324,9 +324,8 @@ class CoordinateOperationRegistry {
             }
             codes = new ArrayList<>();
             codeFinder.setIgnoringAxes(true);
-            codeFinder.setSearchDomain(isEasySearch(crs)
-                    ? IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET
-                    : IdentifiedObjectFinder.Domain.VALID_DATASET);
+            codeFinder.setSearchDomain(isEasySearch(crs) ? IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET
+                                                         : IdentifiedObjectFinder.Domain.VALID_DATASET);
             int matchCount = 0;
             try {
                 final Citation authority = registry.getAuthority();

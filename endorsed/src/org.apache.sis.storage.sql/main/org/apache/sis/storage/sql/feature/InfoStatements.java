@@ -816,7 +816,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                     sridFromCRS = prepareSearchCRS(true);
                 }
                 sridFromCRS.setInt(1, code);
-                sridFromCRS.setString(2, SQLUtilities.toLikePattern(authority, true));
+                sridFromCRS.setString(2, SQLUtilities.toLikePattern(authority, true, database.wildcardEscape));
                 try (ResultSet result = sridFromCRS.executeQuery()) {
                     while (result.next()) {
                         if (SQLUtilities.filterFalsePositive(authority, result.getString(1))) {

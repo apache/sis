@@ -290,7 +290,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             }
 
             /** Returns a set of authority codes, using the fallback if necessary. */
-            @Override protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+            @Override protected Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
                 for (;;) try {      // Executed at most twice.
                     return super.getCodeCandidates(object);
                 } catch (UnavailableFactoryException e) {

@@ -48,6 +48,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Printable;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -626,11 +627,11 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         /*
          * We must close the factories from outside the synchronized block.
          */
-        confirmClose(factories);
         try {
+            confirmClose(factories);
             close(factories);
         } catch (Exception exception) {
-            unexpectedException("closeExpired", exception);
+            unexpectedException("closeExpired", Exceptions.unwrap(exception));
         }
         /*
          * If the queue of Data Access Objects (DAO) become empty, this means that this `ConcurrentAuthorityFactory`
@@ -1901,7 +1902,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * object than the specified one. This method delegates to the data access object.
          */
         @Override
-        protected synchronized Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+        protected synchronized Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
             try {
                 acquire();
                 return finder.getCodeCandidates(object);
@@ -2176,6 +2177,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             confirmClose(factories);
             close(factories);                       // Must be invoked outside the synchronized block.
         } catch (Exception e) {
+            e = Exceptions.unwrap(e);
             if (e instanceof FactoryException) {
                 throw (FactoryException) e;
             } else {

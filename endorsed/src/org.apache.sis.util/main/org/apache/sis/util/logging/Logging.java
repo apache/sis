@@ -356,7 +356,7 @@ public final class Logging extends Static {
      * @since 1.0
      */
     public static boolean ignorableException(final Logger logger, final Class<?> classe,
-                                               final String method, final Throwable error)
+                                             final String method, final Throwable error)
     {
         final String classname = (classe != null) ? classe.getName() : null;
         return unexpectedException(logger, classname, method, error, Level.FINER);

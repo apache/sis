@@ -169,12 +169,16 @@ final class TableInfo {
     final Class<?> type;
 
     /**
-     * The table name for SQL queries, including schema name and quotes for mixed-case names.
-     * May contain a {@code JOIN} clause.
-     *
-     * @see #unquoted()
+     * The table name in mixed-case and without quotes.
      */
     final String table;
+
+    /**
+     * The <abbr>SQL</abbr> fragment to use in the {@code FROM} clause.
+     * This is usually the table name, including the quotes for mixed-case names.
+     * In sometime, this is a more complex clause including {@code JOIN} statements.
+     */
+    final String fromClause;
 
     /**
      * Column name for the code (usually with the {@code "_CODE"} suffix).
@@ -216,7 +220,7 @@ final class TableInfo {
      * Stores information about a specific table.
      *
      * @param type        the class of object to be created (usually a GeoAPI interface).
-     * @param table       the table name for SQL queries, including quotes for mixed-case names.
+     * @param fromClause  The <abbr>SQL</abbr> fragment to use in the {@code FROM} clause, including quotes.
      * @param codeColumn  column name for the code (usually with the {@code "_CODE"} suffix).
      * @param nameColumn  column name for the name (usually with the {@code "_NAME"} suffix), or {@code null}.
      * @param typeColumn  column type for the type (usually with the {@code "_TYPE"} suffix), or {@code null}.
@@ -226,12 +230,12 @@ final class TableInfo {
      * @param areaOfUse   whether the table had an {@code "AREA_OF_USE_CODE"} column in the legacy versions.
      */
     private TableInfo(final Class<?> type,
-                      final String table, final String codeColumn, final String nameColumn,
+                      final String fromClause, final String codeColumn, final String nameColumn,
                       final String typeColumn, final Class<?>[] subTypes, final String[] typeNames,
                       final String showColumn, final boolean areaOfUse)
     {
         this.type       = type;
-        this.table      = table;
+        this.fromClause = fromClause;
         this.codeColumn = codeColumn;
         this.nameColumn = nameColumn;
         this.typeColumn = typeColumn;
@@ -239,13 +243,7 @@ final class TableInfo {
         this.typeNames  = typeNames;
         this.showColumn = showColumn;
         this.areaOfUse  = areaOfUse;
-    }
-
-    /**
-     * Returns the table name without schema name and without quotes.
-     */
-    final String unquoted() {
-        return table.substring(table.indexOf('"') + 1, table.lastIndexOf('"'));
+        table = fromClause.substring(fromClause.indexOf('"') + 1, fromClause.lastIndexOf('"')).intern();
     }
 
     /**
@@ -263,7 +261,7 @@ final class TableInfo {
                 table = table.substring(SQLTranslator.TABLE_PREFIX.length());
             }
             for (final TableInfo info : EPSG) {
-                if (CharSequences.isAcronymForWords(table, info.unquoted())) {
+                if (CharSequences.isAcronymForWords(table, info.table)) {
                     return Optional.of(info.type.getSimpleName());
                 }
             }

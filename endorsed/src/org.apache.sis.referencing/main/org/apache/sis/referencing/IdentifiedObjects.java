@@ -686,8 +686,6 @@ public final class IdentifiedObjects extends Static {
      * <h4>Example 2: extend the search to deprecated definitions</h4>
      * By default, {@code lookup(…)} methods exclude deprecated objects from the search.
      * To search also among deprecated objects, one can use the following Java code:
-     * This example does not use the {@code findSingleton(…)} convenience method on the assumption
-     * that the search may find both deprecated and non-deprecated objects.
      *
      * {@snippet lang="java" :
      *     IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(null);
@@ -706,9 +704,7 @@ public final class IdentifiedObjects extends Static {
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#newIdentifiedObjectFinder()
      * @see IdentifiedObjectFinder#find(IdentifiedObject)
      */
-    public static IdentifiedObjectFinder newFinder(final String authority)
-            throws NoSuchAuthorityFactoryException, FactoryException
-    {
+    public static IdentifiedObjectFinder newFinder(final String authority) throws NoSuchAuthorityFactoryException, FactoryException {
         final GeodeticAuthorityFactory factory;
         if (authority == null) {
             factory = AuthorityFactories.ALL;

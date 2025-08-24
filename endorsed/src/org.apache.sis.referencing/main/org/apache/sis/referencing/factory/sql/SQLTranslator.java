@@ -214,10 +214,17 @@ public class SQLTranslator implements UnaryOperator<String> {
     private Map<String,String> replacements;
 
     /**
-     * The characters used for quoting identifiers, or a whitespace if none.
+     * The characters used for quoting identifiers, or an empty string if none.
      * This information is provided by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
     private final String identifierQuote;
+
+    /**
+     * The string that can be used to escape wildcard characters in {@code LIKE}.
+     * This is the value returned by {@link DatabaseMetaData#getSearchStringEscape()}.
+     * It may be null or empty if the database has no escape character.
+     */
+    final String wildcardEscape;
 
     /**
      * Non-null if the {@value #ENUMERATION_COLUMN} column in {@code "Alias"} table uses enumeration instead
@@ -283,6 +290,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      */
     public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
         identifierQuote = md.getIdentifierQuoteString().trim();
+        wildcardEscape  = md.getSearchStringEscape();
         this.catalog = catalog;
         this.schema  = schema;
         setup(md);
@@ -308,8 +316,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      */
     @SuppressWarnings("fallthrough")
     final void setup(final DatabaseMetaData md) throws SQLException {
-        final String escape  = md.getSearchStringEscape();
-        String schemaPattern = SQLUtilities.escape(schema, escape);
+        String schemaPattern = SQLUtilities.escape(schema, wildcardEscape);
         int tableIndex = 0;
         do {
             usePrefixedTableNames  = false;
@@ -318,7 +325,7 @@ public class SQLTranslator implements UnaryOperator<String> {
             switch (tableIndex++) {
                 case 0: {   // Test EPSG standard table name first.
                     usePrefixedTableNames = true;
-                    table = SQLUtilities.escape(TABLE_PREFIX, escape);
+                    table = SQLUtilities.escape(TABLE_PREFIX, wildcardEscape);
                     // Fallthrough for testing "epsg_coordoperation".
                 }
                 case 2: {
@@ -352,7 +359,7 @@ public class SQLTranslator implements UnaryOperator<String> {
          * naming convention (unquoted or mixed-case, prefixed by "epsg_" or not).
          */
         UnaryOperator<String> toNativeCase = UnaryOperator.identity();
-        schemaPattern  = SQLUtilities.escape(schema, escape);
+        schemaPattern  = SQLUtilities.escape(schema, wildcardEscape);
         tableRewording = new HashMap<>();
         replacements   = new HashMap<>();
         /*
@@ -456,7 +463,7 @@ check:  for (;;) {
             boolean isTableFound = false;
             brokenTargetCols.addAll(mayRenameColumns.values());
             table = toNativeCase.apply(toActualTableName(table));
-            try (ResultSet result = md.getColumns(catalog, schemaPattern, SQLUtilities.escape(table, escape), "%")) {
+            try (ResultSet result = md.getColumns(catalog, schemaPattern, SQLUtilities.escape(table, wildcardEscape), "%")) {
                 while (result.next()) {
                     isTableFound = true;          // Assuming that all tables contain at least one column.
                     final String column = result.getString(Reflection.COLUMN_NAME).toUpperCase(Locale.US);

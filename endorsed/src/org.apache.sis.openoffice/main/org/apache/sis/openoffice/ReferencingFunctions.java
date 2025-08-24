@@ -183,7 +183,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                 return object.getName().getCode();
             }
             // In Apache SIS implementation, `getDescriptionText(…)` returns the identified object name.
-            name = CRS.getAuthorityFactory(null).getDescriptionText(IdentifiedObject.class, codeOrPath).orElse(null);
+            name = CRS.getAuthorityFactory(null).getDescriptionText(CoordinateReferenceSystem.class, codeOrPath).orElse(null);
         } catch (Exception exception) {
             return getLocalizedMessage(exception);
         }

@@ -18,7 +18,10 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Set;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.Collection;
+import java.util.Iterator;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,16 +35,21 @@ import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.metadata.privy.ReferencingServices;
@@ -49,9 +57,14 @@ import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import static org.apache.sis.metadata.privy.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.crs.ParametricCRS;
+import org.opengis.referencing.datum.ParametricDatum;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.referencing.crs.DerivedCRS;
@@ -74,7 +87,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
     /**
      * The type of object to search, or {@code null} for using {@code object.getClass()}.
      * This is set to a non-null value when searching for dependencies, in order to avoid
-     * confusion in an implementation class implements more than one GeoAPI interfaces.
+     * confusion if an implementation class implements more than one GeoAPI interfaces.
      *
      * @see #isInstance(Class, IdentifiedObject)
      */
@@ -101,6 +114,20 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
         } finally {
             dao.quiet = old;
         }
+    }
+
+    /**
+     * Returns the name of the given object, with a preference for <abbr>EPSG</abbr> name.
+     *
+     * @param  object  the object for which to get a name.
+     * @return the object name, or {@code null} if none.
+     */
+    private static String getName(final IdentifiedObject object) {
+        String name = IdentifiedObjects.getName(object, Citations.EPSG);
+        if (name == null) {
+            name = IdentifiedObjects.getName(object, null);
+        }
+        return name;
     }
 
     /**
@@ -139,7 +166,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
             final Set<Number> filters = JDK19.newLinkedHashSet(find.size());
             for (final IdentifiedObject dep : find) {
                 Identifier id = IdentifiedObjects.getIdentifier(dep, Citations.EPSG);
-                if (id != null) try {                                                   // Should never be null, but let be safe.
+                if (id != null) try {
                     filters.add(Integer.valueOf(id.getCode()));
                 } catch (NumberFormatException e) {
                     Logging.recoverableException(EPSGDataAccess.LOGGER, EPSGCodeFinder.class, "getCodeCandidates", e);
@@ -271,14 +298,19 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
     }
 
     /**
-     * Returns a set of authority codes that <strong>may</strong> identify the same object as the specified one.
-     * This implementation tries to get a smaller set than what {@link EPSGDataAccess#getAuthorityCodes(Class)}
-     * would produce. Deprecated objects must be last in iteration order.
+     * Adds in the given collection the authority codes that <strong>may</strong> identify the same object as the specified one.
+     * This implementation tries to get a smaller set than what {@link EPSGDataAccess#getAuthorityCodes(Class)} would produce.
+     * Deprecated objects must be last in iteration order.
+     *
+     * @param  object  the object to search in the database.
+     * @param  all     whether to include the codes of all objects, even deprecated.
+     * @param  addTo   where to add the codes of objects that have been found.
+     * @return whether at least one code has been added.
+     * @throws FactoryException if an error occurred while fetching the set of code candidates.
      */
-    @Override
-    protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
-        final TableInfo   table;                        // Contains `codeColumn` and `table` names.
-        final Condition[] filters;                      // Conditions to put in the WHERE clause.
+    private boolean searchCodesFromProperties(final IdentifiedObject object, final boolean all, final Collection<Integer> addTo) throws FactoryException {
+        final TableInfo   source;       // Contains `codeColumn` and `table` names.
+        final Condition[] filters;      // Conditions to put in the WHERE clause.
 crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             /*
              * For compound CRS, the SQL statement may be something like below
@@ -288,24 +320,26 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              *       AND CMPD_HORIZCRS_CODE IN (?,…)
              *       AND CMPD_VERTCRS_CODE IN (?,…)
              */
-            table = TableInfo.CRS;
+            source = TableInfo.CRS;
             if (isInstance(CompoundCRS.class, object)) {
                 final List<CoordinateReferenceSystem> components = ((CompoundCRS) object).getComponents();
                 if (components != null) {       // Paranoiac check.
-                    final int n = components.size();
-                    if (n == 2) {
-                        filters = new Condition[2];
-                        for (int i=0; i<=1; i++) {
-                            if ((filters[i] = dependencies((i == 0) ? "CMPD_HORIZCRS_CODE" : "CMPD_VERTCRS_CODE",
-                                    CoordinateReferenceSystem.class, components.get(i), false)) == null)
-                            {
-                                return Set.of();
-                            }
+                    switch (components.size()) {
+                        case 1: {
+                            // Defined for safety, but should not happen.
+                            return searchCodesFromProperties(components.get(0), all, addTo);
                         }
-                        break crs;
-                    }
-                    if (n == 1) {               // Should not happen.
-                        return getCodeCandidates(components.get(0));
+                        case 2: {
+                            filters = new Condition[2];
+                            for (int i=0; i<=1; i++) {
+                                final CoordinateReferenceSystem component = components.get(i);
+                                final String column = (i == 0) ? "CMPD_HORIZCRS_CODE" : "CMPD_VERTCRS_CODE";
+                                if ((filters[i] = dependencies(column, CoordinateReferenceSystem.class, component, false)) == null) {
+                                    return false;
+                                }
+                            }
+                            break crs;
+                        }
                     }
                 }
             }
@@ -322,18 +356,22 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             if (object instanceof DerivedCRS) {              // No need to use isInstance(Class, Object) from here.
                 filter = dependencies("BASE_CRS_CODE", SingleCRS.class, ((DerivedCRS) object).getBaseCRS(), true);
             } else if (object instanceof GeodeticCRS) {
-                filter = dependencies("DATUM_CODE", GeodeticDatum.class, ((GeodeticCRS) object).getDatum(), true);
+                filter = dependencies("DATUM_CODE", GeodeticDatum.class, DatumOrEnsemble.asDatum((GeodeticCRS) object), true);
             } else if (object instanceof VerticalCRS) {
-                filter = dependencies("DATUM_CODE", VerticalDatum.class, ((VerticalCRS) object).getDatum(), true);
+                filter = dependencies("DATUM_CODE", VerticalDatum.class, DatumOrEnsemble.asDatum((VerticalCRS) object), true);
             } else if (object instanceof TemporalCRS) {
-                filter = dependencies("DATUM_CODE", TemporalDatum.class, ((TemporalCRS) object).getDatum(), true);
+                filter = dependencies("DATUM_CODE", TemporalDatum.class, DatumOrEnsemble.asDatum((TemporalCRS) object), true);
+            } else if (object instanceof ParametricCRS) {
+                filter = dependencies("DATUM_CODE", ParametricDatum.class, DatumOrEnsemble.asDatum((ParametricCRS) object), true);
+            } else if (object instanceof EngineeringCRS) {
+                filter = dependencies("DATUM_CODE", EngineeringDatum.class, DatumOrEnsemble.asDatum((EngineeringCRS) object), true);
             } else if (object instanceof SingleCRS) {
                 filter = dependencies("DATUM_CODE", Datum.class, ((SingleCRS) object).getDatum(), true);
             } else {
-                return Set.of();
+                return false;
             }
             if (filter == null) {
-                return Set.of();
+                return false;
             }
             filters = new Condition[] {filter};
         } else if (isInstance(Datum.class, object)) {
@@ -346,19 +384,15 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              *    WHERE ELLIPSOID_CODE IN (?,…)
              *      AND (LOWER(DATUM_NAME) LIKE '?%')
              */
-            table = TableInfo.DATUM;
+            source = TableInfo.DATUM;
             if (isInstance(GeodeticDatum.class, object)) {
-                filters = new Condition[] {
-                    dependencies("ELLIPSOID_CODE", Ellipsoid.class, ((GeodeticDatum) object).getEllipsoid(), true),
-                    Condition.NAME
-                };
-                if (filters[0] == null) {
-                    return Set.of();
+                Condition filter = dependencies("ELLIPSOID_CODE", Ellipsoid.class, ((GeodeticDatum) object).getEllipsoid(), true);
+                if (filter == null) {
+                    return false;
                 }
+                filters = new Condition[] {filter, Condition.NAME};
             } else {
-                filters = new Condition[] {
-                    Condition.NAME
-                };
+                filters = new Condition[] {Condition.NAME};
             }
         } else if (isInstance(Ellipsoid.class, object)) {
             /*
@@ -368,13 +402,15 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              *     WHERE SEMI_MAJOR_AXIS >= ?-ε AND SEMI_MAJOR_AXIS <= ?+ε
              *     ORDER BY ABS(SEMI_MAJOR_AXIS-?)
              */
-            table   = TableInfo.ELLIPSOID;
+            source  = TableInfo.ELLIPSOID;
             filters = new Condition[] {
                 new FloatCondition("SEMI_MAJOR_AXIS", ((Ellipsoid) object).getSemiMajorAxis())
             };
-        } else {
-            // Not a supported type. Returns all codes.
-            return super.getCodeCandidates(object);
+        } else try {
+            // Not a supported type. Returns all codes if not too expensive.
+            return dao.getAuthorityCodes(declaredType, addTo);
+        } catch (SQLException exception) {
+            throw databaseFailure(exception);
         }
         /*
          * At this point we collected the information needed for creating the main SQL query.
@@ -388,13 +424,13 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
         final String aliasSQL;
         if (ArraysExt.containsIdentity(filters, Condition.NAME)) {
             namePatterns = new LinkedHashSet<>();
-            namePatterns.add(toDatumPattern(object.getName().getCode(), buffer));
+            namePatterns.add(toDatumPattern(getName(object), buffer));
             for (final GenericName id : object.getAlias()) {
                 namePatterns.add(toDatumPattern(id.tip().toString(), buffer));
             }
             buffer.setLength(0);
             buffer.append("SELECT OBJECT_CODE FROM \"Alias\" WHERE OBJECT_TABLE_NAME='")
-                  .append(dao.translator.toActualTableName(table.unquoted()))
+                  .append(dao.translator.toActualTableName(source.table))
                   .append("' AND ");
             // PostgreSQL does not require explicit cast when the value is a literal instead of "?".
             appendFilterByName(namePatterns, "ALIAS", buffer);
@@ -417,8 +453,8 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          * of dependencies or parameter values as floating points. The last condition is on the object name.
          * It may be absent (typically, only datums or reference frames have that condition).
          */
-        buffer.append("SELECT ").append(table.codeColumn).append(" FROM ").append(table.table);
-        table.where(dao, object, buffer);           // Unconditionally append a "WHERE" clause.
+        buffer.append("SELECT ").append(source.codeColumn).append(" FROM ").append(source.fromClause);
+        source.where(dao, object, buffer);          // Unconditionally append a "WHERE" clause.
         boolean isNext = false;
         for (final Condition filter : filters) {
             isNext |= filter.appendToWhere(buffer, isNext);
@@ -432,14 +468,14 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             if (namePatterns != null) {
                 if (isNext) buffer.append(" AND ");
                 isNext = false;
-                appendFilterByName(namePatterns, table.nameColumn, buffer);
+                appendFilterByName(namePatterns, source.nameColumn, buffer);
                 try (ResultSet result = stmt.executeQuery(aliasSQL)) {
                     while (result.next()) {
                         final int code = result.getInt(1);
                         if (!result.wasNull()) {            // Should never be null but we are paranoiac.
                             if (!isNext) {
                                 isNext = true;
-                                buffer.append(" OR ").append(table.codeColumn).append(" IN (");
+                                buffer.append(" OR ").append(source.codeColumn).append(" IN (");
                             } else {
                                 buffer.append(',');
                             }
@@ -449,7 +485,6 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                 }
                 if (isNext) buffer.append(')');
             }
-            final boolean all = (getSearchDomain() == Domain.ALL_DATASET);
             if (!all) {
                 buffer.append(" AND DEPRECATED=FALSE");
                 // Do not put spaces around "=" because SQLTranslator searches for this exact match.
@@ -461,26 +496,34 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             for (final Condition filter : filters) {
                 filter.appendToOrderBy(buffer);
             }
-            buffer.append(table.codeColumn);          // Only for making order determinist.
+            buffer.append(source.codeColumn);         // Only for making order determinist.
             /*
              * At this point the SQL query is complete. Run it, preserving order.
              * Then sort the result by taking in account the supersession table.
              */
-            final var result = new LinkedHashSet<String>();     // We need to preserve order in this set.
-            try (ResultSet r = stmt.executeQuery(dao.translator.apply(buffer.toString()))) {
-                while (r.next()) {
-                    result.add(r.getString(1));
+            try (ResultSet result = stmt.executeQuery(dao.translator.apply(buffer.toString()))) {
+                while (result.next()) {
+                    final int code = result.getInt(1);
+                    if (!result.wasNull()) {    // Should never be null in a valid EPSG schema.
+                        addTo.add(code);
+                    }
                 }
             }
-            result.remove(null);    // Should not have null element, but let be safe.
-            dao.sort(table.unquoted(), result).ifPresent((sorted) -> {
-                result.clear();
-                result.addAll(JDK16.toList(sorted));
+            dao.sort(source.table, addTo, Integer::intValue).ifPresent((sorted) -> {
+                addTo.clear();
+                addTo.addAll(JDK16.toList(sorted.mapToObj(Integer::valueOf)));
             });
-            return result;
+            return true;
         } catch (SQLException exception) {
             throw dao.databaseFailure(Identifier.class, String.valueOf(CollectionsExt.first(filters[0].values)), exception);
         }
+    }
+
+    /**
+     * Returns the exception to throw when a database error occurred for no particular <abbr>EPSG</abbr> code.
+     */
+    private static FactoryException databaseFailure(final SQLException exception) {
+        return new FactoryException(exception.getLocalizedMessage(), Exceptions.unwrap(exception));
     }
 
     /**
@@ -496,7 +539,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
      */
-    private static String toDatumPattern(final String name, final StringBuilder buffer) {
+    private String toDatumPattern(final String name, final StringBuilder buffer) {
         int start = 0;
         if (name.startsWith(ESRI_DATUM_PREFIX)) {
             start = ESRI_DATUM_PREFIX.length();
@@ -505,7 +548,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
         if (end < 0) end = name.length();
         end = CharSequences.skipTrailingWhitespaces(name, start, end);
         buffer.setLength(0);
-        SQLUtilities.toLikePattern(name, start, end, true, true, buffer);
+        SQLUtilities.toLikePattern(name, start, end, true, true, dao.translator.wildcardEscape, buffer);
         return buffer.toString();
     }
 
@@ -531,5 +574,189 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             separator = " OR ";
         }
         buffer.append(')');
+    }
+
+    /**
+     * Returns a set of authority codes that <strong>may</strong> identify the same object as the specified one.
+     * This implementation tries to get a smaller set than what {@link EPSGDataAccess#getAuthorityCodes(Class)}
+     * would produce. Deprecated objects must be last in iteration order.
+     *
+     * <h4>Exceptions during iteration</h4>
+     * An unchecked {@link BackingStoreException} may be thrown during the iteration
+     * if the action of fetching codes from database was delayed and that action failed.
+     * The exception cause may be {@link FactoryException} or {@link SQLException}.
+     *
+     * @param  object  the object to search in the database.
+     * @return codes of objects that may be the requested ones.
+     * @throws FactoryException if an error occurred while fetching the set of code candidates.
+     */
+    @Override
+    protected Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+        for (final TableInfo table : TableInfo.EPSG) {
+            if (table.type.isInstance(object)) try {
+                return new CodeCandidates(object, table);
+            } catch (SQLException exception) {
+                throw databaseFailure(exception);
+            }
+        }
+        return Set.of();
+    }
+
+    /**
+     * Set of authority codes that <strong>may</strong> identify the same object as the specified one.
+     * This collection returns the codes that can be obtained easily before the more expensive searches.
+     */
+    private final class CodeCandidates implements Iterable<String> {
+        /** The object to search. */
+        private final IdentifiedObject object;
+
+        /** Information about the tables of the object to search. */
+        private final TableInfo source;
+
+        /** Cache of codes found so far. */
+        private final Set<Integer> codes;
+
+        /** Whether to include the codes of all objects, even the deprecated ones. */
+        private boolean includeAll;
+
+        /** Whether to use only identifiers, name and aliases in the search. */
+        private boolean easySearch;
+
+        /**
+         * Algorithm used for filling the {@link #codes} collection so far.
+         * 0 = identifiers, 1 = name, 2 = aliases, 3 = search based on properties.
+         */
+        private byte searchMethod;
+
+        /**
+         * Creates a lazy collection of code candidates.
+         * This constructor loads immediately some codes in order to have an exception early in case of problem.
+         *
+         * @param  object  the object to search in the database.
+         * @param  source  information about the table where to search for the object.
+         * @throws SQLException if an error occurred while searching for codes associated to names.
+         * @throws FactoryException if an error occurred while fetching the set of code candidates.
+         */
+        CodeCandidates(final IdentifiedObject object, final TableInfo source) throws SQLException, FactoryException {
+            this.object = object;
+            this.source = source;
+            this.codes  = new LinkedHashSet<>();
+            switch (getSearchDomain()) {
+                case DECLARATION: easySearch = true; break;
+                case ALL_DATASET: includeAll = true; break;
+                case EXHAUSTIVE_VALID_DATASET: {
+                    // Skip the search methods based on identifiers, name or aliases.
+                    searchCodesFromProperties(object, false, codes);
+                    searchMethod = 3;
+                    return;
+                }
+            }
+            for (final Identifier id : object.getIdentifiers()) {
+                if (Constants.EPSG.equalsIgnoreCase(id.getCodeSpace())) try {
+                    codes.add(Integer.valueOf(id.getCode()));
+                } catch (NumberFormatException exception) {
+                    Logging.ignorableException(EPSGDataAccess.LOGGER, IdentifiedObjectFinder.class, "find", exception);
+                }
+            }
+            if (codes.isEmpty()) {
+                fetchMoreCodes(codes);
+            }
+        }
+
+        /**
+         * Populates the given collection with code candidates.
+         * This method tries less expansive search methods before to tries more expensive search methods.
+         *
+         * @param  addTo  an initially empty collection where to add the codes.
+         * @return whether at least one code has been added to the given collection.
+         * @throws SQLException if an error occurred while searching for codes associated to names.
+         * @throws FactoryException if an error occurred while fetching the set of code candidates.
+         */
+        private boolean fetchMoreCodes(final Collection<Integer> addTo) throws SQLException, FactoryException {
+            do {
+                switch (searchMethod) {
+                    case 0: findCodesFromName(false, addTo); break;     // Fetch codes for the name.
+                    case 1: findCodesFromName(true,  addTo); break;     // Fetch codes for the aliases.
+                    case 2: if (easySearch) break;                      // Search codes based on object properties.
+                            searchCodesFromProperties(object, includeAll, addTo);
+                            break;
+                    default: return false;
+                }
+                searchMethod++;
+            } while (addTo.isEmpty());
+            return true;
+        }
+
+        /**
+         * Adds the authority codes of all objects of the given name.
+         * Callers should update the {@link #searchMethod} flag accordingly.
+         *
+         * @param  alias  whether to search in the alias table rather than the main name.
+         * @param  codes  the collection where to add the codes that have been found.
+         * @throws SQLException if an error occurred while querying the database.
+         */
+        private void findCodesFromName(final boolean alias, final Collection<Integer> addTo) throws SQLException {
+            final String name = getName(object);
+            if (name != null) {     // Should never be null, but we are paranoiac.
+                dao.findCodesFromName(source.table, object.getClass(), name, alias, addTo);
+            }
+        }
+
+        /**
+         * Returns additional code candidates which were not yet returned by the iteration.
+         * This method uses the next search method which hasn't be tried.
+         *
+         * @return the additional codes.
+         * @throws BackingStoreException if an error occurred while fetching the set of code candidates.
+         */
+        private Iterator<Integer> fetchMoreCodes() {
+            final var addTo = new ArrayList<Integer>();
+            do {
+                try {
+                    if (!fetchMoreCodes(addTo)) break;
+                } catch (SQLException | FactoryException exception) {
+                    throw new BackingStoreException(exception);
+                }
+                for (Iterator<Integer> it = addTo.iterator(); it.hasNext();) {
+                    if (!codes.add(it.next())) {
+                        it.remove();    // Code has already be returned.
+                    }
+                }
+            } while (addTo.isEmpty());
+            return addTo.iterator();
+        }
+
+        /**
+         * Returns an iterator over the code candidates. The codes are cached:
+         * the should not be fetched again if a second iteration is executed.
+         *
+         * <h4>Limitation</h4>
+         * The current implementation does not support concurrent iterations, even in the same thread.
+         * This is okay for the usage that Apache <abbr>SIS</abbr> is making of this iterator.
+         */
+        @Override
+        public Iterator<String> iterator() {
+            return new Iterator<String>() {
+                /** Iterator over a subset of the codes. */
+                private Iterator<Integer> sources = codes.iterator();
+
+                /** Tests whether there is more codes to return. */
+                @Override public boolean hasNext() {
+                    if (sources.hasNext()) {
+                        return true;
+                    }
+                    sources = fetchMoreCodes();
+                    return sources.hasNext();
+                }
+
+                /** Returns the next code. */
+                @Override public String next() {
+                    if (!sources.hasNext()) {
+                        sources = fetchMoreCodes();
+                    }
+                    return sources.next().toString();
+                }
+            };
+        }
     }
 }

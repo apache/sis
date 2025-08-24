@@ -684,15 +684,6 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertFalse(units.isEmpty());
         assertTrue (units.size() >= 2);
 
-        // Tests the fusion of all types
-        if (RUN_EXTENSIVE_TESTS) {
-            final Set<String> all = factory.getAuthorityCodes(IdentifiedObject.class);
-            assertTrue(all.containsAll(crs));
-            assertTrue(all.containsAll(datum));
-            assertTrue(all.containsAll(operations));
-            assertTrue(all.containsAll(units));
-        }
-
         // Try a dummy type.
         @SuppressWarnings({"unchecked","rawtypes"})
         final Class<? extends IdentifiedObject> wrong = (Class) String.class;
@@ -708,11 +699,11 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     @Test
     public void testDescriptionText() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
-        assertEquals("World Geodetic System 1984", factory.getDescriptionText(IdentifiedObject.class,  "6326").get().toString(Locale.US));
-        assertEquals("Mean Sea Level",             factory.getDescriptionText(IdentifiedObject.class,  "5100").get().toString(Locale.US));
-        assertEquals("NTF (Paris) / Nord France",  factory.getDescriptionText(IdentifiedObject.class, "27591").get().toString(Locale.US));
-        assertEquals("NTF (Paris) / France II",    factory.getDescriptionText(IdentifiedObject.class, "27582").get().toString(Locale.US));
-        assertEquals("Ellipsoidal height",         factory.getDescriptionText(IdentifiedObject.class,    "84").get().toString(Locale.US));
+        assertEquals("World Geodetic System 1984", factory.getDescriptionText(GeodeticDatum.class,      "6326").get().toString(Locale.US));
+        assertEquals("Mean Sea Level",             factory.getDescriptionText(VerticalDatum.class,      "5100").get().toString(Locale.US));
+        assertEquals("NTF (Paris) / Nord France",  factory.getDescriptionText(ProjectedCRS.class,      "27591").get().toString(Locale.US));
+        assertEquals("NTF (Paris) / France II",    factory.getDescriptionText(ProjectedCRS.class,      "27582").get().toString(Locale.US));
+        assertEquals("Ellipsoidal height",         factory.getDescriptionText(CoordinateSystemAxis.class, "84").get().toString(Locale.US));
         loggings.assertNoUnexpectedLog();
     }
 

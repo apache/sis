@@ -21,20 +21,24 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.system.Semaphores;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**
@@ -57,7 +61,7 @@ import org.apache.sis.util.logging.Logging;
  * is thread-safe. If concurrent searches are desired, then a new instance should be created for each thread.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
  * @see IdentifiedObjects#newFinder(String)
@@ -261,7 +265,19 @@ public class IdentifiedObjectFinder {
      * more reliable than user-specified objects.
      */
     private boolean match(final IdentifiedObject candidate, final IdentifiedObject object) {
-        return Utilities.deepEquals(candidate, object, ignoreAxes ? ComparisonMode.ALLOW_VARIANT : COMPARISON_MODE);
+        final ComparisonMode mode = ignoreAxes ? ComparisonMode.ALLOW_VARIANT : COMPARISON_MODE;
+        if (Utilities.deepEquals(candidate, object, mode)) {
+            return true;
+        }
+        if (Datum.class.isAssignableFrom(proxy.type)) {
+            if (candidate instanceof Datum && object instanceof DatumEnsemble<?>) {
+                return DatumOrEnsemble.isLegacyDatum((DatumEnsemble<?>) object, (Datum) candidate, mode);
+            }
+            if (candidate instanceof DatumEnsemble<?> && object instanceof Datum) {
+                return DatumOrEnsemble.isLegacyDatum((DatumEnsemble<?>) candidate, (Datum) object, mode);
+            }
+        }
+        return false;
     }
 
     /**
@@ -288,20 +304,8 @@ public class IdentifiedObjectFinder {
 
     /**
      * Lookups objects which are approximately equal to the specified object.
-     * The default implementation tries to instantiate some {@linkplain AbstractIdentifiedObject identified objects}
-     * from the authority factory specified at construction time, in the following order:
-     *
-     * <ul>
-     *   <li>If the specified object contains {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers}
-     *       associated to the same authority as the factory, then those identifiers are used for creating the
-     *       objects to be compared by calls to a {@code create<Type>(String)} method.</li>
-     *   <li>If the authority factory can create objects from their {@linkplain AbstractIdentifiedObject#getName() name}
-     *       in addition of identifiers, then the name and {@linkplain AbstractIdentifiedObject#getAlias() aliases} are
-     *       used for creating objects to be tested.</li>
-     *   <li>If a full scan of the dataset is allowed, then full {@linkplain #getCodeCandidates set of candidate codes}
-     *       is used for creating objects to be tested.</li>
-     * </ul>
-     *
+     * This method tries to instantiate objects identified by the {@linkplain #getCodeCandidates set of candidate codes}
+     * with the authority factory specified at construction time.
      * The created objects which are equal to the specified object in the
      * the sense of {@link ComparisonMode#APPROXIMATE} are returned.
      *
@@ -322,14 +326,6 @@ public class IdentifiedObjectFinder {
                      * trust the identifiers in the user object.
                      */
                     IdentifiedObject candidate = createFromIdentifiers(object);
-                    if (candidate == null) {
-                        /*
-                         * We are unable to find the object from its identifiers. Try a quick name lookup.
-                         * Some implementations like the one backed by the EPSG database are capable to find
-                         * an object from its name.
-                         */
-                        candidate = createFromNames(object);
-                    }
                     if (candidate != null) {
                         result = Set.of(candidate);
                     }
@@ -408,7 +404,6 @@ public class IdentifiedObjectFinder {
      * @throws FactoryException if an error occurred while creating an object.
      *
      * @see #createFromCodes(IdentifiedObject)
-     * @see #createFromNames(IdentifiedObject)
      */
     private IdentifiedObject createFromIdentifiers(final IdentifiedObject object) throws FactoryException {
         for (final Identifier id : object.getIdentifiers()) {
@@ -437,56 +432,6 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Creates an object equals (optionally ignoring metadata), to the specified object using only the
-     * {@linkplain AbstractIdentifiedObject#getName name} and {@linkplain AbstractIdentifiedObject#getAlias aliases}.
-     * If no such object is found, returns {@code null}.
-     *
-     * <p>This method may be used with some {@linkplain GeodeticAuthorityFactory authority factory}
-     * implementations like the one backed by the EPSG database, which are capable to find an object
-     * from its name when the identifier is unknown.</p>
-     *
-     * @param  object  the object looked up.
-     * @return the identified object, or {@code null} if not found.
-     * @throws FactoryException if an error occurred while creating an object.
-     *
-     * @see #createFromCodes(IdentifiedObject)
-     * @see #createFromIdentifiers(IdentifiedObject)
-     */
-    private IdentifiedObject createFromNames(final IdentifiedObject object) throws FactoryException {
-        String code = object.getName().getCode();
-        IdentifiedObject candidate;
-        try {
-            candidate = create(code);
-        } catch (FactoryException e) {
-            /*
-             * The identifier was not recognized. We will continue later with aliases.
-             * Note: we catch a more generic exception than NoSuchAuthorityCodeException because
-             *       this attempt may fail for various reasons (character string not supported
-             *       by the underlying database for primary key, duplicated name found, etc.).
-             */
-            exceptionOccurred(e);
-            candidate = null;
-        }
-        if (match(candidate, object)) {
-            return candidate;
-        }
-        for (final GenericName id : object.getAlias()) {
-            code = id.toString();
-            try {
-                candidate = create(code);
-            } catch (FactoryException e) {
-                // The name was not recognized. No problem, let's go on.
-                exceptionOccurred(e);
-                continue;
-            }
-            if (match(candidate, object)) {
-                return candidate;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Creates an object equals (optionally ignoring metadata), to the specified object.
      * This method scans the {@linkplain #getCodeCandidates(IdentifiedObject) authority codes},
      * creates the objects and returns the first one which is equal to the specified object in
@@ -495,20 +440,14 @@ public class IdentifiedObjectFinder {
      * <p>This method may be used in order to get a fully {@linkplain AbstractIdentifiedObject identified object}
      * from an object without {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers}.</p>
      *
-     * <p>Scanning the whole set of authority codes may be slow. Users should try
-     * <code>{@linkplain #createFromIdentifiers createFromIdentifiers}(object)</code> and/or
-     * <code>{@linkplain #createFromNames createFromNames}(object)</code> before to fallback
-     * on this method.</p>
-     *
      * @param  object  the object looked up.
      * @return the identified object, or {@code null} if not found.
      * @throws FactoryException if an error occurred while scanning through authority codes.
      *
      * @see #createFromIdentifiers(IdentifiedObject)
-     * @see #createFromNames(IdentifiedObject)
      */
     Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
-        final Set<IdentifiedObject> result = new LinkedHashSet<>();     // We need to preserve order.
+        final var result = new LinkedHashSet<IdentifiedObject>();     // We need to preserve order.
         final boolean finer = Semaphores.queryAndSet(Semaphores.FINER_OBJECT_CREATION_LOGS);
         try {
             for (final String code : getCodeCandidates(object)) {
@@ -557,15 +496,21 @@ public class IdentifiedObjectFinder {
 
     /**
      * Returns a set of authority codes that <em>may</em> identify the same object as the specified one.
-     * The returned set must contains <em>at least</em> the code of every objects that are
-     * {@link ComparisonMode#APPROXIMATE approximately equal} to the specified one.
-     * However, the set may conservatively contains the code for more objects if an exact search is too expensive.
+     * The elements may be determined from object identifiers, from object names, or from a more extensive search in the database.
+     * The effort in populating the returned set is specified by the {@linkplain #getSearchDomain() search domain}.
+     * The returned set should contain at least the codes of every objects in the search domain
+     * that are {@linkplain ComparisonMode#APPROXIMATE approximately equal} to the specified object.
+     * However, the set may conservatively contain the codes for more objects if an exact search is too expensive.
      *
      * <p>This method is invoked by the default {@link #find(IdentifiedObject)} method implementation.
-     * The caller iterates through the returned codes, instantiate the objects and compare them with
-     * the specified one in order to determine which codes are really applicable.
-     * The iteration stops as soon as a match is found (in other words, if more than one object is equal
-     * to the specified one, then the {@code find(…)} method selects the first one in iteration order).</p>
+     * The caller iterates through the returned codes, instantiates the objects and compares them with
+     * the specified object in order to determine which codes are really matching.
+     * The iteration order should be the preference order.</p>
+     *
+     * <h4>Exceptions during iteration</h4>
+     * An unchecked {@link BackingStoreException} may be thrown during the iteration if the implementation
+     * fetches the codes lazily (when first needed) from the authority factory, and that action failed.
+     * The exception cause is often the checked {@link FactoryException}.
      *
      * <h4>Default implementation</h4>
      * The default implementation returns the same set as
@@ -577,7 +522,7 @@ public class IdentifiedObjectFinder {
      * @return a set of code candidates.
      * @throws FactoryException if an error occurred while fetching the set of code candidates.
      */
-    protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+    protected Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
         return factory.getAuthorityCodes(proxy.type.asSubclass(IdentifiedObject.class));
     }
 
@@ -691,7 +636,7 @@ public class IdentifiedObjectFinder {
          * The default method implementation delegates the work to the finder specified by {@link #delegate()}.
          */
         @Override
-        protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+        protected Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             final IdentifiedObjectFinder delegate = delegate();
             return (delegate != this) ? delegate.getCodeCandidates(object) : super.getCodeCandidates(object);
