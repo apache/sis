@@ -875,13 +875,18 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * If the given transform is an instance of {@code ConcatenatedTransform}, sets its inverse to the given value.
      * Otherwise does nothing.
      *
-     * @param  tr       the transform on which to set the inverse.
+     * <h4>Thread safety</h4>
+     * If {@code forward} is an instance of {@link ConcatenatedTransform}, then it should be a newly created instance.
+     * Users should not have the possibility to interact with that transform before {@code forward.inverse} is set.
+     *
+     * @param  forward  the transform on which to set the inverse.
      * @param  inverse  the inverse to assign to the given transform.
      */
-    static void setInverse(final MathTransform tr, final MathTransform inverse) {
-        if (tr instanceof ConcatenatedTransform) {
-            assert OnewayLinearTransform.isNullOrDelegate(((ConcatenatedTransform) tr).inverse, inverse);
-            ((ConcatenatedTransform) tr).inverse = inverse;
+    static void setInverse(final MathTransform forward, final MathTransform inverse) {
+        if (forward instanceof ConcatenatedTransform) {
+            final var ct = (ConcatenatedTransform) forward;
+            assert OnewayLinearTransform.isNullOrDelegate(ct.inverse, inverse);
+            ct.inverse = inverse;
         }
     }
 
