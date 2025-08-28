@@ -67,6 +67,11 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     private static final int ALL_CODES = 0, NAME_FOR_CODE = 1, CODES_FOR_NAME = 2;
 
     /**
+     * Number of queries stored in the {@link #sql} and {@link #statements} arrays.
+     */
+    private static final int NUM_QUERIES = 3;
+
+    /**
      * The factory which is the owner of this map. One purpose of this field is to prevent
      * garbage collection of that factory as long as this map is in use. This is required
      * because {@link CloseableReference#dispose()} closes the JDBC connections.
@@ -125,9 +130,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      */
     AuthorityCodes(final TableInfo table, final Class<?> type, final EPSGDataAccess factory) throws SQLException {
         this.factory = factory;
-        final int count = (table.nameColumn != null) ? 3 : 1;
-        sql = new String[count];
-        statements = new Statement[count];
+        sql = new String[NUM_QUERIES];
+        statements = new Statement[NUM_QUERIES];
         /*
          * Build the SQL query for fetching the codes of all object. It is of the form:
          *
@@ -150,7 +154,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
          *
          *     SELECT code FROM table WHERE name LIKE ? AND DEPRECATED=FALSE ORDER BY code;
          */
-        if (count > CODES_FOR_NAME) {
+        if (NUM_QUERIES > CODES_FOR_NAME) {
             sql[CODES_FOR_NAME] = buffer.insert(conditionStart, table.nameColumn + " LIKE ? AND ").toString();
             /*
              * Workaround for Derby bug. See `SQLUtilities.filterFalsePositive(…)`.
@@ -165,12 +169,12 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
          *
          *     SELECT name FROM table WHERE code = ?
          */
-        if (count > NAME_FOR_CODE) {
+        if (NUM_QUERIES > NAME_FOR_CODE) {
             buffer.setLength(conditionStart);
             buffer.replace(columnNameStart, columnNameEnd, table.nameColumn);
             sql[NAME_FOR_CODE] = buffer.append(table.codeColumn).append(" = ?").toString();
         }
-        for (int i=0; i<count; i++) {
+        for (int i=0; i<NUM_QUERIES; i++) {
             sql[i] = factory.translator.apply(sql[i]);
         }
     }
@@ -201,21 +205,19 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * Puts codes associated to the given name in the given collection.
      *
      * @param  pattern  the {@code LIKE} pattern of the name to search.
-     * @param  name     the original name (workaround for Derby bug).
+     * @param  name     the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
      * @param  addTo    the collection where to add the codes.
      * @throws SQLException if an error occurred while querying the database.
      */
     final void findCodesFromName(final String pattern, final String name, final Collection<Integer> addTo) throws SQLException {
-        if (statements.length > CODES_FOR_NAME) {
-            synchronized (factory) {
-                final PreparedStatement statement = prepareStatement(CODES_FOR_NAME);
-                statement.setString(1, pattern);
-                try (ResultSet result = statement.executeQuery()) {
-                    while (result.next()) {
-                        final int code = result.getInt(1);
-                        if (!result.wasNull() && SQLUtilities.filterFalsePositive(name, result.getString(2))) {
-                            addTo.add(code);
-                        }
+        synchronized (factory) {
+            final PreparedStatement statement = prepareStatement(CODES_FOR_NAME);
+            statement.setString(1, pattern);
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    final int code = result.getInt(1);
+                    if (!result.wasNull() && SQLUtilities.filterFalsePositive(name, result.getString(2))) {
+                        addTo.add(code);
                     }
                 }
             }
@@ -317,7 +319,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      */
     @Override
     public String get(final Object code) {
-        if (code != null && statements.length > NAME_FOR_CODE) {
+        if (code != null) {
             final int n;
             if (code instanceof Number) {
                 n = ((Number) code).intValue();
@@ -394,7 +396,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         String size = null;
         synchronized (factory) {
             if (codes != null) {
-                size = "size " + (results != null ? "≥ " : "= ") + codes.size();
+                size = "size" + (results != null ? " ≥ " : " = ") + codes.size();
             }
         }
         return Strings.toString(getClass(), "type", type.getSimpleName(), null, size);

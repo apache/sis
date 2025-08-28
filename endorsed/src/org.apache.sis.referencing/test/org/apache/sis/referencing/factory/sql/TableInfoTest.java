@@ -35,12 +35,16 @@ public final class TableInfoTest extends TestCase {
     }
 
     /**
-     * Tests {@link TableInfo#getObjectClassName(String)}.
+     * Validates the enumeration values.
      */
     @Test
-    public void testgGetObjectClassName() {
-        assertEquals("Datum",                     TableInfo.getObjectClassName("epsg_datum").orElseThrow());
-        assertEquals("Ellipsoid",                 TableInfo.getObjectClassName("epsg_ellipsoid").orElseThrow());
-        assertEquals("CoordinateReferenceSystem", TableInfo.getObjectClassName("epsg_coordinatereferencesystem").orElseThrow());
+    public void validate() {
+        for (TableInfo info : TableInfo.values()) {
+            assertNotNull(info.type);
+            assertNotNull(info.table);
+            assertNotNull(info.codeColumn);
+            assertNotNull(info.nameColumn);
+            assertTrue(info.fromClause.contains(info.table));
+        }
     }
 }

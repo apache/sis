@@ -1511,7 +1511,9 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * but instead stores information for later execution.
      */
     private static final class Deferred extends AuthorityFactoryProxy<CoordinateOperationAuthorityFactory> {
-        Deferred() {super(CoordinateOperationAuthorityFactory.class, AuthorityFactoryIdentifier.Type.OPERATION);}
+        Deferred() {
+            super(CoordinateOperationAuthorityFactory.class, AuthorityFactoryIdentifier.Type.OPERATION);
+        }
 
         /** The authority code saved by the {@code createFromAPI(…)} method. */
         String code;
@@ -1791,8 +1793,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         @Override
         final Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
             if (finders == null) try {
-                final ArrayList<IdentifiedObjectFinder> list = new ArrayList<>();
-                final Map<AuthorityFactory,Boolean> unique = new IdentityHashMap<>();
+                final var list = new ArrayList<IdentifiedObjectFinder>();
+                final var unique = new IdentityHashMap<AuthorityFactory,Boolean>();
                 final Iterator<AuthorityFactory> it = ((MultiAuthoritiesFactory) factory).getAllFactories();
                 while (it.hasNext()) {
                     final AuthorityFactory candidate = it.next();
@@ -1809,7 +1811,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             } catch (BackingStoreException e) {
                 throw e.unwrapOrRethrow(FactoryException.class);
             }
-            final Set<IdentifiedObject> found = new LinkedHashSet<>();
+            final var found = new LinkedHashSet<IdentifiedObject>();
             for (final IdentifiedObjectFinder finder : finders) {
                 found.addAll(finder.find(object));
             }

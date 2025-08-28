@@ -47,6 +47,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -509,7 +510,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     }
                 }
             }
-            dao.sort(source.table, addTo, Integer::intValue).ifPresent((sorted) -> {
+            dao.sort(source, addTo, Integer::intValue).ifPresent((sorted) -> {
                 addTo.clear();
                 addTo.addAll(JDK16.toList(sorted.mapToObj(Integer::valueOf)));
             });
@@ -592,9 +593,9 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      */
     @Override
     protected Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
-        for (final TableInfo table : TableInfo.EPSG) {
-            if (table.type.isInstance(object)) try {
-                return new CodeCandidates(object, table);
+        for (final TableInfo source : TableInfo.values()) {
+            if (source.isCandidate() && source.type.isInstance(object)) try {
+                return new CodeCandidates(object, source);
             } catch (SQLException exception) {
                 throw databaseFailure(exception);
             }
@@ -610,22 +611,25 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
         /** The object to search. */
         private final IdentifiedObject object;
 
+        /** Workaround for a Derby bug (see {@code filterFalsePositive(…)}). */
+        private String name;
+
+        /** {@code LIKE} Pattern of the name of the object to search. */
+        private String namePattern;
+
         /** Information about the tables of the object to search. */
         private final TableInfo source;
 
         /** Cache of codes found so far. */
         private final Set<Integer> codes;
 
-        /** Whether to include the codes of all objects, even the deprecated ones. */
-        private boolean includeAll;
+        /** Snapshot of the search domain as it was at collection construction time. */
+        private final Domain domain;
 
-        /** Whether to use only identifiers, name and aliases in the search. */
-        private boolean easySearch;
+        /** Whether to try to easy search methods before the expansive method. */
+        private final boolean optimize;
 
-        /**
-         * Algorithm used for filling the {@link #codes} collection so far.
-         * 0 = identifiers, 1 = name, 2 = aliases, 3 = search based on properties.
-         */
+        /** Sequential number of the algorithm used for filling the {@link #codes} collection so far. */
         private byte searchMethod;
 
         /**
@@ -640,22 +644,16 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
         CodeCandidates(final IdentifiedObject object, final TableInfo source) throws SQLException, FactoryException {
             this.object = object;
             this.source = source;
+            this.domain = getSearchDomain();
             this.codes  = new LinkedHashSet<>();
-            switch (getSearchDomain()) {
-                case DECLARATION: easySearch = true; break;
-                case ALL_DATASET: includeAll = true; break;
-                case EXHAUSTIVE_VALID_DATASET: {
-                    // Skip the search methods based on identifiers, name or aliases.
-                    searchCodesFromProperties(object, false, codes);
-                    searchMethod = 3;
-                    return;
-                }
-            }
-            for (final Identifier id : object.getIdentifiers()) {
-                if (Constants.EPSG.equalsIgnoreCase(id.getCodeSpace())) try {
-                    codes.add(Integer.valueOf(id.getCode()));
-                } catch (NumberFormatException exception) {
-                    Logging.ignorableException(EPSGDataAccess.LOGGER, IdentifiedObjectFinder.class, "find", exception);
+            optimize = (domain != Domain.EXHAUSTIVE_VALID_DATASET);
+            if (optimize) {
+                for (final Identifier id : object.getIdentifiers()) {
+                    if (Constants.EPSG.equalsIgnoreCase(id.getCodeSpace())) try {
+                        codes.add(Integer.valueOf(id.getCode()));
+                    } catch (NumberFormatException exception) {
+                        Logging.ignorableException(EPSGDataAccess.LOGGER, IdentifiedObjectFinder.class, "find", exception);
+                    }
                 }
             }
             if (codes.isEmpty()) {
@@ -675,31 +673,37 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
         private boolean fetchMoreCodes(final Collection<Integer> addTo) throws SQLException, FactoryException {
             do {
                 switch (searchMethod) {
-                    case 0: findCodesFromName(false, addTo); break;     // Fetch codes for the name.
-                    case 1: findCodesFromName(true,  addTo); break;     // Fetch codes for the aliases.
-                    case 2: if (easySearch) break;                      // Search codes based on object properties.
-                            searchCodesFromProperties(object, includeAll, addTo);
-                            break;
-                    default: return false;
+                    case 0: {   // Fetch codes from the name.
+                        if (optimize) {
+                            name = getName(object);
+                            if (name != null) {     // Should never be null, but we are paranoiac.
+                                namePattern = dao.toLikePattern(name);
+                                dao.findCodesFromName(source, object.getClass(), namePattern, name, addTo);
+                            }
+                        }
+                        break;
+                    }
+                    case 1: {   // Fetch codes from the aliases.
+                        if (optimize) {
+                            if (namePattern != null) {
+                                dao.findCodesFromAlias(source, namePattern, name, addTo);
+                            }
+                        }
+                        break;
+                    }
+                    case 2: {   // Search codes based on object properties.
+                        if (domain != Domain.DECLARATION) {
+                            searchCodesFromProperties(object, domain == Domain.ALL_DATASET, addTo);
+                        }
+                        break;
+                    }
+                    default: {
+                        return false;
+                    }
                 }
                 searchMethod++;
             } while (addTo.isEmpty());
             return true;
-        }
-
-        /**
-         * Adds the authority codes of all objects of the given name.
-         * Callers should update the {@link #searchMethod} flag accordingly.
-         *
-         * @param  alias  whether to search in the alias table rather than the main name.
-         * @param  codes  the collection where to add the codes that have been found.
-         * @throws SQLException if an error occurred while querying the database.
-         */
-        private void findCodesFromName(final boolean alias, final Collection<Integer> addTo) throws SQLException {
-            final String name = getName(object);
-            if (name != null) {     // Should never be null, but we are paranoiac.
-                dao.findCodesFromName(source.table, object.getClass(), name, alias, addTo);
-            }
         }
 
         /**
@@ -757,6 +761,15 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     return sources.next().toString();
                 }
             };
+        }
+
+        /**
+         * Returns a string representation for debugging purposes.
+         * The {@code "size"} property may change during the iteration.
+         */
+        @Override
+        public String toString() {
+            return Strings.toString(getClass(), "object", getName(object), "source", source, "domain", domain, "size", codes.size());
         }
     }
 }
