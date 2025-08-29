@@ -165,7 +165,7 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
             assertTrue  (createdDAOs.get(1).isClosed(),         "Worker should be disposed.");
             assertTrue  (createdDAOs.get(0).isClosed(),         "Worker should be disposed.");
         }
-        // If the garbage collector didn't complete, report as a skipped test instead than a test failure.
+        // If the garbage collector didn't complete, report as a skipped test instead of a test failure.
         assumeTrue(r1 & r2, "The execution of ConcurrentAuthorityFactory.disposeExpired() could not complete.");
     }
 

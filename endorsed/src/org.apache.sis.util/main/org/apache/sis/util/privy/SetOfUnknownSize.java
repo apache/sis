@@ -91,7 +91,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
     @Override
     public boolean removeAll(final Collection<?> c) {
         /*
-         * Do not invoke super.removeAll(c) even if isSizeKnown() returns 'true' because we want to unconditionally
+         * Do not invoke super.removeAll(c) even if isSizeKnown() returns `true` because we want to unconditionally
          * iterate over the elements of the given collection. The reason is that this Set may compute the values in
          * a dynamic way and it is sometimes difficult to ensure that the values returned by this Set's iterator are
          * fully consistent with the values recognized by contains(Object) and remove(Object) methods. Furthermore,
@@ -173,7 +173,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
     @Override
     public boolean equals(final Object object) {
         /*
-         * Do not invoke super.equals(object) even if isSizeKnown() returns 'true' because we want to unconditionally
+         * Do not invoke super.equals(object) even if isSizeKnown() returns `true` because we want to unconditionally
          * iterate over the elements of this Set. The reason is that this Set may compute the values dynamically and
          * it is sometimes difficult to ensure that this Set's iterator is fully consistent with the values recognized
          * by the contains(Object) method. For example, the iterator may return "EPSG:4326" while the contains(Object)
@@ -186,7 +186,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
         if (!(object instanceof Set<?>)) {
             return false;
         }
-        final Set<?> that = (Set<?>) object;
+        final var that = (Set<?>) object;
         int size = 0;
         for (final Iterator<E> it = iterator(); it.hasNext();) {
             if (!that.contains(it.next())) {

@@ -601,7 +601,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         }
         if (source == null) {
             for (TableInfo c : TableInfo.values()) {
-                if (c.isCandidate() && c.type.isAssignableFrom(type)) {
+                if (c.isSpecificEnough() && c.type.isAssignableFrom(type)) {
                     if (source != null) {
                         return null;        // The specified type is too generic.
                     }
@@ -1436,7 +1436,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         try {
             final int key = isPrimaryKey ? toPrimaryKeys(null, code)[0] : 0;
             for (final TableInfo source : TableInfo.values()) {
-                if (!(source.isCandidate() && IdentifiedObject.class.isAssignableFrom(source.type))) {
+                if (!(source.isSpecificEnough() && IdentifiedObject.class.isAssignableFrom(source.type))) {
                     continue;
                 }
                 final String column = isPrimaryKey ? source.codeColumn : source.nameColumn;
@@ -3431,6 +3431,11 @@ next:                   while (r.next()) {
      * Returns a finder which can be used for looking up unidentified objects.
      * The finder tries to fetch a fully {@linkplain AbstractIdentifiedObject identified object} from an incomplete one,
      * for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}" element in <i>Well Known Text</i>.
+     *
+     * <h4>Lifetime</h4>
+     * The finder returned by this method depends on this {@code EPSGDataAccess} instance.
+     * The finder should not be used after this factory has been {@linkplain #close() closed}
+     * or given back to the {@link EPSGFactory}.
      *
      * @return a finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder cannot be created.

@@ -126,7 +126,7 @@ final class Generator extends ScriptProvider {
      * Copies the <abbr>EPSG</abbr> terms of use from the {@code sis-epsg} module to this {@code sis-embedded-data} module.
      * If the <abbr>EPSG</abbr> data are not found, then this method does nothing.
      *
-     * <p>We copy those files ourselves instead than relying on {@code maven-resources-plugin}
+     * <p>We copy those files ourselves instead of relying on {@code maven-resources-plugin}
      * because a future version may combine more licenses in a single file.</p>
      */
     private void copyLicenseFiles() throws URISyntaxException, IOException {

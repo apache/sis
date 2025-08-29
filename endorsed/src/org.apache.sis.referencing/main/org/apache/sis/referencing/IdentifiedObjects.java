@@ -46,6 +46,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.DefinitionURI;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.privy.Identifiers;
@@ -582,7 +583,7 @@ public final class IdentifiedObjects extends Static {
                                     final IdentifiedObjectFinder finder) throws FactoryException
     {
         String urn = null;
-        if (object != null) {
+        if (object != null) try {
             for (final IdentifiedObject candidate : finder.find(object)) {
                 String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
                 if (c == null && authority == null) {
@@ -606,6 +607,8 @@ public final class IdentifiedObjects extends Static {
                     urn = c;
                 }
             }
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         }
         return urn;
     }
@@ -642,7 +645,7 @@ public final class IdentifiedObjects extends Static {
     @OptionalCandidate
     public static Integer lookupEPSG(final IdentifiedObject object) throws FactoryException {
         Integer code = null;
-        if (object != null) {
+        if (object != null) try {
             for (final IdentifiedObject candidate : newFinder(Constants.EPSG).find(object)) {
                 final Identifier id = getIdentifier(candidate, Citations.EPSG);
                 if (id != null) try {
@@ -655,6 +658,8 @@ public final class IdentifiedObjects extends Static {
                     warning("lookupEPSG", e);
                 }
             }
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         }
         return code;
     }

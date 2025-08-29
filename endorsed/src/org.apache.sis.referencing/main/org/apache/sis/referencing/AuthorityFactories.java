@@ -42,6 +42,7 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
+import org.apache.sis.referencing.privy.FilteredIterator;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -121,7 +122,9 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             Reflect.log(AuthorityFactories.class, "createSourceIterator", e);
             loader = ServiceLoader.load(service);
         }
-        return loader.iterator();
+        // Excludes the `EPSGFactoryProxy` instance.
+        return new FilteredIterator<>(loader.iterator(),
+                (element) -> (element instanceof EPSGFactoryProxy) ? null : element);
     }
 
     /**
@@ -135,20 +138,6 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     @SuppressWarnings("unchecked")
     protected T[] initialValues() {
         return (T[]) new GeodeticAuthorityFactory[] {getEPSG(true)};
-    }
-
-    /**
-     * Invoked by {@link LazySet} for fetching the next element from the given iterator.
-     * Skips the {@link EPSGFactoryProxy} if possible, or returns {@code null} otherwise.
-     * Note that {@link MultiAuthoritiesFactory} is safe to null values.
-     */
-    @Override
-    protected T next(final Iterator<? extends T> it) {
-        T e = it.next();
-        if (e instanceof EPSGFactoryProxy) {
-            e = it.hasNext() ? it.next() : null;
-        }
-        return e;
     }
 
     /**

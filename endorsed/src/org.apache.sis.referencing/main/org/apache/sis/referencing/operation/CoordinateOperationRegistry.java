@@ -344,6 +344,8 @@ class CoordinateOperationRegistry {
             } catch (UnavailableFactoryException e) {
                 log(null, e);
                 codeFinder = null;
+            } catch (BackingStoreException e) {
+                throw e.unwrapOrRethrow(FactoryException.class);
             }
             authorityCodes.put(crs, codes);
         }

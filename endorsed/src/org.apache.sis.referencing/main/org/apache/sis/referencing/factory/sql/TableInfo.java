@@ -92,7 +92,7 @@ enum TableInfo {
      * Information about the "Conventional RS" table.
      * This enumeration usually needs to be ignored because the current type is too generic.
      *
-     * @see #isCandidate()
+     * @see #isSpecificEnough()
      */
     CONVENTIONAL_RS(IdentifiedObject.class,
             "\"Conventional RS\"",
@@ -281,7 +281,7 @@ enum TableInfo {
      * Returns whether this enumeration value can be used when looking a table by an object type.
      * This method returns {@code false} for types that are too generic.
      */
-    final boolean isCandidate() {
+    final boolean isSpecificEnough() {
         return type != IdentifiedObject.class;
     }
 

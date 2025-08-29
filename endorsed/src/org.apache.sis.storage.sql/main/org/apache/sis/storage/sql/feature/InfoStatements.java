@@ -55,6 +55,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
@@ -643,7 +644,12 @@ public class InfoStatements implements Localized, AutoCloseable {
             if (cached != null) {
                 return cached;
             }
-            result = findOrAddCRS(crs);
+            try {
+                result = findOrAddCRS(crs);
+            } catch (BackingStoreException e) {
+                // May be thrown by IdentifiedObjectFinder iterator.
+                throw e.unwrapOrRethrow(FactoryException.class);
+            }
             database.cacheOfSRID.put(crs, result.srid);
         }
         CommonExecutor.instance().submit((Runnable) result);

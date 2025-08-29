@@ -44,6 +44,7 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
@@ -74,6 +75,10 @@ import org.opengis.referencing.crs.DerivedCRS;
 /**
  * An implementation of {@link IdentifiedObjectFinder} which scans over a smaller set of authority codes.
  * This is used for finding the EPSG code of a given Coordinate Reference System or other geodetic object.
+ *
+ * <h4>Lifetime</h4>
+ * The finder returned by this method depends on the {@link EPSGDataAccess} instance given to the constructor.
+ * The finder should not be used after this factory has been closed or given back to the {@link EPSGFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
@@ -152,7 +157,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
     private <T extends IdentifiedObject> Condition dependencies(final String column,
             final Class<T> type, final T dependency, final boolean ignoreAxes) throws FactoryException
     {
-        if (dependency != null) {
+        if (dependency != null) try {
             final Class<? extends IdentifiedObject> pt = declaredType;
             final boolean previous = isIgnoringAxes();
             final Set<IdentifiedObject> find;
@@ -176,6 +181,8 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
             if (!filters.isEmpty()) {
                 return new Condition(column, filters);
             }
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         }
         return null;
     }
@@ -594,7 +601,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
     @Override
     protected Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
         for (final TableInfo source : TableInfo.values()) {
-            if (source.isCandidate() && source.type.isInstance(object)) try {
+            if (source.isSpecificEnough() && source.type.isInstance(object)) try {
                 return new CodeCandidates(object, source);
             } catch (SQLException exception) {
                 throw databaseFailure(exception);
@@ -606,8 +613,13 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
     /**
      * Set of authority codes that <strong>may</strong> identify the same object as the specified one.
      * This collection returns the codes that can be obtained easily before the more expensive searches.
+     *
+     * @todo We should not keep a reference to the enclosing finder, because the {@link EPSGDataAccess}
+     * may become invalid before the iteration is completed. For now, this is not a problem because this
+     * collection is copied by the {@link EPSGFactory} finder. But this is suboptimal because it defeats
+     * the purpose of object lazy instantiation.
      */
-    private final class CodeCandidates implements Iterable<String> {
+    private final class CodeCandidates implements Iterable<String>, Disposable {
         /** The object to search. */
         private final IdentifiedObject object;
 
@@ -659,6 +671,19 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             if (codes.isEmpty()) {
                 fetchMoreCodes(codes);
             }
+        }
+
+        /**
+         * Invoked when the caller requested to stop the iteration after the current group of elements.
+         * A group of elements is either the codes specified by the identifiers, or the codes found in
+         * the database. We will avoid to stop in the middle of a group.
+         *
+         * <p>This is an undocumented feature of {@link #createFromCodes(IdentifiedObject)}
+         * for stopping an iteration early when at least one match has been found.</p>
+         */
+        @Override
+        public void dispose() {
+            searchMethod = 3;   // The value after the last switch in `fetchMoreCodes(Collection)`.
         }
 
         /**

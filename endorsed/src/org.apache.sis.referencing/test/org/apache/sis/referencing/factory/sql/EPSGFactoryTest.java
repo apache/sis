@@ -887,7 +887,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     public void testFindGeographic() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
         final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
-        final DefaultGeographicCRS crs = (DefaultGeographicCRS) CRS.fromWKT(
+        final var crs = (DefaultGeographicCRS) CRS.fromWKT(
                 "GEOGCS[“WGS 84”,\n" +
                 "  DATUM[“WGS 84”,\n" +     // Use the alias instead of primary name for forcing a deeper search.
                 "    SPHEROID[“WGS 1984”, 6378137.0, 298.257223563]],\n" +  // Different name for forcing a deeper search.
@@ -904,29 +904,17 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertTrue(finder.find(crs.forConvention(AxesConvention.NORMALIZED)).isEmpty(),
                    "Should not find WGS84 because the axis order is not the same.");
         /*
-         * Ensure that the cache is empty.
+         * Performs a search based only on the name.
          */
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
-        assertTrue(finder.find(crs).isEmpty(),
-                   "Should not find without a full scan, because the WKT contains no identifier " +
-                   "and the CRS name is ambiguous (more than one EPSG object have this name).");
+        final IdentifiedObject found = finder.findSingleton(crs);
+        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, found);
         /*
          * Scan the database for searching the CRS.
          */
-        finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
-        final IdentifiedObject found = finder.findSingleton(crs);
-        assertNotNull(found, "With full scan allowed, the CRS should be found.");
-        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, found);
-        /*
-         * Search should behave as specified by `DECLARATION` contract even if the CRS is in the cache.
-         */
-        finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
-        assertNull(finder.findSingleton(crs), "Should met `DECLARATION` contract.");
-        /*
-         * Should find the CRS without the need of a full scan, because of the cache.
-         */
-        finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
-        assertSame(found, finder.findSingleton(crs), "The CRS should still in the cache.");
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET);
+        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, finder.findSingleton(crs));
+        assertSame(found, finder.findSingleton(crs), "The CRS should be in the cache.");
         loggings.assertNoUnexpectedLog();
     }
 

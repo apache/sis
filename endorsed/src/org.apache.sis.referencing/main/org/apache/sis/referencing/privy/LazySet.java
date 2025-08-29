@@ -25,7 +25,7 @@ import org.apache.sis.util.privy.SetOfUnknownSize;
 /**
  * An unmodifiable set built from an iterator, which will be filled only when needed.
  * This implementation does <strong>not</strong> check if all elements in the iterator
- * are really unique; we assume that this condition was already verified by the caller.
+ * are really unique. We assume that this condition was already verified by the caller.
  *
  * <p>Some usages for this class are to prepend some values before the elements given by the source {@code Iterable},
  * or to replace some values when they are loaded.</p>
@@ -34,6 +34,8 @@ import org.apache.sis.util.privy.SetOfUnknownSize;
  * This class is thread safe. The synchronization lock is {@code this}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ *
+ * @see FilteredIterator
  *
  * @param <E>  the type of elements in the set.
  */
@@ -66,11 +68,11 @@ public abstract class LazySet<E> extends SetOfUnknownSize<E> {
     }
 
     /**
-     * Creates the iterator which will provide the elements of this set before filtering.
+     * Creates the iterator which will provide the elements of this set.
      * This method will be invoked only when first needed and at most once, unless {@link #reload()} is invoked.
      * After creation, calls to {@link Iterator#next()} will also be done only when first needed.
      *
-     * @return iterator over the elements of this set before filtering.
+     * @return iterator over the elements of this set.
      */
     protected abstract Iterator<? extends E> createSourceIterator();
 
@@ -145,24 +147,11 @@ public abstract class LazySet<E> extends SetOfUnknownSize<E> {
     public final synchronized int size() {
         if (canPullMore()) {
             while (sourceIterator.hasNext()) {
-                cache(next(sourceIterator));
+                cache(sourceIterator.next());
             }
             sourceIterator = null;
         }
         return numCached;
-    }
-
-    /**
-     * Returns the next element from the given iterator. Default implementation returns {@link Iterator#next()}.
-     * Subclasses may override if they need to apply additional processing. For example, this method can be used
-     * for skipping data, but this approach works only if we have the guarantee that another element exists after
-     * the skipped one (because {@code LazySet} will not invoke {@link Iterator#hasNext()} again).
-     *
-     * @param  it  the iterator from which to get a next value.
-     * @return the next value (may be {@code null}).
-     */
-    protected E next(final Iterator<? extends E> it) {
-        return it.next();
     }
 
     /**
@@ -205,7 +194,7 @@ public abstract class LazySet<E> extends SetOfUnknownSize<E> {
         assert index <= numCached : index;
         if (index >= numCached) {
             if (canPullMore()) {
-                cache(next(sourceIterator));
+                cache(sourceIterator.next());
             } else {
                 throw new NoSuchElementException();
             }

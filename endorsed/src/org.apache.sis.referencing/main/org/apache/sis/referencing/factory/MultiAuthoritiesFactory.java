@@ -42,6 +42,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.parameter.ParameterDescriptor;
@@ -857,7 +858,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * rigorous approach in a future SIS version.
          */
         if (parameters != null || code.indexOf(CommonAuthorityCode.SEPARATOR) >= 0) {
-            final StringBuilder buffer = new StringBuilder(authority.length() + code.length() + 1)
+            final var buffer = new StringBuilder(authority.length() + code.length() + 1)
                     .append(authority).append(Constants.DEFAULT_SEPARATOR).append(code);
             if (parameters != null) {
                 for (final String p : parameters) {
@@ -1738,12 +1739,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * A {@link IdentifiedObjectFinder} which tests every factories declared in the
      * {@linkplain MultiAuthoritiesFactory#getAllFactories() collection of factories}.
      */
-    private static class Finder extends IdentifiedObjectFinder {
+    private static final class Finder extends IdentifiedObjectFinder {
         /**
          * The finders of all factories, or {@code null} if not yet fetched.
          * We will create this array only when first needed in order to avoid instantiating the factories
-         * before needed (for example we may be able to find an object using only its code). However if we
-         * need to create this array, then we will create it fully (for all factories at once).
+         * before needed (for example we may be able to find an object using only its code). However,
+         * if we need to create this array, then we will create it fully (for all factories at once).
          */
         private IdentifiedObjectFinder[] finders;
 
@@ -1781,18 +1782,77 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         }
 
         /**
-         * Delegates to every factories registered in the enclosing {@link MultiAuthoritiesFactory},
-         * in iteration order. This method is invoked only if the parent class failed to find the
-         * object by its identifiers and by its name. At this point, as a last resort, we will scan
-         * over the objects in the database.
+         * Creates objects equal (optionally ignoring metadata) to the specified object using the given identifiers.
+         * This method may be used in order to get a fully identified object from a partially identified one.
+         *
+         * @param  type         the type of the factory which is needed.
+         * @param  object       the user-specified object to search.
+         * @param  identifiers  {@code object.getIdentifiers()} or {@code object.getName()}.
+         * @param  result       the collection where to add the object instantiated from the identifiers.
+         * @throws FactoryException if an error occurred while creating an object.
+         */
+        private void createFromIdentifiers(final AuthorityFactoryIdentifier.Type type, final IdentifiedObject object,
+                final Iterable<Identifier> identifiers, final Set<IdentifiedObject> result) throws FactoryException
+        {
+            for (final Identifier identifier : identifiers) {
+                final String authority = identifier.getCodeSpace();
+                if (authority != null) {
+                    @SuppressWarnings("LocalVariableHidesMemberVariable")
+                    final var factory = (MultiAuthoritiesFactory) this.factory;
+                    final IdentifiedObject candidate;
+                    try {
+                        final var fid = AuthorityFactoryIdentifier.create(type, authority, identifier.getVersion());
+                        candidate = createAndFilter(factory.getAuthorityFactory(fid), identifier.getCode(), object);
+                    } catch (NoSuchAuthorityCodeException e) {
+                        // The identifier was not recognized. No problem, let's go on.
+                        exceptionOccurred(e);
+                        continue;
+                    }
+                    if (candidate != null) {
+                        result.add(candidate);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Creates objects approximately equal to the specified object by iterating over authority code candidates.
+         * This method is invoked by {@link #find(IdentifiedObject)} when the result was not already in the cache.
+         * First, this method tries to delegate to the factory specified by the name space of each identifier.
+         * If this quick search using declared identifiers did not worked, then this method delegates to every
+         * factories registered in the enclosing {@link MultiAuthoritiesFactory}, in iteration order.
          *
          * <p>This method shall <strong>not</strong> delegate the job to the parent class, as the default
          * implementation in the parent class is very inefficient. We need to delegate to the finders of
          * all factories, so we can leverage their potentially more efficient algorithms.</p>
+         *
+         * @param  object  the object looked up.
+         * @return the identified objects, or an empty set if not found.
+         * @throws FactoryException if an error occurred while fetching the authority code candidates.
+         * @throws BackingStoreException allowed for convenience, will be unwrapped by the caller.
          */
         @Override
         final Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
-            if (finders == null) try {
+            if (getSearchDomain() != Domain.EXHAUSTIVE_VALID_DATASET) {
+                for (AuthorityFactoryIdentifier.Type type : AuthorityFactoryIdentifier.Type.values()) {
+                    if (type.api.isInstance(object)) {
+                        final var result = new LinkedHashSet<IdentifiedObject>();
+                        createFromIdentifiers(type, object, object.getIdentifiers(), result);
+                        if (result.isEmpty()) {
+                            createFromIdentifiers(type, object, CollectionsExt.singletonOrEmpty(object.getName()), result);
+                            if (result.isEmpty()) {
+                                break;
+                            }
+                        }
+                        return result;
+                    }
+                }
+            }
+            /*
+             * No object created from the identifiers or the name.
+             * Prepare finders for each factory in iteration order.
+             */
+            if (finders == null) {
                 final var list = new ArrayList<IdentifiedObjectFinder>();
                 final var unique = new IdentityHashMap<AuthorityFactory,Boolean>();
                 final Iterator<AuthorityFactory> it = ((MultiAuthoritiesFactory) factory).getAllFactories();
@@ -1801,21 +1861,35 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     if (candidate instanceof GeodeticAuthorityFactory && unique.put(candidate, Boolean.TRUE) == null) {
                         IdentifiedObjectFinder finder = ((GeodeticAuthorityFactory) candidate).newIdentifiedObjectFinder();
                         if (finder != null) {   // Should never be null according method contract, but we are paranoiac.
-                            finder.setSearchDomain(Domain.EXHAUSTIVE_VALID_DATASET);
-                            finder.setWrapper(this);
                             list.add(finder);
                         }
                     }
                 }
                 finders = list.toArray(IdentifiedObjectFinder[]::new);
-            } catch (BackingStoreException e) {
-                throw e.unwrapOrRethrow(FactoryException.class);
             }
-            final var found = new LinkedHashSet<IdentifiedObject>();
+            /*
+             * If only one finder returns a non-empty set, we return that set without copying
+             * the elements in a `LinkedHashSet` because it may a lazy set. We merge the sets
+             * only if really necessary.
+             */
+            Set<IdentifiedObject> merged = null, result = null;
             for (final IdentifiedObjectFinder finder : finders) {
-                found.addAll(finder.find(object));
+                finder.setWrapper(this);    // Also copy the configuration of this finder.
+                final Set<IdentifiedObject> codes = finder.find(object);
+                if (!codes.isEmpty()) {
+                    if (result == null) {
+                        result = codes;
+                    } else {
+                        if (merged == null) {
+                            merged = new LinkedHashSet<>(result);
+                        }
+                        if (merged.addAll(codes)) {
+                            result = merged;
+                        }
+                    }
+                }
             }
-            return found;
+            return (result != null) ? result : Set.of();
         }
     }
 
