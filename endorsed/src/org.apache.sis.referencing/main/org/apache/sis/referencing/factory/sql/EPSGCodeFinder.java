@@ -158,16 +158,16 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
             final Class<T> type, final T dependency, final boolean ignoreAxes) throws FactoryException
     {
         if (dependency != null) try {
-            final Class<? extends IdentifiedObject> pt = declaredType;
-            final boolean previous = isIgnoringAxes();
+            final Class<? extends IdentifiedObject> previousType = declaredType;
+            final boolean previousAxes = isIgnoringAxes();
             final Set<IdentifiedObject> find;
             try {
-                setIgnoringAxes(ignoreAxes | previous);
+                setIgnoringAxes(ignoreAxes | previousAxes);
                 declaredType = type;
                 find = find(dependency);
             } finally {
-                declaredType = pt;
-                setIgnoringAxes(previous);
+                declaredType = previousType;
+                setIgnoringAxes(previousAxes);
             }
             final Set<Number> filters = JDK19.newLinkedHashSet(find.size());
             for (final IdentifiedObject dep : find) {
@@ -416,7 +416,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             };
         } else try {
             // Not a supported type. Returns all codes if not too expensive.
-            return dao.getAuthorityCodes(declaredType, addTo);
+            return dao.getAuthorityCodes(object, addTo);
         } catch (SQLException exception) {
             throw databaseFailure(exception);
         }
@@ -462,7 +462,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          * It may be absent (typically, only datums or reference frames have that condition).
          */
         buffer.append("SELECT ").append(source.codeColumn).append(" FROM ").append(source.fromClause);
-        source.where(dao, object, buffer);          // Unconditionally append a "WHERE" clause.
+        source.appendWhere(dao, object, buffer);    // Unconditionally append a "WHERE" clause.
         boolean isNext = false;
         for (final Condition filter : filters) {
             isNext |= filter.appendToWhere(buffer, isNext);
@@ -638,9 +638,6 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
         /** Snapshot of the search domain as it was at collection construction time. */
         private final Domain domain;
 
-        /** Whether to try to easy search methods before the expansive method. */
-        private final boolean optimize;
-
         /** Sequential number of the algorithm used for filling the {@link #codes} collection so far. */
         private byte searchMethod;
 
@@ -658,8 +655,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             this.source = source;
             this.domain = getSearchDomain();
             this.codes  = new LinkedHashSet<>();
-            optimize = (domain != Domain.EXHAUSTIVE_VALID_DATASET);
-            if (optimize) {
+            if (domain != Domain.EXHAUSTIVE_VALID_DATASET) {
                 for (final Identifier id : object.getIdentifiers()) {
                     if (Constants.EPSG.equalsIgnoreCase(id.getCodeSpace())) try {
                         codes.add(Integer.valueOf(id.getCode()));
@@ -699,17 +695,17 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             do {
                 switch (searchMethod) {
                     case 0: {   // Fetch codes from the name.
-                        if (optimize) {
+                        if (domain != Domain.EXHAUSTIVE_VALID_DATASET) {
                             name = getName(object);
                             if (name != null) {     // Should never be null, but we are paranoiac.
                                 namePattern = dao.toLikePattern(name);
-                                dao.findCodesFromName(source, object.getClass(), namePattern, name, addTo);
+                                dao.findCodesFromName(source, TableInfo.toCacheKey(object), namePattern, name, addTo);
                             }
                         }
                         break;
                     }
                     case 1: {   // Fetch codes from the aliases.
-                        if (optimize) {
+                        if (domain != Domain.EXHAUSTIVE_VALID_DATASET) {
                             if (namePattern != null) {
                                 dao.findCodesFromAlias(source, namePattern, name, addTo);
                             }

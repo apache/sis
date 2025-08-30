@@ -241,7 +241,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * and returns {@code false} if some are found (thus blocking the call to {@link #close()}
      * by the {@link org.apache.sis.referencing.factory.ConcurrentAuthorityFactory} timer).</p>
      */
-    private final Map<Class<?>, CloseableReference> authorityCodes = new HashMap<>();
+    private final Map<Object, CloseableReference> authorityCodes = new HashMap<>();
 
     /**
      * Cache for axis names, conventional reference systems, realization methods or naming systems.
@@ -561,19 +561,14 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * This method may do nothing if getting all codes would be too expensive
      * (especially since the caller would instantiate all enumerated objects).
      *
-     * @param  type   the spatial reference objects type, or {@code null} if unspecified.
-     * @param  addTo  the collection where to add all codes.
+     * @param  object  the object to search in the database.
+     * @param  addTo   the collection where to add all codes.
      * @return whether the collection has changed as a result of this method call.
      * @throws SQLException if an error occurred while querying the database.
      */
-    final boolean getAuthorityCodes(final Class<? extends IdentifiedObject> type, final Collection<Integer> addTo) throws SQLException {
-        if (type != null) {
-            final AuthorityCodes codes = getCodeMap(type, null, false);
-            if (codes != null) {
-                return codes.getAllCodes(addTo);
-            }
-        }
-        return false;
+    final boolean getAuthorityCodes(final IdentifiedObject object, final Collection<Integer> addTo) throws SQLException {
+        final AuthorityCodes codes = getCodeMap(TableInfo.toCacheKey(object), null, false);
+        return (codes != null) && codes.getAllCodes(addTo);
     }
 
     /**
@@ -581,17 +576,19 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * The cautions documented in {@link #getAuthorityCodes(Class)} apply also to this map.
      * If the given type is unsupported or too generic, returns {@code null}.
      *
-     * @param  type     the spatial reference objects type.
-     * @param  source   the table from which to get the authority codes, or {@code null} for automatic.
-     * @param  publish  whether the returned authority codes will be given to a user outside this package.
+     * @param  cacheKey  object class or {@link TableInfo#toCacheKey(IdentifiedObject)} value.
+     * @param  source    the table from which to get the authority codes, or {@code null} for automatic.
+     * @param  publish   whether the returned authority codes will be given to a user outside this package.
      * @return the map of authority codes associated to their names, or {@code null} if unsupported.
      * @throws FactoryException if access to the underlying database failed.
      *
      * @see #getAuthorityCodes(Class)
      * @see #getDescriptionText(Class, String)
      */
-    private synchronized AuthorityCodes getCodeMap(final Class<?> type, TableInfo source, boolean publish) throws SQLException {
-        CloseableReference reference = authorityCodes.get(type);
+    private synchronized AuthorityCodes getCodeMap(final Object cacheKey, TableInfo source, boolean publish)
+            throws SQLException
+    {
+        CloseableReference reference = authorityCodes.get(cacheKey);
         if (reference != null) {
             AuthorityCodes existing = reference.get();
             if (existing != null) {
@@ -599,26 +596,29 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
                 return existing;
             }
         }
-        if (source == null) {
-            for (TableInfo c : TableInfo.values()) {
-                if (c.isSpecificEnough() && c.type.isAssignableFrom(type)) {
+        if (source != null) {
+            assert source.isSpecificEnough() && source.type.isAssignableFrom(TableInfo.typeOfCacheKey(cacheKey)) : source;
+        } else {
+            final Class<?> userType = TableInfo.typeOfCacheKey(cacheKey);
+            for (TableInfo candidate : TableInfo.values()) {
+                if (candidate.isSpecificEnough() && candidate.type.isAssignableFrom(userType)) {
                     if (source != null) {
                         return null;        // The specified type is too generic.
                     }
-                    source = c;
+                    source = candidate;
                 }
             }
             if (source == null) {
                 return null;                // The specified type is unsupported.
             }
         }
-        AuthorityCodes codes = new AuthorityCodes(source, type, this);
+        AuthorityCodes codes = new AuthorityCodes(source, cacheKey, this);
         /*
          * Maybe an instance already existed but was not found above because the user specified some
          * implementation class instead of an interface class. Before to return a newly created map,
          * check again in the cached maps using the type computed by AuthorityCodes itself.
          */
-        reference = authorityCodes.get(codes.type);
+        reference = authorityCodes.get(codes.cacheKey);
         if (reference != null) {
             AuthorityCodes existing = reference.get();
             if (existing != null) {
@@ -629,10 +629,10 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         }
         if (reference == null) {
             reference = codes.createReference();
-            authorityCodes.put(codes.type, reference);
+            authorityCodes.put(codes.cacheKey, reference);
         }
-        if (type != codes.type) {
-            authorityCodes.put(type, reference);
+        if (cacheKey != codes.cacheKey) {
+            authorityCodes.put(cacheKey, reference);
         }
         reference.published |= publish;
         return codes;
@@ -780,17 +780,17 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     /**
      * Finds the authority codes for the given name.
      *
-     * @param  source   information about the table where the code should appear.
-     * @param  type     the type of object to search. Should be assignable to {@code source.type}.
-     * @param  pattern  the name to search as a pattern that can be used with {@code LIKE}.
-     * @param  name     the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
-     * @param  addTo    the collection where to add the codes that have been found.
+     * @param  source    information about the table where the code should appear.
+     * @param  cacheKey  object class or {@link TableInfo#toCacheKey(IdentifiedObject)} value.
+     * @param  pattern   the name to search as a pattern that can be used with {@code LIKE}.
+     * @param  name      the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
+     * @param  addTo     the collection where to add the codes that have been found.
      * @throws SQLException if an error occurred while querying the database.
      */
-    final void findCodesFromName(final TableInfo source, final Class<?> type, final String pattern, final String name, final Collection<Integer> addTo)
-            throws SQLException
+    final void findCodesFromName(final TableInfo source, final Object cacheKey, final String pattern, final String name,
+                                 final Collection<Integer> addTo) throws SQLException
     {
-        AuthorityCodes codes = getCodeMap(type, source, false);
+        AuthorityCodes codes = getCodeMap(cacheKey, source, false);
         if (codes != null) {
             codes.findCodesFromName(pattern, name, addTo);
         }

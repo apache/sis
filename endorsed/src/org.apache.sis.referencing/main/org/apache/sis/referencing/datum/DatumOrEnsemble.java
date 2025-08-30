@@ -427,18 +427,27 @@ public final class DatumOrEnsemble extends Static {
         if (match != null) {
             return match;
         }
-        String name = ensemble.getName().getCode();
-        if (IdentifiedObjects.isHeuristicMatchForName(datum, name)) {
+        /*
+         * We could not answer the question using identifiers. Try using the names.
+         * The primary name is likely to not match, because ensemble names in EPSG
+         * dataset often ends with "ensemble" while datum names often do not. But
+         * we are more interrested in the ensemble's aliases in the next line.
+         */
+        if (IdentifiedObjects.isHeuristicMatchForName(ensemble, datum.getName().getCode())) {
             return true;
         }
+        /*
+         * Try to remove the "ensemble" prefix in the datum ensemble name and try again.
+         * This time, the comparison will also check `datum` aliases instead of `ensemble`.
+         */
+        String name = ensemble.getName().getCode();
         if (name.endsWith(ENSEMBLE)) {
             int i = name.length() - ENSEMBLE.length();
             if (i > (i = CharSequences.skipTrailingWhitespaces(name, 0, i))) {
                 name = name.substring(0, i);    // Remove the "ensemble" suffix.
-                return IdentifiedObjects.isHeuristicMatchForName(datum, name);
             }
         }
-        return false;
+        return IdentifiedObjects.isHeuristicMatchForName(datum, name);
     }
 
     /**

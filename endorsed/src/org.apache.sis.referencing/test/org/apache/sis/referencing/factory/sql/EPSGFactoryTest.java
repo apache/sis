@@ -699,12 +699,25 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     @Test
     public void testDescriptionText() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
-        assertEquals("World Geodetic System 1984", factory.getDescriptionText(GeodeticDatum.class,      "6326").get().toString(Locale.US));
-        assertEquals("Mean Sea Level",             factory.getDescriptionText(VerticalDatum.class,      "5100").get().toString(Locale.US));
-        assertEquals("NTF (Paris) / Nord France",  factory.getDescriptionText(ProjectedCRS.class,      "27591").get().toString(Locale.US));
-        assertEquals("NTF (Paris) / France II",    factory.getDescriptionText(ProjectedCRS.class,      "27582").get().toString(Locale.US));
-        assertEquals("Ellipsoidal height",         factory.getDescriptionText(CoordinateSystemAxis.class, "84").get().toString(Locale.US));
+        assertDescriptionStarts("World Geodetic System 1984", factory, GeodeticDatum.class,      6326);
+        assertDescriptionStarts("Mean Sea Level",             factory, VerticalDatum.class,      5100);
+        assertDescriptionStarts("NTF (Paris) / Nord France",  factory, ProjectedCRS.class,      27591);
+        assertDescriptionStarts("NTF (Paris) / France II",    factory, ProjectedCRS.class,      27582);
+        assertDescriptionStarts("Ellipsoidal height",         factory, CoordinateSystemAxis.class, 84);
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Asserts that the description text for the given code starts with the expected value.
+     * We do not require a full match because suffix such as "ensemble" may or may not be present
+     * depending on the version of the <abbr>EPSG</abbr> database.
+     */
+    private static void assertDescriptionStarts(final String expected, final EPSGFactory factory,
+            final Class<? extends IdentifiedObject> type, final int code) throws FactoryException
+    {
+        final var description = factory.getDescriptionText(type, Integer.toString(code));
+        assertTrue(description.isPresent(), expected);
+        assertTrue(description.get().toString(Locale.US).startsWith(expected), expected);
     }
 
     /**

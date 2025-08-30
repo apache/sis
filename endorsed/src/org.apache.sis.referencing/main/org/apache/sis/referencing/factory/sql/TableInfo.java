@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Map;
 import javax.measure.Unit;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
@@ -47,7 +48,7 @@ import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
  * As of ISO 19111:2019, we have no standard way to identify the geocentric case from a {@link Class} argument
  * because the standard does not provide the {@code GeocentricCRS} interface. This implementation fallbacks on
  * the <abbr>SIS</abbr>-specific geocentric <abbr>CRS</abbr> class. This special case is implemented in the
- * {@link #where(EPSGDataAccess, IdentifiedObject, StringBuilder)} method.
+ * {@link #appendWhere(EPSGDataAccess, Object, StringBuilder)} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
@@ -63,7 +64,7 @@ enum TableInfo {
             new Class<?>[] { ProjectedCRS.class,   GeographicCRS.class,   DefaultGeocentricCRS.class,
                              VerticalCRS.class,    CompoundCRS.class,     EngineeringCRS.class,
                              DerivedCRS.class,     TemporalCRS.class,     ParametricCRS.class},     // See comment below
-            new String[]   {"projected",          "geographic",          "geocentric",
+            new String[]   {"projected",          "geographic 2D",       "geocentric",              // 3D case handled below
                             "vertical",           "compound",            "engineering",
                             "derived",            "temporal",            "parametric"},             // See comment below
             "SHOW_CRS", true),
@@ -82,9 +83,11 @@ enum TableInfo {
             "DATUM_CODE",
             "DATUM_NAME",
             "DATUM_TYPE",
-            new Class<?>[] { GeodeticDatum.class,  VerticalDatum.class,   EngineeringDatum.class,
+            new Class<?>[] { DatumEnsemble.class,  // Need to be first because Apache SIS uses as mixin interface.
+                             GeodeticDatum.class,  VerticalDatum.class,   EngineeringDatum.class,
                              TemporalDatum.class,  ParametricDatum.class},
-            new String[]   {"geodetic",           "vertical",            "engineering",
+            new String[]   {"ensemble",
+                            "geodetic",           "vertical",            "engineering",
                             "temporal",           "parametric"},         // Same comment as in the CRS case above.
             null, true),
 
@@ -193,6 +196,28 @@ enum TableInfo {
             null, null, null, null, false);
 
     /**
+     * Types to consider as synonymous for searching purposes. This map exists for historical reasons,
+     * because dynamic datum and datum ensemble did not existed in older <abbr>ISO</abbr> 19111 standards.
+     * If an object to search is "geodetic", there is a possibility that it is defined in the old way and
+     * actually appears as a "dynamic geodetic" or "ensemble" in the <abbr>EPSG</abbr> geodetic dataset.
+     *
+     * <p>The "geographic 3D" case is handled in a special way. It is considered as a synonymous of
+     * "geographic 2D" only when we don't know the number of dimensions.</p>
+     */
+    private static final Map<String, String[]> SYNONYMOUS_TYPES = Map.of(
+            "geodetic",      new String[] {"dynamic geodetic", "ensemble"},
+            "geographic 2D", new String[] {"geographic 3D"});
+
+    /**
+     * Types to replace by specialized types when the user-specified instance implements a mixin interface.
+     * For example, {@link DynamicReferenceFrame} means to not search for any geodetic datum, but only for
+     * dynamic geodetic datum.
+     */
+    private static final Map<String, String> DYNAMIC_TYPES = Map.of(
+            "geodetic", "dynamic geodetic");
+            // We would expect a "dynamic vertical" as well, but we don't see it yet in EPSG database.
+
+    /**
      * The class of object to be created (usually a GeoAPI interface).
      */
     final Class<?> type;
@@ -232,6 +257,7 @@ enum TableInfo {
 
     /**
      * Names of {@link #subTypes} in the database, or {@code null} if none.
+     * This array must have the same length as {@link #subTypes}.
      */
     private final String[] typeNames;
 
@@ -286,61 +312,145 @@ enum TableInfo {
     }
 
     /**
-     * Appends a {@code WHERE} clause together with a condition for searching the specified object.
-     * This method delegates to {@link #where(EPSGDataAccess, Class, StringBuilder)} with the type
-     * of the given object, except that some object properties may be inspected for resolving ambiguities.
+     * Returns a key which describes the type and/or the number of dimensions of the given object.
+     * The current implementation relies on the fact that {@link GeographicCRS} is the only type
+     * for which the current <abbr>EPSG</abbr> database distinguishes the number of dimensions,
+     * but callers should not depend on this assumption as it may change in any future version.
      *
-     * @param  factory  the factory which is writing a <abbr>SQL</abbr> statement.
-     * @param  object   the object to search in the database.
-     * @param  buffer   where to append the {@code WHERE} clause.
+     * <h4>Maintenance note</h4>
+     * If the implementation of this method is modified, then the extraction of {@code dimension} and
+     * {@code userType} properties in the {@link #appendWhere(EPSGDataAccess, Object, StringBuilder)}
+     * method body must be updated accordingly.
      */
-    final void where(final EPSGDataAccess factory, final IdentifiedObject object, final StringBuilder buffer) {
-        Class<?> userType = object.getClass();
+    static Object toCacheKey(final IdentifiedObject object) {
         if (object instanceof GeodeticCRS) {
             final CoordinateSystem cs = ((GeodeticCRS) object).getCoordinateSystem();
             if (cs instanceof EllipsoidalCS) {
-                userType = GeographicCRS.class;
-            } else if (cs instanceof CartesianCS || cs instanceof SphericalCS) {
-                userType = DefaultGeocentricCRS.class;
+                return cs.getDimension();
             }
         }
-        where(factory, userType, buffer);
+        return object.getClass();
     }
 
     /**
-     * Appends a {@code WHERE} clause together with a condition for searching the most specific subtype,
-     * if such condition can be added. The clause appended by this method looks like the following example
-     * (details may vary because of enumeration values):
+     * Extracts the type from a value computed by {@link #toCacheKey(IdentifiedObject)}.
+     *
+     * @param  object  value computed by {@link #toCacheKey(IdentifiedObject)}.
+     * @return the class of the object to search, ignoring the number of dimensions.
+     * @throws ClassCastException if the given object has not been created by {@link #toCacheKey(IdentifiedObject)}.
+     */
+    static Class<?> typeOfCacheKey(final Object object) {
+        if (object instanceof Integer) {
+            return GeographicCRS.class;
+        }
+        return (Class<?>) object;
+    }
+
+    /**
+     * Appends a {@code WHERE} clause together with a condition for searching the most specific subtype.
+     * The clause appended by this method looks like the following example:
      *
      * {@snippet lang="sql" :
-     *     WHERE COORD_REF_SYS_KIND LIKE 'geographic%' AND
+     *     WHERE (COORD_REF_SYS_KIND = 'geographic 2D' OR COORD_REF_SYS_KIND = 'geographic 3D') AND
      *     }
      *
-     * The caller shall add at least one condition after this method call.
+     * The <abbr>SQL</abbr> fragment will have a trailing {@code WHERE} or {@code AND} keyword.
+     * Therefore, the caller shall add at least one condition after this method call.
      *
-     * @param  factory   the factory which is writing a <abbr>SQL</abbr> statement.
-     * @param  userType  the type specified by the user.
-     * @param  buffer    where to append the {@code WHERE} clause.
-     * @return the subtype, or {@link #type} if no subtype was found.
+     * <h4>Object type</h4>
+     * The {@code object} argument shall be one of the following types:
+     *
+     * <ul>
+     *   <li>An {@link IdentifiedObject} instance.</li>
+     *   <li>The {@link Class} of an {@code IdentifiedObject}. It may be an implementation class.</li>
+     *   <li>An opaque key computed by {@link #toCacheKey(IdentifiedObject)}.</li>
+     * </ul>
+     *
+     * This method returns a generalization of the {@code object} argument: either a GeoAPI interface,
+     * or {@code object} if it was a cache key computed by {@link #toCacheKey(IdentifiedObject)}.
+     *
+     * @param  factory  the factory which is writing a <abbr>SQL</abbr> statement.
+     * @param  object   the instance, class or cache key to search in the database.
+     * @param  buffer   where to append the {@code WHERE} clause.
+     * @return the {@code object} argument, potentially generalized.
      */
-    final Class<?> where(final EPSGDataAccess factory, final Class<?> userType, final StringBuilder buffer) {
+    final Object appendWhere(final EPSGDataAccess factory, final Object object, final StringBuilder buffer) {
+        final int dimension;            // 0 if not applicable. This is applicable only to `GeographicCRS`.
+        final Class<?> userType;
+        if (object instanceof Integer) {
+            dimension = (Integer) object;
+            userType  = GeographicCRS.class;
+        } else if (object instanceof Class<?>) {
+            userType  = (Class<?>) object;
+            dimension = 0;
+        } else if (object instanceof GeodeticCRS) {
+            final CoordinateSystem cs = ((GeodeticCRS) object).getCoordinateSystem();
+            if (cs instanceof EllipsoidalCS) {
+                userType  = GeographicCRS.class;
+                dimension = cs.getDimension();      // Intentionally restricted to this specific case.
+            } else {
+                if (cs instanceof CartesianCS || cs instanceof SphericalCS) {
+                    userType = DefaultGeocentricCRS.class;
+                } else {
+                    userType = object.getClass();
+                }
+                dimension = 0;
+            }
+        } else {
+            userType  = object.getClass();
+            dimension = 0;
+        }
+        /*
+         * Above code decomposed the given `object`.
+         * The rest of this method builds the SQL.
+         */
         buffer.append(" WHERE ");
         if (typeColumn != null) {
             for (int i=0; i<subTypes.length; i++) {
-                final Class<?> candidate = subTypes[i];
-                if (candidate.isAssignableFrom(userType)) {
-                    if (factory.translator.useEnumerations()) {
-                        buffer.append("CAST(").append(typeColumn).append(" AS ")
-                                .append(EPSGInstaller.ENUM_REPLACEMENT).append(')');
-                    } else {
-                        buffer.append(typeColumn);
+                final Class<?> subType = subTypes[i];
+                if (subType.isAssignableFrom(userType)) {
+                    /*
+                     * Found the type to request in the `COORD_REF_SYS_KIND` or `DATUM_TYPE` columns.
+                     * The mixin interfaces need to be handled in a special way.
+                     */
+                    String typeName = typeNames[i];
+                    if (DynamicReferenceFrame.class.isAssignableFrom(userType)) {
+                        typeName = DYNAMIC_TYPES.getOrDefault(typeName, typeName);
                     }
-                    buffer.append(" LIKE '").append(typeNames[i]).append("%' AND ");
-                    return candidate;
+                    /*
+                     * We may need to look for more than one type if some information are missing
+                     * (for example, the dimension when EPSG distinguishes the 2D and 3D cases).
+                     */
+                    String[] synonymous = SYNONYMOUS_TYPES.get(typeName);
+                    if (synonymous != null && dimension > 0 && dimension <= 9) {
+                        final String suffix = "2D".replace('2',  (char) ('0' + dimension));
+                        if (typeName.endsWith(suffix)) {
+                            synonymous = null;
+                        } else {
+                            for (String alternative : synonymous) {
+                                if (alternative.endsWith(suffix)) {
+                                    typeName = alternative;
+                                    synonymous = null;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    /*
+                     * Build the SQL `WHERE` clause.
+                     */
+                    buffer.append('(').append(typeColumn).append(" = '").append(typeName).append('\'');
+                    if (synonymous != null) {
+                        for (String alternative : synonymous) {
+                            buffer.append(" OR ").append(typeColumn).append(" = '").append(alternative).append('\'');
+                        }
+                    }
+                    buffer.append(") AND ");
+                    return subType;
                 }
             }
         }
-        return type;
+        return (dimension != 0) ? dimension : type;
     }
 
     /**

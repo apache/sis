@@ -768,7 +768,8 @@ public final class IdentifiedObjects extends Static {
              */
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
-            return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name,
+            return NameToIdentifier.isHeuristicMatchForName(
+                    object.getName(), object.getAlias(), name,
                     NameToIdentifier.Simplifier.DEFAULT);
         }
     }

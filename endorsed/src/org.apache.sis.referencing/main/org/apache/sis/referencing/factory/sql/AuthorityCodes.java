@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.IntegerList;
@@ -79,10 +80,10 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     private final transient EPSGDataAccess factory;
 
     /**
-     * The interface of referencing objects for which this map contains the code.
-     * May be a super-interface of the type specified to the constructor.
+     * The key to use for caching this set of authority codes.
+     * May be a generalization of the key given at construction time.
      */
-    final Class<?> type;
+    final Object cacheKey;
 
     /**
      * The SQL commands that this {@code AuthorityCodes} may need to execute.
@@ -122,13 +123,20 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     private transient IntegerList codes;
 
     /**
-     * Creates a new map of authority codes for the specified type.
+     * Creates a new map of authority codes for the specified object instance of class.
+     * The {@code object} argument shall be one of the following types:
+     *
+     * <ul>
+     *   <li>An {@link IdentifiedObject} instance.</li>
+     *   <li>The {@link Class} of an {@code IdentifiedObject}. It may be an implementation class.</li>
+     *   <li>An opaque key computed by {@link TableInfo#toCacheKey(IdentifiedObject)} (useful for caching).</li>
+     * </ul>
      *
      * @param table    the table to query.
-     * @param type     the type to query.
+     * @param object   an {@link IdentifiedObject}, a {@code Class} or an opaque cache key.
      * @param factory  the factory originator.
      */
-    AuthorityCodes(final TableInfo table, final Class<?> type, final EPSGDataAccess factory) throws SQLException {
+    AuthorityCodes(final TableInfo table, final Object object, final EPSGDataAccess factory) throws SQLException {
         this.factory = factory;
         sql = new String[NUM_QUERIES];
         statements = new Statement[NUM_QUERIES];
@@ -141,7 +149,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         final int columnNameStart = buffer.append("SELECT ").length();
         final int columnNameEnd = buffer.append(table.codeColumn).length();
         buffer.append(" FROM ").append(table.fromClause);
-        this.type = table.where(factory, type, buffer);
+        cacheKey = table.appendWhere(factory, object, buffer);
         final int conditionStart = buffer.length();
         if (table.showColumn != null) {
             buffer.append(table.showColumn).append("=TRUE AND ");
@@ -311,8 +319,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
 
     /**
      * Returns the object name associated to the given authority code, or {@code null} if none.
-     * If there is no name for the {@linkplain #type} of object being queried, then this method
-     * returns {@code null}.
+     * If there is no name for the object being queried, then this method returns {@code null}.
      *
      * @param  code  the code for which to get the description. May be a string or an integer.
      * @return the description for the given code, or {@code null} if none.
@@ -399,7 +406,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
                 size = "size" + (results != null ? " ≥ " : " = ") + codes.size();
             }
         }
-        return Strings.toString(getClass(), "type", type.getSimpleName(), null, size);
+        return Strings.toString(getClass(), "cacheKey", cacheKey, null, size);
     }
 
     /**

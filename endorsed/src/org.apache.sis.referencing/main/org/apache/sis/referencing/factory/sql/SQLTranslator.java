@@ -231,8 +231,6 @@ public class SQLTranslator implements UnaryOperator<String> {
      * than character varying. In such case, this field contains the enumeration type. If {@code null}, then
      * then column type is {@code VARCHAR} and the cast can be omitted.
      * If non-null, this string should contain the identifier quotes.
-     *
-     * @see #useEnumerations()
      */
     private String tableNameEnum;
 
@@ -594,15 +592,6 @@ check:  for (;;) {
      */
     final boolean useBoolean() {
         return useBoolean;
-    }
-
-    /**
-     * Returns {@code true} if the database uses enumeration values where applicable.
-     * This method use the {@value #ENUMERATION_COLUMN} column as a sentinel value for
-     * detecting whether enumerations are used for the whole <abbr>EPSG</abbr> database.
-     */
-    final boolean useEnumerations() {
-        return tableNameEnum != null;
     }
 
     /**

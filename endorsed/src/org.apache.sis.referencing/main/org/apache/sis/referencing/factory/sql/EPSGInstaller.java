@@ -74,16 +74,9 @@ final class EPSGInstaller extends ScriptRunner {
                     "CRS Kind",          "VARCHAR(13)",    // Original: VARCHAR(24) for column "coord_ref_sys_kind".
                     "CS Kind",           "VARCHAR(15)",    // Original: VARCHAR(24) for column "coord_sys_type".
                     "Supersession Type", "VARCHAR(12)",    // Original: VARCHAR(50) for column "supersession_type".
-                    "Table Name",     ENUM_REPLACEMENT);   // Original: VARCHAR(80) for columns "object_table_name".
+                    "Table Name",        "VARCHAR(36)");   // Original: VARCHAR(80) for columns "object_table_name".
         }
     }
-
-    /**
-     * The <abbr>SQL</abbr> type to use as a replacement for enumerated values in databases that do not
-     * support enumerations. The maximal length declared in this constant should be the greatest length
-     * declared in {@code VARCHAR(…)} substitutions done when {@link #isEnumTypeSupported} is false.
-     */
-    static final String ENUM_REPLACEMENT = "VARCHAR(36)";
 
     /**
      * Invoked for each text found in a SQL statement. This method replaces {@code ''} by {@code Null}.
