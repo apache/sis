@@ -108,7 +108,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
     }
 
     /**
-     * Lookups objects which are approximately equal to the specified object.
+     * Looks up objects which are approximately equal to the specified object.
      * This method temporarily disables warnings about deprecated objects.
      */
     @Override

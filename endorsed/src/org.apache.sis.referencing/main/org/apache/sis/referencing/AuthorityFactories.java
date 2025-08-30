@@ -260,7 +260,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
                 delegate(fallback(e).newIdentifiedObjectFinder());
             }
 
-            /** Lookups objects which are approximately equal, using the fallback if necessary. */
+            /** Looks up objects which are approximately equal, using the fallback if necessary. */
             @Override public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
                 for (;;) try {      // Executed at most twice.
                     return super.find(object);
@@ -269,7 +269,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
                 }
             }
 
-            /** Lookups an object which is approximately equal, using the fallback if necessary. */
+            /** Looks up an object which is approximately equal, using the fallback if necessary. */
             @Override public IdentifiedObject findSingleton(final IdentifiedObject object) throws FactoryException {
                 for (;;) try {      // Executed at most twice.
                     return super.findSingleton(object);

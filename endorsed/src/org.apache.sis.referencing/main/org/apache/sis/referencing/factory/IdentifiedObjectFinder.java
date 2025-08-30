@@ -36,6 +36,7 @@ import org.apache.sis.referencing.privy.LazySet;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.Logging;
@@ -304,7 +305,11 @@ public class IdentifiedObjectFinder {
 
     /**
      * Returns the cached value for the given object, or {@code null} if none.
+     * This is checked by {@link #find(IdentifiedObject)} before actual search.
      * The returned set (if non-null) should be unmodifiable.
+     *
+     * @param  object  the user-specified object to search.
+     * @return the cached result of the find operation, or {@code null} if none.
      */
     Set<IdentifiedObject> getFromCache(final IdentifiedObject object) {
         return (wrapper != null) ? wrapper.getFromCache(object) : null;
@@ -314,7 +319,8 @@ public class IdentifiedObjectFinder {
      * Stores the given result in the cache, if any. If this method chooses to cache the given set,
      * then it shall wrap or copy the given set in an unmodifiable set and returns the result.
      *
-     * @param  result  the search result as a modifiable set.
+     * @param  object  the user-specified object which was searched.
+     * @param  result  the search result. It will potentially be copied.
      * @return a set with the same content as {@code result}.
      */
     Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
@@ -325,7 +331,7 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Lookups only one object which is approximately equal to the specified object.
+     * Looks up only one object which is approximately equal to the specified object.
      * This method invokes {@link #find(IdentifiedObject)}, then examine the returned {@code Set} as below:
      *
      * <ul>
@@ -341,6 +347,7 @@ public class IdentifiedObjectFinder {
      * @return the identified object, or {@code null} if none or ambiguous.
      * @throws FactoryException if an error occurred while fetching the authority code candidates.
      */
+    @OptionalCandidate
     public IdentifiedObject findSingleton(final IdentifiedObject object) throws FactoryException {
         /*
          * Do not invoke Set.size() because it may be a costly operation if the subclass
@@ -368,7 +375,7 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Lookups objects which are approximately equal to the specified object.
+     * Looks up objects which are approximately equal to the specified object.
      * This method tries to instantiate objects identified by the {@linkplain #getCodeCandidates set of candidate codes}
      * using the {@linkplain #factory authority factory} specified at construction time.
      * {@link FactoryException}s thrown during object creations are logged and otherwise ignored.
@@ -785,7 +792,7 @@ public class IdentifiedObjectFinder {
         }
 
         /**
-         * Lookups objects which are approximately equal to the specified object.
+         * Looks up objects which are approximately equal to the specified object.
          * The default method implementation delegates the work to the finder specified by {@link #delegate()}.
          */
         @Override
@@ -796,7 +803,7 @@ public class IdentifiedObjectFinder {
         }
 
         /**
-         * Lookups only one object which is approximately equal to the specified object.
+         * Looks up only one object which is approximately equal to the specified object.
          * The default method implementation delegates the work to the finder specified by {@link #delegate()}.
          */
         @Override
