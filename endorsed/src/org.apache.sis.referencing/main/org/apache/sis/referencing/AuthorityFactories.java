@@ -42,14 +42,15 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
+import org.apache.sis.referencing.privy.FilteredIterator;
 import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Provides the CRS, CS, datum and coordinate operation authority factories.
+ * Provides the <abbr>CRS</abbr>, <abbr>CS</abbr>, datum and coordinate operation authority factories.
  * Provides also the system-wide {@link MultiAuthoritiesFactory} instance used by {@link CRS#forCode(String)}.
- * Current version handles the EPSG factory in a special way, but we may try to avoid doing special cases in a
- * future SIS version (this may require more help from {@link ServiceLoader}).
+ * Current version handles the <abbr>EPSG</abbr> factory in a special way, but we may try to avoid doing special
+ * cases in a future <abbr>SIS</abbr> version (this may require more help from {@link ServiceLoader}).
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -121,7 +122,9 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             Reflect.log(AuthorityFactories.class, "createSourceIterator", e);
             loader = ServiceLoader.load(service);
         }
-        return loader.iterator();
+        // Excludes the `EPSGFactoryProxy` instance.
+        return new FilteredIterator<>(loader.iterator(),
+                (element) -> (element instanceof EPSGFactoryProxy) ? null : element);
     }
 
     /**
@@ -134,21 +137,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     @Override
     @SuppressWarnings("unchecked")
     protected T[] initialValues() {
-        return (T[]) new GeodeticAuthorityFactory[] {getEPSG()};
-    }
-
-    /**
-     * Invoked by {@link LazySet} for fetching the next element from the given iterator.
-     * Skips the {@link EPSGFactoryProxy} if possible, or returns {@code null} otherwise.
-     * Note that {@link MultiAuthoritiesFactory} is safe to null values.
-     */
-    @Override
-    protected T next(final Iterator<? extends T> it) {
-        T e = it.next();
-        if (e instanceof EPSGFactoryProxy) {
-            e = it.hasNext() ? it.next() : null;
-        }
-        return e;
+        return (T[]) new GeodeticAuthorityFactory[] {getEPSG(true)};
     }
 
     /**
@@ -162,16 +151,19 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     }
 
     /**
-     * Returns the factory connected to the EPSG geodetic dataset if possible, or the EPSG fallback otherwise.
-     * If an EPSG data source has been found, then this method returns an instance of {@link EPSGFactory}, but
-     * there is no guarantee that attempts to use that factory will succeed. For example, maybe the EPSG schema
-     * does not exist. Callers should be prepared to either receive an {@link EPSGFactoryFallback} directly if
-     * the EPSG data source does not exist, or replace the {@code EPSGFactory} by a {@code EPSGFactoryFallback}
-     * later if attempt to use the returned factory fails.
+     * Returns the factory connected to the <abbr>EPSG</abbr> geodetic dataset if possible, or the fallback otherwise.
+     * If an <abbr>EPSG</abbr> data source has been found, then this method returns an instance of {@link EPSGFactory}.
+     * But unless {@code test} is {@code true}, there is no guarantee that attempts to use that factory will succeed.
+     * For example, maybe the {@code EPSG} schema does not exist and no installation scripts are available on the module-path.
+     * Callers should be prepared to either receive an {@link EPSGFactoryFallback} directly if the EPSG data source does not exist,
+     * or replace the {@code EPSGFactory} by a {@code EPSGFactoryFallback} later if attempt to use the returned factory fails.
      */
-    static synchronized GeodeticAuthorityFactory getEPSG() {
+    static synchronized GeodeticAuthorityFactory getEPSG(final boolean test) {
         if (EPSG == null) try {
             EPSG = new EPSGFactory(null);
+            if (test) {
+                EPSG.createPrimeMeridian(StandardDefinitions.GREENWICH);
+            }
         } catch (FactoryException e) {
             log(e, false);
             EPSG = EPSGFactoryFallback.INSTANCE;
@@ -231,7 +223,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
 
     /**
      * Logs the given exception at the given level. This method pretends that the logging come from
-     * {@link CRS#getAuthorityFactory(String)}, which is the public facade for {@link #getEPSG()}.
+     * {@link CRS#getAuthorityFactory(String)}, which is the public facade for {@link #getEPSG(boolean)}.
      */
     private static void log(final Exception e, final boolean isWarning) {
         String message = e.getMessage();        // Prefer the locale of system administrator.
@@ -253,7 +245,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      * @throws FactoryException if the finder cannot be created.
      */
     static IdentifiedObjectFinder finderForEPSG() throws FactoryException {
-        final GeodeticAuthorityFactory factory = getEPSG();
+        final GeodeticAuthorityFactory factory = getEPSG(false);
         if (factory instanceof EPSGFactoryFallback) {
             return ((EPSGFactoryFallback) factory).newIdentifiedObjectFinder();
         }
@@ -268,7 +260,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
                 delegate(fallback(e).newIdentifiedObjectFinder());
             }
 
-            /** Lookups objects which are approximately equal, using the fallback if necessary. */
+            /** Looks up objects which are approximately equal, using the fallback if necessary. */
             @Override public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
                 for (;;) try {      // Executed at most twice.
                     return super.find(object);
@@ -277,7 +269,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
                 }
             }
 
-            /** Lookups an object which is approximately equal, using the fallback if necessary. */
+            /** Looks up an object which is approximately equal, using the fallback if necessary. */
             @Override public IdentifiedObject findSingleton(final IdentifiedObject object) throws FactoryException {
                 for (;;) try {      // Executed at most twice.
                     return super.findSingleton(object);
@@ -287,7 +279,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             }
 
             /** Returns a set of authority codes, using the fallback if necessary. */
-            @Override protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+            @Override protected Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
                 for (;;) try {      // Executed at most twice.
                     return super.getCodeCandidates(object);
                 } catch (UnavailableFactoryException e) {

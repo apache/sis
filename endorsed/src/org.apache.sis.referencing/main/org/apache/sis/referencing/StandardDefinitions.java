@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.function.Function;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.InternationalString;
@@ -48,6 +49,8 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.provider.Mercator1SP;
+import org.apache.sis.referencing.operation.provider.PseudoMercator;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.util.resources.Vocabulary;
@@ -96,10 +99,10 @@ final class StandardDefinitions {
      * We refer to latest version of the 9.x series instead of more recent
      * data because the fallback CRS does not use datum ensemble.
      */
-    static final String VERSION = "9.9.1";
+    private static final String VERSION = "9.9.1";
 
     /**
-     * The EPSG code for Greenwich meridian.
+     * The <abbr>EPSG</abbr> code for Greenwich meridian.
      *
      * @see org.apache.sis.util.privy.Constants#EPSG_GREENWICH
      */
@@ -174,10 +177,19 @@ final class StandardDefinitions {
     }
 
     /**
+     * Creates a Mercator projection using the Apache <abbr>SIS</abbr> factory implementation.
+     *
+     * @param  pseudo  whether to create the pseudo-Mercator projection.
+     */
+    static ProjectedCRS createMercator(final int code, final GeographicCRS baseCRS, final boolean pseudo) {
+        return createProjectedCRS(code, baseCRS, defaultCartesianCS(), pseudo ? PseudoMercator.NAME : Mercator1SP.NAME, (parameters) -> {
+            return pseudo ? "Pseudo-Mercator" : "World Mercator";
+        });
+    }
+
+    /**
      * Creates a Universal Transverse Mercator (UTM) or a Universal Polar Stereographic (UPS) projected CRS
-     * using the Apache SIS factory implementation. This method restricts the factory to SIS implementation
-     * instead of arbitrary factory in order to met the contract saying that {@link CommonCRS} methods
-     * should never fail.
+     * using the Apache <abbr>SIS</abbr> factory implementation.
      *
      * @param code       the EPSG code, or 0 if none.
      * @param baseCRS    the geographic CRS on which the projected CRS is based.
@@ -189,18 +201,35 @@ final class StandardDefinitions {
     static ProjectedCRS createUniversal(final int code, final GeographicCRS baseCRS, final boolean isUTM,
             final double latitude, final double longitude, final CartesianCS derivedCS)
     {
+        return createProjectedCRS(code, baseCRS, derivedCS, isUTM ? TransverseMercator.NAME : PolarStereographicA.NAME, (parameters) -> {
+            return isUTM ? TransverseMercator.Zoner.UTM.setParameters(parameters, latitude, longitude)
+                         : PolarStereographicA.setParameters(parameters, latitude >= 0);
+        });
+    }
+
+    /**
+     * Creates a projected CRS from hard-coded values for the given code.
+     * This method restricts the factory to the <abbr>SIS</abbr> implementation instead of arbitrary factory
+     * in order to met the contract saying that {@link CommonCRS} methods should never fail.
+     *
+     * @param code        the EPSG code, or 0 if none.
+     * @param baseCRS     the geographic CRS on which the projected CRS is based.
+     * @param derivedCS   the projected coordinate system.
+     * @param methodName  name of the operation method to apply.
+     * @param setup       a function which setup the parameter values and returns the name of the conversion.
+     */
+    private static ProjectedCRS createProjectedCRS(final int code, final GeographicCRS baseCRS, final CartesianCS derivedCS,
+            final String methodName, final Function<ParameterValueGroup, String> setup)
+    {
         final OperationMethod method;
         try {
-            method = DefaultMathTransformFactory.provider()
-                     .getOperationMethod(isUTM ? TransverseMercator.NAME : PolarStereographicA.NAME);
+            method = DefaultMathTransformFactory.provider().getOperationMethod(methodName);
         } catch (NoSuchIdentifierException e) {
             throw new IllegalStateException(e);                     // Should not happen with SIS implementation.
         }
         final ParameterValueGroup parameters = method.getParameters().createValue();
-        String name = isUTM ? TransverseMercator.Zoner.UTM.setParameters(parameters, latitude, longitude)
-                            : PolarStereographicA.setParameters(parameters, latitude >= 0);
+        String name = setup.apply(parameters);
         final var conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
-
         name = baseCRS.getName().getCode() + " / " + name;
         return new DefaultProjectedCRS(properties(code, name, null, false), baseCRS, conversion, derivedCS);
     }
@@ -367,6 +396,21 @@ final class StandardDefinitions {
                        UPS_SOUTH      = (short) 1027;
 
     /**
+     * The default coordinate system for projected <abbr>CRS</abbr>, created when first requested.
+     */
+    private static CartesianCS DEFAULT_CS;
+
+    /**
+     * Returns the default coordinate system for projected <abbr>CRS</abbr>.
+     */
+    static synchronized CartesianCS defaultCartesianCS() {
+        if (DEFAULT_CS == null) {
+            DEFAULT_CS = (CartesianCS) createCoordinateSystem(CARTESIAN_2D, true);
+        }
+        return DEFAULT_CS;
+    }
+
+    /**
      * Creates a coordinate system from hard-coded values for the given code.
      * The coordinate system names used by this method contains only the first
      * part of the names declared in the EPSG database.
@@ -386,9 +430,9 @@ final class StandardDefinitions {
             case ELLIPSOIDAL_3D: name = "Ellipsoidal 3D";  type = 2; dim = 3; axisCode =  111; break;
             case SPHERICAL:      name = "Spherical";       type = 1; dim = 3; axisCode =   63; break;
             case EARTH_CENTRED:  name = "Cartesian 3D (geocentric)"; dim = 3; axisCode =  118; break;
-            case CARTESIAN_2D:   name = "Cartesian 2D";                      axisCode =    3; break;
-            case UPS_NORTH:      name = "Cartesian 2D for UPS north";        axisCode = 1067; break;
-            case UPS_SOUTH:      name = "Cartesian 2D for UPS south";        axisCode = 1059; break;
+            case CARTESIAN_2D:   name = "Cartesian 2D";                       axisCode =    3; break;
+            case UPS_NORTH:      name = "Cartesian 2D for UPS north";         axisCode = 1067; break;
+            case UPS_SOUTH:      name = "Cartesian 2D for UPS south";         axisCode = 1059; break;
             default:   if (!mandatory) return null;
                        throw new AssertionError(code);
         }

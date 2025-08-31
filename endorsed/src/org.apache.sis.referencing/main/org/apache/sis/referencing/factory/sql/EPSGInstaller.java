@@ -51,6 +51,8 @@ final class EPSGInstaller extends ScriptRunner {
 
     /**
      * Whether to apply the replacements in the {@link #identifierReplacements} map.
+     * Used for temporarily disabling the replacements during the execution of the
+     * {@code Prepare.sql} script, which defines the enumerations.
      */
     private boolean applyReplacements;
 
@@ -72,16 +74,9 @@ final class EPSGInstaller extends ScriptRunner {
                     "CRS Kind",          "VARCHAR(13)",    // Original: VARCHAR(24) for column "coord_ref_sys_kind".
                     "CS Kind",           "VARCHAR(15)",    // Original: VARCHAR(24) for column "coord_sys_type".
                     "Supersession Type", "VARCHAR(12)",    // Original: VARCHAR(50) for column "supersession_type".
-                    "Table Name",     ENUM_REPLACEMENT);   // Original: VARCHAR(80) for columns "object_table_name".
+                    "Table Name",        "VARCHAR(36)");   // Original: VARCHAR(80) for columns "object_table_name".
         }
     }
-
-    /**
-     * The <abbr>SQL</abbr> type to use as a replacement for enumerated values in databases that do not
-     * support enumerations. The maximal length declared in this constant should be the greatest length
-     * declared in {@code VARCHAR(…)} substitutions done when {@link #isEnumTypeSupported} is false.
-     */
-    static final String ENUM_REPLACEMENT = "VARCHAR(36)";
 
     /**
      * Invoked for each text found in a SQL statement. This method replaces {@code ''} by {@code Null}.
@@ -149,11 +144,12 @@ final class EPSGInstaller extends ScriptRunner {
                 Messages.Keys.CreatingSchema_2,
                 Constants.EPSG,
                 SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
+
+        int numRows = 0;    // For logging purpose only.
         final String[] scripts = scriptProvider.getResourceNames(Constants.EPSG);
-        int numRows = 0;
         for (int i=0; i<scripts.length; i++) {
             final String script = scripts[i];
-            applyReplacements = !(identifierReplacements.isEmpty() || InstallationScriptProvider.PREPARE.equals(script));
+            applyReplacements = (i != 0) && !identifierReplacements.isEmpty();
             try (BufferedReader in = scriptProvider.openScript(Constants.EPSG, i)) {
                 numRows += run(script, in);
             }
@@ -175,9 +171,6 @@ final class EPSGInstaller extends ScriptRunner {
      *   <li>A provider from a publicly supported dependency such as {@code sis-epsg.jar} or {@code sis-embedded.jar}.
      *       Users have to put one of those dependencies in the module path themselves. This action is interpreted as
      *       an acceptance of EPSG terms of use, so no license agreement window will popup.</li>
-     *   <li>A provider using the SQL scripts in the {@code $SIS_DATA/Databases/ExternalSources/EPSG} directory.
-     *       Users have to put those scripts in that directory manually. This action is interpreted as an
-     *       acceptance of EPSG terms of use, so no license agreement window will popup.</li>
      *   <li>A provider offering users to automatically download the data. Those providers are defined by
      *       {@code org.apache.sis.console} and {@code org.apache.sis.gui} modules.
      *       Users must accept EPSG terms of use before the database can be installed.
@@ -197,14 +190,12 @@ final class EPSGInstaller extends ScriptRunner {
             }
         }
         /*
-         * If we did not found a provider ready to use such as "sis-epsg.jar" or "sis-embedded.jar",
+         * If we did not found a provider ready to use such as `sis-epsg.jar` or `sis-embedded.jar`,
          * we may fallback on a provider offering to download the data (those fallbacks are provided
          * by `org.apache.sis.console` and `org.apache.sis.gui` modules). Those fallbacks will ask to
-         * the user if (s)he accepts EPSG terms of use. But before to use those fallbacks, check if the
-         * data have not been downloaded manually in the "$SIS_DATA/Databases/ExternalSources/EPSG" directory.
+         * the users if they accept the EPSG Terms of Use.
          */
-        final var manual = new InstallationScriptProvider.Default(locale);
-        return manual.getAuthorities().isEmpty() ? fallback : manual;
+        return fallback;
     }
 
     /**

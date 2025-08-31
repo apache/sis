@@ -2173,7 +2173,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             return true;
         }
         if (object instanceof GridExtent) {
-            final GridExtent other = (GridExtent) object;
+            final var other = (GridExtent) object;
             if (Arrays.equals(coordinates, other.coordinates)) {
                 switch (mode) {
                     case STRICT:      if (!getClass().equals(object.getClass())) return false;  // else fallthrough

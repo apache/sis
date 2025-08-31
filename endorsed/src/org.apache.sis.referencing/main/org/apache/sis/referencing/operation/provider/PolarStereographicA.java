@@ -47,7 +47,7 @@ public final class PolarStereographicA extends AbstractStereographic {
     private static final long serialVersionUID = 538262714055500925L;
 
     /**
-     * The EPSG name for this projection.
+     * The {@value} string, which is the <abbr>EPSG</abbr> name for this projection.
      */
     public static final String NAME = "Polar Stereographic (variant A)";
 

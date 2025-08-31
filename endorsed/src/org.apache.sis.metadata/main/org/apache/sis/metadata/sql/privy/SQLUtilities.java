@@ -137,58 +137,69 @@ public final class SQLUtilities extends Static {
     }
 
     /**
-     * Returns a string like the given string but with accented letters replaced by <abbr>ASCII</abbr>
-     * letters and all characters that are not letter or digit replaced by the wildcard % character.
+     * Returns a string like the given string but with accented letters replaced by any character ({@code '_'})
+     * and all characters that are not letter or digit replaced by the wildcard ({@code '%'}).
      *
-     * @param  text     the text to get as a SQL LIKE pattern.
-     * @param  toLower  whether to convert characters to lower case.
-     * @return the "LIKE" pattern for the given text.
+     * @param  text         the text to get as a SQL LIKE pattern.
+     * @param  toLowerCase  whether to convert characters to lower case.
+     * @param  escape       value of {@link DatabaseMetaData#getSearchStringEscape()}. May be null or empty.
+     * @return the {@code LIKE} pattern for the given text.
      */
-    public static String toLikePattern(final String text, final boolean toLower) {
+    public static String toLikePattern(final String text, final boolean toLowerCase, final String escape) {
         final var buffer = new StringBuilder(text.length());
-        toLikePattern(text, 0, text.length(), false, toLower, buffer);
+        toLikePattern(text, 0, text.length(), false, toLowerCase, escape, buffer);
         return buffer.toString();
     }
 
     /**
      * Returns a <abbr>SQL</abbr> LIKE pattern for the given text. The text is optionally returned in all lower cases
      * for allowing case-insensitive searches. Punctuations are replaced by any sequence of characters ({@code '%'})
-     * and non-ASCII letters or digits are replaced by any single character ({@code '_'}). This method avoid to put
-     * a {@code '%'} symbol as the first character since it prevents some databases to use their index.
+     * and non-<abbr>ASCII</abbr> Latin letters are replaced by any single character ({@code '_'}).
+     * Ideograms (Japanese, Chinese, …) and hiragana (Japanese) are kept unchanged.
+     * This method avoids to put a {@code '%'} symbol as the first character
+     * because such character prevents some databases to use their index.
      *
-     * @param  text         the text to get as a SQL LIKE pattern.
-     * @param  i            index of the first character to use in the given {@code identifier}.
-     * @param  end          index after the last character to use in the given {@code identifier}.
+     * @param  text         the text to get as a <abbr>SQL</abbr> {@code LIKE} pattern.
+     * @param  textStart    index of the first character to use in the given {@code text}.
+     * @param  textEnd      index after the last character to use in the given {@code text}.
      * @param  allowSuffix  whether to append a final {@code '%'} wildcard at the end of the pattern.
-     * @param  toLower      whether to convert characters to lower case.
-     * @param  buffer       buffer where to append the SQL LIKE pattern.
+     * @param  toLowerCase  whether to convert characters to lower case.
+     * @param  escape       value of {@link DatabaseMetaData#getSearchStringEscape()}. May be null or empty.
+     * @param  buffer       buffer where to append the <abbr>SQL</abbr> {@code LIKE} pattern.
      */
-    public static void toLikePattern(final String text, int i, final int end,
-            final boolean allowSuffix, final boolean toLower, final StringBuilder buffer)
+    public static void toLikePattern(final String text, int textStart, final int textEnd, final boolean allowSuffix,
+                                     final boolean toLowerCase, final String escape, final StringBuilder buffer)
     {
-        final int bs = buffer.length();
-        while (i < end) {
-            final int c = text.codePointAt(i);
+        final int bufferStart = buffer.length();
+        while (textStart < textEnd) {
+            final int c = text.codePointAt(textStart);
             if (Character.isLetterOrDigit(c)) {
-                if (c < 128) {                      // Use only ASCII characters in the search.
-                    buffer.appendCodePoint(toLower ? Character.toLowerCase(c) : c);
+                // Ignore accented letters and Greek letters (before `U+0400`) in the search.
+                if (c < 0x80 || c >= 0x400) {
+                    buffer.appendCodePoint(toLowerCase ? Character.toLowerCase(c) : c);
                 } else {
                     appendIfNotRedundant(buffer, '_');
                 }
             } else {
                 final int length = buffer.length();
-                if (length == bs) {
-                    buffer.appendCodePoint(c != '%' ? c : '_');
+                if (length == bufferStart) {
+                    // Do not use wildcard in the first character.
+                    if (escape != null && (c == '%' || c == '_' || text.startsWith(escape, textStart))) {
+                        // Note: there will be bug if `escape` is a repetition of the same character.
+                        // But we assume that this corner case is too rare for being worth a check.
+                        buffer.append(escape);
+                    }
+                    buffer.appendCodePoint(c);
                 } else if (buffer.charAt(length - 1) != '%') {
                     buffer.append('%');
                 }
             }
-            i += Character.charCount(c);
+            textStart += Character.charCount(c);
         }
         if (allowSuffix) {
             appendIfNotRedundant(buffer, '%');
         }
-        for (i=bs; (i = buffer.indexOf("_%", i)) >= 0;) {
+        for (int i=bufferStart; (i = buffer.indexOf("_%", i)) >= 0;) {
             buffer.deleteCharAt(i);
         }
     }

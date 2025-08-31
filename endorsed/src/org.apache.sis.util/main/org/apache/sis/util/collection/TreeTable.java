@@ -127,7 +127,7 @@ public interface TreeTable {
          * Returns the parent node, or {@code null} if this node is the root of the tree.
          *
          * <p>There is intentionally no {@code setParent(Node)} method, as children and parent managements
-         * are highly implementation-dependant. If the {@linkplain #getChildren() children collection} is
+         * are highly implementation dependent. If the {@linkplain #getChildren() children collection} is
          * modifiable, then implementations are encouraged to update automatically the parent when a child
          * is <em>added to</em> or <em>removed from</em> that collection.</p>
          *

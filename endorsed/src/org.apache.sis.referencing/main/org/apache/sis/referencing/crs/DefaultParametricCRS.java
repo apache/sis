@@ -23,6 +23,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.io.wkt.Formatter;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -216,6 +217,15 @@ public class DefaultParametricCRS extends AbstractSingleCRS<ParametricDatum> imp
     @Override
     public DatumEnsemble<ParametricDatum> getDatumEnsemble() {
         return super.getDatumEnsemble();
+    }
+
+    /**
+     * Returns the datum or a view of the ensemble as a datum.
+     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
+     */
+    @Override
+    final ParametricDatum getDatumOrEnsemble(final boolean legacy) {
+        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
     }
 
     /**

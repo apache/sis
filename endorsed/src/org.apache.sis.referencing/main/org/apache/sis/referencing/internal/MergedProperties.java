@@ -23,8 +23,8 @@ import org.apache.sis.util.privy.AbstractMap;
 
 /**
  * A map which first looks for values in a user supplied map, then looks in a default map if no value was found
- * in the user supplied map. This map is for {@link org.apache.sis.referencing.factory.GeodeticObjectFactory} and
- * other SIS factories internal usage only.
+ * in the user supplied map. This map is for {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}
+ * and other <abbr>SIS</abbr> factories internal usage only.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

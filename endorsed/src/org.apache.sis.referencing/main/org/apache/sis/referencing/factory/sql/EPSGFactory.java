@@ -321,7 +321,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
 
     /**
      * Creates the EPSG schema in the database and populates the tables with geodetic definitions.
-     * This method is invoked automatically when {@link #newDataAccess()} detects that the EPSG dataset is not installed.
+     * This method is invoked automatically when {@link #newDataAccess()} detects that the <abbr>EPSG</abbr> geodetic dataset is not installed.
      * Users can also invoke this method explicitly if they wish to force the dataset installation.
      *
      * <p>This method uses the following properties from the map specified at
@@ -332,33 +332,27 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *     a {@link String} giving the name of the database catalog where to create the EPSG schema.
      *     If non-null, that catalog shall exist prior this method call (this method does not create any catalog).
      *     If no catalog is specified or if the catalog is an empty string,
-     *     then the EPSG schema will be created without catalog.
-     *     If the database does not {@linkplain DatabaseMetaData#supportsCatalogsInTableDefinitions() support
-     *     catalogs in table definitions} or in {@linkplain DatabaseMetaData#supportsCatalogsInDataManipulation()
-     *     data manipulation}, then this property is ignored.</li>
+     *     then the EPSG schema will be created without catalog. If the database does not
+     *     {@linkplain DatabaseMetaData#supportsCatalogsInTableDefinitions() support catalogs in table definitions} or in
+     *     {@linkplain DatabaseMetaData#supportsCatalogsInDataManipulation() data manipulation}, then this property is ignored.</li>
      *
      *   <li><b>{@code schema}:</b><br>
-     *     a {@link String} giving the name of the database schema where to create the EPSG tables.
-     *     That schema shall <strong>not</strong> exist prior this method call;
-     *     the schema will be created by this {@code install(…)} method.
+     *     a {@link String} giving the name of the database schema where to create the <abbr>EPSG</abbr> tables.
+     *     That schema shall <strong>not</strong> exist prior this method call.
+     *     The schema will be created by this {@code install(…)} method.
      *     If the schema is an empty string, then the tables will be created without schema.
-     *     If no schema is specified, then the default schema is {@code "EPSG"}.
-     *     If the database does not {@linkplain DatabaseMetaData#supportsSchemasInTableDefinitions() support
-     *     schemas in table definitions} or in {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation()
-     *     data manipulation}, then this property is ignored.</li>
+     *     If no schema is specified, then the default schema is {@code "EPSG"}. If the database does not
+     *     {@linkplain DatabaseMetaData#supportsSchemasInTableDefinitions() support schemas in table definitions} or in
+     *     {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation() data manipulation}, then this property is ignored.</li>
      *
      *   <li><b>{@code scriptProvider}:</b><br>
-     *     an {@link InstallationScriptProvider} giving the SQL scripts to execute for creating the EPSG database.
+     *     an {@link InstallationScriptProvider} giving the <abbr>SQL</abbr> scripts to execute for creating the EPSG schema.
      *     If no provider is specified, then this method searches on the module path (with {@link java.util.ServiceLoader})
-     *     for user-provided implementations of {@code InstallationScriptProvider}.
-     *     If no user-specified provider is found, then this method will search for
-     *     {@code "*Tables*.sql"}, {@code "*Data*.sql"} and {@code "*FKeys*.sql"} files in the
-     *     {@code $SIS_DATA/Databases/ExternalSources/EPSG} directory where {@code *} stands for any characters
-     *     provided that there is no ambiguity.</li>
+     *     for user-provided implementations of {@code InstallationScriptProvider}.</li>
      * </ul>
      *
      * <h4>Legal constraint</h4>
-     * The EPSG dataset cannot be distributed with Apache SIS for licensing reasons.
+     * The <abbr>EPSG</abbr> dataset cannot be distributed with Apache SIS for licensing reasons.
      * Users need to either install the dataset manually (for example with the help of this method),
      * or add on the module path a separated bundle such as the {@code org.apache.sis.referencing.epsg} module.
      * See <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> for more information.

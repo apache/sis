@@ -32,6 +32,7 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.privy.DirectPositionView;
 import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -237,8 +238,8 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
                 || Utilities.equalsIgnoreMetadata(sourceGG.getExtent(),
                                                   targetGG.getExtent()))
             && (!isDefined(sourceGG, targetGG, GridGeometry.CRS)
-                || Utilities.equalsIgnoreMetadata(sourceGG.getCoordinateReferenceSystem(),
-                                                  targetGG.getCoordinateReferenceSystem()))
+                || CRS.equivalent(sourceGG.getCoordinateReferenceSystem(),
+                                  targetGG.getCoordinateReferenceSystem()))
             && (!isDefined(sourceGG, targetGG, GridGeometry.GRID_TO_CRS)
                 || Utilities.equalsIgnoreMetadata(sourceGG.getGridToCRS(PixelInCell.CELL_CORNER),
                                                   targetGG.getGridToCRS(PixelInCell.CELL_CORNER))
@@ -451,7 +452,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
          * If an envelope is defined, resample only that sub-region.
          */
         GridGeometry complete = target;
-        ComparisonMode mode = ComparisonMode.IGNORE_METADATA;
+        ComparisonMode mode = ComparisonMode.COMPATIBILITY;
         if (!target.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.CRS)) {
             final CoordinateReferenceSystem targetCRS = changeOfCRS.getTargetCRS();
             complete = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);

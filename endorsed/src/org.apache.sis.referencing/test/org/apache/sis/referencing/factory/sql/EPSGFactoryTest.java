@@ -48,6 +48,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -117,7 +118,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         final EPSGFactory factory = dataEPSG.factory();
         final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs);
-        assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, crs.getDatum());
+        assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, DatumOrEnsemble.of(crs));
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         assertSame(crs, factory.createCoordinateReferenceSystem("4326"), "CRS shall be cached.");
@@ -684,15 +685,6 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertFalse(units.isEmpty());
         assertTrue (units.size() >= 2);
 
-        // Tests the fusion of all types
-        if (RUN_EXTENSIVE_TESTS) {
-            final Set<String> all = factory.getAuthorityCodes(IdentifiedObject.class);
-            assertTrue(all.containsAll(crs));
-            assertTrue(all.containsAll(datum));
-            assertTrue(all.containsAll(operations));
-            assertTrue(all.containsAll(units));
-        }
-
         // Try a dummy type.
         @SuppressWarnings({"unchecked","rawtypes"})
         final Class<? extends IdentifiedObject> wrong = (Class) String.class;
@@ -708,12 +700,25 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     @Test
     public void testDescriptionText() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
-        assertEquals("World Geodetic System 1984", factory.getDescriptionText(IdentifiedObject.class,  "6326").get().toString(Locale.US));
-        assertEquals("Mean Sea Level",             factory.getDescriptionText(IdentifiedObject.class,  "5100").get().toString(Locale.US));
-        assertEquals("NTF (Paris) / Nord France",  factory.getDescriptionText(IdentifiedObject.class, "27591").get().toString(Locale.US));
-        assertEquals("NTF (Paris) / France II",    factory.getDescriptionText(IdentifiedObject.class, "27582").get().toString(Locale.US));
-        assertEquals("Ellipsoidal height",         factory.getDescriptionText(IdentifiedObject.class,    "84").get().toString(Locale.US));
+        assertDescriptionStarts("World Geodetic System 1984", factory, GeodeticDatum.class,      6326);
+        assertDescriptionStarts("Mean Sea Level",             factory, VerticalDatum.class,      5100);
+        assertDescriptionStarts("NTF (Paris) / Nord France",  factory, ProjectedCRS.class,      27591);
+        assertDescriptionStarts("NTF (Paris) / France II",    factory, ProjectedCRS.class,      27582);
+        assertDescriptionStarts("Ellipsoidal height",         factory, CoordinateSystemAxis.class, 84);
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Asserts that the description text for the given code starts with the expected value.
+     * We do not require a full match because suffix such as "ensemble" may or may not be present
+     * depending on the version of the <abbr>EPSG</abbr> database.
+     */
+    private static void assertDescriptionStarts(final String expected, final EPSGFactory factory,
+            final Class<? extends IdentifiedObject> type, final int code) throws FactoryException
+    {
+        final var description = factory.getDescriptionText(type, Integer.toString(code));
+        assertTrue(description.isPresent(), expected);
+        assertTrue(description.get().toString(Locale.US).startsWith(expected), expected);
     }
 
     /**
@@ -896,7 +901,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     public void testFindGeographic() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
         final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
-        final DefaultGeographicCRS crs = (DefaultGeographicCRS) CRS.fromWKT(
+        final var crs = (DefaultGeographicCRS) CRS.fromWKT(
                 "GEOGCS[“WGS 84”,\n" +
                 "  DATUM[“WGS 84”,\n" +     // Use the alias instead of primary name for forcing a deeper search.
                 "    SPHEROID[“WGS 1984”, 6378137.0, 298.257223563]],\n" +  // Different name for forcing a deeper search.
@@ -913,29 +918,17 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertTrue(finder.find(crs.forConvention(AxesConvention.NORMALIZED)).isEmpty(),
                    "Should not find WGS84 because the axis order is not the same.");
         /*
-         * Ensure that the cache is empty.
+         * Performs a search based only on the name.
          */
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
-        assertTrue(finder.find(crs).isEmpty(),
-                   "Should not find without a full scan, because the WKT contains no identifier " +
-                   "and the CRS name is ambiguous (more than one EPSG object have this name).");
+        final IdentifiedObject found = finder.findSingleton(crs);
+        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, found);
         /*
          * Scan the database for searching the CRS.
          */
-        finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
-        final IdentifiedObject found = finder.findSingleton(crs);
-        assertNotNull(found, "With full scan allowed, the CRS should be found.");
-        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, found);
-        /*
-         * Search should behave as specified by `DECLARATION` contract even if the CRS is in the cache.
-         */
-        finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
-        assertNull(finder.findSingleton(crs), "Should met `DECLARATION` contract.");
-        /*
-         * Should find the CRS without the need of a full scan, because of the cache.
-         */
-        finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
-        assertSame(found, finder.findSingleton(crs), "The CRS should still in the cache.");
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.EXHAUSTIVE_VALID_DATASET);
+        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, finder.findSingleton(crs));
+        assertSame(found, finder.findSingleton(crs), "The CRS should be in the cache.");
         loggings.assertNoUnexpectedLog();
     }
 

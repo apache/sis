@@ -17,9 +17,6 @@
 package org.apache.sis.test.integration;
 
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.EllipsoidalCS;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 
@@ -28,9 +25,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.factory.TestFactorySource;
-
-// Specific to the main and geoapi-3.1 branches:
-import org.opengis.referencing.crs.GeodeticCRS;
 
 
 /**
@@ -56,32 +50,5 @@ public final class CoordinateReferenceSystemTest extends TestCase {
         assertTrue(TestFactorySource.getSharedFactory() != null);
         CoordinateReferenceSystem crs = CRS.forCode("urn:ogc:def:crs, crs:EPSG::27700, crs:EPSG::5701");
         assertSame(CRS.forCode("EPSG:7405"), crs, "OSGB 1936 / British National Grid + ODN height");
-    }
-
-    /**
-     * Tests creation of "EPSG topocentric example A/B". They are derived geodetic CRS.
-     *
-     * @throws FactoryException if an authority or a code is not recognized.
-     */
-    @Test
-    public void testDerivedCRS() throws FactoryException {
-        assertTrue(TestFactorySource.getSharedFactory() != null);
-        CoordinateReferenceSystem crs = CRS.forCode("EPSG:5820");
-        assertInstanceOf(DerivedCRS .class, crs);
-        assertInstanceOf(GeodeticCRS.class, crs);
-        assertInstanceOf(CartesianCS.class, crs.getCoordinateSystem());
-        assertInstanceOf(CartesianCS.class, ((DerivedCRS) crs).getBaseCRS().getCoordinateSystem());
-        /*
-         * Some tests are disabled because `EPSGDataAccess` confuses CRS type.
-         * We are waiting for upgrade to EPSG database 10+ before to re-evaluate
-         * how to fix this issue.
-         *
-         * https://issues.apache.org/jira/browse/SIS-518
-         */
-        crs = CRS.forCode("EPSG:5819");
-//      assertInstanceOf(DerivedCRS .class, crs);
-//      assertInstanceOf(GeodeticCRS.class, crs);
-        assertInstanceOf(CartesianCS.class, crs.getCoordinateSystem());
-        assertInstanceOf(EllipsoidalCS.class, ((DerivedCRS) crs).getBaseCRS().getCoordinateSystem());
     }
 }

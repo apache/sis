@@ -1714,7 +1714,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the enclosing WKT element, or {@code null} if element being formatted is the root.
+     * Returns the enclosing <abbr>WKT</abbr> element, or {@code null} if the element being formatted is the root.
      * This method can be invoked by child elements having some aspects that depend on the enclosing element.
      *
      * @param  depth  1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>

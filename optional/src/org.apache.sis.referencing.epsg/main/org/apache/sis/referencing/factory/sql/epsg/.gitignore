@@ -1,7 +1,8 @@
 # Those files must be put manually for licensing reasons.
 # See README.md for more details.
-Data.sql
-FKeys.sql
+
 LICENSE.html
 LICENSE.txt
 Tables.sql
+Data.sql
+FKeys.sql

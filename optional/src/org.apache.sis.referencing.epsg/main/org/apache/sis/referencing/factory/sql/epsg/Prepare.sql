@@ -10,8 +10,8 @@
 -- If enumerated values are not supported by the database, Apache SIS will automatically replace their usage
 -- by the VARCHAR type.
 --
-CREATE TYPE "Datum Kind"        AS ENUM ('geodetic', 'vertical', 'temporal', 'engineering', 'dynamic geodetic', 'ensemble');
-CREATE TYPE "CRS Kind"          AS ENUM ('geocentric', 'geographic 2D', 'geographic 3D', 'projected', 'vertical', 'temporal', 'compound', 'engineering', 'derived');
+CREATE TYPE "Datum Kind"        AS ENUM ('geodetic', 'vertical', 'temporal', 'parametric', 'engineering', 'dynamic geodetic', 'ensemble');
+CREATE TYPE "CRS Kind"          AS ENUM ('geocentric', 'geographic 2D', 'geographic 3D', 'projected', 'vertical', 'temporal', 'parametric', 'engineering', 'derived', 'compound');
 CREATE TYPE "CS Kind"           AS ENUM ('ellipsoidal', 'spherical', 'Cartesian', 'vertical', 'gravity-related', 'time', 'linear', 'polar', 'cylindrical', 'affine', 'ordinal');
 CREATE TYPE "Supersession Type" AS ENUM ('Supersession');
 CREATE TYPE "Table Name"        AS ENUM

@@ -21,11 +21,11 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.GeodeticObjectBuilder;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.util.Utilities;
 
 
 /**
@@ -68,6 +68,6 @@ final class CRSMerger extends GeodeticObjectBuilder {
             }
         }
         final CoordinateReferenceSystem result = super.replaceComponent(implicit, firstDimension, explicit);
-        return Utilities.equalsIgnoreMetadata(implicit, result) ? implicit : result;
+        return CRS.equivalent(implicit, result) ? implicit : result;
     }
 }

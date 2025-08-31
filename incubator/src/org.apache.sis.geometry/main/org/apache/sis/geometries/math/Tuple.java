@@ -20,7 +20,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.Utilities;
+import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -378,7 +378,7 @@ public interface Tuple<T extends Tuple <T>> {
             }
         }
         //checking crs is expensive, do it last
-        if (!Utilities.equalsIgnoreMetadata(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem())) {
+        if (!CRS.equivalent(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem())) {
             return false;
         }
         return true;

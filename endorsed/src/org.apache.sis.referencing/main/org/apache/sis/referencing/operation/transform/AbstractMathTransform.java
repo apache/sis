@@ -888,7 +888,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * typically uses mathematical identities that depend on the formulas used by this transform.
      * This method does not need to care about the following more generic cases:
      * {@linkplain #isIdentity() identity} transforms, transforms immediately followed by their {@linkplain #inverse() inverses},
-     * multiplication of {@linkplain MathTransforms#getMatrix(MathTransform) matrixes} in consecutive transforms.</p>
+     * multiplication of {@linkplain MathTransforms#getMatrix(MathTransform) matrices} in consecutive transforms.</p>
      *
      * @param  context  information about the neighbor transforms, and the object where to set the result.
      * @throws FactoryException if an error occurred while combining the transforms.

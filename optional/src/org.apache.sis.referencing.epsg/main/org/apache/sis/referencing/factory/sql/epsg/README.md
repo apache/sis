@@ -9,16 +9,13 @@ the following commands must be executed manually in a separated directory:
 ```shell
 svn checkout https://svn.apache.org/repos/asf/sis/data/non-free/
 cd non-free/EPSG
-export NON_FREE_DIR=$PWD
+export EPSG_DIR=$PWD
 ```
 
-Then, the following commands must be executed with this directory as the current directory:
+Then, the following commands (or something equivalent) should be executed
+with the directory of this `README.md` file as the current directory:
 
 ```shell
-ln --symbolic $NON_FREE_DIR/LICENSE.txt
-ln --symbolic $NON_FREE_DIR/LICENSE.html
-ln --symbolic $NON_FREE_DIR/Tables.sql
-ln --symbolic $NON_FREE_DIR/Data.sql
-ln --symbolic $NON_FREE_DIR/FKeys.sql
-cd -
+ln --symbolic $EPSG_DIR/LICENSE.* .
+ln --symbolic $EPSG_DIR/*.sql .
 ```

@@ -16,14 +16,16 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.sql.ResultSet;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import org.opengis.referencing.IdentifiedObject;
+import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.util.privy.AbstractMap;
@@ -32,7 +34,7 @@ import org.apache.sis.util.privy.Strings;
 
 /**
  * A map of <abbr>EPSG</abbr> authority codes as keys and object names as values.
- * This map requires a living connection to the EPSG database.
+ * This map requires a valid connection to the <abbr>EPSG</abbr> database.
  *
  * <h2>Serialization</h2>
  * Serialization of this class stores a copy of all authority codes.
@@ -63,7 +65,12 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     /**
      * Index in the {@link #sql} and {@link #statements} arrays.
      */
-    private static final int ALL = 0, ONE = 1;
+    private static final int ALL_CODES = 0, NAME_FOR_CODE = 1, CODES_FOR_NAME = 2;
+
+    /**
+     * Number of queries stored in the {@link #sql} and {@link #statements} arrays.
+     */
+    private static final int NUM_QUERIES = 3;
 
     /**
      * The factory which is the owner of this map. One purpose of this field is to prevent
@@ -73,22 +80,24 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     private final transient EPSGDataAccess factory;
 
     /**
-     * The interface of referencing objects for which this map contains the code.
-     * May be a super-interface of the type specified to the constructor.
+     * The key to use for caching this set of authority codes.
+     * May be a generalization of the key given at construction time.
      */
-    final Class<?> type;
+    final Object cacheKey;
 
     /**
      * The SQL commands that this {@code AuthorityCodes} may need to execute.
      * In this array:
      *
      * <ul>
-     *   <li>{@code sql[ALL]} is a statement for querying all codes.</li>
-     *   <li>{@code sql[ONE]} is a statement for querying a single code.
-     *       This statement is similar to {@code sql[ALL]} with the addition of a {@code WHERE} clause.</li>
+     *   <li>{@code sql[ALL_CODES]}      is a statement for querying all codes.</li>
+     *   <li>{@code sql[NAME_FOR_CODE]}  is a statement for querying the name associated to a single code.</li>
+     *   <li>{@code sql[CODES_FOR_NAME]} is a statement for querying the code(s) for an object of a given name.</li>
      * </ul>
+     *
+     * The array length may be only 1 instead of 3 if there is no <abbr>SQL</abbr> statement for fetching the name.
      */
-    private final transient String[] sql = new String[2];
+    private final transient String[] sql;
 
     /**
      * The JDBC statements for the SQL commands in the {@link #sql} array, created when first needed.
@@ -96,15 +105,15 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * This array will also be stored in {@link CloseableReference} for closing the statements
      * when the garbage collector detected that {@code AuthorityCodes} is no longer in use.
      */
-    private final transient Statement[] statements = new Statement[2];
+    private final transient Statement[] statements;
 
     /**
-     * The result of {@code statements[ALL]}, created only if requested.
+     * The result of {@code statements[ALL_CODES]}, created only if requested.
      * The codes will be queried at most once and cached in the {@link #codes} list.
      *
      * <p>Note that if this result set is not closed explicitly, it will be closed implicitly when
-     * {@code statements[ALL]} will be closed. This is because JDBC specification said that closing
-     * a statement also close its result set.</p>
+     * {@code statements[ALL_CODES]} will be closed. This is because <abbr>JDBC</abbr> specification
+     * said that closing a statement also close its result set.</p>
      */
     private transient ResultSet results;
 
@@ -114,51 +123,68 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     private transient IntegerList codes;
 
     /**
-     * Creates a new map of authority codes for the specified type.
+     * Creates a new map of authority codes for the specified object instance of class.
+     * The {@code object} argument shall be one of the following types:
      *
-     * @param  connection  the connection to the EPSG database.
-     * @param  table       the table to query.
-     * @param  type        the type to query.
-     * @param  factory     the factory originator.
+     * <ul>
+     *   <li>An {@link IdentifiedObject} instance.</li>
+     *   <li>The {@link Class} of an {@code IdentifiedObject}. It may be an implementation class.</li>
+     *   <li>An opaque key computed by {@link TableInfo#toCacheKey(IdentifiedObject)} (useful for caching).</li>
+     * </ul>
+     *
+     * @param table    the table to query.
+     * @param object   an {@link IdentifiedObject}, a {@code Class} or an opaque cache key.
+     * @param factory  the factory originator.
      */
-    AuthorityCodes(final Connection connection, final TableInfo table, final Class<?> type, final EPSGDataAccess factory)
-            throws SQLException
-    {
+    AuthorityCodes(final TableInfo table, final Object object, final EPSGDataAccess factory) throws SQLException {
         this.factory = factory;
+        sql = new String[NUM_QUERIES];
+        statements = new Statement[NUM_QUERIES];
         /*
          * Build the SQL query for fetching the codes of all object. It is of the form:
          *
-         *     SELECT code FROM table ORDER BY code;
+         *     SELECT code FROM table WHERE DEPRECATED=FALSE ORDER BY code;
          */
         final var buffer = new StringBuilder(100);
         final int columnNameStart = buffer.append("SELECT ").length();
         final int columnNameEnd = buffer.append(table.codeColumn).length();
-        buffer.append(" FROM ").append(table.table);
-        final Class<?> tableType = table.where(factory, type, buffer);
+        buffer.append(" FROM ").append(table.fromClause);
+        cacheKey = table.appendWhere(factory, object, buffer);
         final int conditionStart = buffer.length();
         if (table.showColumn != null) {
             buffer.append(table.showColumn).append("=TRUE AND ");
-            // Do not put spaces around "<>" - SQLTranslator searches for this exact match.
         }
         // Do not put spaces around "=" - SQLTranslator searches for this exact match.
-        buffer.append("DEPRECATED=FALSE ORDER BY ").append(table.codeColumn);
-        sql[ALL] = factory.translator.apply(buffer.toString());
+        sql[ALL_CODES] = buffer.append("DEPRECATED=FALSE ORDER BY ").append(table.codeColumn).toString();
+        /*
+         * Build the SQL query for fetching the codes of object having a name matching a pattern.
+         * It is of the form:
+         *
+         *     SELECT code FROM table WHERE name LIKE ? AND DEPRECATED=FALSE ORDER BY code;
+         */
+        if (NUM_QUERIES > CODES_FOR_NAME) {
+            sql[CODES_FOR_NAME] = buffer.insert(conditionStart, table.nameColumn + " LIKE ? AND ").toString();
+            /*
+             * Workaround for Derby bug. See `SQLUtilities.filterFalsePositive(…)`.
+             */
+            String t = sql[CODES_FOR_NAME];
+            t = t.substring(0, columnNameEnd) + ", " + table.nameColumn + t.substring(columnNameEnd);
+            sql[CODES_FOR_NAME] = t;
+        }
         /*
          * Build the SQL query for fetching the name of a single object for a given code.
          * This query will also be used for testing object existence. It is of the form:
          *
          *     SELECT name FROM table WHERE code = ?
          */
-        buffer.setLength(conditionStart);
-        if (table.nameColumn != null) {
+        if (NUM_QUERIES > NAME_FOR_CODE) {
+            buffer.setLength(conditionStart);
             buffer.replace(columnNameStart, columnNameEnd, table.nameColumn);
+            sql[NAME_FOR_CODE] = buffer.append(table.codeColumn).append(" = ?").toString();
         }
-        buffer.append(table.codeColumn).append(" = ?");
-        sql[ONE] = factory.translator.apply(buffer.toString());
-        /*
-         * Other information opportunistically computed from above search.
-         */
-        this.type = tableType;
+        for (int i=0; i<NUM_QUERIES; i++) {
+            sql[i] = factory.translator.apply(sql[i]);
+        }
     }
 
     /**
@@ -168,6 +194,62 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      */
     final CloseableReference createReference() {
         return new CloseableReference(this, factory, statements);
+    }
+
+    /**
+     * Returns the prepared statement at the given index, creating it when first needed.
+     * This method must be invoked in a block synchronized on {@link #factory}.
+     */
+    private PreparedStatement prepareStatement(final int index) throws SQLException {
+        var statement = (PreparedStatement) statements[index];
+        if (statement == null) {
+            statements[index] = statement = factory.connection.prepareStatement(sql[index]);
+            sql[index] = null;    // Not needed anymore.
+        }
+        return statement;
+    }
+
+    /**
+     * Puts codes associated to the given name in the given collection.
+     *
+     * @param  pattern  the {@code LIKE} pattern of the name to search.
+     * @param  name     the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
+     * @param  addTo    the collection where to add the codes.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    final void findCodesFromName(final String pattern, final String name, final Collection<Integer> addTo) throws SQLException {
+        synchronized (factory) {
+            final PreparedStatement statement = prepareStatement(CODES_FOR_NAME);
+            statement.setString(1, pattern);
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    final int code = result.getInt(1);
+                    if (!result.wasNull() && SQLUtilities.filterFalsePositive(name, result.getString(2))) {
+                        addTo.add(code);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Puts all codes in the given collection. This method is used only as a fallback when {@link EPSGCodeFinder}
+     * cannot get a list of authority codes in a more selective way, with some conditions on property values.
+     * This method should not be invoked for the most common objects such as <abbr>CRS</abbr> and datum.
+     *
+     * @param  addTo  the collection where to add all codes.
+     * @return whether the collection has changed as a result of this method call.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    final boolean getAllCodes(final Collection<Integer> addTo) throws SQLException {
+        boolean changed = false;
+        synchronized (factory) {
+            int code;
+            for (int index=0; (code = getCodeAt(index)) >= 0; index++) {
+                changed |= addTo.add(code);
+            }
+        }
+        return changed;
     }
 
     /**
@@ -182,8 +264,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         synchronized (factory) {
             if (codes == null) {
                 codes = new IntegerList(100, MAX_CODE);
-                results = (statements[ALL] = factory.connection.createStatement()).executeQuery(sql[ALL]);
-                sql[ALL] = null;                // Not needed anymore.
+                results = (statements[ALL_CODES] = factory.connection.createStatement()).executeQuery(sql[ALL_CODES]);
+                sql[ALL_CODES] = null;          // Not needed anymore.
             }
             int more = index - codes.size();    // Positive as long as we need more data.
             if (more < 0) {
@@ -196,8 +278,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
                     if (!r.next()) {
                         results = null;
                         r.close();
-                        statements[ALL].close();
-                        statements[ALL] = null;
+                        statements[ALL_CODES].close();
+                        statements[ALL_CODES] = null;
                         return -1;
                     }
                     code = r.getInt(1);
@@ -237,8 +319,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
 
     /**
      * Returns the object name associated to the given authority code, or {@code null} if none.
-     * If there is no name for the {@linkplain #type} of object being queried, then this method
-     * returns {@code null}.
+     * If there is no name for the object being queried, then this method returns {@code null}.
      *
      * @param  code  the code for which to get the description. May be a string or an integer.
      * @return the description for the given code, or {@code null} if none.
@@ -256,11 +337,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
             }
             try {
                 synchronized (factory) {
-                    var statement = (PreparedStatement) statements[ONE];
-                    if (statement == null) {
-                        statements[ONE] = statement = factory.connection.prepareStatement(sql[ONE]);
-                        sql[ONE] = null;    // Not needed anymore.
-                    }
+                    final PreparedStatement statement = prepareStatement(NAME_FOR_CODE);
                     statement.setInt(1, n);
                     try (ResultSet r = statement.executeQuery()) {
                         while (r.next()) {
@@ -326,16 +403,16 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         String size = null;
         synchronized (factory) {
             if (codes != null) {
-                size = "size " + (results != null ? "≥ " : "= ") + codes.size();
+                size = "size" + (results != null ? " ≥ " : " = ") + codes.size();
             }
         }
-        return Strings.toString(getClass(), "type", type.getSimpleName(), null, size);
+        return Strings.toString(getClass(), "cacheKey", cacheKey, null, size);
     }
 
     /**
      * Invoked when a SQL statement cannot be executed, or the result retrieved.
      */
-    private BackingStoreException factoryFailure(final SQLException exception) {
+    private static BackingStoreException factoryFailure(final SQLException exception) {
         return new BackingStoreException(exception.getLocalizedMessage(), exception);
     }
 

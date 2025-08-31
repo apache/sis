@@ -240,7 +240,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        if (Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) try {
+        if (CRS.equivalent(sourceCRS, targetCRS)) try {
             return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, null,
                             CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
                                                                targetCRS.getCoordinateSystem())));

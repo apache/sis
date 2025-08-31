@@ -80,6 +80,35 @@ public final class StandardDefinitionsTest extends EPSGDependentTestCase {
     }
 
     /**
+     * Tests {@link StandardDefinitions#createMercator(int, GeographicCRS, boolean)} for World Mercator.
+     */
+    @Test
+    public void testCreateWorldMercator() {
+        final ProjectedCRS crs = StandardDefinitions.createMercator(3395, HardCodedCRS.WGS84, false);
+        assertEquals("WGS 84 / World Mercator", crs.getName().getCode());
+        final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
+        assertEquals(0, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), Constants.LATITUDE_OF_ORIGIN);
+        assertEquals(0, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), Constants.CENTRAL_MERIDIAN);
+        assertEquals(1, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), Constants.SCALE_FACTOR);
+        assertEquals(0, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), Constants.FALSE_EASTING);
+        assertEquals(0, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), Constants.FALSE_NORTHING);
+    }
+
+    /**
+     * Tests {@link StandardDefinitions#createMercator(int, GeographicCRS, boolean)} for pseudo-Mercator.
+     */
+    @Test
+    public void testCreatePseudoMercator() {
+        final ProjectedCRS crs = StandardDefinitions.createMercator(3857, HardCodedCRS.WGS84, true);
+        assertEquals("WGS 84 / Pseudo-Mercator", crs.getName().getCode());
+        final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
+        assertEquals(0, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), Constants.LATITUDE_OF_ORIGIN);
+        assertEquals(0, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), Constants.CENTRAL_MERIDIAN);
+        assertEquals(0, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), Constants.FALSE_EASTING);
+        assertEquals(0, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), Constants.FALSE_NORTHING);
+    }
+
+    /**
      * Tests {@link StandardDefinitions#createUniversal(int, GeographicCRS, boolean, double, double, CartesianCS)}
      * for a Universal Transverse Mercator (UTM) projection.
      */

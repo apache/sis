@@ -29,7 +29,7 @@ import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.util.Utilities;
+import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -85,7 +85,7 @@ public final class MeshPrimitiveComparator {
     public void compare(MeshPrimitive expected, MeshPrimitive candidate) throws IllegalArgumentException {
 
         if (compareCrs) {
-            if (!Utilities.equalsIgnoreMetadata(expected.getCoordinateReferenceSystem(), candidate.getCoordinateReferenceSystem())) {
+            if (!CRS.equivalent(expected.getCoordinateReferenceSystem(), candidate.getCoordinateReferenceSystem())) {
                 throw new IllegalArgumentException("CRS are different");
             }
         }
@@ -162,7 +162,7 @@ public final class MeshPrimitiveComparator {
     public void compare(MultiMeshPrimitive expected, MultiMeshPrimitive candidate) throws IllegalArgumentException {
 
         if (compareCrs) {
-            if (!Utilities.equalsIgnoreMetadata(expected.getCoordinateReferenceSystem(), candidate.getCoordinateReferenceSystem())) {
+            if (!CRS.equivalent(expected.getCoordinateReferenceSystem(), candidate.getCoordinateReferenceSystem())) {
                 throw new IllegalArgumentException("CRS are different");
             }
         }

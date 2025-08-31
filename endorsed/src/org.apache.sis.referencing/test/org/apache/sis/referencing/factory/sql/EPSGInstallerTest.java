@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -52,14 +53,12 @@ import org.apache.sis.metadata.sql.TestDatabase;
  * so we want to opportunistically verify the result immediately after database creation
  * by using the {@code EPSGFactory} for creating a few CRS.
  *
- * <p>This test requires that the {@code $SIS_DATA/Databases/ExternalSources/EPSG} directory
+ * <p>This test requires that the {@code org.apache.sis.referencing.epsg} optional module
  * contains the {@code Tables.sql}, {@code Data.sql} and {@code FKeys.sql} files.
- * An easy setup is to set the above-cited {@code EPSG} directory as a symbolic link
- * to the {@code EPSG} directory of the
- * <a href="https://sis.apache.org/source.html#non-free">SIS non-free directory</a>.</p>
+ * See <a href="https://sis.apache.org/source.html#non-free">source checkout</a>.</p>
  *
- * <p>Every databases created by this test suite exist only in memory.
- * This class does not write to disk, except temporary files for some databases.</p>
+ * <p>The Derby and HSQL databases created by this test suite exist only in memory.
+ * This class does not write to disk, except for the PostgreSQL database.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -77,11 +76,12 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      *
      * @return provider of SQL scripts to execute for building the EPSG geodetic dataset.
      * @throws IOException if an I/O operation was required and failed.
+     * @throws URISyntaxException if an error occurred while locating the directory of the scripts.
      */
-    private static InstallationScriptProvider getScripts() throws IOException {
-        final var scripts = new InstallationScriptProvider.Default(null);
+    private static InstallationScriptProvider getScripts() throws IOException, URISyntaxException {
+        final var scripts = new EPSGScriptProvider();
         assumeTrue(scripts.getAuthorities().contains(Constants.EPSG),
-                "Scripts not found in the \"Databases/ExternalSources/EPSG\" directory.");
+                "Scripts not found in the \"org.apache.sis.referencing.epsg\" optional module.");
         return scripts;
     }
 
@@ -89,7 +89,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      * Tests the creation of an EPSG database on Derby.
      * This test is skipped if the SQL scripts are not found.
      *
-     * <p>See {@link TestDatabase} javadoc if there is a need to inspect content of that in-memory database.</p>
+     * <p>See {@link TestDatabase} Javadoc if there is a need to inspect the content of that in-memory database.</p>
      *
      * @throws Exception if an error occurred while creating the database.
      */

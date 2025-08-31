@@ -1044,7 +1044,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         final int   bitmask;        // CRS, EXTENT or GRID_TO_CRS
         final short errorKey;       // Resource key for error message.
         final CoordinateReferenceSystem sourceCRS = getCoordinateReferenceSystem(envelope);
-        if (Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+        if (org.apache.sis.referencing.CRS.equivalent(sourceCRS, crs)) {
             return envelope;
         } else if (sourceCRS == null) {
             bitmask  = CRS;

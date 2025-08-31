@@ -95,7 +95,7 @@ import org.apache.sis.util.privy.Numerics;
  *
  * <ul>
  *   <li><dfn>Equivalent reference systems</dfn> means two {@link org.opengis.referencing.crs.CoordinateReferenceSystem} instances
- *       for which {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)} returns {@code true}.</li>
+ *       for which {@link org.apache.sis.referencing.CRS#equivalent CRS.equivalent(…)} returns {@code true}.</li>
  *   <li><dfn>Compatible grid to CRS</dfn> means two {@linkplain org.apache.sis.coverage.grid.GridGeometry#getGridToCRS grid to CRS}
  *       transforms which are identical (with small tolerance for rounding errors) except for the translation terms,
  *       with the additional condition that the translations, when expressed in units of grid cell indices,

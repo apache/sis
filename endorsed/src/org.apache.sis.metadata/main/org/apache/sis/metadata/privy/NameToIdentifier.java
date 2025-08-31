@@ -233,7 +233,7 @@ public final class NameToIdentifier implements ReferenceIdentifier {
      * @return {@code true} if the primary name or at least one alias matches the given {@code name}.
      */
     public static boolean isHeuristicMatchForName(final Identifier name, final Collection<GenericName> aliases,
-            CharSequence toSearch, final Simplifier simplifier)
+                                                  CharSequence toSearch, final Simplifier simplifier)
     {
         if (toSearch != null) {
             CharSequence code = (name != null) ? name.getCode() : null;

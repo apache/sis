@@ -254,11 +254,6 @@ public class Errors extends IndexedResourceBundle {
         public static final short DuplicatedElement_1 = 37;
 
         /**
-         * File “{0}” is referenced more than once.
-         */
-        public static final short DuplicatedFileReference_1 = 38;
-
-        /**
          * Name or identifier “{0}” is used more than once.
          */
         public static final short DuplicatedIdentifier_1 = 39;
@@ -504,7 +499,7 @@ public class Errors extends IndexedResourceBundle {
         /**
          * The position is indeterminate.
          */
-        public static final short IndeterminatePosition = 206;
+        public static final short IndeterminatePosition = 38;
 
         /**
          * Index {0} is out of bounds.

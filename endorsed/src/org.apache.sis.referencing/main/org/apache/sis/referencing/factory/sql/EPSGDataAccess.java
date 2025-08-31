@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +29,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
+import java.util.function.ToIntFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -43,6 +43,7 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.temporal.Temporal;
@@ -219,12 +220,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private final NameSpace namespace;
 
     /**
-     * The last table in which object name were looked for.
-     * This is for internal use by {@link #toPrimaryKeys} only.
-     */
-    private String lastTableForName;
-
-    /**
      * A pool of prepared statements. Keys are {@link String} objects related to their originating method
      * (for example "Ellipsoid" for {@link #createEllipsoid(String)}).
      */
@@ -246,7 +241,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * and returns {@code false} if some are found (thus blocking the call to {@link #close()}
      * by the {@link org.apache.sis.referencing.factory.ConcurrentAuthorityFactory} timer).</p>
      */
-    private final Map<Class<?>, CloseableReference> authorityCodes = new HashMap<>();
+    private final Map<Object, CloseableReference> authorityCodes = new HashMap<>();
 
     /**
      * Cache for axis names, conventional reference systems, realization methods or naming systems.
@@ -264,7 +259,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * </ol>
      *
      * Since we are not using the shared cache, there is a possibility that many objects are created for the same code.
-     * However, this duplication should not happen often. For example, each conventional <abbr>RS</abbr> should appears
+     * However, this duplication should not happen often. For example, each conventional <abbr>RS</abbr> should appear
      * in only one datum ensemble created by {@link #createDatumEnsemble(Integer, Map)}.
      *
      * <p>Keys are {@link Long} except the keys for naming systems which are {@link String}.</p>
@@ -272,7 +267,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @see #getAxisName(Integer)
      * @see #getRealizationMethod(Integer)
      * @see #createConventionalRS(Integer)
-     * @see #createProperties(String, Integer, String, CharSequence, String, String, CharSequence, boolean)
+     * @see #createProperties(TableInfo, Integer, String, CharSequence, String, String, CharSequence, boolean)
      */
     private final Map<Object, Object> localCache = new HashMap<>();
 
@@ -539,7 +534,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * for a deprecated object, even if that identifier does not show up in iterations.
      * In other words, the returned collection behaves as if deprecated codes were included in the set but invisible.
      *
-     * @param  type  the spatial reference objects type (may be {@code Object.class}).
+     * @param  type  the type of spatial reference objects for which to get the authority codes.
      * @return the set of authority codes for spatial reference objects of the given type (may be an empty set).
      * @throws FactoryException if access to the underlying database failed.
      */
@@ -549,85 +544,98 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
             if (connection.isClosed()) {
                 throw new FactoryException(error().getString(Errors.Keys.ConnectionClosed));
             }
-            return getCodeMap(type).keySet();
+            final AuthorityCodes codes = getCodeMap(Objects.requireNonNull(type), null, true);
+            if (codes != null) {
+                return codes.keySet();
+            }
         } catch (SQLException exception) {
             throw new FactoryException(exception.getLocalizedMessage(), Exceptions.unwrap(exception));
         }
+        return Set.of();
+    }
+
+    /**
+     * Puts all codes in the given collection. This method is used only as a fallback when {@link EPSGCodeFinder}
+     * cannot get a smaller list of authority codes by using {@code WHERE} conditions on property values.
+     * This method should not be invoked for the most common objects such as <abbr>CRS</abbr> and datum.
+     * This method may do nothing if getting all codes would be too expensive
+     * (especially since the caller would instantiate all enumerated objects).
+     *
+     * @param  object  the object to search in the database.
+     * @param  addTo   the collection where to add all codes.
+     * @return whether the collection has changed as a result of this method call.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    final boolean getAuthorityCodes(final IdentifiedObject object, final Collection<Integer> addTo) throws SQLException {
+        final AuthorityCodes codes = getCodeMap(TableInfo.toCacheKey(object), null, false);
+        return (codes != null) && codes.getAllCodes(addTo);
     }
 
     /**
      * Returns a map of <abbr>EPSG</abbr> authority codes as keys and object names as values.
      * The cautions documented in {@link #getAuthorityCodes(Class)} apply also to this map.
+     * If the given type is unsupported or too generic, returns {@code null}.
      *
-     * @param  type  the spatial reference objects type (may be {@code Object.class}).
-     * @return the map of authority codes associated to their names. May be an empty map.
+     * @param  cacheKey  object class or {@link TableInfo#toCacheKey(IdentifiedObject)} value.
+     * @param  source    the table from which to get the authority codes, or {@code null} for automatic.
+     * @param  publish   whether the returned authority codes will be given to a user outside this package.
+     * @return the map of authority codes associated to their names, or {@code null} if unsupported.
      * @throws FactoryException if access to the underlying database failed.
      *
      * @see #getAuthorityCodes(Class)
      * @see #getDescriptionText(Class, String)
      */
-    private synchronized Map<String,String> getCodeMap(final Class<?> type) throws SQLException {
-        CloseableReference reference = authorityCodes.get(type);
+    private synchronized AuthorityCodes getCodeMap(final Object cacheKey, TableInfo source, boolean publish)
+            throws SQLException
+    {
+        CloseableReference reference = authorityCodes.get(cacheKey);
         if (reference != null) {
             AuthorityCodes existing = reference.get();
             if (existing != null) {
+                reference.published |= publish;
                 return existing;
             }
         }
-        Map<String, String> result = Map.of();
-        for (final TableInfo table : TableInfo.EPSG) {
-            /*
-             * We test `isAssignableFrom` in the two ways for catching the following use cases:
-             *
-             *  - `table.type.isAssignableFrom(type)`
-             *    is for the case where a table is for CoordinateReferenceSystem while the user type is some subtype
-             *    like GeographicCRS. The GeographicCRS need to be queried into the CoordinateReferenceSystem table.
-             *    An additional filter will be applied inside the AuthorityCodes class implementation.
-             *
-             *  - `type.isAssignableFrom(table.type)`
-             *    is for the case where the user type is IdentifiedObject or Object, in which case we basically want
-             *    to iterate through every tables.
-             */
-            if (table.type.isAssignableFrom(type) || type.isAssignableFrom(table.type)) {
-                /*
-                 * Maybe an instance already existed but was not found above because the user specified some
-                 * implementation class instead of an interface class. Before to return a newly created map,
-                 * check again in the cached maps using the type computed by AuthorityCodes itself.
-                 */
-                var codes = new AuthorityCodes(connection, table, type, this);
-                reference = authorityCodes.get(codes.type);
-                if (reference != null) {
-                    AuthorityCodes existing = reference.get();
-                    if (existing != null) {
-                        codes = existing;
-                    } else {
-                        reference = null;           // The weak reference is no longer valid.
+        if (source != null) {
+            assert source.isSpecificEnough() && source.type.isAssignableFrom(TableInfo.typeOfCacheKey(cacheKey)) : source;
+        } else {
+            final Class<?> userType = TableInfo.typeOfCacheKey(cacheKey);
+            for (TableInfo candidate : TableInfo.values()) {
+                if (candidate.isSpecificEnough() && candidate.type.isAssignableFrom(userType)) {
+                    if (source != null) {
+                        return null;        // The specified type is too generic.
                     }
-                }
-                if (reference == null) {
-                    reference = codes.createReference();
-                    authorityCodes.put(codes.type, reference);
-                }
-                if (type != codes.type) {
-                    authorityCodes.put(type, reference);
-                }
-                /*
-                 * We now have the codes for a single type. Append with the codes of previous types, if any.
-                 * This usually happen only if the user asked for the IdentifiedObject type. Of course this
-                 * break all our effort to query the data only when first needed, but the user should ask
-                 * for more specific types.
-                 */
-                if (result.isEmpty()) {
-                    result = codes;
-                } else {
-                    if (result instanceof AuthorityCodes) {
-                        result = new LinkedHashMap<>(result);
-                    }
-                    result.putAll(codes);
+                    source = candidate;
                 }
             }
+            if (source == null) {
+                return null;                // The specified type is unsupported.
+            }
         }
-        return result;
+        AuthorityCodes codes = new AuthorityCodes(source, cacheKey, this);
+        /*
+         * Maybe an instance already existed but was not found above because the user specified some
+         * implementation class instead of an interface class. Before to return a newly created map,
+         * check again in the cached maps using the type computed by AuthorityCodes itself.
+         */
+        reference = authorityCodes.get(codes.cacheKey);
+        if (reference != null) {
+            AuthorityCodes existing = reference.get();
+            if (existing != null) {
+                codes = existing;
+            } else {
+                reference = null;           // The weak reference is no longer valid.
+            }
+        }
+        if (reference == null) {
+            reference = codes.createReference();
+            authorityCodes.put(codes.cacheKey, reference);
+        }
+        if (cacheKey != codes.cacheKey) {
+            authorityCodes.put(cacheKey, reference);
+        }
+        reference.published |= publish;
+        return codes;
     }
 
     /**
@@ -657,12 +665,11 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
             throws FactoryException
     {
         try {
-            for (final TableInfo table : TableInfo.EPSG) {
-                if (table.nameColumn != null && type.isAssignableFrom(table.type)) {
-                    final String text = getCodeMap(table.type).get(code);
-                    if (text != null) {
-                        return Optional.of(new SimpleInternationalString(text));
-                    }
+            final AuthorityCodes codes = getCodeMap(Objects.requireNonNull(type), null, false);
+            if (codes != null) {
+                final String text = codes.get(code);
+                if (text != null) {
+                    return Optional.of(new SimpleInternationalString(text));
                 }
             }
         } catch (SQLException | BackingStoreException exception) {
@@ -711,81 +718,38 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Converts <abbr>EPSG</abbr> codes or <abbr>EPSG</abbr> names to the numerical identifiers (the primary keys).
      * This method can be seen as the converse of above {@link #getDescriptionText(Class, String)} method.
      *
-     * @param  table       the table where the code should appears, or {@code null} if {@code codeColumn} is null.
-     * @param  codeColumn  the column name for the codes, or {@code null} if none.
-     * @param  nameColumn  the column name for the names, or {@code null} if none.
-     * @param  codes       the codes or names to convert to primary keys, as an array of length 1 or 2.
+     * @param  source  the table where the code should appear, or {@code null} for no search by name.
+     * @param  codes   the codes or names to convert to primary keys, as an array of length 1 or 2.
      * @return the numerical identifiers (i.e. the table primary key values).
      * @throws SQLException if an error occurred while querying the database.
      * @throws FactoryDataException if code is a name and two distinct numerical codes match the name.
      * @throws NoSuchAuthorityCodeException if code is a name and no numerical code match the name.
      */
-    private int[] toPrimaryKeys(final String table, final String codeColumn, final String nameColumn, final String... codes)
-            throws SQLException, FactoryException
-    {
+    private int[] toPrimaryKeys(final TableInfo source, final String... codes) throws SQLException, FactoryException {
         final int[] primaryKeys = new int[codes.length];
-next:   for (int i=0; i<codes.length; i++) {
+        for (int i=0; i<codes.length; i++) {
             String code = codes[i];
-            if (codeColumn != null && nameColumn != null && !isPrimaryKey(code)) {
+            if (source != null && !isPrimaryKey(code)) {
                 /*
                  * The given string is not a numerical code. Search the value in the database.
                  * We search first in the table of the query. If the name is not found there,
                  * then we will search in the aliases table as a fallback.
                  */
-                final String pattern = SQLUtilities.toLikePattern(code, false);
-                boolean searchInTableOfQuery = true;
+                final var result = new ArrayList<Integer>();
+                final String pattern = toLikePattern(code);
+                findCodesFromName(source, source.type, pattern, code, result);
+                if (result.isEmpty()) {
+                    // Search in aliases only if no match was found in primary names.
+                    findCodesFromAlias(source, pattern, code, result);
+                }
                 Integer resolved = null;
-                do {    // Executed exactly 1 or 2 times.
-                    PreparedStatement stmt;
-                    if (searchInTableOfQuery) {
-                        /*
-                         * The SQL query for searching in the queried table is a little bit more complicated
-                         * than the query for searching in the alias table. The existing prepared statement
-                         * can be reused only if it was created for the current table.
-                         */
-                        final String KEY = "PrimaryKey";
-                        if (table.equals(lastTableForName)) {
-                            stmt = statements.get(KEY);
-                        } else {
-                            stmt = statements.remove(KEY);
-                            if (stmt != null) {
-                                stmt.close();
-                                stmt = null;
-                            }
-                        }
-                        if (stmt == null) {
-                            stmt = connection.prepareStatement(translator.apply(
-                                    "SELECT " + codeColumn + ", " + nameColumn
-                                            + " FROM \"" + table + '"'
-                                            + " WHERE " + nameColumn + " LIKE ?"));
-                            statements.put(KEY, stmt);
-                            lastTableForName = table;
-                        }
-                        stmt.setString(1, pattern);
-                    } else {
-                        /*
-                         * If the object name is not found in the queries table,
-                         * search in the table of aliases.
-                         */
-                        stmt = prepareStatement("AliasKey",
-                                "SELECT OBJECT_CODE, ALIAS"
-                                        + " FROM \"Alias\""
-                                        + " WHERE OBJECT_TABLE_NAME=? AND ALIAS LIKE ?");
-                        stmt.setString(1, translator.toActualTableName(table));
-                        stmt.setString(2, pattern);
-                    }
-                    try (ResultSet result = stmt.executeQuery()) {
-                        while (result.next()) {
-                            if (SQLUtilities.filterFalsePositive(code, result.getString(2))) {
-                                resolved = ensureSingleton(getOptionalInteger(result, 1), resolved, code);
-                            }
-                        }
-                    }
-                    if (resolved != null) {
-                        primaryKeys[i] = resolved;
-                        continue next;
-                    }
-                } while ((searchInTableOfQuery = !searchInTableOfQuery) == false);
+                for (Integer value : result) {
+                    resolved = ensureSingleton(value, resolved, code);
+                }
+                if (resolved != null) {
+                    primaryKeys[i] = resolved;
+                    continue;
+                }
             }
             /*
              * At this point, `code` should be the primary key. It may still be a non-numerical string
@@ -802,6 +766,62 @@ next:   for (int i=0; i<codes.length; i++) {
             }
         }
         return primaryKeys;
+    }
+
+    /**
+     * Returns the given object name as a pattern which can be used in a {@code LIKE} clause.
+     * This method does not change the character case for avoiding the need to use {@code LOWER}
+     * in the <abbr>SQL</abbr> statement (because it may prevent the use of the database index).
+     */
+    final String toLikePattern(final String name) {
+        return SQLUtilities.toLikePattern(name, false, translator.wildcardEscape);
+    }
+
+    /**
+     * Finds the authority codes for the given name.
+     *
+     * @param  source    information about the table where the code should appear.
+     * @param  cacheKey  object class or {@link TableInfo#toCacheKey(IdentifiedObject)} value.
+     * @param  pattern   the name to search as a pattern that can be used with {@code LIKE}.
+     * @param  name      the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
+     * @param  addTo     the collection where to add the codes that have been found.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    final void findCodesFromName(final TableInfo source, final Object cacheKey, final String pattern, final String name,
+                                 final Collection<Integer> addTo) throws SQLException
+    {
+        AuthorityCodes codes = getCodeMap(cacheKey, source, false);
+        if (codes != null) {
+            codes.findCodesFromName(pattern, name, addTo);
+        }
+    }
+
+    /**
+     * Finds the authority codes for the given alias.
+     *
+     * @param  source   information about the table where the code should appear.
+     * @param  pattern  the name to search as a pattern that can be used with {@code LIKE}.
+     * @param  name     the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
+     * @param  addTo    the collection where to add the codes that have been found.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    final void findCodesFromAlias(final TableInfo source, final String pattern, final String name, final Collection<Integer> addTo)
+            throws SQLException
+    {
+        final PreparedStatement stmt = prepareStatement(
+                "AliasKey",
+                "SELECT OBJECT_CODE, ALIAS"
+                        + " FROM \"Alias\""
+                        + " WHERE OBJECT_TABLE_NAME=? AND ALIAS LIKE ?");
+        stmt.setString(1, translator.toActualTableName(source.table));
+        stmt.setString(2, pattern);
+        try (ResultSet result = stmt.executeQuery()) {
+            while (result.next()) {
+                if (SQLUtilities.filterFalsePositive(name, result.getString(2))) {
+                    addTo.add(getOptionalInteger(result, 1));
+                }
+            }
+        }
     }
 
     /**
@@ -824,35 +844,27 @@ next:   for (int i=0; i<codes.length; i++) {
      *       in their {@code finally} block.</li>
      * </ul>
      *
-     * @param  table       the table where the code should appears.
-     * @param  codeColumn  the column name for the codes, or {@code null} if none.
-     * @param  nameColumn  the column name for the names, or {@code null} if none.
-     * @param  sql         the SQL statement to use for creating the {@link PreparedStatement} object.
-     *                     Will be used only if no prepared statement was already created for the given code.
-     * @param  codes       the codes of the object to create, as an array of length 1 or 2.
+     * @param  source  information about the table where the code should appear.
+     * @param  sql     the <abbr>SQL</abbr> statement to use for creating the {@link PreparedStatement} object.
+     *                 Will be used only if no prepared statement was already created for the given code.
+     * @param  codes   the codes of the object to create, as an array of length 1 or 2.
      * @return the result of the query.
      * @throws SQLException if an error occurred while querying the database.
      */
-    private ResultSet executeSingletonQuery(final String    table,
-                                            final String    codeColumn,
-                                            final String    nameColumn,
-                                            final String    sql,
-                                            final String... codes)
+    private ResultSet executeSingletonQuery(final TableInfo source, final String sql, final String... codes)
             throws SQLException, FactoryException
     {
         assert Thread.holdsLock(this);
-        assert sql.contains('"' + table + '"') : table;
-        assert (codeColumn == null) || sql.contains(codeColumn) || table.equals("Extent") : codeColumn;
-        assert (nameColumn == null) || sql.contains(nameColumn) || table.equals("Extent") : nameColumn;
-        final int[] keys = toPrimaryKeys(table, codeColumn, nameColumn, codes);
-        currentSingletonQuery = new QueryID(table, keys, currentSingletonQuery);
+        assert source.validate(sql) : source;
+        final int[] keys = toPrimaryKeys(source, codes);
+        currentSingletonQuery = new QueryID(source.table, keys, currentSingletonQuery);
         if (currentSingletonQuery.isAlreadyInProgress()) {
             throw new FactoryDataException(resources().getString(
                     Resources.Keys.RecursiveCreateCallForCode_2,
-                    TableInfo.getObjectClassName(table).orElse(table),
+                    source.type.getSimpleName(),
                     (codes.length == 1) ? codes[0] : Arrays.toString(codes)));
         }
-        return executeQueryForCodes(table, sql, keys);
+        return executeQueryForCodes(source.table, sql, keys);
     }
 
     /**
@@ -929,6 +941,7 @@ next:   for (int i=0; i<codes.length; i++) {
      * @param  caller       the caller, used for reporting a warning in case of parsing error.
      * @return the temporal at the specified column, or {@code null}.
      * @throws SQLException if an error occurred while querying the database.
+     * @throws DateTimeException if the date cannot be parsed.
      */
     private static Temporal getOptionalTemporal(final ResultSet result, final int columnIndex, final String caller)
             throws SQLException
@@ -1184,11 +1197,11 @@ next:   for (int i=0; i<codes.length; i++) {
     /**
      * Logs a warning saying that the given code is deprecated and returns the code of the proposed replacement.
      *
-     * @param  table   the table of the deprecated code.
+     * @param  source  information about the table where the deprecated object is found.
      * @param  code    the deprecated code.
      * @return the proposed replacement (may be the "(none)" text). Never empty.
      */
-    private String getReplacement(final String table, final Integer code, final Locale locale) throws SQLException {
+    private String getReplacement(final TableInfo source, final Integer code, final Locale locale) throws SQLException {
         String reason = null;
         String replacedBy;
 search: try (ResultSet result = executeMetadataQuery("Deprecation",
@@ -1196,7 +1209,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         + " FROM \"Deprecation\""
                         + " WHERE OBJECT_TABLE_NAME=?"
                         + " AND OBJECT_CODE=?",
-                translator.toActualTableName(table), code))
+                translator.toActualTableName(source.table), code))
         {
             while (result.next()) {
                 reason    = getOptionalString (result, 1);
@@ -1216,7 +1229,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         if (!quiet) {
             Logging.completeAndLog(LOGGER,
                     EPSGDataAccess.class,
-                    "create".concat(TableInfo.getObjectClassName(table).orElse("")),
+                    "create".concat(source.type.getSimpleName()),
                     Resources.forLocale(locale).createLogRecord(
                             Level.WARNING,
                             Resources.Keys.DeprecatedCode_3,
@@ -1244,7 +1257,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
      *     }
      *     }
      *
-     * @param  table       the table on which a query has been executed.
+     * @param  source      information about the table on which a query has been executed.
      * @param  code        the EPSG code of the object to construct.
      * @param  name        the name for the {@link IdentifiedObject} to construct.
      * @param  description a description associated with the name, or {@code null} if none.
@@ -1255,7 +1268,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
      * @return the name together with a set of properties.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Object> createProperties(final String       table,
+    private Map<String,Object> createProperties(final TableInfo    source,
                                                 final Integer      code,
                                                       String       name,        // May be replaced by an alias.
                                                 final CharSequence description,
@@ -1270,7 +1283,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
          * se we need to fetch and store the extent before to populate the `properties` map.
          */
         final Extent extent = (extentCode == null) ? null : createExtent(extentCode);
-        final String actualTable = translator.toActualTableName(table);
+        final String actualTable = translator.toActualTableName(source.table);
         /*
          * Get all domains for the object identified by the given code.
          * The table used nere is new in version 10 of EPSG database.
@@ -1359,7 +1372,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         final ImmutableIdentifier identifier;
         if (deprecated) {
             properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
-            final String replacedBy = getReplacement(table, code, locale);
+            final String replacedBy = getReplacement(source, code, locale);
             identifier = new DeprecatedCode(
                     authority,
                     Constants.EPSG,
@@ -1420,21 +1433,20 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         final boolean isPrimaryKey = isPrimaryKey(code);
         final var query = new StringBuilder("SELECT ");
         final int queryStart = query.length();
-        int found = -1;
+        TableInfo found = null;
         try {
-            final int key = isPrimaryKey ? toPrimaryKeys(null, null, null, code)[0] : 0;
-            for (int i = 0; i < TableInfo.EPSG.length; i++) {
-                final TableInfo table = TableInfo.EPSG[i];
-                final String column = isPrimaryKey ? table.codeColumn : table.nameColumn;
-                if (column == null) {
+            final int key = isPrimaryKey ? toPrimaryKeys(null, code)[0] : 0;
+            for (final TableInfo source : TableInfo.values()) {
+                if (!(source.isSpecificEnough() && IdentifiedObject.class.isAssignableFrom(source.type))) {
                     continue;
                 }
+                final String column = isPrimaryKey ? source.codeColumn : source.nameColumn;
                 query.setLength(queryStart);
-                query.append(table.codeColumn);
+                query.append(source.codeColumn);
                 if (!isPrimaryKey) {
                     query.append(", ").append(column);      // Only for filterFalsePositive(…).
                 }
-                query.append(" FROM ").append(table.table)
+                query.append(" FROM ").append(source.fromClause)
                      .append(" WHERE ").append(column).append(isPrimaryKey ? " = ?" : " LIKE ?");
                 try (PreparedStatement stmt = connection.prepareStatement(translator.apply(query.toString()))) {
                     /*
@@ -1444,7 +1456,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     if (isPrimaryKey) {
                         stmt.setInt(1, key);
                     } else {
-                        stmt.setString(1, SQLUtilities.toLikePattern(code, false));
+                        stmt.setString(1, toLikePattern(code));
                     }
                     Integer present = null;
                     try (ResultSet result = stmt.executeQuery()) {
@@ -1455,10 +1467,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         }
                     }
                     if (present != null) {
-                        if (found >= 0) {
+                        if (found != null) {
                             throw new FactoryDataException(error().getString(Errors.Keys.DuplicatedIdentifier_1, code));
                         }
-                        found = i;
+                        found = source;
                     }
                 }
             }
@@ -1468,18 +1480,18 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         /*
          * If a record has been found in one table, then delegates to the appropriate method.
          */
-        if (found >= 0) {
+        if (found != null) {
             switch (found) {
-                case 0:  return createCoordinateReferenceSystem(code);
-                case 1:  return createCoordinateSystem         (code);
-                case 2:  return createCoordinateSystemAxis     (code);
-                case 3:  return createDatum                    (code);
-                case 4:  return createEllipsoid                (code);
-                case 5:  return createPrimeMeridian            (code);
-                case 6:  return createCoordinateOperation      (code);
-                case 7:  return createOperationMethod          (code);
-                case 8:  return createParameterDescriptor      (code);
-                case 9:  break; // Cannot cast Unit to IdentifiedObject
+                case CRS:            return createCoordinateReferenceSystem(code);
+                case CS:             return createCoordinateSystem         (code);
+                case AXIS:           return createCoordinateSystemAxis     (code);
+                case DATUM:          return createDatum                    (code);
+                case ELLIPSOID:      return createEllipsoid                (code);
+                case PRIME_MERIDIAN: return createPrimeMeridian            (code);
+                case OPERATION:      return createCoordinateOperation      (code);
+                case METHOD:         return createOperationMethod          (code);
+                case PARAMETER:      return createParameterDescriptor      (code);
+                case UNIT:           break; // Cannot cast Unit to IdentifiedObject
                 default: throw new AssertionError(found);                   // Should not happen
             }
         }
@@ -1563,9 +1575,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         CoordinateReferenceSystem returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Coordinate Reference System",
-                "COORD_REF_SYS_CODE",
-                "COORD_REF_SYS_NAME",
+                TableInfo.CRS,
                 "SELECT"+ /* column  1 */ " COORD_REF_SYS_CODE,"
                         + /* column  2 */ " COORD_REF_SYS_NAME,"
                         + /* column  3 */ " AREA_OF_USE_CODE,"      // Deprecated since EPSG version 10 (always NULL)
@@ -1598,7 +1608,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final FactoryCall<CRSFactory, CoordinateReferenceSystem> constructor;
                 /*
                  * The following switch statement should have a case for all "CRS Kind" values enumerated
-                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 * in the `Prepare.sql` file, except that the values in this Java code are in lower cases.
                  */
                 switch (type.toLowerCase(Locale.US)) {
                     /* ──────────────────────────────────────────────────────────────────────
@@ -1809,7 +1819,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
-                        "Coordinate Reference System", epsg, name, null, area, scope, remarks, deprecated);
+                        TableInfo.CRS, epsg, name, null, area, scope, remarks, deprecated);
                 final CoordinateReferenceSystem crs = create(constructor, owner.crsFactory, properties);
                 returnValue = ensureSingleton(crs, returnValue, code);
                 if (result.isClosed()) break;   // See createProperties(…) for explanation.
@@ -1817,7 +1827,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateReferenceSystem.class, code, exception);
         } catch (ClassCastException exception) {
-            throw new FactoryDataException(error().getString(exception.getLocalizedMessage()), exception);
+            throw new FactoryDataException(exception.getLocalizedMessage(), exception);
         } finally {
             currentSingletonQuery = previousSingletonQuery;
         }
@@ -1878,9 +1888,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         Datum returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Datum",
-                "DATUM_CODE",
-                "DATUM_NAME",
+                TableInfo.DATUM,
                 "SELECT"+ /* column  1 */ " DATUM_CODE,"
                         + /* column  2 */ " DATUM_NAME,"
                         + /* column  3 */ " DATUM_TYPE,"
@@ -1920,7 +1928,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final FactoryCall<DatumFactory, ? extends Datum> constructor;
                 /*
                  * The following switch statement should have a case for all "Datum Kind" values enumerated
-                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 * in the `Prepare.sql` file, except that the values in this Java code are in lower cases.
                  */
                 switch (type.toLowerCase(Locale.US)) {
                     case "dynamic geodetic":
@@ -1973,7 +1981,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final IdentifiedObject conventionalRS = createConventionalRS(convRSCode);
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
-                        "Datum", epsg, name, null, area, scope, remarks, deprecated);
+                        TableInfo.DATUM, epsg, name, null, area, scope, remarks, deprecated);
                 properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
                 properties.put(Datum.ANCHOR_EPOCH_KEY,      epoch);
                 properties.put(Datum.PUBLICATION_DATE_KEY,  publish);
@@ -1985,6 +1993,8 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             }
         } catch (SQLException exception) {
             throw databaseFailure(Datum.class, code, exception);
+        } catch (DateTimeException exception) {
+            throw new FactoryDataException(exception.getLocalizedMessage(), exception);
         } finally {
             currentSingletonQuery = previousSingletonQuery;
         }
@@ -2105,7 +2115,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         var returnValue = (IdentifiedObject) localCache.get(cacheKey);
         if (returnValue == null) {
             try (ResultSet result = executeQueryForCodes(
-                    "Conventional RS",
+                    TableInfo.CONVENTIONAL_RS.table,
                     "SELECT"+ /* column 1 */ " CONVENTIONAL_RS_CODE,"
                             + /* column 2 */ " CONVENTIONAL_RS_NAME,"
                             + /* column 3 */ " REMARKS,"
@@ -2124,7 +2134,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                      */
                     @SuppressWarnings("LocalVariableHidesMemberVariable")
                     final Map<String,Object> properties = createProperties(
-                            "Conventional RS", epsg, name, null, null, null, remarks, deprecated);
+                            TableInfo.CONVENTIONAL_RS, epsg, name, null, null, null, remarks, deprecated);
                     returnValue = ensureSingleton(new AbstractIdentifiedObject(properties), returnValue, code);
                     if (result.isClosed()) break;   // See createProperties(…) for explanation.
                 }
@@ -2166,9 +2176,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         Ellipsoid returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Ellipsoid",
-                "ELLIPSOID_CODE",
-                "ELLIPSOID_NAME",
+                TableInfo.ELLIPSOID,
                 "SELECT"+ /* column 1 */ " ELLIPSOID_CODE,"
                         + /* column 2 */ " ELLIPSOID_NAME,"
                         + /* column 3 */ " SEMI_MAJOR_AXIS,"
@@ -2207,7 +2215,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
-                        "Ellipsoid", epsg, name, null, null, null, remarks, deprecated);
+                        TableInfo.ELLIPSOID, epsg, name, null, null, null, remarks, deprecated);
                 final Ellipsoid ellipsoid;
                 if (useSemiMinor) {
                     // We only have semiMinorAxis defined. It is OK
@@ -2270,9 +2278,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         PrimeMeridian returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Prime Meridian",
-                "PRIME_MERIDIAN_CODE",
-                "PRIME_MERIDIAN_NAME",
+                TableInfo.PRIME_MERIDIAN,
                 "SELECT"+ /* column 1 */ " PRIME_MERIDIAN_CODE,"
                         + /* column 2 */ " PRIME_MERIDIAN_NAME,"
                         + /* column 3 */ " GREENWICH_LONGITUDE,"
@@ -2295,7 +2301,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  * information needed from the `ResultSet`, because it may be closed.
                  */
                 final PrimeMeridian primeMeridian = owner.datumFactory.createPrimeMeridian(
-                        createProperties("Prime Meridian", epsg, name, null, null, null, remarks, deprecated),
+                        createProperties(TableInfo.PRIME_MERIDIAN, epsg, name, null, null, null, remarks, deprecated),
                         longitude, unit);
                 returnValue = ensureSingleton(primeMeridian, returnValue, code);
                 if (result.isClosed()) break;   // See createProperties(…) for explanation.
@@ -2351,9 +2357,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         final var deferred = new ArrayList<Map.Entry<DefaultVerticalExtent, Integer>>();
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Extent",
-                "EXTENT_CODE",
-                "EXTENT_NAME",
+                TableInfo.EXTENT,
                 "SELECT"+ /* column  1 */ " EXTENT_DESCRIPTION,"
                         + /* column  2 */ " BBOX_SOUTH_BOUND_LAT,"
                         + /* column  3 */ " BBOX_NORTH_BOUND_LAT,"
@@ -2415,6 +2419,8 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             }
         } catch (SQLException exception) {
             throw databaseFailure(Extent.class, code, exception);
+        } catch (DateTimeException exception) {
+            throw new FactoryDataException(exception.getLocalizedMessage(), exception);
         } finally {
             currentSingletonQuery = previousSingletonQuery;
         }
@@ -2468,9 +2474,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         CoordinateSystem returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Coordinate System",
-                "COORD_SYS_CODE",
-                "COORD_SYS_NAME",
+                TableInfo.CS,
                 "SELECT"+ /* column 1 */ " COORD_SYS_CODE,"
                         + /* column 2 */ " COORD_SYS_NAME,"
                         + /* column 3 */ " COORD_SYS_TYPE,"
@@ -2505,10 +2509,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
-                        "Coordinate System", epsg, name, null, null, null, remarks, deprecated);
+                        TableInfo.CS, epsg, name, null, null, null, remarks, deprecated);
                 /*
                  * The following switch statement should have a case for all "CS Kind" values enumerated
-                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 * in the `Prepare.sql` file, except that the values in this Java code are in lower cases.
                  */
                 final CSFactory csFactory = owner.csFactory;
                 CoordinateSystem cs = null;
@@ -2631,9 +2635,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         CoordinateSystemAxis returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Coordinate Axis",
-                "COORD_AXIS_CODE",
-                null,
+                TableInfo.AXIS,
                 "SELECT"+ /* column 1 */ " COORD_AXIS_CODE,"
                         + /* column 2 */ " COORD_AXIS_NAME_CODE,"
                         + /* column 3 */ " COORD_AXIS_ORIENTATION,"
@@ -2660,7 +2662,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  * information needed from the `ResultSet`, because it may be closed.
                  */
                 final CoordinateSystemAxis axis = owner.csFactory.createCoordinateSystemAxis(
-                        createProperties("Coordinate Axis", epsg, an.name, an.description, null, null, an.remarks, false),
+                        createProperties(TableInfo.AXIS, epsg, an.name, an.description, null, null, an.remarks, false),
                         abbreviation, direction, owner.createUnit(unit));
                 returnValue = ensureSingleton(axis, returnValue, code);
                 if (result.isClosed()) break;   // See createProperties(…) for explanation.
@@ -2773,9 +2775,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         Unit<?> returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Unit of Measure",
-                "UOM_CODE",
-                "UNIT_OF_MEAS_NAME",
+                TableInfo.UNIT,
                 "SELECT"+ /* column 1 */ " UOM_CODE,"
                         + /* column 2 */ " FACTOR_B,"
                         + /* column 3 */ " FACTOR_C,"
@@ -2857,9 +2857,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         ParameterDescriptor<?> returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Coordinate_Operation Parameter",
-                "PARAMETER_CODE",
-                "PARAMETER_NAME",
+                TableInfo.PARAMETER,
                 "SELECT"+ /* column 1 */ " PARAMETER_CODE,"
                         + /* column 2 */ " PARAMETER_NAME,"
                         + /* column 3 */ " DESCRIPTION,"
@@ -2887,7 +2885,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                      */
                     type = Double.class;
                     try (ResultSet r = executeQueryForCodes(
-                            "ParameterType",
+                            "Parameter Type",
                             "SELECT PARAM_VALUE_FILE_REF"
                                     + " FROM \"Coordinate_Operation Parameter Value\""
                                     + " WHERE PARAM_VALUE_FILE_REF IS NOT NULL"
@@ -2911,7 +2909,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                      */
                     units = new LinkedHashSet<>();
                     try (ResultSet r = executeQueryForCodes(
-                            "ParameterUnit",
+                            "Parameter Unit",
                             "SELECT UOM_CODE"
                                     + " FROM \"Coordinate_Operation Parameter Value\""
                                     + " WHERE (PARAMETER_CODE = ?)"
@@ -2944,7 +2942,7 @@ next:                   while (r.next()) {
                  */
                 InternationalString isReversible = null;
                 try (ResultSet r = executeQueryForCodes(
-                        "ParameterSign",
+                        "Parameter Sign",
                         "SELECT DISTINCT PARAM_SIGN_REVERSAL"
                                 + " FROM \"Coordinate_Operation Parameter Usage\""
                                 + " WHERE (PARAMETER_CODE = ?)", epsg))
@@ -2979,7 +2977,7 @@ next:                   while (r.next()) {
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
-                        "Coordinate_Operation Parameter", epsg, name, null, null, null, isReversible, deprecated);
+                        TableInfo.PARAMETER, epsg, name, null, null, null, isReversible, deprecated);
                 properties.put(Identifier.DESCRIPTION_KEY, description);
                 final var descriptor = new DefaultParameterDescriptor<>(properties, 1, 1, type, valueDomain, null, null);
                 returnValue = ensureSingleton(descriptor, returnValue, code);
@@ -3109,9 +3107,7 @@ next:                   while (r.next()) {
         OperationMethod returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Coordinate_Operation Method",
-                "COORD_OP_METHOD_CODE",
-                "COORD_OP_METHOD_NAME",
+                TableInfo.METHOD,
                 "SELECT"+ /* column 1 */ " COORD_OP_METHOD_CODE,"
                         + /* column 2 */ " COORD_OP_METHOD_NAME,"
                         + /* column 3 */ " REMARKS,"
@@ -3138,7 +3134,7 @@ next:                   while (r.next()) {
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
-                        "Coordinate_Operation Method", epsg, name, null, null, null, remarks, deprecated);
+                        TableInfo.METHOD, epsg, name, null, null, null, remarks, deprecated);
                 /*
                  * Note: we do not store the formula at this time, because the text is very verbose and rarely used.
                  */
@@ -3187,9 +3183,7 @@ next:                   while (r.next()) {
         CoordinateOperation returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
-                "Coordinate_Operation",
-                "COORD_OP_CODE",
-                "COORD_OP_NAME",
+                TableInfo.OPERATION,
                 "SELECT"+ /* column  1 */ " COORD_OP_CODE,"
                         + /* column  2 */ " COORD_OP_NAME,"
                         + /* column  3 */ " COORD_OP_TYPE,"
@@ -3335,7 +3329,7 @@ next:                   while (r.next()) {
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
-                        "Coordinate_Operation", epsg, name, null, area, scope, remarks, deprecated);
+                        TableInfo.OPERATION, epsg, name, null, area, scope, remarks, deprecated);
                 properties.put(CoordinateOperations.OPERATION_TYPE_KEY, operationType);
                 properties.put(CoordinateOperations.PARAMETERS_KEY, parameterValues);
                 properties.put(CoordinateOperation .OPERATION_VERSION_KEY, version);
@@ -3380,7 +3374,7 @@ next:                   while (r.next()) {
         final String label = sourceCRS + " ⇨ " + targetCRS;
         final var set = new CoordinateOperationSet(owner);
         try {
-            final int[] pair = toPrimaryKeys(null, null, null, sourceCRS, targetCRS);
+            final int[] pair = toPrimaryKeys(null, sourceCRS, targetCRS);
             boolean searchTransformations = false;
             do {
                 /*
@@ -3417,9 +3411,9 @@ next:                   while (r.next()) {
              * Alter the ordering using the information supplied in the extents
              * and supersession tables.
              */
-            List<String> codes = Arrays.asList(set.getAuthorityCodes());
-            sort("Coordinate_Operation", codes).ifPresent((sorted) -> {
-                set.setAuthorityCodes(sorted.toArray(String[]::new));
+            final List<String> codes = Arrays.asList(set.getAuthorityCodes());
+            sort(TableInfo.OPERATION, codes, Integer::parseInt).ifPresent((sorted) -> {
+                set.setAuthorityCodes(sorted.mapToObj(Integer::toString).toArray(String[]::new));
             });
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateOperation.class, label, exception);
@@ -3438,6 +3432,11 @@ next:                   while (r.next()) {
      * Returns a finder which can be used for looking up unidentified objects.
      * The finder tries to fetch a fully {@linkplain AbstractIdentifiedObject identified object} from an incomplete one,
      * for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}" element in <i>Well Known Text</i>.
+     *
+     * <h4>Lifetime</h4>
+     * The finder returned by this method depends on this {@code EPSGDataAccess} instance.
+     * The finder should not be used after this factory has been {@linkplain #close() closed}
+     * or given back to the {@link EPSGFactory}.
      *
      * @return a finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder cannot be created.
@@ -3461,23 +3460,24 @@ next:                   while (r.next()) {
      * Except for the codes moved as a result of pairwise ordering, this method tries to preserve the old
      * ordering of the supplied codes (since deprecated operations should already be last).
      *
-     * @param  table  the table of the objects for which to check for supersession.
-     * @param  codes  the codes to sort. This collection will not be modified by this method.
-     * @return codes of sorted elements, or empty if this method did not changed the codes order.
+     * @param  source  the table of the objects for which to check for supersession.
+     * @param  codes   the codes to sort. This collection will not be modified by this method.
+     * @param  parser  the method to invoke for converting a {@code codes} element to an integer.
+     * @return codes of sorted elements, or empty if this method did not change the codes order.
      */
-    final synchronized Optional<Stream<String>> sort(final String table, final Collection<String> codes)
+    final synchronized <C extends Comparable<?>> Optional<IntStream> sort(final TableInfo source, final Collection<C> codes, final ToIntFunction<C> parser)
             throws SQLException, FactoryException
     {
         final int size = codes.size();
         if (size > 1) try {
             final var elements = new ObjectPertinence[size];
             final var extents = new ArrayList<String>();
-            final String actualTable = translator.toActualTableName(table);
+            final String actualTable = translator.toActualTableName(source.table);
             int count = 0;
-            for (final String code : codes) {
+            for (final C code : codes) {
                 final int key;
                 try {
-                    key = Integer.parseInt(code);
+                    key = parser.applyAsInt(code);
                 } catch (NumberFormatException e) {
                     unexpectedException("sort", e);
                     continue;
@@ -3491,20 +3491,15 @@ next:                   while (r.next()) {
                      * Note: if this block is deleted, consider deleting also
                      * the finally block and the `TableInfo.areaOfUse` flag.
                      */
-                    for (final TableInfo info : TableInfo.EPSG) {
-                        if (table.equals(info.unquoted())) {
-                            if (info.areaOfUse) {
-                                try (ResultSet result = executeQueryForCodes(
-                                        "Area",     // Table from EPSG version 9. Does not exist anymore in version 10.
-                                        "SELECT AREA_OF_USE_CODE FROM \"" + table + "\" WHERE " + info.codeColumn + "=?",
-                                        key))
-                                {
-                                    while (result.next()) {
-                                        extents.add(getString(code, result, 1));
-                                    }
-                                }
+                    if (source.areaOfUse) {
+                        try (ResultSet result = executeQueryForCodes(
+                                "Area",     // Table from EPSG version 9. Does not exist anymore in version 10.
+                                "SELECT AREA_OF_USE_CODE FROM \"" + source.table + "\" WHERE " + source.codeColumn + "=?",
+                                key))
+                        {
+                            while (result.next()) {
+                                extents.add(getString(code, result, 1));
                             }
-                            break;
                         }
                     }
                 }
@@ -3527,7 +3522,7 @@ next:                   while (r.next()) {
                 elements[count++] = element;
             }
             if (ObjectPertinence.sort(elements)) {
-                return Optional.of(Arrays.stream(elements).map(ObjectPertinence::code));
+                return Optional.of(Arrays.stream(elements).mapToInt((p) -> p.code));
             }
         } finally {
             /*
@@ -3598,11 +3593,22 @@ next:                   while (r.next()) {
      */
     final synchronized boolean canClose() {
         boolean can = true;
+        SQLException error = null;
         if (!authorityCodes.isEmpty()) {
             System.gc();                // For cleaning as much weak references as we can before we check them.
             final Iterator<CloseableReference> it = authorityCodes.values().iterator();
             while (it.hasNext()) {
-                if (JDK16.refersTo(it.next(), null)) {
+                final CloseableReference reference = it.next();
+                if (!reference.published) {
+                    it.remove();
+                    try {
+                        reference.close();
+                    } catch (SQLException e) {
+                        if (error == null) error = e;
+                        else error.addSuppressed(e);
+                    }
+                    reference.clear();
+                } else if (JDK16.refersTo(reference, null)) {
                     it.remove();
                 } else {
                     /*
@@ -3613,11 +3619,14 @@ next:                   while (r.next()) {
                 }
             }
         }
+        if (error != null) {
+            unexpectedException("canClose", error);
+        }
         return can;
     }
 
     /**
-     * Closes the JDBC connection used by this factory.
+     * Closes the <abbr>JDBC</abbr> connection used by this factory.
      * If this {@code EPSGDataAccess} is used by an {@link EPSGFactory}, then this method
      * will be automatically invoked after some {@linkplain EPSGFactory#getTimeout timeout}.
      *

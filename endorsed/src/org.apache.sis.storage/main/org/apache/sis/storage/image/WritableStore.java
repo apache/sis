@@ -216,7 +216,7 @@ class WritableStore extends WorldFileStore {
          * must be identical to the existing one, in which case there is nothing to do.
          */
         if (index != MAIN_IMAGE || isMultiImages() > 1) {
-            if (!getGridGeometry(MAIN_IMAGE).equals(gg, ComparisonMode.IGNORE_METADATA)) {
+            if (!getGridGeometry(MAIN_IMAGE).equals(gg, ComparisonMode.COMPATIBILITY)) {
                 String message = resources().getString(Resources.Keys.IncompatibleGridGeometry);
                 throw new IncompatibleResourceException(message).addAspect("gridGeometry");
             }

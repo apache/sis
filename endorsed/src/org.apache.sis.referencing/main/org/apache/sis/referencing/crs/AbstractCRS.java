@@ -19,7 +19,6 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.Objects;
-import java.util.ConcurrentModificationException;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -33,6 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
@@ -120,7 +120,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * @see #forConvention(AxesConvention)
      */
-    final EnumMap<AxesConvention,AbstractCRS> forConvention;
+    private final EnumMap<AxesConvention,AbstractCRS> forConvention;
 
     /**
      * Creates the value to assign to the {@link #forConvention} map by constructors.
@@ -283,20 +283,31 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns the datum, or {@code null} if none.
+     * Returns the datum or a view of the ensemble as a datum, or {@code null} if none.
+     * The {@code legacy} argument is usually {@code false}, except when formatting in a legacy <abbr>WKT</abbr> format.
      *
-     * This property does not exist in {@code CoordinateReferenceSystem} interface — it is defined in the
-     * {@link SingleCRS} sub-interface instead. This method is defined here for the convenience of the
-     * {@link #formatTo(Formatter)} method implementation.
-     *
+     * @param  legacy  whether to allow a view of the ensemble as a datum for interoperability with legacy standards.
      * @return the datum, or {@code null} if none.
      */
-    Datum getDatum() {
+    Datum getDatumOrEnsemble(final boolean legacy) {
         /*
          * User could provide his own CRS implementation outside this SIS package, so we have
          * to check for SingleCRS interface. But all SIS classes override this implementation.
          */
-        return (this instanceof SingleCRS) ? ((SingleCRS) this).getDatum() : null;
+        if (this instanceof SingleCRS) {
+            final var crs = (SingleCRS) this;
+            final Datum datum = crs.getDatum();
+            if (datum != null) {
+                return datum;
+            }
+            if (legacy) {
+                final var ensemble = crs.getDatumEnsemble();
+                if (ensemble instanceof Datum) {
+                    return (Datum) ensemble;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -326,23 +337,33 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Sets the CRS for the given axes convention.
+     * Returns the cached <abbr>CRS</abbr> for the given axes convention.
      *
-     * @param  crs  the CRS to cache.
+     * @return the cached <abbr>CRS</abbr>, or {@code null} if none.
+     */
+    final AbstractCRS getCached(final AxesConvention convention) {
+        synchronized (forConvention) {
+            return forConvention.get(convention);
+        }
+    }
+
+    /**
+     * Sets the <abbr>CRS</abbr>  for the given axes convention.
+     *
+     * @param  crs  the <abbr>CRS</abbr> to cache.
      * @return the cached CRS. May be different than the given {@code crs} if an existing instance has been found.
      */
     final AbstractCRS setCached(final AxesConvention convention, AbstractCRS crs) {
-        assert Thread.holdsLock(forConvention);
-        for (final AbstractCRS existing : forConvention.values()) {
-            if (crs.equals(existing, ComparisonMode.IGNORE_METADATA)) {
-                crs = existing;
-                break;
-            }
+        synchronized (forConvention) {
+            return forConvention.computeIfAbsent(convention, (c) -> {
+                for (final AbstractCRS existing : forConvention.values()) {
+                    if (crs.equals(existing, ComparisonMode.IGNORE_METADATA)) {
+                        return existing;
+                    }
+                }
+                return crs;
+            });
         }
-        if (forConvention.put(convention, crs) != null) {
-            throw new ConcurrentModificationException();    // Should never happen, unless we have a synchronization bug.
-        }
-        return crs;
     }
 
     /**
@@ -355,23 +376,21 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @see AbstractCS#forConvention(AxesConvention)
      */
     public AbstractCRS forConvention(final AxesConvention convention) {
-        synchronized (forConvention) {
-            AbstractCRS crs = forConvention.get(Objects.requireNonNull(convention));
-            if (crs == null) {
-                final AbstractCS cs = AbstractCS.castOrCopy(coordinateSystem);
-                final AbstractCS candidate = cs.forConvention(convention);
-                if (candidate.equals(cs, ComparisonMode.IGNORE_METADATA)) {
-                    crs = this;
-                } else try {
-                    crs = createSameType(candidate);
-                    crs.getCoordinateSystem();          // Throws ClassCastException if the CS type is invalid.
-                } catch (ClassCastException e) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotCompute_1, convention), e);
-                }
-                crs = setCached(convention, crs);
+        AbstractCRS crs = getCached(Objects.requireNonNull(convention));
+        if (crs == null) {
+            final AbstractCS cs = AbstractCS.castOrCopy(coordinateSystem);
+            final AbstractCS candidate = cs.forConvention(convention);
+            if (candidate.equals(cs, ComparisonMode.IGNORE_METADATA)) {
+                crs = this;
+            } else try {
+                crs = createSameType(candidate);
+                crs.getCoordinateSystem();          // Throws ClassCastException if the CS type is invalid.
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotCompute_1, convention), e);
             }
-            return crs;
+            crs = setCached(convention, crs);
         }
+        return crs;
     }
 
     /**
@@ -392,9 +411,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * are compared including the {@linkplain #getDomains() domains} and remarks.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -455,7 +472,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     protected String formatTo(final Formatter formatter) {
         final String keyword = super.formatTo(formatter);
         formatter.newLine();
-        formatter.append(WKTUtilities.toFormattable(getDatum()));
+        formatter.append(AbstractDatum.castOrCopy(getDatumOrEnsemble(true)));     // For the conversion of ensemble to datum.
         formatter.newLine();
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;

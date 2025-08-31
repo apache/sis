@@ -22,6 +22,7 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import org.opengis.metadata.Identifier;
+import org.opengis.util.CodeList;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -33,12 +34,15 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.UnformattableObjectException;
-import org.apache.sis.util.iso.DefaultNameSpace;
+
+// Specific to the geoapi-3.1 and 4.0 branches:
+import org.opengis.referencing.crs.VerticalCRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;
@@ -62,14 +66,25 @@ public final class ConsistencyTest extends TestCase {
     /**
      * Codes to exclude for now.
      */
-    private static final Set<String> EXCLUDES = Set.of(
+    private final Set<String> EXCLUDES = Set.of(
         "CRS:1",            // Computer display: WKT parser alters the (i,j) axis names.
         "EPSG:5819",        // EPSG topocentric example A: DerivedCRS wrongly handled as a ProjectedCRS. See SIS-518.
+        "EPSG:5820",        // EPSG topocentric example B.
         "AUTO2:42001",      // This projection requires parameters, but we provide none.
         "AUTO2:42002",      // This projection requires parameters, but we provide none.
         "AUTO2:42003",      // This projection requires parameters, but we provide none.
         "AUTO2:42004",      // This projection requires parameters, but we provide none.
         "AUTO2:42005");     // This projection requires parameters, but we provide none.
+
+    /**
+     * Elements to ignore when comparing the <abbr>WKT</abbr> strings.
+     * We ignore the vertical extent because in the current <abbr>SIS</abbr> implementation,
+     * the unit of measurement is inferred from the <abbr>CRS</abbr> and there is no east way
+     * to rebuild the <abbr>CRS</abbr> at parsing time.
+     */
+    private final String[] WKT_TO_IGNORE = {
+        "VERTICALEXTENT"
+    };
 
     /**
      * Width of the code columns in the warnings formatted by {@link #print(String, String, Object)}.
@@ -102,6 +117,26 @@ public final class ConsistencyTest extends TestCase {
     }
 
     /**
+     * Returns whether testing the given <abbr>CRS</abbr> requires the 2019 version of <abbr>WKT</abbr> format.
+     * We skip the vertical datum having the "local" realization method because this information is lost during
+     * the roundtrip with WKT or WKT 2 version 2015, and the WKT parser tries to guess the method from the axis
+     * abbreviation "d" which result in "tidal".
+     */
+    private static boolean requiresWKT2019(final CoordinateReferenceSystem crs) {
+        final VerticalCRS c = CRS.getVerticalComponent(crs, false);
+        if (c != null) {
+            final var datum = c.getDatum();
+            if (datum != null) {
+                final String method = datum.getRealizationMethod().map(CodeList::name).orElse("");
+                if (method.equalsIgnoreCase("local")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Verifies the WKT consistency of all CRS instances.
      *
      * @throws FactoryException if an error other than "unsupported operation method" occurred.
@@ -126,6 +161,9 @@ public final class ConsistencyTest extends TestCase {
                 } catch (UnavailableFactoryException | NoSuchIdentifierException | FactoryDataException e) {
                     print(code, "WARNING", e.getLocalizedMessage());
                     continue;
+                } catch (FactoryException e) {
+                    fail("Cannot create CRS for \"" + code + "\".", e);
+                    continue;
                 }
                 lookup(parseAndFormat(v2,  code, crs), crs);
                 lookup(parseAndFormat(v2s, code, crs), crs);
@@ -134,6 +172,9 @@ public final class ConsistencyTest extends TestCase {
                  * For example, we cannot format fully three-dimensional geographic CRS because the unit
                  * is not the same for all axes. We cannot format neither some axis directions.
                  */
+                if (requiresWKT2019(crs)) {
+                    continue;
+                }
                 try {
                     parseAndFormat(v1, code, crs);
                 } catch (UnformattableObjectException e) {
@@ -170,9 +211,7 @@ public final class ConsistencyTest extends TestCase {
      * @param  crs   the CRS to test.
      * @return the parsed CRS.
      */
-    private CoordinateReferenceSystem parseAndFormat(final WKTFormat f,
-            final String code, final CoordinateReferenceSystem crs)
-    {
+    private CoordinateReferenceSystem parseAndFormat(final WKTFormat f, final String code, final CoordinateReferenceSystem crs) {
         String wkt = f.format(crs);
         final Warnings warnings = f.getWarnings();
         if (warnings != null && !warnings.getExceptions().isEmpty()) {
@@ -185,8 +224,7 @@ public final class ConsistencyTest extends TestCase {
             print(code, "ERROR", "Cannot parse the WKT below.");
             out.println(wkt);
             out.println();
-            e.printStackTrace(out);
-            fail(e.getLocalizedMessage());
+            fail(e);
             return null;
         }
         final String again = f.format(parsed);
@@ -225,8 +263,15 @@ public final class ConsistencyTest extends TestCase {
          */
         final int length = StrictMath.min(expectedLines.length, actualLines.length);
         try {
-            for (int i=0; i<length; i++) {
-                assertEquals(expectedLines[i], actualLines[i], code);
+skip:       for (int i=0; i<length; i++) {
+                final CharSequence expected = expectedLines[i];
+                final CharSequence actual   = actualLines[i];
+                for (final String ignore : WKT_TO_IGNORE) {
+                    if (expected.toString().contains(ignore) && actual.toString().contains(ignore)) {
+                        continue skip;
+                    }
+                }
+                assertEquals(expected, actual, code);
             }
         } catch (AssertionError e) {
             print(code, "ERROR", "WKT are not equal.");

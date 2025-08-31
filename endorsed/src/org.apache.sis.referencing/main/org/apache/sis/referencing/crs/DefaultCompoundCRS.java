@@ -313,7 +313,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Compound CRS do not have datum.
      */
     @Override
-    final Datum getDatum() {
+    final Datum getDatumOrEnsemble(final boolean legacy) {
         return null;
     }
 
@@ -534,33 +534,31 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     @Override
     public DefaultCompoundCRS forConvention(final AxesConvention convention) {
-        synchronized (forConvention) {
-            var crs = (DefaultCompoundCRS) forConvention.get(Objects.requireNonNull(convention));
-            if (crs == null) {
-                crs = this;
-                boolean changed = false;
-                final boolean reorderCRS = convention.ordinal() >= AxesConvention.DISPLAY_ORIENTED.ordinal();
-                final List<? extends CoordinateReferenceSystem> elements = reorderCRS ? singles : components;
-                final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[elements.size()];
-                for (int i=0; i<newComponents.length; i++) {
-                    CoordinateReferenceSystem component = elements.get(i);
-                    AbstractCRS m = castOrCopy(component);
-                    if (m != (m = m.forConvention(convention))) {
-                        component = m;
-                        changed = true;
-                    }
-                    newComponents[i] = component;
+        var crs = (DefaultCompoundCRS) getCached(Objects.requireNonNull(convention));
+        if (crs == null) {
+            crs = this;
+            boolean changed = false;
+            final boolean reorderCRS = convention.ordinal() >= AxesConvention.DISPLAY_ORIENTED.ordinal();
+            final List<? extends CoordinateReferenceSystem> elements = reorderCRS ? singles : components;
+            final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[elements.size()];
+            for (int i=0; i<newComponents.length; i++) {
+                CoordinateReferenceSystem component = elements.get(i);
+                AbstractCRS m = castOrCopy(component);
+                if (m != (m = m.forConvention(convention))) {
+                    component = m;
+                    changed = true;
                 }
-                if (changed) {
-                    if (reorderCRS) {
-                        Arrays.sort(newComponents, SubTypes.BY_TYPE);   // This array typically has less than 4 elements.
-                    }
-                    crs = new DefaultCompoundCRS(crs, newComponents);
-                }
-                crs = (DefaultCompoundCRS) setCached(convention, crs);
+                newComponents[i] = component;
             }
-            return crs;
+            if (changed) {
+                if (reorderCRS) {
+                    Arrays.sort(newComponents, SubTypes.BY_TYPE);   // This array typically has less than 4 elements.
+                }
+                crs = new DefaultCompoundCRS(crs, newComponents);
+            }
+            crs = (DefaultCompoundCRS) setCached(convention, crs);
         }
+        return crs;
     }
 
     /**
@@ -575,9 +573,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Compares this coordinate reference system with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @hidden because nothing new to said.

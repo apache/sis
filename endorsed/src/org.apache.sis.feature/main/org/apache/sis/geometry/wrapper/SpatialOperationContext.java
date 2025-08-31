@@ -37,7 +37,6 @@ import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
@@ -164,7 +163,7 @@ public final class SpatialOperationContext implements Serializable {
     public GeometryWrapper transform(GeometryWrapper geometry) throws FactoryException, TransformException {
         if (computationCRS != null) {
             final CoordinateReferenceSystem sourceCRS = to2D(geometry.getCoordinateReferenceSystem());
-            if (sourceCRS != null && !Utilities.equalsIgnoreMetadata(computationCRS, sourceCRS)) {
+            if (sourceCRS != null && !CRS.equivalent(computationCRS, sourceCRS)) {
                 geometry = geometry.transform(CRS.findOperation(sourceCRS, computationCRS, areaOfInterest), false);
             }
         }
@@ -172,7 +171,7 @@ public final class SpatialOperationContext implements Serializable {
     }
 
     /**
-     * Transforms the specified geometries to the common CRS.
+     * Transforms the specified geometries to the common <abbr>CRS</abbr>.
      * If {@link #computationCRS} is {@code null}, then this method tries to infer one automatically.
      * Geometries with unspecified CRS will be used as-is, without transformation.
      * The common CRS is stored in the {@link #commonCRS} field.
@@ -217,7 +216,7 @@ public final class SpatialOperationContext implements Serializable {
                 do {
                     if (--i < 0) return true;       // All geometries are in common CRS.
                     crs = allCRS[i];
-                } while (crs == null || Utilities.equalsIgnoreMetadata(commonCRS, crs));
+                } while (crs == null || CRS.equivalent(commonCRS, crs));
             }
         }
         /*
@@ -271,7 +270,7 @@ select: if (commonCRS == null) {
         for (int i=0; i<allCRS.length; i++) {
             if (i != skipIndex) {
                 final CoordinateReferenceSystem sourceCRS = allCRS[i];
-                if (!Utilities.equalsIgnoreMetadata(commonCRS, sourceCRS)) {
+                if (!CRS.equivalent(commonCRS, sourceCRS)) {
                     geometries[i] = geometries[i].transform(CRS.findOperation(sourceCRS, commonCRS, areaOfInterest), false);
                 }
             }

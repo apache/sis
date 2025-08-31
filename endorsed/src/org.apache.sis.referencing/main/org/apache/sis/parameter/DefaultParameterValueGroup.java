@@ -372,7 +372,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         Objects.requireNonNull(name);
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ParameterValueList values = this.values;                  // Protect against accidental changes.
-        final List<ParameterValueGroup> groups = new ArrayList<>(4);
+        final var groups = new ArrayList<ParameterValueGroup>(4);
         final int size = values.size();
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
@@ -438,7 +438,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * <ul>
      *   <li>{@link ComparisonMode#STRICT} and {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}
      *       take in account the parameter order.</li>
-     *   <li>{@link ComparisonMode#IGNORE_METADATA} and {@link ComparisonMode#APPROXIMATE APPROXIMATE}
+     *   <li>Other comparison modes
      *       ignore the order of parameter values (but not necessarily the order of parameter descriptors).</li>
      * </ul>
      *
@@ -455,7 +455,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         if (object != null) {
             if (mode == ComparisonMode.STRICT) {
                 if (getClass() == object.getClass()) {
-                    final DefaultParameterValueGroup that = (DefaultParameterValueGroup) object;
+                    final var that = (DefaultParameterValueGroup) object;
                     return Objects.equals(values.descriptor, that.values.descriptor) &&
                            Objects.equals(values, that.values);
                 }
@@ -476,7 +476,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         if (!mode.isIgnoringMetadata()) {
             return Utilities.deepEquals(expected.values(), actual.values(), mode);
         }
-        final List<GeneralParameterValue> values = new LinkedList<>(expected.values());
+        final var values = new LinkedList<GeneralParameterValue>(expected.values());
 scan:   for (final GeneralParameterValue param : actual.values()) {
             final Iterator<GeneralParameterValue> it = values.iterator();
             while (it.hasNext()) {

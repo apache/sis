@@ -796,7 +796,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * (which may be different), which implies keeping the same `objectiveToPositionCRS`.
          */
         final boolean clear = (fullOperationSearchRequired != null) && fullOperationSearchRequired.test(canvas);
-        final boolean sameCRS = !clear && Utilities.equalsIgnoreMetadata(objectiveCRS, crs);
+        final boolean sameCRS = !clear && CRS.equivalent(objectiveCRS, crs);
         if (localToCRS == null) {
             localToCRS = MathTransforms.identity(BIDIMENSIONAL);
         }

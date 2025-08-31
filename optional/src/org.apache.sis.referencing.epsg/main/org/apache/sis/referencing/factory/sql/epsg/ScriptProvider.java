@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory.sql.epsg;
 
 import java.util.Locale;
+import java.util.StringJoiner;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,14 +29,14 @@ import org.apache.sis.referencing.factory.sql.InstallationScriptProvider;
 
 
 /**
- * Provides SQL scripts for creating a local copy of the EPSG geodetic dataset.
- * Provides also a copy of the <a href="https://epsg.org/terms-of-use.html">EPSG terms of use</a>,
- * which should be accepted by users before the EPSG dataset can be installed.
+ * Provides <abbr>SQL</abbr> scripts for creating a local copy of the <abbr>EPSG</abbr> geodetic dataset.
+ * Provides also a copy of the <a href="https://epsg.org/terms-of-use.html"><abbr>EPSG</abbr> Terms of Use</a>,
+ * which should be accepted by users before the <abbr>EPSG</abbr> dataset can be installed.
  *
- * <p><b>Notice</b></p>
- * EPSG is maintained by the <a href="http://www.iogp.org/">International Association of Oil and Gas Producers</a>
- * (IOGP) Surveying &amp; Positioning Committee. The SQL scripts are given by this class with identical content,
- * but in a more compact format.
+ * <h2>Notice</h2>
+ * <abbr>EPSG</abbr> is maintained by the <a href="http://www.iogp.org/">International Association of Oil and Gas Producers</a>
+ * (<abbr>IOGP</abbr>) Surveying &amp; Positioning Committee. The <abbr>SQL</abbr> scripts given by this class are derived from
+ * the <abbr>EPSG</abbr> scripts, but in a more compact format and with some <abbr>EPSG</abbr> lineage metadata omitted.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
@@ -48,11 +49,11 @@ public class ScriptProvider extends InstallationScriptProvider {
      * Creates a new EPSG scripts provider.
      */
     public ScriptProvider() {
-        super(Constants.EPSG, PREPARE, "Tables.sql", "Data.sql", "FKeys.sql", FINISH);
+        super(Constants.EPSG, "Prepare.sql", "Tables.sql", "Data.sql", "FKeys.sql", "Finish.sql");
     }
 
     /**
-     * Returns a copy of EPSG terms of use.
+     * Returns a copy of <abbr>EPSG</abbr> terms of use.
      *
      * @param  authority  one of the values returned by {@link #getAuthorities()}.
      * @param  locale     the preferred locale for the terms of use.
@@ -79,20 +80,19 @@ public class ScriptProvider extends InstallationScriptProvider {
         if (in == null) {
             throw new FileNotFoundException(filename);
         }
-        final StringBuilder buffer = new StringBuilder();
-        final String lineSeparator = System.lineSeparator();
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+        final var buffer = new StringJoiner(System.lineSeparator(), "", System.lineSeparator());
+        try (var reader = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
             String line;
-            while ((line = r.readLine()) != null) {
-                buffer.append(line).append(lineSeparator);
+            while ((line = reader.readLine()) != null) {
+                buffer.add(line);
             }
         }
         return buffer.toString();
     }
 
     /**
-     * Returns the content for the SQL script of the given name.
-     * The file encoding is UTF-8.
+     * Returns the content for the <abbr>SQL</abbr> script of the given name.
+     * The file encoding is <abbr>UTF</abbr>-8.
      *
      * @param name  either {@code "Tables.sql"}, {@code "Data.sql"} or {@code "FKeys.sql"}.
      * @return the SQL script of the given name, or {@code null} if the given name is not one of the expected names.

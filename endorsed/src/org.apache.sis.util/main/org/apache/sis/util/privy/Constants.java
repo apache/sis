@@ -241,6 +241,7 @@ public final class Constants extends Static {
      *
      * <ul>
      *   <li><cite>Scale factor at natural origin</cite></li>
+     *   <li><cite>Scale factor at projection centre</cite></li>
      *   <li><cite>Scale factor on initial line</cite></li>
      *   <li><cite>Scale factor on pseudo standard parallel</cite></li>
      * </ul>

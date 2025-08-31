@@ -72,7 +72,7 @@ public final class Numerics extends Static {
      *     Matrix m1 = ...;
      *     Matrix m2 = ...;
      *     if (Matrices.epsilonEqual(m1, m2, COMPARISON_THRESHOLD, true)) {
-     *         // Consider that matrixes are equal.
+     *         // Consider that matrices are equal.
      *     }
      *     }
      *

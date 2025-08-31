@@ -148,7 +148,10 @@ public final class VerticalDatumTypes {
                 case ORTHOMETRIC: return 2001;      // CS_VD_Orthometric
                 case ELLIPSOIDAL: return 2002;      // CS_VD_Ellipsoidal
                 case BAROMETRIC:  return 2003;      // CS_VD_AltitudeBarometric
-                case "GEOIDAL":   return 2005;      // CS_VD_GeoidModelDerived
+                case "GEOIDAL":
+                case "GEOID":     return 2005;      // CS_VD_GeoidModelDerived
+                case "LEVELLING": // From ISO: "adjustment of a levelling network fixed to one or more tide gauges".
+                case "TIDAL":
                 case "DEPTH":     return 2006;      // CS_VD_Depth
             }
         }
@@ -263,6 +266,7 @@ public final class VerticalDatumTypes {
                     switch (abbreviation.charAt(0)) {
                         case 'h': method = ellipsoidal(); break;
                         case 'H': method = RealizationMethod.GEOID; break;
+                        case 'd': // Fall through
                         case 'D': method = RealizationMethod.TIDAL; dir = AxisDirection.DOWN; break;
                         default:  return null;
                     }
@@ -289,9 +293,13 @@ public final class VerticalDatumTypes {
             if (CharSequences.equalsFiltered("Mean Sea Level", name, Characters.Filter.LETTERS_AND_DIGITS, true)) {
                 return RealizationMethod.TIDAL;
             }
-            if (name.regionMatches(true, 0, "geoid", 0, 5)) {
-                return RealizationMethod.GEOID;
-            }
+            int i = 0;
+            do {
+                if (name.regionMatches(true, i, "geoid", 0, 5)) {
+                    return RealizationMethod.GEOID;
+                }
+                i = name.indexOf(' ', i) + 1;
+            } while (i > 0);
         }
         return null;
     }
