@@ -383,7 +383,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         GeographicCRS crs = factory.createGeographicCRS("CRS:84");
         assertWktEqualsRegex(Convention.WKT1, "(?m)\\Q" +               // Multilines
                 "GEOGCS[" + WGS84 + ",\n" +
-                "  DATUM[“World Geodetic System 1984”,\n" +
+                "  DATUM[“World Geodetic System 1984\\E\\s?\\w*\\Q”,\n" +
                 "    SPHEROID[" + WGS84 + ", 6378137.0, 298.257223563]],\n" +
                 "    PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
@@ -393,7 +393,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
 
         assertWktEqualsRegex(Convention.WKT2, "(?m)\\Q" +
                 "GEODCRS[" + WGS84 + ",\n" +
-                "  DATUM[“World Geodetic System 1984”,\n" +
+                "  DATUM[“World Geodetic System 1984\\E\\s?\\w*\\Q”,\n" +
                 "    ELLIPSOID[" + WGS84 + ", 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
                 "    PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
                 "  CS[ellipsoidal, 2],\n" +

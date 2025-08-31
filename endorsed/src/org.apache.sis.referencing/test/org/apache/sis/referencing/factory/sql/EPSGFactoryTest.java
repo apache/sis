@@ -48,6 +48,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -117,7 +118,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         final EPSGFactory factory = dataEPSG.factory();
         final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs);
-        assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, crs.getDatum());
+        assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, DatumOrEnsemble.of(crs));
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         assertSame(crs, factory.createCoordinateReferenceSystem("4326"), "CRS shall be cached.");
