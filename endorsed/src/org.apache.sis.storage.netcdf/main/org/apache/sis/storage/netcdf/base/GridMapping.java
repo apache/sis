@@ -426,7 +426,7 @@ final class GridMapping {
             }
             datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
         } else {
-            datum = defaultDefinitions.datum();
+            datum = defaultDefinitions.datum(false);
             if (datum == null) {
                 ensemble = defaultDefinitions.datumEnsemble();
             }

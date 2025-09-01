@@ -139,12 +139,12 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
      */
     @Test
     public void testCreateDatum() throws FactoryException {
-        verifyCreateDatum(CommonCRS.WGS84 .datum(), "6326");
-        verifyCreateDatum(CommonCRS.WGS72 .datum(), "6322");
-        verifyCreateDatum(CommonCRS.NAD83 .datum(), "6269");
-        verifyCreateDatum(CommonCRS.NAD27 .datum(), "6267");
-        verifyCreateDatum(CommonCRS.ED50  .datum(), "6230");
-        verifyCreateDatum(CommonCRS.SPHERE.datum(), "6047");
+        verifyCreateDatum(CommonCRS.WGS84 .datum(true), "6326");
+        verifyCreateDatum(CommonCRS.WGS72 .datum(true), "6322");
+        verifyCreateDatum(CommonCRS.NAD83 .datum(true), "6269");
+        verifyCreateDatum(CommonCRS.NAD27 .datum(true), "6267");
+        verifyCreateDatum(CommonCRS.ED50  .datum(true), "6230");
+        verifyCreateDatum(CommonCRS.SPHERE.datum(true), "6047");
         loggings.assertNoUnexpectedLog();
     }
 

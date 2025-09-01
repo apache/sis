@@ -175,7 +175,7 @@ public final class StandardDefinitionsTest extends EPSGDependentTestCase {
                 case WGS72:  compare(HardCodedDatum.WGS72,  datum); break;
                 case SPHERE: compare(HardCodedDatum.SPHERE, datum); break;
             }
-            final GeographicCRS crs = StandardDefinitions.createGeographicCRS(e.geographic, datum, cs);
+            final GeographicCRS crs = StandardDefinitions.createGeographicCRS(e.geographic, datum, null, cs);
             Validators.validate(crs);
             switch (e) {
                 case WGS84:  compare(HardCodedCRS.WGS84, crs); break;

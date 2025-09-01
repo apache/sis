@@ -1196,7 +1196,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         element.close(ignoredElements);
-        final var info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+        final var info = new BursaWolfParameters(CommonCRS.WGS84.datum(true), null);
         info.setValues(values);
         return info;
     }

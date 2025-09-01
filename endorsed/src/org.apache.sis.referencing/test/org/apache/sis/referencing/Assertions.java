@@ -499,7 +499,7 @@ public final class Assertions extends Static {
         assertLegacyEquals(expected, actual, null);
     }
 
-    private static void assertLegacyEquals(String expected, final String actual, final String message) {
+    static void assertLegacyEquals(String expected, final String actual, final String message) {
         if (expected != null && actual != null) {
             for (int i=0; i < REPLACEMENTS.length;) {
                 final String oldName = REPLACEMENTS[i++];

@@ -630,7 +630,7 @@ previous:   for (int i = components.size(); --i >= 0;) {
          * The predefined CRS is {@link #defaultCRS} or a spherical CRS.
          */
         protected final void setDatum(final CommonCRS crs) {
-            datum = crs.datum();
+            datum = crs.datum(false);
             if (datum == null) {
                 datumEnsemble = crs.datumEnsemble();
             }

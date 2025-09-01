@@ -106,7 +106,7 @@ import org.opengis.referencing.datum.DynamicReferenceFrame;
  *
  * <ol>
  *   <li>Create a {@code GeodeticDatum} from one of the static convenience shortcuts listed in
- *       {@link org.apache.sis.referencing.CommonCRS#datum()}.</li>
+ *       {@link org.apache.sis.referencing.CommonCRS#datum(boolean)}.</li>
  *   <li>Create a {@code GeodeticDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createGeodeticDatum(String)}.</li>
  *   <li>Create a {@code GeodeticDatum} by invoking the {@code DatumFactory.createGeodeticDatum(…)} method
@@ -132,7 +132,7 @@ import org.opengis.referencing.datum.DynamicReferenceFrame;
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
- * @see org.apache.sis.referencing.CommonCRS#datum()
+ * @see org.apache.sis.referencing.CommonCRS#datum(boolean)
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticDatum(String)
  *
  * @since 0.4

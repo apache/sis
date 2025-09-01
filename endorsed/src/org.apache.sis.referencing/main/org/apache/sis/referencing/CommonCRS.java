@@ -76,6 +76,7 @@ import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Constants;
@@ -329,8 +330,8 @@ public enum CommonCRS {
     final short geocentric;
 
     /**
-     * The EPSG code of the datum. The value is often {@link #geographic} + 2000,
-     * but it doesn't have to be always the case.
+     * The EPSG code of the datum or datum ensemble.
+     * The value is often {@link #geographic} + 2000, but it doesn't have to be always the case.
      */
     final short datum;
 
@@ -462,8 +463,8 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the {@code CommonCRS} enumeration value for the datum of the given CRS.
-     * The given CRS shall comply to the following conditions
+     * Returns the {@code CommonCRS} enumeration value for the datum of the given <abbr>CRS</abbr>.
+     * The given <abbr>CRS</abbr> shall comply to the following conditions
      * (otherwise an {@link IllegalArgumentException} is thrown):
      *
      * <ul>
@@ -472,9 +473,9 @@ public enum CommonCRS {
      *       with an {@linkplain CRS#getHorizontalComponent horizontal component}.</li>
      *   <li>The {@code crs} or the horizontal component of {@code crs} is associated to a {@link GeodeticDatum}.</li>
      *   <li>The geodetic reference frame either<ul>
-     *     <li>has the same EPSG code as one of the {@code CommonCRS} enumeration values, or</li>
-     *     <li>has no EPSG code but is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
-     *       to the {@link #datum()} value of one of the {@code CommonCRS} enumeration values.</li>
+     *     <li>has the same <abbr>EPSG</abbr> code as one of the {@code CommonCRS} enumeration values, or</li>
+     *     <li>has no <abbr>EPSG</abbr> code but is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
+     *       to the {@link #datum(boolean)} value of one of the {@code CommonCRS} enumeration values.</li>
      *   </ul></li>
      * </ul>
      *
@@ -486,7 +487,7 @@ public enum CommonCRS {
      * @return the {@code CommonCRS} value for the geodetic reference frame of the given CRS.
      * @throws IllegalArgumentException if no {@code CommonCRS} value can be found for the given CRS.
      *
-     * @see #datum()
+     * @see #datum(boolean)
      * @since 0.8
      */
     public static CommonCRS forDatum(final CoordinateReferenceSystem crs) {
@@ -533,15 +534,13 @@ public enum CommonCRS {
             }
         }
         for (final CommonCRS c : values()) {
-            final boolean filter;
             if (epsg != 0) {
-                filter = c.datum == epsg;
-            } else if (datum != null) {
-                filter = Utilities.equalsIgnoreMetadata(c.datum(), datum);
-            } else {
-                filter = Utilities.equalsIgnoreMetadata(c.datumEnsemble(), ensemble);
-            }
-            if (filter) {
+                if (c.datum == epsg) {
+                    return c;
+                }
+            } else if (DatumOrEnsemble.isLegacyDatum(c.datumEnsemble(), datum, ComparisonMode.COMPATIBILITY)
+                    || DatumOrEnsemble.isLegacyDatum(ensemble, c.datum(true), ComparisonMode.COMPATIBILITY))
+            {
                 return c;
             }
         }
@@ -658,7 +657,6 @@ public enum CommonCRS {
             } catch (FactoryException e) {
                 failure(this, "geographic", e, geographic);
             }
-            final GeodeticDatum frame = datum();
             /*
              * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
              * We will arbitrarily create this CS only for the most frequently created CRS,
@@ -670,7 +668,7 @@ public enum CommonCRS {
             } else {
                 cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.ELLIPSOIDAL_2D, true);
             }
-            cached = object = StandardDefinitions.createGeographicCRS(geographic, frame, cs);
+            cached = object = StandardDefinitions.createGeographicCRS(geographic, datum(false), datumEnsemble(), cs);
         }
         return object;
     }
@@ -825,8 +823,18 @@ public enum CommonCRS {
     }
 
     /**
+     * Returns the datum or datum ensemble associated to this geodetic object.
+     *
+     * @deprecated Replaced by {@link #datum(boolean)} for specifying whether to include datum ensembles.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public GeodeticDatum datum() {
+        return datum(true);
+    }
+
+    /**
      * Returns the geodetic reference frame associated to this geodetic object.
-     * The following table summarizes the datums known to this class,
+     * The following table summarizes the datums or datum ensembles known to this class,
      * together with an enumeration value that can be used for fetching that datum:
      *
      * <blockquote><table class="sis">
@@ -842,13 +850,23 @@ public enum CommonCRS {
      *   <tr><td>World Geodetic System 1984</td>                        <td>{@link #WGS84}</td>  <td>6326</td></tr>
      * </table></blockquote>
      *
-     * @return the geodetic reference frame associated to this enum, or {@code null} for a datum ensemble.
+     * Some rows in above table are actually defined as datum ensembles in version 10 or later of the
+     * <abbr>EPSG</abbr> geodetic dataset. These datum ensembles are listed in {@link #datumEnsemble()}
+     * and may be returned only if the {@code acceptEnsemble} argument is {@code true}.
+     * Note that whether a datum is a datum ensemble depends on whether Apache <abbr>SIS</abbr>
+     * is connected to an <abbr>EPSG</abbr> geodetic dataset and the version of that dataset.
+     *
+     * @param  acceptEnsemble  whether to return datum ensemble as a pseudo-datum.
+     * @return the datum or (optionally) datum ensemble associated to this enum, or {@code null}
+     *         if the result is a datum ensemble and {@code acceptEnsemble} is {@code false}.
      *
      * @see #forDatum(CoordinateReferenceSystem)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
+     *
+     * @since 1.5
      */
-    public synchronized GeodeticDatum datum() {
-        GeodeticDatum object = datum(cached);
+    public synchronized GeodeticDatum datum(final boolean acceptEnsemble) {
+        GeodeticDatum object = getDatumOrEnsemble(cached);
         if (object == null) {
             final GeodeticAuthorityFactory factory = factory();
             if (factory != null) try {
@@ -861,18 +879,35 @@ public enum CommonCRS {
             final var pm = primeMeridian();
             cached = object = StandardDefinitions.createGeodeticDatum(datum, ei, pm);
         }
+        if (!acceptEnsemble && object instanceof DatumEnsemble<?>) {
+            return null;
+        }
         return object;
     }
 
     /**
      * Returns the datum ensemble associated to this geodetic object.
+     * The following table summarizes the datum ensembles known to this class,
+     * together with an enumeration value that can be used for fetching that ensemble:
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Commonly used datum ensembles</caption>
+     *   <tr><th>Name or alias</th>                              <th>Enum</th>            <th>EPSG</th></tr>
+     *   <tr><td>European Terrestrial Reference System 1989</td> <td>{@link #ETRS89}</td> <td>6258</td></tr>
+     *   <tr><td>World Geodetic System 1984</td>                 <td>{@link #WGS84}</td>  <td>6326</td></tr>
+     * </table></blockquote>
+     *
+     * The exact table content depends on whether Apache <abbr>SIS</abbr> is connected to an <abbr>EPSG</abbr>
+     * geodetic dataset and the version of that dataset. In some version, a datum ensemble may be defined as
+     * an ordinary datum.
      *
      * @return the datum ensemble associated to this enum, or {@code null} if none.
      *
      * @since 1.5
      */
     public DatumEnsemble<GeodeticDatum> datumEnsemble() {
-        return geographic().getDatumEnsemble();
+        final GeodeticDatum object = datum(true);
+        return (object instanceof DatumEnsemble<?>) ? (DatumEnsemble<GeodeticDatum>) object : null;
     }
 
     /**
@@ -958,14 +993,17 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the datum associated to the given object, or {@code null} if none.
+     * Returns the datum or datum ensemble of the given object, or {@code null} if none.
+     * Datum ensembles are viewed as pseudo-datum. This is necessary for consistency,
+     * because {@link org.apache.sis.referencing.datum.DefaultDatumEnsemble} implements
+     * the {@link Datum} interface anyway in the Apache <abbr>SIS</abbr> implementation.
      */
-    private static GeodeticDatum datum(final IdentifiedObject object) {
+    private static GeodeticDatum getDatumOrEnsemble(final IdentifiedObject object) {
         if (object instanceof GeodeticDatum) {
             return (GeodeticDatum) object;
         }
         if (object instanceof GeodeticCRS) {
-            return ((GeodeticCRS) object).getDatum();
+            return DatumOrEnsemble.asDatum((GeodeticCRS) object);
         }
         return null;
     }
@@ -1309,7 +1347,8 @@ public enum CommonCRS {
         final short crs;
 
         /**
-         * The EPSG code for the datum or the resource keys, depending on {@link #isEPSG} value.
+         * The EPSG code for the datum or datum ensemble if {@link #isEPSG} is {@code true},
+         * or the resource keys otherwise.
          */
         final short datum;
 

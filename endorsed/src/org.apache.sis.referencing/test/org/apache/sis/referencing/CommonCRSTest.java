@@ -399,8 +399,8 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
      */
     @Test
     public void testFormat() {
-        Assertions.assertLegacyEquals("World Geodetic System 1984", String.format("%s", CommonCRS.WGS84.datum()));
-        assertTrue(String.format("%S",  CommonCRS.WGS84.datum()).startsWith("WORLD GEODETIC SYSTEM 1984"));
-        assertTrue(String.format("%#s", CommonCRS.WGS84.datum()).endsWith(":6326"));
+        Assertions.assertLegacyEquals("World Geodetic System 1984", String.format("%s", CommonCRS.WGS84.datum(true)));
+        assertTrue(String.format("%S",  CommonCRS.WGS84.datum(true)).startsWith("WORLD GEODETIC SYSTEM 1984"));
+        assertTrue(String.format("%#s", CommonCRS.WGS84.datum(true)).endsWith(":6326"));
     }
 }

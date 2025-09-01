@@ -77,6 +77,7 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 import static org.opengis.referencing.ObjectDomain.DOMAIN_OF_VALIDITY_KEY;
 
 
@@ -232,14 +233,17 @@ final class StandardDefinitions {
     }
 
     /**
-     * Creates a geodetic CRS from hard-coded values for the given code.
+     * Creates a geodetic <abbr>CRS</abbr> from hard-coded values for the given code.
      *
-     * @param  code   the EPSG code.
-     * @param  datum  the geodetic reference frame.
-     * @param  cs     the coordinate system.
-     * @return the geographic CRS for the given code.
+     * @param  code      the EPSG code.
+     * @param  datum     the geodetic reference frame, or {@code null} if a datum ensemble is used instead.
+     * @param  ensemble  the datum ensemble, or {@code null} if none.
+     * @param  cs        the coordinate system.
+     * @return the geographic <abbr>CRS</abbr> for the given code.
      */
-    static GeographicCRS createGeographicCRS(final short code, final GeodeticDatum datum, final EllipsoidalCS cs) {
+    static GeographicCRS createGeographicCRS(final short code, final GeodeticDatum datum,
+            final DatumEnsemble<GeodeticDatum> ensemble, final EllipsoidalCS cs)
+    {
         final String name;
         boolean world = false;
         switch (code) {
@@ -254,7 +258,7 @@ final class StandardDefinitions {
             default:   throw new AssertionError(code);
         }
         final Map<String, Object> properties = properties(code, name, null, world);
-        return new DefaultGeographicCRS(properties, datum, null, cs);
+        return new DefaultGeographicCRS(properties, datum, ensemble, cs);
     }
 
     /**
