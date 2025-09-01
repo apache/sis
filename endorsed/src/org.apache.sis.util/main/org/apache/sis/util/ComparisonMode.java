@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.MathTransform;
  *   <li>{@link #STRICT}          – All attributes of the compared objects shall be strictly equal.</li>
  *   <li>{@link #BY_CONTRACT}     – Only the attributes published in the interface contract need to be compared.</li>
  *   <li>{@link #IGNORE_METADATA} – Only the attributes relevant to the object functionality are compared.</li>
- *   <li>{@link #COMPATIBILITY}      – Like {@code IGNORE_METADATA}, but ignore also some structural changes for historical reasons.</li>
+ *   <li>{@link #COMPATIBILITY}   – Like {@code IGNORE_METADATA}, but ignore also some structural changes for historical reasons.</li>
  *   <li>{@link #APPROXIMATE}     – Like {@code COMPATIBILITY}, with some tolerance threshold on numerical values.</li>
  *   <li>{@link #ALLOW_VARIANT}   – Objects not really equal but related (e.g., <abbr>CRS</abbr> using different axis order).</li>
  *   <li>{@link #DEBUG}           – Special mode for figuring out why two objects expected to be equal are not.</li>

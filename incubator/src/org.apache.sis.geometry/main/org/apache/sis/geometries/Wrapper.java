@@ -19,27 +19,25 @@ package org.apache.sis.geometries;
 import java.awt.Shape;
 import java.util.Iterator;
 import java.util.OptionalInt;
-import org.apache.sis.filter.sqlmm.SQLMM;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.privy.ArraySequence;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.filter.SpatialOperatorName;
+import org.opengis.filter.DistanceOperatorName;
+import org.apache.sis.filter.sqlmm.SQLMM;
+import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.privy.ArraySequence;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.Debug;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.Envelope;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.filter.SpatialOperatorName;
-import org.opengis.filter.DistanceOperatorName;
 
 
 /**
