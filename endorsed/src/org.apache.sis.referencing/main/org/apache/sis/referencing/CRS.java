@@ -27,6 +27,7 @@ import java.util.logging.LogRecord;
 import java.time.temporal.Temporal;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.Geometry;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CartesianCS;
@@ -51,6 +52,8 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.BoundingPolygon;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
@@ -65,6 +68,7 @@ import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.DefinitionVerifier;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
@@ -81,7 +85,6 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
-import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
@@ -98,12 +101,9 @@ import org.apache.sis.util.logging.Logging;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.geometry.Geometry;
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.datum.DynamicReferenceFrame;
-import org.opengis.metadata.extent.BoundingPolygon;
-import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.coordinate.CoordinateMetadata;
 
 

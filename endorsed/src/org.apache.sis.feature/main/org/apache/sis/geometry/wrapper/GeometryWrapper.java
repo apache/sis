@@ -24,7 +24,6 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
 import javax.measure.quantity.Length;
-import org.opengis.geometry.Geometry;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -45,6 +44,7 @@ import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Set;
+import org.opengis.geometry.Geometry;
 import org.opengis.geometry.Boundary;
 import org.opengis.geometry.TransfiniteSet;
 import org.opengis.geometry.complex.Complex;

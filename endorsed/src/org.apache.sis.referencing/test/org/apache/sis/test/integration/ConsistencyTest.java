@@ -26,6 +26,7 @@ import org.opengis.util.CodeList;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.FactoryDataException;
@@ -40,9 +41,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.UnformattableObjectException;
-
-// Specific to the geoapi-3.1 and 4.0 branches:
-import org.opengis.referencing.crs.VerticalCRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;

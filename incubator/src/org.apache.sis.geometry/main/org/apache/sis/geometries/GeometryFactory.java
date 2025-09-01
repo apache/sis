@@ -21,6 +21,7 @@ import java.nio.DoubleBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.conics.Circle;
 import org.apache.sis.geometries.conics.CircularString;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -43,7 +44,7 @@ import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.setup.GeometryLibrary;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *
