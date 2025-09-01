@@ -31,7 +31,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.WraparoundAxesFinder;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -183,7 +182,7 @@ public class WraparoundAdjustment {
          * The (source ≉ target) condition is a quick check for avoiding
          * unnecessary calculation of `geographicDomain` in common cases.
          */
-        if (!geographicDomainKnown && !Utilities.equalsIgnoreMetadata(source, target)) try {
+        if (!geographicDomainKnown && !CRS.equivalent(source, target)) try {
             geographicDomainKnown = true;                       // Shall be set even in case of failure.
             geographicDomain = ReferencingServices.getInstance().setBounds(domainOfValidity, null, "shift");
         } catch (TransformException e) {

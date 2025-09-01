@@ -368,7 +368,7 @@ public enum CommonCRS {
      *
      * @see #normalizedGeographic()
      */
-    private transient GeographicCRS cachedNormalized;
+    private transient volatile GeographicCRS cachedNormalized;
 
     /**
      * The three-dimensional geographic CRS, created when first needed.
@@ -604,19 +604,19 @@ public enum CommonCRS {
      * @see DefaultGeographicCRS#forConvention(AxesConvention)
      * @see AxesConvention#NORMALIZED
      */
-    public synchronized GeographicCRS normalizedGeographic() {
+    public GeographicCRS normalizedGeographic() {
         /*
-         * Note on synchronization: a previous version of this class was using volatile fields for the caches,
-         * and kept the synchronized blocks as small as possible. It has been replaced by simpler synchronized
-         * methods in order to avoid race conditions which resulted in duplicated and confusing log messages
-         * when the EPSG factory is not available.
+         * Avoid synchronization since we observed that it can be a cause of deadlock.
+         * In particular, the call to `forConvention(…)` may require an access to the
+         * EPSG geodetic dataset. The methods invoked below are already thread-safe.
          */
-        if (cachedNormalized == null) {
-            DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(geographic());
-            crs = crs.forConvention(AxesConvention.RIGHT_HANDED);       // Equivalent to NORMALIZED in our cases, but faster.
+        GeographicCRS crs = cachedNormalized;
+        if (crs == null) {
+            crs = DefaultGeographicCRS.castOrCopy(geographic()).forConvention(AxesConvention.RIGHT_HANDED);
+            // `RIGHT_HANDED` is equivalent to `NORMALIZED` in this case, but faster.
             cachedNormalized = crs;
         }
-        return cachedNormalized;
+        return crs;
     }
 
     /**
@@ -645,6 +645,12 @@ public enum CommonCRS {
      * @see DefaultGeographicCRS
      */
     public synchronized GeographicCRS geographic() {
+        /*
+         * Note on synchronization: a previous version of this class was using volatile fields for the caches,
+         * and kept the synchronized blocks as small as possible. It has been replaced by simpler synchronized
+         * methods in order to avoid race conditions which resulted in duplicated and confusing log messages
+         * when the EPSG factory is not available.
+         */
         GeographicCRS object = geographic(cached);
         if (object == null) {
             final GeodeticAuthorityFactory factory = factory();
@@ -1159,9 +1165,10 @@ public enum CommonCRS {
             if (cs == null) {
                 if (this != DEFAULT) {
                     cs = DEFAULT.universal(latitude, longitude).getCoordinateSystem();
+                } else if (isUTM) {
+                    cs = StandardDefinitions.defaultCartesianCS();
                 } else {
                     cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(
-                            isUTM   ? StandardDefinitions.CARTESIAN_2D :
                             isSouth ? StandardDefinitions.UPS_SOUTH
                                     : StandardDefinitions.UPS_NORTH, true);
                 }
@@ -2057,17 +2064,12 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the EPSG factory to use for creating CRS, or {@code null} if none.
+     * Returns the <abbr>EPSG</abbr> factory to use for creating <abbr>CRS</abbr>s, or {@code null} if none.
      * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
      */
     private static GeodeticAuthorityFactory factory() {
-        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            final GeodeticAuthorityFactory factory = AuthorityFactories.getEPSG();
-            if (!(factory instanceof EPSGFactoryFallback)) {
-                return factory;
-            }
-        }
-        return null;
+        final GeodeticAuthorityFactory factory = AuthorityFactories.getEPSG(false);
+        return (factory instanceof EPSGFactoryFallback) ? null : factory;
     }
 
     /**

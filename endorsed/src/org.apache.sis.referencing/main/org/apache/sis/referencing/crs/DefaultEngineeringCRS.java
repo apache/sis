@@ -26,6 +26,7 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.*;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -237,6 +238,15 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
     @Override
     public DefaultDatumEnsemble<EngineeringDatum> getDatumEnsemble() {
         return super.getDatumEnsemble();
+    }
+
+    /**
+     * Returns the datum or a view of the ensemble as a datum.
+     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
+     */
+    @Override
+    final EngineeringDatum getDatumOrEnsemble(final boolean legacy) {
+        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
     }
 
     /**

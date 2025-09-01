@@ -74,7 +74,7 @@ public class Syntax {
      * @see #escapeWildcards(String)
      * @see SQLBuilder#appendWildcardEscaped(String)
      */
-    final String wildcardEscape;
+    public final String wildcardEscape;
 
     /**
      * The default catalog of the connection, or {@code null} if none.

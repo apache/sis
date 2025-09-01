@@ -802,7 +802,7 @@ public abstract class Builder<B extends Builder<B>> {
             }
             /*
              * Found a name associated to the given authority. Process to the replacement if we still
-             * have some elements to take in the 'replacements' array, otherwise remove the name.
+             * have some elements to take in the `replacements` array, otherwise remove the name.
              */
             if (next < length) {
                 final CharSequence name;
@@ -830,7 +830,7 @@ public abstract class Builder<B extends Builder<B>> {
             }
         }
         /*
-         * If there is any remaining elements in the 'replacements' array, insert them right after the last
+         * If there is any remaining elements in the `replacements` array, insert them right after the last
          * element of the given authority that we found (so we keep together the names of the same authority).
          */
         while (next < length) {

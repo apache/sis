@@ -192,9 +192,7 @@ public final class DefaultImageDatum extends AbstractDatum implements ImageDatum
      * Compares this datum with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @hidden because nothing new to said.

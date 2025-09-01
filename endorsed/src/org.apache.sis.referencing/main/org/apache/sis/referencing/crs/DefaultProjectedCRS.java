@@ -30,6 +30,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -47,7 +48,6 @@ import org.opengis.referencing.operation.Projection;
 // Specific to the main branch:
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
-import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 
 
 /**
@@ -248,7 +248,16 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     @Override
     public DefaultDatumEnsemble<GeodeticDatum> getDatumEnsemble() {
-        return MissingMethods.getDatumEnsemble(getBaseCRS());
+        return (DefaultDatumEnsemble<GeodeticDatum>) getDatumEnsemble(getBaseCRS());
+    }
+
+    /**
+     * Returns the datum or a view of the ensemble as a datum.
+     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
+     */
+    @Override
+    final GeodeticDatum getDatumOrEnsemble(final boolean legacy) {
+        return legacy ? DatumOrEnsemble.asDatum(getBaseCRS()) : getDatum();
     }
 
     /**
@@ -323,14 +332,12 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * In addition to the metadata documented in the
      * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#equals(Object, ComparisonMode) parent class},
      * this method considers coordinate system axes of the {@linkplain #getBaseCRS() base CRS} as metadata.
-     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or {@code APPROXIMATE},
-     * then axis order of the base geographic CRS are ignored
+     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or more permissive,
+     * then axis order of the base geodetic <abbr>CRS</abbr> is ignored
      * (but <strong>not</strong> axis order of <strong>this</strong> projected CRS).
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override

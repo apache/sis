@@ -31,6 +31,7 @@ import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
@@ -327,7 +328,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @throws ClassCastException if the conversion is not an instance of {@link MathTransform1D}.
      */
     private MathTransform1D getConversionFrom(final VerticalCRS source) throws FactoryException {
-        if (!Utilities.equalsIgnoreMetadata(verticalCRS, source) && verticalCRS != null && source != null) {
+        if (source != null && verticalCRS != null && !Utilities.deepEquals(verticalCRS, source, ComparisonMode.COMPATIBILITY)) {
             final MathTransform1D cv = ReferencingServices.getInstance().findTransform(source, verticalCRS);
             if (!cv.isIdentity()) {
                 return cv;

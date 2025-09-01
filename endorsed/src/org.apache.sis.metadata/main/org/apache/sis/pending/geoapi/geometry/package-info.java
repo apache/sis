@@ -14,37 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.factory.sql;
-
-// Test dependencies
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
-
 
 /**
- * Tests {@link TableInfo}.
+ * Placeholder for GeoAPI interfaces not present in GeoAPI 3.0.
+ *
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.3
+ * @version 1.5
  */
-public final class TableInfoTest extends TestCase {
-    /**
-     * Creates a new test case.
-     */
-    public TableInfoTest() {
-    }
-
-    /**
-     * Validates the enumeration values.
-     */
-    @Test
-    public void validate() {
-        for (TableInfo info : TableInfo.values()) {
-            assertNotNull(info.type);
-            assertNotNull(info.table);
-            assertNotNull(info.codeColumn);
-            assertNotNull(info.nameColumn);
-            assertTrue(info.fromClause.contains(info.table));
-        }
-    }
-}
+package org.apache.sis.pending.geoapi.geometry;

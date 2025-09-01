@@ -324,7 +324,7 @@ public final class CharSequencesTest extends TestCase {
     @Test
     public void testIsAcronymForWords() {
         /*
-         * Following shall be accepted as acronyms...
+         * Following shall be accepted as acronyms.
          */
         assertTrue(isAcronymForWords("OGC",                        "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("O.G.C.",                     "Open Geospatial Consortium"));
@@ -334,7 +334,7 @@ public final class CharSequencesTest extends TestCase {
         assertTrue(isAcronymForWords("E",                          "EAST"));
         assertTrue(isAcronymForWords("ENE",                        "EAST_NORTH_EAST"));
         /*
-         * Following shall be rejected...
+         * Following shall be rejected.
          */
         assertFalse(isAcronymForWords("ORC",    "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("O.C.G.", "Open Geospatial Consortium"));
@@ -382,6 +382,7 @@ public final class CharSequencesTest extends TestCase {
          * otherwise it leads to a confusion in `EPSGDataAccess`.
          */
         assertFalse(isAcronymForWords("coordoperation", "Coordinate_Operation Method"));
+        assertFalse(isAcronymForWords("North along 15°W", "North along 150°W"));
     }
 
     /**

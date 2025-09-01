@@ -19,7 +19,7 @@ package org.apache.sis.storage.aggregate;
 import java.util.Locale;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.Utilities;
+import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -56,7 +56,7 @@ final class GroupByCRS<E> extends Group<E> {
      * Returns whether an object having the given <abbr>CRS</abbr> can be a member of this group.
      */
     final boolean accepts(final CoordinateReferenceSystem candidate) {
-        return Utilities.equalsIgnoreMetadata(crs, candidate);
+        return CRS.equivalent(crs, candidate);
     }
 
     /**

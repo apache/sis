@@ -16,16 +16,11 @@
  */
 package org.apache.sis.resources.embedded;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.CallableStatement;
@@ -41,15 +36,14 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.privy.Initializer;
 import org.apache.sis.metadata.sql.privy.LocalDataSource;
 import org.apache.sis.system.DataDirectory;
-import org.apache.sis.system.Shutdown;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.apache.sis.referencing.factory.sql.epsg.ScriptProvider;
 
 
 /**
- * Generates {@code SpatialMetadata} database with EPSG geodetic dataset.
- * This class is invoked only at build time and should be excluded from the final JAR file.
- * The {@link #main(String[])} method generates resources directly in the {@code target/classes} directory.
+ * Generates {@code SpatialMetadata} database with <abbr>EPSG</abbr> geodetic dataset.
+ * This class is invoked only at build time and should be excluded from the final <abbr>JAR</abbr> file.
+ * The {@link #createIfAbsent()} method generates resources directly in the {@code target/classes} directory.
  *
  * <p><b>Note:</b>
  * Maven usage is to generate resources in the {@code target/generated-resources} directory.
@@ -58,39 +52,22 @@ import org.apache.sis.referencing.factory.sql.epsg.ScriptProvider;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Generator extends ScriptProvider {
+final class Generator extends ScriptProvider {
     /**
-     * Generates the embedded resources in the {@code target/classes} directory.
-     * See class Javadoc for more information.
-     *
-     * @param  args  ignored. Can be null.
-     * @throws Exception if a failure occurred while searching directories,
-     *         executing SQL scripts, copying data or any other operation.
+     * Directory where the {@link EmbeddedResources} class file is located.
+     * This is the directory where to copy the license files.
      */
-    public static void main(String[] args) throws Exception {
-        new Generator().run();
-        Shutdown.stop(Generator.class);
-    }
+    private final Path classesDirectory;
 
     /**
-     * Generates the embedded resources in the {@code target/classes} directory.
-     *
-     * @throws Exception if a failure occurred while searching directories,
-     *         executing SQL scripts, copying data or any other operation.
+     * Directory where to search for <abbr>EPSG</abbr> data.
      */
-    final void run() throws Exception {
-        if (dataSource != null) {
-            createMetadata();
-            createEPSG();
-            compress();
-            shutdown();
-        }
-    }
+    private final Path sourceEPSG;
 
     /**
      * Provides a connection to the "SpatialMetadata" database, or {@code null} if the database already exists.
-     * The connection URL will reference the {@code SIS_DATA/Databases/spatial-metadata} directory in the Maven
-     * {@code target/classes} directory.
+     * The connection <abbr>URL</abbr> references the <code>SIS_DATA/Databases/{@value EmbeddedResources#EMBEDDED_DATABASE}</code>
+     * directory in the Maven {@code target/classes} directory.
      */
     private final EmbeddedDataSource dataSource;
 
@@ -98,12 +75,14 @@ public final class Generator extends ScriptProvider {
      * Creates a new database generator.
      */
     Generator() throws URISyntaxException, IOException {
-        Path target = copyLicenseFiles();
+        classesDirectory = directoryOf(EmbeddedResources.class);
+        Path target = classesDirectory;
         do target = target.getParent();     // Move to the root directory of classes.
         while (!target.getFileName().toString().startsWith("org.apache.sis."));
         target = target.resolve("META-INF").resolve(DataDirectory.ENV);
         if (Files.isDirectory(target)) {
             dataSource = null;
+            sourceEPSG = null;
             return;
         }
         /*
@@ -116,28 +95,51 @@ public final class Generator extends ScriptProvider {
         dataSource.setDataSourceName(Initializer.DATABASE);
         dataSource.setDatabaseName(target.resolve(EmbeddedResources.EMBEDDED_DATABASE).toString());
         dataSource.setCreateDatabase("create");
+        sourceEPSG = directoryOf(ScriptProvider.class);
     }
 
     /**
-     * Copies the EPSG terms of use from the {@code sis-epsg} module to this {@code sis-embedded-data} module.
-     * We copy those files ourselves instead than relying on {@code maven-resources-plugin} because a future
-     * version may combine more licenses in a single file.
-     *
-     * @return the directory where the licenses have been copied.
+     * Returns the directory which contains the given class.
      */
-    private Path copyLicenseFiles() throws URISyntaxException, IOException {
-        final Class<?> consumer = EmbeddedResources.class;
-        final Path target = Path.of(consumer.getResource(consumer.getSimpleName() + ".class").toURI()).getParent();
+    private static Path directoryOf(final Class<?> member) throws URISyntaxException {
+        return Path.of(member.getResource(member.getSimpleName() + ".class").toURI()).getParent();
+    }
+
+    /**
+     * Generates the embedded resources in the {@code target/classes} directory if it does not already exists.
+     * See class Javadoc for more information.
+     *
+     * @throws Exception if a failure occurred while searching directories,
+     *         executing <abbr>SQL</abbr> scripts, copying data or any other operation.
+     */
+    final void createIfAbsent() throws Exception {
+        if (dataSource != null) {
+            copyLicenseFiles();
+            createMetadata();
+            createEPSG();
+            compress();
+            shutdown();
+        }
+    }
+
+    /**
+     * Copies the <abbr>EPSG</abbr> terms of use from the {@code sis-epsg} module to this {@code sis-embedded-data} module.
+     * If the <abbr>EPSG</abbr> data are not found, then this method does nothing.
+     *
+     * <p>We copy those files ourselves instead of relying on {@code maven-resources-plugin}
+     * because a future version may combine more licenses in a single file.</p>
+     */
+    private void copyLicenseFiles() throws URISyntaxException, IOException {
         final String[] files = {"LICENSE.txt", "LICENSE.html"};
         for (String file : files) {
-            try (InputStream in = openStream(file)) {
-                if (in == null) throw new FileNotFoundException(file);
-                Files.copy(in, target.resolve(file));
-            } catch (FileAlreadyExistsException e) {
-                break;
+            final Path source = sourceEPSG.resolve(file);
+            if (Files.exists(source)) {
+                final Path target = classesDirectory.resolve(file);
+                if (Files.notExists(target)) {
+                    Files.createLink(target, source);
+                }
             }
         }
-        return target;
     }
 
     /**
@@ -146,7 +148,7 @@ public final class Generator extends ScriptProvider {
      * @throws FactoryException  if an error occurred while creating or querying the database.
      */
     private void createMetadata() throws MetadataStoreException, ReflectiveOperationException {
-        try (MetadataSource md = new MetadataSource(MetadataStandard.ISO_19115, dataSource, "metadata", null)) {
+        try (var md = new MetadataSource(MetadataStandard.ISO_19115, dataSource, "metadata", null)) {
             Method install = md.getClass().getDeclaredMethod("install");
             install.setAccessible(true);
             install.invoke(md);
@@ -154,12 +156,18 @@ public final class Generator extends ScriptProvider {
     }
 
     /**
-     * Creates the EPSG database schema.
+     * Creates the <abbr>EPSG</abbr> database schema.
+     * This method does nothing if the <abbr>EPSG</abbr> are not available.
+     * In the latter case, only the database will contain only free metadata.
      *
      * @throws FactoryException  if an error occurred while creating or querying the database.
+     * @return whether the <abbr>EPSG</abbr> data were found.
      */
-    private void createEPSG() throws FactoryException {
-        final Map<String,Object> properties = new HashMap<>();
+    private boolean createEPSG() throws FactoryException {
+        if (Files.notExists(sourceEPSG.resolve("Data.sql"))) {
+            return false;
+        }
+        final var properties = new HashMap<String,Object>();
         properties.put("dataSource", dataSource);
         properties.put("scriptProvider", this);
         /*
@@ -173,16 +181,17 @@ public final class Generator extends ScriptProvider {
         if (!crs.getName().getCode().equals("WGS 84")) {
             throw new FactoryException("Unexpected CRS: " + crs.getName());
         }
+        return true;
     }
 
     /**
-     * Compresses all tables in the EPSG schema. Compression can save space if there was many update
+     * Compresses all tables in all schema. Compression can save space if there was many update
      * or delete operations in the database. In the case of the database generated by this class,
      * the benefit is very small because the database is fresh. But it is still non-zero.
      */
     private void compress() throws SQLException {
         try (Connection c = dataSource.getConnection()) {
-            List<String> tables = new ArrayList<>(80);  // As (schema,table) pairs.
+            final var tables = new ArrayList<String>(80);  // As (schema,table) pairs.
             try (ResultSet r = c.getMetaData().getTables(null, null, null, null)) {
                 while (r.next()) {
                     final String schema = r.getString("TABLE_SCHEM");

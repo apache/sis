@@ -24,7 +24,6 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
 import javax.measure.quantity.Length;
-import org.opengis.geometry.Geometry;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -44,6 +43,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
+import org.apache.sis.pending.geoapi.geometry.Geometry;
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
 
@@ -132,6 +132,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      *
      * @return the geometry <abbr>CRS</abbr>, or {@code null} if unknown.
      */
+    @Override
     public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return crs;
     }
@@ -178,6 +179,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      *
      * @return the geometry envelope. Should never be {@code null}.
      */
+    @Override
     public abstract GeneralEnvelope getEnvelope();
 
     /**

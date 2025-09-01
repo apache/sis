@@ -214,18 +214,23 @@ public class SQLTranslator implements UnaryOperator<String> {
     private Map<String,String> replacements;
 
     /**
-     * The characters used for quoting identifiers, or a whitespace if none.
+     * The characters used for quoting identifiers, or an empty string if none.
      * This information is provided by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
     private final String identifierQuote;
+
+    /**
+     * The string that can be used to escape wildcard characters in {@code LIKE}.
+     * This is the value returned by {@link DatabaseMetaData#getSearchStringEscape()}.
+     * It may be null or empty if the database has no escape character.
+     */
+    final String wildcardEscape;
 
     /**
      * Non-null if the {@value #ENUMERATION_COLUMN} column in {@code "Alias"} table uses enumeration instead
      * than character varying. In such case, this field contains the enumeration type. If {@code null}, then
      * then column type is {@code VARCHAR} and the cast can be omitted.
      * If non-null, this string should contain the identifier quotes.
-     *
-     * @see #useEnumerations()
      */
     private String tableNameEnum;
 
@@ -283,6 +288,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      */
     public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
         identifierQuote = md.getIdentifierQuoteString().trim();
+        wildcardEscape  = md.getSearchStringEscape();
         this.catalog = catalog;
         this.schema  = schema;
         setup(md);
@@ -308,8 +314,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      */
     @SuppressWarnings("fallthrough")
     final void setup(final DatabaseMetaData md) throws SQLException {
-        final String escape  = md.getSearchStringEscape();
-        String schemaPattern = SQLUtilities.escape(schema, escape);
+        String schemaPattern = SQLUtilities.escape(schema, wildcardEscape);
         int tableIndex = 0;
         do {
             usePrefixedTableNames  = false;
@@ -318,7 +323,7 @@ public class SQLTranslator implements UnaryOperator<String> {
             switch (tableIndex++) {
                 case 0: {   // Test EPSG standard table name first.
                     usePrefixedTableNames = true;
-                    table = SQLUtilities.escape(TABLE_PREFIX, escape);
+                    table = SQLUtilities.escape(TABLE_PREFIX, wildcardEscape);
                     // Fallthrough for testing "epsg_coordoperation".
                 }
                 case 2: {
@@ -352,7 +357,7 @@ public class SQLTranslator implements UnaryOperator<String> {
          * naming convention (unquoted or mixed-case, prefixed by "epsg_" or not).
          */
         UnaryOperator<String> toNativeCase = UnaryOperator.identity();
-        schemaPattern  = SQLUtilities.escape(schema, escape);
+        schemaPattern  = SQLUtilities.escape(schema, wildcardEscape);
         tableRewording = new HashMap<>();
         replacements   = new HashMap<>();
         /*
@@ -456,7 +461,7 @@ check:  for (;;) {
             boolean isTableFound = false;
             brokenTargetCols.addAll(mayRenameColumns.values());
             table = toNativeCase.apply(toActualTableName(table));
-            try (ResultSet result = md.getColumns(catalog, schemaPattern, SQLUtilities.escape(table, escape), "%")) {
+            try (ResultSet result = md.getColumns(catalog, schemaPattern, SQLUtilities.escape(table, wildcardEscape), "%")) {
                 while (result.next()) {
                     isTableFound = true;          // Assuming that all tables contain at least one column.
                     final String column = result.getString(Reflection.COLUMN_NAME).toUpperCase(Locale.US);
@@ -475,10 +480,12 @@ check:  for (;;) {
                     /*
                      * Detect if the tables use enumeration (on PostgreSQL database) instead of VARCHAR.
                      * Enumerations appear in various tables, including in a WHERE clause for the Alias table.
+                     * Note: we cannot rely on `result.getInt(Reflection.DATA_TYPE)` because the declared type
+                     * of enumeration is `Types.VARCHAR` (at least on PostgresSQL)`.
                      */
                     if (ENUMERATION_COLUMN.equals(column)) {
                         String type = result.getString(Reflection.TYPE_NAME);
-                        if (!CharSequences.startsWith(type, "VARCHAR", true)) {
+                        if (!(CharSequences.startsWith(type, "VARCHAR", true) || CharSequences.startsWith(type, "CHARACTER", true))) {
                             if (!type.contains(identifierQuote)) {
                                 type = identifierQuote + type + identifierQuote;
                             }
@@ -585,15 +592,6 @@ check:  for (;;) {
      */
     final boolean useBoolean() {
         return useBoolean;
-    }
-
-    /**
-     * Returns {@code true} if the database uses enumeration values where applicable.
-     * This method use the {@value #ENUMERATION_COLUMN} column as a sentinel value for
-     * detecting whether enumerations are used for the whole <abbr>EPSG</abbr> database.
-     */
-    final boolean useEnumerations() {
-        return tableNameEnum != null;
     }
 
     /**

@@ -24,7 +24,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.Utilities;
 
 
 /**
@@ -106,14 +105,14 @@ class EnvelopeReducer {
          * without performing any reprojection. In the common case where all envelopes use
          * the same CRS, this will result in an array having only one non-null element.
          */
-        final GeneralEnvelope[] reduced = new GeneralEnvelope[envelopes.length];
+        final var reduced = new GeneralEnvelope[envelopes.length];
         int count = 0;
 merge:  for (final Envelope envelope : envelopes) {
             if (envelope != null) {
                 final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
                 for (int i=0; i<count; i++) {
                     final GeneralEnvelope previous = reduced[i];
-                    if (Utilities.equalsIgnoreMetadata(crs, previous.getCoordinateReferenceSystem())) {
+                    if (CRS.equivalent(crs, previous.getCoordinateReferenceSystem())) {
                         reduce(previous, envelope);
                         continue merge;
                     }

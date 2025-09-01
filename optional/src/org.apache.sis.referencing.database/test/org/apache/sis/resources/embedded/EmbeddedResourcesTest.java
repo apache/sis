@@ -27,10 +27,10 @@ import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.metadata.sql.privy.Initializer;
 import org.apache.sis.system.DataDirectory;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.factory.sql.epsg.ScriptProvider;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestUtilities;
@@ -41,27 +41,29 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 
 /**
  * Tests {@link EmbeddedResources}.
+ * This test has the side-effect of creating the database if it does not already exists.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final strictfp class EmbeddedResourcesTest {
     /**
-     * Whether the database has been created.
-     */
-    private static boolean databaseCreated;
-
-    /**
      * Creates a new test case.
+     *
+     * @throws Exception if an error occurred while creating the database.
      */
-    public EmbeddedResourcesTest() {
+    public EmbeddedResourcesTest() throws Exception {
+        new Generator().createIfAbsent();
     }
 
     /**
-     * Skips the test if the EPSG scripts are not present.
+     * Skips the test if the <abbr>EPSG</abbr> scripts are not present.
      * This method uses {@code LICENSE.txt} as a sentinel file.
+     * Note that even if the <abbr>EPSG</abbr> data are not available,
+     * the database may still contain other metadata.
      */
-    private static void assumeDataPresent() {
-        assumeTrue(ScriptProvider.class.getResource("LICENSE.txt") != null,
+    private static void assumeContainsEPSG() {
+        assumeTrue(EmbeddedResources.class.getResource("LICENSE.txt") != null,
                 "EPSG resources not found. See `README.md` for manual installation.");
     }
 
@@ -69,13 +71,7 @@ public final strictfp class EmbeddedResourcesTest {
      * Returns the {@link EmbeddedResources} instance declared in the {@code META-INF/services/} directory.
      * The provider may coexist with providers defined in other modules, so we need to filter them.
      */
-    private static synchronized InstallationResources getInstance() {
-        if (!databaseCreated) try {
-            new Generator().run();
-            databaseCreated = true;
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
+    private static InstallationResources getInstance() {
         InstallationResources provider = null;
         for (InstallationResources candidate : ServiceLoader.load(InstallationResources.class)) {
             if (candidate instanceof EmbeddedResources) {
@@ -94,7 +90,7 @@ public final strictfp class EmbeddedResourcesTest {
      */
     @Test
     public void testLicences() throws IOException {
-        assumeDataPresent();
+        assumeContainsEPSG();
         final InstallationResources provider = getInstance();
         assertTrue(provider.getLicense("Embedded", null, "text/plain").contains("IOGP"));
         assertTrue(provider.getLicense("Embedded", null, "text/html" ).contains("IOGP"));
@@ -107,13 +103,13 @@ public final strictfp class EmbeddedResourcesTest {
      */
     @Test
     public void testConnection() throws Exception {
-        assumeDataPresent();
+        assumeContainsEPSG();
         final String dir = DataDirectory.getenv();
-        assertTrue((dir == null) || dir.isEmpty(), "The SIS_DATA environment variable must be unset for enabling this test.");
+        assumeTrue((dir == null) || dir.isEmpty(), "The SIS_DATA environment variable must be unset for enabling this test.");
         final DataSource ds = Initializer.getDataSource();
         assertNotNull(ds, "Cannot find the data source.");
         try (Connection c = ds.getConnection()) {
-            assertEquals("jdbc:derby:classpath:SIS_DATA/Databases/spatial-metadata", c.getMetaData().getURL(), "URL");
+            assertEquals("jdbc:derby:classpath:SIS_DATA/Databases/" + EmbeddedResources.EMBEDDED_DATABASE, c.getMetaData().getURL(), "URL");
             try (Statement s = c.createStatement()) {
                 try (ResultSet r = s.executeQuery("SELECT COORD_REF_SYS_NAME FROM EPSG.\"Coordinate Reference System\" WHERE COORD_REF_SYS_CODE = 4326")) {
                     assertTrue(r.next(), "ResultSet.next()");
@@ -133,7 +129,7 @@ public final strictfp class EmbeddedResourcesTest {
      */
     @Test
     public void testCrsforCode() throws FactoryException {
-        assumeDataPresent();
+        assumeContainsEPSG();
         var crs = assertInstanceOf(AbstractCRS.class, CRS.forCode("EPSG:6676"));
         String area = TestUtilities.getSingleton(crs.getDomains()).getDomainOfValidity().getDescription().toString();
         assertTrue(area.contains("Japan"), area);

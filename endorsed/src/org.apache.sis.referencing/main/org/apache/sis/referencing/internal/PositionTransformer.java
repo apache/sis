@@ -25,10 +25,10 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.MultiRegisterOperations;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.util.Utilities;
 
 // Specific to the main branch:
 import org.opengis.geometry.MismatchedDimensionException;
@@ -217,7 +217,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
              * has been invoked. If the specified position uses a new CRS, then get the transformation and save
              * it in case the next call to this method would use again the same transformation.
              */
-            if (!Utilities.equalsIgnoreMetadata(lastCRS, userCRS)) {
+            if (!CRS.equivalent(lastCRS, userCRS)) {
                 setSourceCRS(userCRS);
             }
             if (forward != null) {
@@ -232,7 +232,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
      */
     private MathTransform inverse() throws TransformException {
         if (inverse == null) {
-            if (!Utilities.equalsIgnoreMetadata(lastCRS, defaultCRS)) {
+            if (!CRS.equivalent(lastCRS, defaultCRS)) {
                 setSourceCRS(defaultCRS);
             }
             inverse = (forward != null) ? forward.inverse() : MathTransforms.identity(getDimension());

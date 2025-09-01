@@ -107,7 +107,7 @@ public final class AuthorityFactoriesTest extends TestCaseWithLogs {
      * @param code      the code of the object for which to fetch the description.
      */
     private void assertDescriptionEquals(String expected, String code) throws FactoryException {
-        assertEquals(expected, AuthorityFactories.ALL.getDescriptionText(IdentifiedObject.class, code).orElseThrow().toString());
+        assertEquals(expected, AuthorityFactories.ALL.getDescriptionText(CoordinateReferenceSystem.class, code).orElseThrow().toString());
     }
 
     /**

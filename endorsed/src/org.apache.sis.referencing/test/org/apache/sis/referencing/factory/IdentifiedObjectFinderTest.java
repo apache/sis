@@ -20,7 +20,6 @@ import java.util.Map;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 
@@ -76,7 +75,7 @@ public final class IdentifiedObjectFinderTest extends TestCase {
          * Same test as above, using a CRS without identifier.
          * The intent is to force a full scan.
          */
-        final CoordinateReferenceSystem search = new DefaultGeographicCRS(
+        final var search = new DefaultGeographicCRS(
                 Map.of(DefaultGeographicCRS.NAME_KEY, CRS84.getName()),
                 CRS84.getDatum(), getDatumEnsemble(CRS84), CRS84.getCoordinateSystem());
         assertEqualsIgnoreMetadata(CRS84, search);              // Required condition for next test.

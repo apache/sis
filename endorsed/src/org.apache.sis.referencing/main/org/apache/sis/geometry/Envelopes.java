@@ -188,7 +188,7 @@ public final class Envelopes extends Static {
 
     /**
      * Computes the union of all given envelopes, transforming them to a common CRS if necessary.
-     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
+     * If all envelopes use {@linkplain CRS#equivalent equivalent} <abbr>CRS</abbr>,
      * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#add(Envelope)
      * union is computed} without transforming any envelope. Otherwise, all envelopes are transformed
      * to a {@linkplain CRS#suggestCommonTarget common CRS} before union is computed.
@@ -208,7 +208,7 @@ public final class Envelopes extends Static {
 
     /**
      * Computes the intersection of all given envelopes, transforming them to a common CRS if necessary.
-     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
+     * If all envelopes use {@linkplain CRS#equivalent equivalent} <abbr>CRS</abbr>,
      * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#intersect(Envelope)
      * intersection is computed} without transforming any envelope. Otherwise, all envelopes are transformed
      * to a {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
@@ -625,7 +625,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
         final CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
         if (sourceCRS != null) {
             final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-            if (crs != null && !Utilities.equalsIgnoreMetadata(crs, sourceCRS)) {
+            if (crs != null && !CRS.equivalent(crs, sourceCRS)) {
                 /*
                  * Argument-check: the envelope CRS seems inconsistent with the given operation.
                  * However, we need to push the check a little bit further, since 3D-GeographicCRS

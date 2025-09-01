@@ -234,7 +234,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
                 case "Polar Stereographic (variant B)":
                 case "Polar Stereographic (variant C)":           param = "Latitude of standard parallel"; value = 80; break;
                 case "Hotine Oblique Mercator (variant A)":
-                case "Hotine Oblique Mercator (variant B)":       param = "Azimuth of initial line"; value = 30; break;
+                case "Hotine Oblique Mercator (variant B)":       param = "Azimuth at projection centre"; value = 30; break;
                 case "Lambert Conic Conformal (1SP)":
                 case "Lambert Conic Conformal (West Orientated)": param = "Latitude of natural origin"; value = 45; break;
                 case "Lambert Conic Conformal (2SP Michigan)":    param = "Ellipsoid scaling factor"; value = 1;  // Fall through for defining standard parallels too.

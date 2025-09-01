@@ -299,6 +299,15 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
     }
 
     /**
+     * Returns the datum or a view of the ensemble as a datum.
+     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
+     */
+    @Override
+    final TemporalDatum getDatumOrEnsemble(final boolean legacy) {
+        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
+    }
+
+    /**
      * Returns the coordinate system.
      *
      * @return the coordinate system.

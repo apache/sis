@@ -887,16 +887,14 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * properties are compared including the {@linkplain #getDomains() domains} and the accuracy.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for ignoring properties
-     *                 that do not make a difference in the numerical results of coordinate operations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal for the given comparison mode.
      */
     @Override
     public boolean equals(final Object object, ComparisonMode mode) {
         if (super.equals(object, mode)) {
             if (mode == ComparisonMode.STRICT) {
-                final AbstractCoordinateOperation that = (AbstractCoordinateOperation) object;
+                final var that = (AbstractCoordinateOperation) object;
                 if (Objects.equals(sourceCRS,                   that.sourceCRS)        &&
                     Objects.equals(interpolationCRS,            that.interpolationCRS) &&
                     Objects.equals(transform,                   that.transform)        &&
@@ -920,14 +918,14 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                  *   - Scope, domain and accuracy properties only if NOT in "ignore metadata" mode.
                  *   - Interpolation CRS in all cases (regardless if ignoring metadata or not).
                  */
-                final CoordinateOperation that = (CoordinateOperation) object;
+                final var that = (CoordinateOperation) object;
                 if ((mode.isIgnoringMetadata() ||
                     (deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))) &&
                      deepEquals(getInterpolationCRS().orElse(null), getInterpolationCRS(that), mode))
                 {
                     /*
                      * At this point all metadata match or can be ignored. First, compare the targetCRS.
-                     * We need to perform this comparison only if this 'equals(…)' method is not invoked
+                     * We need to perform this comparison only if this `equals(…)` method is not invoked
                      * from AbstractDerivedCRS, otherwise we would fall in an infinite recursive loop
                      * (because targetCRS is the DerivedCRS, which in turn wants to compare this operation).
                      *
@@ -956,14 +954,14 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      * Now compare the sourceCRS, potentially with a relaxed ComparisonMode (see above comment).
                      * If the comparison mode allows the two CRS to have different axis order and units, then we
                      * need to take in account those difference before to compare the MathTransform. We proceed
-                     * by modifying 'tr2' as if it was a MathTransform with crs1 as the source instead of crs2.
+                     * by modifying `tr2` as if it was a MathTransform with crs1 as the source instead of crs2.
                      */
                     final CoordinateReferenceSystem crs1 = this.getSourceCRS();
                     final CoordinateReferenceSystem crs2 = that.getSourceCRS();
                     if (deepEquals(crs1, crs2, mode)) {
                         MathTransform tr1 = this.getMathTransform();
                         MathTransform tr2 = that.getMathTransform();
-                        if (mode.allowsVariant()) try {
+                        if (mode.ordinal() >= ComparisonMode.ALLOW_VARIANT.ordinal()) try {
                             final MathTransform before = MathTransforms.linear(
                                     CoordinateSystems.swapAndScaleAxes(crs1.getCoordinateSystem(),
                                                                        crs2.getCoordinateSystem()));
@@ -994,9 +992,9 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     @Override
     protected long computeHashCode() {
         /*
-         * Do NOT take 'getMethod()' in account in hash code calculation. See the comment
-         * inside the above 'equals(Object, ComparisonMode)' method for more information.
-         * Note that we use the 'transform' hash code, which should be sufficient.
+         * Do NOT take `getMethod()` in account in hash code calculation. See the comment
+         * inside the above `equals(Object, ComparisonMode)` method for more information.
+         * Note that we use the `transform` hash code, which should be sufficient.
          */
         return super.computeHashCode() + Objects.hash(sourceCRS, targetCRS, interpolationCRS, transform);
     }

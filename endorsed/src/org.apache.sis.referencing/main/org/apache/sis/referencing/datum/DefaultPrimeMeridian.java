@@ -249,9 +249,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Compares this prime meridian with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @hidden because nothing new to said.
@@ -268,14 +266,14 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                         Objects.equals(this.angularUnit,        that.angularUnit);
             }
             case BY_CONTRACT: {
-                final PrimeMeridian that = (PrimeMeridian) object;
+                final var that = (PrimeMeridian) object;
                 return Numerics.equals(getGreenwichLongitude(), that.getGreenwichLongitude()) &&
                         Objects.equals(getAngularUnit(),        that.getAngularUnit());
             }
             default: {
                 final double v1 = getGreenwichLongitude(Units.DEGREE);
                 final double v2 = ReferencingUtilities.getGreenwichLongitude((PrimeMeridian) object, Units.DEGREE);
-                if (mode == ComparisonMode.IGNORE_METADATA) {
+                if (mode.isIgnoringMetadata()) {
                     /*
                      * We relax the check on unit of measurement because EPSG uses sexagesimal degrees
                      * for the Greenwich meridian.  Requirying the same unit would make more difficult
@@ -284,9 +282,11 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                      * they are often not the same in the EPSG dataset). The same is not true for other
                      * objects like DefaultEllipsoid.
                      */
+                    if (Numerics.epsilonEqual(v1, v2, Formulas.ANGULAR_TOLERANCE)) {
+                        return true;
+                    }
+                } else {
                     return Numerics.equals(v1, v2);
-                } else if (Numerics.epsilonEqual(v1, v2, Formulas.ANGULAR_TOLERANCE)) {
-                    return true;
                 }
                 assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference("greenwichLongitude", v1, v2);
             }

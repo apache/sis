@@ -499,7 +499,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             return null;
         }
         for (final BursaWolfParameters candidate : bursaWolf) {
-            if (deepEquals(targetDatum, candidate.getTargetDatum(), ComparisonMode.IGNORE_METADATA)) {
+            if (deepEquals(targetDatum, candidate.getTargetDatum(), ComparisonMode.COMPATIBILITY)) {
                 selector.evaluate(candidate.getDomainOfValidity(), candidate);
             }
         }
@@ -669,9 +669,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Compares this datum with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @hidden because nothing new to said.

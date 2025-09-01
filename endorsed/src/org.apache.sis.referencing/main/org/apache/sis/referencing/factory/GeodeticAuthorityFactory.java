@@ -193,7 +193,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     @Override
     @Deprecated(since = "1.5")
     public InternationalString getDescriptionText(final String code) throws FactoryException {
-        return getDescriptionText(IdentifiedObject.class, code).orElse(null);
+        return getDescriptionText(CoordinateReferenceSystem.class, code).orElse(null);
     }
 
     /**

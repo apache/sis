@@ -76,6 +76,7 @@ import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.Numerics;
@@ -90,7 +91,6 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.GeoCodes;
 import org.apache.sis.storage.geotiff.base.GeoKeys;
 import org.apache.sis.storage.geotiff.base.UnitKey;
-import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
 
 /**
@@ -913,8 +913,8 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                 lastName = datum.getName();
                 try {
                     final CommonCRS predefined = CommonCRS.valueOf(name);
-                    if (equalsIgnoreMetadata(predefined.ellipsoid(), ellipsoid) &&
-                        equalsIgnoreMetadata(predefined.primeMeridian(), meridian))
+                    if (Utilities.equalsIgnoreMetadata(predefined.ellipsoid(), ellipsoid) &&
+                        Utilities.equalsIgnoreMetadata(predefined.primeMeridian(), meridian))
                     {
                         return predefined.datum();
                     }

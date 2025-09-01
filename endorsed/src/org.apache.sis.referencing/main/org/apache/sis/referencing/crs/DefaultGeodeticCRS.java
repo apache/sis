@@ -34,6 +34,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -169,6 +170,15 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
     }
 
     /**
+     * Returns the datum or a view of the ensemble as a datum.
+     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
+     */
+    @Override
+    final GeodeticDatum getDatumOrEnsemble(final boolean legacy) {
+        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
+    }
+
+    /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
      * This method shall be overridden by all {@code DefaultGeodeticCRS} subclasses in this package.
      *
@@ -220,9 +230,9 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
          * as a sibling (rather than a child) element in WKT for historical reasons.
          */
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final GeodeticDatum datum = getDatum();             // Gives subclasses a chance to override.
+        final GeodeticDatum datum = getDatumOrEnsemble(true);
         formatter.newLine();
-        formatter.append(WKTUtilities.toFormattable(datum));
+        formatter.append(DefaultGeodeticDatum.castOrCopy(datum));   // For the conversion of ensemble to datum.
         formatter.newLine();
         final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(cs, null);
         DatumOrEnsemble.getPrimeMeridian(this).ifPresent((PrimeMeridian pm) -> {
@@ -262,7 +272,7 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
         /*
          * Format the coordinate system, except if this CRS is the base CRS of an AbstractDerivedCRS in WKT 2 format.
          * This is because ISO 19162 omits the coordinate system definition of enclosed base CRS in order to simplify
-         * the WKT. The 'formatCS(…)' method may write axis unit before or after the axes depending on whether we are
+         * the WKT. The `formatCS(…)` method may write axis unit before or after the axes depending on whether we are
          * formatting WKT version 1 or 2 respectively.
          *
          * Note that even if we do not format the CS, we may still write the units if we are formatting in "simplified"

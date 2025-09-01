@@ -53,6 +53,7 @@ import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import static org.apache.sis.referencing.internal.Legacy.DERIVED_TYPE_KEY;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
@@ -64,7 +65,6 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
-import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 
 
 /**
@@ -430,7 +430,19 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      */
     @Override
     public DefaultDatumEnsemble<?> getDatumEnsemble() {
-        return MissingMethods.getDatumEnsemble(getBaseCRS());
+        return getDatumEnsemble(getBaseCRS());
+    }
+
+    /**
+     * Returns the datum or a view of the ensemble as a datum.
+     */
+    @Override
+    Datum getDatumOrEnsemble(final boolean legacy) {
+        final SingleCRS baseCRS = getBaseCRS();
+        if (baseCRS instanceof AbstractCRS) {
+            return ((AbstractCRS) baseCRS).getDatumOrEnsemble(legacy);
+        }
+        return super.getDatumOrEnsemble(legacy);
     }
 
     /**
@@ -506,14 +518,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * In addition to the metadata documented in the
      * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#equals(Object, ComparisonMode) parent class},
      * this method considers coordinate system axes of the {@linkplain #getBaseCRS() base CRS} as metadata.
-     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or {@code APPROXIMATE},
-     * then axis order of the base CRS are ignored
+     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or more permissive,
+     * then axis order of the base <abbr>CRS</abbr> is ignored
      * (but <strong>not</strong> axis order of <strong>this</strong> derived CRS).
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -681,6 +691,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (GeodeticDatum) super.getDatum();
         }
 
+        /** Returns the datum or a view of the ensemble as a datum. */
+        @Override GeodeticDatum getDatumOrEnsemble(final boolean legacy) {
+            return legacy ? DatumOrEnsemble.asDatum((GeodeticCRS) getBaseCRS()) : getDatum();
+        }
+
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
         @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
             return new Geodetic(this, derivedCS);
@@ -730,6 +745,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** Returns the datum of the base vertical CRS. */
         @Override public VerticalDatum getDatum() {
             return (VerticalDatum) super.getDatum();
+        }
+
+        /** Returns the datum or a view of the ensemble as a datum. */
+        @Override VerticalDatum getDatumOrEnsemble(final boolean legacy) {
+            return legacy ? DatumOrEnsemble.asDatum((VerticalCRS) getBaseCRS()) : getDatum();
         }
 
         /** Returns the coordinate system given at construction time. */
@@ -788,6 +808,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (TemporalDatum) super.getDatum();
         }
 
+        /** Returns the datum or a view of the ensemble as a datum. */
+        @Override TemporalDatum getDatumOrEnsemble(final boolean legacy) {
+            return legacy ? DatumOrEnsemble.asDatum((TemporalCRS) getBaseCRS()) : getDatum();
+        }
+
         /** Returns the coordinate system given at construction time. */
         @Override public TimeCS getCoordinateSystem() {
             return (TimeCS) super.getCoordinateSystem();
@@ -842,6 +867,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** Returns the datum of the base parametric CRS. */
         @Override public DefaultParametricDatum getDatum() {
             return (DefaultParametricDatum) super.getDatum();
+        }
+
+        /** Returns the datum or a view of the ensemble as a datum. */
+        @Override DefaultParametricDatum getDatumOrEnsemble(final boolean legacy) {
+            return getDatum();
         }
 
         /** Returns the coordinate system given at construction time. */
@@ -901,6 +931,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** Returns the datum of the base engineering CRS. */
         @Override public EngineeringDatum getDatum() {
             return (EngineeringDatum) super.getDatum();
+        }
+
+        /** Returns the datum or a view of the ensemble as a datum. */
+        @Override EngineeringDatum getDatumOrEnsemble(final boolean legacy) {
+            return legacy ? DatumOrEnsemble.asDatum((EngineeringCRS) getBaseCRS()) : getDatum();
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */

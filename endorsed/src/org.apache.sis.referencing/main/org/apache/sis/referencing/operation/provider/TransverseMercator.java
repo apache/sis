@@ -48,7 +48,7 @@ public final class TransverseMercator extends AbstractMercator {
     private static final long serialVersionUID = -3386587506686432398L;
 
     /**
-     * The {@value} string, which is also the EPSG name for this projection.
+     * The {@value} string, which is the <abbr>EPSG</abbr> name for this projection.
      */
     public static final String NAME = "Transverse Mercator";
 

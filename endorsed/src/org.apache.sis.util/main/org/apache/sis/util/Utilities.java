@@ -52,7 +52,7 @@ public final class Utilities extends Static {
      *       results than transforming the same coordinates with the other transform.</li>
      *
      *   <li>If the two given objects are
-     *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
+     *       {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference Systems} (CRS), then a call to
      *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2, null)</code>
      *       will return an identity operation.</li>
      * </ul>

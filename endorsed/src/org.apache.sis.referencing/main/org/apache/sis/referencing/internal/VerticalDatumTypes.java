@@ -145,7 +145,10 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
                 case ORTHOMETRIC: return 2001;      // CS_VD_Orthometric
                 case ELLIPSOIDAL: return 2002;      // CS_VD_Ellipsoidal
                 case BAROMETRIC:  return 2003;      // CS_VD_AltitudeBarometric
-                case "GEOIDAL":   return 2005;      // CS_VD_GeoidModelDerived
+                case "GEOIDAL":
+                case "GEOID":     return 2005;      // CS_VD_GeoidModelDerived
+                case "LEVELLING": // From ISO: "adjustment of a levelling network fixed to one or more tide gauges".
+                case "TIDAL":
                 case "DEPTH":     return 2006;      // CS_VD_Depth
             }
         }
@@ -208,8 +211,9 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
                     switch (abbreviation.charAt(0)) {
                         case 'h': method = ellipsoidal(); break;
                         case 'H': method = VerticalDatumType.GEOIDAL; break;
+                        case 'd': // Fall through
                         case 'D': method = VerticalDatumType.DEPTH; dir = AxisDirection.DOWN; break;
-                        default:  return VerticalDatumType.OTHER_SURFACE;
+                        default:  return null;
                     }
                     if (dir.equals(axis.getDirection())) {
                         return method;
@@ -234,13 +238,18 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
             if (CharSequences.equalsFiltered("Mean Sea Level", name, Characters.Filter.LETTERS_AND_DIGITS, true)) {
                 return VerticalDatumType.GEOIDAL;
             }
-            if (name.regionMatches(true, 0, "geoid", 0, 5)) {
-                return VerticalDatumType.GEOIDAL;
-            }
+            int i = 0;
+            do {
+                if (name.regionMatches(true, i, "geoid", 0, 5)) {
+                    return VerticalDatumType.GEOIDAL;
+                }
+                i = name.indexOf(' ', i) + 1;
+            } while (i > 0);
             if (name.equalsIgnoreCase("Tidal")) {
                 return VerticalDatumType.DEPTH;
             }
-            for (int i=0; i<name.length();) {
+            i = 0;
+            while (i < name.length()) {
                 final int c = name.codePointAt(i);
                 if (Character.isLetter(c)) {
                     return CodeLists.find(VerticalDatumType.class, new VerticalDatumTypes(name));

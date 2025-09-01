@@ -18,6 +18,7 @@ package org.apache.sis.resources.embedded;
 
 import java.util.Set;
 import java.util.Locale;
+import java.util.StringJoiner;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -30,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Provides an embedded database for the EPSG geodetic dataset and other resources.
+ * Provides an embedded database for the <abbr>EPSG</abbr> geodetic dataset and other resources.
  * Provides also a copy of the <a href="https://epsg.org/terms-of-use.html">EPSG terms of use</a>,
  * which should be accepted by users before the EPSG dataset can be installed.
  *
@@ -45,7 +46,7 @@ public class EmbeddedResources extends InstallationResources {
      * The name of the database embedded in the JAR file.
      * It must be an invalid package name, because otherwise the Java Platform Module System (JPMS) enforces
      * encapsulation in the same way as non-exported packages, which makes the database inaccessible to Derby.
-     * This naming trick is part of JPMS specification, so it should be reliable.
+     * This naming trick is part of <abbr>JPMS</abbr> specification, so it should be reliable.
      */
     static final String EMBEDDED_DATABASE = "spatial-metadata";
 
@@ -95,14 +96,13 @@ public class EmbeddedResources extends InstallationResources {
         } else {
             return null;
         }
-        final StringBuilder buffer = new StringBuilder();
-        final String lineSeparator = System.lineSeparator();
+        final var buffer = new StringJoiner(System.lineSeparator(), "", System.lineSeparator());
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 EmbeddedResources.class.getResourceAsStream(filename), "UTF-8")))
         {
             String line;
             while ((line = in.readLine()) != null) {
-                buffer.append(line).append(lineSeparator);
+                buffer.add(line);
             }
         }
         return buffer.toString();
@@ -130,14 +130,14 @@ public class EmbeddedResources extends InstallationResources {
     @Override
     public DataSource getResource(String authority, int index) {
         verifyAuthority(authority);
-        final EmbeddedDataSource ds = new EmbeddedDataSource();
+        final var ds = new EmbeddedDataSource();
         ds.setDataSourceName(Initializer.DATABASE);
         ds.setDatabaseName("classpath:SIS_DATA/Databases/" + EMBEDDED_DATABASE);
         return ds;
     }
 
     /**
-     * Unconditionally throws an exception since the embedded database is not provided as SQL scripts.
+     * Unconditionally throws an exception since the embedded database is not provided as <abbr>SQL</abbr> scripts.
      *
      * @param  authority  shall be {@code "Embedded"}.
      * @param  resource   shall be 0.

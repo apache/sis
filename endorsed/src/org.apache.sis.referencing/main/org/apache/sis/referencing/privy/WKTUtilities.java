@@ -30,8 +30,6 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
@@ -40,9 +38,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
-import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
-import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -161,34 +157,6 @@ public final class WKTUtilities extends Static {
             return (FormattableObject) object;
         } else {
             return DefaultCoordinateSystemAxis.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the given datum as a formattable object.
-     *
-     * @param  object  the datum, or {@code null}.
-     * @return the given datum as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final Datum object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return AbstractDatum.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the given geodetic reference frame as a formattable object.
-     *
-     * @param  object  the datum, or {@code null}.
-     * @return the given datum as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final GeodeticDatum object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return DefaultGeodeticDatum.castOrCopy(object);
         }
     }
 

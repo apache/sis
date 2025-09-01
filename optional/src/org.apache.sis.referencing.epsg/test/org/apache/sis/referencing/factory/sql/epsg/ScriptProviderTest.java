@@ -80,11 +80,11 @@ public final strictfp class ScriptProviderTest {
     public void testResources() throws IOException {
         final InstallationResources provider = getInstance();
         final String[] names = provider.getResourceNames("EPSG");
-        assertArrayEquals(new String[] {"Prepare", "Tables.sql", "Data.sql", "FKeys.sql", "Finish"}, names);
+        assertArrayEquals(new String[] {"Prepare.sql", "Tables.sql", "Data.sql", "FKeys.sql", "Finish.sql"}, names);
         for (int i=0; i<names.length; i++) {
             try (BufferedReader in = provider.openScript("EPSG", i)) {
                 // Just verify that we can read.
-                assertFalse(in.readLine().isEmpty());
+                assertFalse(in.readLine().isBlank());
             }
         }
     }

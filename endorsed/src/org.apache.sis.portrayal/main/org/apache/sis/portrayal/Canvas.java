@@ -32,7 +32,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.util.FactoryException;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -554,9 +553,9 @@ public class Canvas extends Observable implements Localized {
                     } else {
                         final CoordinateReferenceSystem crs = anchor.getCoordinateReferenceSystem();
                         ArgumentChecks.ensureNonNull("anchor.CRS", crs);
-                        if (!Utilities.equalsIgnoreMetadata(crs, newValue)) {
+                        if (!CRS.equivalent(crs, newValue)) {
                             MathTransform anchorToNew = poiToNew;
-                            if (!Utilities.equalsIgnoreMetadata(crs, poiCRS)) {
+                            if (!CRS.equivalent(crs, poiCRS)) {
                                 anchorToNew = findTransform(crs, newValue, true);
                             }
                             anchor = anchorToNew.transform(anchor, allocatePosition());
@@ -797,7 +796,7 @@ public class Canvas extends Observable implements Localized {
     public void setDisplayBounds(final Envelope newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(DISPLAY_BOUNDS_PROPERTY, newValue);
         final CoordinateReferenceSystem crs = newValue.getCoordinateReferenceSystem();
-        if (crs != null && !Utilities.equalsIgnoreMetadata(getDisplayCRS(), crs)) {
+        if (crs != null && !CRS.equivalent(getDisplayCRS(), crs)) {
             throw new MismatchedReferenceSystemException(errors().getString(
                     Errors.Keys.IllegalCoordinateSystem_1, IdentifiedObjects.getDisplayName(crs, getLocale())));
         }
@@ -889,7 +888,7 @@ public class Canvas extends Observable implements Localized {
              * Note 2: `oldValue` cannot be null if `multidimToObjective` is non-null.
              */
             MathTransform mt = multidimToObjective;
-            if (mt == null || !Utilities.equalsIgnoreMetadata(crs, oldValue.getCoordinateReferenceSystem())) {
+            if (mt == null || !CRS.equivalent(crs, oldValue.getCoordinateReferenceSystem())) {
                 mt = findTransform(crs, objectiveCRS, false);
             }
             objectivePOI          = mt.transform(copy, allocatePosition());
@@ -977,7 +976,7 @@ public class Canvas extends Observable implements Localized {
                     supplementalDimensions = CanvasExtent.findSupplementalDimensions(crs,
                             multidimToObjective.derivative(pointOfInterest), components);
                     augmentedObjectiveCRS = CRS.compound(components.toArray(CoordinateReferenceSystem[]::new));
-                    if (Utilities.equalsIgnoreMetadata(augmentedObjectiveCRS, crs)) {
+                    if (CRS.equivalent(augmentedObjectiveCRS, crs)) {
                         augmentedObjectiveCRS = crs;
                     }
                 } else {
@@ -1218,7 +1217,7 @@ public class Canvas extends Observable implements Localized {
             throws FactoryException, TransformException, RenderException
     {
         if (allowDisplayCRS) {
-            allowDisplayCRS = Utilities.equalsIgnoreMetadata(source, displayBounds.getCoordinateReferenceSystem());
+            allowDisplayCRS = CRS.equivalent(source, displayBounds.getCoordinateReferenceSystem());
         }
         if (allowDisplayCRS) {
             source = objectiveCRS;

@@ -47,7 +47,7 @@ final class ObjectPertinence implements Comparable<ObjectPertinence> {
     /**
      * Code of the object for which the pertinence is evaluated.
      */
-    private final int code;
+    final int code;
 
     /**
      * An estimation of the surface of the domain of validity as a negative number, or NaN if none.
@@ -86,13 +86,6 @@ final class ObjectPertinence implements Comparable<ObjectPertinence> {
     }
 
     /**
-     * Returns the code of the object for which the pertinence is evaluated.
-     */
-    final String code() {
-        return Integer.toString(code);
-    }
-
-    /**
      * Determines the ordering based on the extent.
      * This method does not take supersession in account.
      * This method is inconsistent with {@link #equals(Object)},
@@ -123,7 +116,7 @@ final class ObjectPertinence implements Comparable<ObjectPertinence> {
         do {
             redo = false;
             for (int i=0; i<elements.length; i++) {
-                for (final Integer replacement : elements[i].replacedBy) {
+                for (final int replacement : elements[i].replacedBy) {
                     for (int j=i+1; j<elements.length; j++) {
                         final ObjectPertinence candidate = elements[j];
                         if (candidate.code == replacement) {

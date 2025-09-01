@@ -1218,16 +1218,13 @@ search:     while (freeColumn < numCol) {
      * @see MatrixSIS#equals(Object, ComparisonMode)
      */
     public static boolean equals(final Matrix m1, final Matrix m2, final ComparisonMode mode) {
-        switch (mode) {
-            case STRICT:          return Objects.equals(m1, m2);
-            case BY_CONTRACT:     // Fall through
-            case IGNORE_METADATA: return equals(m1, m2, 0, false);
-            case DEBUG:           // Fall through
-            case ALLOW_VARIANT:   // Fall through
-            case APPROXIMATE:     return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
-            default: throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.UnknownEnumValue_2, ComparisonMode.class, mode));
+        if (mode.isApproximate()) {
+            return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
         }
+        if (mode == ComparisonMode.STRICT) {
+            return Objects.equals(m1, m2);
+        }
+        return equals(m1, m2, 0, false);
     }
 
     /**

@@ -164,7 +164,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
         Objects.requireNonNull(name);
-        final List<ParameterValueGroup> groups = new ArrayList<>(4);
+        final var groups = new ArrayList<ParameterValueGroup>(4);
         for (final GeneralParameterValue value : values) {
             if (value instanceof ParameterValueGroup) {
                 if (IdentifiedObjects.isHeuristicMatchForName(value.getDescriptor(), name)) {
@@ -195,7 +195,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public Parameters clone() {
-        final DefaultParameterValueGroup copy = new DefaultParameterValueGroup(descriptor);
+        final var copy = new DefaultParameterValueGroup(descriptor);
         Parameters.copy(this, copy);
         return copy;
     }
@@ -207,7 +207,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
      * <ul>
      *   <li>{@link ComparisonMode#STRICT} and {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}
      *       take in account the parameter order.</li>
-     *   <li>{@link ComparisonMode#IGNORE_METADATA} and {@link ComparisonMode#APPROXIMATE APPROXIMATE}
+     *   <li>Other comparison modes
      *       ignore the order of parameter values (but not necessarily the order of parameter descriptors).</li>
      * </ul>
      *
@@ -223,7 +223,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
         if (object != null) {
             if (mode == ComparisonMode.STRICT) {
                 if (getClass() == object.getClass()) {
-                    final UnmodifiableParameterValueGroup that = (UnmodifiableParameterValueGroup) object;
+                    final var that = (UnmodifiableParameterValueGroup) object;
                     return Objects.equals(descriptor, that.descriptor) &&
                            Objects.equals(values,     that.values);
                 }

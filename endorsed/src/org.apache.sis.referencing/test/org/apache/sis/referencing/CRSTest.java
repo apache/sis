@@ -78,9 +78,7 @@ public final class CRSTest extends TestCaseWithLogs {
     private static void verifyForCode(final SingleCRS expected, final String code) throws FactoryException {
         final CoordinateReferenceSystem actual = CRS.forCode(code);
         assertTrue(Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG), code);
-        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            assertSame(expected, actual, code);
-        }
+        assertSame(expected, actual, code);
     }
 
     /**

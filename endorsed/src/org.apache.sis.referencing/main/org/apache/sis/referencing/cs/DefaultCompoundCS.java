@@ -189,28 +189,26 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @Override
     public DefaultCompoundCS forConvention(final AxesConvention convention) {
-        synchronized (forConvention) {
-            var cs = (DefaultCompoundCS) forConvention.get(Objects.requireNonNull(convention));
-            if (cs == null) {
-                cs = this;
-                boolean changed = false;
-                final var newComponents = new CoordinateSystem[components.size()];
-                for (int i=0; i<newComponents.length; i++) {
-                    CoordinateSystem component = components.get(i);
-                    AbstractCS m = castOrCopy(component);
-                    if (m != (m = m.forConvention(convention))) {
-                        component = m;
-                        changed = true;
-                    }
-                    newComponents[i] = component;
+        DefaultCompoundCS cs = (DefaultCompoundCS) getCached(Objects.requireNonNull(convention));
+        if (cs == null) {
+            cs = this;
+            boolean changed = false;
+            final var newComponents = new CoordinateSystem[components.size()];
+            for (int i=0; i<newComponents.length; i++) {
+                CoordinateSystem component = components.get(i);
+                AbstractCS m = castOrCopy(component);
+                if (m != (m = m.forConvention(convention))) {
+                    component = m;
+                    changed = true;
                 }
-                if (changed) {
-                    cs = new DefaultCompoundCS(cs, newComponents);
-                }
-                cs = (DefaultCompoundCS) setCached(convention, cs);
+                newComponents[i] = component;
             }
-            return cs;
+            if (changed) {
+                cs = new DefaultCompoundCS(cs, newComponents);
+            }
+            cs = (DefaultCompoundCS) setCached(convention, cs);
         }
+        return cs;
     }
 
     /*
@@ -227,9 +225,7 @@ public class DefaultCompoundCS extends AbstractCS {
      * Compares this coordinate system with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override

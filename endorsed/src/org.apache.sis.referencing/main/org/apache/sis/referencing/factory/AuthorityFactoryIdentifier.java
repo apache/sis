@@ -106,7 +106,7 @@ final class AuthorityFactoryIdentifier {
     }
 
     /**
-     * The type of the factory needed.
+     * The type of the factory which is needed.
      */
     final Type type;
 
@@ -123,7 +123,7 @@ final class AuthorityFactoryIdentifier {
     private String authority;
 
     /**
-     * The version part of a URI, or {@code null} if none.
+     * The version part of a <abbr>URI</abbr>, or {@code null} if none.
      * If the version contains alphabetic characters, they should be in lower case.
      *
      * <h4>Example</h4>
@@ -139,6 +139,10 @@ final class AuthorityFactoryIdentifier {
      * Creates a new identifier for a factory of the given type, authority and version.
      * The given authority shall be already in upper cases and the version in lower cases
      * (this is not verified by this constructor).
+     *
+     * @param  type       the type of the factory which is needed.
+     * @param  authority  the authority of the factory, in upper case.
+     * @param  version    the version part of a <abbr>URI</abbr>, or {@code null} if none.
      */
     private AuthorityFactoryIdentifier(final Type type, final String authority, final String version) {
         this.type      = type;
@@ -164,6 +168,11 @@ final class AuthorityFactoryIdentifier {
     /**
      * Creates a new identifier for a factory of the given type, authority and version.
      * Only the version can be null.
+     *
+     * @param  type       the type of the factory which is needed.
+     * @param  authority  the authority of the factory, case-insensitive.
+     * @param  version    the version part of a <abbr>URI</abbr>, or {@code null} if none.
+     * @return identifier for a factory of the given type, authority and version.
      */
     static AuthorityFactoryIdentifier create(final Type type, final String authority, final String version) {
         return new AuthorityFactoryIdentifier(type, authority.toUpperCase(IDENTIFIER_LOCALE),
@@ -173,6 +182,9 @@ final class AuthorityFactoryIdentifier {
     /**
      * Returns an identifier for a factory of the same type as this identifier,
      * but a different authority and no version.
+     *
+     * @param  newAuthority  the authority of the factory, case-insensitive.
+     * @return identifier for a factory of the given authority.
      */
     AuthorityFactoryIdentifier unversioned(final String newAuthority) {
         if (version == null && newAuthority.equals(authority)) {
@@ -201,6 +213,9 @@ final class AuthorityFactoryIdentifier {
 
     /**
      * Creates a new identifier for the same authority and version than this identifier, but a different factory.
+     *
+     * @param  type       the type of the factory which is needed.
+     * @return identifier for a factory of the given type.
      */
     AuthorityFactoryIdentifier newType(final Type newType) {
         return new AuthorityFactoryIdentifier(newType, authority, version);

@@ -483,6 +483,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
                         alternative,
                         concatenate(actualParameters,  ContextualParameters.MatrixRole.DENORMALIZATION,
                                     inverseParameters, ContextualParameters.MatrixRole.INVERSE_DENORMALIZATION));
+                ConcatenatedTransform.setInverse(inverse, this);
             } else {
                 inverse = simple;
             }

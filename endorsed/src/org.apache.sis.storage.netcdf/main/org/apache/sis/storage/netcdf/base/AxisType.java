@@ -26,7 +26,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * Type of coordinate system axis, in the order they should appears for a "normalized" coordinate reference system.
+ * Type of coordinate system axis, in the order they should appear for a "normalized" coordinate reference system.
  * The enumeration name matches the name of the {@code "axis"} attribute in CF-convention.
  * Enumeration order is the desired order of coordinate values.
  *

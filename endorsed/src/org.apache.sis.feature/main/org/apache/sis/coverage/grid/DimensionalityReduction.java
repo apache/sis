@@ -826,7 +826,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
         CoordinateReferenceSystem crs = null;
         if (reduced.isDefined(GridGeometry.CRS) && sourceGeometry.isDefined(GridGeometry.CRS)) {
             final CoordinateReferenceSystem reducedCRS = reduced.getCoordinateReferenceSystem();
-            if (Utilities.equalsIgnoreMetadata(reducedGeometry.getCoordinateReferenceSystem(), reducedCRS)) {
+            if (CRS.equivalent(reducedGeometry.getCoordinateReferenceSystem(), reducedCRS)) {
                 crs = sourceGeometry.getCoordinateReferenceSystem();
             } else {
                 FactoryException cause = null;

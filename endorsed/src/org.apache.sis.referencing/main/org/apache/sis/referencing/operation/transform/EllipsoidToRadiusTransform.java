@@ -204,10 +204,14 @@ public class EllipsoidToRadiusTransform extends AbstractMathTransform implements
      * @return the conversion from two-dimensional to three-dimensional spherical coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
-    public static MathTransform createGeodeticConversion(final MathTransformFactory factory, final Ellipsoid surface)
+    public static MathTransform createGeodeticConversion(MathTransformFactory factory, final Ellipsoid surface)
             throws FactoryException
     {
         if (Formulas.isEllipsoidal(surface)) try {
+            if (factory instanceof DefaultMathTransformFactory) {
+                factory = ((DefaultMathTransformFactory) factory).caching(false);
+                // We need non-shared instance because we will modify the inverse.
+            }
             final var kernel = new EllipsoidToRadiusTransform(surface);
             final MathTransform complete = kernel.context.completeTransform(factory, kernel);
             /*

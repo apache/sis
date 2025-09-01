@@ -48,6 +48,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Printable;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -632,11 +633,11 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         /*
          * We must close the factories from outside the synchronized block.
          */
-        confirmClose(factories);
         try {
+            confirmClose(factories);
             close(factories);
         } catch (Exception exception) {
-            unexpectedException("closeExpired", exception);
+            unexpectedException("closeExpired", Exceptions.unwrap(exception));
         }
         /*
          * If the queue of Data Access Objects (DAO) become empty, this means that this `ConcurrentAuthorityFactory`
@@ -1842,6 +1843,13 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         }
 
         /**
+         * Returns the factory given at construction time.
+         */
+        private ConcurrentAuthorityFactory<?> factory() {
+            return (ConcurrentAuthorityFactory<?>) factory;
+        }
+
+        /**
          * Acquires a new {@linkplain #finder}.
          * The {@link #release()} method must be invoked in a {@code finally} block after the call to {@code acquire}.
          * The pattern must be as below (note that the call to {@code acquire()} is inside the {@code try} block):
@@ -1859,7 +1867,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             assert Thread.holdsLock(this);
             assert (acquireCount == 0) == (finder == null) : acquireCount;
             if (acquireCount == 0) {
-                final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory<?>) factory).getDataAccess();
+                final GeodeticAuthorityFactory delegate = factory().getDataAccess();
                 /*
                  * Set `acquireCount` only after we succeed in fetching the factory, and before any operation on it.
                  * The intent is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
@@ -1884,7 +1892,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             }
             if (--acquireCount == 0) {
                 finder = null;
-                ((ConcurrentAuthorityFactory<?>) factory).release(null, null, null);
+                factory().release(null, null, null);
             }
         }
 
@@ -1893,7 +1901,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * object than the specified one. This method delegates to the data access object.
          */
         @Override
-        protected synchronized Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+        protected synchronized Iterable<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
             try {
                 acquire();
                 return finder.getCodeCandidates(object);
@@ -1903,35 +1911,78 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         }
 
         /**
+         * Returns the index in the cached {@code Set<IdentifiedObject>[]} array for a result using the given finder.
+         * The index depends on the finder configuration. The argument should be either {@link #finder} if non-null,
+         * or {@code this} otherwise.
+         */
+        private static int index(final IdentifiedObjectFinder finder) {
+            int index = finder.getSearchDomain().ordinal();
+            if (finder.isIgnoringAxes()) index += DOMAIN_COUNT;
+            return index;
+        }
+
+        /**
          * Returns the cached value for the given object, or {@code null} if none.
+         * This is checked by {@link #find(IdentifiedObject)} before actual search.
          * The returned set (if non-null) is unmodifiable.
+         *
+         * @param  object  the user-specified object to search.
+         * @return the cached result of the find operation, or {@code null} if none.
          */
         @Override
         final Set<IdentifiedObject> getFromCache(final IdentifiedObject object) {
-            final Map<IdentifiedObject, Set<IdentifiedObject>[]> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
+            // `finder` should never be null since this method is not invoked directly by this Finder.
+            return getFromCache(object, index(finder));
+        }
+
+        /**
+         * Implementation of {@link #getFromCache(IdentifiedObject)} with the specified index to use in the cache.
+         * The index depends on the finder configuration.
+         *
+         * @param  object  the user-specified object to search.
+         * @param  index   value of {@link #index(IdentifiedObjectFinder)} or custom slot.
+         * @return the cached result of the find operation, or {@code null} if none.
+         */
+        private Set<IdentifiedObject> getFromCache(final IdentifiedObject object, final int index) {
+            final Map<IdentifiedObject, Set<IdentifiedObject>[]> findPool = factory().findPool;
             synchronized (findPool) {
                 final Set<IdentifiedObject>[] entry = findPool.get(object);
                 if (entry != null) {
-                    // `finder` may be null if this method is invoked directly by this Finder.
-                    return entry[index(finder != null ? finder : this)];
+                    return entry[index];
                 }
             }
             return null;
         }
 
         /**
-         * Stores the given result in the cache. This method wraps or copies the given set
-         * in an unmodifiable set and returns the result.
+         * Stores the given result in the cache. This method copies the given set in a new unmodifiable
+         * set and returns the result. The copy is needed because, with the current implementation of
+         * <abbr>EPSG</abbr> factory, {@code result} may be a lazy set with a connection to the database.
+         *
+         * @param  object  the user-specified object which was searched.
+         * @param  result  the search result. It will be copied.
+         * @return a set with the same content as {@code result}.
          */
         @Override
-        final Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
-            final Map<IdentifiedObject, Set<IdentifiedObject>[]> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
-            result = CollectionsExt.unmodifiableOrCopy(result);
+        final Set<IdentifiedObject> cache(final IdentifiedObject object, final Set<IdentifiedObject> result) {
+            // `finder` should never be null since this method is not invoked directly by this Finder.
+            return cache(object, CollectionsExt.copyPreserveOrder(result), index(finder));
+        }
+
+        /**
+         * Implementation of {@link #cache(IdentifiedObject, Set)} with the specified index to use in the cache.
+         * The index depends on the finder configuration.
+         *
+         * @param  object  the user-specified object which was searched.
+         * @param  result  the search result. The copy, if needed, shall be done by the caller.
+         * @param  index   value of {@link #index(IdentifiedObjectFinder)} or custom slot.
+         * @return a set with the same content as {@code result}.
+         */
+        private Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result, final int index) {
+            final Map<IdentifiedObject, Set<IdentifiedObject>[]> findPool = factory().findPool;
             synchronized (findPool) {
-                // `finder` should never be null since this method is not invoked directly by this Finder.
-                final int i = index(finder);
                 final Set<IdentifiedObject>[] entry = findPool.computeIfAbsent(object, Finder::createCacheEntry);
-                final Set<IdentifiedObject> existing = entry[i];
+                final Set<IdentifiedObject> existing = entry[index];
                 if (existing != null) {
                     return existing;
                 }
@@ -1941,36 +1992,60 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                         break;
                     }
                 }
-                entry[i] = result;
+                entry[index] = result;
             }
             return result;
         }
 
         /**
          * Creates an initially empty cache entry for the given object.
+         * Used in lambda expression and defined as a separated method because of generic type.
+         * The {@code object} argument is present only for having the required method signature.
+         *
+         * @param  object  the user-specified object which was searched.
+         * @return a new array to use as a cache for the specified object.
          */
         @SuppressWarnings({"unchecked", "rawtypes"})            // Generic array creation.
         private static Set<IdentifiedObject>[] createCacheEntry(IdentifiedObject object) {
-            return new Set[DOMAIN_COUNT * 2];
-        }
-
-        /**
-         * Returns the index in the cached {@code Set<IdentifiedObject>[]} array
-         * for a result using the given finder.
-         */
-        private static int index(final IdentifiedObjectFinder finder) {
-            int i = finder.getSearchDomain().ordinal();
-            if (finder.isIgnoringAxes()) i += DOMAIN_COUNT;
-            return i;
+            return new Set[DOMAIN_COUNT * 3];
         }
 
         /**
          * Looks up an object from this authority factory which is approximately equal to the specified object.
          * The default implementation performs the same lookup as the Data Access Object and caches the result.
+         *
+         * @param  object  the object looked up.
+         * @return the identified object, or {@code null} if none or ambiguous.
+         */
+        @Override
+        public IdentifiedObject findSingleton(final IdentifiedObject object) throws FactoryException {
+            final int index = index(this) + 2*DOMAIN_COUNT;
+            Set<IdentifiedObject> result = getFromCache(object, index);
+            if (result == null) {
+                synchronized (this) {
+                    try {
+                        acquire();
+                        result = CollectionsExt.singletonOrEmpty(finder.findSingleton(object));
+                    } finally {
+                        release();
+                    }
+                }
+                cache(object, result, index);
+            }
+            factory().findPoolLatestQueries.markAsUsed(object);
+            return CollectionsExt.first(result);
+        }
+
+        /**
+         * Looks up objects from this authority factory which are approximately equal to the specified object.
+         * The default implementation performs the same lookup as the Data Access Object and caches the result.
+         *
+         * @param  object  the object looked up.
+         * @return the identified objects, or an empty set if not found.
          */
         @Override
         public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
-            Set<IdentifiedObject> candidate = getFromCache(object);
+            Set<IdentifiedObject> candidate = getFromCache(object, index(this));
             if (candidate == null) {
                 /*
                  * Nothing has been found in the cache. Delegates the search to the Data Access Object.
@@ -1992,7 +2067,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
              * We keep a strong reference only for the top-level object, not for the intermediate searches,
              * because strong references to intermediate objects already exist in the top-level object.
              */
-            ((ConcurrentAuthorityFactory<?>) factory).findPoolLatestQueries.markAsUsed(object);
+            factory().findPoolLatestQueries.markAsUsed(object);
             return candidate;
         }
     }
@@ -2168,6 +2243,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             confirmClose(factories);
             close(factories);                       // Must be invoked outside the synchronized block.
         } catch (Exception e) {
+            e = Exceptions.unwrap(e);
             if (e instanceof FactoryException) {
                 throw (FactoryException) e;
             } else {

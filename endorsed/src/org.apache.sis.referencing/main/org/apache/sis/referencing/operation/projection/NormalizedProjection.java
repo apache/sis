@@ -300,6 +300,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * <p>Some common names for this parameter are:</p>
          * <ul>
          *   <li>Scale factor at natural origin</li>
+         *   <li>Scale factor at projection centre</li>
          *   <li>Scale factor on initial line</li>
          *   <li>Scale factor on pseudo standard parallel</li>
          * </ul>
@@ -924,6 +925,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 }
                 // Fall through for comparing the eccentricity.
             }
+            case COMPATIBILITY:
             case IGNORE_METADATA: {
                 /*
                  * There is no need to compare both `eccentricity` and `eccentricitySquared` since the former
@@ -960,8 +962,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                  */
                 final double e = max(eccentricity, that.eccentricity);
                 if (!Numerics.epsilonEqual(eccentricity, that.eccentricity, ANGULAR_TOLERANCE * (1/e - e))) {
-                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
-                            "eccentricity", eccentricity, that.eccentricity);
+                    assert (mode != ComparisonMode.DEBUG)
+                            : Numerics.messageForDifference("eccentricity", eccentricity, that.eccentricity);
                     return false;
                 }
                 break;

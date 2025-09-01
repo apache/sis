@@ -731,15 +731,17 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *           is considered ignorable metadata while the explicit arguments given to the constructor (if any) are
      *           considered non-ignorable. Note that there is some exceptions to this rule of thumb — see
      *           <cite>When object name matter</cite> below.</td></tr>
+     *   <tr><td>{@link ComparisonMode#COMPATIBILITY COMPATIBILITY}:</td>
+     *       <td>Same as {@code IGNORE_METADATA}, with some tolerance about structural changes due to historical reasons.</td></tr>
      *   <tr><td>{@link ComparisonMode#APPROXIMATE APPROXIMATE}:</td>
-     *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
+     *       <td>Same as {@code COMPATIBILITY}, with some tolerance threshold on numerical values.</td></tr>
      *   <tr><td>{@link ComparisonMode#ALLOW_VARIANT ALLOW_VARIANT}:</td>
      *       <td>Same as {@code APPROXIMATE}, but ignores coordinate system axes.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
      * </table>
      *
-     * The main guideline is that if {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true},
+     * The main guideline is that if {@code sourceCRS.equals(targetCRS, COMPATIBILITY)} returns {@code true},
      * then the transformation from {@code sourceCRS} to {@code targetCRS} should be the identity transform
      * even if the two CRS do not have the same name.
      *
@@ -809,15 +811,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                        deepEquals(getDomains(),     Legacy.getDomains(that), mode) &&
                        deepEquals(getRemarks(),     that.getRemarks(),     mode);
             }
-            case IGNORE_METADATA:
-            case APPROXIMATE:
-            case ALLOW_VARIANT:
-            case DEBUG: {
-                return implementsSameInterface(object);
-            }
             default: {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.UnknownEnumValue_2, ComparisonMode.class, mode));
+                return implementsSameInterface(object);
             }
         }
     }

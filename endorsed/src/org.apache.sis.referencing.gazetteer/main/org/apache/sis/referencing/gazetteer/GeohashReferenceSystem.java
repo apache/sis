@@ -37,7 +37,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.privy.Formulas;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
@@ -508,10 +507,10 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          */
         private DirectPosition toGeographic(final DirectPosition position) throws FactoryException, TransformException {
             final CoordinateReferenceSystem ps = position.getCoordinateReferenceSystem();
-            if (ps == null || normalizedCRS.equals(ps, ComparisonMode.IGNORE_METADATA)) {
+            if (ps == null || normalizedCRS.equals(ps, ComparisonMode.COMPATIBILITY)) {
                 return position;
             }
-            if (lastOp == null || !Utilities.equalsIgnoreMetadata(lastOp.getSourceCRS(), ps)) {
+            if (lastOp == null || !CRS.equivalent(lastOp.getSourceCRS(), ps)) {
                 lastOp = CRS.findOperation(ps, normalizedCRS, null);
             }
             return lastOp.getMathTransform().transform(position, null);

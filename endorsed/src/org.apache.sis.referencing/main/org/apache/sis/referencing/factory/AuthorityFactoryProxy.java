@@ -184,6 +184,9 @@ abstract class AuthorityFactoryProxy<T> {
                 return factory.getDescriptionText(classe, code).orElse(null);
             }
             @Override InternationalString createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                if (factory instanceof GeodeticAuthorityFactory) {
+                    return ((GeodeticAuthorityFactory) factory).getDescriptionText(classe, code).orElse(null);
+                }
                 return factory.getDescriptionText(code);
             }
             @Override AuthorityFactoryProxy<InternationalString> specialize(String typeName) {

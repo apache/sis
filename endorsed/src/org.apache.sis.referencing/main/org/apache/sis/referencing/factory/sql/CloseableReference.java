@@ -47,6 +47,12 @@ final class CloseableReference extends WeakReference<AuthorityCodes> implements 
     private final Statement[] statements;
 
     /**
+     * Whether the referenced {@link AuthorityCodes} has been given to the user.
+     * If {@code false}, we can invoke {@link #close()} without waiting for the garbage collection.
+     */
+    boolean published;
+
+    /**
      * Creates a new phantom reference which will close the given statements
      * when the given referenced object will be garbage collected.
      */

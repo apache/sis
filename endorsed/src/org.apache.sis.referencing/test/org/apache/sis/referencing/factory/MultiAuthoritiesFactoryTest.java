@@ -196,7 +196,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
         assertSame(HardCodedDatum.SPHERE,               factory.createGeodeticDatum("MOCK: 0:6047"));
         assertSame(Extents       .WORLD,                factory.createExtent       ("MOCK: 2.3 : 1262"));
         assertSame(Units         .METRE,                factory.createUnit         (" MoCK : : 9001 "));
-        assertEquals("Greenwich", factory.getDescriptionText(IdentifiedObject.class, "MOCK:8901").get().toString());
+        assertEquals("Greenwich", factory.getDescriptionText(PrimeMeridian.class, "MOCK:8901").get().toString());
 
         var e = assertThrows(NoSuchAuthorityFactoryException.class,
                 () -> factory.createGeodeticDatum("MOCK2:4326"),

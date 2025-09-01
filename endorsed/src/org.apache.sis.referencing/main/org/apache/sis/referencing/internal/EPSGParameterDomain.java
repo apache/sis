@@ -23,9 +23,9 @@ import org.apache.sis.util.privy.CollectionsExt;
 
 
 /**
- * The domain of values of an EPSG parameter which accepts different units.
+ * The domain of values of an <abbr>EPSG</abbr> parameter which accepts different units.
  * An example is the EPSG:8617 (<cite>Coordinate 1 of evaluation point</cite>) parameter,
- * which may be used in the EPSG database with either metres or degrees units.
+ * which may be used in the <abbr>EPSG</abbr> database with either metres or degrees units.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

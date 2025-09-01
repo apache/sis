@@ -25,7 +25,10 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.privy.LegacyNamespaces;
@@ -93,10 +96,9 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private static final long serialVersionUID = 380347456670516572L;
 
     /**
-     * The type of this vertical datum.
-     * If {@code null}, a value will be inferred from the name by {@link #type()}.
+     * The type of this vertical datum, or {@code null} if unspecified.
+     * In the latter case, a default will be inferred when requested.
      *
-     * @see #type()
      * @see #getVerticalDatumType()
      */
     private VerticalDatumType type;
@@ -201,28 +203,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Returns the type of this datum, or infers the type from the datum name if no type were specified.
-     * The latter case occurs after unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
-     * It may also happen if the datum were created using reflection.
-     *
-     * <p>This method uses heuristic rules and may be changed in any future SIS version.</p>
-     *
-     * <p>No synchronization needed; this is not a problem if this value is computed twice.
-     * This method returns only existing immutable instances.</p>
-     *
-     * @see #getVerticalDatumType()
-     * @see #getTypeElement()
-     */
-    private VerticalDatumType type() {
-        VerticalDatumType t = type;
-        if (t == null) {
-            final ReferenceIdentifier name = super.getName();
-            type = t = VerticalDatumTypes.fromDatum(name != null ? name.getCode() : null, super.getAlias(), null);
-        }
-        return t;
-    }
-
-    /**
      * Returns the type of this vertical datum.
      *
      * <h4>Historical note:</h4>
@@ -235,7 +215,27 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     @Override
     public VerticalDatumType getVerticalDatumType() {
-        return type();
+        if (type == null) {
+            // Do not store the value because it depends on the context (whether we know the axis).
+            return VerticalDatumTypes.fromDatum(super.getName().getCode(), super.getAlias(), null);
+        }
+        return type;
+    }
+
+    /**
+     * Returns the datum type if it was explicitly specified, or otherwise tries to guess it.
+     * This method may return {@code null} if it cannot guess the method. This is used for compatibility
+     * with legacy formats such as WKT 1 or GML 3.1, before realization method became a formal property.
+     */
+    private VerticalDatumType getOrGuessMethod(final FormattableObject parent) {
+        if (type != null && type != VerticalDatumType.OTHER_SURFACE) {
+            return type;
+        }
+        CoordinateSystemAxis axis = null;
+        if (parent instanceof CoordinateReferenceSystem) {
+            axis = ((CoordinateReferenceSystem) parent).getCoordinateSystem().getAxis(0);
+        }
+        return VerticalDatumTypes.fromDatum(getName().getCode(), getAlias(), axis);
     }
 
     /**
@@ -327,9 +327,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Compares this vertical datum with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @hidden because nothing new to said.
@@ -345,7 +343,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         switch (mode) {
             case STRICT: {
                 final var other = (DefaultVerticalDatum) object;
-                return type().equals(other.type());
+                return Objects.equals(type, other.type);
             }
             case BY_CONTRACT: {
                 final var other = (VerticalDatum) object;
@@ -373,7 +371,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + type().hashCode();
+        return super.computeHashCode() + Objects.hashCode(type);
     }
 
     /**
@@ -393,7 +391,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
-            formatter.append(VerticalDatumTypes.toLegacyCode(type()));
+            formatter.append(VerticalDatumTypes.toLegacyCode(getOrGuessMethod(formatter.getEnclosingElement(1))));
             return WKTKeywords.Vert_Datum;
         }
         return formatter.shortOrLong(WKTKeywords.VDatum, WKTKeywords.VerticalDatum);
@@ -431,7 +429,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     @XmlElement(name = "verticalDatumType")
     private VerticalDatumType getTypeElement() {
-        return Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2) ? null : getVerticalDatumType();
+        if (Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2)) {
+            return null;
+        }
+        return getOrGuessMethod(null);
     }
 
     /**

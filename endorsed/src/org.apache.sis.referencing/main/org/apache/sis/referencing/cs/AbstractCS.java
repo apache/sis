@@ -19,7 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.Arrays;
-import java.util.ConcurrentModificationException;
+import java.util.Objects;
 import java.util.logging.Logger;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -135,7 +135,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @see #forConvention(AxesConvention)
      */
-    final EnumMap<AxesConvention,AbstractCS> forConvention;
+    private final EnumMap<AxesConvention,AbstractCS> forConvention;
 
     /**
      * Creates the value to assign to the {@link #forConvention} map by constructors.
@@ -428,27 +428,37 @@ next:   for (final CoordinateSystemAxis axis : axes) {
     }
 
     /**
-     * Sets the CS for the given axes convention.
+     * Returns the cached Coordinate System (<abbr>CS</abbr>) for the given axes convention.
      *
-     * @param  cs  the CS to cache.
+     * @return the cached <abbr>CS</abbr>, or {@code null} if none.
+     */
+    final AbstractCS getCached(final AxesConvention convention) {
+        synchronized (forConvention) {
+            return forConvention.get(convention);
+        }
+    }
+
+    /**
+     * Sets the Coordinate System (<abbr>CS</abbr>) for the given axes convention.
+     *
+     * @param  cs  the <abbr>CS</abbr> to cache.
      * @return the cached CS. May be different than the given {@code cs} if an existing instance has been found.
      */
-    final AbstractCS setCached(final AxesConvention convention, AbstractCS cs) {
-        assert Thread.holdsLock(forConvention);
-        /*
-         * It happens often that the CRS created by RIGHT_HANDED, DISPLAY_ORIENTED and NORMALIZED are the same.
-         * Sharing the same instance not only saves memory, but can also makes future comparisons faster.
-         */
-        for (final AbstractCS existing : forConvention.values()) {
-            if (cs.equals(existing, ComparisonMode.IGNORE_METADATA)) {
-                cs = existing;
-                break;
-            }
+    final AbstractCS setCached(final AxesConvention convention, final AbstractCS cs) {
+        synchronized (forConvention) {
+            /*
+             * It happens often that the CRS created by RIGHT_HANDED, DISPLAY_ORIENTED and NORMALIZED are the same.
+             * Sharing the same instance not only saves memory, but can also makes future comparisons faster.
+             */
+            return forConvention.computeIfAbsent(convention, (c) -> {
+                for (final AbstractCS existing : forConvention.values()) {
+                    if (cs.equals(existing, ComparisonMode.IGNORE_METADATA)) {
+                        return existing;
+                    }
+                }
+                return cs;
+            });
         }
-        if (forConvention.put(convention, cs) != null) {
-            throw new ConcurrentModificationException();    // Should never happen, unless we have a synchronization bug.
-        }
-        return cs;
     }
 
     /**
@@ -461,19 +471,18 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
      */
     public AbstractCS forConvention(final AxesConvention convention) {
-        synchronized (forConvention) {
-            AbstractCS cs = forConvention.get(convention);
+        AbstractCS cs = getCached(Objects.requireNonNull(convention));
+        if (cs == null) {
+            // Need to be outside the synchronized block because it may query the EPSG database.
+            cs = Normalizer.forConvention(this, convention);
             if (cs == null) {
-                cs = Normalizer.forConvention(this, convention);
-                if (cs == null) {
-                    cs = this;          // This coordinate system is already normalized.
-                } else if (convention != AxesConvention.POSITIVE_RANGE) {
-                    cs = cs.resolveEPSG(this);
-                }
-                cs = setCached(convention, cs);
+                cs = this;          // This coordinate system is already normalized.
+            } else if (convention != AxesConvention.POSITIVE_RANGE) {
+                cs = cs.resolveEPSG(this);
             }
-            return cs;
+            cs = setCached(convention, cs);
         }
+        return cs;
     }
 
     /**
@@ -554,15 +563,12 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      * Compares the specified object with this coordinate system for equality.
      *
      * @param  object  the object to compare to {@code this}.
-     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
-     *                 properties relevant to coordinate transformations.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @hidden because nothing new to said.
      */
     @Override
-    @SuppressWarnings({"AssertWithSideEffects", "fallthrough"})
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;                                            // Slight optimization.
@@ -575,23 +581,22 @@ next:   for (final CoordinateSystemAxis axis : axes) {
                 // No need to check the class - this check has been done by super.equals(…).
                 return Arrays.equals(axes, ((AbstractCS) object).axes);
             }
-            case DEBUG: {
-                final int d1, d2;
-                assert (d1 = axes.length) == (d2 = ((CoordinateSystem) object).getDimension())
-                        : Errors.format(Errors.Keys.MismatchedDimension_2, d1, d2);
-                // Fall through
+            case DEBUG:
+            case ALLOW_VARIANT: {
+                final int dimension = getDimension();
+                final int that = ((CoordinateSystem) object).getDimension();
+                assert dimension == that || mode != ComparisonMode.DEBUG : Errors.format(Errors.Keys.MismatchedDimension_2, dimension, that);
+                return dimension == that;
             }
             default: {
-                final CoordinateSystem that = (CoordinateSystem) object;
+                final var that = (CoordinateSystem) object;
                 final int dimension = getDimension();
                 if (dimension != that.getDimension()) {
                     return false;
                 }
-                if (!mode.allowsVariant()) {
-                    for (int i=0; i<dimension; i++) {
-                        if (!Utilities.deepEquals(getAxis(i), that.getAxis(i), mode)) {
-                            return false;
-                        }
+                for (int i=0; i<dimension; i++) {
+                    if (!Utilities.deepEquals(getAxis(i), that.getAxis(i), mode)) {
+                        return false;
                     }
                 }
                 return true;

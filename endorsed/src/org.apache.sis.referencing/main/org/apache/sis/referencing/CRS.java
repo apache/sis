@@ -27,6 +27,7 @@ import java.util.logging.LogRecord;
 import java.time.temporal.Temporal;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.Geometry;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CartesianCS;
@@ -51,6 +52,8 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.BoundingPolygon;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
@@ -85,6 +88,7 @@ import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
@@ -98,6 +102,8 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 // Specific to the main branch:
 import org.apache.sis.coordinate.DefaultCoordinateMetadata;
+import org.apache.sis.referencing.DefaultObjectDomain;
+import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
@@ -179,6 +185,8 @@ public final class CRS extends Static {
      *   <tr><td>CRS:83</td>        <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:84</td>        <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:88</td>        <td>{@link CommonCRS.Vertical#NAVD88 NAVD88}</td><td>Vertical</td><td>North American Vertical Datum 1988 height</td></tr>
+     *   <tr><td>EPSG:3395</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / World Mercator</td></tr>
+     *   <tr><td>EPSG:3857</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Projected</td>       <td>WGS 84 / Pseudo-Mercator</td></tr>
      *   <tr><td>EPSG:4230</td>     <td>{@link CommonCRS#ED50   ED50}</td>   <td>Geographic</td>      <td>European Datum 1950</td></tr>
      *   <tr><td>EPSG:4258</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference System 1989</td></tr>
      *   <tr><td>EPSG:4267</td>     <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>North American Datum 1927</td></tr>
@@ -415,8 +423,8 @@ public final class CRS extends Static {
      *     {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCoordinateReferenceSystem(String) create a CRS}
      *     for that identifier, then:
      *     <ul>
-     *       <li>If the CRS defined by the authority is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
-     *         to the given CRS, then this method returns silently the <em>authoritative</em> CRS.</li>
+     *       <li>If the CRS defined by the authority is {@linkplain #equivalent equivalent} to the given CRS,
+     *         then this method returns silently the <em>authoritative</em> CRS.</li>
      *       <li>Otherwise if the CRS defined by the authority is equal, ignoring axis order and units, to the given CRS,
      *         then this method returns a <em>new</em> CRS derived from the authoritative one but with same
      *         {@linkplain org.apache.sis.referencing.cs.AxesConvention axes convention} than the given CRS.
@@ -429,8 +437,8 @@ public final class CRS extends Static {
      *       {@linkplain org.apache.sis.referencing.factory.IdentifiedObjectFinder searches for an equivalent CRS}
      *       defined by the authority factory. If such CRS is found, then:
      *     <ul>
-     *       <li>If the CRS defined by the authority is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
-     *         to the given CRS, then this method returns silently the <em>authoritative</em> CRS.</li>
+     *       <li>If the CRS defined by the authority is {@linkplain #equivalent equivalent} to the given CRS,
+     *         then this method returns silently the <em>authoritative</em> CRS.</li>
      *       <li>Otherwise if the CRS defined by the authority is equal, ignoring axis order and units, to the given CRS,
      *         then this method returns silently a <em>new</em> CRS derived from the authoritative one but with same
      *         {@linkplain org.apache.sis.referencing.cs.AxesConvention axes convention} than the given CRS.</li>
@@ -476,6 +484,31 @@ public final class CRS extends Static {
             }
         }
         return crs;
+    }
+
+    /**
+     * Returns whether the given Coordinate Reference Systems can be considered as equivalent.
+     * Two <abbr>CRS</abbr>s are considered equivalent if they may have some differences in metadata or data structure,
+     * but replacing one <abbr>CRS</abbr> by the other should not change the input and output coordinate values in operations.
+     *
+     * <h4>Implementation note</h4>
+     * This is a convenience method for the following method call:
+     *
+     * {@snippet lang="java" :
+     *     return deepEquals(object1, object2, ComparisonMode.IGNORE_METADATA);
+     *     }
+     *
+     * @param  object1  the first object to compare (may be null).
+     * @param  object2  the second object to compare (may be null).
+     * @return {@code true} if both objects are equivalent.
+     *
+     * @see ComparisonMode#COMPATIBILITY
+     * @see Utilities#equalsIgnoreMetadata(Object, Object)
+     *
+     * @since 1.5
+     */
+    public static boolean equivalent(final CoordinateReferenceSystem object1, final CoordinateReferenceSystem object2) {
+        return Utilities.deepEquals(object1, object2, ComparisonMode.COMPATIBILITY);
     }
 
     /**
@@ -796,6 +829,7 @@ public final class CRS extends Static {
      * @return the accuracy estimation (always in meters), or NaN if unknown.
      *
      * @see #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
+     * @see DatumOrEnsemble#getAccuracy(IdentifiedObject)
      *
      * @since 0.7
      */
@@ -877,6 +911,39 @@ public final class CRS extends Static {
     public static Envelope getDomainOfValidity(final CoordinateReferenceSystem crs) {
         Envelope envelope = null;
         GeneralEnvelope merged = null;
+        if (crs instanceof AbstractCRS) {
+            for (final DefaultObjectDomain domain : ((AbstractCRS) crs).getDomains()) {
+                final Extent domainOfValidity = domain.getDomainOfValidity();
+                if (domainOfValidity != null) {
+                    for (final GeographicExtent extent : domainOfValidity.getGeographicElements()) {
+                        if (extent instanceof BoundingPolygon && !Boolean.FALSE.equals(extent.getInclusion())) {
+                            for (final Geometry geometry : ((BoundingPolygon) extent).getPolygons()) {
+                                if (!(geometry instanceof org.apache.sis.pending.geoapi.geometry.Geometry)) continue;
+                                final Envelope candidate = ((org.apache.sis.pending.geoapi.geometry.Geometry) geometry).getEnvelope();
+                                if (candidate != null) {
+                                    final CoordinateReferenceSystem sourceCRS = candidate.getCoordinateReferenceSystem();
+                                    if (sourceCRS == null || equivalent(sourceCRS, crs)) {
+                                        if (envelope == null) {
+                                            envelope = candidate;
+                                        } else {
+                                            if (merged == null) {
+                                                envelope = merged = new GeneralEnvelope(envelope);
+                                            }
+                                            merged.add(envelope);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        /*
+         * If no envelope was found, uses the geographic bounding box as a fallback. We will
+         * need to transform it from WGS84 to the supplied CRS. This step was not required in
+         * the previous block because the latter selected only envelopes in the right CRS.
+         */
         /* if (envelope == null) */ {   // Condition needed on other branches but not on trunk.
             final GeographicBoundingBox bounds = getGeographicBoundingBox(crs);
             if (bounds != null && !Boolean.FALSE.equals(bounds.getInclusion())) {

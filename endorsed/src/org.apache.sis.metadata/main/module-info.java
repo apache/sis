@@ -76,6 +76,10 @@ module org.apache.sis.metadata {
     /*
      * Internal API open only to other Apache SIS modules.
      */
+    exports org.apache.sis.pending.geoapi.geometry to
+            org.apache.sis.referencing,
+            org.apache.sis.feature;
+
     exports org.apache.sis.pending.geoapi.temporal to
             org.apache.sis.feature;
 

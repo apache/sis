@@ -67,3 +67,13 @@ CREATE VIEW "Operation Method Type dimension" AS
  ORDER BY IS_CONVERSION;
 
 COMMENT ON VIEW "Operation Method Type dimension" IS 'Number of dimensions of Operation Method types.';
+
+
+--
+-- Summary of types of datum members in datum ensembles.
+--
+CREATE VIEW "Datum Member Type" AS
+ SELECT DISTINCT DATUM_TYPE
+ FROM "Datum" WHERE DATUM_CODE IN (SELECT DATUM_CODE FROM "Datum Ensemble Member");
+
+COMMENT ON VIEW "Datum Member Type" IS 'Types of datum members in datum ensembles.';

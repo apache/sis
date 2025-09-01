@@ -14,37 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.factory.sql;
+package org.apache.sis.pending.geoapi.geometry;
 
-// Test dependencies
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * Tests {@link TableInfo}.
+ * Placeholder for a GeoAPI interfaces incomplete in GeoAPI 3.0.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @since   1.5
+ * @version 1.5
  */
-public final class TableInfoTest extends TestCase {
+public interface Geometry extends org.opengis.geometry.Geometry {
     /**
-     * Creates a new test case.
+     * Returns the coordinate reference system.
      */
-    public TableInfoTest() {
-    }
+    CoordinateReferenceSystem getCoordinateReferenceSystem();
 
     /**
-     * Validates the enumeration values.
+     * Returns the minimum bounding box for this {@code Geometry}.
      */
-    @Test
-    public void validate() {
-        for (TableInfo info : TableInfo.values()) {
-            assertNotNull(info.type);
-            assertNotNull(info.table);
-            assertNotNull(info.codeColumn);
-            assertNotNull(info.nameColumn);
-            assertTrue(info.fromClause.contains(info.table));
-        }
-    }
+    Envelope getEnvelope();
 }

@@ -78,7 +78,7 @@ public abstract class InstallationResources {
     }
 
     /**
-     * Returns all installation resources found on the module path, regardless is supported or not.
+     * Returns all installation resources found on the module path, regardless if supported or not.
      * Callers should filter the services for executing only those where {@link #getAuthorities()}
      * returns a non-empty set.
      *

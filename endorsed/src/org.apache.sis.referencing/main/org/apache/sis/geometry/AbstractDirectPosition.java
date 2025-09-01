@@ -31,10 +31,10 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -204,7 +204,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * {@code null}, then all coordinate values are set to {@link Double#NaN NaN}.
      *
      * <p>If this position and the given position have a non-null CRS, then the default implementation
-     * requires the CRS to be {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)},
+     * requires the CRS to be {@linkplain CRS#equivalent equivalent},
      * otherwise a {@code MismatchedReferenceSystemException} is thrown. However, subclass may choose
      * to assign the CRS of this position to the CRS of the given position.</p>
      *
@@ -221,7 +221,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
             if (crs != null) {
                 final CoordinateReferenceSystem other = position.getCoordinateReferenceSystem();
-                if (other != null && !Utilities.equalsIgnoreMetadata(crs, other)) {
+                if (other != null && !CRS.equivalent(crs, other)) {
                     throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.MismatchedCRS));
                 }
             }

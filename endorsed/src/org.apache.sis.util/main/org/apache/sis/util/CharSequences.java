@@ -643,7 +643,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             }
             return split;
         }
-        // 'excludeEmpty' must use the same criterion as trimWhitespaces(…).
+        // `excludeEmpty` must use the same criterion as `trimWhitespaces(…)`.
         final boolean excludeEmpty = isWhitespace(separator);
         CharSequence[] split = createSplitArray(text);
         final int length = text.length();
@@ -1130,8 +1130,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             if (toRemove > 0) {
                 toRemove += 5;          // Space needed for the " (…) " string.
                 /*
-                 * We will remove characters from 'lower' to 'upper' both exclusive. We try to
-                 * adjust 'lower' and 'upper' in such a way that the first and last characters
+                 * We will remove characters from `lower` to `upper` both exclusive. We try to
+                 * adjust `lower` and `upper` in such a way that the first and last characters
                  * to be removed will be spaces or punctuation characters.
                  */
                 int lower = length >>> 1;
@@ -1316,7 +1316,7 @@ searchWordBreak:    while (true) {
             return null;
         }
         /*
-         * Implementation note: the 'camelCaseToSentence' method needs
+         * Implementation note: the `camelCaseToSentence` method needs
          * this method to unconditionally returns a new StringBuilder.
          */
         final int length = identifier.length();
@@ -1424,10 +1424,14 @@ searchWordBreak:    while (true) {
     /**
      * Returns {@code true} if the first string is likely to be an acronym of the second string.
      * An acronym is a sequence of {@linkplain Character#isLetterOrDigit(int) letters or digits}
-     * built from at least one character of each word in the {@code words} string. More than
-     * one character from the same word may appear in the acronym, but they must always
-     * be the first consecutive characters. The comparison is case-insensitive.
+     * built from at least one character of each word in the {@code words} string.
+     * More than one character from the same word may appear in the acronym,
+     * but they must always be the first consecutive characters.
+     * The comparison is case-insensitive.
      * If any of the given arguments is {@code null}, this method returns {@code false}.
+     *
+     * <p>If a word contains digits, than the digits shall either be all absent or all present in the acronym.
+     * An acronym with only the first digits is not considered as a match because it changes the numerical value.</p>
      *
      * <h4>Example</h4>
      * Given the {@code "Open Geospatial Consortium"} words, the following strings are recognized as acronyms:
@@ -1459,9 +1463,10 @@ searchWordBreak:    while (true) {
         }
 cmp:    while (ia < lga) {
             if (ic >= lgc) {
-                // There is more letters in the acronym than in the complete name.
+                // There is more letters in the acronym than in the remaining part of the complete name.
                 return false;
             }
+            final int last = ca;
             ca = codePointAt(acronym, ia); ia += charCount(ca);
             cc = codePointAt(words,   ic); ic += charCount(cc);
             if (isLetterOrDigit(ca)) {
@@ -1470,14 +1475,20 @@ cmp:    while (ia < lga) {
                     // Continue the comparison with next letter of both strings.
                     continue;
                 }
-                // Will search for the next word after the 'else' block.
-            } else do {
-                if (ia >= lga) break cmp;
-                ca = codePointAt(acronym, ia);
-                ia += charCount(ca);
-            } while (!isLetterOrDigit(ca));
+                // Will search for the next word after the `else` block.
+            } else {
+                if (isDigit(cc) && isDigit(last)) {
+                    // Acronym contains a truncated number.
+                    return false;
+                }
+                do {
+                    if (ia >= lga) break cmp;
+                    ca = codePointAt(acronym, ia);
+                    ia += charCount(ca);
+                } while (!isLetterOrDigit(ca));
+            }
             /*
-             * At this point, 'ca' is the next acronym letter to compare and we
+             * At this point, `ca` is the next acronym letter to compare and we
              * need to search for the next word in the complete name. We first
              * skip remaining letters, then we skip non-letter characters.
              */
@@ -1499,15 +1510,22 @@ cmp:    while (ia < lga) {
          * any additional word. We can only finish the current word and skip trailing non-
          * letter characters.
          */
+        boolean disallowDigit = isDigit(ca);
         boolean skipLetters = true;
-        do {
-            do {
-                if (ic >= lgc) return true;
-                cc = codePointAt(words, ic);
-                ic += charCount(cc);
-            } while (isLetterOrDigit(cc) == skipLetters);
-        } while ((skipLetters = !skipLetters) == false);
-        return false;
+        while (ic < lgc) {
+            cc = codePointAt(words, ic);
+            ic += charCount(cc);
+            if (skipLetters) {
+                if (disallowDigit) {
+                    if (isDigit(cc)) return false;
+                    disallowDigit = false;
+                }
+                skipLetters = isLetterOrDigit(cc);
+            } else if (isLetterOrDigit(cc)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -2166,7 +2184,7 @@ cmp:    while (ia < lga) {
         int upper = fromIndex;
         /*
          * Skip whitespaces. At the end of this loop,
-         * 'c' will be the first non-blank character.
+         * `c` will be the first non-blank character.
          */
         int c;
         do {
