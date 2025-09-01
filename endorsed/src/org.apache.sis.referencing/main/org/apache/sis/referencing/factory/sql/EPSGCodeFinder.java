@@ -64,13 +64,13 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import static org.apache.sis.metadata.privy.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
-// Specific to the main branch:
-import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.referencing.crs.DefaultParametricCRS;
-import org.apache.sis.referencing.datum.DefaultParametricDatum;
-
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.referencing.datum.DefaultParametricDatum;
+import org.apache.sis.referencing.crs.DefaultParametricCRS;
 
 
 /**

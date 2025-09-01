@@ -31,6 +31,7 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.referencing.privy.LazySet;
+import org.apache.sis.referencing.privy.FilteredIterator;
 import org.apache.sis.system.Reflect;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Modules;
@@ -42,7 +43,6 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
-import org.apache.sis.referencing.privy.FilteredIterator;
 import org.apache.sis.util.logging.Logging;
 
 

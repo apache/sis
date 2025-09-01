@@ -48,8 +48,8 @@ import org.opengis.geometry.MismatchedDimensionException;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
+import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 
 
 /**

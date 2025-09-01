@@ -68,6 +68,7 @@ import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.DefinitionVerifier;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
@@ -84,7 +85,6 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
-import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
@@ -101,11 +101,11 @@ import org.apache.sis.util.logging.Logging;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 // Specific to the main branch:
-import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
+import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
 
 

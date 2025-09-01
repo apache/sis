@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -45,6 +44,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 // Specific to the main branch:

@@ -92,6 +92,7 @@ import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.SignReversalComment;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.ServicesForMetadata;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.system.Loggers;
@@ -131,7 +132,6 @@ import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.referencing.internal.ServicesForMetadata;
 import org.apache.sis.temporal.TemporalDate;
 
 

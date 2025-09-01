@@ -17,12 +17,12 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Locale;
+import java.util.Map;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.apache.sis.util.privy.Constants;

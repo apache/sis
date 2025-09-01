@@ -30,9 +30,9 @@ import org.apache.sis.referencing.privy.WKTKeywords;
 // Specific to the main branch:
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.crs.DefaultParametricCRS;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
-import org.apache.sis.referencing.datum.DefaultParametricDatum;
 
 
 /**
