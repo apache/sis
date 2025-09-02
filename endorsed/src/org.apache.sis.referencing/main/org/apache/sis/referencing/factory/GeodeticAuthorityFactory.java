@@ -696,7 +696,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
-     * @see org.apache.sis.referencing.CommonCRS#datum()
+     * @see org.apache.sis.referencing.CommonCRS#datum(boolean)
      */
     public GeodeticDatum createGeodeticDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeodeticDatum.class, createDatum(code), code);

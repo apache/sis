@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
+import static org.apache.sis.referencing.Assertions.assertEquivalent;
 
 
 /**
@@ -114,7 +114,7 @@ public final class CoverageSubsetTest extends TestCase {
     {
         final GridGeometry domain = reduced.getGridGeometry();
         assertEquals(dimension, domain.getDimension());
-        assertEqualsIgnoreMetadata(crs, domain.getCoordinateReferenceSystem());
+        assertEquivalent(crs, domain.getCoordinateReferenceSystem());
 
         final GridCoverage loaded = reduced.read(null);
         assertEquals(domain, loaded.getGridGeometry());

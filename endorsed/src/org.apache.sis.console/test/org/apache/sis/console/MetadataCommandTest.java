@@ -80,7 +80,8 @@ public final class MetadataCommandTest extends TestCaseWithLogs {
         var test = new MetadataCommand(0, new String[] {CommandRunner.TEST, url.toString(), "--format", "XML"});
         test.run();
         verifyNetCDF("<?xml", test.outputBuffer.toString());
-        loggings.skipNextLogIfContains("EPSG:4019");                // Warning about deprecated EPSG code.
+        loggings.skipNextLogIfContains("EPSG:6019");    // Warning about deprecated EPSG code for datum.
+        loggings.skipNextLogIfContains("EPSG:4019");    // Warning about deprecated EPSG code for CRS.
         loggings.assertNoUnexpectedLog();
     }
 }

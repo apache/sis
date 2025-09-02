@@ -32,6 +32,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.crs.GeodeticCRS;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.measure.Units;
 
@@ -227,7 +228,7 @@ public final class GeodeticObjectVerifier {
      *                            {@code Extent} element for the world, or {@code false} if optional.
      */
     public static void assertIsWGS84(final GeodeticDatum datum, final boolean isExtentMandatory) {
-        assertEquals("World Geodetic System 1984", datum.getName().getCode(), "name");
+        Assertions.assertLegacyEquals("World Geodetic System 1984", datum.getName().getCode(), "name");
         assertIsWorld    (datum, isExtentMandatory);
         assertIsGreenwich(datum.getPrimeMeridian());
         assertIsWGS84    (datum.getEllipsoid());
@@ -244,7 +245,7 @@ public final class GeodeticObjectVerifier {
      *     <td>{@code "WGS 84"}</td></tr>
      * <tr><td>{@linkplain GeodeticCRS#getDomains() Domain of validity}</td>
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
-     * <tr><td>{@linkplain GeodeticCRS#getDatum() Datum}</td>
+     * <tr><td>{@linkplain GeodeticCRS#getDatum() Datum} or datum ensemble</td>
      *     <td>{@linkplain #assertIsWGS84(GeodeticDatum, boolean) Is WGS84}</td></tr>
      * <tr><td>{@linkplain GeodeticCRS#getCoordinateSystem() Coordinate system}</td>
      *     <td>{@linkplain #assertIsGeodetic2D(EllipsoidalCS, boolean) Is for a 2D geodetic CRS}</td></tr>
@@ -259,7 +260,7 @@ public final class GeodeticObjectVerifier {
     public static void assertIsWGS84(final GeodeticCRS crs, final boolean isExtentMandatory, final boolean isRangeMandatory) {
         assertEquals("WGS 84", crs.getName().getCode(), "name");
         assertIsWorld(crs, isExtentMandatory);
-        assertIsWGS84(crs.getDatum(), isExtentMandatory);
+        assertIsWGS84(DatumOrEnsemble.asDatum(crs), isExtentMandatory);
         final CoordinateSystem cs = crs.getCoordinateSystem();
         assertInstanceOf(EllipsoidalCS.class, cs, "coordinateSystem");
         assertIsGeodetic2D((EllipsoidalCS) cs, isRangeMandatory);

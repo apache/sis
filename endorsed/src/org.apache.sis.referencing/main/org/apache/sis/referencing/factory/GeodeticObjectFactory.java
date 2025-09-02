@@ -612,7 +612,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  datum       geodetic reference frame, or {@code null} if the CRS is associated only to a datum ensemble.
      * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
-     * @param  cs          the two- or three-dimensional ellipsoidal coordinate system for the created CRS.
+     * @param  cs          the two- or three-dimensional ellipsoidal coordinate system for the created <abbr>CRS</abbr>.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultGeographicCRS#DefaultGeographicCRS(Map, GeodeticDatum, DefaultDatumEnsemble, EllipsoidalCS)
@@ -636,22 +636,24 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a geographic <abbr>CRS</abbr> from a reference frame.
-     * This is a shortcut for the {@linkplain #createGeographicCRS(Map, GeodeticDatum, DefaultDatumEnsemble, EllipsoidalCS)
-     * more generic method} without datum ensemble.
+     * Creates a geographic <abbr>CRS</abbr> with a datum that may be a datum ensemble.
+     * If the given {@code datum} argument is a {@linkplain DefaultDatumEnsemble datum ensemble
+     * viewed as a pseudo-datum}, then it is used as the {@code ensemble} argument of the above
+     * constructor.
      *
      * @param  properties  name and other properties to give to the new object.
-     *                     Available properties are {@linkplain ObjectFactory listed there}.
-     * @param  datum       geodetic reference frame to use in created CRS.
-     * @param  cs          the ellipsoidal coordinate system for the created CRS.
+     * @param  datum       the geodetic reference frame or datum ensemble viewed as a pseudo-datum.
+     * @param  cs          the two- or three-dimensional ellipsoidal coordinate system for the created <abbr>CRS</abbr>.
      * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
-    public GeographicCRS createGeographicCRS(Map<String, ?> properties, GeodeticDatum datum, EllipsoidalCS cs)
+    public GeographicCRS createGeographicCRS(Map<String,?> properties, GeodeticDatum datum, EllipsoidalCS cs)
             throws FactoryException
     {
-        return createGeographicCRS(properties, datum, null, cs);
+        DefaultDatumEnsemble<GeodeticDatum> ensemble = DatumOrEnsemble.asEnsemble(datum).orElse(null);
+        if (ensemble != null) datum = null;
+        return createGeographicCRS(properties, datum, ensemble, cs);
     }
 
     /**
@@ -1078,7 +1080,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  datum       vertical reference frame, or {@code null} if the CRS is associated only to a datum ensemble.
      * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
-     * @param  cs          the vertical coordinate system for the created CRS.
+     * @param  cs          the vertical coordinate system for the created <abbr>CRS</abbr>.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultVerticalCRS#DefaultVerticalCRS(Map, VerticalDatum, DefaultDatumEnsemble, VerticalCS)
@@ -1102,21 +1104,24 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a static vertical datum from a realization method.
-     * The default implementation creates a {@link DefaultVerticalDatum} instance.
+     * Creates a vertical <abbr>CRS</abbr> with a datum that may be a datum ensemble.
+     * If the given {@code datum} argument is a {@linkplain DefaultDatumEnsemble datum ensemble
+     * viewed as a pseudo-datum}, then it is used as the {@code ensemble} argument of the above
+     * constructor.
      *
      * @param  properties  name and other properties to give to the new object.
-     *                     Available properties are {@linkplain ObjectFactory listed there}.
-     * @param  datum       vertical datum to use in created CRS.
-     * @param  cs          the vertical coordinate system for the created CRS.
+     * @param  datum       the vertical reference frame or datum ensemble viewed as a pseudo-datum.
+     * @param  cs          the vertical coordinate system for the created <abbr>CRS</abbr>.
      * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
-    public VerticalCRS createVerticalCRS(Map<String, ?> properties, VerticalDatum datum, VerticalCS cs)
+    public VerticalCRS createVerticalCRS(Map<String,?> properties, VerticalDatum datum, VerticalCS cs)
             throws FactoryException
     {
-        return createVerticalCRS(properties, datum, null, cs);
+        DefaultDatumEnsemble<VerticalDatum> ensemble = DatumOrEnsemble.asEnsemble(datum).orElse(null);
+        if (ensemble != null) datum = null;
+        return createVerticalCRS(properties, datum, ensemble, cs);
     }
 
     /**
@@ -1224,7 +1229,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  datum       temporal datum, or {@code null} if the CRS is associated only to a datum ensemble.
      * @param  ensemble    collection of datum which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
-     * @param  cs          the temporal coordinate system for the created CRS.
+     * @param  cs          the temporal coordinate system for the created <abbr>CRS</abbr>.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultTemporalCRS#DefaultTemporalCRS(Map, TemporalDatum, DefaultDatumEnsemble, TimeCS)
@@ -1247,22 +1252,24 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a temporal <abbr>CRS</abbr> from a datum.
-     * This is a shortcut for the {@linkplain #createTemporalCRS(Map, TemporalDatum, DefaultDatumEnsemble, TimeCS)
-     * more generic method} without datum ensemble.
+     * Creates a temporal <abbr>CRS</abbr> with a datum that may be a datum ensemble.
+     * If the given {@code datum} argument is a {@linkplain DefaultDatumEnsemble datum ensemble
+     * viewed as a pseudo-datum}, then it is used as the {@code ensemble} argument of the above
+     * constructor.
      *
      * @param  properties  name and other properties to give to the new object.
-     *         Available properties are {@linkplain ObjectFactory listed there}.
-     * @param  datum  temporal datum to use in created CRS.
-     * @param  cs  the temporal coordinate system for the created CRS.
+     * @param  datum       the temporal datum or datum ensemble viewed as a pseudo-datum.
+     * @param  cs          the temporal coordinate system for the created <abbr>CRS</abbr>.
      * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
-    public TemporalCRS createTemporalCRS(Map<String, ?> properties, TemporalDatum datum, TimeCS cs)
+    public TemporalCRS createTemporalCRS(Map<String,?> properties, TemporalDatum datum, TimeCS cs)
             throws FactoryException
     {
-        return createTemporalCRS(properties, datum, null, cs);
+        DefaultDatumEnsemble<TemporalDatum> ensemble = DatumOrEnsemble.asEnsemble(datum).orElse(null);
+        if (ensemble != null) datum = null;
+        return createTemporalCRS(properties, datum, ensemble, cs);
     }
 
     /**
@@ -1349,7 +1356,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  datum       parametric datum, or {@code null} if the CRS is associated only to a datum ensemble.
      * @param  ensemble    collection of datum which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
-     * @param  cs          the parametric coordinate system for the created CRS.
+     * @param  cs          the parametric coordinate system for the created <abbr>CRS</abbr>.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultParametricCRS#DefaultParametricCRS(Map, DefaultParametricDatum, DefaultDatumEnsemble, ParametricCS)
@@ -1603,7 +1610,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  datum       engineering datum, or {@code null} if the CRS is associated only to a datum ensemble.
      * @param  ensemble    collection of datum which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
-     * @param  cs          the coordinate system for the created CRS.
+     * @param  cs          the coordinate system for the created <abbr>CRS</abbr>.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultEngineeringCRS#DefaultEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
@@ -1627,22 +1634,24 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a engineering <abbr>CRS</abbr> from a datum.
-     * This is a shortcut for the {@linkplain #createEngineeringCRS(Map, EngineeringDatum, DefaultDatumEnsemble, CoordinateSystem)
-     * more generic method} without datum ensemble.
+     * Creates a engineering <abbr>CRS</abbr> with a datum that may be a datum ensemble.
+     * If the given {@code datum} argument is a {@linkplain DefaultDatumEnsemble datum ensemble
+     * viewed as a pseudo-datum}, then it is used as the {@code ensemble} argument of the above
+     * constructor.
      *
      * @param  properties  name and other properties to give to the new object.
-     *                     Available properties are {@linkplain ObjectFactory listed there}.
-     * @param  datum       engineering datum to use in created CRS.
-     * @param  cs          the coordinate system for the created CRS.
+     * @param  datum       the engineering datum or datum ensemble viewed as a pseudo-datum.
+     * @param  cs          the coordinate system for the created <abbr>CRS</abbr>.
      * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
-    public EngineeringCRS createEngineeringCRS(Map<String, ?> properties, EngineeringDatum datum, CoordinateSystem cs)
+    public EngineeringCRS createEngineeringCRS(Map<String,?> properties, EngineeringDatum datum, CoordinateSystem cs)
             throws FactoryException
     {
-        return createEngineeringCRS(properties, datum, null, cs);
+        DefaultDatumEnsemble<EngineeringDatum> ensemble = DatumOrEnsemble.asEnsemble(datum).orElse(null);
+        if (ensemble != null) datum = null;
+        return createEngineeringCRS(properties, datum, ensemble, cs);
     }
 
     /**

@@ -113,6 +113,7 @@ public final class CRSTest extends TestCaseWithLogs {
         verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(), "EPSG:5714");
         verifyForCode(CommonCRS.Vertical.DEPTH.crs(),          "EPSG:5715");
 
+        loggings.skipNextLogIfContains("EPSG:6047");
         loggings.skipNextLogIfContains("EPSG:4047");    // No longer supported by EPSG.
         loggings.assertNoUnexpectedLog();
     }
@@ -255,6 +256,7 @@ public final class CRSTest extends TestCaseWithLogs {
                     null, new DefaultGeographicBoundingBox(-1, +1, ymin, ymax), null, null));
             crs[i] = new DefaultProjectedCRS(properties, baseCRS.geographic(), HardCodedConversions.MERCATOR, cs);
         }
+        loggings.skipNextLogIfContains("EPSG:6047");                        // Datum of EPSG:4047.
         loggings.skipNextLogIfContains("EPSG:4047");                        // No longer supported by EPSG.
         final ProjectedCRS[] overlappingCRS = Arrays.copyOf(crs, 3);        // Exclude the last CRS only.
         /*

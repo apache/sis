@@ -483,80 +483,6 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
-     * Creates a parametric CS. This method requires the SIS factory
-     * since parametric CRS were not available in GeoAPI 3.0.
-     *
-     * <p>This method is actually not needed anymore for {@code sis-metadata} module,
-     * but is still defined here for historical reason. This method is removed on SIS
-     * branches using a GeoAPI versions more recent than 3.0.</p>
-     *
-     * @param  properties  the coordinate system name, and optionally other properties.
-     * @param  axis        the axis of the parametric coordinate system.
-     * @param  factory     the factory to use for creating the coordinate system.
-     * @return a parametric coordinate system using the given axes.
-     * @throws FactoryException if the parametric object creation failed.
-     */
-    public static CoordinateSystem createParametricCS(final Map<String,?> properties, final CoordinateSystemAxis axis,
-            CSFactory factory) throws FactoryException
-    {
-        if (!(factory instanceof GeodeticObjectFactory)) {
-            factory = GeodeticObjectFactory.provider();
-        }
-        return ((GeodeticObjectFactory) factory).createParametricCS(properties, axis);
-    }
-
-    /**
-     * Creates a parametric datum. This method requires the SIS factory
-     * since parametric CRS were not available in GeoAPI 3.0.
-     *
-     * <p>This method is actually not needed anymore for {@code sis-metadata} module,
-     * but is still defined here for historical reason. This method is removed on SIS
-     * branches using a GeoAPI versions more recent than 3.0.</p>
-     *
-     * @param  properties  the datum name, and optionally other properties.
-     * @param  factory     the factory to use for creating the datum.
-     * @return a parametric datum using the given name.
-     * @throws FactoryException if the parametric object creation failed.
-     */
-    public static Datum createParametricDatum(final Map<String,?> properties, DatumFactory factory)
-            throws FactoryException
-    {
-        if (!(factory instanceof GeodeticObjectFactory)) {
-            factory = GeodeticObjectFactory.provider();
-        }
-        return ((GeodeticObjectFactory) factory).createParametricDatum(properties);
-    }
-
-    /**
-     * Creates a parametric CRS. This method requires the SIS factory
-     * since parametric CRS were not available in GeoAPI 3.0.
-     *
-     * <p>This method is actually not needed anymore for {@code sis-metadata} module,
-     * but is still defined here for historical reason. This method is removed on SIS
-     * branches using a GeoAPI versions more recent than 3.0.</p>
-     *
-     * @param  properties  the coordinate reference system name, and optionally other properties.
-     * @param  datum       the parametric datum.
-     * @param  cs          the parametric coordinate system.
-     * @param  factory     the factory to use for creating the coordinate reference system.
-     * @return a parametric coordinate system using the given axes.
-     * @throws FactoryException if the parametric object creation failed.
-     */
-    public static SingleCRS createParametricCRS(final Map<String,?> properties, final Datum datum,
-            final CoordinateSystem cs, CRSFactory factory) throws FactoryException
-    {
-        if (!(factory instanceof GeodeticObjectFactory)) {
-            factory = GeodeticObjectFactory.provider();
-        }
-        try {
-            return ((GeodeticObjectFactory) factory).createParametricCRS(properties,
-                    (DefaultParametricDatum) datum, (DefaultParametricCS) cs);
-        } catch (ClassCastException e) {
-            throw new InvalidGeodeticParameterException(e.toString(), e);
-        }
-    }
-
-    /**
      * Creates a format for {@link DirectPosition} instances.
      *
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
@@ -567,7 +493,6 @@ public final class ServicesForMetadata extends ReferencingServices {
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
         return new CoordinateFormat(locale, timezone);
     }
-
 
     /**
      * Returns transform between a pair of vertical CRS.

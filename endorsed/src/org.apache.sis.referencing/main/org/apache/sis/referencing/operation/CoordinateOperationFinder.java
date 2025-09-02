@@ -630,8 +630,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (!(interpolationCS instanceof EllipsoidalCS)) {
             final EllipsoidalCS cs = CommonCRS.WGS84.geographic3D().getCoordinateSystem();
             if (!Utilities.equalsIgnoreMetadata(interpolationCS, cs)) {
-                final GeographicCRS stepCRS = factorySIS.crsFactory
-                        .createGeographicCRS(derivedFrom(sourceCRS), DatumOrEnsemble.asDatum(sourceCRS), cs);
+                final GeographicCRS stepCRS = factorySIS.crsFactory.createGeographicCRS(
+                        derivedFrom(sourceCRS),
+                        DatumOrEnsemble.asDatum(sourceCRS),
+                        cs);
                 step1 = createOperation(sourceCRS, toAuthorityDefinition(GeographicCRS.class, stepCRS));
                 interpolationCRS = step1.getTargetCRS();
                 interpolationCS  = interpolationCRS.getCoordinateSystem();

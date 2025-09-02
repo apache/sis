@@ -89,7 +89,9 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.referencing.internal.ServicesForMetadata;
+import org.apache.sis.pending.geoapi.referencing.MissingMethods;
+import org.apache.sis.referencing.cs.DefaultParametricCS;
+import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.temporal.TemporalDate;
 
@@ -983,7 +985,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             case WKTKeywords.parametric: {
                 if (axes.length != (dimension = 1)) break;
-                return ServicesForMetadata.createParametricCS(csProperties, axes[0], csFactory);
+                return MissingMethods.createParametricCS(csProperties, axes[0], csFactory);
             }
             default: {
                 warning(parent, WKTKeywords.CS, Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
@@ -1209,7 +1211,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         element.close(ignoredElements);
-        final var info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+        final var info = new BursaWolfParameters(CommonCRS.WGS84.datum(true), null);
         info.setValues(values);
         return info;
     }
@@ -1516,7 +1518,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ParametricDatum"} element as a {@code ParametricDatum} object.
      * @throws ParseException if the {@code "ParametricDatum"} element cannot be parsed.
      */
-    private Datum parseParametricDatum(final int mode, final Element parent) throws ParseException {
+    private DefaultParametricDatum parseParametricDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ParametricDatum, WKTKeywords.PDatum);
         if (element == null) {
             return null;
@@ -1524,7 +1526,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final String name = element.pullString("name");
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            return ServicesForMetadata.createParametricDatum(parseAnchorAndClose(element, name), datumFactory);
+            return MissingMethods.createParametricDatum(parseAnchorAndClose(element, name), datumFactory);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -2058,7 +2060,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A ParametricCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind ParametricCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
          */
-        Datum datum = null;
+        DefaultParametricDatum datum = null;
         SingleCRS baseCRS = null;
         Conversion fromBase = null;
         if (!isBaseCRS) {
@@ -2084,12 +2086,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.parametric, 1, false, unit, false, null);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
-            if (cs != null) {
+            if (cs instanceof DefaultParametricCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
-                return ServicesForMetadata.createParametricCRS(properties, datum, cs, crsFactory);
+                return MissingMethods.createParametricCRS(properties, datum, (DefaultParametricCS) cs, crsFactory);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);

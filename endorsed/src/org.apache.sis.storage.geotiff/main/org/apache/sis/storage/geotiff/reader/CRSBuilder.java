@@ -916,7 +916,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                     if (Utilities.equalsIgnoreMetadata(predefined.ellipsoid(), ellipsoid) &&
                         Utilities.equalsIgnoreMetadata(predefined.primeMeridian(), meridian))
                     {
-                        return predefined.datum();
+                        return predefined.datum(true);
                     }
                 } catch (IllegalArgumentException e) {
                     // Not a name that can be mapped to CommonCRS. Ignore.

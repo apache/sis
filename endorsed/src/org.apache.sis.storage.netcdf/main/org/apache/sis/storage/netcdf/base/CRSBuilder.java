@@ -1002,8 +1002,7 @@ previous:   for (int i = components.size(); --i >= 0;) {
             if (datum != null) {
                 referenceSystem =  factory.createTemporalCRS(properties, datum, coordinateSystem);
             } else {
-                referenceSystem =  factory.createEngineeringCRS(properties,
-                        CommonCRS.Engineering.TIME.datum(), coordinateSystem);
+                referenceSystem = factory.createEngineeringCRS(properties, CommonCRS.Engineering.TIME.datum(), coordinateSystem);
             }
         }
     }
