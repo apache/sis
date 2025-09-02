@@ -383,6 +383,81 @@ public final class DatumOrEnsemble extends Static {
     }
 
     /**
+     * If the given object is a pseudo-datum for a geodetic ensemble, returns that ensemble.
+     * This method is the converse of {@link #asDatum(GeodeticCRS)} and recognizes only the
+     * pseudo-datum created by this class of by {@link DefaultDatumEnsemble} static methods.
+     *
+     * @param  datum  the object which may be a pseudo-datum for an ensemble, or {@code null}.
+     * @return the given object cast to a datum ensemble if the cast is valid.
+     */
+    public static Optional<DatumEnsemble<GeodeticDatum>> asEnsemble(final GeodeticDatum datum) {
+        if (datum instanceof DefaultDatumEnsemble.Geodetic) {
+            return Optional.of((DefaultDatumEnsemble.Geodetic) datum);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * If the given object is a pseudo-datum for a vertical ensemble, returns that ensemble.
+     * This method is the converse of {@link #asDatum(VerticalCRS)} and recognizes only the
+     * pseudo-datum created by this class of by {@link DefaultDatumEnsemble} static methods.
+     *
+     * @param  datum  the object which may be a pseudo-datum for an ensemble, or {@code null}.
+     * @return the given object cast to a datum ensemble if the cast is valid.
+     */
+    public static Optional<DatumEnsemble<VerticalDatum>> asEnsemble(final VerticalDatum datum) {
+        if (datum instanceof DefaultDatumEnsemble.Vertical) {
+            return Optional.of((DefaultDatumEnsemble.Vertical) datum);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * If the given object is a pseudo-datum for a temporal ensemble, returns that ensemble.
+     * This method is the converse of {@link #asDatum(TemporalCRS)} and recognizes only the
+     * pseudo-datum created by this class of by {@link DefaultDatumEnsemble} static methods.
+     *
+     * @param  datum  the object which may be a pseudo-datum for an ensemble, or {@code null}.
+     * @return the given object cast to a datum ensemble if the cast is valid.
+     */
+    public static Optional<DatumEnsemble<TemporalDatum>> asEnsemble(final TemporalDatum datum) {
+        if (datum instanceof DefaultDatumEnsemble.Time) {
+            return Optional.of((DefaultDatumEnsemble.Time) datum);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * If the given object is a pseudo-datum for a parametric ensemble, returns that ensemble.
+     * This method is the converse of {@link #asDatum(ParametricCRS)} and recognizes only the
+     * pseudo-datum created by this class of by {@link DefaultDatumEnsemble} static methods.
+     *
+     * @param  datum  the object which may be a pseudo-datum for an ensemble, or {@code null}.
+     * @return the given object cast to a datum ensemble if the cast is valid.
+     */
+    public static Optional<DatumEnsemble<ParametricDatum>> asEnsemble(final ParametricDatum datum) {
+        if (datum instanceof DefaultDatumEnsemble.Parametric) {
+            return Optional.of((DefaultDatumEnsemble.Parametric) datum);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * If the given object is a pseudo-datum for a engineering ensemble, returns that ensemble.
+     * This method is the converse of {@link #asDatum(EngineeringCRS)} and recognizes only the
+     * pseudo-datum created by this class of by {@link DefaultDatumEnsemble} static methods.
+     *
+     * @param  datum  the object which may be a pseudo-datum for an ensemble, or {@code null}.
+     * @return the given object cast to a datum ensemble if the cast is valid.
+     */
+    public static Optional<DatumEnsemble<EngineeringDatum>> asEnsemble(final EngineeringDatum datum) {
+        if (datum instanceof DefaultDatumEnsemble.Engineering) {
+            return Optional.of((DefaultDatumEnsemble.Engineering) datum);
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Returns whether a legacy definition of a datum may be considered as equivalent to the given datum ensemble.
      * This is {@code true} if all reference frames (both the specified datum and the ensemble members) have the
      * same properties (ellipsoid and prime meridians in the geodetic case), and the datum and datum ensemble either

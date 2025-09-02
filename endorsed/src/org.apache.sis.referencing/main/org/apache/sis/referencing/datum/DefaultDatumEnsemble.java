@@ -326,7 +326,9 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      *     }
      *
      * It has been removed because, to be safe, it would require a `Class<D>` argument in the static methods.
-     * Even `? super D` is unsafe. See the comment in `Factory.forMemberType(…)` method for more discussion.
+     * Even the use of `? super D` wildcard is potentially unsafe if members implement two datum interfaces.
+     * See the comment inside `Factory.forMemberType(…)` method body for more discussion.
+     * We could use `? extends Datum`, but its usefulness is uncertain.
      */
 
     /**

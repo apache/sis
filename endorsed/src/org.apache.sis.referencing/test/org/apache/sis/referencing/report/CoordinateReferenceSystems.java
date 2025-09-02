@@ -595,7 +595,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             // because those authority codes need parameters.
             row.hasError = false;
             row.remark = "Projected";
-            ((ByName) row).setup(CommonCRS.WGS84.datum(), unusedDatumMapping);
+            ((ByName) row).setup(CommonCRS.WGS84.datum(true), unusedDatumMapping);
         } else {
             row.remark = exception.getLocalizedMessage();
             ((ByName) row).setup(null, unusedDatumMapping);

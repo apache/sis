@@ -501,7 +501,7 @@ public class Convention {
                      */
                     final Vector values = node.getAttributeAsVector(name);
                     if (values == null || values.size() < 3) continue;
-                    final var bp = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+                    final var bp = new BursaWolfParameters(CommonCRS.WGS84.datum(true), null);
                     bp.setValues(values.doubleValues());
                     value = bp;
                     break;

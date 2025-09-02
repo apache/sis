@@ -55,6 +55,9 @@ import org.apache.sis.measure.Units;
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeocentricCRS;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
+
 
 /**
  * The authority factory to use as a fallback when the real EPSG factory is not available.
@@ -196,7 +199,8 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
      * Kinds of object created by this factory, as bitmask. Note that objects
      * created for {@link #CS} and {@link #AXIS} kinds are currently not cached.
      */
-    private static final int CRS=0x1, DATUM=0x2, ELLIPSOID=0x4, PRIME_MERIDIAN=0x8, UNIT=0x10, AXIS=0x20, CS=0x40;
+    private static final int CRS=0x1, DATUM=0x2, ENSEMBLE=0x4, ELLIPSOID=0x8, PRIME_MERIDIAN=0x10,
+                             UNIT=0x20, AXIS=0x40, CS=0x80;
 
     /**
      * Returns a prime meridian for the given EPSG code.
@@ -216,10 +220,19 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
 
     /**
      * Returns a datum for the given EPSG code.
+     * For compatibility reason, it may be an ensemble viewed as a pseudo-datum.
      */
     @Override
     public Datum createDatum(final String code) throws NoSuchAuthorityCodeException {
-        return (Datum) predefined(code, DATUM);
+        return (Datum) predefined(code, DATUM | ENSEMBLE);
+    }
+
+    /**
+     * Returns a datum ensemble for the given EPSG code.
+     */
+    @Override
+    public DatumEnsemble<?> createDatumEnsemble(final String code) throws NoSuchAuthorityCodeException {
+        return (DatumEnsemble<?>) predefined(code, ENSEMBLE);
     }
 
     /**
@@ -312,9 +325,9 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
                 }
             }
             /*
-             * Cases that we can delegate to `CommonCRS`. That enumeration have its own cache.
+             * Cases that we can delegate to `CommonCRS`. That enumeration has its own cache.
              */
-            if ((kind & (ELLIPSOID | DATUM | CRS)) != 0) {
+            if ((kind & (ELLIPSOID | DATUM | ENSEMBLE | CRS)) != 0) {
                 for (final CommonCRS crs : CommonCRS.values()) {
                     /*
                      * In a complete EPSG dataset we could have an ambiguity below because the same code can be used
@@ -322,7 +335,8 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
                      * ensured that there is no such collision - see CommonCRSTest.ensureNoCodeCollision().
                      */
                     if ((kind & ELLIPSOID) != 0  &&  n == crs.ellipsoid) return crs.ellipsoid();
-                    if ((kind & DATUM)     != 0  &&  n == crs.datum)     return crs.datum();
+                    if ((kind & DATUM)     != 0  &&  n == crs.datum)     return crs.datum((kind & ENSEMBLE) != 0);
+                    if ((kind & ENSEMBLE)  != 0  &&  n == crs.datum)     return crs.datumEnsemble();
                     if ((kind & CRS) != 0) {
                         if (n == crs.geographic) return crs.geographic();
                         if (n == crs.geocentric) return crs.geocentric();
@@ -345,11 +359,12 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
                         return crs.universal(latitude, TransverseMercator.Zoner.UTM.centralMeridian(zone));
                     }
                 }
-                if ((kind & (DATUM | CRS)) != 0) {
+                if ((kind & (DATUM | ENSEMBLE | CRS)) != 0) {
                     for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
                         if (candidate.isEPSG) {
-                            if ((kind & DATUM) != 0  &&  candidate.datum == n) return candidate.datum();
-                            if ((kind & CRS)   != 0  &&  candidate.crs   == n) return candidate.crs();
+                            if ((kind & DATUM)    != 0  &&  candidate.datum == n) return candidate.datum();
+                            if ((kind & ENSEMBLE) != 0  &&  candidate.datum == n) return null;  // Not yet provided.
+                            if ((kind & CRS)      != 0  &&  candidate.crs   == n) return candidate.crs();
                         }
                     }
                 }
@@ -420,6 +435,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
         switch (kind) {
             case CRS:            return CoordinateReferenceSystem.class;
             case DATUM:          return Datum.class;
+            case ENSEMBLE:       return DatumEnsemble.class;
             case ELLIPSOID:      return Ellipsoid.class;
             case PRIME_MERIDIAN: return PrimeMeridian.class;
             case UNIT:           return Unit.class;
