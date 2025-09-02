@@ -68,7 +68,7 @@ Complete API can be browsed in [online Javadoc](https://sis.apache.org/apidocs/i
 
 ## License (see also LICENSE)
 
-Collective work: Copyright 2010-2023 The Apache Software Foundation.
+Collective work: Copyright 2010-2025 The Apache Software Foundation.
 
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with

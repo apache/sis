@@ -18,11 +18,11 @@ the only requirement is Java 11 or later, except the GDAL module which requires
 Java 22. For launching the desktop application, requirements are Java 22 or later
 and JavaFX 24 or later.
 
-1) Unzip `apache-sis-1.4-bin.zip` in any directory.
-2) Invoke `./apache-sis-1.4/bin/sis` for the command-line.
-3) Invoke `./apache-sis-1.4/bin/sisfx` for the graphical application.
+1) Unzip `apache-sis-1.5-bin.zip` in any directory.
+2) Invoke `./apache-sis-1.5/bin/sis` for the command-line.
+3) Invoke `./apache-sis-1.5/bin/sisfx` for the graphical application.
 
-The `apache-sis-1.4/bin` directory may also be added to the `PATH` environment
+The `apache-sis-1.5/bin` directory may also be added to the `PATH` environment
 variable for making `sis` or `sisfx` invocations easier.
 
 
