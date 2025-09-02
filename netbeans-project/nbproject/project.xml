@@ -19,12 +19,10 @@
             <source-roots>
                 <root id="src.dir" pathref="src.dir.path"/>
                 <root id="optional.main.dir" pathref="optional.main.dir.path"/>
-                <root id="incubator.main.dir" pathref="incubator.main.dir.path"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir" pathref="test.src.dir.path"/>
                 <root id="optional.test.dir" pathref="optional.test.dir.path"/>
-                <root id="incubator.test.dir" pathref="incubator.test.dir.path"/>
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">

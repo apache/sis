@@ -39,7 +39,6 @@ together with their dependencies:
 
 * `endorsed/build/libs/`  (core library)
 * `optional/build/libs/`  (requires JavaFX)
-* `incubator/build/libs/` (not yet released)
 
 If JAR files seem missing, try `gradle jar`.
 For publishing to the local `~/.m2` repository
