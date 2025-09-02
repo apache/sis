@@ -174,6 +174,22 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
+     * Returns a description of the object corresponding to a code.
+     *
+     * @param  code  value allocated by authority.
+     * @return a description of the object, or empty if the object corresponding to the specified code has no description.
+     * @throws FactoryException if an error occurred while fetching the description.
+     *
+     * @deprecated Replaced by {@link #getDescriptionText(Class, String)} because authority code without type are ambiguous.
+     */
+    @Override
+    @Deprecated(since="1.5")
+    @SuppressWarnings("removal")    // Cannot be removed before a migration to GeoAPI 4.0.
+    public InternationalString getDescriptionText(final String code) throws FactoryException {
+        return getDescriptionText(CoordinateReferenceSystem.class, code).orElse(null);
+    }
+
+    /**
      * Returns an object of the specified type from a code. This implementation forwards
      * the method call to the most specialized methods determined by the given type.
      * For example, a call to {@code createObject(GeodeticCRS.class, code)} delegates
