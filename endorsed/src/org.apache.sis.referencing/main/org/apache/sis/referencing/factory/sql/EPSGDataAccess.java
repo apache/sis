@@ -75,6 +75,7 @@ import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
@@ -1621,7 +1622,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         final String datumCode = getString(code, result, 9);
                         final CoordinateSystem cs = owner.createCoordinateSystem(csCode);  // Do not inline the `getString(…)` calls.
                         final GeodeticDatum datumOrEnsemble = owner.createGeodeticDatum(datumCode);
-                        final DatumEnsemble<GeodeticDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, GeodeticDatum.class);
+                        final DatumEnsemble<GeodeticDatum> ensemble = DatumOrEnsemble.asEnsemble(datumOrEnsemble).orElse(null);
                         final GeodeticDatum datum = (ensemble == null) ? datumOrEnsemble : null;
                         if (cs instanceof CartesianCS) {
                             final var c = (CartesianCS) cs;
@@ -1653,7 +1654,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                             csCode = replaceDeprecatedCS(csCode);
                         }
                         final EllipsoidalCS cs = owner.createEllipsoidalCS(csCode.toString());
-                        final DatumEnsemble<GeodeticDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, GeodeticDatum.class);
+                        final DatumEnsemble<GeodeticDatum> ensemble = DatumOrEnsemble.asEnsemble(datumOrEnsemble).orElse(null);
                         final GeodeticDatum datum = (ensemble == null) ? datumOrEnsemble : null;
                         constructor = (factory, metadata) -> factory.createGeographicCRS(metadata, datum, ensemble, cs);
                         break;
@@ -1743,7 +1744,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         final String datumCode = getString(code, result, 9);
                         final VerticalCS cs = owner.createVerticalCS(csCode);   // Do not inline the `getString(…)` calls.
                         final VerticalDatum datumOrEnsemble = owner.createVerticalDatum(datumCode);
-                        final DatumEnsemble<VerticalDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, VerticalDatum.class);
+                        final DatumEnsemble<VerticalDatum> ensemble = DatumOrEnsemble.asEnsemble(datumOrEnsemble).orElse(null);
                         final VerticalDatum datum = (ensemble == null) ? datumOrEnsemble : null;
                         constructor = (factory, metadata) -> factory.createVerticalCRS(metadata, datum, ensemble, cs);
                         break;
@@ -1760,7 +1761,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         final String datumCode = getString(code, result, 9);
                         final TimeCS cs = owner.createTimeCS(csCode);    // Do not inline the `getString(…)` calls.
                         final TemporalDatum datumOrEnsemble = owner.createTemporalDatum(datumCode);
-                        final DatumEnsemble<TemporalDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, TemporalDatum.class);
+                        final DatumEnsemble<TemporalDatum> ensemble = DatumOrEnsemble.asEnsemble(datumOrEnsemble).orElse(null);
                         final TemporalDatum datum = (ensemble == null) ? datumOrEnsemble : null;
                         constructor = (factory, metadata) -> factory.createTemporalCRS(metadata, datum, ensemble, cs);
                         break;
@@ -1773,7 +1774,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         final String datumCode = getString(code, result, 9);
                         final CoordinateSystem cs = owner.createCoordinateSystem(csCode);    // Do not inline the `getString(…)` calls.
                         final EngineeringDatum datumOrEnsemble = owner.createEngineeringDatum(datumCode);
-                        final DatumEnsemble<EngineeringDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, EngineeringDatum.class);
+                        final DatumEnsemble<EngineeringDatum> ensemble = DatumOrEnsemble.asEnsemble(datumOrEnsemble).orElse(null);
                         final EngineeringDatum datum = (ensemble == null) ? datumOrEnsemble : null;
                         constructor = (factory, metadata) -> factory.createEngineeringCRS(metadata, datum, ensemble, cs);
                         break;
@@ -1786,7 +1787,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         final String datumCode = getString(code, result, 9);
                         final ParametricCS cs = owner.createParametricCS(csCode);    // Do not inline the `getString(…)` calls.
                         final ParametricDatum datumOrEnsemble = owner.createParametricDatum(datumCode);
-                        final DatumEnsemble<ParametricDatum> ensemble = wasDatumEnsemble(datumOrEnsemble, ParametricDatum.class);
+                        final DatumEnsemble<ParametricDatum> ensemble = DatumOrEnsemble.asEnsemble(datumOrEnsemble).orElse(null);
                         final ParametricDatum datum = (ensemble == null) ? datumOrEnsemble : null;
                         constructor = (factory, metadata) -> factory.createParametricCRS(metadata, datum, ensemble, cs);
                         break;
@@ -1834,29 +1835,6 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
              throw noSuchAuthorityCode(CoordinateReferenceSystem.class, code);
         }
         return returnValue;
-    }
-
-    /**
-     * Returns the given datum as a datum ensemble if it should be considered as such.
-     * This method exists because the datum and datum ensemble are stored in the same table,
-     * and Apache <abbr>SIS</abbr> creates those two kinds of objects with the same method.
-     * The real type is resolved by inspection of the {@link #createDatum(String)} return value.
-     *
-     * <h4>Design restriction</h4>
-     * We cannot resolve the type with a private field which would be set by {@link #createDatumEnsemble(String)}
-     * because that method will not be invoked if the datum is fetched from the cache.
-     *
-     * @param  <D>         compile-time value of {@code memberType}.
-     * @param  datum       the datum to check if it is a datum ensemble.
-     * @param  memberType  the expected type of datum members.
-     * @return the given datum as an ensemble if it should be considered as such, or {@code null} otherwise.
-     * @throws ClassCastException if at least one member is not an instance of the specified type.
-     */
-    private static <D extends Datum> DatumEnsemble<D> wasDatumEnsemble(final D datum, final Class<D> memberType) {
-        if (datum instanceof DatumEnsemble<?>) {
-            return DefaultDatumEnsemble.castOrCopy((DatumEnsemble<?>) datum).cast(memberType);
-        }
-        return null;
     }
 
     /**

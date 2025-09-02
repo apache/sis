@@ -38,7 +38,10 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
@@ -92,6 +95,21 @@ public final class Assertions extends Static {
      * Do not allow instantiation of this class.
      */
     private Assertions() {
+    }
+
+    /**
+     * Asserts that the two given coordinate references are equivalent.
+     * This method is tolerance to differences regarding whether a datum versus datum ensemble.
+     *
+     * @param  expected  the expected object.
+     * @param  actual    the actual object.
+     *
+     * @see org.apache.sis.test.Assertions#assertEqualsIgnoreMetadata(Object, Object)
+     */
+    public static void assertEquivalent(final CoordinateReferenceSystem expected, final CoordinateReferenceSystem actual) {
+        assertTrue(Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG),       "Shall be approximately equal.");
+        assertTrue(Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATE), "DEBUG inconsistent with APPROXIMATE.");
+        assertTrue(CRS.equivalent(expected, actual), "CRS shall be equivalent.");
     }
 
     /**

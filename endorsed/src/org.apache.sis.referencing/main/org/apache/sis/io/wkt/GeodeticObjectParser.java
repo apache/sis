@@ -2042,7 +2042,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
          */
         ParametricDatum datum = null;
-        DatumEnsemble<ParametricDatum> datumEnsemble = null;    // TODO
         SingleCRS baseCRS = null;
         Conversion fromBase = null;
         if (!isBaseCRS) {
@@ -2073,7 +2072,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
-                return crsFactory.createParametricCRS(properties, datum, datumEnsemble, (ParametricCS) cs);
+                return crsFactory.createParametricCRS(properties, datum, (ParametricCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);

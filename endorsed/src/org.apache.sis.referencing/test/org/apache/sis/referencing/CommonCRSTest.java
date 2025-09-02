@@ -198,7 +198,7 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
         Validators.validate(crs);
         assertEquals ("ETRS89", crs.getName().getCode());
         assertSame   (CommonCRS.ETRS89.geographic().getDatum(), crs.getDatum());
-        assertNotSame(CommonCRS.WGS84 .geographic().getDatum(), crs.getDatum());
+        assertNotSame(CommonCRS.WGS84 .datum(true), crs.getDatum());
 
         final CoordinateSystem cs = crs.getCoordinateSystem();
         final String name = cs.getName().getCode();

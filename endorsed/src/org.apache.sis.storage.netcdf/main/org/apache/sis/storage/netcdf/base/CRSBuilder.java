@@ -1007,10 +1007,9 @@ previous:   for (int i = components.size(); --i >= 0;) {
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             properties = properties(getFirstAxis().coordinates.getUnitsString());
             if (datum != null) {
-                referenceSystem =  factory.createTemporalCRS(properties, datum, datumEnsemble, coordinateSystem);
+                referenceSystem = factory.createTemporalCRS(properties, datum, datumEnsemble, coordinateSystem);
             } else {
-                referenceSystem =  factory.createEngineeringCRS(properties,
-                        CommonCRS.Engineering.TIME.datum(), coordinateSystem);
+                referenceSystem = factory.createEngineeringCRS(properties, CommonCRS.Engineering.TIME.datum(), coordinateSystem);
             }
         }
     }

@@ -108,6 +108,7 @@ public final class HardCodedDatum {
 
     /**
      * Spherical datum based on GRS 1980 Authalic Sphere (EPSG:6047). Prime meridian is Greenwich.
+     * Note that this entry has been deprecated in recent <abbr>EPSG</abbr> versions.
      */
     public static final DefaultGeodeticDatum SPHERE = new DefaultGeodeticDatum(
             properties("Not specified (based on GRS 1980 Authalic Sphere)", "6047", "Not a valid datum."),

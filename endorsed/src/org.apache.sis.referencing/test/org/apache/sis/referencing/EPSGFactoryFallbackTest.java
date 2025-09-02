@@ -145,6 +145,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
         verifyCreateDatum(CommonCRS.NAD27 .datum(true), "6267");
         verifyCreateDatum(CommonCRS.ED50  .datum(true), "6230");
         verifyCreateDatum(CommonCRS.SPHERE.datum(true), "6047");
+        loggings.skipNextLogIfContains("EPSG:6047");    // Deprecated EPSG entry for datum.
         loggings.assertNoUnexpectedLog();
     }
 
@@ -213,7 +214,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
      * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given datum.
      */
     private static void verifyCreateDatum(final Datum expected, final String code) throws FactoryException {
-        assertSame(expected, EPSGFactoryFallback.INSTANCE.createDatum(code), code);
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createDatum (code), code);
         assertSame(expected, EPSGFactoryFallback.INSTANCE.createObject(code), code);
     }
 
@@ -271,9 +272,13 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
         } finally {
             setEPSGFactory(EPSG);
         }
-        loggings.skipNextLogIfContains("EPSG:4047");
-        loggings.skipNextLogIfContains("EPSG:4019");        // Deprecated EPSG entry.
-        loggings.skipNextLogIfContains("EPSG:4047");        // Repeated because order may vary.
+        boolean repeat = false;
+        do {
+            loggings.skipNextLogIfContains("EPSG:6047");        // Deprecated EPSG entry for datum.
+            loggings.skipNextLogIfContains("EPSG:4047");        // Deprecated EPSG entry for CRS.
+            loggings.skipNextLogIfContains("EPSG:6019");        // Deprecated EPSG entry for datum.
+            loggings.skipNextLogIfContains("EPSG:4019");        // Deprecated EPSG entry for CRS.
+        } while ((repeat = !repeat) == true);                   // Repeated because order may vary.
         loggings.assertNoUnexpectedLog();
     }
 }

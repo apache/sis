@@ -219,10 +219,11 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
 
     /**
      * Returns a datum for the given EPSG code.
+     * For compatibility reason, it may be an ensemble viewed as a pseudo-datum.
      */
     @Override
     public Datum createDatum(final String code) throws NoSuchAuthorityCodeException {
-        return (Datum) predefined(code, DATUM);
+        return (Datum) predefined(code, DATUM | ENSEMBLE);
     }
 
     /**
@@ -332,7 +333,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
                      * ensured that there is no such collision - see CommonCRSTest.ensureNoCodeCollision().
                      */
                     if ((kind & ELLIPSOID) != 0  &&  n == crs.ellipsoid) return crs.ellipsoid();
-                    if ((kind & DATUM)     != 0  &&  n == crs.datum)     return crs.datum(false);
+                    if ((kind & DATUM)     != 0  &&  n == crs.datum)     return crs.datum((kind & ENSEMBLE) != 0);
                     if ((kind & ENSEMBLE)  != 0  &&  n == crs.datum)     return crs.datumEnsemble();
                     if ((kind & CRS) != 0) {
                         if (n == crs.geographic) return crs.geographic();

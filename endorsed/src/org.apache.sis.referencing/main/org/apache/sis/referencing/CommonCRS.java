@@ -502,7 +502,7 @@ public enum CommonCRS {
             }
         }
         final Datum datum = single.getDatum();
-        if (datum instanceof GeodeticDatum) {
+        if (datum == null || datum instanceof GeodeticDatum) {
             final CommonCRS c = forDatum((GeodeticDatum) datum, single.getDatumEnsemble());
             if (c != null) return c;
         }
@@ -524,8 +524,10 @@ public enum CommonCRS {
          * database).
          */
         int epsg = 0;
-        final Identifier identifier = IdentifiedObjects.getIdentifier(datum, Citations.EPSG);
-        if (identifier != null) {
+        Identifier identifier;
+        if ((identifier = IdentifiedObjects.getIdentifier(datum,    Citations.EPSG)) != null ||
+            (identifier = IdentifiedObjects.getIdentifier(ensemble, Citations.EPSG)) != null)
+        {
             final String code = identifier.getCode();
             if (code != null) try {
                 epsg = Integer.parseInt(code);
@@ -838,23 +840,26 @@ public enum CommonCRS {
      * together with an enumeration value that can be used for fetching that datum:
      *
      * <blockquote><table class="sis">
-     *   <caption>Commonly used geodetic reference frames</caption>
+     *   <caption>Commonly used geodetic reference frames or datum ensembles</caption>
      *   <tr><th>Name or alias</th>                                     <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>European Datum 1950</td>                               <td>{@link #ED50}</td>   <td>6230</td></tr>
      *   <tr><td>European Terrestrial Reference System 1989</td>        <td>{@link #ETRS89}</td> <td>6258</td></tr>
      *   <tr><td>North American Datum 1927</td>                         <td>{@link #NAD27}</td>  <td>6267</td></tr>
      *   <tr><td>North American Datum 1983</td>                         <td>{@link #NAD83}</td>  <td>6269</td></tr>
      *   <tr><td>Not specified (based on GRS 1980 ellipsoid)</td>       <td>{@link #GRS1980}</td><td>6019</td></tr>
-     *   <tr><td>Not specified (based on GRS 1980 Authalic Sphere)</td> <td>{@link #SPHERE}</td> <td>6047</td></tr>
+     *   <tr><td>Not specified (based on GRS 1980 Authalic Sphere)</td> <td>{@link #SPHERE}</td> <td><del>6047</del></td></tr>
      *   <tr><td>World Geodetic System 1972</td>                        <td>{@link #WGS72}</td>  <td>6322</td></tr>
      *   <tr><td>World Geodetic System 1984</td>                        <td>{@link #WGS84}</td>  <td>6326</td></tr>
      * </table></blockquote>
      *
+     * <h4>Datum ensemble</h4>
      * Some rows in above table are actually defined as datum ensembles in version 10 or later of the
-     * <abbr>EPSG</abbr> geodetic dataset. These datum ensembles are listed in {@link #datumEnsemble()}
+     * <abbr>EPSG</abbr> geodetic dataset. These rows are repeated in {@link #datumEnsemble()} Javadoc
      * and may be returned only if the {@code acceptEnsemble} argument is {@code true}.
-     * Note that whether a datum is a datum ensemble depends on whether Apache <abbr>SIS</abbr>
-     * is connected to an <abbr>EPSG</abbr> geodetic dataset and the version of that dataset.
+     * In such case, the returned object is the ensemble viewed as if it was a single geodetic datum.
+     *
+     * <p>Note that whether an object is a datum ensemble depends on whether Apache <abbr>SIS</abbr>
+     * is connected to an <abbr>EPSG</abbr> geodetic dataset and the version of that dataset.</p>
      *
      * @param  acceptEnsemble  whether to return datum ensemble as a pseudo-datum.
      * @return the datum or (optionally) datum ensemble associated to this enum, or {@code null}
@@ -866,7 +871,7 @@ public enum CommonCRS {
      * @since 1.5
      */
     public synchronized GeodeticDatum datum(final boolean acceptEnsemble) {
-        GeodeticDatum object = getDatumOrEnsemble(cached);
+        GeodeticDatum object = datumOrEnsemble(cached);
         if (object == null) {
             final GeodeticAuthorityFactory factory = factory();
             if (factory != null) try {
@@ -879,7 +884,7 @@ public enum CommonCRS {
             final var pm = primeMeridian();
             cached = object = StandardDefinitions.createGeodeticDatum(datum, ei, pm);
         }
-        if (!acceptEnsemble && object instanceof DatumEnsemble<?>) {
+        if (!acceptEnsemble && DatumOrEnsemble.asEnsemble(object).isPresent()) {
             return null;
         }
         return object;
@@ -906,8 +911,7 @@ public enum CommonCRS {
      * @since 1.5
      */
     public DatumEnsemble<GeodeticDatum> datumEnsemble() {
-        final GeodeticDatum object = datum(true);
-        return (object instanceof DatumEnsemble<?>) ? (DatumEnsemble<GeodeticDatum>) object : null;
+        return DatumOrEnsemble.asEnsemble(datum(true)).orElse(null);
     }
 
     /**
@@ -998,7 +1002,7 @@ public enum CommonCRS {
      * because {@link org.apache.sis.referencing.datum.DefaultDatumEnsemble} implements
      * the {@link Datum} interface anyway in the Apache <abbr>SIS</abbr> implementation.
      */
-    private static GeodeticDatum getDatumOrEnsemble(final IdentifiedObject object) {
+    private static GeodeticDatum datumOrEnsemble(final IdentifiedObject object) {
         if (object instanceof GeodeticDatum) {
             return (GeodeticDatum) object;
         }
