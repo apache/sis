@@ -89,9 +89,7 @@ module org.apache.sis.metadata {
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
             org.apache.sis.storage.netcdf,
-            org.apache.sis.storage.geotiff,
-            org.apache.sis.storage.shapefile,   // In the "incubator" sub-project.
-            org.apache.sis.cql;                 // In the "incubator" sub-project.
+            org.apache.sis.storage.geotiff;
 
     exports org.apache.sis.metadata.internal.shared to
             org.apache.sis.referencing,
@@ -167,7 +165,6 @@ module org.apache.sis.metadata {
     exports org.apache.sis.metadata.sql.internal.shared to
             org.apache.sis.referencing,
             org.apache.sis.storage.sql,
-            org.apache.sis.storage.geopackage,      // In the "incubator" sub-project.
             org.apache.sis.referencing.database;    // In the "non-free" subproject.
 
     exports org.apache.sis.metadata.simple to
