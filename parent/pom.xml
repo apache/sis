@@ -38,7 +38,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>1.5-SNAPSHOT</version>
+  <version>1.5</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
