@@ -330,6 +330,9 @@ publishing {
 signing {
     useGpgCmd()
     if (System.getProperty("org.apache.sis.releaseVersion") != null) {
+        sign(publishing.publications["storage.gdal"])
+        sign(publishing.publications["database"])
+        sign(publishing.publications["epsg"])
         sign(publishing.publications["gui"])
     }
 }
