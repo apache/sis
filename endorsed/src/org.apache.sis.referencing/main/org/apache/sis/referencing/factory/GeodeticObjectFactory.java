@@ -588,6 +588,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  datum       the geodetic reference frame or datum ensemble viewed as a pseudo-datum.
      * @param  cs          the two- or three-dimensional ellipsoidal coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1055,6 +1056,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  datum       the vertical reference frame or datum ensemble viewed as a pseudo-datum.
      * @param  cs          the vertical coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1208,6 +1210,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  datum       the temporal datum or datum ensemble viewed as a pseudo-datum.
      * @param  cs          the temporal coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1331,6 +1334,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  datum       the parametric datum or datum ensemble viewed as a pseudo-datum.
      * @param  cs          the parametric coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1525,6 +1529,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  datum       the engineering datum or datum ensemble viewed as a pseudo-datum.
      * @param  cs          the coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     @Override
