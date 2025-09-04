@@ -57,6 +57,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.util.Utilities;
@@ -524,12 +525,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
              * May contain the addition of ellipsoidal height or spherical radius, which need an ellipsoid.
              */
             final var builder = factorySIS.getMathTransformFactory().builder(Constants.COORDINATE_SYSTEM_CONVERSION);
-            Ellipsoid ellipsoid = targetDatum.getEllipsoid();
-            if (ellipsoid == null) {
-                ellipsoid = sourceDatum.getEllipsoid();
-            }
-            builder.setSourceAxes(sourceCS, ellipsoid);
-            builder.setTargetAxes(targetCS, ellipsoid);
+            builder.setSourceAxes(sourceCS, sourceDatum.getEllipsoid());
+            builder.setTargetAxes(targetCS, targetDatum.getEllipsoid());
             transform  = builder.create();
             method     = builder.getMethod();
             parameters = builder.parameters();
@@ -558,8 +555,19 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 final var impl = (DefaultGeodeticDatum) sourceDatum;
                 datumShift = impl.getPositionVectorTransformation(targetDatum, areaOfInterest);
                 if (datumShift != null) typeOfChange = DATUM_SHIFT;
+            } else if (targetDatum instanceof DefaultGeodeticDatum) {
+                final var impl = (DefaultGeodeticDatum) targetDatum;
+                Matrix matrix = impl.getPositionVectorTransformation(sourceDatum, areaOfInterest);
+                if (matrix != null) try {
+                    matrix = Matrices.inverse(matrix);
+                    typeOfChange = DATUM_SHIFT;
+                } catch (NoninvertibleMatrixException e) {
+                    recoverableException("createOperationStep", e);
+                    matrix = null;
+                }
+                datumShift = matrix;
             } else {
-                datumShift   = null;
+                datumShift = null;
             }
             var builder = new MathTransformContext(factorySIS.getMathTransformFactory(), sourceDatum, targetDatum);
             builder.setSourceAxes(sourceCS, sourceDatum.getEllipsoid());
