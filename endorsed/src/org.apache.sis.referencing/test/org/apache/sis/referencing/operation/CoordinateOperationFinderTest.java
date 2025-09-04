@@ -627,9 +627,9 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests a conversion of the temporal axis. We convert 1899-12-31 from a CRS having its epoch at 1970-1-1
+     * Tests a cha,ge of the temporal axis. We convert 1899-12-31 from a CRS having its epoch at 1970-1-1
      * to another CRS having its epoch at 1858-11-17, so the new value shall be approximately 41 years
-     * after the new epoch. This conversion also implies a change of units from seconds to days.
+     * after the new epoch. This operation also implies a change of units from seconds to days.
      *
      * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
@@ -641,8 +641,8 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
-        assertEquals("Axis changes", operation.getName().getCode());
-        assertInstanceOf(Conversion.class, operation);
+        assertEquals("Datum shift", operation.getName().getCode());
+        assertInstanceOf(Transformation.class, operation);  // Transformation because there is a change of datum.
 
         transform = operation.getMathTransform();
         tolerance = 2E-12;
@@ -1080,7 +1080,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final CoordinateOperationFinder finder = finder();
         var e = assertThrows(OperationNotFoundException.class, () -> finder.createOperation(sourceCRS, targetCRS),
                 "Should not create operation between CRS of different datum.");
-        assertMessageContains(e, "A test CRS");
+        assertMessageContains(e, "Screen display", "Another device");
 
         final DefaultEngineeringCRS screenCRS = createEngineering("Screen display", AxisDirection.DISPLAY_UP);
         final CoordinateOperation operation = finder.createOperation(sourceCRS, screenCRS);

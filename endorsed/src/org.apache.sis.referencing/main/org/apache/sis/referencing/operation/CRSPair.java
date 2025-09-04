@@ -97,7 +97,7 @@ final class CRSPair extends org.apache.sis.pending.jdk.Record {
                 cs = ((CoordinateReferenceSystem) object).getCoordinateSystem();
             }
             if (cs instanceof EllipsoidalCS) {
-                final StringBuilder sb = new StringBuilder(label);
+                final var sb = new StringBuilder(label);
                 sb.setLength(label.length() - suffix.length());
                 label = sb.append(((CoordinateSystem) cs).getDimension()).append('D').toString();
             }

@@ -267,7 +267,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
             assertEquals( 320,      p2.parameter("Z-axis translation").doubleValue());
             return true;
         } else {
-            assertSame(CoordinateOperationFinder.ELLIPSOID_CHANGE, steps.get(datumShiftIndex).getName());
+            assertSame(CoordinateOperationFinder.UNSPECIFIED_DATUM_CHANGE, steps.get(datumShiftIndex).getName());
             return false;
         }
     }

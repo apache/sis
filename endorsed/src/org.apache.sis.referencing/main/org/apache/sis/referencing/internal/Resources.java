@@ -204,6 +204,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short CoordinateOperationNotFound_2 = 13;
 
         /**
+         * No information about how to change from datum “{0}” to “{1}”.
+         */
+        public static final short DatumChangeNotFound_2 = 110;
+
+        /**
          * Datum shift files are searched in the “{0}” directory.
          */
         public static final short DatumChangesDirectory_1 = 92;
