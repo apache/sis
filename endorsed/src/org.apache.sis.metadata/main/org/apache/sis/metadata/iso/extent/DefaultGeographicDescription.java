@@ -37,7 +37,7 @@ import org.apache.sis.util.iso.Types;
  * {@code       └─code……………………………………} Alphanumeric value identifying an instance in the namespace.</div>
  *
  * The area is given by a {@linkplain #getGeographicIdentifier() geographic identifier},
- * which may be a code in the codespace of some authority (for example an EPSG code).
+ * which may be a code in the codespace of some authority (for example, an <abbr>EPSG</abbr> code).
  * In addition, the geographic identifier can optionally have a
  * {@linkplain DefaultIdentifier#getDescription() natural language description}.
  *

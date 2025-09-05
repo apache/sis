@@ -99,8 +99,8 @@ Then open the `FKeys.sql` file for edition:
 
 Usually, the above editions result in no change compared to the previous scripts (ignoring white spaces),
 in which case the maintainer can just revert the changes in order to preserve the formatting.
-However, if some changes are found in the schema, then hard-coded values in the `DataScriptFormatter` class may need
-to be modified, in particular the `booleanColumnIndicesForTables` and `doubleColumnIndicesForTables` collections.
+However, if some changes are found in the schema, then hard-coded values in the `DataScriptFormatter` class
+may need to be modified, in particular the `booleanColumns` and `doubleColumns` collections.
 
 
 ### Automatic updates after the manual checks
