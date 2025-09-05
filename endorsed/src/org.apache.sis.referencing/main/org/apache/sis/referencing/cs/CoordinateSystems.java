@@ -346,6 +346,9 @@ next:   for (final CoordinateSystem cs : targets) {
                                           final CoordinateSystem targetCS)
             throws IllegalArgumentException, IncommensurableException
     {
+        if (sourceCS == targetCS) {     // Quick optimization for a common case.
+            return Matrices.createIdentity(sourceCS.getDimension() + 1);
+        }
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
             // Above line was a relatively cheap test. Try the more expensive test below only if necessary.
             if (!hasAllTargetTypes(sourceCS, targetCS)) {

@@ -40,10 +40,10 @@ dependencyResolutionManagement {
      */
     repositories {
         mavenCentral()
-        mavenLocal()    // For GeoAPI SNAPSHOT, which are built locally. Seems also needed for UCAR.
+        mavenLocal()    // For GeoAPI SNAPSHOT, which are built locally.
         maven {
             name = "UCAR"
-            url = uri("https://artifacts.unidata.ucar.edu/repository/unidata-releases")
+            url = uri("https://artifacts.unidata.ucar.edu/repository/unidata-all")
             content {
                 includeGroup("edu.ucar")        // Restrict usage to those dependencies.
             }

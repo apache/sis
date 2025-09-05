@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.referencing.internal.Resources;
 
 
 /**
@@ -30,7 +31,7 @@ import org.apache.sis.util.privy.Numerics;
  * └     ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see Matrix2
  * @see Matrix3
@@ -251,6 +252,18 @@ public class Matrix1 extends MatrixSIS {
     }
 
     /**
+     * Returns the inverse of this matrix.
+     *
+     * @return the inverse of this matrix.
+     * @throws NoninvertibleMatrixException if this matrix is not invertible.
+     */
+    @Override
+    public MatrixSIS inverse() throws NoninvertibleMatrixException {
+        if (m00 != 0) return new Matrix1(1 / m00);
+        throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.SingularMatrix));
+    }
+
+    /**
      * Normalizes all columns in-place.
      * For a 1×1 matrix with non-NaN value, this method sets the {@link #m00} value
      * to +1, -1 or 0 with the same sign as the original value.
@@ -259,7 +272,7 @@ public class Matrix1 extends MatrixSIS {
      */
     @Override
     public MatrixSIS normalizeColumns() {
-        final MatrixSIS magnitudes = new Matrix1(Math.abs(m00));
+        final var magnitudes = new Matrix1(Math.abs(m00));
         m00 = Math.signum(m00);
         return magnitudes;
     }

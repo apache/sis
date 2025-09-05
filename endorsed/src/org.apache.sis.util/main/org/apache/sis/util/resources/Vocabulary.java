@@ -465,11 +465,6 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Ellipsoid = 72;
 
         /**
-         * Ellipsoid change
-         */
-        public static final short EllipsoidChange = 73;
-
-        /**
          * Ellipsoidal height
          */
         public static final short EllipsoidalHeight = 74;
@@ -1130,6 +1125,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short RootMeanSquare = 177;
 
         /**
+         * Same datum ensemble
+         */
+        public static final short SameDatumEnsemble = 279;
+
+        /**
          * Sample dimensions
          */
         public static final short SampleDimensions = 178;
@@ -1343,6 +1343,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Unspecified
          */
         public static final short Unspecified = 209;
+
+        /**
+         * Unspecified datum change
+         */
+        public static final short UnspecifiedDatumChange = 73;
 
         /**
          * Untitled

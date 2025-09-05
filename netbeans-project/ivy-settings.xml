@@ -12,7 +12,7 @@
     <resolvers>
         <ibiblio name="central" m2compatible="true"/>
         <url name="UCAR">
-            <artifact pattern="https://artifacts.unidata.ucar.edu/repository/unidata-releases/edu/ucar/[artifact]/[revision]/[artifact]-[revision].[ext]"/>
+            <artifact pattern="https://artifacts.unidata.ucar.edu/repository/unidata-all/edu/ucar/[artifact]/[revision]/[artifact]-[revision].[ext]"/>
         </url>
     </resolvers>
      <modules>

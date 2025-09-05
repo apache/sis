@@ -52,7 +52,7 @@ import static org.apache.sis.util.privy.Constants.EPSG;
  * This is useful as a workaround if a URL is no longer accessible.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 public abstract class OptionalInstallations extends InstallationResources implements Localized {
@@ -60,7 +60,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
      * Where to download the EPSG scripts after user has approved the terms of use.
      */
     private static final String EPSG_DOWNLOAD_URL =
-            "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.4/sis-epsg-1.4.jar";
+            "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.5/sis-epsg-1.5.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in megabytes.

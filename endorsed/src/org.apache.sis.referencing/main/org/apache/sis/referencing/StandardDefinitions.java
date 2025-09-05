@@ -78,10 +78,8 @@ import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;
-import static org.opengis.referencing.ObjectDomain.DOMAIN_OF_VALIDITY_KEY;
-
-// Specific to the geoapi-3.1 branch:
 import org.opengis.referencing.datum.RealizationMethod;
+import static org.opengis.referencing.ObjectDomain.DOMAIN_OF_VALIDITY_KEY;
 
 
 /**
@@ -361,7 +359,7 @@ final class StandardDefinitions {
             default:   throw new AssertionError(code);
         }
         Map<String,Object> properties = properties(csCode, csName, null, false);
-        final DefaultVerticalCS cs = new DefaultVerticalCS(properties, createAxis(axis, true));
+        final var cs = new DefaultVerticalCS(properties, createAxis(axis, true));
         properties = properties(code, name, alias, true);
         if (wms != null) {
             addWMS(properties, wms);
@@ -378,12 +376,23 @@ final class StandardDefinitions {
     static VerticalDatum createVerticalDatum(final short code) {
         final String name;
         final String alias;
+        final RealizationMethod method;
         switch (code) {
-            case 5100: name = "Mean Sea Level";                     alias = "MSL";    break;
-            case 5103: name = "North American Vertical Datum 1988"; alias = "NAVD88"; break;
-            default:   throw new AssertionError(code);
+            case 5100: {
+                name   = "Mean Sea Level";
+                alias  = "MSL";
+                method = RealizationMethod.TIDAL;
+                break;
+            }
+            case 5103: {
+                name   = "North American Vertical Datum 1988";
+                alias  = "NAVD88";
+                method = RealizationMethod.LEVELLING;
+                break;
+            }
+            default: throw new AssertionError(code);
         }
-        return new DefaultVerticalDatum(properties(code, name, alias, true), (RealizationMethod) null);
+        return new DefaultVerticalDatum(properties(code, name, alias, true), method);
     }
 
     /**
