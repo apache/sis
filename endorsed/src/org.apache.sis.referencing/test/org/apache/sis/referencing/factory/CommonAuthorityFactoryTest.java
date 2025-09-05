@@ -391,7 +391,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
                 "  AXIS[“Latitude”, NORTH],\n" +
                 "  AUTHORITY[“CRS”, “84”]]\\E", crs);
 
-        assertWktEqualsRegex(Convention.WKT2, "(?m)\\Q" +
+        assertWktEqualsRegex(Convention.WKT2_2015, "(?m)\\Q" +
                 "GEODCRS[" + WGS84 + ",\n" +
                 "  DATUM[“World Geodetic System 1984\\E\\s?\\w*\\Q”,\n" +
                 "    ELLIPSOID[" + WGS84 + ", 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +

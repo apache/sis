@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Date;
+import java.util.function.Function;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -80,6 +81,7 @@ import org.apache.sis.metadata.simple.SimpleExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
@@ -636,6 +638,23 @@ public class Formatter implements Localized {
     }
 
     /**
+     * Appends the given object as an instance of {@code FormattableObject}.
+     * This method delegates to {@link #append(FormattableObject)} with an argument which is either
+     * the {@code object} value if that value is already an instance of {@link FormattableObject},
+     * or with the value converted using the given function. The {@code toFormattable} argument is
+     * usually a lambda function to a {@code castOrCopy(T)} method in an implementation class.
+     *
+     * @param  <T>            type of object to format.
+     * @param  object         the formattable object to append to the WKT, or {@code null} if none.
+     * @param  toFormattable  the function to invoke for converting the given object to a formattable object.
+     *
+     * @since 1.5
+     */
+    public <T> void appendFormattable(final T object, final Function<T, FormattableObject> toFormattable) {
+        append((object instanceof FormattableObject) ? (FormattableObject) object : toFormattable.apply(object));
+    }
+
+    /**
      * Appends the given {@code FormattableObject}.
      * This method performs the following steps:
      *
@@ -862,10 +881,7 @@ public class Formatter implements Localized {
                     }
                 }
                 for (Identifier id : identifiers) {
-                    if (!(id instanceof FormattableObject)) {
-                        id = ImmutableIdentifier.castOrCopy(id);
-                    }
-                    append((FormattableObject) id);
+                    appendFormattable(id, ImmutableIdentifier::castOrCopy);
                     if (filterID) break;
                 }
             }
@@ -889,14 +905,23 @@ public class Formatter implements Localized {
         } else if (!(object instanceof ReferenceSystem || object instanceof CoordinateOperation)) {
             return;
         }
-        for (final ObjectDomain domain : object.getDomains()) {
-            scope = domain.getScope();
-            area = domain.getDomainOfValidity();
-            if (area != null) break;
-            // TODO: in 2019 revision we need to format all USAGE[…] elements, not only the first one.
-        }
         appendOnNewLine(WKTKeywords.Anchor, anchor, null);
-        append(scope, area);
+        final boolean usage = convention.compareTo(Convention.WKT2_2015) < 0
+                && convention != Convention.WKT2_SIMPLIFIED;    // TODO: remove that exclusion.
+        for (final ObjectDomain domain : object.getDomains()) {
+            if (usage) {
+                // ISO 19162:2019
+                appendFormattable(domain, DefaultObjectDomain::castOrCopy);
+            } else {
+                // ISO 19162:2015
+                scope = domain.getScope();
+                area = domain.getDomainOfValidity();
+                if (scope != null || area != null) {
+                    append(scope, area);
+                    break;
+                }
+            }
+        }
     }
 
     /**

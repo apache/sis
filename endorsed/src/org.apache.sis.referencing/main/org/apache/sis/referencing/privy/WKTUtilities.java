@@ -69,7 +69,7 @@ import org.opengis.metadata.Identifier;
  * This class provides a set of {@code toFormattable(…)} for various {@link IdentifiedObject} subtypes.
  * It is important to <strong>not</strong> provide a generic {@code toFormattable(IdentifiedObject)}
  * method, because the user may choose to implement more than one GeoAPI interface for the same object.
- * We need to be specific in order to select the right "aspect" of the given object.
+ * We need to be specific in order to select the right aspect of the given object.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

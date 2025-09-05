@@ -359,7 +359,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
     @Test
     public void testWKT2_WithMixedUnits() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "PROJCRS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  BASEGEODCRS[“NTF (Paris)”,\n" +
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +

@@ -388,6 +388,14 @@ abstract class AbstractParser implements Parser {
      * This is a helper method for {@link Element} only.
      *
      * <p>The WKT 2 format expects dates formatted according the ISO 9075-2 standard.</p>
+     *
+     * <h4>Limitations</h4>
+     * The WKT 2 specification allows dates in the form {@code YYYY-DDD} where {@code DDD} is the ordinal day.
+     * This is not supported in the current implementation. It can be distinguished from the {@code YYYY-MM}
+     * case by the fact that the ordinal day must have 3 digits according the specification.
+     *
+     * @todo Need to replace {@code Date} by {@code java.time} with the precision used in the WKT string.
+     * The WKT 2 specification allows any precision.
      */
     final Date parseDate(final String text, final ParsePosition position) {
         if (dateFormat == null) {

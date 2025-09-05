@@ -76,12 +76,12 @@ public final class DefaultVerticalDatumTest extends TestCase {
         DefaultVerticalDatum datum;
         datum = new DefaultVerticalDatum(Map.of(DefaultVerticalDatum.NAME_KEY, "Geoidal"), RealizationMethod.GEOID);
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Geoidal”, 2005]", datum);
-        assertWktEquals(Convention.WKT2, "VDATUM[“Geoidal”]", datum);
+        assertWktEquals(Convention.WKT2_2015, "VDATUM[“Geoidal”]", datum);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Geoidal”]", datum);
 
         datum = new DefaultVerticalDatum(Map.of(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ellipsoidal());
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Ellipsoidal”, 2002]", datum);
-        assertWktEquals(Convention.WKT2, "VDATUM[“Ellipsoidal”]", datum);
+        assertWktEquals(Convention.WKT2_2015, "VDATUM[“Ellipsoidal”]", datum);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Ellipsoidal”]", datum);
     }
 

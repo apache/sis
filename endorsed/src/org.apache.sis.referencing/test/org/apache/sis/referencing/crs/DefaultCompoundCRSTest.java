@@ -261,7 +261,7 @@ public final class DefaultCompoundCRSTest extends TestCase {
      */
     @Test
     public void testWKT2() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "COMPOUNDCRS[“WGS 84 + height + time”,\n" +
                 "  GEODCRS[“WGS 84”,\n" +
                 "    DATUM[“World Geodetic System 1984”,\n" +

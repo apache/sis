@@ -126,7 +126,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
                 "ReferenceSystem[“My \"object\".”, AUTHORITY[“EPSG”, “4326”]]",
                 object);
 
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "ReferenceSystem[“My \"object\".”,\n" +     // Quotes replaced
                 "  SCOPE[“Large scale topographic mapping and cadastre.”],\n" +
                 "  AREA[“Netherlands offshore.”],\n" +

@@ -22,8 +22,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The convention to use for WKT formatting.
- * This enumeration specifies whether to use the <i>Well Known Text</i> format defined by ISO 19162
+ * The convention to use for <abbr title="Well Known Text">WKT</abbr> formatting.
+ * This enumeration specifies whether to use the <i>Well Known Text</i> format defined by <abbr>ISO</abbr> 19162
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
  * <h2>WKT 1 variants</h2>
@@ -61,12 +61,8 @@ public enum Convention {
      */
 
     /**
-     * The ISO 19162 format, also known as “WKT 2”.
-     * This convention follows the ISO recommendations.
-     *
-     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
-     * and parameters formatted with this convention will use the {@linkplain Citations#EPSG EPSG}
-     * names when available.</p>
+     * Latest version of the ISO 19162 format (also known as “WKT 2”) supported by Apache SIS.
+     * In the current version of Apache <abbr>SIS</abbr>, this is synonymous of {@link #WKT2_2019}.
      *
      * <p>This is the default convention used by {@link FormattableObject#toWKT()}
      * and for new {@link WKTFormat} instances.</p>
@@ -105,12 +101,24 @@ public enum Convention {
     WKT2_SIMPLIFIED(false, false, false),
 
     /**
-     * The ISO 19162:2007 format, also known as “WKT 2”.
+     * The ISO 19162:2019 format, also known as “WKT 2”.
+     * This version replaces ISO 19162:2015.
+     *
+     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
+     * and parameters formatted with this convention will use the {@linkplain Citations#EPSG EPSG}
+     * names when available.</p>
+     *
+     * @since 1.5
+     */
+    WKT2_2019(false, true, false),
+
+    /**
+     * The ISO 19162:2015 format, also known as “WKT 2”.
      * This version has been replaced by ISO 19162:2019.
      * This enumeration value can be used when compatibility with this older standard is required.
      *
      * <p>This was the default convention used by {@link FormattableObject#toWKT()}
-     * in Apache <abbr>SIS</abbr> versions prior to 1.5.</p>
+     * in Apache <abbr>SIS</abbr> versions prior to version 1.5.</p>
      *
      * @since 1.5
      */
@@ -264,14 +272,12 @@ public enum Convention {
     /**
      * Returns {@code true} if this convention is one of the simplified variants of WKT.
      * The simplifications are documented in the {@link #WKT2_SIMPLIFIED} javadoc.
-     *
-     * <p>This methods consider version 1 of WKT as a “simplified” convention,
-     * since this version was indeed simpler than version 2.</p>
+     * This method also considers version 1 of WKT as a simplified convention.
      *
      * @return {@code true} it this convention uses a simplified variant of WKT.
      */
     public boolean isSimplified() {
-        return this != WKT2;
+        return this == WKT2_SIMPLIFIED || ordinal() >= WKT1.ordinal();
     }
 
     /**

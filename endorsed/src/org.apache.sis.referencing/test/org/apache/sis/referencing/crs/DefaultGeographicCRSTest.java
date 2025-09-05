@@ -153,7 +153,7 @@ public final class DefaultGeographicCRSTest extends TestCase {
      */
     @Test
     public void testWKT2() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "GEODCRS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
@@ -177,7 +177,7 @@ public final class DefaultGeographicCRSTest extends TestCase {
      */
     @Test
     public void testWKT2_For3D() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "GEODCRS[“WGS 84 (3D)”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +

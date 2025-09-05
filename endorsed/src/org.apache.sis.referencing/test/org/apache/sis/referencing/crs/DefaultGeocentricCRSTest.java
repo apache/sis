@@ -133,7 +133,7 @@ public final class DefaultGeocentricCRSTest extends TestCase {
      */
     @Test
     public void testWKT2() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "GEODCRS[“Geocentric”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +

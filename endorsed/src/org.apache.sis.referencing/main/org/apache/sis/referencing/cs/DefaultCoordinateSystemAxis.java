@@ -780,7 +780,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * to all axes (we do not verify).
          */
         if (!isWKT1) {
-            if (convention == Convention.WKT2 && cs != null) {
+            if (cs != null && !convention.isSimplified()) {
                 final Order order = Order.create(cs, this);
                 if (order != null) {
                     formatter.append(order);

@@ -310,8 +310,8 @@ public final class DefaultParameterDescriptorTest extends TestCase {
     @Test
     public void testWKT() {
         final DefaultParameterDescriptor<Double> descriptor = create("Real number", 4, 8, 5, Units.METRE);
-        assertWktEquals("PARAMETER[“Integer param”, 5]", create("Integer param", 4, 8, 5));
-        assertWktEquals("PARAMETER[“Real number”, 5.0, LENGTHUNIT[“metre”, 1]]", descriptor);
+        assertWktEquals(Convention.WKT2, "PARAMETER[“Integer param”, 5]", create("Integer param", 4, 8, 5));
+        assertWktEquals(Convention.WKT2, "PARAMETER[“Real number”, 5.0, LENGTHUNIT[“metre”, 1]]", descriptor);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "Parameter[“Real number”, 5.0, Unit[“metre”, 1]]", descriptor);
     }
 
@@ -323,6 +323,6 @@ public final class DefaultParameterDescriptorTest extends TestCase {
     @Test
     public void testIdentifiedParameterWKT() {
         final DefaultParameterDescriptor<Double> descriptor = createEPSG("A0", Constants.EPSG_A0);
-        assertWktEquals("PARAMETER[“A0”, ID[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
+        assertWktEquals(Convention.WKT2, "PARAMETER[“A0”, ID[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
     }
 }

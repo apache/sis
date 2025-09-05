@@ -247,7 +247,7 @@ abstract class CommandRunner {
          * or to the standard output stream otherwise.
          */
         if (TEST.equals(commandName)) {
-            final StringWriter s = new StringWriter();
+            final var s = new StringWriter();
             outputBuffer = s.getBuffer();
             out = new PrintWriter(s);
             err = out;

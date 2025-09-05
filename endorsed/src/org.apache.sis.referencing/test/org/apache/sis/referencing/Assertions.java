@@ -66,7 +66,7 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  */
 public final class Assertions extends Static {
     /**
-     * The formatter to be used by {@link #assertWktEquals(String, Object)}.
+     * The formatter to be used by {@link #assertWktEquals(Convention, String, Object)}.
      * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
      * for easier readability of {@link String} constants in Java code.
      */
@@ -543,18 +543,6 @@ public final class Assertions extends Static {
     }
 
     /**
-     * Asserts that the WKT 2 of the given object is equal to the expected one.
-     * This method expected the {@code “…”} quotation marks instead of {@code "…"}
-     * for easier readability of {@link String} constants in Java code.
-     *
-     * @param expected  the expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object    the object to format in <i>Well Known Text</i> format, or {@code null}.
-     */
-    public static void assertWktEquals(final String expected, final Object object) {
-        assertWktEquals(Convention.WKT2, expected, object);
-    }
-
-    /**
      * Asserts that the WKT of the given object according the given convention is equal to the expected one.
      * This method expected the {@code “…”} quotation marks instead of {@code "…"} for easier readability of
      * {@link String} constants in Java code.
@@ -587,8 +575,8 @@ public final class Assertions extends Static {
 
     /**
      * Asserts that the WKT of the given object according the given convention is equal to the given regular expression.
-     * This method is like {@link #assertWktEquals(String, Object)}, but the use of regular expression allows some
-     * tolerance for example on numerical parameter values that may be subject to a limited form of rounding errors.
+     * This method is like {@link #assertWktEquals(Convention, String, Object)}, but the use of regular expression allows
+     * some tolerance for example on numerical parameter values that may be subject to a limited form of rounding errors.
      *
      * @param convention  the WKT convention to use.
      * @param expected    the expected regular expression, or {@code null} if {@code object} is expected to be null.

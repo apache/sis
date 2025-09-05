@@ -189,7 +189,7 @@ public final class DefaultDerivedCRSTest extends TestCase {
      */
     @Test
     public void testWKT2() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "GEODCRS[“Back to Greenwich”,\n" +
                 "  BASEGEODCRS[“NTF (Paris)”,\n" +
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +

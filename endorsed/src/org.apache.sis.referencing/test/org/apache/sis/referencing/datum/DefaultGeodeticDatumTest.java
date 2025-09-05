@@ -244,7 +244,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
     @Test
     public void testToWKT() {
         final var datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "DATUM[“WGS84”,\n" +
                 "  ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]]",
                 datum);
@@ -326,7 +326,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
                 "  AUTHORITY[“EPSG”, “6326”]]",
                 datum);
 
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "DATUM[“World Geodetic System 1984”,\n" +
                 "  ELLIPSOID[“WGS 84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]],\n" +
                 "  ID[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]]]",
