@@ -359,7 +359,7 @@ final class StandardDefinitions {
             default:   throw new AssertionError(code);
         }
         Map<String,Object> properties = properties(csCode, csName, null, false);
-        final DefaultVerticalCS cs = new DefaultVerticalCS(properties, createAxis(axis, true));
+        final var cs = new DefaultVerticalCS(properties, createAxis(axis, true));
         properties = properties(code, name, alias, true);
         if (wms != null) {
             addWMS(properties, wms);
@@ -376,12 +376,23 @@ final class StandardDefinitions {
     static VerticalDatum createVerticalDatum(final short code) {
         final String name;
         final String alias;
+        final VerticalDatumType method;
         switch (code) {
-            case 5100: name = "Mean Sea Level";                     alias = "MSL";    break;
-            case 5103: name = "North American Vertical Datum 1988"; alias = "NAVD88"; break;
-            default:   throw new AssertionError(code);
+            case 5100: {
+                name   = "Mean Sea Level";
+                alias  = "MSL";
+                method = VerticalDatumType.DEPTH;       // Actually `RealizationMethod.TIDAL`
+                break;
+            }
+            case 5103: {
+                name   = "North American Vertical Datum 1988";
+                alias  = "NAVD88";
+                method = VerticalDatumType.GEOIDAL;     // Actually `RealizationMethod.LEVELLING`;
+                break;
+            }
+            default: throw new AssertionError(code);
         }
-        return new DefaultVerticalDatum(properties(code, name, alias, true), VerticalDatumType.GEOIDAL);
+        return new DefaultVerticalDatum(properties(code, name, alias, true), method);
     }
 
     /**

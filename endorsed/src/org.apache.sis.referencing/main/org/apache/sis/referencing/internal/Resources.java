@@ -204,6 +204,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short CoordinateOperationNotFound_2 = 13;
 
         /**
+         * No information about how to change from datum “{0}” to “{1}”.
+         */
+        public static final short DatumChangeNotFound_2 = 106;
+
+        /**
          * Datum shift files are searched in the “{0}” directory.
          */
         public static final short DatumChangesDirectory_1 = 92;
@@ -517,11 +522,6 @@ public class Resources extends IndexedResourceBundle {
          * Operation “{1}” of class ‘{0}’ has no mathematical transform.
          */
         public static final short OperationHasNoTransform_2 = 43;
-
-        /**
-         * Coordinate operation between reference frames in the same datum ensemble.
-         */
-        public static final short OperationSameDatumEnsemble = 106;
 
         /**
          * No parameter named “{1}” has been found in “{0}”.

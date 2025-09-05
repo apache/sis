@@ -120,13 +120,6 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     public static final PositionalAccuracy INDIRECT_SHIFT_APPLIED;
 
     /**
-     * Coordinate operation between reference frames in the same datum ensemble.
-     * Should be used only with coordinate operations that are conversion,
-     * but may also be used as a fallback if a datum ensemble didn't specified its accuracy.
-     */
-    public static final PositionalAccuracy SAME_DATUM_ENSEMBLE;
-
-    /**
      * Name for accuracy metadata of datum ensemble.
      */
     private static final DefaultMeasureReference ENSEMBLE_REFERENCE =
@@ -160,9 +153,6 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
         DATUM_SHIFT_APPLIED    = new PositionalAccuracyConstant(TRANSFORMATION_REFERENCE, method, pass, DATUM_SHIFT_ACCURACY);
         DATUM_SHIFT_OMITTED    = new PositionalAccuracyConstant(TRANSFORMATION_REFERENCE, method, fail, UNKNOWN_ACCURACY);
         INDIRECT_SHIFT_APPLIED = new PositionalAccuracyConstant(TRANSFORMATION_REFERENCE, method, pass, INDIRECT_SHIFT_ACCURACY);
-
-        final var reference = new DefaultMeasureReference(Resources.formatInternational(Resources.Keys.OperationSameDatumEnsemble));
-        SAME_DATUM_ENSEMBLE = new PositionalAccuracyConstant(reference, null, null, null);
     }
 
     /**
@@ -246,7 +236,6 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
         if (equals(DATUM_SHIFT_APPLIED))    return DATUM_SHIFT_APPLIED;
         if (equals(DATUM_SHIFT_OMITTED))    return DATUM_SHIFT_OMITTED;
         if (equals(INDIRECT_SHIFT_APPLIED)) return INDIRECT_SHIFT_APPLIED;
-        if (equals(SAME_DATUM_ENSEMBLE))    return SAME_DATUM_ENSEMBLE;
         return this;
     }
 

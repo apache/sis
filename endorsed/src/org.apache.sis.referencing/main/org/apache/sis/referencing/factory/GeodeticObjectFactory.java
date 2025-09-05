@@ -1385,9 +1385,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * more generic method} without datum ensemble.
      *
      * @param  properties  name and other properties to give to the new object.
-     *         Available properties are {@linkplain ObjectFactory listed there}.
-     * @param  datum  temporal datum to use in created CRS.
-     * @param  cs  the temporal coordinate system for the created CRS.
+     * @param  datum       the parametric datum or datum ensemble viewed as a pseudo-datum.
+     * @param  cs          the parametric coordinate system for the created <abbr>CRS</abbr>.
      * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */

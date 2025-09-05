@@ -134,9 +134,9 @@ public final class DatumOrEnsemble extends Static {
 
     /**
      * Returns the datum or ensemble of a coordinate operation from <var>source</var> to <var>target</var>.
-     * If the two given coordinate reference systems are associated to the same datum, then this method returns
-     * the <var>target</var> datum. Otherwise, this method returns the largest ensemble which fully contains the
-     * datum or datum ensemble of the other <abbr>CRS</abbr>.
+     * If the two given coordinate reference systems are associated to equal datum (ignoring metadata),
+     * then this method returns the <var>target</var> datum. Otherwise, this method returns
+     * the largest ensemble which fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>.
      * That largest common ensemble is interpreted as the new target of the operation result.
      * If none of the <var>source</var> or <var>target</var> datum ensembles met the above criteria,
      * then this method returns an empty value.
@@ -227,9 +227,9 @@ public final class DatumOrEnsemble extends Static {
 
     /**
      * Returns the datum or pseudo-datum of the result of an operation between the given geodetic <abbr>CRS</abbr>s.
-     * If the two given coordinate reference systems are associated to the same datum, then this method returns
-     * the <var>target</var> datum. Otherwise, this method returns a pseudo-datum for the largest ensemble which
-     * fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>.
+     * If the two given coordinate reference systems are associated to equal (ignoring metadata) datum,
+     * then this method returns the <var>target</var> datum. Otherwise, this method returns a pseudo-datum
+     * for the largest ensemble which fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>.
      * That largest common ensemble is interpreted as the new target of the operation result.
      * If none of the <var>source</var> or <var>target</var> datum ensembles met the above criteria,
      * then this method returns an empty value.
@@ -319,7 +319,8 @@ public final class DatumOrEnsemble extends Static {
         DefaultDatumEnsemble<D> targetEnsemble;
         DefaultDatumEnsemble<D> selected;
         if ((isMember(selected = targetEnsemble = (DefaultDatumEnsemble<D>) getDatumEnsemble(targetCRS), sourceDatum)) ||
-            (isMember(selected = sourceEnsemble = (DefaultDatumEnsemble<D>) getDatumEnsemble(sourceCRS), targetDatum)))
+            (isMember(selected = sourceEnsemble = (DefaultDatumEnsemble<D>) getDatumEnsemble(sourceCRS), targetDatum)) ||
+            (sourceEnsemble != null && sourceEnsemble == targetEnsemble))     // Optimization for a common case.
         {
             return Optional.of(constructor.apply(selected));
         }
@@ -362,7 +363,7 @@ public final class DatumOrEnsemble extends Static {
      * @return whether the ensemble contains the given datum.
      */
     private static boolean isMember(final DefaultDatumEnsemble<?> ensemble, final IdentifiedObject datum) {
-        if (ensemble != null) {
+        if (ensemble != null && datum != null) {
             for (final Datum member : ensemble.getMembers()) {
                 if (Utilities.equalsIgnoreMetadata(datum, member)) {
                     return true;

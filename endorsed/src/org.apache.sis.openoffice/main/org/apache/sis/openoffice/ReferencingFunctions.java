@@ -44,6 +44,7 @@ import org.apache.sis.storage.base.CodeType;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.DefaultObjectDomain;
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.referencing.internal.Legacy;
 
 
@@ -306,8 +307,10 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                         } else if (object instanceof CoordinateSystem) {
                             cs = (CoordinateSystem) object;
                         } else {
-                            final Class<?> actual;
-                            if (object instanceof AbstractIdentifiedObject) {
+                            final Object actual;
+                            if (object instanceof DefaultDatumEnsemble) {
+                                actual = "DatumEnsemble";
+                            } else if (object instanceof AbstractIdentifiedObject) {
                                 actual = ((AbstractIdentifiedObject) object).getInterface();
                             } else {
                                 actual = Classes.getClass(object);

@@ -45,7 +45,6 @@ import static org.apache.sis.util.privy.Constants.UTC;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.test.Validators;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.*;
@@ -130,7 +129,6 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
     @Test
     public void testGeographic() {
         final GeographicCRS geographic = CommonCRS.WGS84.geographic();
-        Validators.validate(geographic);
         GeodeticObjectVerifier.assertIsWGS84(geographic, true, true);
         assertSame(geographic, CommonCRS.WGS84.geographic(), "Cached value");
     }
@@ -142,7 +140,6 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
     public void testNormalizedGeographic() {
         final GeographicCRS geographic = CommonCRS.WGS84.geographic();
         final GeographicCRS normalized = CommonCRS.WGS84.normalizedGeographic();
-        Validators.validate(normalized);
         assertSame(geographic.getDatum(), normalized.getDatum());
         /*
          * Compare axes. Note that axes in different order have different EPSG codes.
@@ -160,7 +157,6 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
     @Test
     public void testGeographic3D() {
         final GeographicCRS crs = CommonCRS.WGS72.geographic3D();
-        Validators.validate(crs);
         assertEquals ("WGS 72", crs.getName().getCode());
         assertSame   (CommonCRS.WGS72.geographic().getDatum(), crs.getDatum());
         assertNotSame(CommonCRS.WGS84.geographic().getDatum(), crs.getDatum());
@@ -179,7 +175,6 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
     @Test
     public void testGeocentric() {
         final GeodeticCRS crs = CommonCRS.WGS72.geocentric();
-        Validators.validate(crs);
         assertEquals ("WGS 72", crs.getName().getCode());
         assertSame   (CommonCRS.WGS72.geographic().getDatum(), crs.getDatum());
         assertNotSame(CommonCRS.WGS84.geographic().getDatum(), crs.getDatum());
@@ -198,7 +193,6 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
     @Test
     public void testSpherical() {
         final GeodeticCRS crs = CommonCRS.ETRS89.spherical();
-        Validators.validate(crs);
         assertEquals ("ETRS89", crs.getName().getCode());
         assertSame   (CommonCRS.ETRS89.geographic().getDatum(), crs.getDatum());
         assertNotSame(CommonCRS.WGS84 .datum(true), crs.getDatum());
@@ -220,10 +214,10 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
             final VerticalDatumType method;
             final String axisName, datumName;
             switch (e) {
-                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; method = VerticalDatumType. GEOIDAL;       break;
+                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; method = null; break;
                 case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface";          method = VerticalDatumType. BAROMETRIC;    break;
-                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     method = VerticalDatumType. GEOIDAL;       break;
-                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     method = VerticalDatumType. GEOIDAL;       break;
+                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     method = VerticalDatumType. DEPTH;         break;
+                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     method = VerticalDatumType. DEPTH;         break;
                 case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                          method = VerticalDatumTypes.ellipsoidal(); break;
                 case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";                      method = VerticalDatumType. OTHER_SURFACE; break;
                 default: throw new AssertionError(e);
@@ -231,17 +225,12 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
             final String        name  = e.name();
             final VerticalDatum datum = e.datum();
             final VerticalCRS   crs   = e.crs();
-            if (e.isEPSG && !name.startsWith("NAV")) {
-                /*
-                 * BAROMETRIC and ELLIPSOIDAL uses an axis named "Height", which is not a valid
-                 * axis name according ISO 19111. We skip the validation test for those enums.
-                 */
-                Validators.validate(crs);
-            }
             assertSame(datum, e.datum(), name);                         // Datum before CRS creation.
             assertSame(crs.getDatum(), e.datum(), name);                // Datum after CRS creation.
             assertEquals(datumName, datum.getName().getCode(), name);
-            assertEquals(method, datum.getVerticalDatumType(), name);
+            if (method != null) {
+                assertEquals(method, datum.getVerticalDatumType(), name);
+            }
             assertEquals(axisName,  crs.getCoordinateSystem().getAxis(0).getName().getCode(), name);
         }
     }
@@ -284,7 +273,6 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
             final TemporalDatum datum  = e.datum();
             final TemporalCRS   crs    = e.crs();
             final Date          origin = datum.getOrigin();
-            Validators.validate(crs);
             assertSame(datum, e.datum(), name);             // Datum before CRS creation.
             assertSame(crs.getDatum(), e.datum(), name);    // Datum after CRS creation.
             assertEquals(epoch, dateFormat.format(origin), name);

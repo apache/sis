@@ -130,19 +130,29 @@ class CoordinateOperationRegistry {
     /**
      * The identifier for a transformation which is a datum shift without Bursa-Wolf parameters.
      * Only the changes in ellipsoid axis-length are taken in account.
-     * Such "ellipsoid shifts" are approximations and may have 1 kilometre error.
+     * Such "Unspecified datum change" are approximations and may have 1 kilometre error.
      *
+     * @see #isDatumChange(Identifier)
      * @see org.apache.sis.referencing.datum.BursaWolfParameters
      * @see PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
      */
-    static final Identifier ELLIPSOID_CHANGE = createIdentifier(Vocabulary.Keys.EllipsoidChange);
+    static final Identifier UNSPECIFIED_DATUM_CHANGE = createIdentifier(Vocabulary.Keys.UnspecifiedDatumChange);
 
     /**
      * The identifier for a transformation which is a datum shift.
      *
+     * @see #isDatumChange(Identifier)
      * @see PositionalAccuracyConstant#DATUM_SHIFT_APPLIED
      */
     static final Identifier DATUM_SHIFT = createIdentifier(Vocabulary.Keys.DatumShift);
+
+    /**
+     * The identifier for a transformation between two members of the same datum ensemble.
+     * The accuracy is specified by the datum ensemble.
+     *
+     * @see #isDatumChange(Identifier)
+     */
+    static final Identifier SAME_DATUM_ENSEMBLE = createIdentifier(Vocabulary.Keys.SameDatumEnsemble);
 
     /**
      * The identifier for a geocentric conversion.
@@ -159,6 +169,17 @@ class CoordinateOperationRegistry {
      */
     private static Identifier createIdentifier(final short key) {
         return new NamedIdentifier(Citations.SIS, Vocabulary.formatInternational(key));
+    }
+
+    /**
+     * Returns whether the given identifier is one of the pre-defined values used for datum changes.
+     *
+     * @see CoordinateOperationFinder#canHide(Identifier)
+     */
+    static boolean isDatumChange(final Identifier typeOfChange) {
+        return typeOfChange == DATUM_SHIFT
+            || typeOfChange == UNSPECIFIED_DATUM_CHANGE
+            || typeOfChange == SAME_DATUM_ENSEMBLE;
     }
 
     /**
@@ -751,15 +772,7 @@ class CoordinateOperationRegistry {
         final OperationMethod method = InverseOperationMethod.create(op.getMethod(), factorySIS);
         final Map<String,Object> properties = properties(INVERSE_OPERATION);
         InverseOperationMethod.properties(op, properties);
-        /*
-         * Find a hint about whether the coordinate operation is a transformation or a conversion,
-         * but do not set any conversion subtype. In particular, do not specify a Projection type,
-         * because the inverse of a Projection does not implement the Projection interface.
-         */
-        Class<? extends CoordinateOperation> type = null;
-        if (op instanceof Transformation)  type = Transformation.class;
-        else if (op instanceof Conversion) type = Conversion.class;
-        inverse = createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, type);
+        inverse = createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, typeOf(op));
         AbstractCoordinateOperation.setCachedInverse(op, inverse);
         return inverse;
     }
@@ -987,15 +1000,7 @@ class CoordinateOperationRegistry {
         if (Utilities.equalsApproximately(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
         if (Utilities.equalsApproximately(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
         final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
-        /*
-         * Determine whether the operation to create is a Conversion or a Transformation
-         * (could also be a Conversion subtype like Projection, but this is less important).
-         * We want the GeoAPI interface, not the implementation class.
-         * The most reliable way is to ask to the `AbstractOperation.getInterface()` method,
-         * but this is SIS-specific. The fallback uses reflection.
-         */
-        properties.put(CoordinateOperations.OPERATION_TYPE_KEY,
-                ReferencingUtilities.getInterface(CoordinateOperation.class, operation));
+        properties.put(CoordinateOperations.OPERATION_TYPE_KEY, typeOf(operation));
         /*
          * Reuse the same operation method, but we may need to change its number of dimension.
          * For example the "Affine" set of parameters depend on the number of dimensions.
@@ -1245,10 +1250,10 @@ class CoordinateOperationRegistry {
 
     /**
      * Returns the specified identifier in a map to be given to coordinate operation constructors.
-     * In the special case where the {@code name} identifier is {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE},
-     * the map will contain extra information like positional accuracy.
+     * If the coordinate operation is a transformation, then it is caller's responsibility to set
+     * the {@value CoordinateOperation#COORDINATE_OPERATION_ACCURACY_KEY} property.
      *
-     * <h4>Note</h4>
+     * <h4>Missing properties</h4>
      * In the datum shift case, an operation version is mandatory but unknown at this time.
      * However, we noticed that the EPSG database does not always define a version neither.
      * Consequently, the Apache SIS implementation relaxes the rule requiring an operation
@@ -1258,13 +1263,8 @@ class CoordinateOperationRegistry {
      * @return a modifiable map containing the given name. Callers can put other entries in this map.
      */
     static Map<String,Object> properties(final Identifier name) {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(CoordinateOperation.NAME_KEY, name);
-        if ((name == DATUM_SHIFT) || (name == ELLIPSOID_CHANGE)) {
-            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                    (name == DATUM_SHIFT) ? PositionalAccuracyConstant.DATUM_SHIFT_APPLIED
-                                          : PositionalAccuracyConstant.DATUM_SHIFT_OMITTED);
-        }
         return properties;
     }
 
@@ -1308,7 +1308,7 @@ class CoordinateOperationRegistry {
      *   <li>If the given {@code type} is null, then this method infers the type from whether the given properties
      *       specify and accuracy or not. If those properties were created by the {@link #properties(Identifier)}
      *       method, then the operation will be a {@link Transformation} instance instead of {@link Conversion} if
-     *       the {@code name} identifier was {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE}.</li>
+     *       the {@code name} identifier {@linkplain #isDatumChange(Identifier) is for a datum change}.</li>
      *
      *   <li>If the given {@code method} is {@code null}, then infer an operation method by inspecting the given transform.
      *       The transform needs to implement the {@link org.apache.sis.parameter.Parameterized} interface in order to allow
@@ -1353,15 +1353,6 @@ class CoordinateOperationRegistry {
             }
         }
         /*
-         * If the operation type was not explicitly specified, infers it from whether an accuracy is specified
-         * or not. In principle, only transformations has an accuracy property; conversions do not. This policy
-         * is applied by the properties(Identifier) method in this class.
-         */
-        if (type == null) {
-            type = properties.containsKey(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY)
-                    ? Transformation.class : Conversion.class;
-        }
-        /*
          * The operation method is mandatory. If the user did not provided one, we need to infer it ourselves.
          * If we fail to infer an OperationMethod, let it to null - the exception will be thrown by the factory.
          */
@@ -1384,11 +1375,30 @@ class CoordinateOperationRegistry {
         if (parameters != null) {
             properties.put(CoordinateOperations.PARAMETERS_KEY, parameters);
         }
-        properties.put(CoordinateOperations.OPERATION_TYPE_KEY, type);
-        if (Conversion.class.isAssignableFrom(type) && transform.isIdentity()) {
-            properties.replace(IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
+        if (type != null) {
+            properties.put(CoordinateOperations.OPERATION_TYPE_KEY, type);
+            if (Conversion.class.isAssignableFrom(type) && transform.isIdentity()) {
+                properties.replace(IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
+            }
         }
         return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS, null, method, transform);
+    }
+
+    /**
+     * Returns the GeoAPI interface (not the implementation class) of the given operation.
+     * This mostly for whether the operation is a {@link Conversion} or {@link Transformation}.
+     * Legacy GeoAPI types such as {@code Projection} are intentionally omitted, in part because
+     * the inverse of a {@code Projection} does not implement the same interface.
+     *
+     * @param  op  the coordinate operation for which to identify the type.
+     * @return the operation type, or {@code null} if not one of the types of interest for this factory.
+     *
+     * @see AbstractCoordinateOperation#getInterface()
+     */
+    static Class<? extends CoordinateOperation> typeOf(final CoordinateOperation op) {
+        if (op instanceof Transformation) return Transformation.class;
+        if (op instanceof Conversion)     return Conversion.class;
+        return null;
     }
 
     /**
@@ -1405,6 +1415,20 @@ class CoordinateOperationRegistry {
      */
     final String label(final IdentifiedObject object) {
         return CRSPair.label(object, locale);
+    }
+
+    /**
+     * Returns an error message for missing information about datum change.
+     * This is used for the construction of {@link OperationNotFoundException}.
+     *
+     * @param  source  the source datum or datum ensemble.
+     * @param  target  the target datum or datum ensemble.
+     * @return a default error message.
+     */
+    final String datumChangeNotFound(final IdentifiedObject source, final IdentifiedObject target) {
+        return resources().getString(Resources.Keys.DatumChangeNotFound_2,
+                IdentifiedObjects.getDisplayName(source, locale),
+                IdentifiedObjects.getDisplayName(target, locale));
     }
 
     /**

@@ -43,6 +43,7 @@ import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
 import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
 import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
 import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
@@ -152,7 +153,7 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
      */
     private void setEllipsoid(final Ellipsoid value) {
         if (value != null) {
-            if (ellipsoid != null && ellipsoid != value) {
+            if (ellipsoid != null && !Utilities.equalsIgnoreMetadata(ellipsoid, value)) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.AlreadyInitialized_1, "ellipsoid"));
             }
             ellipsoid = value;

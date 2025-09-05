@@ -76,6 +76,8 @@ import static org.apache.sis.util.privy.CollectionsExt.immutableSet;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.Projection;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceSystem;
@@ -821,9 +823,16 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Returns {@code true} if the given object implements the same GeoAPI interface as this object.
      */
     private boolean implementsSameInterface(final Object object) {
-        final Class<? extends IdentifiedObject> type = getInterface();
+        Class<? extends IdentifiedObject> type = getInterface();
+        if (Projection.class.isAssignableFrom(type)) {  // Deprecated interface, behave as if it does not exist.
+            type = Conversion.class;
+        }
         if (object instanceof AbstractIdentifiedObject) {
-            return ((AbstractIdentifiedObject) object).getInterface() == type;
+            Class<?> other = ((AbstractIdentifiedObject) object).getInterface();
+            if (Projection.class.isAssignableFrom(other)) {
+                other = Conversion.class;
+            }
+            return other == type;
         }
         /*
          * Fallback for non-SIS implementations.

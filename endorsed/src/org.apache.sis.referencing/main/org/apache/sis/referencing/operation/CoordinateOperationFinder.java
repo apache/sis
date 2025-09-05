@@ -49,6 +49,7 @@ import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.AnnotatedMatrix;
+import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -56,6 +57,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.util.Utilities;
@@ -333,20 +335,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         // │                Any single CRS  ↔  CRS of the same type                 │
         // └────────────────────────────────────────────────────────────────────────┘
         if (sourceCRS instanceof SingleCRS && targetCRS instanceof SingleCRS) {
-            final Optional<IdentifiedObject> datumOrEnsemble =
-                    DatumOrEnsemble.ofTarget((SingleCRS) sourceCRS, (SingleCRS) targetCRS);
-            if (datumOrEnsemble.isPresent()) try {
-                /*
-                 * Because the CRS type is determined by the datum type (sometimes completed by the CS type),
-                 * having equivalent datum and compatible CS should be a sufficient criterion.
-                 */
-                return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
-                                DatumOrEnsemble.getAccuracy(datumOrEnsemble.get()).orElse(null),
-                                CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
-                                                                   targetCRS.getCoordinateSystem())));
-            } catch (IllegalArgumentException | IncommensurableException e) {
-                throw new FactoryException(notFoundMessage(sourceCRS, targetCRS), e);
-            }
+            return createOperationStepFallback((SingleCRS) sourceCRS, (SingleCRS) targetCRS);
         }
         // ┌────────────────────────────────────────────────────────────────────────┐
         // │                        Compound  ↔  various CRS                        │
@@ -512,27 +501,35 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final GeodeticDatum targetDatum = DatumOrEnsemble.asDatum(targetCRS);
         /*
          * Find the type of operation depending on whether there is a change of geodetic reference frame (datum).
-         * The `DATUM_SHIFT` and `ELLIPSOID_CHANGE` identifiers mean that there is a datum change, and all other
-         * identifiers mean that the coordinate operation is only a change of coordinate system type (Ellipsoidal
-         * ↔ Cartesian ↔ Spherical), axis swapping and unit conversions.
+         * The `DATUM_SHIFT`, `UNSPECIFIED_DATUM_CHANGE` and `SAME_DATUM_ENSEMBLE` identifiers mean that there is
+         * a datum change, and all other identifiers mean that the coordinate operation is only a change of
+         * coordinate system type (Ellipsoidal ↔ Cartesian ↔ Spherical), axis swapping and unit conversions.
          */
+        Identifier typeOfChange;
         final Matrix datumShift;
-        final Identifier identifier;
         final MathTransform transform;
         ParameterValueGroup parameters;
         final Optional<OperationMethod> method;
-        final Optional<GeodeticDatum> commonDatum = DatumOrEnsemble.asTargetDatum(sourceCRS, targetCRS);
-        if (commonDatum.isPresent()) {
+        final Optional<GeodeticDatum> finalDatum;
+        final boolean sameDatumOrEnsemble;
+        if (Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+            finalDatum = Optional.empty();
+            sameDatumOrEnsemble = true;
+            typeOfChange = (sourceCS instanceof EllipsoidalCS)
+                        == (targetCS instanceof EllipsoidalCS) ? AXIS_CHANGES : GEOCENTRIC_CONVERSION;
+        } else {
+            finalDatum = DatumOrEnsemble.asTargetDatum(sourceCRS, targetCRS);
+            sameDatumOrEnsemble = finalDatum.isPresent();
+            typeOfChange = sameDatumOrEnsemble ? SAME_DATUM_ENSEMBLE : UNSPECIFIED_DATUM_CHANGE;
+        }
+        if (sameDatumOrEnsemble) {
             /*
              * Coordinate system change (including change in the number of dimensions) without datum shift.
              * May contain the addition of ellipsoidal height or spherical radius, which need an ellipsoid.
              */
-            final boolean isGeographic = (sourceCS instanceof EllipsoidalCS);
-            identifier = isGeographic != (targetCS instanceof EllipsoidalCS) ? GEOCENTRIC_CONVERSION : AXIS_CHANGES;
             final var builder = CoordinateOperations.builder(factorySIS.getMathTransformFactory(), Constants.COORDINATE_SYSTEM_CONVERSION);
-            final var ellipsoid = (isGeographic ? sourceDatum : targetDatum).getEllipsoid();
-            builder.setSourceAxes(sourceCS, ellipsoid);
-            builder.setTargetAxes(targetCS, ellipsoid);
+            builder.setSourceAxes(sourceCS, sourceDatum.getEllipsoid());
+            builder.setTargetAxes(targetCS, targetDatum.getEllipsoid());
             transform  = builder.create();
             method     = builder.getMethod();
             parameters = builder.parameters();
@@ -557,9 +554,24 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
              *    - [Abridged] Molodensky          (as an approximation of geocentric translation)
              *    - Identity                       (if the desired accuracy is so large than we can skip datum shift)
              */
-            datumShift = (sourceDatum instanceof DefaultGeodeticDatum) ?
-                    ((DefaultGeodeticDatum) sourceDatum).getPositionVectorTransformation(targetDatum, areaOfInterest) : null;
-            identifier = (datumShift != null) ? DATUM_SHIFT : ELLIPSOID_CHANGE;
+            if (sourceDatum instanceof DefaultGeodeticDatum) {
+                final var impl = (DefaultGeodeticDatum) sourceDatum;
+                datumShift = impl.getPositionVectorTransformation(targetDatum, areaOfInterest);
+                if (datumShift != null) typeOfChange = DATUM_SHIFT;
+            } else if (targetDatum instanceof DefaultGeodeticDatum) {
+                final var impl = (DefaultGeodeticDatum) targetDatum;
+                Matrix matrix = impl.getPositionVectorTransformation(sourceDatum, areaOfInterest);
+                if (matrix != null) try {
+                    matrix = Matrices.inverse(matrix);
+                    typeOfChange = DATUM_SHIFT;
+                } catch (NoninvertibleMatrixException e) {
+                    recoverableException("createOperationStep", e);
+                    matrix = null;
+                }
+                datumShift = matrix;
+            } else {
+                datumShift = null;
+            }
             var builder = new MathTransformContext(factorySIS.getMathTransformFactory(), sourceDatum, targetDatum);
             builder.setSourceAxes(sourceCS, sourceDatum.getEllipsoid());
             builder.setTargetAxes(targetCS, targetDatum.getEllipsoid());
@@ -579,15 +591,23 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * The indirect path uses a third datum (typically WGS84) as an intermediate between the two
          * specified datum.
          */
-        final Map<String, Object> properties = properties(identifier);
-        PositionalAccuracy accuracy = commonDatum.flatMap(DatumOrEnsemble::getAccuracy).orElse(null);
-        if (accuracy == null && datumShift instanceof AnnotatedMatrix) {
-            accuracy = ((AnnotatedMatrix) datumShift).accuracy;
+        final Map<String, Object> properties = properties(typeOfChange);
+        PositionalAccuracy accuracy = finalDatum.flatMap(DatumOrEnsemble::getAccuracy).orElseGet(() ->
+            (datumShift instanceof AnnotatedMatrix) ? ((AnnotatedMatrix) datumShift).accuracy : null
+        );
+        final Class<? extends SingleOperation> type;
+        if (isDatumChange(typeOfChange)) {
+            type = Transformation.class;
+            if (accuracy == null) {
+                accuracy = (typeOfChange == UNSPECIFIED_DATUM_CHANGE)
+                     ? PositionalAccuracyConstant.DATUM_SHIFT_OMITTED
+                     : PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
+            }
+        } else {
+            type = Conversion.class;
         }
-        if (accuracy != null) {
-            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, accuracy);
-        }
-        return asList(createFromMathTransform(properties, sourceCRS, targetCRS, transform, method.orElse(null), parameters, null));
+        properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, accuracy);
+        return asList(createFromMathTransform(properties, sourceCRS, targetCRS, transform, method.orElse(null), parameters, type));
     }
 
     /**
@@ -683,7 +703,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * It is not the job of this block to perform unit conversions.
          * Unit conversions, if needed, are done by `step3` computed in above block.
          *
-         * The "Geographic3DtoVertical.txt" file in the provider package is a reminder.
+         * The "Geographic3DtoVertical.md" file in the `provider` package is a reminder.
          * If this policy is changed, that file should be edited accordingly.
          */
         final int srcDim = interpolationCS.getDimension();                          // Should always be 3.
@@ -715,10 +735,19 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                                                             final VerticalCRS targetCRS)
             throws FactoryException
     {
-        final Optional<VerticalDatum> commonDatum = DatumOrEnsemble.asTargetDatum(sourceCRS, targetCRS);
-        if (commonDatum.isEmpty()) {
-            throw new OperationNotFoundException(notFoundMessage(DatumOrEnsemble.of(sourceCRS),
-                                                                 DatumOrEnsemble.of(targetCRS)));
+        final VerticalDatum sourceDatum = DatumOrEnsemble.asDatum(sourceCRS);
+        final VerticalDatum targetDatum = DatumOrEnsemble.asDatum(targetCRS);
+        final Optional<VerticalDatum> finalDatum;
+        final Identifier typeOfChange;
+        if (Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+            finalDatum   = Optional.empty();
+            typeOfChange = AXIS_CHANGES;
+        } else {
+            finalDatum = DatumOrEnsemble.asTargetDatum(sourceCRS, targetCRS);
+            if (finalDatum.isEmpty()) {
+                throw new OperationNotFoundException(datumChangeNotFound(sourceDatum, targetDatum));
+            }
+            typeOfChange = SAME_DATUM_ENSEMBLE;
         }
         final VerticalCS sourceCS = sourceCRS.getCoordinateSystem();
         final VerticalCS targetCS = targetCRS.getCoordinateSystem();
@@ -728,8 +757,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
-        return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
-                DatumOrEnsemble.getAccuracy(commonDatum.get()).orElse(null), matrix));
+        // TODO: should we replace `targetCRS` if `finalDatum` is not equal to `targetDatum`?
+        return asList(createFromAffineTransform(typeOfChange, sourceCRS, targetCRS, finalDatum, matrix));
     }
 
     /**
@@ -760,6 +789,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     {
         final TemporalDatum sourceDatum = DatumOrEnsemble.asDatum(sourceCRS);
         final TemporalDatum targetDatum = DatumOrEnsemble.asDatum(targetCRS);
+        final Optional<TemporalDatum> finalDatum;
+        final Identifier typeOfChange;
+        if (Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+            finalDatum   = Optional.empty();
+            typeOfChange = AXIS_CHANGES;
+        } else {
+            finalDatum   = DatumOrEnsemble.asTargetDatum(sourceCRS, targetCRS);
+            typeOfChange = finalDatum.isPresent() ? SAME_DATUM_ENSEMBLE : DATUM_SHIFT;
+            // We do not default to `UNSPECIFIED_DATUM_CHANGE` because the change is not completely unspecified.
+        }
         final TimeCS sourceCS = sourceCRS.getCoordinateSystem();
         final TimeCS targetCS = targetCRS.getCoordinateSystem();
         /*
@@ -791,7 +830,58 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.
         final var translation = DoubleDouble.of(matrix.getNumber(0, translationColumn), true);
         matrix.setNumber(0, translationColumn, translation.add(epochShift));
-        return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, null, matrix));
+        // TODO: should we replace `targetCRS` if `finalDatum` is not equal to `targetDatum`?
+        return asList(createFromAffineTransform(typeOfChange, sourceCRS, targetCRS, finalDatum, matrix));
+    }
+
+    /**
+     * Creates an operation between two coordinate reference systems having no specialized method.
+     * The two given <abbr>CRS</abbr> should be of the same type. This is not verified directly by
+     * this method. However, because the <abbr>CRS</abbr> type is determined by the datum type
+     * (sometimes completed by the <abbr>CS</abbr> type), having equivalent datum and compatible
+     * <abbr>CS</abbr> should be a sufficient criterion for saying that the <abbr>CRS</abbr> are
+     * of the same type.
+     *
+     * <p>This method should be invoked as in last resort only.</p>
+     *
+     * <h4>Implementation type</h4>
+     * The method body is a pattern repeated in most {@code createOperationStep(…)} methods of this class.
+     * Except that in other methods, the logic is interleaved with more complex checks for datum changes.
+     * Understanding the code of this method can help to understand the code of other methods.
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation cannot be constructed.
+     */
+    private List<CoordinateOperation> createOperationStepFallback(final SingleCRS sourceCRS,
+                                                                  final SingleCRS targetCRS)
+            throws FactoryException
+    {
+        final IdentifiedObject sourceDatum = DatumOrEnsemble.of(sourceCRS);
+        final IdentifiedObject targetDatum = DatumOrEnsemble.of(targetCRS);
+        final Optional<IdentifiedObject> finalDatum;
+        final Identifier typeOfChange;
+        if (Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+            finalDatum   = Optional.empty();
+            typeOfChange = AXIS_CHANGES;
+        } else {
+            finalDatum = DatumOrEnsemble.ofTarget(sourceCRS, targetCRS);
+            if (finalDatum.isEmpty()) {
+                throw new OperationNotFoundException(datumChangeNotFound(sourceDatum, targetDatum));
+            }
+            typeOfChange = SAME_DATUM_ENSEMBLE;
+        }
+        final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
+        final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
+        final Matrix matrix;
+        try {
+            matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
+        } catch (IllegalArgumentException | IncommensurableException exception) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        }
+        // TODO: should we replace `targetCRS` if `finalDatum` is not equal to `targetDatum`?
+        return asList(createFromAffineTransform(typeOfChange, sourceCRS, targetCRS, finalDatum, matrix));
     }
 
     /**
@@ -963,31 +1053,37 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
 
     /**
      * Creates a coordinate operation from a matrix, which usually describes an affine transform.
-     * A default {@link OperationMethod} object is given to this transform. In the special case
-     * where the {@code name} identifier is {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE},
+     * A default {@link OperationMethod} object is given to the returned operation. In the special case
+     * where {@code typeOfChange} {@linkplain #isDatumChange(Identifier) is for a datum change},
      * the operation will be a {@link Transformation} instance instead of {@link Conversion}.
      *
-     * @param  name       the identifier for the operation to be created.
-     * @param  sourceCRS  the source coordinate reference system.
-     * @param  targetCRS  the target coordinate reference system.
-     * @param  accuracy   the positional accuracy, or {@code null} if unspecified.
-     * @param  matrix     the matrix which describe an affine transform operation.
+     * @param  typeOfChange  the identifier for the operation to be created.
+     * @param  sourceCRS     the source coordinate reference system.
+     * @param  targetCRS     the target coordinate reference system.
+     * @param  finalDatum    the ensemble that determines the operation accuracy, or {@code null} if none.
+     * @param  matrix        the matrix which describe an affine transform operation.
      * @return the conversion or transformation.
      * @throws FactoryException if the operation cannot be created.
      */
-    private CoordinateOperation createFromAffineTransform(final Identifier                name,
-                                                          final CoordinateReferenceSystem sourceCRS,
-                                                          final CoordinateReferenceSystem targetCRS,
-                                                          final PositionalAccuracy        accuracy,
-                                                          final Matrix                    matrix)
-            throws FactoryException
+    private CoordinateOperation createFromAffineTransform(
+            final Identifier typeOfChange,
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS,
+            final Optional<? extends IdentifiedObject> finalDatum,
+            final Matrix matrix) throws FactoryException
     {
-        final MathTransform transform  = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
-        final Map<String, Object> properties = properties(name);
-        if (accuracy != null) {
-            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, accuracy);
+        final MathTransform transform = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
+        final Map<String, Object> properties = properties(typeOfChange);
+        if (finalDatum != null) {
+            finalDatum.flatMap(DatumOrEnsemble::getAccuracy)
+                    .ifPresent((accuracy) -> properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, accuracy));
         }
-        return createFromMathTransform(properties, sourceCRS, targetCRS, transform, null, null, null);
+        // Note: we cannot rely on whether the accuracy was non-null for determining the type.
+        Class<? extends CoordinateOperation> type = Conversion.class;
+        if (isDatumChange(typeOfChange)) {
+            type = Transformation.class;
+        }
+        return createFromMathTransform(properties, sourceCRS, targetCRS, transform, null, null, type);
     }
 
     /**
@@ -1052,11 +1148,14 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         }
         if (SubTypes.isSingleOperation(main)) {
             final SingleOperation op = (SingleOperation) main;
-            final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
-            main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
-                   sourceCRS, targetCRS, mt, op.getMethod(), op.getParameterValues(),
-                   (main instanceof Transformation) ? Transformation.class :
-                   (main instanceof Conversion) ? Conversion.class : SingleOperation.class);
+            main = createFromMathTransform(
+                    new HashMap<>(IdentifiedObjects.getProperties(main)),
+                    sourceCRS,
+                    targetCRS,
+                    factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2),
+                    op.getMethod(),
+                    op.getParameterValues(),
+                    typeOf(op));
         } else {
             main = factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
         }
@@ -1131,6 +1230,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * Returns {@code true} if a coordinate operation of the given name can be hidden
      * in the list of operations. Note that the {@code MathTransform} will still take
      * the operation in account however.
+     *
+     * @see #isDatumChange(Identifier)
      */
     private static boolean canHide(final Identifier id) {
         return (id == AXIS_CHANGES) || (id == IDENTITY);
@@ -1161,8 +1262,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         identifierOfStepCRS.put(newID, oldID);
         identifierOfStepCRS.put(oldID, count);
 
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(IdentifiedObject.NAME_KEY, newID);
+        final Map<String,Object> properties = properties(newID);
         properties.put(IdentifiedObject.REMARKS_KEY, Vocabulary.formatInternational(Vocabulary.Keys.DerivedFrom_1, label(object)));
         return properties;
     }
@@ -1180,7 +1280,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * CoordinateReferenceSystem)} method contract.
      */
     private static List<CoordinateOperation> asList(final CoordinateOperation operation) {
-        final List<CoordinateOperation> operations = new ArrayList<>(1);
+        final var operations = new ArrayList<CoordinateOperation>(1);
         operations.add(operation);
         return operations;
     }
@@ -1192,8 +1292,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  source  the source CRS.
      * @param  target  the target CRS.
      * @return a default error message.
+     *
+     * @see #datumChangeNotFound(IdentifiedObject, IdentifiedObject)
      */
-    private String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
+    private String notFoundMessage(final CoordinateReferenceSystem source, final CoordinateReferenceSystem target) {
         return resources().getString(Resources.Keys.CoordinateOperationNotFound_2, label(source), label(target));
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.referencing.internal.Resources;
 
 
 /**
@@ -31,7 +32,7 @@ import org.apache.sis.util.privy.Numerics;
  * └         ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see Matrix1
  * @see Matrix3
@@ -297,6 +298,19 @@ public class Matrix2 extends MatrixSIS {
             m00 * x + m01 * y,
             m10 * x + m11 * y
         };
+    }
+
+    /**
+     * Returns the inverse of this matrix.
+     *
+     * @return the inverse of this matrix.
+     * @throws NoninvertibleMatrixException if this matrix is not invertible.
+     */
+    @Override
+    public MatrixSIS inverse() throws NoninvertibleMatrixException {
+        final double id = m00*m11 - m01*m10;
+        if (id != 0) return new Matrix2(m11/id, -m01/id, -m10/id, m00/id);
+        throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.SingularMatrix));
     }
 
     /**

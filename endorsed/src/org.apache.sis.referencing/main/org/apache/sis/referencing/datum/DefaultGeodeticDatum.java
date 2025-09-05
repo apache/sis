@@ -45,6 +45,7 @@ import org.apache.sis.referencing.internal.AnnotatedMatrix;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -422,6 +423,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @see BursaWolfParameters#getPositionVectorTransformation(Temporal)
      */
+    @OptionalCandidate
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent areaOfInterest) {
         ensureNonNull("targetDatum", targetDatum);
         final var selector = new ExtentSelector<BursaWolfParameters>(areaOfInterest);
