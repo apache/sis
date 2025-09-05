@@ -167,8 +167,6 @@ public class DefaultParametricDatum extends AbstractDatum implements ParametricD
      * {@code ParametricDatum} is defined in the WKT 2 specification only.
      *
      * @return {@code "ParametricDatum"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#83">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

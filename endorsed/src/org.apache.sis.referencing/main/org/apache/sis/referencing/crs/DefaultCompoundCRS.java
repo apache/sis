@@ -455,8 +455,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
 
     /**
      * Returns {@code true} if the sequence of single components is conform to the ISO 19162 restrictions.
-     * The <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#111">WKT 2 specification at §16.1</a>
-     * restricts {@code CompoundCRS} to the following components in that order:
+     * The WKT 2 specification restricts {@code CompoundCRS} to the following components in that order:
      *
      * <ul>
      *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS}
@@ -620,8 +619,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * SIS does not check if this CRS is compliant with the above-cited restrictions.
      *
      * @return {@code "CompoundCRS"} (WKT 2) or {@code "Compd_CS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification §16</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

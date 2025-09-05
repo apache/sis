@@ -262,8 +262,6 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
      * Formats this CRS as a <i>Well Known Text</i> {@code VerticalCRS[…]} element.
      *
      * @return {@code "VerticalCRS"} (WKT 2) or {@code "Vert_CS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#69">WKT 2 specification §10</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

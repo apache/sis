@@ -402,8 +402,6 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

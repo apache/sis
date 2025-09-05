@@ -470,8 +470,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Formats this operation as a <i>Well Known Text</i> {@code Method[…]} element.
      *
      * @return {@code "Method"} (WKT 2) or {@code "Projection"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#118">WKT 2 specification §17.2.3</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

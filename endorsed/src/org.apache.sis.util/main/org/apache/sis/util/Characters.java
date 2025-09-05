@@ -325,7 +325,6 @@ public final class Characters extends Static {
      *
      * @see java.lang.Character.Subset
      * @see Character#getType(int)
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#139">WKT 2 specification §B.5</a>
      *
      * @since 0.3
      */

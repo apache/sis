@@ -377,8 +377,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * They were reintroduced in a different form ({@link RealizationMethod}) in the ISO 19111:2019 standard.
      *
      * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#71">WKT 2 specification §10.2</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

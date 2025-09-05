@@ -723,8 +723,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * {@link org.apache.sis.io.wkt.WKTFormat#setTransliterator(Transliterator)}.
      *
      * @return {@code "Axis"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -463,9 +463,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * </ul>
      *
      * @return {@inheritDoc}
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
-     * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

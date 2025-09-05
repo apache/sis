@@ -52,11 +52,6 @@ public final class URLs extends Static {
     public static final String OPERATION_METHODS = "https://sis.apache.org/tables/CoordinateOperationMethods.html";
 
     /**
-     * The Well-Known Text (WKT) 2 specification implemented by Apache SIS.
-     */
-    public static final String WKT_SPECIFICATION = "http://docs.opengeospatial.org/is/12-063r5/12-063r5.html";
-
-    /**
      * Do not allow instantiation of this class.
      */
     private URLs() {

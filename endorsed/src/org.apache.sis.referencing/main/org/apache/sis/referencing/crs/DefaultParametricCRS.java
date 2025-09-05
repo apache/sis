@@ -268,8 +268,6 @@ public class DefaultParametricCRS extends AbstractSingleCRS<ParametricDatum> imp
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ParametricCRS"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#83">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

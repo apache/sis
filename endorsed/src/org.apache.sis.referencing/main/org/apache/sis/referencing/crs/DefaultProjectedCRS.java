@@ -391,8 +391,6 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification §9</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

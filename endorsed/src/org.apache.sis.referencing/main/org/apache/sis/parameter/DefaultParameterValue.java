@@ -1072,8 +1072,6 @@ convert:            if (componentType != null) {
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Parameter"} or {@code "ParameterFile"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#119">WKT 2 specification §17.2.4</a>
      */
     @Override
     @SuppressWarnings("LocalVariableHidesMemberVariable")

@@ -132,8 +132,7 @@ public final class CoordinateSystems extends Static {
      * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic reference frame} of the
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance
      * that contains (through its coordinate system) the axes having those directions.
-     * This policy is consistent with
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">WKT 2 specification §7.5.4(iv)</a>.
+     * This policy is consistent with <abbr>WKT</abbr> 2 specification.
      *
      * <h4>Example</h4>
      * {@code directionAlongMeridian(AxisDirection.SOUTH, -90)} returns an axis direction for

@@ -109,11 +109,7 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- *
- * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
- * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
- *
- * @since 0.4
+ * @since   0.4
  */
 public class Formatter implements Localized {
     /**
@@ -1508,8 +1504,6 @@ public class Formatter implements Localized {
      * {@code append(Units.KILOMETRE)} will append "{@code LengthUnit["km", 1000]}" to the WKT.
      *
      * @param  unit  the unit to append to the WKT, or {@code null} if none.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#35">WKT 2 specification §7.4</a>
      */
     @SuppressWarnings("StringEquality")
     public void append(final Unit<?> unit) {

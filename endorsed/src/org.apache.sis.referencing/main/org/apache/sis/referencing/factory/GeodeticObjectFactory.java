@@ -1833,8 +1833,6 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see org.apache.sis.io.wkt
      * @see org.apache.sis.referencing.CRS#fromWKT(String)
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
-     * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     @Override
     public CoordinateReferenceSystem createFromWKT(final String wkt) throws FactoryException {

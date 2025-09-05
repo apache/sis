@@ -63,11 +63,7 @@ import org.apache.sis.system.Environment;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- *
- * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
- * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
- *
- * @since 0.4
+ * @since   0.4
  */
 @XmlTransient
 public abstract class FormattableObject implements Printable {

@@ -1125,8 +1125,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "PrimeMeridian"} element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#53">WKT 2 specification §8.2.2</a>.
+     * Parses a {@code "PrimeMeridian"} element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1202,8 +1201,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses an {@code "Ellipsoid"} element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#52">WKT 2 specification §8.2.1</a>.
+     * Parses an {@code "Ellipsoid"} element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1304,8 +1302,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "Method"} (WKT 2) element, followed by parameter values. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#62">WKT 2 specification §9.3</a>.
+     * Parses a {@code "Method"} (WKT 2) element, followed by parameter values.
      *
      * The legacy WKT 1 specification was:
      *
@@ -1379,8 +1376,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "Datum"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#54">WKT 2 specification §8.2.4</a>.
+     * Parses a {@code "Datum"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1420,8 +1416,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "VerticalDatum"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#71">WKT 2 specification §10.2</a>.
+     * Parses a {@code "VerticalDatum"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1517,8 +1512,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "EngineeringDatum"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#76">WKT 2 specification §11.2</a>.
+     * Parses a {@code "EngineeringDatum"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1555,8 +1549,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses an {@code "ImageDatum"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#81">WKT 2 specification §12.2</a>.
+     * Parses an {@code "ImageDatum"} (WKT 2) element.
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1575,8 +1568,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "EngineeringCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#74">WKT 2 specification §11</a>.
+     * Parses a {@code "EngineeringCRS"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1656,8 +1648,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses an {@code "ImageCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification §12</a>.
+     * Parses an {@code "ImageCRS"} (WKT 2) element.
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1687,8 +1678,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "GeodeticCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>.
+     * Parses a {@code "GeodeticCRS"} (WKT 2) element.
      *
      * The legacy WKT 1 specification had two elements for this:
      *
@@ -1866,8 +1856,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "VerticalCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#69">WKT 2 specification §10</a>.
+     * Parses a {@code "VerticalCRS"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -2081,8 +2070,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "ProjectedCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification §9</a>.
+     * Parses a {@code "ProjectedCRS"} (WKT 2) element.
      *
      * The legacy WKT 1 specification was:
      *
@@ -2162,8 +2150,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "CompoundCRS"} element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification §16</a>.
+     * Parses a {@code "CompoundCRS"} element.
      *
      * The legacy WKT 1 specification was:
      *
@@ -2286,8 +2273,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "CoordinateOperation"} element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification §17</a>.
+     * Parses a {@code "CoordinateOperation"} element.
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.

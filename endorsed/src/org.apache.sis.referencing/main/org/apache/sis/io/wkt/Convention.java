@@ -70,8 +70,6 @@ public enum Convention {
      *
      * <p>This is the default convention used by {@link FormattableObject#toWKT()}
      * and for new {@link WKTFormat} instances.</p>
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
      */
     WKT2(false, true, false),
 
@@ -114,16 +112,13 @@ public enum Convention {
      * <p>This was the default convention used by {@link FormattableObject#toWKT()}
      * in Apache <abbr>SIS</abbr> versions prior to 1.5.</p>
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
-     *
      * @since 1.5
      */
     WKT2_2015(false, true, false),
 
     /**
      * The OGC 01-009 format, also known as “WKT 1”.
-     * A definition for this format is shown in Extended Backus Naur Form (EBNF)
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">on GeoAPI</a>.
+     * A definition for this format is shown in Extended Backus Naur Form (EBNF) in OGC 01-009.
      *
      * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
      * and parameters formatted with this convention will use the {@linkplain Citations#OGC OGC}
@@ -156,8 +151,6 @@ public enum Convention {
      *   <tr><td>Geocentric</td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td></tr>
      * </table>
      * </div></div>
-     *
-     * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     WKT1(true, true, false),
 

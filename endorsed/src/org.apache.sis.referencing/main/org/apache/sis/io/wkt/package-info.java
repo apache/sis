@@ -47,10 +47,9 @@
  * Referencing WKT is defined using Extended Backus Naur Form (EBNF) in two versions:
  * <ul>
  *   <li>ISO 19162 defines the current format, also known as “WKT 2”. The specification is also made
- *       <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">available online</a> by OGC.</li>
+ *       <a href="https://www.ogc.org/standards/wkt-crs/">available online</a> by OGC.</li>
  *   <li>The previous format — “WKT 1” — was defined in the <a href="https://www.ogc.org/standards/ct">OGC
- *       document 01-009</a>. This definition is
- *       <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">shown on GeoAPI</a>.</li>
+ *       document 01-009</a>.</li>
  * </ul>
  *
  * The WKT 1 format has been interpreted differently by various implementers.
@@ -84,10 +83,6 @@
  * @author  Rémi Eve (IRD)
  * @author  Rueben Schulz (UBC)
  * @version 1.5
- *
- * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
- * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
- *
- * @since 0.4
+ * @since   0.4
  */
 package org.apache.sis.io.wkt;

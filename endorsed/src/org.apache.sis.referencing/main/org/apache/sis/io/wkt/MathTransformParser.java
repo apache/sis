@@ -55,8 +55,6 @@ import org.apache.sis.measure.Units;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- *
- * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  */
 class MathTransformParser extends AbstractParser {
     /**
