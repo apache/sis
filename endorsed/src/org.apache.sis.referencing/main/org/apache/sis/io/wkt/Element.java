@@ -713,7 +713,7 @@ final class Element {
 
     /**
      * Removes and returns the next {@link Element} with no bracket.
-     * The key is used only for only for formatting an error message.
+     * The key is used only for formatting an error message.
      *
      * @param  key  the parameter name. Used only for formatting an error message.
      * @return the next {@link Element} among the children, with no bracket.

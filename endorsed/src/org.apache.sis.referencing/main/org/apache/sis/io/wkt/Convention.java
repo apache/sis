@@ -77,7 +77,9 @@ public enum Convention {
      *   <li>By {@linkplain KeywordStyle#DEFAULT default}, this convention uses the keywords that are the closest matches
      *       to the Java interface names. For example, {@code "GeodeticCRS"} is preferred to {@code "GeodCRS"}.</li>
      *   <li>The {@code PrimeMeridian} element is omitted if the meridian is Greenwich.</li>
-     *   <li>The {@code Axis} element omits the {@code Order} sub-element.</li>
+     *   <li>The {@code Axis} element omits always the {@code Order} sub-element.</li>
+     *   <li>The {@code Axis} element omits the {@code AxisMinValue}, {@code AxisMinValue} and {@code RangeMeaning}
+     *       sub-elements if their values are the standard values for latitude or longitude axes.</li>
      *   <li>The {@code Unit} elements are less verbose:<ul>
      *     <li>{@code Ellipsoid} and {@code VerticalExtent} elements omit the {@code LengthUnit} sub-element
      *         if that unit is {@link org.apache.sis.measure.Units#METRE}.</li>

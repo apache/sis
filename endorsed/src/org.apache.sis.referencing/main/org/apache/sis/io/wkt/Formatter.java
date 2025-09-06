@@ -1622,7 +1622,7 @@ public class Formatter implements Localized {
      */
     final boolean appendValue(final Object value) {
         if (value instanceof Number) {
-            final Number number = (Number) value;
+            final var number = (Number) value;
             if (Numbers.isInteger(number.getClass())) {
                 append(number.longValue());
             } else {

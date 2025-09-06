@@ -247,8 +247,8 @@ public final class DefaultGeographicCRSTest extends TestCase {
                 "    Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "    PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
-                "    Axis[“Longitude (L)”, east],\n" +                      // See method javadoc.
-                "    Axis[“Latitude (B)”, north],\n" +
+                "    Axis[“Longitude (L)”, east, AxisMinValue[-200.0], AxisMaxValue[200.0], RangeMeaning[wraparound]],\n" +
+                "    Axis[“Latitude (B)”, north, AxisMinValue[-100.0], AxisMaxValue[100.0], RangeMeaning[exact]],\n" +
                 "    Unit[“grad”, 0.015707963267948967]]",
                 HardCodedCRS.NTF);
     }

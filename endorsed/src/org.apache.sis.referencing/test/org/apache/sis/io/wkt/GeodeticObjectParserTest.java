@@ -34,6 +34,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -184,12 +186,18 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         assertEquals("φ", axis.getAbbreviation(), "abbreviation");
         assertEquals(AxisDirection.NORTH, axis.getDirection(), "direction");
         assertEquals(Units.DEGREE, axis.getUnit(), "unit");
+        assertEquals(Latitude.MIN_VALUE, axis.getMinimumValue());
+        assertEquals(Latitude.MAX_VALUE, axis.getMaximumValue());
+        assertEquals(RangeMeaning.EXACT, axis.getRangeMeaning());
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“longitude”,EAST,order[2],UNIT[“degree”,0.0174532925199433]]");
         assertEquals("Longitude", axis.getName().getCode(), "name");
         assertEquals("λ", axis.getAbbreviation(), "abbreviation");
         assertEquals(AxisDirection.EAST, axis.getDirection(), "direction");
         assertEquals(Units.DEGREE, axis.getUnit(), "unit");
+        assertEquals(Longitude.MIN_VALUE, axis.getMinimumValue());
+        assertEquals(Longitude.MAX_VALUE, axis.getMaximumValue());
+        assertEquals(RangeMeaning.WRAPAROUND, axis.getRangeMeaning());
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“ellipsoidal height (h)”,up,ORDER[3],LengthUnit[“kilometre”,1000]]");
         assertEquals("Ellipsoidal height", axis.getName().getCode(), "name");
@@ -208,6 +216,16 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         assertEquals("X", axis.getAbbreviation(), "abbreviation");
         assertEquals(CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 90), axis.getDirection(), "direction");
         assertEquals(Units.METRE, axis.getUnit(), "unit");
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“longitude”,EAST,order[2],UNIT[“degree”,0.0174532925199433],"
+                + "AxisMinValue[0],AxisMaxValue[360],RangeMeaning[wraparound]]");
+        assertEquals("Longitude", axis.getName().getCode(), "name");
+        assertEquals("λ", axis.getAbbreviation(), "abbreviation");
+        assertEquals(AxisDirection.EAST, axis.getDirection(), "direction");
+        assertEquals(Units.DEGREE, axis.getUnit(), "unit");
+        assertEquals(RangeMeaning.WRAPAROUND, axis.getRangeMeaning());
+        assertEquals(  0, axis.getMinimumValue());
+        assertEquals(360, axis.getMaximumValue());
     }
 
     /**

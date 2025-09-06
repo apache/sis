@@ -421,6 +421,79 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
+     * Pulls an optional element which contains only a floating-point value.
+     *
+     * @param  parent  the element from which to pull a child element.
+     * @param  key     name of the element to pull.
+     * @return the value, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    final Double pullElementAsDouble(final Element parent, final String key) throws ParseException {
+        Element element = parent.pullElement(OPTIONAL, key);
+        if (element != null) {
+            double value = element.pullDouble(key);
+            element.close(ignoredElements);
+            return value;
+        }
+        return null;
+    }
+
+    /**
+     * Pulls an optional element which contains only an integer value.
+     *
+     * @param  parent  the element from which to pull a child element.
+     * @param  key     name of the element to pull.
+     * @return the value, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    final Integer pullElementAsInteger(final Element parent, final String key) throws ParseException {
+        Element element = parent.pullElement(OPTIONAL, key);
+        if (element != null) {
+            int value = element.pullInteger(key);
+            element.close(ignoredElements);
+            return value;
+        }
+        return null;
+    }
+
+    /**
+     * Pulls an optional element which contains only a string value.
+     *
+     * @param  parent  the element from which to pull a child element.
+     * @param  key     name of the element to pull.
+     * @return the value, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    final String pullElementAsString(final Element parent, final String key) throws ParseException {
+        Element element = parent.pullElement(OPTIONAL, key);
+        if (element != null) {
+            String value = element.pullString(key);
+            element.close(ignoredElements);
+            return value;
+        }
+        return null;
+    }
+
+    /**
+     * Pulls an optional element which contains only an enumeration value.
+     *
+     * @param  parent  the element from which to pull a child element.
+     * @param  key     name of the element to pull.
+     * @return the value, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    final String pullElementAsEnum(final Element parent, final String key) throws ParseException {
+        Element element = parent.pullElement(OPTIONAL, key);
+        if (element != null) {
+            Element value = element.pullVoidElement(key);
+            value  .close(ignoredElements);
+            element.close(ignoredElements);
+            return value.keyword;
+        }
+        return null;
+    }
+
+    /**
      * Reports a non-fatal warning that occurred while parsing a WKT.
      *
      * @param  parent   the parent element, or {@code null} if unknown.

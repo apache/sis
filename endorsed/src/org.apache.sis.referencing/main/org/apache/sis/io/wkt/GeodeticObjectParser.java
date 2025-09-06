@@ -57,6 +57,7 @@ import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
@@ -474,7 +475,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          */
         final var domains = new ArrayList<ObjectDomain>();
         while ((element = parent.pullElement(OPTIONAL, WKTKeywords.Usage)) != null) {
-            final String scope = parseScope(element);
+            final String scope = pullElementAsString(element, WKTKeywords.Scope);
             final DefaultExtent extent = parseExtent(element);
             if (scope != null || extent != null) {
                 domains.add(new DefaultObjectDomain(Types.toInternationalString(scope), extent));
@@ -486,7 +487,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              * Legacy (ISO 19162:2015) way to declare scope and extent:
              * directly inside de CRS element, without USAGE wrapper.
              */
-            final String scope = parseScope(parent);
+            final String scope = pullElementAsString(parent, WKTKeywords.Scope);
             if (scope != null) {
                 properties.put(ObjectDomain.SCOPE_KEY, scope);
             }
@@ -524,28 +525,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             anchor.close(ignoredElements);
         }
         return properties;
-    }
-
-    /**
-     * Parses the {@code SCOPE} element.
-     * This element has the following pattern:
-     *
-     * {@snippet lang="wkt" :
-     *     SCOPE["Large scale topographic mapping and cadastre."]
-     *     }
-     *
-     * @param  parent  the parent element.
-     * @return the scope, or {@code null} if none.
-     * @throws ParseException if an element cannot be parsed.
-     */
-    private String parseScope(final Element parent) throws ParseException {
-        final Element element = parent.pullElement(OPTIONAL, WKTKeywords.Scope);
-        if (element != null) {
-            final String scope = element.pullString("scope");
-            element.close(ignoredElements);
-            return scope;
-        }
-        return null;
     }
 
     /**
@@ -1127,24 +1106,30 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         name         = transliterator.toLongAxisName       (csType, direction, name);
         abbreviation = transliterator.toUnicodeAbbreviation(csType, direction, abbreviation);
         /*
-         * At this point we are done and ready to create the CoordinateSystemAxis. But there is one last element
-         * specified by ISO 19162 but not in Apache SIS representation of axis: ORDER[n], which specify the axis
-         * ordering. If present we will store that value for processing by the `parseCoordinateSystem(…)` method.
+         * At this point, the mandatory properties are known. The next element is specified by ISO 19162
+         * but not stored in Apache SIS representation of axis: ORDER[n], which specifies the axis ordering.
+         * If present, we will store that value for processing by the `parseCoordinateSystem(…)` method.
          */
-        final Element order = element.pullElement(OPTIONAL, WKTKeywords.Order);
-        Integer n = null;
-        if (order != null) {
-            n = order.pullInteger("order");
-            order.close(ignoredElements);
-        }
+        final Integer order   = pullElementAsInteger(element, WKTKeywords.Order);
+        final Double  minimum = pullElementAsDouble (element, WKTKeywords.AxisMinValue);
+        final Double  maximum = pullElementAsDouble (element, WKTKeywords.AxisMaxValue);
+        final String  meaning = pullElementAsEnum   (element, WKTKeywords.RangeMeaning);
+        final Map<String, Object> properties = parseMetadataAndClose(element, name, null);
+        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, minimum);
+        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, maximum);
+        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY,
+                Types.forCodeName(RangeMeaning.class, meaning, RangeMeaning::valueOf));
+        /*
+         * At this point, all mandatory and optional properties are known.
+         */
         final CoordinateSystemAxis axis;
         final CSFactory csFactory = factories.getCSFactory();
         try {
-            axis = csFactory.createCoordinateSystemAxis(parseMetadataAndClose(element, name, null), abbreviation, direction, unit);
+            axis = csFactory.createCoordinateSystemAxis(properties, abbreviation, direction, unit);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
-        if (axisOrder.put(axis, n) != null) {   // Opportunist check, effective for instances created by SIS factory.
+        if (axisOrder.put(axis, order) != null) {   // Opportunist check, effective for instances created by SIS factory.
             throw new UnparsableObjectException(errorLocale, Errors.Keys.DuplicatedElement_1,
                     new Object[] {Strings.bracket(WKTKeywords.Axis, name)}, element.offset);
         }

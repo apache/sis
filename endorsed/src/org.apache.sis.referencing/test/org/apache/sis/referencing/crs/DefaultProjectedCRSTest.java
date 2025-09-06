@@ -274,8 +274,8 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 "      Id[“EPSG”, 6807]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, Id[“EPSG”, 8903]],\n" +
                 "    CS[ellipsoidal, 2],\n" +
-                "      Axis[“Longitude (λ)”, east],\n" +
-                "      Axis[“Latitude (φ)”, north],\n" +
+                "      Axis[“Longitude (λ)”, east, AxisMinValue[-200.0], AxisMaxValue[200.0], RangeMeaning[wraparound]],\n" +
+                "      Axis[“Latitude (φ)”, north, AxisMinValue[-100.0], AxisMaxValue[100.0], RangeMeaning[exact]],\n" +
                 "      Unit[“grad”, 0.015707963267948967, Id[“EPSG”, 9105]]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801], Id[“GeoTIFF”, 9]],\n" +

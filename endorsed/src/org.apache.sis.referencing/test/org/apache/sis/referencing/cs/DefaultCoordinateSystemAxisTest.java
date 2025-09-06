@@ -88,25 +88,28 @@ public final class DefaultCoordinateSystemAxisTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals(Convention.WKT2, "AXIS[“x”, east, LENGTHUNIT[“metre”, 1]]",  X);
-        assertWktEquals(Convention.WKT2, "AXIS[“y”, north, LENGTHUNIT[“metre”, 1]]", Y);
-        assertWktEquals(Convention.WKT2, "AXIS[“z”, up, LENGTHUNIT[“metre”, 1]]",    Z);
-        assertWktEquals(Convention.WKT2, "AXIS[“Longitude (λ)”, east, ANGLEUNIT[“grad”, 0.015707963267948967]]",             LONGITUDE_gon);
-        assertWktEquals(Convention.WKT2, "AXIS[“Latitude (φ)”, north, ANGLEUNIT[“grad”, 0.015707963267948967]]",             LATITUDE_gon);
-        assertWktEquals(Convention.WKT2, "AXIS[“Altitude (h)”, up, LENGTHUNIT[“metre”, 1]]",                                 ALTITUDE);
-        assertWktEquals(Convention.WKT2, "AXIS[“Time (t)”, future, TIMEUNIT[“day”, 86400]]",                                 TIME);
-        assertWktEquals(Convention.WKT2, "AXIS[“Longitude (λ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]",           GEODETIC_LONGITUDE);
-        assertWktEquals(Convention.WKT2, "AXIS[“Spherical longitude (θ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]", SPHERICAL_LONGITUDE);
-        assertWktEquals(Convention.WKT2, "AXIS[“Latitude (φ)”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]",           GEODETIC_LATITUDE);
-        assertWktEquals(Convention.WKT2, "AXIS[“Spherical latitude (Ω)”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
-
-        assertWktEquals(Convention.WKT1,     "AXIS[“x”, EAST]",  X);
-        assertWktEquals(Convention.WKT1,     "AXIS[“y”, NORTH]", Y);
-        assertWktEquals(Convention.WKT1,     "AXIS[“z”, UP]",    Z);
-        assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic longitude (λ)”, east, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]",  GEODETIC_LONGITUDE);
-        assertWktEquals(Convention.INTERNAL, "Axis[“Spherical longitude (θ)”, east, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]", SPHERICAL_LONGITUDE);
-        assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic latitude (φ)”, north, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]",  GEODETIC_LATITUDE);
-        assertWktEquals(Convention.INTERNAL, "Axis[“Spherical latitude (Ω)”, north, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]", SPHERICAL_LATITUDE);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“x”, east, LENGTHUNIT[“metre”, 1]]",  X);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“y”, north, LENGTHUNIT[“metre”, 1]]", Y);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“z”, up, LENGTHUNIT[“metre”, 1]]",    Z);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“Longitude (λ)”, east, ANGLEUNIT[“grad”, 0.015707963267948967]]",             LONGITUDE_gon);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“Latitude (φ)”, north, ANGLEUNIT[“grad”, 0.015707963267948967]]",             LATITUDE_gon);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“Altitude (h)”, up, LENGTHUNIT[“metre”, 1]]",                                 ALTITUDE);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“Time (t)”, future, TIMEUNIT[“day”, 86400]]",                                 TIME);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“Longitude (λ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]",           GEODETIC_LONGITUDE);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“Spherical longitude (θ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]", SPHERICAL_LONGITUDE);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“Latitude (φ)”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]",           GEODETIC_LATITUDE);
+        assertWktEquals(Convention.WKT2_2015, "AXIS[“Spherical latitude (Ω)”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
+        assertWktEquals(Convention.WKT1,      "AXIS[“x”, EAST]",  X);
+        assertWktEquals(Convention.WKT1,      "AXIS[“y”, NORTH]", Y);
+        assertWktEquals(Convention.WKT1,      "AXIS[“z”, UP]",    Z);
+        assertWktEquals(Convention.INTERNAL,  "Axis[“Geodetic longitude (λ)”, east, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]",  GEODETIC_LONGITUDE);
+        assertWktEquals(Convention.INTERNAL,  "Axis[“Spherical longitude (θ)”, east, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]", SPHERICAL_LONGITUDE);
+        assertWktEquals(Convention.INTERNAL,  "Axis[“Geodetic latitude (φ)”, north, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]",  GEODETIC_LATITUDE);
+        assertWktEquals(Convention.INTERNAL,  "Axis[“Spherical latitude (Ω)”, north, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]", SPHERICAL_LATITUDE);
+        assertWktEquals(Convention.WKT2_2019, "AXIS[“Longitude (λ)”, east, ANGLEUNIT[“grad”, 0.015707963267948967], "
+                + "AXISMINVALUE[-200.0], AXISMAXVALUE[200.0], RANGEMEANING[wraparound]]", LONGITUDE_gon);
+        assertWktEquals(Convention.WKT2_2019, "AXIS[“Latitude (φ)”, north, ANGLEUNIT[“grad”, 0.015707963267948967], "
+                + "AXISMINVALUE[-100.0], AXISMAXVALUE[100.0], RANGEMEANING[exact]]", LATITUDE_gon);
     }
 
     /**
