@@ -294,7 +294,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ArcGIS", "ESRI");
+    public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ArcGIS", Constants.ESRI);
 
     /**
      * The authority for identifiers of objects defined by the World Meteorological Organization (<abbr>WMO</abbr>).

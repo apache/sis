@@ -740,10 +740,15 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * as a separated element after the geodetic reference frame (for compatibility with WKT 1).
      *
      * @return {@code "Datum"} or {@code "GeodeticDatum"}.
+     *         May also be {@code "Member"} if this datum is inside a <abbr>WKT</abbr> {@code Ensemble[…]} element.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        final String name = super.formatTo(formatter);
+        if (name != null) {
+            // Member of a datum ensemble.
+            return name;
+        }
         formatter.newLine();
         formatter.appendFormattable(getEllipsoid(), DefaultEllipsoid::castOrCopy);
         final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;

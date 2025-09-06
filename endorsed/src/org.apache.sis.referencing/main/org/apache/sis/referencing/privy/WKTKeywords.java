@@ -78,19 +78,21 @@ public final class WKTKeywords extends Static {
      * and {@link org.apache.sis.referencing.datum.AbstractDatum}.
      */
     public static final String
-            CS            = "CS",
-            Axis          = "Axis",
-            AxisMinValue  = "AxisMinValue",
-            AxisMaxValue  = "AxisMaxValue",
-            RangeMeaning  = "RangeMeaning",
-            Order         = "Order",
-            Meridian      = "Meridian",
-            PrimeMeridian = "PrimeMeridian",
-            PrimeM        = "PrimeM",
-            Ellipsoid     = "Ellipsoid",
-            Spheroid      = "Spheroid",
-            Ensemble      = "Ensemble",
-            ToWGS84       = "ToWGS84";
+            CS               = "CS",
+            Axis             = "Axis",
+            AxisMinValue     = "AxisMinValue",
+            AxisMaxValue     = "AxisMaxValue",
+            RangeMeaning     = "RangeMeaning",
+            Order            = "Order",
+            Meridian         = "Meridian",
+            PrimeMeridian    = "PrimeMeridian",
+            PrimeM           = "PrimeM",
+            Ellipsoid        = "Ellipsoid",
+            Spheroid         = "Spheroid",
+            Ensemble         = "Ensemble",
+            Member           = "Member",
+            EnsembleAccuracy = "EnsembleAccuracy",
+            ToWGS84          = "ToWGS84";
 
     /**
      * Related to {@link org.apache.sis.referencing.crs.DefaultGeocentricCRS}

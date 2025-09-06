@@ -44,7 +44,6 @@ import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;
@@ -162,15 +161,6 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum.
-     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
-     */
-    @Override
-    final GeodeticDatum getDatumOrEnsemble(final boolean legacy) {
-        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
-    }
-
-    /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
      * This method shall be overridden by all {@code DefaultGeodeticCRS} subclasses in this package.
      *
@@ -221,16 +211,13 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
          * The prime meridian is part of datum according ISO 19111, but is formatted
          * as a sibling (rather than a child) element in WKT for historical reasons.
          */
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final GeodeticDatum datum = getDatumOrEnsemble(true);
         formatter.newLine();
-        formatter.append(DefaultGeodeticDatum.castOrCopy(datum));   // For the conversion of ensemble to datum.
+        formatDatum(formatter);
         formatter.newLine();
         final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(cs, null);
         DatumOrEnsemble.getPrimeMeridian(this).ifPresent((PrimeMeridian pm) -> {
-            if (convention != Convention.WKT2_SIMPLIFIED ||     // Really this specific enum, not Convention.isSimplified().
-                    ReferencingUtilities.getGreenwichLongitude(pm, Units.DEGREE) != 0)
-            {
+            // Really this specific enum, not Convention.isSimplified().
+            if (convention != Convention.WKT2_SIMPLIFIED || pm.getGreenwichLongitude() != 0) {
                 final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
                 formatter.indent(1);
                 formatter.appendFormattable(pm, DefaultPrimeMeridian::castOrCopy);
@@ -289,6 +276,14 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
             return isBaseCRS ? WKTKeywords.BaseGeodCRS
                    : formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
         }
+    }
+
+    /**
+     * Formats the datum or a view of the ensemble as a datum.
+     */
+    @Override
+    final void formatDatum(final Formatter formatter) {
+        formatDatum(formatter, this, getDatum(), DefaultGeodeticDatum::castOrCopy, DatumOrEnsemble::asDatum);
     }
 
 

@@ -30,7 +30,6 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -236,15 +235,6 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
     @Override
     public DatumEnsemble<GeodeticDatum> getDatumEnsemble() {
         return getBaseCRS().getDatumEnsemble();
-    }
-
-    /**
-     * Returns the datum or a view of the ensemble as a datum.
-     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
-     */
-    @Override
-    final GeodeticDatum getDatumOrEnsemble(final boolean legacy) {
-        return legacy ? DatumOrEnsemble.asDatum(getBaseCRS()) : getDatum();
     }
 
     /**

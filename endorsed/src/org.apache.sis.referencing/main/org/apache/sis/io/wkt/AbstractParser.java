@@ -425,17 +425,18 @@ abstract class AbstractParser implements Parser {
      *
      * @param  parent  the element from which to pull a child element.
      * @param  key     name of the element to pull.
-     * @return the value, or {@code null} if none.
+     * @param  mode    {@link #MANDATORY} or {@link #OPTIONAL}.
+     * @return the value, or {@code Double.NaN} if none.
      * @throws ParseException if an element cannot be parsed.
      */
-    final Double pullElementAsDouble(final Element parent, final String key) throws ParseException {
-        Element element = parent.pullElement(OPTIONAL, key);
+    final double pullElementAsDouble(final Element parent, final String key, final int mode) throws ParseException {
+        Element element = parent.pullElement(mode, key);
         if (element != null) {
             double value = element.pullDouble(key);
             element.close(ignoredElements);
             return value;
         }
-        return null;
+        return Double.NaN;
     }
 
     /**

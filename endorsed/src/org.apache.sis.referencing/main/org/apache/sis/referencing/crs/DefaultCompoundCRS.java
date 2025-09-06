@@ -27,7 +27,6 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -307,14 +306,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @Override
     public Class<? extends CompoundCRS> getInterface() {
         return CompoundCRS.class;
-    }
-
-    /**
-     * Compound CRS do not have datum.
-     */
-    @Override
-    final Datum getDatumOrEnsemble(final boolean legacy) {
-        return null;
     }
 
     /**

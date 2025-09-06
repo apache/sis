@@ -304,27 +304,22 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      */
     @Override
     final Object buildFromTree(final Element element) throws ParseException {
-        Object value = parseCoordinateReferenceSystem(element, false);
-        if (value != null) {
-            return value;
-        }
-        value = parseMathTransform(element, false);
-        if (value != null) {
-            return value;
-        }
         Object object;
-        if ((object = parseAxis             (FIRST, element, null,  Units.METRE )) == null &&
-            (object = parsePrimeMeridian    (FIRST, element, false, Units.DEGREE)) == null &&
-            (object = parseDatum            (FIRST, element, null )) == null &&
-            (object = parseEllipsoid        (FIRST, element       )) == null &&
-            (object = parseToWGS84          (FIRST, element       )) == null &&
-            (object = parseVerticalDatum    (FIRST, element, false)) == null &&
-            (object = parseTimeDatum        (FIRST, element       )) == null &&
-            (object = parseParametricDatum  (FIRST, element       )) == null &&
-            (object = parseEngineeringDatum (FIRST, element, false)) == null &&
-            (object = parseImageDatum       (FIRST, element       )) == null &&
-            (object = parseOperation        (FIRST, element))        == null &&
-            (object = parseGeogTranslation  (FIRST, element))        == null)
+        if    (null == (object = parseCoordinateReferenceSystem(element, false))
+            && null == (object = parseMathTransform            (element, false))
+            && null == (object = parseAxis              (FIRST, element, null,  Units.METRE ))
+            && null == (object = parsePrimeMeridian     (FIRST, element, false, Units.DEGREE))
+            && null == (object = parseEnsemble          (FIRST, element, Datum.class, greenwich()))
+            && null == (object = parseDatum             (FIRST, element, greenwich()))
+            && null == (object = parseEllipsoid         (FIRST, element))
+            && null == (object = parseToWGS84           (FIRST, element))
+            && null == (object = parseVerticalDatum     (FIRST, element, false))
+            && null == (object = parseTimeDatum         (FIRST, element))
+            && null == (object = parseParametricDatum   (FIRST, element))
+            && null == (object = parseEngineeringDatum  (FIRST, element, false))
+            && null == (object = parseImageDatum        (FIRST, element))
+            && null == (object = parseOperation         (FIRST, element))
+            && null == (object = parseGeogTranslation   (FIRST, element)))
         {
             throw element.missingOrUnknownComponent(WKTKeywords.GeodeticCRS);
         }
@@ -1111,12 +1106,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * If present, we will store that value for processing by the `parseCoordinateSystem(…)` method.
          */
         final Integer order   = pullElementAsInteger(element, WKTKeywords.Order);
-        final Double  minimum = pullElementAsDouble (element, WKTKeywords.AxisMinValue);
-        final Double  maximum = pullElementAsDouble (element, WKTKeywords.AxisMaxValue);
+        final double  minimum = pullElementAsDouble (element, WKTKeywords.AxisMinValue, OPTIONAL);
+        final double  maximum = pullElementAsDouble (element, WKTKeywords.AxisMaxValue, OPTIONAL);
         final String  meaning = pullElementAsEnum   (element, WKTKeywords.RangeMeaning);
         final Map<String, Object> properties = parseMetadataAndClose(element, name, null);
-        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, minimum);
-        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, maximum);
+        if (Double.isFinite(minimum)) properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, minimum);
+        if (Double.isFinite(maximum)) properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, maximum);
         properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY,
                 Types.forCodeName(RangeMeaning.class, meaning, RangeMeaning::valueOf));
         /*
@@ -1415,6 +1410,75 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
+     * Parses an {@code "Ensemble"} (WKT 2) element.
+     *
+     * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  datumType  GeoAPI interface of the type of datum to create.
+     * @param  meridian   the prime meridian, or {@code null} if the ensemble is not geodetic.
+     * @return the {@code "Ensemble"} element as a {@link DatumEnsemble} object.
+     * @throws ParseException if the {@code "Ensemble"} element cannot be parsed.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultDatumEnsemble#formatTo(Formatter)
+     */
+    private <D extends Datum> DatumEnsemble<D> parseEnsemble(final int mode, final Element parent,
+            final Class<D> datumType, final PrimeMeridian meridian) throws ParseException
+    {
+        final Element ensemble = parent.pullElement(mode, WKTKeywords.Ensemble);
+        if (ensemble == null) {
+            return null;
+        }
+        final String ensembleName = ensemble.pullString("name");
+        final Ellipsoid ellipsoid;
+        final boolean vertical;
+        if (datumType == GeodeticDatum.class) {
+            ellipsoid = parseEllipsoid(MANDATORY, ensemble);
+            vertical  = false;
+        } else if (datumType == Datum.class) {
+            // Unspecified datum type, use the presence of `ELLIPSOID` for detecting the geodetic case.
+            ellipsoid = parseEllipsoid(OPTIONAL, ensemble);
+            vertical  = (ellipsoid == null);
+        } else {
+            ellipsoid = null;
+            vertical  = (datumType == VerticalDatum.class);
+        }
+        final DatumFactory datumFactory = factories.getDatumFactory();
+        final var members = new ArrayList<D>();
+        try {
+            Element element = ensemble.pullElement(MANDATORY, WKTKeywords.Member);
+            do {
+                final Datum member;
+                try {
+                    final String name = element.pullString("name");
+                    final Map<String,Object> properties = parseAnchorAndClose(element, name);
+                    if (ellipsoid != null) {    // `memberType` may be `Datum` or `GeodeticDatum`
+                        member = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
+                    } else if (vertical) {
+                        member = datumFactory.createVerticalDatum(properties, null);
+                    } else if (datumType == TemporalDatum.class) {
+                        member = datumFactory.createTemporalDatum(properties, null);
+                    } else if (datumType == ParametricDatum.class) {
+                        member = datumFactory.createParametricDatum(properties);
+                    } else if (datumType == EngineeringDatum.class) {
+                        member = datumFactory.createEngineeringDatum(properties);
+                    } else {
+                        // Should never happen because this method is private and we checked all calls.
+                        throw new AssertionError(datumType);
+                    }
+                } catch (FactoryException exception) {
+                    throw element.parseFailed(exception);
+                }
+                members.add(datumType.cast(member));
+                element = ensemble.pullElement(OPTIONAL, WKTKeywords.Member);
+            } while (element != null);
+            var accuracy = PositionalAccuracyConstant.ensemble(pullElementAsDouble(ensemble, WKTKeywords.EnsembleAccuracy, MANDATORY));
+            return datumFactory.createDatumEnsemble(parseAnchorAndClose(ensemble, ensembleName), members, accuracy);
+        } catch (FactoryException exception) {
+            throw ensemble.parseFailed(exception);
+        }
+    }
+
+    /**
      * Parses a {@code "Datum"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
@@ -1425,13 +1489,13 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent    the parent element.
-     * @param  meridian  the prime meridian, or {@code null} for Greenwich.
+     * @param  meridian  the prime meridian.
      * @return the {@code "Datum"} element as a {@link GeodeticDatum} object.
      * @throws ParseException if the {@code "Datum"} element cannot be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#formatTo(Formatter)
      */
-    private GeodeticDatum parseDatum(final int mode, final Element parent, PrimeMeridian meridian) throws ParseException {
+    private GeodeticDatum parseDatum(final int mode, final Element parent, final PrimeMeridian meridian) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.Datum, WKTKeywords.GeodeticDatum);
         if (element == null) {
             return null;
@@ -1440,9 +1504,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Ellipsoid          ellipsoid  = parseEllipsoid(MANDATORY, element);
         final Object             toWGS84    = parseToWGS84(OPTIONAL, element);
         final Map<String,Object> properties = parseAnchorAndClose(element, name);
-        if (meridian == null) {
-            meridian = CommonCRS.WGS84.primeMeridian();
-        }
         if (toWGS84 != null) {
             properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, toWGS84);
         }
@@ -1639,6 +1700,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * An EngineeringCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a base CRS.
          */
+        DatumEnsemble<EngineeringDatum> ensemble = null;
         EngineeringDatum datum    = null;
         SingleCRS        baseCRS  = null;
         Conversion       fromBase = null;
@@ -1669,18 +1731,20 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 }
             }
         }
-        if (baseCRS == null) {                                                  // The most usual case.
-            datum = parseEngineeringDatum(MANDATORY, element, isWKT1);
+        if (baseCRS == null) {      // The most usual case.
+            ensemble = parseEnsemble(OPTIONAL, element, EngineeringDatum.class, null);
+            datum = parseEngineeringDatum(ensemble == null ? MANDATORY : OPTIONAL, element, isWKT1);
         }
+        final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
         final CRSFactory crsFactory = factories.getCRSFactory();
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, false, null);
-            final Map<String,Object> properties = parseMetadataAndClose(element, name, datum);
+            final Map<String,Object> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (baseCRS != null) {
                 properties.put(Legacy.DERIVED_TYPE_KEY, EngineeringCRS.class);
                 return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
             }
-            return crsFactory.createEngineeringCRS(properties, datum, cs);
+            return crsFactory.createEngineeringCRS(properties, datum, ensemble, cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1874,19 +1938,23 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 warning(element, WKTKeywords.AngleUnit, Errors.formatInternational(
                         Errors.Keys.InconsistentUnitsForCS_1, angularUnit), null);
             }
-            final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, longitudeUnit);
-            final GeodeticDatum datum = parseDatum(MANDATORY, element, meridian);
-            final DatumEnsemble<GeodeticDatum> datumEnsemble = null;    // TODO
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, longitudeUnit);
+            if (meridian == null) {
+                meridian = greenwich();
+            }
+            final DatumEnsemble<GeodeticDatum> ensemble = parseEnsemble(OPTIONAL, element, GeodeticDatum.class, meridian);
+            final GeodeticDatum datum = parseDatum(ensemble == null ? MANDATORY : OPTIONAL, element, meridian);
+            final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (cs instanceof EllipsoidalCS) {                                  // By far the most frequent case.
-                return crsFactory.createGeographicCRS(properties, datum, datumEnsemble, (EllipsoidalCS) cs);
+                return crsFactory.createGeographicCRS(properties, datum, ensemble, (EllipsoidalCS) cs);
             }
             if (cs instanceof CartesianCS) {                                    // The second most frequent case.
-                return crsFactory.createGeodeticCRS(properties, datum, datumEnsemble,
+                return crsFactory.createGeodeticCRS(properties, datum, ensemble,
                         Legacy.forGeocentricCRS((CartesianCS) cs, false));
             }
             if (cs instanceof SphericalCS) {                                    // Not very common case.
-                return crsFactory.createGeodeticCRS(properties, datum, datumEnsemble, (SphericalCS) cs);
+                return crsFactory.createGeodeticCRS(properties, datum, ensemble, (SphericalCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -1927,6 +1995,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A VerticalCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind VerticalCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseVertCRS.
          */
+        DatumEnsemble<VerticalDatum> ensemble = null;
         VerticalDatum datum    = null;
         SingleCRS     baseCRS  = null;
         Conversion    fromBase = null;
@@ -1946,13 +2015,17 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 baseCRS = parseVerticalCRS(MANDATORY, element, true);
             }
         }
-        if (baseCRS == null) {                                                  // The most usual case.
-            datum = parseVerticalDatum(MANDATORY, element, isWKT1);
+        if (baseCRS == null) {      // The most usual case.
+            ensemble = parseEnsemble(OPTIONAL, element, VerticalDatum.class, null);
+            datum = parseVerticalDatum(ensemble == null ? MANDATORY : OPTIONAL, element, isWKT1);
         }
+        final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, unit, false, datum.getRealizationMethod().orElse(null));
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            final RealizationMethod method = (datumOrEnsemble instanceof VerticalDatum)
+                    ? ((VerticalDatum) datumOrEnsemble).getRealizationMethod().orElse(null) : null;
+            cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, unit, false, method);
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (cs instanceof VerticalCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
@@ -1963,14 +2036,14 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * But sometimes the axis (which was not available when we created the datum) provides
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  */
-                if (datum.getRealizationMethod().isEmpty()) {
+                if (method == null && datum != null) {
                     var type = VerticalDatumTypes.fromDatum(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
                     if (type != null) {
                         final DatumFactory datumFactory = factories.getDatumFactory();
                         datum = datumFactory.createVerticalDatum(IdentifiedObjects.getProperties(datum), type);
                     }
                 }
-                verticalCRS = crsFactory.createVerticalCRS(properties, datum, (VerticalCS) cs);
+                verticalCRS = crsFactory.createVerticalCRS(properties, datum, ensemble, (VerticalCS) cs);
                 /*
                  * Some DefaultVerticalExtent objects may be waiting for the VerticalCRS before to complete
                  * their construction. If this is the case, try to complete them now.
@@ -2008,6 +2081,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A TemporalCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind TemporalCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseTimeCRS.
          */
+        DatumEnsemble<TemporalDatum> ensemble = null;
         TemporalDatum datum    = null;
         SingleCRS     baseCRS  = null;
         Conversion    fromBase = null;
@@ -2027,19 +2101,21 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 baseCRS = parseTimeCRS(MANDATORY, element, true);
             }
         }
-        if (baseCRS == null) {                                                  // The most usual case.
-            datum = parseTimeDatum(MANDATORY, element);
+        if (baseCRS == null) {      // The most usual case.
+            ensemble = parseEnsemble(OPTIONAL, element, TemporalDatum.class, null);
+            datum = parseTimeDatum(ensemble == null ? MANDATORY : OPTIONAL, element);
         }
+        final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.temporal, 1, false, unit, false, null);
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (cs instanceof TimeCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
-                return crsFactory.createTemporalCRS(properties, datum, (TimeCS) cs);
+                return crsFactory.createTemporalCRS(properties, datum, ensemble, (TimeCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -2069,6 +2145,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A ParametricCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind ParametricCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
          */
+        DatumEnsemble<ParametricDatum> ensemble = null;
         ParametricDatum datum = null;
         SingleCRS baseCRS = null;
         Conversion fromBase = null;
@@ -2088,19 +2165,21 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 baseCRS = parseParametricCRS(MANDATORY, element, true);
             }
         }
-        if (baseCRS == null) {                                                  // The most usual case.
-            datum = parseParametricDatum(MANDATORY, element);
+        if (baseCRS == null) {      // The most usual case.
+            ensemble = parseEnsemble(OPTIONAL, element, ParametricDatum.class, null);
+            datum = parseParametricDatum(ensemble == null ? MANDATORY : OPTIONAL, element);
         }
+        final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.parametric, 1, false, unit, false, null);
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (cs instanceof ParametricCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
-                return crsFactory.createParametricCRS(properties, datum, (ParametricCS) cs);
+                return crsFactory.createParametricCRS(properties, datum, ensemble, (ParametricCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -2329,12 +2408,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final CoordinateReferenceSystem targetCRS        = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.TargetCRS);
         final CoordinateReferenceSystem interpolationCRS = parseCoordinateReferenceSystem(element, OPTIONAL,  WKTKeywords.InterpolationCRS);
         final OperationMethod           method           = parseMethod(element, WKTKeywords.Method);
-        final Element                   accuracy         = element.pullElement(OPTIONAL, WKTKeywords.OperationAccuracy);
+        final double                    accuracy         = pullElementAsDouble(element, WKTKeywords.OperationAccuracy, OPTIONAL);
         final Map<String,Object>        properties       = parseParametersAndClose(element, name, method);
-        if (accuracy != null) {
+        if (Double.isFinite(accuracy)) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                    PositionalAccuracyConstant.transformation(accuracy.pullDouble("accuracy")));
-            accuracy.close(ignoredElements);
+                           PositionalAccuracyConstant.transformation(accuracy));
         }
         try {
             final DefaultCoordinateOperationFactory df = getOperationFactory();
@@ -2375,5 +2453,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         } else {
             return DefaultCoordinateOperationFactory.provider();
         }
+    }
+
+    /**
+     * Returns the prime meridian to use by default when none is specified.
+     */
+    private static PrimeMeridian greenwich() {
+        return CommonCRS.WGS84.primeMeridian();
     }
 }

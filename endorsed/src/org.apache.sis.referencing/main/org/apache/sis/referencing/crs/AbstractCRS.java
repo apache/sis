@@ -19,6 +19,7 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.Objects;
+import java.util.function.Function;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -34,8 +35,10 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.AbstractDatum;
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
@@ -44,6 +47,7 @@ import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.datum.DatumEnsemble;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.referencing.crs.DerivedCRS;
@@ -282,34 +286,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum, or {@code null} if none.
-     * The {@code legacy} argument is usually {@code false}, except when formatting in a legacy <abbr>WKT</abbr> format.
-     *
-     * @param  legacy  whether to allow a view of the ensemble as a datum for interoperability with legacy standards.
-     * @return the datum, or {@code null} if none.
-     */
-    Datum getDatumOrEnsemble(final boolean legacy) {
-        /*
-         * User could provide his own CRS implementation outside this SIS package, so we have
-         * to check for SingleCRS interface. But all SIS classes override this implementation.
-         */
-        if (this instanceof SingleCRS) {
-            final var crs = (SingleCRS) this;
-            final Datum datum = crs.getDatum();
-            if (datum != null) {
-                return datum;
-            }
-            if (legacy) {
-                final var ensemble = crs.getDatumEnsemble();
-                if (ensemble instanceof Datum) {
-                    return (Datum) ensemble;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns the coordinate system.
      *
      * @return the coordinate system.
@@ -468,7 +444,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     protected String formatTo(final Formatter formatter) {
         final String keyword = super.formatTo(formatter);
         formatter.newLine();
-        formatter.append(AbstractDatum.castOrCopy(getDatumOrEnsemble(true)));     // For the conversion of ensemble to datum.
+        formatDatum(formatter);
         formatter.newLine();
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;
@@ -477,6 +453,51 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
         }
         return keyword;
+    }
+
+    /**
+     * Formats the datum or a view of the ensemble as a datum.
+     * Subclasses should override for invoking the static {@code formatDatum(…)} with more specifiy types.
+     */
+    void formatDatum(final Formatter formatter) {
+        /*
+         * User could provide his own CRS implementation outside this SIS package, so we have
+         * to check for SingleCRS interface. But all SIS classes override this implementation.
+         */
+        if (this instanceof SingleCRS) {
+            final var sc = (SingleCRS) this;
+            formatDatum(formatter, sc, sc.getDatum(), AbstractDatum::castOrCopy, (crs) -> {
+                final DatumEnsemble<?> ensemble = crs.getDatumEnsemble();
+                return (ensemble instanceof Datum) ? (Datum) ensemble : null;
+            });
+        }
+    }
+
+    /**
+     * Formats the datum or a view of the ensemble as a datum.
+     *
+     * @param  <D>            the type of datum or ensemble members.
+     * @param  formatter      the formatter where to write the datum.
+     * @param  crs            the coordinate reference system.
+     * @param  datum          the datum to format, or {@code null} if none.
+     * @param  toFormattable  the function to invoke for converting the datum to a formattable object.
+     * @param  asDatum        the function to invoke for getting an ensemble viewed as a datum.
+     */
+    static <C extends SingleCRS, D extends Datum> void formatDatum(
+            final Formatter formatter,
+            final C crs,
+            final D datum,
+            final Function<D, FormattableObject> toFormattable,
+            final Function<C, D> asDatum)
+    {
+        if (datum != null) {
+            formatter.appendFormattable(datum, toFormattable);
+        } else if (formatter.getConvention().supports(Convention.WKT2_2019)) {
+            formatter.appendFormattable(crs.getDatumEnsemble(), DefaultDatumEnsemble::castOrCopy);
+        } else {
+            // Apply `toFormattable` unconditionally for forcing a conversion of ensemble to datum.
+            formatter.append(toFormattable.apply(asDatum.apply(crs)));
+        }
     }
 
     /**

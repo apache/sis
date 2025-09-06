@@ -39,6 +39,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -497,6 +498,38 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
+     * Tests the parsing of a geographic CRS with datum ensemble.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testGeographicCRSWithEnsemble() throws ParseException {
+        final GeographicCRS crs = parse(GeographicCRS.class,
+                "GeodeticCRS[“WGS 84”,\n" +
+                "  Ensemble[“World Geodetic System 1984”,\n" +
+                "    Member[“World Geodetic System 1984 (Transit)”],\n" +
+                "    Member[“World Geodetic System 1984 (G730)”],\n" +
+                "    Member[“World Geodetic System 1984 (G873)”],\n" +
+                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
+                "    EnsembleAccuracy[2.0]],\n" +
+                "  PrimeMeridian[“Greenwich”, 0],\n" +
+                "  CS[ellipsoidal, 2],\n" +
+                "    Axis[“Geodetic longitude (Lon)”, east],\n" +
+                "    Axis[“Geodetic latitude (Lat)”, north],\n" +
+                "    Unit[“degree”, 0.017453292519943295],\n" +
+                "  Usage[\n" +
+                "    Scope[“Horizontal component of 3D system.”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]]]");
+        verifyGeographicCRS(0, crs);
+        assertNull(crs.getDatum());
+        final Iterator<GeodeticDatum> members = crs.getDatumEnsemble().getMembers().iterator();
+        assertNameAndIdentifierEqual("World Geodetic System 1984 (Transit)", 0, members.next());
+        assertNameAndIdentifierEqual("World Geodetic System 1984 (G730)",    0, members.next());
+        assertNameAndIdentifierEqual("World Geodetic System 1984 (G873)",    0, members.next());
+        assertFalse(members.hasNext());
+    }
+
+    /**
      * Implementation of {@link #testGeographicCRS()} and related test methods.
      * This test expects no {@code AUTHORITY} element on any component.
      *
@@ -506,7 +539,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     private void verifyGeographicCRS(final int swap, final GeographicCRS crs) throws ParseException {
         assertNameAndIdentifierEqual("WGS 84", 0, crs);
 
-        final GeodeticDatum datum = crs.getDatum();
+        final GeodeticDatum datum = DatumOrEnsemble.asDatum(crs);
         assertNameAndIdentifierEqual("World Geodetic System 1984", 0, datum);
         assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
 

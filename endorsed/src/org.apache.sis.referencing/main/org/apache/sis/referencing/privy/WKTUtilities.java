@@ -193,6 +193,24 @@ public final class WKTUtilities extends Static {
     }
 
     /**
+     * Appends an element containing only a {@code double} value if that value is strictly greater than zero.
+     *
+     * @param name       name of the element to add.
+     * @param value      value to add.
+     * @param formatter  formatter where to add the value.
+     */
+    public static void appendElementIfPositive(final String name, final double value, final Formatter formatter) {
+        if (value > 0) {
+            formatter.append(new FormattableObject() {
+                @Override protected String formatTo(final Formatter formatter) {
+                    formatter.append(value);
+                    return name;
+                }
+            });
+        }
+    }
+
+    /**
      * Appends a {@linkplain ParameterValueGroup group of parameters} in a {@code Param_MT[…]} element.
      *
      * @param  parameters  the parameter to append to the WKT, or {@code null} if none.
