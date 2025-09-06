@@ -51,7 +51,6 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
-import static org.apache.sis.referencing.privy.WKTUtilities.toFormattable;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -746,7 +745,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.newLine();
-        formatter.append(toFormattable(getEllipsoid()));
+        formatter.appendFormattable(getEllipsoid(), DefaultEllipsoid::castOrCopy);
         final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
         if (isWKT1) {
             /*

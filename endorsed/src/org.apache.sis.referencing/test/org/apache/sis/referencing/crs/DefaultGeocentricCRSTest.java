@@ -172,7 +172,8 @@ public final class DefaultGeocentricCRSTest extends TestCase {
                 "GeodeticCRS[“Geocentric”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
-                "    Scope[“Satellite navigation.”],\n" +
+                "    Usage[\n" +
+                "      Scope[“Satellite navigation.”]],\n" +
                 "    Id[“EPSG”, 6326]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
                 "  CS[Cartesian, 3],\n" +

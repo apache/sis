@@ -906,11 +906,11 @@ public class Formatter implements Localized {
             return;
         }
         appendOnNewLine(WKTKeywords.Anchor, anchor, null);
-        final boolean usage = convention.compareTo(Convention.WKT2_2015) < 0
-                && convention != Convention.WKT2_SIMPLIFIED;    // TODO: remove that exclusion.
+        final boolean usage = convention.supports(Convention.WKT2_2019);
         for (final ObjectDomain domain : object.getDomains()) {
             if (usage) {
                 // ISO 19162:2019
+                newLine();
                 appendFormattable(domain, DefaultObjectDomain::castOrCopy);
             } else {
                 // ISO 19162:2015

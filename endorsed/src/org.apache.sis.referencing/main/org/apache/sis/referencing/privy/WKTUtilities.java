@@ -29,18 +29,11 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.datum.PrimeMeridian;
-import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
-import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
-import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.system.Loggers;
@@ -129,62 +122,6 @@ public final class WKTUtilities extends Static {
             return (FormattableObject) object;
         } else {
             return AbstractCRS.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the given coordinate system as a formattable object.
-     *
-     * @param  object  the coordinate system, or {@code null}.
-     * @return the given coordinate system as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final CoordinateSystem object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return AbstractCS.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the given coordinate system axis as a formattable object.
-     *
-     * @param  object  the coordinate system axis, or {@code null}.
-     * @return the given coordinate system axis as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final CoordinateSystemAxis object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return DefaultCoordinateSystemAxis.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the ellipsoid as a formattable object.
-     *
-     * @param  object  the ellipsoid, or {@code null}.
-     * @return the given ellipsoid as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final Ellipsoid object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return DefaultEllipsoid.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the given prime meridian as a formattable object.
-     *
-     * @param  object  the prime meridian, or {@code null}.
-     * @return the given prime meridian as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final PrimeMeridian object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return DefaultPrimeMeridian.castOrCopy(object);
         }
     }
 

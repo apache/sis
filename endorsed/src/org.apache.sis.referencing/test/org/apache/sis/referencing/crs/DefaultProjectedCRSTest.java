@@ -262,14 +262,15 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    public void testInternal() throws FactoryException {
+    public void testWKT2_Internal() throws FactoryException {
         ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.INTERNAL,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Française”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269],\n" +
-                "      Scope[“Topographic mapping.”],\n" +
+                "      Usage[\n" +
+                "        Scope[“Topographic mapping.”]],\n" +
                 "      Id[“EPSG”, 6807]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, Id[“EPSG”, 8903]],\n" +
                 "    CS[ellipsoidal, 2],\n" +

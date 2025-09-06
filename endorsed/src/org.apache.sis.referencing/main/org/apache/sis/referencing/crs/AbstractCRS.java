@@ -32,8 +32,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.AbstractDatum;
-import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Convention;
@@ -523,7 +523,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             }
         } else {
             // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
-            formatter.append(WKTUtilities.toFormattable(cs));
+            formatter.appendFormattable(cs, AbstractCS::castOrCopy);
             formatter.indent(+1);
         }
         if (!isWKT1 || formatter.getConvention() != Convention.WKT1_IGNORE_AXES) {
@@ -532,7 +532,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                 final int dimension = cs.getDimension();
                 for (int i=0; i<dimension; i++) {
                     formatter.newLine();
-                    formatter.append(WKTUtilities.toFormattable(cs.getAxis(i)));
+                    formatter.appendFormattable(cs.getAxis(i), DefaultCoordinateSystemAxis::castOrCopy);
                 }
             }
         }

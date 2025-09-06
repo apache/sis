@@ -35,6 +35,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -232,7 +233,7 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
             {
                 final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
                 formatter.indent(1);
-                formatter.append(WKTUtilities.toFormattable(pm));
+                formatter.appendFormattable(pm, DefaultPrimeMeridian::castOrCopy);
                 formatter.indent(-1);
                 formatter.newLine();
                 formatter.restoreContextualUnit(angularUnit, oldUnit);

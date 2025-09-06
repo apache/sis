@@ -54,12 +54,14 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
@@ -76,7 +78,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.privy.AxisNames;
-import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;
@@ -464,94 +465,45 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             // REMINDER: values associated to IDENTIFIERS_KEY shall be recognized by `toIdentifier(Object)`.
         }
         /*
-         * Other metadata (SCOPE, AREA, etc.).  ISO 19162 said that at most one of each type shall be present,
-         * but our parser accepts an arbitrary number of some kinds of metadata. They can be recognized by the
-         * `while` loop.
+         * SCOPE, AREA, BBOX, VERTICALEXTENT and TIMEEXTENT. Since ISO 19162:2019,
+         * all those properties are grouped inside an USAGE element. Example:
          *
-         * Most WKT do not contain any of those metadata, so we perform an `isEmpty()` check as an optimization
-         * for those common cases.
+         *     USAGE[
+         *       SCOPE["Large scale mapping."],
+         *       AREA["UK - Northern Ireland - onshore"]]
          */
-        if (!parent.isEmpty()) {
-            /*
-             * Example: SCOPE["Large scale topographic mapping and cadastre."]
-             */
-            element = parent.pullElement(OPTIONAL, WKTKeywords.Scope);
-            if (element != null) {
-                properties.put(ObjectDomain.SCOPE_KEY, element.pullString("scope"));
-                element.close(ignoredElements);
+        final var domains = new ArrayList<ObjectDomain>();
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.Usage)) != null) {
+            final String scope = parseScope(element);
+            final DefaultExtent extent = parseExtent(element);
+            if (scope != null || extent != null) {
+                domains.add(new DefaultObjectDomain(Types.toInternationalString(scope), extent));
             }
+            element.close(ignoredElements);
+        }
+        if (domains.isEmpty()) {
             /*
-             * Example: AREA["Netherlands offshore."]
+             * Legacy (ISO 19162:2015) way to declare scope and extent:
+             * directly inside de CRS element, without USAGE wrapper.
              */
-            DefaultExtent extent = null;
-            while ((element = parent.pullElement(OPTIONAL, WKTKeywords.Area)) != null) {
-                final String area = element.pullString("area");
-                element.close(ignoredElements);
-                if (extent == null) {
-                    extent = new DefaultExtent(area, null, null, null);
-                } else {
-                    extent.getGeographicElements().add(new DefaultGeographicDescription(area));
-                }
+            final String scope = parseScope(parent);
+            if (scope != null) {
+                properties.put(ObjectDomain.SCOPE_KEY, scope);
             }
-            /*
-             * Example: BBOX[51.43, 2.54, 55.77, 6.40]
-             */
-            while ((element = parent.pullElement(OPTIONAL, WKTKeywords.BBox)) != null) {
-                final double southBoundLatitude = element.pullDouble("southBoundLatitude");
-                final double westBoundLongitude = element.pullDouble("westBoundLongitude");
-                final double northBoundLatitude = element.pullDouble("northBoundLatitude");
-                final double eastBoundLongitude = element.pullDouble("eastBoundLongitude");
-                element.close(ignoredElements);
-                if (extent == null) extent = new DefaultExtent();
-                extent.getGeographicElements().add(new DefaultGeographicBoundingBox(
-                        westBoundLongitude, eastBoundLongitude, southBoundLatitude, northBoundLatitude));
-            }
-            /*
-             * Example: VERTICALEXTENT[-1000, 0, LENGTHUNIT[“metre”, 1]]
-             *
-             * Units are optional, default to metres (no "contextual units" here).
-             */
-            while ((element = parent.pullElement(OPTIONAL, WKTKeywords.VerticalExtent)) != null) {
-                final double minimum = element.pullDouble("minimum");
-                final double maximum = element.pullDouble("maximum");
-                Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
-                element.close(ignoredElements);
-                if (unit   == null) unit   = Units.METRE;
-                if (extent == null) extent = new DefaultExtent();
-                verticalElements = new VerticalInfo(verticalElements, extent, minimum, maximum, unit).resolve(verticalCRS);
-            }
-            /*
-             * Example: TIMEEXTENT[2013-01-01, 2013-12-31]
-             *
-             * TODO: syntax like TIMEEXTENT[“Jurassic”, “Quaternary”] is not yet supported.
-             * See https://issues.apache.org/jira/browse/SIS-163
-             */
-            while ((element = parent.pullElement(OPTIONAL, WKTKeywords.TimeExtent)) != null) {
-                if (element.peekValue() instanceof String) {
-                    element.pullString("startTime");
-                    element.pullString("endTime");
-                    element.close(ignoredElements);
-                    warning(parent, element, Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
-                } else {
-                    final Instant startTime = element.pullDate("startTime");
-                    final Instant endTime   = element.pullDate("endTime");
-                    element.close(ignoredElements);
-                    final var t = new DefaultTemporalExtent(startTime, endTime);
-                    if (extent == null) extent = new DefaultExtent();
-                    extent.getTemporalElements().add(t);
-                }
-            }
+            final DefaultExtent extent = parseExtent(parent);
             if (extent != null) {
                 properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, extent);
             }
-            /*
-             * Example: REMARK["Замечание на русском языке"]
-             */
-            element = parent.pullElement(OPTIONAL, WKTKeywords.Remark);
-            if (element != null) {
-                properties.put(IdentifiedObject.REMARKS_KEY, element.pullString("remarks"));
-                element.close(ignoredElements);
-            }
+        } else {
+            properties.put(IdentifiedObject.DOMAINS_KEY, domains.toArray(ObjectDomain[]::new));
+        }
+        /*
+         * Example: REMARK["Замечание на русском языке"]
+         */
+        element = parent.pullElement(OPTIONAL, WKTKeywords.Remark);
+        if (element != null) {
+            properties.put(IdentifiedObject.REMARKS_KEY, element.pullString("remarks"));
+            element.close(ignoredElements);
         }
         parent.close(ignoredElements);
         if (parent.isRoot) {
@@ -572,6 +524,108 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             anchor.close(ignoredElements);
         }
         return properties;
+    }
+
+    /**
+     * Parses the {@code SCOPE} element.
+     * This element has the following pattern:
+     *
+     * {@snippet lang="wkt" :
+     *     SCOPE["Large scale topographic mapping and cadastre."]
+     *     }
+     *
+     * @param  parent  the parent element.
+     * @return the scope, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    private String parseScope(final Element parent) throws ParseException {
+        final Element element = parent.pullElement(OPTIONAL, WKTKeywords.Scope);
+        if (element != null) {
+            final String scope = element.pullString("scope");
+            element.close(ignoredElements);
+            return scope;
+        }
+        return null;
+    }
+
+    /**
+     * Parses the {@code AREA}, {@code BBOX}, {@code VERTICALEXTENT} and {@code TIMEEXTENT} elements if present.
+     * These elements were directly inside the <abbr>CRS</abbr> element in <abbr>ISO</abbr> 19162:2015, but became
+     * wrapped inside an {@code USAGE} element in <abbr>ISO</abbr> 19162:2019.
+     *
+     * <h4>Extension to <abbr>ISO</abbr> 19162 specification</h4>
+     * The specification saids that at most one extent of each type can appear in the same {@code USAGE}.
+     * However, Apache <abbr>SIS</abbr> puts no limit on the number of occurrence of each extent type.
+     *
+     * <h4>Limitations</h4>
+     * Temporal extents with a syntax such as {@code TIMEEXTENT[“Jurassic”, “Quaternary”]} are not yet supported.
+     * See <a href="https://issues.apache.org/jira/browse/SIS-163">SIS-163</a>.
+     *
+     * @param  parent  the parent element.
+     * @return an extent containing all the above-cited elements, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    private DefaultExtent parseExtent(final Element parent) throws ParseException {
+        DefaultExtent extent = null;
+        Element element;
+        /*
+         * Example: AREA["Netherlands offshore."]
+         */
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.Area)) != null) {
+            final String area = element.pullString("area");
+            element.close(ignoredElements);
+            if (extent == null) {
+                extent = new DefaultExtent(area, null, null, null);
+            } else {
+                extent.getGeographicElements().add(new DefaultGeographicDescription(area));
+            }
+        }
+        /*
+         * Example: BBOX[51.43, 2.54, 55.77, 6.40]
+         */
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.BBox)) != null) {
+            final double southBoundLatitude = element.pullDouble("southBoundLatitude");
+            final double westBoundLongitude = element.pullDouble("westBoundLongitude");
+            final double northBoundLatitude = element.pullDouble("northBoundLatitude");
+            final double eastBoundLongitude = element.pullDouble("eastBoundLongitude");
+            element.close(ignoredElements);
+            if (extent == null) extent = new DefaultExtent();
+            extent.getGeographicElements().add(new DefaultGeographicBoundingBox(
+                    westBoundLongitude, eastBoundLongitude, southBoundLatitude, northBoundLatitude));
+        }
+        /*
+         * Example: VERTICALEXTENT[-1000, 0, LENGTHUNIT[“metre”, 1]]
+         *
+         * Units are optional, default to metres (no "contextual units" here).
+         */
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.VerticalExtent)) != null) {
+            final double minimum = element.pullDouble("minimum");
+            final double maximum = element.pullDouble("maximum");
+            Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
+            element.close(ignoredElements);
+            if (unit   == null) unit   = Units.METRE;
+            if (extent == null) extent = new DefaultExtent();
+            verticalElements = new VerticalInfo(verticalElements, extent, minimum, maximum, unit).resolve(verticalCRS);
+        }
+        /*
+         * Example: TIMEEXTENT[2013-01-01, 2013-12-31]
+         */
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.TimeExtent)) != null) {
+            if (element.peekValue() instanceof String) {
+                element.pullString("startTime");
+                element.pullString("endTime");
+                element.close(ignoredElements);
+                warning(parent, element, Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
+            } else {
+                final Instant startTime = element.pullDate("startTime");
+                final Instant endTime   = element.pullDate("endTime");
+                element.close(ignoredElements);
+                final var t = new DefaultTemporalExtent(startTime, endTime);
+                if (extent == null) extent = new DefaultExtent();
+                extent.getTemporalElements().add(t);
+            }
+        }
+        return extent;
     }
 
     /**

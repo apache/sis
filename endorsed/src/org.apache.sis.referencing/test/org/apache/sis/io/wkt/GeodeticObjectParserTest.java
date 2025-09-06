@@ -484,6 +484,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
      *
      * @param  swap  1 if axes are expected to be swapped, or 0 otherwise.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")
     private void verifyGeographicCRS(final int swap, final GeographicCRS crs) throws ParseException {
         assertNameAndIdentifierEqual("WGS 84", 0, crs);
 
@@ -698,8 +699,9 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the same CRS as {@link #testProjectedWithGradUnits()}, but from a WKT 2 definition
-     * (except for inclusion of accented letters).
+     * Tests the same <abbr>CRS</abbr> as {@link #testProjectedWithGradUnits()},
+     * but from a string mostly conform to <abbr>ISO</abbr> 19162:2015.
+     * A small deviation is that this test includes accented letters.
      *
      * @throws ParseException if the parsing failed.
      *
@@ -707,7 +709,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-310">SIS-310</a>
      */
     @Test
-    public void testProjectedFromWKT2() throws ParseException {
+    public void testProjectedFromWKT2_2015() throws ParseException {
         String wkt = "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                      "  BaseGeodCRS[“NTF (Paris)”,\n" +
                      "    Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
@@ -730,6 +732,45 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
 
         final ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
         validateParisFranceII(crs, 27572, false);
+        assertEquals("Large and medium scale topographic mapping and engineering survey.",
+                     getSingleton(crs.getDomains()).getScope().toString());
+        assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
+    }
+
+    /**
+     * Tests the same <abbr>CRS</abbr> as {@link #testProjectedWithGradUnits()},
+     * but from a string mostly conform to <abbr>ISO</abbr> 19162:2019.
+     * A small deviation is that this test includes accented letters.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testProjectedFromWKT2_2019() throws ParseException {
+        String wkt = "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
+                     "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                     "    Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
+                     "      Ellipsoid[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
+                     "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967], Id[“EPSG”, 8903]],\n" +
+                     "    AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                     "  Conversion[“Lambert zone II”,\n" +
+                     "    Method[“Lambert Conic Conformal (1SP)”],\n" +
+                     "    Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grad”, 0.015707963267948967]],\n" +
+                     "    Parameter[“Longitude of natural origin”, 0.0],\n" +
+                     "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
+                     "    Parameter[“False easting”, 600.0],\n" +
+                     "    Parameter[“False northing”, 2200.0]],\n" +
+                     "  CS[Cartesian, 2],\n" +
+                     "    Axis[“Easting (E)”, east],\n" +
+                     "    Axis[“Northing (N)”, north],\n" +
+                     "    LengthUnit[“kilometre”, 1000],\n" +
+                     "  Usage[\n" +
+                     "    Scope[“Large and medium scale topographic mapping and engineering survey.”]],\n" +
+                     "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]";
+
+        final ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
+        validateParisFranceII(crs, 27572, false);
+        assertEquals("Large and medium scale topographic mapping and engineering survey.",
+                     getSingleton(crs.getDomains()).getScope().toString());
         assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
     }
 

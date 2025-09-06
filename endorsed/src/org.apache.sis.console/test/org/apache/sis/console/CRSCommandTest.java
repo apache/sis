@@ -50,9 +50,10 @@ public final class CRSCommandTest extends TestCase {
             "    Axis[\"Latitude (B)\", north],\n" +
             "    Axis[\"Longitude (L)\", east],\n" +
             "    Unit[\"degree\", 0.017453292519943295],\n" +
-            "\\E(?:  Scope\\[\".+\"\\],\n)?\\Q" +                                               // Ignore SCOPE[…] if present.
-            "  Area[\"\\E.*\\Q\"],\n" +                                                         // Language may vary because of SIS localization.
-            "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
+            "  Usage[\n" +
+            "\\E(?:    Scope\\[\".+\"\\],\n)?\\Q" +                                             // Ignore SCOPE[…] if present.
+            "    Area[\"\\E.*\\Q\"],\n" +                                                       // Language may vary because of SIS localization.
+            "    BBox[-90.00, -180.00, 90.00, 180.00]],\n" +
             "  Id[\"EPSG\", 4326,\\E.*\\Q URI[\"urn:ogc:def:crs:EPSG:\\E.*\\Q:4326\"]]" +       // Version number of EPSG dataset may vary.
             "\\E(?:,\n  Remark\\[\".+\"\\])?\\]\n";                                             // Ignore trailing REMARK[…] if present.
         /*

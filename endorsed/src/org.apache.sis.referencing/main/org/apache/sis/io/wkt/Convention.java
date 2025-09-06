@@ -67,7 +67,7 @@ public enum Convention {
      * <p>This is the default convention used by {@link FormattableObject#toWKT()}
      * and for new {@link WKTFormat} instances.</p>
      */
-    WKT2(false, true, false),
+    WKT2(true, false),
 
     /**
      * The ISO 19162 format with omission of some optional elements. This convention is identical
@@ -98,7 +98,7 @@ public enum Convention {
      *
      * <p>This is the default convention used by {@link FormattableObject#toString()}.</p>
      */
-    WKT2_SIMPLIFIED(false, false, false),
+    WKT2_SIMPLIFIED(false, false),
 
     /**
      * The ISO 19162:2019 format, also known as “WKT 2”.
@@ -110,7 +110,7 @@ public enum Convention {
      *
      * @since 1.5
      */
-    WKT2_2019(false, true, false),
+    WKT2_2019(true, false),
 
     /**
      * The ISO 19162:2015 format, also known as “WKT 2”.
@@ -122,7 +122,7 @@ public enum Convention {
      *
      * @since 1.5
      */
-    WKT2_2015(false, true, false),
+    WKT2_2015(true, false),
 
     /**
      * The OGC 01-009 format, also known as “WKT 1”.
@@ -160,7 +160,7 @@ public enum Convention {
      * </table>
      * </div></div>
      */
-    WKT1(true, true, false),
+    WKT1(true, false),
 
     /**
      * The <cite>Simple Feature</cite> format, also known as “WKT 1”.
@@ -177,7 +177,7 @@ public enum Convention {
      *       (e.g. <q>meter</q> instead of <q>metre</q>).</li>
      * </ul>
      */
-    WKT1_COMMON_UNITS(true, true, true),
+    WKT1_COMMON_UNITS(true, true),
 
     /**
      * The <cite>Simple Feature</cite> format without parsing of axis elements.
@@ -194,7 +194,7 @@ public enum Convention {
      *
      * @since 0.6
      */
-    WKT1_IGNORE_AXES(true, true, true),
+    WKT1_IGNORE_AXES(true, true),
 
     /**
      * A special convention for formatting objects as stored internally by Apache SIS.
@@ -220,17 +220,12 @@ public enum Convention {
      * This convention is used only for debugging purpose.
      */
     @Debug
-    INTERNAL(false, false, false);
+    INTERNAL(false, false);
 
     /**
      * The default conventions.
      */
     static final Convention DEFAULT = WKT2;
-
-    /**
-     * {@code true} for using WKT 1 syntax, or {@code false} for using WKT 2 syntax.
-     */
-    private final boolean isWKT1;
 
     /**
      * {@code true} for using short upper-case keywords by {@linkplain KeywordStyle#DEFAULT default}.
@@ -253,10 +248,23 @@ public enum Convention {
     /**
      * Creates a new enumeration value.
      */
-    private Convention(final boolean isWKT1, final boolean toUpperCase, final boolean usesCommonUnits) {
-        this.isWKT1          = isWKT1;
+    private Convention(final boolean toUpperCase, final boolean usesCommonUnits) {
         this.toUpperCase     = toUpperCase;
         this.usesCommonUnits = usesCommonUnits;
+    }
+
+    /**
+     * Returns whether this convention supports the feature of the given convention.
+     * For example, {@code supports(WKT2_2015)} returns {@code true} if this convention represents
+     * either <abbr>ISO</abbr> 19162:2015 or a more recent version such as <abbr>ISO</abbr> 19162:2019.
+     *
+     * @param  base  the base version which is required.
+     * @return whether this convention is the given base version or a more recent version.
+     *
+     * @since 1.5
+     */
+    public boolean supports(final Convention base) {
+        return compareTo(base) <= 0 || this == INTERNAL;
     }
 
     /**
@@ -266,7 +274,7 @@ public enum Convention {
      * @return 1 if this convention is one of the WKT 1 variants, or 2 otherwise.
      */
     public int majorVersion() {
-        return isWKT1 ? 1 : 2;
+        return supports(WKT2_2015) ? 2 : 1;
     }
 
     /**
@@ -303,6 +311,6 @@ public enum Convention {
      * @see Citations#OGC
      */
     final Citation getNameAuthority() {
-        return isWKT1 ? Citations.OGC : Citations.EPSG;
+        return majorVersion() == 1 ? Citations.OGC : Citations.EPSG;
     }
 }

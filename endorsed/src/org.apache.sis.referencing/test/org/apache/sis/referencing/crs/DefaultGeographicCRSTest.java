@@ -204,8 +204,9 @@ public final class DefaultGeographicCRSTest extends TestCase {
                 "    Axis[“Longitude (L)”, east],\n" +
                 "    Axis[“Latitude (B)”, north],\n" +
                 "    Unit[“degree”, 0.017453292519943295],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
+                "  Usage[\n" +
+                "    Area[“World”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]]]",
                 HardCodedCRS.WGS84);
     }
 
@@ -218,15 +219,17 @@ public final class DefaultGeographicCRSTest extends TestCase {
                 "GeodeticCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
-                "    Scope[“Satellite navigation.”],\n" +
+                "    Usage[\n" +
+                "      Scope[“Satellite navigation.”]],\n" +
                 "    Id[“EPSG”, 6326]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Geodetic longitude (λ)”, east],\n" +
                 "    Axis[“Geodetic latitude (φ)”, north],\n" +
                 "    Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
+                "  Usage[\n" +
+                "    Area[“World”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]]]",
                 HardCodedCRS.WGS84);
     }
 

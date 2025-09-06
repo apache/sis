@@ -312,8 +312,9 @@ public final class DefaultCompoundCRSTest extends TestCase {
                 "    CS[temporal, 1],\n" +
                 "      Axis[“Time (t)”, future],\n" +
                 "      TimeUnit[“day”, 86400]],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
+                "  Usage[\n" +
+                "    Area[“World”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]]]",
                 HardCodedCRS.GEOID_4D);
     }
 
