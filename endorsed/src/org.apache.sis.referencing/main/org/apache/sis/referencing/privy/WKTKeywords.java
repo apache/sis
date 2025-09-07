@@ -92,6 +92,7 @@ public final class WKTKeywords extends Static {
             Ensemble         = "Ensemble",
             Member           = "Member",
             EnsembleAccuracy = "EnsembleAccuracy",
+            Dynamic          = "Dynamic",
             ToWGS84          = "ToWGS84";
 
     /**
@@ -228,6 +229,7 @@ public final class WKTKeywords extends Static {
      */
     public static final String
             CoordinateMetadata = "CoordinateMetadata",
+            FrameEpoch         = "FrameEpoch",
             Epoch              = "Epoch",
             Point              = "Point";
 

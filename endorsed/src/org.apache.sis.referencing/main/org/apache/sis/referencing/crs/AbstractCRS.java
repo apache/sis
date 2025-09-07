@@ -490,9 +490,14 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             final Function<D, FormattableObject> toFormattable,
             final Function<C, D> asDatum)
     {
+        final boolean supportsDynamic = formatter.getConvention().supports(Convention.WKT2_2019);
         if (datum != null) {
+            if (supportsDynamic) {
+                formatter.append(DynamicCRS.createIfDynamic(datum));
+                formatter.newLine();
+            }
             formatter.appendFormattable(datum, toFormattable);
-        } else if (formatter.getConvention().supports(Convention.WKT2_2019)) {
+        } else if (supportsDynamic) {
             formatter.appendFormattable(crs.getDatumEnsemble(), DefaultDatumEnsemble::castOrCopy);
         } else {
             // Apply `toFormattable` unconditionally for forcing a conversion of ensemble to datum.

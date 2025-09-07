@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.time.Instant;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.time.Year;
+import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.referencing.IdentifiedObject;
@@ -977,6 +979,35 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
                   "UNIT[“m”, 1.0], " +
                   "AXIS[“Westing”, WEST], " +
                   "AXIS[" + axis + "]]");
+    }
+
+    /**
+     * Tests the parsing of a vertical <abbr>CRS</abbr>.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testVerticalCRS() throws ParseException {
+        final VerticalCRS crs = parse(VerticalCRS.class,
+                "VerticalCRS[“RH2000 height”,\n" +
+                "  Dynamic[FrameEpoch[2000]],\n" +
+                "  VerticalDatum[“Rikets hojdsystem 2000”],\n" +
+                "  CS[vertical, 1],\n" +
+                "    Axis[“Gravity-related height (H)”, up],\n" +
+                "    Unit[“metre”, 1],\n" +
+                "  Usage[\n" +
+                "    Scope[“Geodesy, engineering survey.”],\n" +
+                "    Area[“Sweden - onshore.”],\n" +
+                "    BBox[55.28, 10.93, 69.07, 24.17]],\n" +
+                "  Id[“EPSG”, 5613, “12.013”, URI[“urn:ogc:def:crs:EPSG:12.013:5613”]],\n" +
+                "  Remark[“Replaces RH70 (CRS code 5718) from 2005.”]]");
+
+        assertNameAndIdentifierEqual("RH2000 height", 5613, crs);
+        assertNameAndIdentifierEqual("Rikets hojdsystem 2000", 0, crs.getDatum());
+        Temporal epoch = assertInstanceOf(DynamicReferenceFrame.class, crs.getDatum()).getFrameReferenceEpoch();
+        assertEquals(Year.of(2000), epoch);
+        assertEquals("Geodesy, engineering survey.", getSingleton(crs.getDomains()).getScope().toString());
+        assertEquals("Replaces RH70 (CRS code 5718) from 2005.", crs.getRemarks().orElseThrow().toString());
     }
 
     /**
