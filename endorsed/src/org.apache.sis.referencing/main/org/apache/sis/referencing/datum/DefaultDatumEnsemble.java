@@ -43,12 +43,15 @@ import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.metadata.privy.SecondaryTrait;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.privy.CollectionsExt;
 
 // Specific to the main and geoapi-3.1 branches:
 import java.util.Date;
@@ -149,7 +152,7 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      * @throws IllegalArgumentException if a member is an instance of {@code DatumEnsemble}, of if at least two
      *         different {@linkplain AbstractDatum#getConventionalRS() conventional reference systems} are found.
      *
-     * @see #create(Map, Collection, PositionalAccuracy)
+     * @see #create(Map, Class, Collection, PositionalAccuracy)
      */
     protected DefaultDatumEnsemble(final Map<String,?> properties,
                                    final Collection<? extends D> members,
@@ -219,10 +222,11 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      * Creates a datum ensemble from the given properties. The content of the {@code properties} map is described
      * {@linkplain #DefaultDatumEnsemble(Map, Collection, PositionalAccuracy, Class) in the constructor}.
      * The returned ensemble may implement the {@link GeodeticDatum}, {@link VerticalDatum}, {@link TemporalDatum},
-     * {@link ParametricDatum} or {@link EngineeringDatum} interface if all members are instances of the same interface.
+     * or {@link EngineeringDatum} interface if all members are instances of the same interface.
      *
-     * @param  <D>         the type of datum members contained in this ensemble.
+     * @param  <D>         the type of datum members contained in the ensemble to create.
      * @param  properties  the properties to be given to the identified object.
+     * @param  memberType  type of members, or {@code null} for automatic.
      * @param  members     datum or reference frames which are members of this ensemble.
      * @param  accuracy    inaccuracy introduced through use of this ensemble (mandatory).
      * @return the datum ensemble.
@@ -231,10 +235,13 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      */
     public static <D extends Datum> DefaultDatumEnsemble<D> create(
             final Map<String,?> properties,
+            final Class<D> memberType,
             final Collection<? extends D> members,
             final PositionalAccuracy accuracy)
     {
-        return Factory.forMemberType(Datum.class, null, properties, List.copyOf(members), accuracy);
+        return Factory.forMemberType(
+                memberType != null ? memberType : Datum.class,
+                null, properties, List.copyOf(members), accuracy);
     }
 
     /**
@@ -297,6 +304,19 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      */
     public PositionalAccuracy getEnsembleAccuracy() {
         return ensembleAccuracy;
+    }
+
+    /**
+     * Returns an estimation of positional accuracy in metres, or {@code NaN} if unknown.
+     * If at least one {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative
+     * result} is found with a linear unit, then returns the largest result value converted to metres.
+     *
+     * @return the accuracy estimation (always in meters), or NaN if unknown.
+     *
+     * @see org.apache.sis.referencing.CRS#getLinearAccuracy(CoordinateOperation)
+     */
+    public double getLinearAccuracy() {
+        return PositionalAccuracyConstant.getLinearAccuracy(CollectionsExt.singletonOrEmpty(getEnsembleAccuracy()));
     }
 
     /**
@@ -451,16 +471,32 @@ check:  if (it.hasNext()) {
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        if (Convention.WKT2_2015.compareTo(formatter.getConvention()) >= 0) {
+        for (final Datum member : getMembers()) {
+            formatter.newLine();
+            formatter.appendFormattable(member, AbstractDatum::castOrCopy);
+        }
+        complete(formatter);
+        formatter.newLine();
+        WKTUtilities.appendElementIfPositive(WKTKeywords.EnsembleAccuracy, getLinearAccuracy(), formatter);
+        formatter.newLine();
+        if (!formatter.getConvention().supports(Convention.WKT2_2019)) {
             formatter.setInvalidWKT(this, null);
         }
         return WKTKeywords.Ensemble;
     }
 
     /**
+     * Completes the <abbr>WKT</abbr> formatting with elements to insert after members and before accuracy.
+     *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
+     */
+    void complete(final Formatter formatter) {
+    }
+
+    /**
      * An ensemble viewed as a low-accuracy geodetic datum.
      *
-     * @see #create(Map, Collection, PositionalAccuracy)
+     * @see #create(Map, Class, Collection, PositionalAccuracy)
      * @see DatumOrEnsemble#of(GeodeticCRS)
      * @see DatumOrEnsemble#asTargetDatum(GeodeticCRS, GeodeticCRS)
      */
@@ -509,12 +545,26 @@ check:  if (it.hasNext()) {
         public PrimeMeridian getPrimeMeridian() {
             return getCommonMandatoryValue(GeodeticDatum::getPrimeMeridian);
         }
+
+        /**
+         * Completes the <abbr>WKT</abbr> formatting with elements to insert after members and before accuracy.
+         * It includes the ellipsoid, but not the prime meridian which is formatted outside the ensemble.
+         */
+        @Override
+        void complete(final Formatter formatter) {
+            formatter.newLine();
+            try {
+                formatter.appendFormattable(getEllipsoid(), DefaultEllipsoid::castOrCopy);
+            } catch (GeodeticException e) {
+                formatter.setInvalidWKT(this, e);
+            }
+        }
     }
 
     /**
      * An ensemble viewed as a low-accuracy vertical datum.
      *
-     * @see #create(Map, Collection, PositionalAccuracy)
+     * @see #create(Map, Class, Collection, PositionalAccuracy)
      * @see DatumOrEnsemble#of(VerticalCRS)
      * @see DatumOrEnsemble#asTargetDatum(VerticalCRS, VerticalCRS)
      */
@@ -554,7 +604,7 @@ check:  if (it.hasNext()) {
     /**
      * An ensemble viewed as a low-accuracy temporal datum.
      *
-     * @see #create(Map, Collection, PositionalAccuracy)
+     * @see #create(Map, Class, Collection, PositionalAccuracy)
      * @see DatumOrEnsemble#of(TemporalCRS)
      * @see DatumOrEnsemble#asTargetDatum(TemporalCRS, TemporalCRS)
      */
@@ -595,7 +645,7 @@ check:  if (it.hasNext()) {
     /**
      * An ensemble viewed as a low-accuracy engineering datum.
      *
-     * @see #create(Map, Collection, PositionalAccuracy)
+     * @see #create(Map, Class, Collection, PositionalAccuracy)
      * @see DatumOrEnsemble#of(EngineeringCRS)
      * @see DatumOrEnsemble#asTargetDatum(EngineeringCRS, EngineeringCRS)
      */
@@ -628,7 +678,7 @@ check:  if (it.hasNext()) {
      *
      * @param  <D>  base type of all members in the ensembles constructed by this factory instance.
      *
-     * @see #create(Map, Collection, PositionalAccuracy)
+     * @see #create(Map, Class, Collection, PositionalAccuracy)
      */
     private static abstract class Factory<D extends Datum> {
         /**
@@ -702,7 +752,7 @@ nextType:   for (final Factory<?> factory : FACTORIES) {
                     }
                 }
             }
-            throw new ClassCastException(Errors.format(Errors.Keys.IllegalClass_2, Datum.class, Classes.getClass(illegal)));
+            throw new ClassCastException(Errors.format(Errors.Keys.IllegalClass_2, memberType, Classes.getClass(illegal)));
         }
 
         /**
@@ -715,7 +765,7 @@ nextType:   for (final Factory<?> factory : FACTORIES) {
          * @throws IllegalArgumentException if a member is an instance of {@code DatumEnsemble}, of if at least two
          *         different {@linkplain AbstractDatum#getConventionalRS() conventional reference systems} are found.
          *
-         * @see #create(Map, Collection, PositionalAccuracy)
+         * @see #create(Map, Class, Collection, PositionalAccuracy)
          */
         abstract DefaultDatumEnsemble<D> create(Map<String,?> properties, List<? extends D> members, PositionalAccuracy accuracy);
 
@@ -730,7 +780,7 @@ nextType:   for (final Factory<?> factory : FACTORIES) {
 
         /**
          * Factories for all datum types supported by this class. The types are (in order) {@link GeodeticDatum},
-         * {@link VerticalDatum}, {@link TemporalDatum}, {@link ParametricDatum} and {@link EngineeringDatum}.
+         * {@link VerticalDatum}, {@link TemporalDatum} and {@link EngineeringDatum}.
          * The types are tested in iteration order. For example, if a member implements both {@code VerticalDatum}
          * {@code ParametricDatum} interface, then {@code VerticalDatum} has precedence.
          */

@@ -36,6 +36,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.operation.Conversion;
@@ -53,7 +54,6 @@ import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import static org.apache.sis.referencing.internal.Legacy.DERIVED_TYPE_KEY;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
@@ -434,18 +434,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum.
-     */
-    @Override
-    Datum getDatumOrEnsemble(final boolean legacy) {
-        final SingleCRS baseCRS = getBaseCRS();
-        if (baseCRS instanceof AbstractCRS) {
-            return ((AbstractCRS) baseCRS).getDatumOrEnsemble(legacy);
-        }
-        return super.getDatumOrEnsemble(legacy);
-    }
-
-    /**
      * Returns the CRS on which the conversion is applied.
      * This CRS defines the {@linkplain #getDatum() datum} of this CRS and (at least implicitly)
      * the {@linkplain DefaultConversion#getSourceCRS() source} of
@@ -543,8 +531,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * Formats the inner part of the <i>Well Known Text</i> (WKT) representation of this CRS.
      *
      * @return {@code "Fitted_CS"} (WKT 1) or a type-dependent keyword (WKT 2).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#93">WKT 2 specification §15</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -691,11 +677,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (GeodeticDatum) super.getDatum();
         }
 
-        /** Returns the datum or a view of the ensemble as a datum. */
-        @Override GeodeticDatum getDatumOrEnsemble(final boolean legacy) {
-            return legacy ? DatumOrEnsemble.asDatum((GeodeticCRS) getBaseCRS()) : getDatum();
-        }
-
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */
         @Override AbstractCRS createSameType(final AbstractCS derivedCS) {
             return new Geodetic(this, derivedCS);
@@ -703,6 +684,9 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
         /** Returns the WKT keyword for this derived CRS type. */
         @Override String keyword(final Formatter formatter) {
+            if (formatter.getConvention().supports(Convention.WKT2_2019) && getCoordinateSystem() instanceof EllipsoidalCS) {
+                return formatter.shortOrLong(WKTKeywords.GeogCRS, WKTKeywords.GeographicCRS);
+            }
             return formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
         }
 
@@ -745,11 +729,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** Returns the datum of the base vertical CRS. */
         @Override public VerticalDatum getDatum() {
             return (VerticalDatum) super.getDatum();
-        }
-
-        /** Returns the datum or a view of the ensemble as a datum. */
-        @Override VerticalDatum getDatumOrEnsemble(final boolean legacy) {
-            return legacy ? DatumOrEnsemble.asDatum((VerticalCRS) getBaseCRS()) : getDatum();
         }
 
         /** Returns the coordinate system given at construction time. */
@@ -808,11 +787,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (TemporalDatum) super.getDatum();
         }
 
-        /** Returns the datum or a view of the ensemble as a datum. */
-        @Override TemporalDatum getDatumOrEnsemble(final boolean legacy) {
-            return legacy ? DatumOrEnsemble.asDatum((TemporalCRS) getBaseCRS()) : getDatum();
-        }
-
         /** Returns the coordinate system given at construction time. */
         @Override public TimeCS getCoordinateSystem() {
             return (TimeCS) super.getCoordinateSystem();
@@ -867,11 +841,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** Returns the datum of the base parametric CRS. */
         @Override public DefaultParametricDatum getDatum() {
             return (DefaultParametricDatum) super.getDatum();
-        }
-
-        /** Returns the datum or a view of the ensemble as a datum. */
-        @Override DefaultParametricDatum getDatumOrEnsemble(final boolean legacy) {
-            return getDatum();
         }
 
         /** Returns the coordinate system given at construction time. */
@@ -931,11 +900,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** Returns the datum of the base engineering CRS. */
         @Override public EngineeringDatum getDatum() {
             return (EngineeringDatum) super.getDatum();
-        }
-
-        /** Returns the datum or a view of the ensemble as a datum. */
-        @Override EngineeringDatum getDatumOrEnsemble(final boolean legacy) {
-            return legacy ? DatumOrEnsemble.asDatum((EngineeringCRS) getBaseCRS()) : getDatum();
         }
 
         /** Returns a coordinate reference system of the same type as this CRS but with different axes. */

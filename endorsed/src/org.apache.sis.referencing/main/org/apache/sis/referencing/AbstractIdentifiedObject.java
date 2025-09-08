@@ -106,15 +106,10 @@ import org.apache.sis.referencing.internal.Legacy;
  * <h2>Instantiation</h2>
  * This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Applications should instead instantiate the most specific subclass having a name starting by {@code Default}.
- * However, exceptions to this rule may occur when it is not possible to identify the exact type.
+ * However, exceptions to this rule may occur when it is not possible to identify the exact type
+ * (e.g. sometime with the version 1 of <i>Well Known Text</i> format).
  *
- * <div class="note"><b>Example:</b>
- * It is sometimes not possible to infer the exact coordinate system type from
- * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">version 1
- * of <i>Well Known Text</i> format</a>, for example when parsing a {@code LOCAL_CS} element.
- * In such exceptional situation, a plain {@code AbstractCS} object may be instantiated.</div>
- *
- * {@code IdentifiedObject} instances are created in two main ways:
+ * <p>{@code IdentifiedObject} instances are created in two main ways:</p>
  *
  * <ul>
  *   <li>Using an {@link ObjectFactory}, in which case all properties can be explicitly specified.</li>
@@ -694,8 +689,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      *
      * <h4>Future evolutions</h4>
-     * This method implements recommendations from the
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#139">WKT 2 specification §B.5.2</a>,
+     * This method implements recommendations from the <abbr>WKT</abbr> 2 specification,
      * together with heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
@@ -930,13 +924,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      *
      * Keywords and metadata (scope, extent, identifier and remarks) shall not be formatted here.
-     * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
+     * For example if this formattable element is for a {@code GeographicCRS[…]} element,
      * then subclasses shall write the content starting at the insertion point shown below:
      *
      * <div class="horizontal-flow">
      * <div><p><b>WKT example</b></p>
      * <pre class="text">
-     *   GeodeticCRS["WGS 84", ID["EPSG", 4326]]
+     *   GeographicCRS["WGS 84", ID["EPSG", 4326]]
      *                       ↑
      *               (insertion point)</pre>
      * </div><div>
@@ -963,8 +957,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return the {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
      *         for the WKT element, or {@code null} if unknown.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#21">WKT 2 specification §7</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

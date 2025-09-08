@@ -27,6 +27,7 @@ import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
+import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -241,15 +242,6 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum.
-     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
-     */
-    @Override
-    final EngineeringDatum getDatumOrEnsemble(final boolean legacy) {
-        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
-    }
-
-    /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -274,8 +266,6 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
      * Formats this CRS as a <i>Well Known Text</i> {@code EngineeringCRS[…]} element.
      *
      * @return {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#74">WKT 2 specification §11</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -283,6 +273,14 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
         return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Local_CS
                : isBaseCRS(formatter) ? WKTKeywords.BaseEngCRS
                  : formatter.shortOrLong(WKTKeywords.EngCRS, WKTKeywords.EngineeringCRS);
+    }
+
+    /**
+     * Formats the datum or a view of the ensemble as a datum.
+     */
+    @Override
+    final void formatDatum(final Formatter formatter) {
+        formatDatum(formatter, this, getDatum(), DefaultEngineeringDatum::castOrCopy, DatumOrEnsemble::asDatum);
     }
 
 

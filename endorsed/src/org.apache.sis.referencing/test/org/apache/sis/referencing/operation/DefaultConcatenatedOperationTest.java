@@ -107,14 +107,14 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
         final DefaultConcatenatedOperation op = createGeocentricTranslation();
         assertWktEquals(Convention.WKT2_SIMPLIFIED,                             // Pseudo-WKT actually.
                 "ConcatenatedOperation[“Tokyo to JGD2000”,\n" +
-                "  SourceCRS[GeodeticCRS[“Tokyo”,\n" +
+                "  SourceCRS[GeographicCRS[“Tokyo”,\n" +
                 "    Datum[“Tokyo 1918”,\n" +
                 "      Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128]],\n" +
                 "    CS[ellipsoidal, 3],\n" +
                 "      Axis[“Longitude (L)”, east, Unit[“degree”, 0.017453292519943295]],\n" +
                 "      Axis[“Latitude (B)”, north, Unit[“degree”, 0.017453292519943295]],\n" +
                 "      Axis[“Ellipsoidal height (h)”, up, Unit[“metre”, 1]]]],\n" +
-                "  TargetCRS[GeodeticCRS[“JGD2000”,\n" +
+                "  TargetCRS[GeographicCRS[“JGD2000”,\n" +
                 "    Datum[“Japanese Geodetic Datum 2000”,\n" +
                 "      Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101]],\n" +
                 "    CS[ellipsoidal, 3],\n" +

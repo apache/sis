@@ -153,9 +153,9 @@ public class CoordinateOperationMethods extends HTMLGenerator {
         domainOfValidity = Map.of();                // TODO: not yet available.
         rangeFormat = new RangeFormat(LOCALE);
         final int header = openTag("header");
-        println("h1", "Apache SIS™ Coordinate Operation Methods");
+        println("h1", "Apache <abbr title=\"Spatial Information System\">SIS</abbr>™ Coordinate Operation Methods");
         int item = openTag("p");
-        println("The following tables summarize the coordinate operation methods known to Apache SIS " + Version.SIS);
+        println("The following tables summarize the coordinate operation methods known to Apache <abbr title=\"Spatial Information System\">SIS</abbr> " + Version.SIS);
         println("together with the recognized parameters. There are three kinds of parameters:");
         closeTags(item);
         openTag("ul", "verbose");
@@ -163,8 +163,8 @@ public class CoordinateOperationMethods extends HTMLGenerator {
         println("The <code>semi-major</code> and <code>semi-minor</code> parameters are needed for all map projections,");
         println("but usually do not need to be specified explicitly since they are inferred from the ellipsoid");
         println("(unless <a href=\"https://sis.apache.org/apidocs/org/apache/sis/referencing/operation/transform/DefaultMathTransformFactory.html\">creating parameterized transforms directly</a>).");
-        println("For this reason, those parameters are usually not shown in <a href=\"" + URLs.EPSG + "\">EPSG repository</a>");
-        println("or <a href=\"" + URLs.WKT_SPECIFICATION + "\">Well Known Text</a> (WKT) definitions.");
+        println("For this reason, those parameters are usually not shown in <a href=\"" + URLs.EPSG + "\"><abbr>EPSG</abbr> repository</a>");
+        println("or <a href=\"https://www.ogc.org/standards/wkt-crs/\">Well Known Text</a> (<abbr>WKT</abbr>) definitions.");
         reopenTag("li");
         println("The <code>earth_radius</code> and <code>inverse_flattening</code> parameters (not shown below) are implicitly supported by all map projections.");
         println("They are other ways to specify the ellipsoid (actually rarely used).");

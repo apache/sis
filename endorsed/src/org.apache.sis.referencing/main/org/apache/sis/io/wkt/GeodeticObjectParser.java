@@ -31,7 +31,8 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.temporal.Temporal;
 import static java.util.Collections.singletonMap;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -54,18 +55,22 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.Epoch;
 import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
@@ -76,7 +81,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.privy.AxisNames;
-import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;
@@ -91,6 +95,9 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
+import org.apache.sis.referencing.datum.AbstractDatum;
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
+import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.temporal.TemporalDate;
@@ -228,7 +235,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     {
         super(sourceFile, fragments, symbols, numberFormat, dateFormat, unitFormat, factories, errorLocale);
         this.transliterator = transliterator;
-        usesCommonUnits = convention.usesCommonUnits;
+        usesCommonUnits = convention.usesCommonUnits();
         ignoreAxes      = convention == Convention.WKT1_IGNORE_AXES;
     }
 
@@ -314,27 +321,22 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      */
     @Override
     final Object buildFromTree(final Element element) throws ParseException {
-        Object value = parseCoordinateReferenceSystem(element, false);
-        if (value != null) {
-            return value;
-        }
-        value = parseMathTransform(element, false);
-        if (value != null) {
-            return value;
-        }
         Object object;
-        if ((object = parseAxis             (FIRST, element, null,  Units.METRE )) == null &&
-            (object = parsePrimeMeridian    (FIRST, element, false, Units.DEGREE)) == null &&
-            (object = parseDatum            (FIRST, element, null )) == null &&
-            (object = parseEllipsoid        (FIRST, element       )) == null &&
-            (object = parseToWGS84          (FIRST, element       )) == null &&
-            (object = parseVerticalDatum    (FIRST, element, false)) == null &&
-            (object = parseTimeDatum        (FIRST, element       )) == null &&
-            (object = parseParametricDatum  (FIRST, element       )) == null &&
-            (object = parseEngineeringDatum (FIRST, element, false)) == null &&
-            (object = parseImageDatum       (FIRST, element       )) == null &&
-            (object = parseOperation        (FIRST, element))        == null &&
-            (object = parseGeogTranslation  (FIRST, element))        == null)
+        if    (null == (object = parseCoordinateReferenceSystem(element, false))
+            && null == (object = parseMathTransform            (element, false))
+            && null == (object = parseAxis              (FIRST, element, null,  Units.METRE ))
+            && null == (object = parsePrimeMeridian     (FIRST, element, false, Units.DEGREE))
+            && null == (object = parseEnsemble          (FIRST, element, Datum.class, greenwich()))
+            && null == (object = parseDatum             (FIRST, element, greenwich(), null))
+            && null == (object = parseEllipsoid         (FIRST, element))
+            && null == (object = parseToWGS84           (FIRST, element))
+            && null == (object = parseVerticalDatum     (FIRST, element, null, false))
+            && null == (object = parseTimeDatum         (FIRST, element))
+            && null == (object = parseParametricDatum   (FIRST, element))
+            && null == (object = parseEngineeringDatum  (FIRST, element, false))
+            && null == (object = parseImageDatum        (FIRST, element))
+            && null == (object = parseOperation         (FIRST, element))
+            && null == (object = parseGeogTranslation   (FIRST, element)))
         {
             throw element.missingOrUnknownComponent(WKTKeywords.GeodeticCRS);
         }
@@ -476,94 +478,45 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             // REMINDER: values associated to IDENTIFIERS_KEY shall be recognized by `toIdentifier(Object)`.
         }
         /*
-         * Other metadata (SCOPE, AREA, etc.).  ISO 19162 said that at most one of each type shall be present,
-         * but our parser accepts an arbitrary number of some kinds of metadata. They can be recognized by the
-         * `while` loop.
+         * SCOPE, AREA, BBOX, VERTICALEXTENT and TIMEEXTENT. Since ISO 19162:2019,
+         * all those properties are grouped inside an USAGE element. Example:
          *
-         * Most WKT do not contain any of those metadata, so we perform an `isEmpty()` check as an optimization
-         * for those common cases.
+         *     USAGE[
+         *       SCOPE["Large scale mapping."],
+         *       AREA["UK - Northern Ireland - onshore"]]
          */
-        if (!parent.isEmpty()) {
-            /*
-             * Example: SCOPE["Large scale topographic mapping and cadastre."]
-             */
-            element = parent.pullElement(OPTIONAL, WKTKeywords.Scope);
-            if (element != null) {
-                properties.put(ReferenceSystem.SCOPE_KEY, element.pullString("scope"));  // Other types like Datum use the same key.
-                element.close(ignoredElements);
+        final var domains = new ArrayList<DefaultObjectDomain>();
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.Usage)) != null) {
+            final String scope = pullElementAsString(element, WKTKeywords.Scope);
+            final DefaultExtent extent = parseExtent(element);
+            if (scope != null || extent != null) {
+                domains.add(new DefaultObjectDomain(Types.toInternationalString(scope), extent));
             }
+            element.close(ignoredElements);
+        }
+        if (domains.isEmpty()) {
             /*
-             * Example: AREA["Netherlands offshore."]
+             * Legacy (ISO 19162:2015) way to declare scope and extent:
+             * directly inside de CRS element, without USAGE wrapper.
              */
-            DefaultExtent extent = null;
-            while ((element = parent.pullElement(OPTIONAL, WKTKeywords.Area)) != null) {
-                final String area = element.pullString("area");
-                element.close(ignoredElements);
-                if (extent == null) {
-                    extent = new DefaultExtent(area, null, null, null);
-                } else {
-                    extent.getGeographicElements().add(new DefaultGeographicDescription(area));
-                }
+            final String scope = pullElementAsString(parent, WKTKeywords.Scope);
+            if (scope != null) {
+                properties.put(ReferenceSystem.SCOPE_KEY, scope);
             }
-            /*
-             * Example: BBOX[51.43, 2.54, 55.77, 6.40]
-             */
-            while ((element = parent.pullElement(OPTIONAL, WKTKeywords.BBox)) != null) {
-                final double southBoundLatitude = element.pullDouble("southBoundLatitude");
-                final double westBoundLongitude = element.pullDouble("westBoundLongitude");
-                final double northBoundLatitude = element.pullDouble("northBoundLatitude");
-                final double eastBoundLongitude = element.pullDouble("eastBoundLongitude");
-                element.close(ignoredElements);
-                if (extent == null) extent = new DefaultExtent();
-                extent.getGeographicElements().add(new DefaultGeographicBoundingBox(
-                        westBoundLongitude, eastBoundLongitude, southBoundLatitude, northBoundLatitude));
-            }
-            /*
-             * Example: VERTICALEXTENT[-1000, 0, LENGTHUNIT[“metre”, 1]]
-             *
-             * Units are optional, default to metres (no "contextual units" here).
-             */
-            while ((element = parent.pullElement(OPTIONAL, WKTKeywords.VerticalExtent)) != null) {
-                final double minimum = element.pullDouble("minimum");
-                final double maximum = element.pullDouble("maximum");
-                Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
-                element.close(ignoredElements);
-                if (unit   == null) unit   = Units.METRE;
-                if (extent == null) extent = new DefaultExtent();
-                verticalElements = new VerticalInfo(verticalElements, extent, minimum, maximum, unit).resolve(verticalCRS);
-            }
-            /*
-             * Example: TIMEEXTENT[2013-01-01, 2013-12-31]
-             *
-             * TODO: syntax like TIMEEXTENT[“Jurassic”, “Quaternary”] is not yet supported.
-             * See https://issues.apache.org/jira/browse/SIS-163
-             */
-            while ((element = parent.pullElement(OPTIONAL, WKTKeywords.TimeExtent)) != null) {
-                if (element.peekValue() instanceof String) {
-                    element.pullString("startTime");
-                    element.pullString("endTime");
-                    element.close(ignoredElements);
-                    warning(parent, element, Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
-                } else {
-                    final Instant startTime = element.pullDate("startTime");
-                    final Instant endTime   = element.pullDate("endTime");
-                    element.close(ignoredElements);
-                    final var t = new DefaultTemporalExtent(startTime, endTime);
-                    if (extent == null) extent = new DefaultExtent();
-                    extent.getTemporalElements().add(t);
-                }
-            }
+            final DefaultExtent extent = parseExtent(parent);
             if (extent != null) {
                 properties.put(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY, extent);
             }
-            /*
-             * Example: REMARK["Замечание на русском языке"]
-             */
-            element = parent.pullElement(OPTIONAL, WKTKeywords.Remark);
-            if (element != null) {
-                properties.put(IdentifiedObject.REMARKS_KEY, element.pullString("remarks"));
-                element.close(ignoredElements);
-            }
+        } else {
+            properties.put(AbstractDatum.DOMAINS_KEY, domains.toArray(DefaultObjectDomain[]::new));
+        }
+        /*
+         * Example: REMARK["Замечание на русском языке"]
+         */
+        element = parent.pullElement(OPTIONAL, WKTKeywords.Remark);
+        if (element != null) {
+            properties.put(IdentifiedObject.REMARKS_KEY, element.pullString("remarks"));
+            element.close(ignoredElements);
         }
         parent.close(ignoredElements);
         if (parent.isRoot) {
@@ -577,13 +530,92 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * String, IdentifiedObject)} method. If an anchor has been found, its value is stored in the returned map.
      */
     private Map<String,Object> parseAnchorAndClose(final Element element, final String name) throws ParseException {
-        final Element anchor = element.pullElement(OPTIONAL, WKTKeywords.Anchor);
+        String   anchor = pullElementAsString(element, WKTKeywords.Anchor);
+        Temporal epoch  = Epoch.fromYear(pullElementAsDouble(element, WKTKeywords.AnchorEpoch, OPTIONAL), 0);
         final Map<String,Object> properties = parseMetadataAndClose(element, name, null);
-        if (anchor != null) {
-            properties.put(Datum.ANCHOR_POINT_KEY, anchor.pullString(DefaultGeodeticDatum.ANCHOR_DEFINITION_KEY));
-            anchor.close(ignoredElements);
-        }
+        if (anchor != null) properties.put(AbstractDatum.ANCHOR_DEFINITION_KEY, anchor);
+        if (epoch  != null) properties.put(AbstractDatum.ANCHOR_EPOCH_KEY, epoch);
         return properties;
+    }
+
+    /**
+     * Parses the {@code AREA}, {@code BBOX}, {@code VERTICALEXTENT} and {@code TIMEEXTENT} elements if present.
+     * These elements were directly inside the <abbr>CRS</abbr> element in <abbr>ISO</abbr> 19162:2015, but became
+     * wrapped inside an {@code USAGE} element in <abbr>ISO</abbr> 19162:2019.
+     *
+     * <h4>Extension to <abbr>ISO</abbr> 19162 specification</h4>
+     * The specification said that at most one extent of each type can appear in the same {@code USAGE}.
+     * However, Apache <abbr>SIS</abbr> puts no limit on the number of occurrence of each extent type.
+     *
+     * <h4>Limitations</h4>
+     * Temporal extents with a syntax such as {@code TIMEEXTENT[“Jurassic”, “Quaternary”]} are not yet supported.
+     * See <a href="https://issues.apache.org/jira/browse/SIS-163">SIS-163</a>.
+     *
+     * @param  parent  the parent element.
+     * @return an extent containing all the above-cited elements, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    private DefaultExtent parseExtent(final Element parent) throws ParseException {
+        DefaultExtent extent = null;
+        Element element;
+        /*
+         * Example: AREA["Netherlands offshore."]
+         */
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.Area)) != null) {
+            final String area = element.pullString("area");
+            element.close(ignoredElements);
+            if (extent == null) {
+                extent = new DefaultExtent(area, null, null, null);
+            } else {
+                extent.getGeographicElements().add(new DefaultGeographicDescription(area));
+            }
+        }
+        /*
+         * Example: BBOX[51.43, 2.54, 55.77, 6.40]
+         */
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.BBox)) != null) {
+            final double southBoundLatitude = element.pullDouble("southBoundLatitude");
+            final double westBoundLongitude = element.pullDouble("westBoundLongitude");
+            final double northBoundLatitude = element.pullDouble("northBoundLatitude");
+            final double eastBoundLongitude = element.pullDouble("eastBoundLongitude");
+            element.close(ignoredElements);
+            if (extent == null) extent = new DefaultExtent();
+            extent.getGeographicElements().add(new DefaultGeographicBoundingBox(
+                    westBoundLongitude, eastBoundLongitude, southBoundLatitude, northBoundLatitude));
+        }
+        /*
+         * Example: VERTICALEXTENT[-1000, 0, LENGTHUNIT[“metre”, 1]]
+         *
+         * Units are optional, default to metres (no "contextual units" here).
+         */
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.VerticalExtent)) != null) {
+            final double minimum = element.pullDouble("minimum");
+            final double maximum = element.pullDouble("maximum");
+            Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
+            element.close(ignoredElements);
+            if (unit   == null) unit   = Units.METRE;
+            if (extent == null) extent = new DefaultExtent();
+            verticalElements = new VerticalInfo(verticalElements, extent, minimum, maximum, unit).resolve(verticalCRS);
+        }
+        /*
+         * Example: TIMEEXTENT[2013-01-01, 2013-12-31]
+         */
+        while ((element = parent.pullElement(OPTIONAL, WKTKeywords.TimeExtent)) != null) {
+            if (element.peekValue() instanceof String) {
+                element.pullString("startTime");
+                element.pullString("endTime");
+                element.close(ignoredElements);
+                warning(parent, element, Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
+            } else {
+                final Temporal startTime = element.pullTime("startTime");
+                final Temporal endTime   = element.pullTime("endTime");
+                element.close(ignoredElements);
+                final var t = new DefaultTemporalExtent(startTime, endTime);
+                if (extent == null) extent = new DefaultExtent();
+                extent.getTemporalElements().add(t);
+            }
+        }
+        return extent;
     }
 
     /**
@@ -1088,24 +1120,30 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         name         = transliterator.toLongAxisName       (csType, direction, name);
         abbreviation = transliterator.toUnicodeAbbreviation(csType, direction, abbreviation);
         /*
-         * At this point we are done and ready to create the CoordinateSystemAxis. But there is one last element
-         * specified by ISO 19162 but not in Apache SIS representation of axis: ORDER[n], which specify the axis
-         * ordering. If present we will store that value for processing by the `parseCoordinateSystem(…)` method.
+         * At this point, the mandatory properties are known. The next element is specified by ISO 19162
+         * but not stored in Apache SIS representation of axis: ORDER[n], which specifies the axis ordering.
+         * If present, we will store that value for processing by the `parseCoordinateSystem(…)` method.
          */
-        final Element order = element.pullElement(OPTIONAL, WKTKeywords.Order);
-        Integer n = null;
-        if (order != null) {
-            n = order.pullInteger("order");
-            order.close(ignoredElements);
-        }
+        final Integer order   = pullElementAsInteger(element, WKTKeywords.Order);
+        final double  minimum = pullElementAsDouble (element, WKTKeywords.AxisMinValue, OPTIONAL);
+        final double  maximum = pullElementAsDouble (element, WKTKeywords.AxisMaxValue, OPTIONAL);
+        final String  meaning = pullElementAsEnum   (element, WKTKeywords.RangeMeaning);
+        final Map<String, Object> properties = parseMetadataAndClose(element, name, null);
+        if (Double.isFinite(minimum)) properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, minimum);
+        if (Double.isFinite(maximum)) properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, maximum);
+        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY,
+                Types.forCodeName(RangeMeaning.class, meaning, RangeMeaning::valueOf));
+        /*
+         * At this point, all mandatory and optional properties are known.
+         */
         final CoordinateSystemAxis axis;
         final CSFactory csFactory = factories.getCSFactory();
         try {
-            axis = csFactory.createCoordinateSystemAxis(parseMetadataAndClose(element, name, null), abbreviation, direction, unit);
+            axis = csFactory.createCoordinateSystemAxis(properties, abbreviation, direction, unit);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
-        if (axisOrder.put(axis, n) != null) {   // Opportunist check, effective for instances created by SIS factory.
+        if (axisOrder.put(axis, order) != null) {   // Opportunist check, effective for instances created by SIS factory.
             throw new UnparsableObjectException(errorLocale, Errors.Keys.DuplicatedElement_1,
                     new Object[] {Strings.bracket(WKTKeywords.Axis, name)}, element.offset);
         }
@@ -1140,8 +1178,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "PrimeMeridian"} element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#53">WKT 2 specification §8.2.2</a>.
+     * Parses a {@code "PrimeMeridian"} element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1217,8 +1254,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses an {@code "Ellipsoid"} element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#52">WKT 2 specification §8.2.1</a>.
+     * Parses an {@code "Ellipsoid"} element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1248,7 +1284,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Map<String,?> properties = parseMetadataAndClose(element, name, null);
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            if (inverseFlattening == 0) {                           // OGC convention for a sphere.
+            if (inverseFlattening == 0) {       // OGC and ISO 19162 convention for a sphere.
                 return datumFactory.createEllipsoid(properties, semiMajorAxis, semiMajorAxis, unit);
             } else {
                 return datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
@@ -1320,8 +1356,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "Method"} (WKT 2) element, followed by parameter values. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#62">WKT 2 specification §9.3</a>.
+     * Parses a {@code "Method"} (WKT 2) element, followed by parameter values.
      *
      * The legacy WKT 1 specification was:
      *
@@ -1342,8 +1377,18 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @throws ParseException if the {@code "Method"} element cannot be parsed.
      */
     private Conversion parseDerivingConversion(final int mode, Element parent, final String wrapper,
-            final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
+            Unit<?> defaultUnit, Unit<Angle> defaultAngularUnit) throws ParseException
     {
+        /*
+         * ISO 19162:2015 was not very specific about the default units of measurement for parameters.
+         * ISO 19162:2019 clarified the policy by saying that default units should be metres or degrees.
+         * This is different than our understanding of OGC 01-009, which seems to inherit the units from
+         * the context.
+         */
+        if (wrapper != null) {
+            defaultUnit = Units.METRE;
+            defaultAngularUnit = Units.DEGREE;
+        }
         final String name;
         if (wrapper == null) {
             name = null;  // Will actually be ignored. WKT 1 does not provide name for Conversion objects.
@@ -1395,8 +1440,93 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "Datum"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#54">WKT 2 specification §8.2.4</a>.
+     * Parses a {@code "FrameEoch"} (WKT 2) element.
+     *
+     * @param  parent  the parent element.
+     * @return the frame epoch, or {@code null} if none.
+     * @throws ParseException if the {@code "FrameEoch"} element cannot be parsed.
+     */
+    private Temporal parseDynamic(final Element parent) throws ParseException {
+        final Element element = parent.pullElement(OPTIONAL, WKTKeywords.Dynamic);
+        if (element == null) {
+            return null;
+        }
+        Temporal epoch = Epoch.fromYear(pullElementAsDouble(element, WKTKeywords.FrameEpoch, MANDATORY), 0);
+        element.close(ignoredElements);
+        return epoch;
+    }
+
+    /**
+     * Parses an {@code "Ensemble"} (WKT 2) element.
+     *
+     * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  datumType  GeoAPI interface of the type of datum to create.
+     * @param  meridian   the prime meridian, or {@code null} if the ensemble is not geodetic.
+     * @return the {@code "Ensemble"} element as a {@code DatumEnsemble} object.
+     * @throws ParseException if the {@code "Ensemble"} element cannot be parsed.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultDatumEnsemble#formatTo(Formatter)
+     */
+    private <D extends Datum> DefaultDatumEnsemble<D> parseEnsemble(final int mode, final Element parent,
+            final Class<D> datumType, final PrimeMeridian meridian) throws ParseException
+    {
+        final Element ensemble = parent.pullElement(mode, WKTKeywords.Ensemble);
+        if (ensemble == null) {
+            return null;
+        }
+        final String ensembleName = ensemble.pullString("name");
+        final Ellipsoid ellipsoid;
+        final boolean vertical;
+        if (datumType == GeodeticDatum.class) {
+            ellipsoid = parseEllipsoid(MANDATORY, ensemble);
+            vertical  = false;
+        } else if (datumType == Datum.class) {
+            // Unspecified datum type, use the presence of `ELLIPSOID` for detecting the geodetic case.
+            ellipsoid = parseEllipsoid(OPTIONAL, ensemble);
+            vertical  = (ellipsoid == null);
+        } else {
+            ellipsoid = null;
+            vertical  = (datumType == VerticalDatum.class);
+        }
+        final DatumFactory datumFactory = factories.getDatumFactory();
+        final var members = new ArrayList<D>();
+        try {
+            Element element = ensemble.pullElement(MANDATORY, WKTKeywords.Member);
+            do {
+                final Datum member;
+                try {
+                    final String name = element.pullString("name");
+                    final Map<String,Object> properties = parseAnchorAndClose(element, name);
+                    if (ellipsoid != null) {    // `memberType` may be `Datum` or `GeodeticDatum`
+                        member = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
+                    } else if (vertical) {
+                        member = datumFactory.createVerticalDatum(properties, VerticalDatumTypes.fromDatum(name, null, null));
+                    } else if (datumType == TemporalDatum.class) {
+                        member = datumFactory.createTemporalDatum(properties, null);
+                    } else if (datumType == DefaultParametricDatum.class) {
+                        member = MissingMethods.createParametricDatum(properties, datumFactory);
+                    } else if (datumType == EngineeringDatum.class) {
+                        member = datumFactory.createEngineeringDatum(properties);
+                    } else {
+                        // Should never happen because this method is private and we checked all calls.
+                        throw new AssertionError(datumType);
+                    }
+                } catch (FactoryException exception) {
+                    throw element.parseFailed(exception);
+                }
+                members.add(datumType.cast(member));
+                element = ensemble.pullElement(OPTIONAL, WKTKeywords.Member);
+            } while (element != null);
+            var accuracy = PositionalAccuracyConstant.ensemble(pullElementAsDouble(ensemble, WKTKeywords.EnsembleAccuracy, MANDATORY));
+            return MissingMethods.createDatumEnsemble(parseAnchorAndClose(ensemble, ensembleName), members, accuracy, datumFactory);
+        } catch (FactoryException exception) {
+            throw ensemble.parseFailed(exception);
+        }
+    }
+
+    /**
+     * Parses a {@code "Datum"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1406,14 +1536,20 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent    the parent element.
-     * @param  meridian  the prime meridian, or {@code null} for Greenwich.
+     * @param  meridian  the prime meridian.
+     * @param  epoch     the frame epoch if the datum is dynamic, or {@code null} if static.
      * @return the {@code "Datum"} element as a {@link GeodeticDatum} object.
      * @throws ParseException if the {@code "Datum"} element cannot be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#formatTo(Formatter)
      */
-    private GeodeticDatum parseDatum(final int mode, final Element parent, PrimeMeridian meridian) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.Datum, WKTKeywords.GeodeticDatum);
+    private GeodeticDatum parseDatum(final int mode, final Element parent, final PrimeMeridian meridian, final Temporal epoch)
+            throws ParseException
+    {
+        final Element element = parent.pullElement(mode,
+                WKTKeywords.GeodeticDatum,
+                WKTKeywords.Datum,
+                WKTKeywords.TRF);
         if (element == null) {
             return null;
         }
@@ -1421,23 +1557,22 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Ellipsoid          ellipsoid  = parseEllipsoid(MANDATORY, element);
         final Object             toWGS84    = parseToWGS84(OPTIONAL, element);
         final Map<String,Object> properties = parseAnchorAndClose(element, name);
-        if (meridian == null) {
-            meridian = CommonCRS.WGS84.primeMeridian();
-        }
         if (toWGS84 != null) {
             properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, toWGS84);
         }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            return datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
+            if (epoch == null) {
+                return datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
+            }
+            return MissingMethods.createGeodeticDatum(properties, ellipsoid, meridian, epoch, datumFactory);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
     }
 
     /**
-     * Parses a {@code "VerticalDatum"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#71">WKT 2 specification §10.2</a>.
+     * Parses a {@code "VerticalDatum"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1447,17 +1582,19 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
+     * @param  epoch   the frame epoch if the datum is dynamic, or {@code null} if static.
      * @param  isWKT1  {@code true} if the parent is a WKT 1 element.
      * @return the {@code "VerticalDatum"} element as a {@link VerticalDatum} object.
      * @throws ParseException if the {@code "VerticalDatum"} element cannot be parsed.
      */
-    private VerticalDatum parseVerticalDatum(final int mode, final Element parent, final boolean isWKT1)
+    private VerticalDatum parseVerticalDatum(final int mode, final Element parent, final Temporal epoch, final boolean isWKT1)
             throws ParseException
     {
         final Element element = parent.pullElement(mode,
                 WKTKeywords.VerticalDatum,
                 WKTKeywords.VDatum,
-                WKTKeywords.Vert_Datum);
+                WKTKeywords.Vert_Datum,
+                WKTKeywords.VRF);
         if (element == null) {
             return null;
         }
@@ -1469,9 +1606,13 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (method == null) {
             method = VerticalDatumTypes.fromDatum(name, null, null);
         }
+        final Map<String, Object> properties = parseAnchorAndClose(element, name);
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            return datumFactory.createVerticalDatum(parseAnchorAndClose(element, name), method);
+            if (epoch == null) {
+                return datumFactory.createVerticalDatum(properties, method);
+            }
+            return MissingMethods.createVerticalDatum(properties, method, epoch, datumFactory);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1484,6 +1625,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     TimeDatum["<name>", TimeOrigin[<time origin>] {,<authority>}]
      *     }
      *
+     * @todo {@code CALANDAR[…]} element is not yet supported.
+     *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "TimeDatum"} element as a {@link TemporalDatum} object.
@@ -1494,10 +1637,16 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (element == null) {
             return null;
         }
-        final String  name   = element.pullString ("name");
-        final Element origin = element.pullElement(MANDATORY, WKTKeywords.TimeOrigin);
-        final Instant epoch  = origin .pullDate("origin");
-        origin.close(ignoredElements);
+        final String   name = element.pullString ("name");
+        final Element  origin = element.pullElement(OPTIONAL, WKTKeywords.TimeOrigin);
+        final Temporal epoch;
+        if (origin != null) {
+            epoch = origin .pullTime("origin");
+            origin.close(ignoredElements);
+        } else {
+            // Default to the date of signing of the Convention du Mètre (from ISO 19162:2019 specification)
+            epoch = LocalDate.of(1875, 5, 20);
+        }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createTemporalDatum(parseAnchorAndClose(element, name), TemporalDate.toDate(epoch));
@@ -1533,8 +1682,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "EngineeringDatum"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#76">WKT 2 specification §11.2</a>.
+     * Parses a {@code "EngineeringDatum"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1571,8 +1719,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses an {@code "ImageDatum"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#81">WKT 2 specification §12.2</a>.
+     * Parses an {@code "ImageDatum"} (WKT 2) element.
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1596,8 +1743,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "EngineeringCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#74">WKT 2 specification §11</a>.
+     * Parses a {@code "EngineeringCRS"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1629,6 +1775,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * An EngineeringCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a base CRS.
          */
+        DefaultDatumEnsemble<EngineeringDatum> ensemble = null;
         EngineeringDatum datum    = null;
         SingleCRS        baseCRS  = null;
         Conversion       fromBase = null;
@@ -1659,26 +1806,27 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 }
             }
         }
-        if (baseCRS == null) {                                                  // The most usual case.
-            datum = parseEngineeringDatum(MANDATORY, element, isWKT1);
+        if (baseCRS == null) {      // The most usual case.
+            ensemble = parseEnsemble(OPTIONAL, element, EngineeringDatum.class, null);
+            datum = parseEngineeringDatum(ensemble == null ? MANDATORY : OPTIONAL, element, isWKT1);
         }
+        final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
         final CRSFactory crsFactory = factories.getCRSFactory();
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, false, null);
-            final Map<String,Object> properties = parseMetadataAndClose(element, name, datum);
+            final Map<String,Object> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (baseCRS != null) {
                 properties.put(Legacy.DERIVED_TYPE_KEY, EngineeringCRS.class);
                 return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
             }
-            return crsFactory.createEngineeringCRS(properties, datum, cs);
+            return MissingMethods.createEngineeringCRS(properties, datum, ensemble, cs, crsFactory);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
     }
 
     /**
-     * Parses an {@code "ImageCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification §12</a>.
+     * Parses an {@code "ImageCRS"} (WKT 2) element.
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1707,8 +1855,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "GeodeticCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>.
+     * Parses a {@code "GeodeticCRS"} (WKT 2) element.
      *
      * The legacy WKT 1 specification had two elements for this:
      *
@@ -1865,18 +2012,24 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 warning(element, WKTKeywords.AngleUnit, Errors.formatInternational(
                         Errors.Keys.InconsistentUnitsForCS_1, angularUnit), null);
             }
-            final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, longitudeUnit);
-            final GeodeticDatum datum = parseDatum(MANDATORY, element, meridian);
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, longitudeUnit);
+            if (meridian == null) {
+                meridian = greenwich();
+            }
+            final Temporal epoch = parseDynamic(element);
+            final DefaultDatumEnsemble<GeodeticDatum> ensemble = parseEnsemble(OPTIONAL, element, GeodeticDatum.class, meridian);
+            final GeodeticDatum datum = parseDatum(ensemble == null ? MANDATORY : OPTIONAL, element, meridian, epoch);
+            final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (cs instanceof EllipsoidalCS) {                                  // By far the most frequent case.
-                return crsFactory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
+                return MissingMethods.createGeographicCRS(properties, datum, ensemble, (EllipsoidalCS) cs, crsFactory);
             }
             if (cs instanceof CartesianCS) {                                    // The second most frequent case.
-                return crsFactory.createGeocentricCRS(properties, datum,
-                        Legacy.forGeocentricCRS((CartesianCS) cs, false));
+                return MissingMethods.createGeodeticCRS(properties, datum, ensemble,
+                        Legacy.forGeocentricCRS((CartesianCS) cs, false), crsFactory);
             }
             if (cs instanceof SphericalCS) {                                    // Not very common case.
-                return crsFactory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
+                return MissingMethods.createGeodeticCRS(properties, datum, ensemble, (SphericalCS) cs, crsFactory);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -1885,8 +2038,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "VerticalCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#69">WKT 2 specification §10</a>.
+     * Parses a {@code "VerticalCRS"} (WKT 2) element.
      *
      * The legacy WKT 1 pattern was:
      *
@@ -1918,6 +2070,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A VerticalCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind VerticalCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseVertCRS.
          */
+        DefaultDatumEnsemble<VerticalDatum> ensemble = null;
         VerticalDatum datum    = null;
         SingleCRS     baseCRS  = null;
         Conversion    fromBase = null;
@@ -1937,13 +2090,17 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 baseCRS = parseVerticalCRS(MANDATORY, element, true);
             }
         }
-        if (baseCRS == null) {                                                  // The most usual case.
-            datum = parseVerticalDatum(MANDATORY, element, isWKT1);
+        if (baseCRS == null) {      // The most usual case.
+            final Temporal epoch = parseDynamic(element);
+            ensemble = parseEnsemble(OPTIONAL, element, VerticalDatum.class, null);
+            datum = parseVerticalDatum(ensemble == null ? MANDATORY : OPTIONAL, element, epoch, isWKT1);
         }
+        final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, unit, false, datum.getVerticalDatumType());
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            final var method = ((VerticalDatum) datumOrEnsemble).getVerticalDatumType();
+            cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, unit, false, method);
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (cs instanceof VerticalCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
@@ -1953,15 +2110,18 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * The `parseVerticalDatum(…)` method may have been unable to resolve the realization method.
                  * But sometimes the axis (which was not available when we created the datum) provides
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
+                 *
+                 * Note: we exclude the reconstruction of dynamic datum for simplicity in the use of the factory.
+                 * This block is a dirty trick anyway (a workaround for a metadata excluded from the WKT standard).
                  */
-                if (datum.getVerticalDatumType() == VerticalDatumType.OTHER_SURFACE) {
+                if (method == VerticalDatumType.OTHER_SURFACE && datum != null && !(datum instanceof DefaultVerticalDatum.Dynamic)) {
                     var type = VerticalDatumTypes.fromDatum(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
                     if (type != VerticalDatumType.OTHER_SURFACE) {
                         final DatumFactory datumFactory = factories.getDatumFactory();
                         datum = datumFactory.createVerticalDatum(IdentifiedObjects.getProperties(datum), type);
                     }
                 }
-                verticalCRS = crsFactory.createVerticalCRS(properties, datum, (VerticalCS) cs);
+                verticalCRS = MissingMethods.createVerticalCRS(properties, datum, ensemble, (VerticalCS) cs, crsFactory);
                 /*
                  * Some DefaultVerticalExtent objects may be waiting for the VerticalCRS before to complete
                  * their construction. If this is the case, try to complete them now.
@@ -1999,6 +2159,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A TemporalCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind TemporalCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseTimeCRS.
          */
+        DefaultDatumEnsemble<TemporalDatum> ensemble = null;
         TemporalDatum datum    = null;
         SingleCRS     baseCRS  = null;
         Conversion    fromBase = null;
@@ -2018,19 +2179,21 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 baseCRS = parseTimeCRS(MANDATORY, element, true);
             }
         }
-        if (baseCRS == null) {                                                  // The most usual case.
-            datum = parseTimeDatum(MANDATORY, element);
+        if (baseCRS == null) {      // The most usual case.
+            ensemble = parseEnsemble(OPTIONAL, element, TemporalDatum.class, null);
+            datum = parseTimeDatum(ensemble == null ? MANDATORY : OPTIONAL, element);
         }
+        final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.temporal, 1, false, unit, false, null);
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (cs instanceof TimeCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
-                return crsFactory.createTemporalCRS(properties, datum, (TimeCS) cs);
+                return MissingMethods.createTemporalCRS(properties, datum, ensemble, (TimeCS) cs, crsFactory);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -2060,9 +2223,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A ParametricCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind ParametricCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
          */
+        DefaultDatumEnsemble<DefaultParametricDatum> ensemble = null;
         DefaultParametricDatum datum = null;
-        SingleCRS baseCRS = null;
-        Conversion fromBase = null;
+        SingleCRS       baseCRS  = null;
+        Conversion      fromBase = null;
         if (!isBaseCRS) {
             /*
              * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
@@ -2079,19 +2243,21 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 baseCRS = parseParametricCRS(MANDATORY, element, true);
             }
         }
-        if (baseCRS == null) {                                                  // The most usual case.
-            datum = parseParametricDatum(MANDATORY, element);
+        if (baseCRS == null) {      // The most usual case.
+            ensemble = parseEnsemble(OPTIONAL, element, DefaultParametricDatum.class, null);
+            datum = parseParametricDatum(ensemble == null ? MANDATORY : OPTIONAL, element);
         }
+        final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.parametric, 1, false, unit, false, null);
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
             if (cs instanceof DefaultParametricCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
-                return MissingMethods.createParametricCRS(properties, datum, (DefaultParametricCS) cs, crsFactory);
+                return MissingMethods.createParametricCRS(properties, datum, ensemble, (DefaultParametricCS) cs, crsFactory);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -2100,8 +2266,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "ProjectedCRS"} (WKT 2) element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification §9</a>.
+     * Parses a {@code "ProjectedCRS"} (WKT 2) element.
      *
      * The legacy WKT 1 specification was:
      *
@@ -2181,8 +2346,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "CompoundCRS"} element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification §16</a>.
+     * Parses a {@code "CompoundCRS"} element.
      *
      * The legacy WKT 1 specification was:
      *
@@ -2263,7 +2427,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         number, AxisDirections.UNSPECIFIED, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
-            final Map<String,Object> axisName = singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes));
+            final Map<String,Object> axisName = singletonMap(
+                    CoordinateSystem.NAME_KEY,
+                    AxisDirections.appendTo(new StringBuilder("CS"), axes));
             final var derivedCS = new AbstractCS(axisName, axes);
             /*
              * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
@@ -2305,8 +2471,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "CoordinateOperation"} element. The syntax is given by
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification §17</a>.
+     * Parses a {@code "CoordinateOperation"} element.
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -2323,12 +2488,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final CoordinateReferenceSystem targetCRS        = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.TargetCRS);
         final CoordinateReferenceSystem interpolationCRS = parseCoordinateReferenceSystem(element, OPTIONAL,  WKTKeywords.InterpolationCRS);
         final OperationMethod           method           = parseMethod(element, WKTKeywords.Method);
-        final Element                   accuracy         = element.pullElement(OPTIONAL, WKTKeywords.OperationAccuracy);
+        final double                    accuracy         = pullElementAsDouble(element, WKTKeywords.OperationAccuracy, OPTIONAL);
         final Map<String,Object>        properties       = parseParametersAndClose(element, name, method);
-        if (accuracy != null) {
+        if (Double.isFinite(accuracy)) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                    PositionalAccuracyConstant.transformation(accuracy.pullDouble("accuracy")));
-            accuracy.close(ignoredElements);
+                           PositionalAccuracyConstant.transformation(accuracy));
         }
         try {
             final DefaultCoordinateOperationFactory df = getOperationFactory();
@@ -2369,5 +2533,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         } else {
             return DefaultCoordinateOperationFactory.provider();
         }
+    }
+
+    /**
+     * Returns the prime meridian to use by default when none is specified.
+     */
+    private static PrimeMeridian greenwich() {
+        return CommonCRS.WGS84.primeMeridian();
     }
 }

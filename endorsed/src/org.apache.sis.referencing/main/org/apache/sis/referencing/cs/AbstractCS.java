@@ -639,8 +639,6 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "CS"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification §7.5</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

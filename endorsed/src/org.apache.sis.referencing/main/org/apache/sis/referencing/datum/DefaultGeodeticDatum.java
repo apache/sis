@@ -51,7 +51,6 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
-import static org.apache.sis.referencing.privy.WKTUtilities.toFormattable;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -743,14 +742,17 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * as a separated element after the geodetic reference frame (for compatibility with WKT 1).
      *
      * @return {@code "Datum"} or {@code "GeodeticDatum"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#51">WKT 2 specification §8.2</a>
+     *         May also be {@code "Member"} if this datum is inside a <abbr>WKT</abbr> {@code Ensemble[…]} element.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        final String name = super.formatTo(formatter);
+        if (name != null) {
+            // Member of a datum ensemble.
+            return name;
+        }
         formatter.newLine();
-        formatter.append(toFormattable(getEllipsoid()));
+        formatter.appendFormattable(getEllipsoid(), DefaultEllipsoid::castOrCopy);
         final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
         if (isWKT1) {
             /*

@@ -21,6 +21,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -65,7 +66,7 @@ public final class MercatorAuxiliarySphere extends AbstractMercator {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder().setCodeSpace(Citations.ESRI, "ESRI");
+        final ParameterBuilder builder = builder().setCodeSpace(Citations.ESRI, Constants.ESRI);
         AUXILIARY_SPHERE_TYPE = builder.addName("Auxiliary_Sphere_Type").createBounded(0, 3, 0);
 
         final ParameterDescriptor<?>[] descriptors = toArray(Mercator2SP.PARAMETERS.descriptors(), 1);

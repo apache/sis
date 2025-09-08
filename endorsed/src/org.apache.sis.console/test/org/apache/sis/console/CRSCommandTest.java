@@ -43,16 +43,19 @@ public final class CRSCommandTest extends TestCase {
     public CRSCommandTest() {
         final String name = "\"WGS\\E\\s?(?:19)?\\Q84\"";                                       // Accept "WGS 84" or "WGS 1984".
         WGS84 = "(?m)\\Q" +                                                                     // Multilines.
-            "GeodeticCRS[" + name + ",\n" +
-            "  Datum[\"World Geodetic System 1984\\E\\s?\\w*\\Q\",\n" +                         // End with "ensemble" in EPSG 10+.
-            "    Ellipsoid[" + name + ", 6378137.0, 298.257223563]],\n" +
+            "GeographicCRS[" + name + ",\n" +
+            "  Ensemble[\"World Geodetic System 1984\\E\\s?\\w*\\Q\",\n" +                      // Ignore any suffix in the name.
+            "\\E(?:    Member\\[\".+\"\\],\n)+\\Q" +                                            // At least one MEMBER[…].
+            "    Ellipsoid[" + name + ", 6378137.0, 298.257223563],\n" +
+            "    EnsembleAccuracy[2.0]],\n" +
             "  CS[ellipsoidal, 2],\n" +
             "    Axis[\"Latitude (B)\", north],\n" +
             "    Axis[\"Longitude (L)\", east],\n" +
             "    Unit[\"degree\", 0.017453292519943295],\n" +
-            "\\E(?:  Scope\\[\".+\"\\],\n)?\\Q" +                                               // Ignore SCOPE[…] if present.
-            "  Area[\"\\E.*\\Q\"],\n" +                                                         // Language may vary because of SIS localization.
-            "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
+            "  Usage[\n" +
+            "\\E(?:    Scope\\[\".+\"\\],\n)?\\Q" +                                             // Ignore SCOPE[…] if present.
+            "    Area[\"\\E.*\\Q\"],\n" +                                                       // Language may vary because of SIS localization.
+            "    BBox[-90.00, -180.00, 90.00, 180.00]],\n" +
             "  Id[\"EPSG\", 4326,\\E.*\\Q URI[\"urn:ogc:def:crs:EPSG:\\E.*\\Q:4326\"]]" +       // Version number of EPSG dataset may vary.
             "\\E(?:,\n  Remark\\[\".+\"\\])?\\]\n";                                             // Ignore trailing REMARK[…] if present.
         /*

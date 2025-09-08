@@ -59,8 +59,6 @@ import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- *
- * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  */
 class MathTransformParser extends AbstractParser {
     /**
@@ -74,7 +72,8 @@ class MathTransformParser extends AbstractParser {
     private static final String[] UNIT_KEYWORDS = {
         WKTKeywords.Unit,   // Ignored since it does not allow us to know the quantity dimension.
         WKTKeywords.LengthUnit, WKTKeywords.AngleUnit, WKTKeywords.ScaleUnit, WKTKeywords.TimeUnit,
-        WKTKeywords.ParametricUnit  // Ignored for the same reason as "Unit".
+        WKTKeywords.TemporalQuantity,   // Alternative keyword for "TimeUnit".
+        WKTKeywords.ParametricUnit      // Ignored for the same reason as "Unit".
     };
 
     /**
@@ -82,7 +81,7 @@ class MathTransformParser extends AbstractParser {
      * For each {@code UNIT_KEYWORDS[i]} element, the associated base unit is {@code BASE_UNIT[i-1]}.
      */
     private static final Unit<?>[] BASE_UNITS = {
-        Units.METRE, Units.RADIAN, Units.UNITY, Units.SECOND
+        Units.METRE, Units.RADIAN, Units.UNITY, Units.SECOND, Units.SECOND
     };
 
     /**
@@ -260,10 +259,22 @@ class MathTransformParser extends AbstractParser {
         if (element == null) {
             return null;
         }
-        final String  name   = element.pullString("name");
-        double        factor = element.pullDouble("factor");
         final int     index  = element.getKeywordIndex() - 1;
+        final String  name   = element.pullString("name");
         final Unit<?> unit   = parseUnitID(element);
+        final Unit<?> base   = (index >= 0 && index < BASE_UNITS.length) ? BASE_UNITS[index] : null;
+        /*
+         * The conversion factor form base unit is mandatory, except for temporal units
+         * because the conversion may not be exact (because of variable duration of day,
+         * month or year). Note however that Apache SIS 1.5 will fallback on constant
+         * factors anyway, therefore the problem described by ISO is not really solved.
+         */
+        double factor;
+        if (base == Units.SECOND && element.peekValue() == null) {
+            factor = Double.NaN;
+        } else {
+            factor = element.pullDouble("factor");
+        }
         element.close(ignoredElements);
         if (unit != null) {
             return unit;
@@ -274,11 +285,11 @@ class MathTransformParser extends AbstractParser {
          * In particular, the conversion factor for degrees is sometimes written as 0.01745329252 instead of
          * 0.017453292519943295.
          */
-        if (index >= 0 && index < BASE_UNITS.length) {
+        if (base != null && !Double.isNaN(factor)) {
             if (index < CONVERSION_FACTORS.length) {
                 factor = completeUnitFactor(CONVERSION_FACTORS[index], factor);
             }
-            return BASE_UNITS[index].multiply(factor);
+            return base.multiply(factor);
         }
         // If we cannot infer the base type, we have to rely on the name.
         try {

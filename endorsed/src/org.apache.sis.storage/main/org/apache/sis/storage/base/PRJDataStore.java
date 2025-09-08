@@ -152,14 +152,14 @@ public abstract class PRJDataStore extends URIDataStore {
                 throw new DataStoreException(s.getMessage(getLocale()), s.exception);
             }
             final String wkt = content.toString();
-            final StoreFormat format = new StoreFormat(dataLocale, timezone, null, listeners);
+            final var format = new StoreFormat(dataLocale, timezone, null, listeners);
             format.setConvention(getConvention());          // Ignored if the format is WKT 2.
             try {
                 format.setSourceFile(content.getURI());
             } catch (URISyntaxException e) {
                 suppressed = e;
             }
-            final ParsePosition pos = new ParsePosition(0);
+            final var pos = new ParsePosition(0);
             // ClassCastException handled by `catch` statement below.
             final T result = type.cast(format.parse(wkt, pos));
             if (result != null) {
@@ -189,7 +189,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * <h4>WKT version used</h4>
      * Current version writes the CRS in WKT 2 format. This is not the common practice, which uses WKT 1.
      * But the WKT 1 variant used by the common practice is not the standard format defined by OGC 01-009.
-     * It is more like  {@link Convention#WKT1_IGNORE_AXES}, which has many ambiguity problems. The WKT 2
+     * It is more like {@link Convention#WKT1_IGNORE_AXES}, which has many ambiguity problems. The WKT 2
      * format fixes those ambiguities. We hope that major software have updated their referencing engine
      * and can now parse WKT 2 as well as WKT 1.
      *
@@ -200,8 +200,8 @@ public abstract class PRJDataStore extends URIDataStore {
             if (crs == null) {
                 deleteAuxiliaryFile(PRJ);
             } else try (BufferedWriter out = writeAuxiliaryFile(PRJ)) {
-                final StoreFormat format = new StoreFormat(dataLocale, timezone, null, listeners);
-                // Keep the default "WKT 2" format (see method javadoc).
+                final var format = new StoreFormat(dataLocale, timezone, null, listeners);
+                format.setConvention(Convention.WKT2_2015);     // TODO: upgrade to newer version.
                 format.format(crs, out);
                 out.newLine();
             }
@@ -284,8 +284,8 @@ public abstract class PRJDataStore extends URIDataStore {
         public static final ParameterDescriptor<CoordinateReferenceSystem> DEFAULT_CRS;
         static {
             final ParameterBuilder builder = new ParameterBuilder();
-            DEFAULT_CRS = builder.addName(CRS_NAME).setDescription(
-                    Vocabulary.formatInternational(Vocabulary.Keys.CoordinateRefSys))
+            DEFAULT_CRS = builder.addName(CRS_NAME)
+                    .setDescription(Vocabulary.formatInternational(Vocabulary.Keys.CoordinateRefSys))
                     .create(CoordinateReferenceSystem.class, null);
         }
 

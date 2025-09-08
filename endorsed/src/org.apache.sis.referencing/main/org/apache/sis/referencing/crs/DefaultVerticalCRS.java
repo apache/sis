@@ -27,6 +27,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
+import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -225,15 +226,6 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum.
-     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
-     */
-    @Override
-    final VerticalDatum getDatumOrEnsemble(final boolean legacy) {
-        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
-    }
-
-    /**
      * Returns the coordinate system.
      *
      * @return the coordinate system.
@@ -266,8 +258,6 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
      * Formats this CRS as a <i>Well Known Text</i> {@code VerticalCRS[…]} element.
      *
      * @return {@code "VerticalCRS"} (WKT 2) or {@code "Vert_CS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#69">WKT 2 specification §10</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -275,6 +265,14 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
         return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Vert_CS
                : isBaseCRS(formatter) ? WKTKeywords.BaseVertCRS
                  : formatter.shortOrLong(WKTKeywords.VertCRS, WKTKeywords.VerticalCRS);
+    }
+
+    /**
+     * Formats the datum or a view of the ensemble as a datum.
+     */
+    @Override
+    final void formatDatum(final Formatter formatter) {
+        formatDatum(formatter, this, getDatum(), DefaultVerticalDatum::castOrCopy, DatumOrEnsemble::asDatum);
     }
 
 

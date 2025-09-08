@@ -309,7 +309,7 @@ public final class CRS extends Static {
      *
      * {@snippet lang="wkt" :
      *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
-     *     BaseGeodCRS["SIRGAS 2000",
+     *     BaseGeogCRS["SIRGAS 2000",
      *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
      *         Ellipsoid["GRS 1980", 6378137, 298.257222101]]],
      *     Conversion["Petrobras Mercator",
@@ -354,7 +354,7 @@ public final class CRS extends Static {
      * @see org.apache.sis.io.wkt.WKTFormat
      * @see GeodeticObjectFactory#createFromWKT(String)
      * @see org.apache.sis.geometry.Envelopes#fromWKT(CharSequence)
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+     * @see <a href="https://www.ogc.org/standards/wkt-crs/">WKT 2 specification</a>
      *
      * @since 0.6
      */
@@ -409,8 +409,8 @@ public final class CRS extends Static {
      *   {@code   AUTHORITY["EPSG", "3857"]]}
      * </blockquote>
      *
-     * In such cases, Apache SIS behavior in {@link #fromWKT(String)}, {@link #fromXML(String)} and other methods is
-     * conform to the <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">ISO 19162 specification</a>:
+     * In such cases, Apache SIS behavior in {@link #fromWKT(String)}, {@link #fromXML(String)} and other methods
+     * is conform to the <a href="https://www.ogc.org/standards/wkt-crs/"><abbr>WKT</abbr> 2 specification</a>:
      *
      * <blockquote><q>Should any attributes or values given in the cited identifier be in conflict with attributes
      * or values given explicitly in the WKT description, the WKT values shall prevail.</q></blockquote>
@@ -1209,9 +1209,7 @@ choice: if (intersect != 0) {
      * <ul>
      *   <li>is an instance of {@link GeographicCRS} (or an equivalent {@link GeodeticCRS}), or</li>
      *   <li>is an instance of {@link ProjectedCRS}, or</li>
-     *   <li>is an instance of {@link EngineeringCRS} (following
-     *     <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#111">ISO 19162 §16.1</a>
-     *     definition of {@literal <horizontal crs>}).</li>
+     *   <li>is an instance of {@link EngineeringCRS} (following <abbr>WKT</abbr> 2 definition of {@literal <horizontal crs>}).</li>
      * </ul>
      *
      * In case of doubt, this method conservatively returns {@code false}.

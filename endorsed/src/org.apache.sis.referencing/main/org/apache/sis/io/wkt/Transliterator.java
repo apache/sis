@@ -29,6 +29,7 @@ import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.OptionalCandidate;
 
 
 /**
@@ -92,7 +93,6 @@ import org.apache.sis.util.Characters;
  * @version 1.1
  *
  * @see org.apache.sis.util.Characters#isValidWKT(int)
- * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
  *
  * @since 0.6
  */
@@ -182,17 +182,15 @@ public abstract class Transliterator implements Serializable {
     }
 
     /**
-     * Returns the axis name to format in WKT, or {@code null} if none. This method performs the mapping
-     * between the names of axes in memory (designated by <q>long axis names</q> in this class)
-     * and the names to format in the WKT (designated by <q>short axis names</q>).
+     * Returns the axis name to format in <abbr>WKT</abbr>, or {@code null} if none.
+     * This method performs the mapping between the names of axes in memory (designated by <dfn>long axis names</dfn>
+     * in this class) and the names to format in the <abbr>WKT</abbr> (designated by <dfn>short axis names</dfn>).
+     * The long axis names are defined by <abbr>ISO</abbr> 19111 — <cite>referencing by coordinates</cite> while
+     * the short axis names are defined by <abbr>ISO</abbr> 19162 — <cite>Well-known text representation
+     * of coordinate reference systems</cite>.
      *
-     * <div class="note"><b>Note:</b>
-     * the <q>long axis names</q> are defined by ISO 19111 — <cite>referencing by coordinates</cite>
-     * while the <q>short axis names</q> are defined by ISO 19162 — <cite>Well-known text representation
-     * of coordinate reference systems</cite>.</div>
-     *
-     * This method can return {@code null} if the name should be omitted.
-     * ISO 19162 recommends to omit the axis name when it is already given through the mandatory axis direction.
+     * <p>This method returns {@code null} if the name should be omitted. <abbr>ISO</abbr> 19162 recommends
+     * to omit the axis name when it is already given through the mandatory axis direction.</p>
      *
      * <p>The default implementation performs at least the following replacements:</p>
      * <ul>
@@ -209,6 +207,7 @@ public abstract class Transliterator implements Serializable {
      *
      * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#formatTo(Formatter)
      */
+    @OptionalCandidate
     public String toShortAxisName(final CoordinateSystem cs, final AxisDirection direction, final String name) {
         if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE) ||               // ISO 19162:2015 §7.5.3(ii)
             name.equalsIgnoreCase(AxisNames.PLANETODETIC_LATITUDE))

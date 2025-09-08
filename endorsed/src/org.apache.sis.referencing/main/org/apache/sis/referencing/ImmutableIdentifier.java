@@ -466,8 +466,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#33">WKT 2 specification §7.3.4</a>
      */
     @Override
     @SuppressWarnings("LocalVariableHidesMemberVariable")

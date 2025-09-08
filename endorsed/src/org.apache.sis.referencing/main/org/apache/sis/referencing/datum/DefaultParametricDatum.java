@@ -45,7 +45,7 @@ import org.apache.sis.io.wkt.Formatter;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
@@ -131,15 +131,21 @@ public class DefaultParametricDatum extends AbstractDatum {
      * Formats this datum as a <cite>Well Known Text</cite> {@code ParametricDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
-     * {@code ParametricDatum} is defined in the WKT 2 specification only.
+     * {@code ParametricDatum} is defined in the <abbr>WKT</abbr> 2 specification only.
+     * Apache <abbr>SIS</abbr> accepts this type as members of datum ensembles,
+     * but this is not valid <abbr>WKT</abbr> according <abbr>ISO</abbr> 19162:2019.
      *
-     * @return {@code "ParametricDatum"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#83">WKT 2 specification</a>
+     * @return {@code "PDatum"} or {@code "ParametricDatum"}.
+     *         May also be {@code "Member"} if this datum is inside a <abbr>WKT</abbr> {@code Ensemble[…]} element.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        final String name = super.formatTo(formatter);
+        if (name != null) {
+            // Member of a datum ensemble, but ISO 19162:2019 allows that for geodetic and vertical datum only.
+            formatter.setInvalidWKT(this, null);
+            return name;
+        }
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }

@@ -201,9 +201,7 @@ public class TensorParameters<E> implements Serializable {
     public static final TensorParameters<Double> ALPHANUM;
 
     /**
-     * Parses and creates matrix parameters with names matching the
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text</a>
-     * version 1 (WKT 1) convention.
+     * Parses and creates matrix parameters with names matching the Well Known Text version 1 (WKT 1) convention.
      *
      * <ul>
      *   <li>First parameter is {@code "num_row"}.</li>

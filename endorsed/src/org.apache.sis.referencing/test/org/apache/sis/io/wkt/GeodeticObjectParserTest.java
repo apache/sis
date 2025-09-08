@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.time.Instant;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.time.Year;
+import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.referencing.IdentifiedObject;
@@ -34,9 +36,12 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -54,6 +59,12 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.referencing.crs.DefaultVerticalCRS;
+import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.temporal.TemporalDate;
@@ -187,12 +198,18 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         assertEquals("φ", axis.getAbbreviation(), "abbreviation");
         assertEquals(AxisDirection.NORTH, axis.getDirection(), "direction");
         assertEquals(Units.DEGREE, axis.getUnit(), "unit");
+        assertEquals(Latitude.MIN_VALUE, axis.getMinimumValue());
+        assertEquals(Latitude.MAX_VALUE, axis.getMaximumValue());
+        assertEquals(RangeMeaning.EXACT, axis.getRangeMeaning());
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“longitude”,EAST,order[2],UNIT[“degree”,0.0174532925199433]]");
         assertEquals("Longitude", axis.getName().getCode(), "name");
         assertEquals("λ", axis.getAbbreviation(), "abbreviation");
         assertEquals(AxisDirection.EAST, axis.getDirection(), "direction");
         assertEquals(Units.DEGREE, axis.getUnit(), "unit");
+        assertEquals(Longitude.MIN_VALUE, axis.getMinimumValue());
+        assertEquals(Longitude.MAX_VALUE, axis.getMaximumValue());
+        assertEquals(RangeMeaning.WRAPAROUND, axis.getRangeMeaning());
 
         axis = parse(CoordinateSystemAxis.class, "AXIS[“ellipsoidal height (h)”,up,ORDER[3],LengthUnit[“kilometre”,1000]]");
         assertEquals("Ellipsoidal height", axis.getName().getCode(), "name");
@@ -211,6 +228,16 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         assertEquals("X", axis.getAbbreviation(), "abbreviation");
         assertEquals(CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 90), axis.getDirection(), "direction");
         assertEquals(Units.METRE, axis.getUnit(), "unit");
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“longitude”,EAST,order[2],UNIT[“degree”,0.0174532925199433],"
+                + "AxisMinValue[0],AxisMaxValue[360],RangeMeaning[wraparound]]");
+        assertEquals("Longitude", axis.getName().getCode(), "name");
+        assertEquals("λ", axis.getAbbreviation(), "abbreviation");
+        assertEquals(AxisDirection.EAST, axis.getDirection(), "direction");
+        assertEquals(Units.DEGREE, axis.getUnit(), "unit");
+        assertEquals(RangeMeaning.WRAPAROUND, axis.getRangeMeaning());
+        assertEquals(  0, axis.getMinimumValue());
+        assertEquals(360, axis.getMaximumValue());
     }
 
     /**
@@ -482,15 +509,48 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
+     * Tests the parsing of a geographic CRS with datum ensemble.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testGeographicCRSWithEnsemble() throws ParseException {
+        final var crs = parse(DefaultGeographicCRS.class,
+                "GeodeticCRS[“WGS 84”,\n" +
+                "  Ensemble[“World Geodetic System 1984”,\n" +
+                "    Member[“World Geodetic System 1984 (Transit)”],\n" +
+                "    Member[“World Geodetic System 1984 (G730)”],\n" +
+                "    Member[“World Geodetic System 1984 (G873)”],\n" +
+                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
+                "    EnsembleAccuracy[2.0]],\n" +
+                "  PrimeMeridian[“Greenwich”, 0],\n" +
+                "  CS[ellipsoidal, 2],\n" +
+                "    Axis[“Geodetic longitude (Lon)”, east],\n" +
+                "    Axis[“Geodetic latitude (Lat)”, north],\n" +
+                "    Unit[“degree”, 0.017453292519943295],\n" +
+                "  Usage[\n" +
+                "    Scope[“Horizontal component of 3D system.”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]]]");
+        verifyGeographicCRS(0, crs);
+        assertNull(crs.getDatum());
+        final Iterator<GeodeticDatum> members = crs.getDatumEnsemble().getMembers().iterator();
+        assertNameAndIdentifierEqual("World Geodetic System 1984 (Transit)", 0, members.next());
+        assertNameAndIdentifierEqual("World Geodetic System 1984 (G730)",    0, members.next());
+        assertNameAndIdentifierEqual("World Geodetic System 1984 (G873)",    0, members.next());
+        assertFalse(members.hasNext());
+    }
+
+    /**
      * Implementation of {@link #testGeographicCRS()} and related test methods.
      * This test expects no {@code AUTHORITY} element on any component.
      *
      * @param  swap  1 if axes are expected to be swapped, or 0 otherwise.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")
     private void verifyGeographicCRS(final int swap, final GeographicCRS crs) throws ParseException {
         assertNameAndIdentifierEqual("WGS 84", 0, crs);
 
-        final GeodeticDatum datum = crs.getDatum();
+        final GeodeticDatum datum = DatumOrEnsemble.asDatum(crs);
         assertNameAndIdentifierEqual("World Geodetic System 1984", 0, datum);
         assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
 
@@ -701,8 +761,9 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the same CRS as {@link #testProjectedWithGradUnits()}, but from a WKT 2 definition
-     * (except for inclusion of accented letters).
+     * Tests the same <abbr>CRS</abbr> as {@link #testProjectedWithGradUnits()},
+     * but from a string mostly conform to <abbr>ISO</abbr> 19162:2015.
+     * A small deviation is that this test includes accented letters.
      *
      * @throws ParseException if the parsing failed.
      *
@@ -710,7 +771,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-310">SIS-310</a>
      */
     @Test
-    public void testProjectedFromWKT2() throws ParseException {
+    public void testProjectedFromWKT2_2015() throws ParseException {
         String wkt = "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                      "  BaseGeodCRS[“NTF (Paris)”,\n" +
                      "    Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
@@ -722,8 +783,8 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
                      "    Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grad”, 0.015707963267948967]],\n" +
                      "    Parameter[“Longitude of natural origin”, 0.0],\n" +
                      "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
-                     "    Parameter[“False easting”, 600.0],\n" +
-                     "    Parameter[“False northing”, 2200.0]],\n" +
+                     "    Parameter[“False easting”, 600.0, LengthUnit[“kilometre”, 1000]],\n" +
+                     "    Parameter[“False northing”, 2200.0, LengthUnit[“kilometre”, 1000]]],\n" +
                      "  CS[Cartesian, 2],\n" +
                      "    Axis[“Easting (E)”, east],\n" +
                      "    Axis[“Northing (N)”, north],\n" +
@@ -731,8 +792,47 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
                      "  Scope[“Large and medium scale topographic mapping and engineering survey.”],\n" +
                      "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]";
 
-        final ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
+        final var crs = parse(DefaultProjectedCRS.class, wkt);
         validateParisFranceII(crs, 27572, false);
+        assertEquals("Large and medium scale topographic mapping and engineering survey.",
+                     getSingleton(crs.getDomains()).getScope().toString());
+        assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
+    }
+
+    /**
+     * Tests the same <abbr>CRS</abbr> as {@link #testProjectedWithGradUnits()},
+     * but from a string mostly conform to <abbr>ISO</abbr> 19162:2019.
+     * A small deviation is that this test includes accented letters.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testProjectedFromWKT2_2019() throws ParseException {
+        String wkt = "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
+                     "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                     "    Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
+                     "      Ellipsoid[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
+                     "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967], Id[“EPSG”, 8903]],\n" +
+                     "    AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                     "  Conversion[“Lambert zone II”,\n" +
+                     "    Method[“Lambert Conic Conformal (1SP)”],\n" +
+                     "    Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grad”, 0.015707963267948967]],\n" +
+                     "    Parameter[“Longitude of natural origin”, 0.0],\n" +
+                     "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
+                     "    Parameter[“False easting”, 600.0, LengthUnit[“kilometre”, 1000]],\n" +
+                     "    Parameter[“False northing”, 2200.0, LengthUnit[“kilometre”, 1000]]],\n" +
+                     "  CS[Cartesian, 2],\n" +
+                     "    Axis[“Easting (E)”, east],\n" +
+                     "    Axis[“Northing (N)”, north],\n" +
+                     "    LengthUnit[“kilometre”, 1000],\n" +
+                     "  Usage[\n" +
+                     "    Scope[“Large and medium scale topographic mapping and engineering survey.”]],\n" +
+                     "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]";
+
+        final var crs = parse(DefaultProjectedCRS.class, wkt);
+        validateParisFranceII(crs, 27572, false);
+        assertEquals("Large and medium scale topographic mapping and engineering survey.",
+                     getSingleton(crs.getDomains()).getScope().toString());
         assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
     }
 
@@ -888,6 +988,35 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
                   "UNIT[“m”, 1.0], " +
                   "AXIS[“Westing”, WEST], " +
                   "AXIS[" + axis + "]]");
+    }
+
+    /**
+     * Tests the parsing of a vertical <abbr>CRS</abbr>.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testVerticalCRS() throws ParseException {
+        final var crs = parse(DefaultVerticalCRS.class,
+                "VerticalCRS[“RH2000 height”,\n" +
+                "  Dynamic[FrameEpoch[2000]],\n" +
+                "  VerticalDatum[“Rikets hojdsystem 2000”],\n" +
+                "  CS[vertical, 1],\n" +
+                "    Axis[“Gravity-related height (H)”, up],\n" +
+                "    Unit[“metre”, 1],\n" +
+                "  Usage[\n" +
+                "    Scope[“Geodesy, engineering survey.”],\n" +
+                "    Area[“Sweden - onshore.”],\n" +
+                "    BBox[55.28, 10.93, 69.07, 24.17]],\n" +
+                "  Id[“EPSG”, 5613, “12.013”, URI[“urn:ogc:def:crs:EPSG:12.013:5613”]],\n" +
+                "  Remark[“Replaces RH70 (CRS code 5718) from 2005.”]]");
+
+        assertNameAndIdentifierEqual("RH2000 height", 5613, crs);
+        assertNameAndIdentifierEqual("Rikets hojdsystem 2000", 0, crs.getDatum());
+        Temporal epoch = assertInstanceOf(DefaultVerticalDatum.Dynamic.class, crs.getDatum()).getFrameReferenceEpoch();
+        assertEquals(Year.of(2000), epoch);
+        assertEquals("Geodesy, engineering survey.", getSingleton(crs.getDomains()).getScope().toString());
+        assertEquals("Replaces RH70 (CRS code 5718) from 2005.", crs.getRemarks().toString());
     }
 
     /**

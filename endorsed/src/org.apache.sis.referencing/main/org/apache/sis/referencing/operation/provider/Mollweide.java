@@ -22,6 +22,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -92,7 +93,7 @@ public final class Mollweide extends MapProjection {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        PARAMETERS = builder().setCodeSpace(Citations.ESRI, "ESRI")
+        PARAMETERS = builder().setCodeSpace(Citations.ESRI, Constants.ESRI)
                 .addName("Mollweide")
                 .addName(null, "Homalographic")
                 .addName(null, "Homolographic")

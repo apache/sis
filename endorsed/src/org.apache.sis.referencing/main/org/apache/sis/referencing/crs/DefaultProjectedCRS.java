@@ -30,7 +30,6 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -252,15 +251,6 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum.
-     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
-     */
-    @Override
-    final GeodeticDatum getDatumOrEnsemble(final boolean legacy) {
-        return legacy ? DatumOrEnsemble.asDatum(getBaseCRS()) : getDatum();
-    }
-
-    /**
      * Returns the geographic CRS on which the map projection is applied.
      * This CRS defines the {@linkplain #getDatum() datum} of this CRS and (at least implicitly)
      * the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
@@ -362,7 +352,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *
      * {@snippet lang="wkt" :
      *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
-     *     BaseGeodCRS[“NTF (Paris)”,
+     *     BaseGeogCRS[“NTF (Paris)”,
      *       Datum[“Nouvelle Triangulation Francaise”,
      *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],
      *         PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grad”, 0.015707963267948967]]],
@@ -405,8 +395,6 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification §9</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

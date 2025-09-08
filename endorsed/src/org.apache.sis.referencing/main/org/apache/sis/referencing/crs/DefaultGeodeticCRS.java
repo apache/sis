@@ -35,6 +35,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -43,7 +44,6 @@ import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -170,15 +170,6 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum.
-     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
-     */
-    @Override
-    final GeodeticDatum getDatumOrEnsemble(final boolean legacy) {
-        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
-    }
-
-    /**
      * Returns a coordinate reference system of the same type as this CRS but with different axes.
      * This method shall be overridden by all {@code DefaultGeodeticCRS} subclasses in this package.
      *
@@ -191,7 +182,7 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
     }
 
     /**
-     * Formats this CRS as a <i>Well Known Text</i> {@code GeodeticCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code GeodeticCRS[…]} or {@code GeographicCRS[…]} element.
      * More information about the WKT format is documented in subclasses.
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"}/{@code "GeocCS"} (WKT 1).
@@ -202,8 +193,8 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
         CoordinateSystem cs = getCoordinateSystem();
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = (convention.majorVersion() == 1);
-        final boolean isGeographicWKT1 = isWKT1 && (cs instanceof EllipsoidalCS);
-        if (isGeographicWKT1 && cs.getDimension() == 3) {
+        final boolean isGeographic = (cs instanceof EllipsoidalCS);
+        if (isWKT1 && isGeographic && cs.getDimension() == 3) {
             /*
              * Version 1 of WKT format did not have three-dimensional GeographicCRS. Instead, such CRS were formatted
              * as a CompoundCRS made of a two-dimensional GeographicCRS with a VerticalCRS for the ellipsoidal height.
@@ -229,19 +220,16 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
          * The prime meridian is part of datum according ISO 19111, but is formatted
          * as a sibling (rather than a child) element in WKT for historical reasons.
          */
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final GeodeticDatum datum = getDatumOrEnsemble(true);
         formatter.newLine();
-        formatter.append(DefaultGeodeticDatum.castOrCopy(datum));   // For the conversion of ensemble to datum.
+        formatDatum(formatter);
         formatter.newLine();
         final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(cs, null);
         DatumOrEnsemble.getPrimeMeridian(this).ifPresent((PrimeMeridian pm) -> {
-            if (convention != Convention.WKT2_SIMPLIFIED ||     // Really this specific enum, not Convention.isSimplified().
-                    ReferencingUtilities.getGreenwichLongitude(pm, Units.DEGREE) != 0)
-            {
+            // Really this specific enum, not Convention.isSimplified().
+            if (convention != Convention.WKT2_SIMPLIFIED || pm.getGreenwichLongitude() != 0) {
                 final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
                 formatter.indent(1);
-                formatter.append(WKTUtilities.toFormattable(pm));
+                formatter.appendFormattable(pm, DefaultPrimeMeridian::castOrCopy);
                 formatter.indent(-1);
                 formatter.newLine();
                 formatter.restoreContextualUnit(angularUnit, oldUnit);
@@ -258,7 +246,7 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
          */
         final boolean isBaseCRS;
         if (isWKT1) {
-            if (!isGeographicWKT1) {                        // If not geographic, then presumed geocentric.
+            if (!isGeographic) {                            // If not geographic, then presumed geocentric.
                 if (cs instanceof CartesianCS) {
                     cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
                 } else {
@@ -292,11 +280,22 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
          * have a GeodeticCRS. We need to make the choice in this base class. The CS type is a sufficient criterion.
          */
         if (isWKT1) {
-            return isGeographicWKT1 ? WKTKeywords.GeogCS : WKTKeywords.GeocCS;
+            return isGeographic ? WKTKeywords.GeogCS : WKTKeywords.GeocCS;
+        } else if (isGeographic && convention.supports(Convention.WKT2_2019)) {
+            return isBaseCRS ? WKTKeywords.BaseGeogCRS
+                   : formatter.shortOrLong(WKTKeywords.GeogCRS, WKTKeywords.GeographicCRS);
         } else {
             return isBaseCRS ? WKTKeywords.BaseGeodCRS
                    : formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
         }
+    }
+
+    /**
+     * Formats the datum or a view of the ensemble as a datum.
+     */
+    @Override
+    final void formatDatum(final Formatter formatter) {
+        formatDatum(formatter, this, getDatum(), DefaultGeodeticDatum::castOrCopy, DatumOrEnsemble::asDatum);
     }
 
 

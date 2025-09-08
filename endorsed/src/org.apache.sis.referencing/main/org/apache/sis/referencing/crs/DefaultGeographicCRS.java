@@ -370,14 +370,14 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Formats this CRS as a <i>Well Known Text</i> {@code GeodeticCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code GeographicCRS[…]} element.
      *
      * <h4>Example</h4>
      * Well-Known Text (version 2)
      * of a geographic coordinate reference system using the WGS 84 datum.
      *
      * {@snippet lang="wkt" :
-     *   GeodeticCRS["WGS 84",
+     *   GeographicCRS["WGS 84",
      *      Datum["World Geodetic System 1984",
      *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
      *        PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
@@ -406,8 +406,6 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -20,6 +20,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -94,7 +95,7 @@ public final class AffineTest extends TestCase {
     @Test
     public void testWKT() {
         final Matrix matrix = Matrices.createDiagonal(3, 3);
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
                 "PARAMETERGROUP[“Affine parametric transformation”," +
                 " ID[“EPSG”, 9624]]", Affine.parameters(matrix));
         /*
@@ -103,7 +104,7 @@ public final class AffineTest extends TestCase {
         matrix.setElement(0, 1,  2);  // A1
         matrix.setElement(1, 1,  0);  // B1
         matrix.setElement(1, 2, -1);  // B2
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
                 "PARAMETERGROUP[“Affine parametric transformation”,\n" +
                 "  PARAMETER[“A1”, 2.0, ID[“EPSG”, 8624]],\n"  +
                 "  PARAMETER[“B1”, 0.0, ID[“EPSG”, 8640]],\n" +
@@ -114,7 +115,7 @@ public final class AffineTest extends TestCase {
          * So it should not be anymore EPSG:9624.
          */
         matrix.setElement(2, 0, 3);  // C0
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
                 "PARAMETERGROUP[“Affine”,\n" +
                 "  PARAMETER[“num_row”, 3],\n"  +
                 "  PARAMETER[“num_col”, 3],\n"  +

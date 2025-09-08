@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlType;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.io.wkt.Formatter;
 
 // Specific to the main branch:
@@ -195,15 +194,6 @@ public class DefaultParametricCRS extends AbstractSingleCRS<DefaultParametricDat
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum.
-     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
-     */
-    @Override
-    final DefaultParametricDatum getDatumOrEnsemble(final boolean legacy) {
-        return getDatum();
-    }
-
-    /**
      * Returns the coordinate system.
      *
      * @return the coordinate system.
@@ -243,8 +233,6 @@ public class DefaultParametricCRS extends AbstractSingleCRS<DefaultParametricDat
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ParametricCRS"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#83">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

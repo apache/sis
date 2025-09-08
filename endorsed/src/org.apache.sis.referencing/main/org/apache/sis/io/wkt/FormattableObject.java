@@ -63,11 +63,7 @@ import org.apache.sis.system.Environment;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- *
- * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
- * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
- *
- * @since 0.4
+ * @since   0.4
  */
 @XmlTransient
 public abstract class FormattableObject implements Printable {
@@ -224,11 +220,11 @@ public abstract class FormattableObject implements Printable {
      * This method is automatically invoked by {@link WKTFormat} when a formattable element is found.
      *
      * <p>Keywords, opening and closing brackets shall not be formatted here.
-     * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
+     * For example if this formattable element is for a {@code GeographicCRS[…]} element,
      * then this method shall write the content starting at the insertion point shown below:</p>
      *
      * <pre class="text">
-     *   GeodeticCRS[ ]
+     *   GeographicCRS[ ]
      *               ↑
      *       (insertion point)</pre>
      *

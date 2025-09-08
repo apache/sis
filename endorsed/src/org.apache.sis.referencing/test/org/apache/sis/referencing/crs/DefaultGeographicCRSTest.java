@@ -153,7 +153,7 @@ public final class DefaultGeographicCRSTest extends TestCase {
      */
     @Test
     public void testWKT2() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "GEODCRS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
@@ -177,7 +177,7 @@ public final class DefaultGeographicCRSTest extends TestCase {
      */
     @Test
     public void testWKT2_For3D() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "GEODCRS[“WGS 84 (3D)”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
@@ -197,15 +197,16 @@ public final class DefaultGeographicCRSTest extends TestCase {
     @Test
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
-                "GeodeticCRS[“WGS 84”,\n" +
+                "GeographicCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Longitude (L)”, east],\n" +
                 "    Axis[“Latitude (B)”, north],\n" +
                 "    Unit[“degree”, 0.017453292519943295],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
+                "  Usage[\n" +
+                "    Area[“World”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]]]",
                 HardCodedCRS.WGS84);
     }
 
@@ -215,18 +216,20 @@ public final class DefaultGeographicCRSTest extends TestCase {
     @Test
     public void testWKT2_Internal() {
         assertWktEquals(Convention.INTERNAL,
-                "GeodeticCRS[“WGS 84”,\n" +
+                "GeographicCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
-                "    Scope[“Satellite navigation.”],\n" +
+                "    Usage[\n" +
+                "      Scope[“Satellite navigation.”]],\n" +
                 "    Id[“EPSG”, 6326]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Geodetic longitude (λ)”, east],\n" +
                 "    Axis[“Geodetic latitude (φ)”, north],\n" +
                 "    Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
+                "  Usage[\n" +
+                "    Area[“World”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]]]",
                 HardCodedCRS.WGS84);
     }
 
@@ -239,13 +242,13 @@ public final class DefaultGeographicCRSTest extends TestCase {
     @Test
     public void testWKT2_ForNonGreenwich() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
-                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "GeographicCRS[“NTF (Paris)”,\n" +
                 "  Datum[“Nouvelle Triangulation Francaise”,\n" +           // Formatter should replace "ç" by "c".
                 "    Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "    PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
-                "    Axis[“Longitude (L)”, east],\n" +                      // See method javadoc.
-                "    Axis[“Latitude (B)”, north],\n" +
+                "    Axis[“Longitude (L)”, east, AxisMinValue[-200.0], AxisMaxValue[200.0], RangeMeaning[wraparound]],\n" +
+                "    Axis[“Latitude (B)”, north, AxisMinValue[-100.0], AxisMaxValue[100.0], RangeMeaning[exact]],\n" +
                 "    Unit[“grad”, 0.015707963267948967]]",
                 HardCodedCRS.NTF);
     }

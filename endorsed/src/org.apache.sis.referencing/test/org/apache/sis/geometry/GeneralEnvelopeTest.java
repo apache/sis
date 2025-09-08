@@ -23,6 +23,7 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Range;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -748,7 +749,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         envelope.setRange(0,  6, 10);
         envelope.setRange(1, 16, 20);
         envelope.setRange(2, 23, 50);
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,    // Actually not in WKT2 standard.
                 "BOX3D[ 6 16 23,\n" +
                 "      10 20 50]", envelope);
     }

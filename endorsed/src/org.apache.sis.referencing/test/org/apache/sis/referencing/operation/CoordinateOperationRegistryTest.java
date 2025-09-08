@@ -150,7 +150,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     @Test
     public void testLongitudeRotationBetweenConformCRS() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
-                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "GeographicCRS[“NTF (Paris)”,\n" +
                 "  $NTF,\n" +
                 "    PrimeMeridian[“Paris”, 2.5969213],\n" +
                 "  CS[ellipsoidal, 2],\n" +
@@ -188,7 +188,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     @Test
     public void testLongitudeRotationBetweenNormalizedCRS() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
-                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "GeographicCRS[“NTF (Paris)”,\n" +
                 "  $NTF,\n" +
                 "    PrimeMeridian[“Paris”, 2.33722917],\n" +
                 "  CS[ellipsoidal, 2],\n" +
@@ -218,7 +218,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     @Test
     public void testInverse() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem targetCRS = parse(
-                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "GeographicCRS[“NTF (Paris)”,\n" +
                 "  $NTF,\n" +
                 "    PrimeMeridian[“Paris”, 2.5969213],\n" +
                 "  CS[ellipsoidal, 2],\n" +
@@ -249,7 +249,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     @Test
     public void testLongitudeRotationBetweenGeographic3D() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
-                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "GeographicCRS[“NTF (Paris)”,\n" +
                 "  $NTF,\n" +
                 "    PrimeMeridian[“Paris”, 2.5969213],\n" +
                 "  CS[ellipsoidal, 3],\n" +
@@ -283,7 +283,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     @Test
     public void testLongitudeRotationBetweenNormalizedGeographic3D() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
-                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "GeographicCRS[“NTF (Paris)”,\n" +
                 "  $NTF,\n" +
                 "    PrimeMeridian[“Paris”, 2.33722917],\n" +
                 "  CS[ellipsoidal, 3],\n" +

@@ -121,7 +121,7 @@ public final class DefaultOperationMethodTest extends TestCase {
     @Test
     public void testWKT() {
         final OperationMethod method = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2");
-        assertWktEquals("METHOD[“Mercator (variant A)”, ID[“EPSG”, 9804, URI[“urn:ogc:def:method:EPSG::9804”]]]", method);
+        assertWktEquals(Convention.WKT2, "METHOD[“Mercator (variant A)”, ID[“EPSG”, 9804, URI[“urn:ogc:def:method:EPSG::9804”]]]", method);
         assertWktEquals(Convention.WKT1, "PROJECTION[“Mercator (variant A)”, AUTHORITY[“EPSG”, “9804”]]", method);
     }
 }

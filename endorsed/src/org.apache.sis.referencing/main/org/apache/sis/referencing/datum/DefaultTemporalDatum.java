@@ -273,15 +273,21 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * Formats this datum as a <i>Well Known Text</i> {@code TimeDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
-     * {@code TimeDatum} is defined in the WKT 2 specification only.
+     * {@code TimeDatum} is defined in the <abbr>WKT</abbr> 2 specification only.
+     * Apache <abbr>SIS</abbr> accepts this type as members of datum ensembles,
+     * but this is not valid <abbr>WKT</abbr> according <abbr>ISO</abbr> 19162:2019.
      *
-     * @return {@code "TimeDatum"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#90">WKT 2 specification §14.2</a>
+     * @return {@code "TDatum"} or {@code "TimeDatum"}.
+     *         May also be {@code "Member"} if this datum is inside a <abbr>WKT</abbr> {@code Ensemble[…]} element.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        final String name = super.formatTo(formatter);
+        if (name != null) {
+            // Member of a datum ensemble, but ISO 19162:2019 allows that for geodetic and vertical datum only.
+            formatter.setInvalidWKT(this, null);
+            return name;
+        }
         formatter.append(new Origin(TemporalDate.toTemporal(getOrigin())));
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);

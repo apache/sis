@@ -226,8 +226,6 @@ public final class DefaultImageCRS extends AbstractSingleCRS<ImageDatum> impleme
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ImageCRS"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification §12</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

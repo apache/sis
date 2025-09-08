@@ -89,7 +89,7 @@ public final class DefaultEngineeringCRSTest extends TestCase {
     @Test
     public void testWKT2() {
         final DefaultEngineeringCRS crs = createSpherical();
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "ENGCRS[“A spherical CRS”,\n" +
                 "  EDATUM[“Centre”],\n" +
                 "  CS[spherical, 3],\n" +

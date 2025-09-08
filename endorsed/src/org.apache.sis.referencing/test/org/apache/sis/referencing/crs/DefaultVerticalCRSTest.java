@@ -54,7 +54,7 @@ public final class DefaultVerticalCRSTest extends TestCase {
      */
     @Test
     public void testWKT2() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "VERTCRS[“Depth”,\n" +
                 "  VDATUM[“Mean Sea Level”],\n" +
                 "  CS[vertical, 1],\n" +
