@@ -244,7 +244,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
     @Test
     public void testToWKT() {
         final var datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "DATUM[“WGS84”,\n" +
                 "  ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]]",
                 datum);
@@ -326,7 +326,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
                 "  AUTHORITY[“EPSG”, “6326”]]",
                 datum);
 
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "DATUM[“World Geodetic System 1984”,\n" +
                 "  ELLIPSOID[“WGS 84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]],\n" +
                 "  ID[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]]]",
@@ -343,9 +343,11 @@ public final class DefaultGeodeticDatumTest extends TestCase {
                 "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, Id[“EPSG”, 7030],\n" +
                 "    Remark[“Defining parameters cited in EPSG database.”]],\n" +
                 "  Anchor[“Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.”],\n" +
-                "  Scope[“Satellite navigation.”],\n" +
-                "  Area[“World.”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
+                "  AnchorEpoch[1984.000],\n" +  // The 3 digits are because of <gml:realizationEpoch> in test file.
+                "  Usage[\n" +
+                "    Scope[“Satellite navigation.”],\n" +
+                "    Area[“World.”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]],\n" +
                 "  Id[“EPSG”, 6326],\n" +
                 "  Remark[“No distinction between the original and subsequent WGS 84 frames.”]]",
                 datum);

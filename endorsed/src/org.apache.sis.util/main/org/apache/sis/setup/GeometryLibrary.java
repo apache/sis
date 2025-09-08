@@ -16,6 +16,7 @@
  */
 package org.apache.sis.setup;
 
+import org.apache.sis.util.privy.Constants;
 import org.opengis.metadata.acquisition.GeometryType;
 
 
@@ -70,7 +71,7 @@ public enum GeometryLibrary {
      *
      * @see <a href="https://github.com/Esri/geometry-api-java/wiki">API wiki page</a>
      */
-    ESRI("ESRI"),
+    ESRI(Constants.ESRI),
 
     /**
      * The Java Topology Suite (JTS) library. This open source library provides an object model

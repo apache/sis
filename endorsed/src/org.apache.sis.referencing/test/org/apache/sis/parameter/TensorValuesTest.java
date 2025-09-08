@@ -28,6 +28,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.util.privy.Constants.NUM_ROW;
 import static org.apache.sis.util.privy.Constants.NUM_COL;
@@ -309,7 +310,7 @@ public final class TensorValuesTest extends TestCase {
         final ParameterValueGroup group = TensorParameters.WKT1.createValueGroup(
                 Map.of(TensorValues.NAME_KEY, Constants.AFFINE), matrix);
         validate(group);
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
                 "PARAMETERGROUP[“Affine”,\n"      +
                 "  PARAMETER[“num_row”, 3],\n"    +   // Shall be shown even if equals to the default value.
                 "  PARAMETER[“num_col”, 3],\n"    +
@@ -336,7 +337,7 @@ public final class TensorValuesTest extends TestCase {
         final ParameterValueGroup group = TensorParameters.ALPHANUM.createValueGroup(
                 Map.of(TensorValues.NAME_KEY, Affine.NAME), matrix);
         validate(group);
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
                 "PARAMETERGROUP[“Affine parametric transformation”,\n" +
                 "  PARAMETER[“A2”, 4.0, ID[“EPSG”, 8625]],\n"  +
                 "  PARAMETER[“B0”, -2.0, ID[“EPSG”, 8639]],\n" +

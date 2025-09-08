@@ -199,7 +199,7 @@ public class DefaultCoordinateMetadata extends FormattableObject
     protected String formatTo(final Formatter formatter) {
         formatter.append(WKTUtilities.toFormattable(crs));
         if (epoch != null) {
-            formatter.append(new Epoch(epoch));
+            formatter.append(new Epoch(epoch, WKTKeywords.Epoch));
         }
         return WKTKeywords.CoordinateMetadata;
     }

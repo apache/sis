@@ -22,13 +22,14 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.referencing.operation.provider.LambertConformal1SP;
 import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.util.privy.Constants;
 
 // Test dependencies
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -177,7 +178,7 @@ public final class HardCodedConversions {
         pg.parameter("Easting at false origin") .setValue( 700000);
         pg.parameter("Northing at false origin").setValue(6600000);
         final DefaultConversion c = create("Lambert Conic Conformal", method, pg);
-        final ImmutableIdentifier id = new ImmutableIdentifier(Citations.ESRI, "ESRI", "102110");
+        final ImmutableIdentifier id = new ImmutableIdentifier(Citations.ESRI, Constants.ESRI, "102110");
         return new DefaultProjectedCRS(
                 Map.of(ProjectedCRS.NAME_KEY, "RGF 1993 Lambert",
                        ProjectedCRS.IDENTIFIERS_KEY, id),

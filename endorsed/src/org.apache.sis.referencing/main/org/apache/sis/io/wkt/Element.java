@@ -16,14 +16,13 @@
  */
 package org.apache.sis.io.wkt;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Locale;
-import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -34,6 +33,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.util.privy.CollectionsExt;
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
@@ -342,7 +342,7 @@ final class Element {
                         valueType = ArraysExt.containsIgnoreCase(TIME_KEYWORDS, keyword) ? TEMPORAL : NUMERIC;
                     }
                     switch (valueType) {
-                        case TEMPORAL: value = parser.parseDate  (text, position); break;
+                        case TEMPORAL: value = TemporalDate.toTemporal(parser.parseDate(text, position)); break;
                         case NUMERIC:  value = parser.parseNumber(text, position); break;
                         default: throw new AssertionError(valueType);                       // Should never happen.
                     }
@@ -549,19 +549,19 @@ final class Element {
     }
 
     /**
-     * Removes the next {@link Date} from the children and returns it.
+     * Removes the next {@link Temporal} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no date is found.
-     * @return the next {@link Date} among the children.
+     * @return the next {@link Temporal} among the children.
      * @throws ParseException if no more date is available.
      */
-    public Instant pullDate(final String key) throws ParseException {
+    public Temporal pullTime(final String key) throws ParseException {
         final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
-            if (object instanceof Date) {
+            if (object instanceof Temporal) {
                 iterator.remove();
-                return ((Date) object).toInstant();
+                return (Temporal) object;
             }
         }
         throw missingComponent(key);
@@ -713,7 +713,7 @@ final class Element {
 
     /**
      * Removes and returns the next {@link Element} with no bracket.
-     * The key is used only for only for formatting an error message.
+     * The key is used only for formatting an error message.
      *
      * @param  key  the parameter name. Used only for formatting an error message.
      * @return the next {@link Element} among the children, with no bracket.

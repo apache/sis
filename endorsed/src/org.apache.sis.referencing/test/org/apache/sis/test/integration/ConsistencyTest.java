@@ -110,7 +110,7 @@ public final class ConsistencyTest extends TestCase {
         final String code = "EPSG::29871";
         final CoordinateReferenceSystem crs = CRS.forCode(code);
         final var format = new WKTFormat();
-        format.setConvention(Convention.WKT2);
+        format.setConvention(Convention.WKT2_2015);
         lookup(parseAndFormat(format, code, crs), crs);
     }
 
@@ -149,7 +149,7 @@ public final class ConsistencyTest extends TestCase {
         final var v2s = new WKTFormat();
         v1 .setConvention(Convention.WKT1);
         v1c.setConvention(Convention.WKT1_COMMON_UNITS);
-        v2 .setConvention(Convention.WKT2);
+        v2 .setConvention(Convention.WKT2_2015);
         v2s.setConvention(Convention.WKT2_SIMPLIFIED);
         for (final String code : CRS.getAuthorityFactory(null).getAuthorityCodes(CoordinateReferenceSystem.class)) {
             if (!EXCLUDES.contains(code) && !code.startsWith(Constants.PROJ4 + DefaultNameSpace.DEFAULT_SEPARATOR)) {

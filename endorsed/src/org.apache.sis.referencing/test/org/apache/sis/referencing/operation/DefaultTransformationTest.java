@@ -156,7 +156,7 @@ public final class DefaultTransformationTest extends TestCase {
     @Test
     public void testWKT() {
         final DefaultTransformation op = createGeocentricTranslation();
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "COORDINATEOPERATION[“Tokyo to JGD2000 (GSI)”,\n" +
                 "  SOURCECRS[GEODCRS[“Tokyo 1918”,\n" +
                 "    DATUM[“Tokyo 1918”,\n" +

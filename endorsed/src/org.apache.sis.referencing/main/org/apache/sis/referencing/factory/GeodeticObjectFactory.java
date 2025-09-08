@@ -670,7 +670,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final DefaultDatumEnsemble<D> ensemble;
         try {
-            ensemble = DefaultDatumEnsemble.create(complete(properties), members, accuracy);
+            ensemble = DefaultDatumEnsemble.create(complete(properties), null, members, accuracy);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }
@@ -2035,7 +2035,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * {@snippet lang="wkt" :
      *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
-     *     BaseGeodCRS["SIRGAS 2000",
+     *     BaseGeogCRS["SIRGAS 2000",
      *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
      *         Ellipsoid["GRS 1980", 6378137, 298.257222101]]],
      *     Conversion["Petrobras Mercator",
@@ -2073,8 +2073,6 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see org.apache.sis.io.wkt
      * @see org.apache.sis.referencing.CRS#fromWKT(String)
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
-     * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     @Override
     public CoordinateReferenceSystem createFromWKT(final String wkt) throws FactoryException {

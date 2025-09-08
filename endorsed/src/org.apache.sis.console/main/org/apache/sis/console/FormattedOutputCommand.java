@@ -116,6 +116,12 @@ abstract class FormattedOutputCommand extends CommandRunner {
         } else if (format.equalsIgnoreCase("WKT2")) {
             outputFormat = OutputFormat.WKT;
             convention   = Convention.WKT2;
+        } else if (format.equalsIgnoreCase("WKT2:2019")) {  // Same name as PROJ.
+            outputFormat = OutputFormat.WKT;
+            convention   = Convention.WKT2_2019;
+        } else if (format.equalsIgnoreCase("WKT2:2015")) {  // Same name as PROJ.
+            outputFormat = OutputFormat.WKT;
+            convention   = Convention.WKT2_2015;
         } else {
             /*
              * Separate the format name from its version. We verify right after this block that the format

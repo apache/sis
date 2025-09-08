@@ -48,8 +48,10 @@ import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.io.wkt.Formatter;
@@ -57,8 +59,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.FormattableObject;
-import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.util.collection.Containers.property;
 
 
 /*
@@ -296,12 +296,12 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         this.abbreviation = abbreviation;
         this.direction    = direction;
         this.unit         = unit;
-        ensureNonEmpty("abbreviation", abbreviation);
-        ensureNonNull ("direction",    direction);
-        ensureNonNull ("unit",         unit);
-        Number  minimum = property(properties, MINIMUM_VALUE_KEY, Number.class);
-        Number  maximum = property(properties, MAXIMUM_VALUE_KEY, Number.class);
-        RangeMeaning rm = property(properties, RANGE_MEANING_KEY, RangeMeaning.class);
+        ArgumentChecks.ensureNonEmpty("abbreviation", abbreviation);
+        ArgumentChecks.ensureNonNull ("direction",    direction);
+        ArgumentChecks.ensureNonNull ("unit",         unit);
+        Number  minimum = Containers.property(properties, MINIMUM_VALUE_KEY, Number.class);
+        Number  maximum = Containers.property(properties, MAXIMUM_VALUE_KEY, Number.class);
+        RangeMeaning rm = Containers.property(properties, RANGE_MEANING_KEY, RangeMeaning.class);
         if (minimum == null && maximum == null && rm == null) {
             double min = Double.NEGATIVE_INFINITY;
             double max = Double.POSITIVE_INFINITY;
@@ -333,7 +333,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                         Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
             }
             if ((minimumValue != NEGATIVE_INFINITY) || (maximumValue != POSITIVE_INFINITY)) {
-                ensureNonNull(RANGE_MEANING_KEY, rm);
+                ArgumentChecks.ensureNonNull(RANGE_MEANING_KEY, rm);
             } else {
                 rm = null;
             }
@@ -723,8 +723,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * {@link org.apache.sis.io.wkt.WKTFormat#setTransliterator(Transliterator)}.
      *
      * @return {@code "Axis"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -782,8 +780,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * to all axes (we do not verify).
          */
         if (!isWKT1) {
-            if (convention == Convention.WKT2 && cs != null) {
-                final Order order = Order.create(cs, this);
+            if (cs != null && !convention.isSimplified()) {
+                final Child order = Child.order(cs, this);
                 if (order != null) {
                     formatter.append(order);
                 } else {
@@ -793,19 +791,52 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             if (!formatter.hasContextualUnit(1)) {
                 formatter.append(getUnit());
             }
+            if (convention.supports(Convention.WKT2_2019)) {
+                boolean standard = false;
+                if (convention.isSimplified()) {
+                    dir = AxisDirections.absolute(dir);
+                    if (Units.DEGREE.equals(unit)) {
+                        if (dir.equals(AxisDirection.NORTH)) {
+                            standard = (minimumValue == Latitude.MIN_VALUE)
+                                    && (maximumValue == Latitude.MAX_VALUE)
+                                    && (rangeMeaning == RangeMeaning.EXACT);
+                        } else if (dir.equals(AxisDirection.EAST)) {
+                            standard = (minimumValue == Longitude.MIN_VALUE)
+                                    && (maximumValue == Longitude.MAX_VALUE)
+                                    && (rangeMeaning == RangeMeaning.WRAPAROUND);
+                        }
+                    } else if (Units.isLinear(unit) && cs instanceof SphericalCS) {
+                        if (dir.equals(AxisDirection.UP)) {
+                            standard = (minimumValue == 0)
+                                    && (maximumValue == Double.POSITIVE_INFINITY)
+                                    && (rangeMeaning == RangeMeaning.EXACT);
+                        }
+                    }
+                }
+                if (!standard) {
+                    final Child min = Child.range(getMinimumValue(), false);
+                    final Child max = Child.range(getMaximumValue(), true);
+                    if (min != null || max != null) {
+                        formatter.append(min);
+                        formatter.append(max);
+                        formatter.append(Child.range(getRangeMeaning()));
+                    }
+                }
+            }
         }
         return WKTKeywords.Axis;
     }
 
     /**
-     * The {@code ORDER[…]} element to be formatted inside {@code AXIS[…]} element.
-     * This is an element of WKT 2 only.
+     * The {@code ORDER[…]}, {@code AXISMINVALUE}, {@code AXISMAXVALUE} or {@code RANGEMEANING} element
+     * to be formatted inside an {@code AXIS[…]} element. They are elements of <abbr>WKT</abbr> 2 only.
      */
-    private static final class Order extends FormattableObject {
-        /**
-         * The sequence number to format inside the {@code ORDER[…]} element.
-         */
-        private final int index;
+    private static final class Child extends FormattableObject {
+        /** The <abbr>WKT</abbr> keyword of this element. */
+        private final String keyword;
+
+        /** The numerical or textual value to be written inside this child element. */
+        private final Object value;
 
         /**
          * Creates a new {@code ORDER[…]} element for the given axis in the given coordinate system.
@@ -819,13 +850,13 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          *
          * @se <a href="https://issues.apache.org/jira/browse/SIS-163">SIS-163</a>
          */
-        static Order create(final CoordinateSystem cs, final DefaultCoordinateSystemAxis axis) {
-            Order order = null;
+        static Child order(final CoordinateSystem cs, final DefaultCoordinateSystemAxis axis) {
+            Child order = null;
             final int dimension = cs.getDimension();
             for (int i=0; i<dimension;) {
                 if (cs.getAxis(i++) == axis) {
                     if (order == null) {
-                        order = new Order(i);
+                        order = new Child(WKTKeywords.Order, i);
                     } else {
                         return null;
                     }
@@ -835,19 +866,39 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         }
 
         /**
-         * Creates new {@code ORDER[…]} element for the given sequential number.
+         * Creates a new {@code AXISMINVALUE} or {@code AXISMAXVALUE} element for the given value.
+         * If the value is not finite, then this method returns {@code null}.
          */
-        private Order(final int index) {
-            this.index = index;
+        static Child range(final double value, final boolean isMax) {
+            if (Double.isFinite(value)) {
+                return new Child(isMax ? WKTKeywords.AxisMaxValue : WKTKeywords.AxisMinValue, value);
+            }
+            return null;
         }
 
         /**
-         * Formats the {@code ORDER[…]} element.
+         * Creates a new {@code RANGEMEANING} element for the given value.
+         * If the value is null, then this method returns {@code null}.
+         */
+        static Child range(final RangeMeaning value) {
+            return (value != null) ? new Child(WKTKeywords.RangeMeaning, value) : null;
+        }
+
+        /**
+         * Creates new child element with the given value.
+         */
+        private Child(final String keyword, final Object value) {
+            this.keyword = keyword;
+            this.value   = value;
+        }
+
+        /**
+         * Formats the {@code ORDER[…]}, {@code AXISMINVALUE}, {@code AXISMAXVALUE} or {@code RANGEMEANING} element.
          */
         @Override
         protected String formatTo(final Formatter formatter) {
-            formatter.append(index);
-            return WKTKeywords.Order;
+            formatter.appendAny(value);
+            return keyword;
         }
     }
 

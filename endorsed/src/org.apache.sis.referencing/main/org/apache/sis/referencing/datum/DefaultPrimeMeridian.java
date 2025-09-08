@@ -315,7 +315,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *
      * {@snippet lang="wkt" :
      *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
-     *     BaseGeodCRS[“NTF (Paris)”,
+     *     BaseGeogCRS[“NTF (Paris)”,
      *       Datum[“Nouvelle Triangulation Francaise”,
      *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],
      *       PrimeMeridian[“Paris”, 2.5969213],
@@ -364,8 +364,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Formats this prime meridian as a <i>Well Known Text</i> {@code PrimeMeridian[…]} element.
      *
      * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#53">WKT 2 specification §8.2.2</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

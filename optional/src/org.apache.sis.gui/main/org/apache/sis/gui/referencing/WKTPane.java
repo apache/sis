@@ -76,6 +76,7 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
         final Convention[] sc = {           // Selected conventions in the order we want them to appear.
             Convention.WKT2_SIMPLIFIED,
             Convention.WKT2,
+            Convention.WKT2_2015,
             Convention.WKT1,
             Convention.WKT1_COMMON_UNITS
         };
@@ -104,6 +105,7 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
         switch (c) {
             case WKT2_SIMPLIFIED:   simplified = true;         // Fall through.
             case WKT2:              version = 2; break;
+            case WKT2_2015:         version = "2 (2015)"; break;
             case WKT1:              version = 1; break;
             case WKT1_COMMON_UNITS: version = "GDAL 1-2"; break;
             default: return c.name();

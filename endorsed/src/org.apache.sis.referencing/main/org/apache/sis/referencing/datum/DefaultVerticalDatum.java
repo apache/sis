@@ -443,13 +443,16 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * vertical datum in the ISO 19111:2003 standard, then removed completely in the ISO 19111:2007 standard.
      * They were reintroduced in a different form ({@link RealizationMethod}) in the ISO 19111:2019 standard.
      *
-     * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#71">WKT 2 specification §10.2</a>
+     * @return {@code "VDatum"} or {@code "VerticalDatum"} (WKT 2), or {@code "Vert_Datum"} (WKT 1).
+     *         May also be {@code "Member"} if this datum is inside a <abbr>WKT</abbr> {@code Ensemble[…]} element.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        final String name = super.formatTo(formatter);
+        if (name != null) {
+            // Member of a datum ensemble.
+            return name;
+        }
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.append(VerticalDatumTypes.toLegacyCode(getOrGuessMethod(formatter.getEnclosingElement(1))));
             return WKTKeywords.Vert_Datum;

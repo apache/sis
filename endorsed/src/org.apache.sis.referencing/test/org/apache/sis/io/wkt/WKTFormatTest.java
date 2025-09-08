@@ -458,6 +458,7 @@ public final class WKTFormatTest extends EPSGDependentTestCase {
     @Test
     public void testFragments() throws ParseException {
         format = new WKTFormat();
+        format.setConvention(Convention.WKT2_2015);
         format.addFragment("deg",    "UNIT[“degree”, 0.0174532925199433]");
         format.addFragment("Bessel", "SPHEROID[“Bessel 1841”, 6377397.155, 299.1528128, AUTHORITY[“EPSG”,“7004”]]");
         format.addFragment("Tokyo",  "DATUM[“Tokyo”, $Bessel]");

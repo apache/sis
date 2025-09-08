@@ -88,14 +88,14 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
         parser  = new WKTFormat();
         parser.addFragment("NTF",
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
                 "      Ellipsoid[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213],\n" +
                 "    Unit[“grad”, 0.015707963267948967]]\n," +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
                 "    Parameter[“False easting”, 600000.0],\n" +
                 "    Parameter[“False northing”, 2200000.0]],\n" +
@@ -107,7 +107,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
 
         parser.addFragment("Mercator",
                 "ProjectedCRS[“WGS 84 / World Mercator”,\n" +
-                "  BaseGeodCRS[“WGS 84”,\n" +
+                "  BaseGeogCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
                 "      Ellipsoid[“WGS 84”, 6378137.0, 298.257223563]],\n" +
                 "    Unit[“degree”, 0.017453292519943295]],\n" +

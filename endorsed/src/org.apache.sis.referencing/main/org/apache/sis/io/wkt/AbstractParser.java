@@ -388,6 +388,14 @@ abstract class AbstractParser implements Parser {
      * This is a helper method for {@link Element} only.
      *
      * <p>The WKT 2 format expects dates formatted according the ISO 9075-2 standard.</p>
+     *
+     * <h4>Limitations</h4>
+     * The WKT 2 specification allows dates in the form {@code YYYY-DDD} where {@code DDD} is the ordinal day.
+     * This is not supported in the current implementation. It can be distinguished from the {@code YYYY-MM}
+     * case by the fact that the ordinal day must have 3 digits according the specification.
+     *
+     * @todo Need to replace {@code Date} by {@code java.time} with the precision used in the WKT string.
+     * The WKT 2 specification allows any precision.
      */
     final Date parseDate(final String text, final ParsePosition position) {
         if (dateFormat == null) {
@@ -410,6 +418,80 @@ abstract class AbstractParser implements Parser {
             unitFormat.setStyle(UnitFormat.Style.NAME);
         }
         return unitFormat.parse(text);
+    }
+
+    /**
+     * Pulls an optional element which contains only a floating-point value.
+     *
+     * @param  parent  the element from which to pull a child element.
+     * @param  key     name of the element to pull.
+     * @param  mode    {@link #MANDATORY} or {@link #OPTIONAL}.
+     * @return the value, or {@code Double.NaN} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    final double pullElementAsDouble(final Element parent, final String key, final int mode) throws ParseException {
+        Element element = parent.pullElement(mode, key);
+        if (element != null) {
+            double value = element.pullDouble(key);
+            element.close(ignoredElements);
+            return value;
+        }
+        return Double.NaN;
+    }
+
+    /**
+     * Pulls an optional element which contains only an integer value.
+     *
+     * @param  parent  the element from which to pull a child element.
+     * @param  key     name of the element to pull.
+     * @return the value, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    final Integer pullElementAsInteger(final Element parent, final String key) throws ParseException {
+        Element element = parent.pullElement(OPTIONAL, key);
+        if (element != null) {
+            int value = element.pullInteger(key);
+            element.close(ignoredElements);
+            return value;
+        }
+        return null;
+    }
+
+    /**
+     * Pulls an optional element which contains only a string value.
+     *
+     * @param  parent  the element from which to pull a child element.
+     * @param  key     name of the element to pull.
+     * @return the value, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    final String pullElementAsString(final Element parent, final String key) throws ParseException {
+        Element element = parent.pullElement(OPTIONAL, key);
+        if (element != null) {
+            String value = element.pullString(key);
+            element.close(ignoredElements);
+            return value;
+        }
+        return null;
+    }
+
+    /**
+     * Pulls an optional element which contains only an enumeration value.
+     *
+     * @param  parent  the element from which to pull a child element.
+     * @param  key     name of the element to pull.
+     * @return the value, or {@code null} if none.
+     * @throws ParseException if an element cannot be parsed.
+     */
+    final String pullElementAsEnum(final Element parent, final String key) throws ParseException {
+        Element element = parent.pullElement(OPTIONAL, key);
+        if (element != null) {
+            Element value = element.pullVoidElement(key);
+            value  .close(ignoredElements);
+            element.close(ignoredElements);
+            return value.keyword;
+        }
+        return null;
     }
 
     /**

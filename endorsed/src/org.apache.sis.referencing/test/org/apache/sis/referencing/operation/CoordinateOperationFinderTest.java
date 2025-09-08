@@ -237,7 +237,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     @Test
     public void testGeocentricTranslationInGeographic3D() throws ParseException, FactoryException, TransformException {
         final GeographicCRS sourceCRS = (GeographicCRS) parse(
-                "GeodeticCRS[“NAD27”,\n" +
+                "GeographicCRS[“NAD27”,\n" +
                 "  Datum[“North American Datum 1927”,\n" +
                 "    Ellipsoid[“Clarke 1866”, 6378206.4, 294.9786982138982],\n" +
                 "    ToWGS84[-8, 160, 176]]," +                                     // See comment in above test.
@@ -315,7 +315,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     @Test
     public void testLongitudeRotation() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
-                "GeodeticCRS[“NTF (Paris)”, $NTF,\n" +
+                "GeographicCRS[“NTF (Paris)”, $NTF,\n" +
                 "  PrimeMeridian[“Paris”, 2.5969213],\n" +          // in grads, not degrees.
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Latitude (φ)”, NORTH],\n" +
@@ -944,7 +944,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testProjected4D_to_2D() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem targetCRS = parse(
                 "ProjectedCRS[“WGS 84 / World Mercator”,\n" +
-                "  BaseGeodCRS[“WGS 84”,\n" +
+                "  BaseGeogCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
                 "      Ellipsoid[“WGS 84”, 6378137.0, 298.257223563]]],\n" +
                 "  Conversion[“WGS 84 / World Mercator”,\n" +

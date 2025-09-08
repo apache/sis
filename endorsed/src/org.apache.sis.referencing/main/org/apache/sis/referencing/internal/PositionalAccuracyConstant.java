@@ -240,33 +240,15 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     }
 
     /**
-     * Convenience method returning the accuracy in meters for the specified operation.
-     * This method tries each of the following procedures and returns the first successful one:
+     * Extracts the accuracy in meters from the given metadata.
+     * If at least one {@link QuantitativeResult} is found with a linear unit, then the largest
+     * accuracy estimate is converted to {@linkplain Units#METRE metres} and returned.
      *
-     * <ul>
-     *   <li>If at least one {@link QuantitativeResult} is found with a linear unit, then the largest
-     *       accuracy estimate is converted to {@linkplain Units#METRE metres} and returned.</li>
-     *   <li>Otherwise, if the operation is a {@link Conversion}, then returns 0 since a conversion
-     *       is by definition accurate up to rounding errors.</li>
-     *   <li>Otherwise, if the operation is a {@link Transformation}, then checks if the datum shift
-     *       were applied with the help of Bursa-Wolf parameters. This procedure looks for SIS-specific
-     *       {@link #DATUM_SHIFT_APPLIED} and {@link #DATUM_SHIFT_OMITTED DATUM_SHIFT_OMITTED} constants.</li>
-     *   <li>Otherwise, if the operation is a {@link ConcatenatedOperation}, returns the sum of the accuracy
-     *       of all components. This is a conservative scenario where we assume that errors cumulate linearly.
-     *       Note that this is not necessarily the "worst case" scenario since the accuracy could be worst
-     *       if the math transforms are highly non-linear.</li>
-     * </ul>
-     *
-     * If the above is modified, please update {@code AbstractCoordinateOperation.getLinearAccuracy()} javadoc.
-     *
-     * @param  operation  the operation to inspect for accuracy.
+     * @param  accuracies  the metadata to inspect for accuracy.
      * @return the accuracy estimate (always in meters), or NaN if unknown.
-     *
-     * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
      */
-    public static double getLinearAccuracy(final CoordinateOperation operation) {
+    public static double getLinearAccuracy(final Iterable<PositionalAccuracy> accuracies) {
         double accuracy = Double.NaN;
-        final Collection<PositionalAccuracy> accuracies = operation.getCoordinateOperationAccuracy();
         for (final PositionalAccuracy metadata : accuracies) {
             for (final Result result : metadata.getResults()) {
                 if (result instanceof QuantitativeResult) {
@@ -292,6 +274,36 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
                 }
             }
         }
+        return accuracy;
+    }
+
+    /**
+     * Extracts the accuracy in meters from the specified operation.
+     * This method tries each of the following procedures and returns the first successful one:
+     *
+     * <ul>
+     *   <li>If at least one {@link QuantitativeResult} is found with a linear unit, then the largest
+     *       accuracy estimate is converted to {@linkplain Units#METRE metres} and returned.</li>
+     *   <li>Otherwise, if the operation is a {@link Conversion}, then returns 0 since a conversion
+     *       is by definition accurate up to rounding errors.</li>
+     *   <li>Otherwise, if the operation is a {@link Transformation}, then checks if the datum shift
+     *       were applied with the help of Bursa-Wolf parameters. This procedure looks for SIS-specific
+     *       {@link #DATUM_SHIFT_APPLIED} and {@link #DATUM_SHIFT_OMITTED DATUM_SHIFT_OMITTED} constants.</li>
+     *   <li>Otherwise, if the operation is a {@link ConcatenatedOperation}, returns the sum of the accuracy
+     *       of all components. This is a conservative scenario where we assume that errors cumulate linearly.
+     *       Note that this is not necessarily the "worst case" scenario since the accuracy could be worst
+     *       if the math transforms are highly non-linear.</li>
+     * </ul>
+     *
+     * If the above is modified, please update {@code AbstractCoordinateOperation.getLinearAccuracy()} javadoc.
+     *
+     * @param  operation  the operation to inspect for accuracy.
+     * @return the accuracy estimate (always in meters), or NaN if unknown.
+     *
+     * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
+     */
+    public static double getLinearAccuracy(final CoordinateOperation operation) {
+        double accuracy = getLinearAccuracy(operation.getCoordinateOperationAccuracy());
         if (Double.isNaN(accuracy)) {
             /*
              * No quantitative (linear) accuracy were found. If the coordinate operation is actually

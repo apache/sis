@@ -41,7 +41,7 @@ import org.opengis.metadata.Identifier;
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringDatum(String)
@@ -155,13 +155,21 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     /**
      * Formats this datum as a <i>Well Known Text</i> {@code EngineeringDatum[…]} element.
      *
-     * @return {@code "EngineeringDatum"} (WKT 2) or {@code "Local_Datum"} (WKT 1).
+     * <h4>Compatibility note</h4>
+     * Apache <abbr>SIS</abbr> accepts this type as members of datum ensembles,
+     * but this is not valid <abbr>WKT</abbr> according <abbr>ISO</abbr> 19162:2019.
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#76">WKT 2 specification §11.2</a>
+     * @return {@code "EDatum"} or {@code "EngineeringDatum"} (WKT 2), or {@code "Local_Datum"} (WKT 1).
+     *         May also be {@code "Member"} if this datum is inside a <abbr>WKT</abbr> {@code Ensemble[…]} element.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        final String name = super.formatTo(formatter);
+        if (name != null) {
+            // Member of a datum ensemble, but ISO 19162:2019 allows that for geodetic and vertical datum only.
+            formatter.setInvalidWKT(this, null);
+            return name;
+        }
         if (formatter.getConvention().majorVersion() == 1) {
             /*
              * Datum type was provided for all kind of datum in the legacy OGC 01-009 specification.

@@ -24,6 +24,7 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -48,7 +49,7 @@ public class ObliqueMercatorTwoPoints extends ObliqueMercator {
                                                     LAT_OF_2ND_POINT, LONG_OF_2ND_POINT;
 
     static {
-        final ParameterBuilder builder = builder().setCodeSpace(Citations.ESRI, "ESRI");
+        final ParameterBuilder builder = builder().setCodeSpace(Citations.ESRI, Constants.ESRI);
         LAT_OF_1ST_POINT  = create(builder.addName("Latitude_Of_1st_Point"),   Latitude.MIN_VALUE,  Latitude.MAX_VALUE);
         LAT_OF_2ND_POINT  = create(builder.addName("Latitude_Of_2nd_Point"),   Latitude.MIN_VALUE,  Latitude.MAX_VALUE);
         LONG_OF_1ST_POINT = create(builder.addName("Longitude_Of_1st_Point"), Longitude.MIN_VALUE, Longitude.MAX_VALUE);
@@ -77,7 +78,7 @@ public class ObliqueMercatorTwoPoints extends ObliqueMercator {
                              final ParameterDescriptor<Double> easting,
                              final ParameterDescriptor<Double> northing)
     {
-        super(builder().setCodeSpace(Citations.ESRI, "ESRI").addName(name)
+        super(builder().setCodeSpace(Citations.ESRI, Constants.ESRI).addName(name)
                 .createGroupForMapProjection(
                         LAT_OF_1ST_POINT,    LONG_OF_1ST_POINT,
                         LAT_OF_2ND_POINT,    LONG_OF_2ND_POINT,

@@ -38,6 +38,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
+import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
@@ -295,15 +296,6 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
     }
 
     /**
-     * Returns the datum or a view of the ensemble as a datum.
-     * The {@code legacy} argument tells whether this method is invoked for formatting in a legacy <abbr>WKT</abbr> format.
-     */
-    @Override
-    final TemporalDatum getDatumOrEnsemble(final boolean legacy) {
-        return legacy ? DatumOrEnsemble.asDatum(this) : getDatum();
-    }
-
-    /**
      * Returns the coordinate system.
      *
      * @return the coordinate system.
@@ -511,8 +503,6 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "TimeCRS"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#88">WKT 2 specification §14</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -521,6 +511,14 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
             formatter.setInvalidWKT(this, null);
         }
         return isBaseCRS(formatter) ? WKTKeywords.BaseTimeCRS : WKTKeywords.TimeCRS;
+    }
+
+    /**
+     * Formats the datum or a view of the ensemble as a datum.
+     */
+    @Override
+    final void formatDatum(final Formatter formatter) {
+        formatDatum(formatter, this, getDatum(), DefaultTemporalDatum::castOrCopy, DatumOrEnsemble::asDatum);
     }
 
 

@@ -182,7 +182,7 @@ public final class ElementTest extends TestCase {
     public void testPullDate() throws ParseException {
         Element element = parse("TimeOrigin[1858-11-17T00:00:00.0Z]");
         assertEquals("TimeOrigin", element.keyword);
-        assertEquals(Instant.parse("1858-11-17T00:00:00Z"), element.pullDate("date"));
+        assertEquals(Instant.parse("1858-11-17T00:00:00Z"), element.pullTime("date"));
         element.close(null);
     }
 
@@ -222,7 +222,7 @@ public final class ElementTest extends TestCase {
         assertEquals("Modified Julian", element.pullString("name"));
         Element inner = element.pullElement(AbstractParser.MANDATORY, "TimeOrigin");
         assertEquals("TimeOrigin", inner.keyword);
-        assertEquals(Instant.parse("1858-11-17T00:00:00Z"), inner.pullDate("date"));
+        assertEquals(Instant.parse("1858-11-17T00:00:00Z"), inner.pullTime("date"));
         inner.close(null);
         element.close(null);
     }

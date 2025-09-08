@@ -64,7 +64,7 @@ public final class DefaultTemporalCRSTest extends TestCase {
      */
     @Test
     public void testWKT2() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "TIMECRS[“Time”,\n" +
                 "  TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17]],\n" +
                 "  CS[temporal, 1],\n" +

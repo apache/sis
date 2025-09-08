@@ -198,15 +198,16 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
          * but is reproduced here for easier comparison with the test following it.
          */
         final DefaultParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0);
-        assertWktEquals("PARAMETER[“A0”, ID[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
+        assertWktEquals(Convention.WKT2, "PARAMETER[“A0”, ID[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
         /*
          * When the parameter is part of a larger element, we expect a simplification.
          * Here, the URI should be omitted because it is a long value which does not
          * bring new information, since it is computed from other values.
          */
         final var group = new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "Affine"), 1, 1, descriptor);
-        assertWktEquals("PARAMETERGROUP[“Affine”,\n" +
-                        "  PARAMETER[“A0”, ID[“EPSG”, 8623]]]", group);
+        assertWktEquals(Convention.WKT2,
+                "PARAMETERGROUP[“Affine”,\n" +
+                "  PARAMETER[“A0”, ID[“EPSG”, 8623]]]", group);
     }
 
     /**

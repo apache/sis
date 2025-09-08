@@ -27,7 +27,6 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -310,14 +309,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * Compound CRS do not have datum.
-     */
-    @Override
-    final Datum getDatumOrEnsemble(final boolean legacy) {
-        return null;
-    }
-
-    /**
      * Returns the ordered list of coordinate reference systems.
      * This is the list of CRS given at construction time.
      * This list may contains other {@code CompoundCRS} instances, as described in class Javadoc.
@@ -455,8 +446,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
 
     /**
      * Returns {@code true} if the sequence of single components is conform to the ISO 19162 restrictions.
-     * The <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#111">WKT 2 specification at §16.1</a>
-     * restricts {@code CompoundCRS} to the following components in that order:
+     * The WKT 2 specification restricts {@code CompoundCRS} to the following components in that order:
      *
      * <ul>
      *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS}
@@ -620,8 +610,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * SIS does not check if this CRS is compliant with the above-cited restrictions.
      *
      * @return {@code "CompoundCRS"} (WKT 2) or {@code "Compd_CS"} (WKT 1).
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification §16</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

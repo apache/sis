@@ -261,7 +261,7 @@ public final class DefaultCompoundCRSTest extends TestCase {
      */
     @Test
     public void testWKT2() {
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "COMPOUNDCRS[“WGS 84 + height + time”,\n" +
                 "  GEODCRS[“WGS 84”,\n" +
                 "    DATUM[“World Geodetic System 1984”,\n" +
@@ -294,7 +294,7 @@ public final class DefaultCompoundCRSTest extends TestCase {
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "CompoundCRS[“WGS 84 + height + time”,\n" +
-                "  GeodeticCRS[“WGS 84”,\n" +
+                "  GeographicCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
                 "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "    CS[ellipsoidal, 2],\n" +
@@ -312,8 +312,9 @@ public final class DefaultCompoundCRSTest extends TestCase {
                 "    CS[temporal, 1],\n" +
                 "      Axis[“Time (t)”, future],\n" +
                 "      TimeUnit[“day”, 86400]],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
+                "  Usage[\n" +
+                "    Area[“World”],\n" +
+                "    BBox[-90.00, -180.00, 90.00, 180.00]]]",
                 HardCodedCRS.GEOID_4D);
     }
 

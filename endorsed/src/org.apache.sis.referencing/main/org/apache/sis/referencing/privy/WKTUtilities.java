@@ -29,18 +29,11 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.datum.PrimeMeridian;
-import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
-import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
-import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.system.Loggers;
@@ -69,7 +62,7 @@ import org.opengis.metadata.Identifier;
  * This class provides a set of {@code toFormattable(…)} for various {@link IdentifiedObject} subtypes.
  * It is important to <strong>not</strong> provide a generic {@code toFormattable(IdentifiedObject)}
  * method, because the user may choose to implement more than one GeoAPI interface for the same object.
- * We need to be specific in order to select the right "aspect" of the given object.
+ * We need to be specific in order to select the right aspect of the given object.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -133,62 +126,6 @@ public final class WKTUtilities extends Static {
     }
 
     /**
-     * Returns the given coordinate system as a formattable object.
-     *
-     * @param  object  the coordinate system, or {@code null}.
-     * @return the given coordinate system as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final CoordinateSystem object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return AbstractCS.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the given coordinate system axis as a formattable object.
-     *
-     * @param  object  the coordinate system axis, or {@code null}.
-     * @return the given coordinate system axis as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final CoordinateSystemAxis object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return DefaultCoordinateSystemAxis.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the ellipsoid as a formattable object.
-     *
-     * @param  object  the ellipsoid, or {@code null}.
-     * @return the given ellipsoid as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final Ellipsoid object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return DefaultEllipsoid.castOrCopy(object);
-        }
-    }
-
-    /**
-     * Returns the given prime meridian as a formattable object.
-     *
-     * @param  object  the prime meridian, or {@code null}.
-     * @return the given prime meridian as a formattable object, or {@code null}.
-     */
-    public static FormattableObject toFormattable(final PrimeMeridian object) {
-        if (object instanceof FormattableObject) {
-            return (FormattableObject) object;
-        } else {
-            return DefaultPrimeMeridian.castOrCopy(object);
-        }
-    }
-
-    /**
      * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the
      * given object is not already an instance of {@code FormattableObject} before to invoke this method.
      * This method returns {@code null} if it cannot convert the object.
@@ -220,8 +157,8 @@ public final class WKTUtilities extends Static {
     }
 
     /**
-     * If the given unit is one of the unit that cannot be formatted without ambiguity in WKT format,
-     * return a proposed replacement. Otherwise returns {@code unit} unchanged.
+     * If the given unit is one of the units that cannot be formatted without ambiguity in <abbr>WKT</abbr> format,
+     * returns a proposed replacement. Otherwise returns {@code unit} unchanged.
      *
      * @param  <Q>   the unit dimension.
      * @param  unit  the unit to test.
@@ -253,6 +190,24 @@ public final class WKTUtilities extends Static {
             }
         }
         formatter.append(name, (type != null) ? type : ElementKind.NAME);
+    }
+
+    /**
+     * Appends an element containing only a {@code double} value if that value is strictly greater than zero.
+     *
+     * @param name       name of the element to add.
+     * @param value      value to add.
+     * @param formatter  formatter where to add the value.
+     */
+    public static void appendElementIfPositive(final String name, final double value, final Formatter formatter) {
+        if (value > 0) {
+            formatter.append(new FormattableObject() {
+                @Override protected String formatTo(final Formatter formatter) {
+                    formatter.append(value);
+                    return name;
+                }
+            });
+        }
     }
 
     /**

@@ -37,6 +37,7 @@ import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.xml.bind.referencing.CC_Conversion;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
@@ -205,6 +206,19 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     @XmlElement(name = "conversion", required = true)
     public C getConversionFromBase() {
         return conversionFromBase;
+    }
+
+    /**
+     * Formats the datum or a view of the ensemble as a datum.
+     */
+    @Override
+    final void formatDatum(final Formatter formatter) {
+        final CoordinateReferenceSystem baseCRS = getBaseCRS();
+        if (baseCRS instanceof AbstractCRS) {
+            ((AbstractCRS) baseCRS).formatDatum(formatter);
+        } else {
+            super.formatDatum(formatter);
+        }
     }
 
     /**

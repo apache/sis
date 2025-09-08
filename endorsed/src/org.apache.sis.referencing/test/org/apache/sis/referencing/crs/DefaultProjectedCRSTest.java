@@ -262,23 +262,24 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    public void testInternal() throws FactoryException {
+    public void testWKT2_Internal() throws FactoryException {
         ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.INTERNAL,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Française”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269],\n" +
-                "      Scope[“Topographic mapping.”],\n" +
+                "      Usage[\n" +
+                "        Scope[“Topographic mapping.”]],\n" +
                 "      Id[“EPSG”, 6807]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, Id[“EPSG”, 8903]],\n" +
                 "    CS[ellipsoidal, 2],\n" +
-                "      Axis[“Longitude (λ)”, east],\n" +
-                "      Axis[“Latitude (φ)”, north],\n" +
+                "      Axis[“Longitude (λ)”, east, AxisMinValue[-200.0], AxisMaxValue[200.0], RangeMeaning[wraparound]],\n" +
+                "      Axis[“Latitude (φ)”, north, AxisMinValue[-100.0], AxisMaxValue[100.0], RangeMeaning[exact]],\n" +
                 "      Unit[“grad”, 0.015707963267948967, Id[“EPSG”, 9105]]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801], Id[“GeoTIFF”, 9]],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0, Id[“EPSG”, 8801], Id[“GeoTIFF”, 3081]],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grad”, 0.015707963267948967, Id[“EPSG”, 9105]], Id[“EPSG”, 8801], Id[“GeoTIFF”, 3081]],\n" +
                 "    Parameter[“Longitude of natural origin”, 0.0, Id[“EPSG”, 8802], Id[“GeoTIFF”, 3080]],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.99987742, Id[“EPSG”, 8805], Id[“GeoTIFF”, 3092]],\n" +
                 "    Parameter[“False easting”, 600000.0, Id[“EPSG”, 8806], Id[“GeoTIFF”, 3082]],\n" +
@@ -303,14 +304,14 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213],\n" +
                 "    Unit[“grad”, 0.015707963267948967]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Parameter[“Longitude of natural origin”, 0.0],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
                 "    Parameter[“False easting”, 600000.0],\n" +
@@ -328,7 +329,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
@@ -359,7 +360,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
     @Test
     public void testWKT2_WithMixedUnits() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "PROJCRS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  BASEGEODCRS[“NTF (Paris)”,\n" +
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
@@ -381,7 +382,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
@@ -466,7 +467,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“Equidistant Cylindrical (Spherical)”,\n" +
-                "  BaseGeodCRS[“WGS 84”,\n" +
+                "  BaseGeogCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
                 "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "    Unit[“degree”, 0.017453292519943295]],\n" +

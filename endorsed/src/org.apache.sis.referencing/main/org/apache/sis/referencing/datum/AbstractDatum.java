@@ -33,9 +33,13 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.metadata.privy.NameToIdentifier;
@@ -44,10 +48,10 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.util.collection.Containers.property;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.datum.DynamicReferenceFrame;
 
 
@@ -197,15 +201,15 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (anchorDefinition == null) {
             anchorDefinition = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
         }
-        anchorEpoch = property(properties, ANCHOR_EPOCH_KEY, Temporal.class);
+        anchorEpoch = Containers.property(properties, ANCHOR_EPOCH_KEY, Temporal.class);
         if (anchorEpoch == null) {
-            Date date = property(properties, REALIZATION_EPOCH_KEY, Date.class);
+            Date date = Containers.property(properties, REALIZATION_EPOCH_KEY, Date.class);
             if (date != null) {
                 anchorEpoch = date.toInstant();
             }
         }
-        publicationDate = property(properties, PUBLICATION_DATE_KEY, Temporal.class);
-        conventionalRS  = property(properties, CONVENTIONAL_RS_KEY, IdentifiedObject.class);
+        publicationDate = Containers.property(properties, PUBLICATION_DATE_KEY, Temporal.class);
+        conventionalRS  = Containers.property(properties, CONVENTIONAL_RS_KEY, IdentifiedObject.class);
     }
 
     /**
@@ -526,6 +530,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Formats the inner part of the <i>Well Known Text</i> (WKT) representation for this datum.
      * See {@link AbstractIdentifiedObject#formatTo(Formatter)} for more information.
      *
+     * <h4>Default implementation</h4>
+     * The default implementation appends the datum name and returns {@code "Member"} if this datum
+     * is formatted inside a {@code ENSEMBLE} <abbr>WKT</abbr> element, or {@code null} otherwise.
+     *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return the {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
      *         for the WKT element, or {@code null} if unknown.
@@ -537,13 +545,20 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (name == null) {
             name = IdentifiedObjects.getName(this, null);
             if (name == null) {                                 // Should never happen, but be safe.
-                return super.formatTo(formatter);
-            }
-            if ("ESRI".equalsIgnoreCase(Citations.toCodeSpace(authority)) && !name.startsWith(Simplifier.ESRI_DATUM_PREFIX)) {
-                name = Simplifier.ESRI_DATUM_PREFIX + name;
+                name = Vocabulary.forLocale(formatter.getLocale()).getString(Vocabulary.Keys.Unnamed);
+            } else if (Constants.ESRI.equalsIgnoreCase(Citations.toCodeSpace(authority))) {
+                /*
+                 * ESRI specific convention: datum names start with the "D_" suffix.
+                 */
+                if (!name.startsWith(Simplifier.ESRI_DATUM_PREFIX)) {
+                    name = Simplifier.ESRI_DATUM_PREFIX + name;
+                }
             }
         }
         formatter.append(name, ElementKind.DATUM);
+        if (formatter.getEnclosingElement(1) instanceof DatumEnsemble<?>) {
+            return WKTKeywords.Member;
+        }
         return null;
     }
 

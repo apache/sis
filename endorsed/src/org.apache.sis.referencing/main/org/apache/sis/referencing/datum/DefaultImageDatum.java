@@ -26,7 +26,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -233,20 +232,24 @@ public final class DefaultImageDatum extends AbstractDatum implements ImageDatum
      * Formats this datum as a <i>Well Known Text</i> {@code ImageDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
-     * {@code ImageDatum} is defined in the WKT 2 specification only.
+     * {@code ImageDatum} is defined only in the first edition of the
+     * <abbr>WKT</abbr> 2 specification (<abbr>ISO</abbr> 19162:2015).
      *
-     * @return {@code "ImageDatum"}.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#81">WKT 2 specification §12.2</a>
+     * @return {@code "IDatum"} or {@code "ImageDatum"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
-        final Convention convention = formatter.getConvention();
-        if (convention == Convention.INTERNAL) {
-            formatter.append(getPixelInCell());         // This is an extension compared to ISO 19162.
-        } else if (convention.majorVersion() == 1) {
+        final String name = super.formatTo(formatter);
+        if (name != null) {
+            // Member of a datum ensemble, but ISO 19162:2019 allows that for geodetic and vertical datum only.
             formatter.setInvalidWKT(this, null);
+            return name;
+        }
+        switch (formatter.getConvention()) {
+            // `PixelInCell` is an extension compared to ISO 19162.
+            case INTERNAL: formatter.append(getPixelInCell()); break;
+            case WKT2_2015: break;      // The only standard where this element is defined.
+            default: formatter.setInvalidWKT(this, null); break;
         }
         return formatter.shortOrLong(WKTKeywords.IDatum, WKTKeywords.ImageDatum);
     }

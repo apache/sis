@@ -289,6 +289,7 @@ public class DefaultObjectDomain extends FormattableObject implements ObjectDoma
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        formatter.newLine();
         // Use the fields directly in order to keep null values.
         formatter.append(scope, domainOfValidity);
         return WKTKeywords.Usage;

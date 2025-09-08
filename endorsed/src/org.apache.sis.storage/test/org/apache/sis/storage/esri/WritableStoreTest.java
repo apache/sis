@@ -128,7 +128,7 @@ public final class WritableStoreTest extends TestCase {
         final Path file = Files.createTempFile(null, ".asc");
         try {
             final Path filePRJ = toPRJ(file);
-            final StorageConnector sc = new StorageConnector(file);
+            final var sc = new StorageConnector(file);
             sc.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {StandardOpenOption.WRITE});
             boolean deleted;
             try (WritableStore store = new WritableStore(null, sc)) {

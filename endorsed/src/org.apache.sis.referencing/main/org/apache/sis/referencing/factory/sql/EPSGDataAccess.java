@@ -45,7 +45,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.Year;
 import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -87,6 +86,7 @@ import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.DeprecatedCode;
+import org.apache.sis.referencing.internal.Epoch;
 import org.apache.sis.referencing.internal.EPSGParameterDomain;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
@@ -965,16 +965,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @throws SQLException if an error occurred while querying the database.
      */
     private static Temporal getOptionalEpoch(final ResultSet result, final int columnIndex) throws SQLException {
-        final double epoch = getOptionalDouble(result, columnIndex);
-        if (Double.isNaN(epoch)) {
-            return null;
-        }
-        final var year = Year.of((int) epoch);
-        final long day = Math.round((epoch - year.getValue()) * year.length());
-        if (day == 0) {
-            return year;
-        }
-        return year.atMonth(year.atDay(Math.toIntExact(day)).getMonth());
+        return Epoch.fromYear(getOptionalDouble(result, columnIndex), 0);
     }
 
     /**

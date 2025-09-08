@@ -75,7 +75,7 @@ public final class DefaultImageCRSTest extends TestCase {
     @Test
     public void testWKT2() {
         final DefaultImageCRS crs = create(true);
-        assertWktEquals(Convention.WKT2,
+        assertWktEquals(Convention.WKT2_2015,
                 "IMAGECRS[“An image CRS”,\n" +
                 "  IDATUM[“C1”],\n" +
                 "  CS[Cartesian, 2],\n" +

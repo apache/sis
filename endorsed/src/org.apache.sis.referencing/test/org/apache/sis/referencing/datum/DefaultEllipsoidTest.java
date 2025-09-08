@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -117,8 +118,8 @@ public final class DefaultEllipsoidTest extends TestCase {
      */
     @Test
     public void testToWKT() {
-        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
-        assertWktEquals("ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]", e);
+        final var e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
+        assertWktEquals(Convention.WKT2, "ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]", e);
     }
 
     /**

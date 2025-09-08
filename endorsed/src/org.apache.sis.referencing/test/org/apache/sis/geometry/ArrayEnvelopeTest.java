@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry;
 
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 
 // Test dependencies
@@ -87,11 +88,13 @@ public final class ArrayEnvelopeTest extends TestCase {
     @Test
     public void testFormatWKT() {
         ArrayEnvelope envelope = new ArrayEnvelope(new double[] {4, -10, 50, 2});
-        assertWktEquals("BOX[ 4 -10,\n" +
-                        "    50   2]", envelope);
+        assertWktEquals(Convention.WKT2,    // Actually not in WKT2 standard.
+                "BOX[ 4 -10,\n" +
+                "    50   2]", envelope);
         envelope.crs = WGS84;
-        assertWktEquals("BOX[ 4.00000000 -10.00000000,\n" +
-                        "    50.00000000   2.00000000]", envelope);
+        assertWktEquals(Convention.WKT2,    // Actually not in WKT2 standard.
+                "BOX[ 4.00000000 -10.00000000,\n" +
+                "    50.00000000   2.00000000]", envelope);
     }
 
     /**

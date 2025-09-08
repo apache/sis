@@ -38,9 +38,6 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- *
- * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
- * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
  */
 public final class WKTKeywords extends Static {
     /**
@@ -58,45 +55,54 @@ public final class WKTKeywords extends Static {
             URI       = "URI",
             Citation  = "Citation",
             Authority = "Authority",
-            Anchor    = "Anchor",
             Usage     = "Usage",
             Scope     = "Scope",
             Area      = "Area",
+            BBox      = "BBox",
             Remark    = "Remark";
 
     /**
      * Related to unit of measurements.
      */
     public static final String
-            Unit           = "Unit",
-            LengthUnit     = "LengthUnit",
-            AngleUnit      = "AngleUnit",
-            ScaleUnit      = "ScaleUnit",
-            TimeUnit       = "TimeUnit",
-            ParametricUnit = "ParametricUnit";
+            Unit             = "Unit",
+            LengthUnit       = "LengthUnit",
+            AngleUnit        = "AngleUnit",
+            ScaleUnit        = "ScaleUnit",
+            TimeUnit         = "TimeUnit",
+            TemporalQuantity = "TemporalQuantity",
+            ParametricUnit   = "ParametricUnit";
 
     /**
      * Related to {@link org.apache.sis.referencing.cs.AbstractCS}
      * and {@link org.apache.sis.referencing.datum.AbstractDatum}.
      */
     public static final String
-            CS            = "CS",
-            Axis          = "Axis",
-            Order         = "Order",
-            Meridian      = "Meridian",
-            PrimeMeridian = "PrimeMeridian",
-            PrimeM        = "PrimeM",
-            Ellipsoid     = "Ellipsoid",
-            Spheroid      = "Spheroid",
-            Ensemble      = "Ensemble",
-            ToWGS84       = "ToWGS84";
+            CS               = "CS",
+            Axis             = "Axis",
+            AxisMinValue     = "AxisMinValue",
+            AxisMaxValue     = "AxisMaxValue",
+            RangeMeaning     = "RangeMeaning",
+            Order            = "Order",
+            Meridian         = "Meridian",
+            PrimeMeridian    = "PrimeMeridian",
+            PrimeM           = "PrimeM",
+            Ellipsoid        = "Ellipsoid",
+            Spheroid         = "Spheroid",
+            Ensemble         = "Ensemble",
+            Member           = "Member",
+            EnsembleAccuracy = "EnsembleAccuracy",
+            Dynamic          = "Dynamic",
+            ToWGS84          = "ToWGS84";
 
     /**
      * Related to {@link org.apache.sis.referencing.crs.DefaultGeocentricCRS}
      * and {@link org.apache.sis.referencing.crs.DefaultGeographicCRS}.
      */
     public static final String
-            BBox          = "BBox",
+            Anchor        = "Anchor",
+            AnchorEpoch   = "AnchorEpoch",
+            TRF           = "TRF",
             Datum         = "Datum",
             GeodeticDatum = "GeodeticDatum",
             GeodeticCRS   = "GeodeticCRS",
@@ -116,6 +122,7 @@ public final class WKTKeywords extends Static {
             VerticalDatum  = "VerticalDatum",
             VerticalCRS    = "VerticalCRS",
             BaseVertCRS    = "BaseVertCRS",
+            VRF            = "VRF",
             VDatum         = "VDatum",
             Vert_Datum     = "Vert_Datum",
             VertCRS        = "VertCRS",
@@ -225,6 +232,7 @@ public final class WKTKeywords extends Static {
      */
     public static final String
             CoordinateMetadata = "CoordinateMetadata",
+            FrameEpoch         = "FrameEpoch",
             Epoch              = "Epoch",
             Point              = "Point";
 
@@ -265,9 +273,9 @@ public final class WKTKeywords extends Static {
          * `Datum` subtypes.
          */
         subtypes = new String[][] {
-            addType(org.opengis.referencing.datum.GeodeticDatum.class,    GeodeticDatum,    Datum),
+            addType(org.opengis.referencing.datum.GeodeticDatum.class,    GeodeticDatum,    Datum, TRF),
             addType(org.opengis.referencing.datum.TemporalDatum.class,    TimeDatum,        TDatum),
-            addType(org.opengis.referencing.datum.VerticalDatum.class,    VerticalDatum,    VDatum, Vert_Datum),
+            addType(org.opengis.referencing.datum.VerticalDatum.class,    VerticalDatum,    VDatum, Vert_Datum, VRF),
             addType(org.opengis.referencing.datum.EngineeringDatum.class, EngineeringDatum, EDatum, Local_Datum)
         };
         addType(org.opengis.referencing.datum.Datum.class, ArraysExt.concatenate(subtypes));

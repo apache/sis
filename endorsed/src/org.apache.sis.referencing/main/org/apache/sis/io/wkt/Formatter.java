@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Date;
+import java.util.function.Function;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -80,9 +81,11 @@ import org.apache.sis.metadata.simple.SimpleExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.referencing.internal.Epoch;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.geometry.AbstractDirectPosition;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -109,11 +112,7 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
- *
- * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
- * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
- *
- * @since 0.4
+ * @since   0.4
  */
 public class Formatter implements Localized {
     /**
@@ -377,7 +376,7 @@ public class Formatter implements Localized {
         this.unitFormat       = new UnitFormat(symbols.getLocale());
         this.buffer           = new StringBuffer();
         unitFormat.setStyle(UnitFormat.Style.NAME);
-        if (convention.usesCommonUnits) {
+        if (convention.usesCommonUnits()) {
             unitFormat.setLocale(Locale.US);
         }
     }
@@ -440,7 +439,7 @@ public class Formatter implements Localized {
         this.indentation    = indentation;
         this.listSizeLimit  = listSizeLimit;
         this.transliterator = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
-        unitFormat.setLocale(convention.usesCommonUnits ? Locale.US : Locale.ROOT);
+        unitFormat.setLocale(convention.usesCommonUnits() ? Locale.US : Locale.ROOT);
     }
 
     /**
@@ -510,6 +509,8 @@ public class Formatter implements Localized {
     /**
      * Appends in the {@linkplain #buffer} the ANSI escape sequence for the given kind of element.
      * This method does nothing unless syntax coloring has been explicitly enabled.
+     *
+     * @param  type  the key of the colors to apply if syntax coloring is enabled, or {@code null} if none.
      */
     private void setColor(final ElementKind type) {
         if (colors != null) {
@@ -637,6 +638,23 @@ public class Formatter implements Localized {
         if (newLine) {
             newLine();
         }
+    }
+
+    /**
+     * Appends the given object as an instance of {@code FormattableObject}.
+     * This method delegates to {@link #append(FormattableObject)} with an argument which is either
+     * the {@code object} value if that value is already an instance of {@link FormattableObject},
+     * or with the value converted using the given function. The {@code toFormattable} argument is
+     * usually a lambda function to a {@code castOrCopy(T)} method in an implementation class.
+     *
+     * @param  <T>            type of object to format.
+     * @param  object         the formattable object to append to the WKT, or {@code null} if none.
+     * @param  toFormattable  the function to invoke for converting the given object to a formattable object.
+     *
+     * @since 1.5
+     */
+    public <T> void appendFormattable(final T object, final Function<T, FormattableObject> toFormattable) {
+        append((object instanceof FormattableObject) ? (FormattableObject) object : toFormattable.apply(object));
     }
 
     /**
@@ -866,10 +884,7 @@ public class Formatter implements Localized {
                     }
                 }
                 for (Identifier id : identifiers) {
-                    if (!(id instanceof FormattableObject)) {
-                        id = ImmutableIdentifier.castOrCopy(id);
-                    }
-                    append((FormattableObject) id);
+                    appendFormattable(id, ImmutableIdentifier::castOrCopy);
                     if (filterID) break;
                 }
             }
@@ -886,21 +901,29 @@ public class Formatter implements Localized {
      * {@link ReferenceSystem} and {@link CoordinateOperation} objects.
      */
     private void appendForSubtypes(final IdentifiedObject object) {
-        InternationalString anchor = null, scope = null;
-        Extent area = null;
         if (object instanceof Datum) {
-            anchor = ((Datum) object).getAnchorDefinition().orElse(null);
+            final var datum = (Datum) object;
+            appendOnNewLine(WKTKeywords.Anchor, datum.getAnchorDefinition().orElse(null), null);
+            datum.getAnchorEpoch().ifPresent((epoch) -> append(new Epoch(epoch, WKTKeywords.AnchorEpoch)));
         } else if (!(object instanceof ReferenceSystem || object instanceof CoordinateOperation)) {
             return;
         }
+        final boolean usage = convention.supports(Convention.WKT2_2019);
         for (final ObjectDomain domain : object.getDomains()) {
-            scope = domain.getScope();
-            area = domain.getDomainOfValidity();
-            if (area != null) break;
-            // TODO: in 2019 revision we need to format all USAGE[…] elements, not only the first one.
+            if (usage) {
+                // ISO 19162:2019
+                newLine();
+                appendFormattable(domain, DefaultObjectDomain::castOrCopy);
+            } else {
+                // ISO 19162:2015
+                InternationalString scope = domain.getScope();
+                Extent area = domain.getDomainOfValidity();
+                if (scope != null || area != null) {
+                    append(scope, area);
+                    break;
+                }
+            }
         }
-        appendOnNewLine(WKTKeywords.Anchor, anchor, null);
-        append(scope, area);
     }
 
     /**
@@ -1070,10 +1093,9 @@ public class Formatter implements Localized {
      * @param  keyword  the {@linkplain KeywordCase#CAMEL_CASE camel-case} keyword.
      *                  Example: {@code "Scope"}, {@code "Area"} or {@code "Remarks"}.
      * @param  text     the text, or {@code null} if none.
-     * @param  type     the key of the colors to apply if syntax coloring is enabled.
+     * @param  type     the key of the colors to apply if syntax coloring is enabled, or {@code null} if none.
      */
     private void appendOnNewLine(final String keyword, final InternationalString text, final ElementKind type) {
-        ArgumentChecks.ensureNonNull("keyword", keyword);
         if (text != null) {
             String localized = text.toString(locale);
             if (localized != null && !(localized = localized.strip()).isEmpty()) {
@@ -1113,6 +1135,9 @@ public class Formatter implements Localized {
      * Appends the given string as a quoted text. If the given string contains the closing quote character,
      * that character will be doubled (WKT 2) or deleted (WKT 1). We check for the closing quote only because
      * it is the character that the parser will look for determining the text end.
+     *
+     * @param  text  the text to append.
+     * @param  type  the key of the colors to apply if syntax coloring is enabled, or {@code null} if none.
      */
     private void quote(String text, final ElementKind type) {
         setColor(type);
@@ -1210,7 +1235,7 @@ public class Formatter implements Localized {
         if (date != null) {
             appendSeparator();
             if (date instanceof Instant) {
-                dateFormat.format(Date.from((Instant) date), buffer, dummy);
+                dateFormat.format(TemporalDate.toDate((Instant) date), buffer, dummy);
             } else {
                 // Preserve the data structure (e.g. whether there is hours or not, timezone or not).
                 buffer.append(date);
@@ -1508,8 +1533,6 @@ public class Formatter implements Localized {
      * {@code append(Units.KILOMETRE)} will append "{@code LengthUnit["km", 1000]}" to the WKT.
      *
      * @param  unit  the unit to append to the WKT, or {@code null} if none.
-     *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#35">WKT 2 specification §7.4</a>
      */
     @SuppressWarnings("StringEquality")
     public void append(final Unit<?> unit) {
@@ -1603,7 +1626,7 @@ public class Formatter implements Localized {
      */
     final boolean appendValue(final Object value) {
         if (value instanceof Number) {
-            final Number number = (Number) value;
+            final var number = (Number) value;
             if (Numbers.isInteger(number.getClass())) {
                 append(number.longValue());
             } else {
@@ -1727,7 +1750,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns {@code true} if the element at the given depth specified a contextual unit.
+     * Returns {@code true} if the element at the given depth has specified a contextual unit.
      * This method returns {@code true} if the formattable object given by {@code getEnclosingElement(depth)}
      * has invoked {@link #addContextualUnit(Unit)} with a non-null unit at least once.
      *
@@ -1751,8 +1774,9 @@ public class Formatter implements Localized {
      * <p>If the given unit is null, then this method does nothing and returns {@code null}.</p>
      *
      * <h4>Special case</h4>
-     * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit
-     * and returns {@code null}. See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
+     * If the <abbr>WKT</abbr> conventions are {@code WKT1_COMMON_UNITS} or {@code WKT1_IGNORE_AXES},
+     * then this method ignores the given unit and returns {@code null}.
+     * See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
      *
      * @param  <Q>   the unit quantity.
      * @param  unit  the contextual unit to add, or {@code null} if none.
@@ -1760,7 +1784,7 @@ public class Formatter implements Localized {
      */
     @SuppressWarnings("unchecked")
     public <Q extends Quantity<Q>> Unit<Q> addContextualUnit(final Unit<Q> unit) {
-        if (unit == null || convention.usesCommonUnits) {
+        if (unit == null || convention.usesCommonUnits()) {
             return null;
         }
         hasContextualUnit |= 1;
@@ -1788,11 +1812,11 @@ public class Formatter implements Localized {
             if (unit != null && units.remove(unit.getSystemUnit()) != unit) {
                 /*
                  * The unit that we removed was not the expected one. Probably the user has invoked
-                 * addContextualUnit(…) again without a matching call to `restoreContextualUnit(…)`.
-                 * However, this check does not work in `Convention.WKT1_COMMON_UNITS` mode, since the
-                 * map is always empty in that mode.
+                 * `addContextualUnit(…)` again without a matching call to `restoreContextualUnit(…)`.
+                 * However, this check does not work in `Convention.WKT1_COMMON_UNITS` mode,
+                 * because the map is always empty in that mode.
                  */
-                if (!convention.usesCommonUnits) {
+                if (!convention.usesCommonUnits()) {
                     throw new IllegalStateException();
                 }
             }
@@ -1800,10 +1824,7 @@ public class Formatter implements Localized {
         } else if (units.put(previous.getSystemUnit(), previous) != unit) {
             /*
              * The unit that we replaced was not the expected one. Probably the user has invoked
-             * addContextualUnit(…) again without a matching call to `restoreContextualUnit(…)`.
-             * Note that this case should never happen in `Convention.WKT1_COMMON_UNITS` mode,
-             * since `previous` should never be non-null in that mode (if the user followed
-             * the documented pattern).
+             * `addContextualUnit(…)` again without a matching call to `restoreContextualUnit(…)`.
              */
             throw new IllegalStateException();
         }
