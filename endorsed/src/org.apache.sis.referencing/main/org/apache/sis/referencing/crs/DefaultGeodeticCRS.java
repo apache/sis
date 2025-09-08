@@ -173,7 +173,7 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
     }
 
     /**
-     * Formats this CRS as a <i>Well Known Text</i> {@code GeodeticCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code GeodeticCRS[…]} or {@code GeographicCRS[…]} element.
      * More information about the WKT format is documented in subclasses.
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"}/{@code "GeocCS"} (WKT 1).
@@ -184,8 +184,8 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
         CoordinateSystem cs = getCoordinateSystem();
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = (convention.majorVersion() == 1);
-        final boolean isGeographicWKT1 = isWKT1 && (cs instanceof EllipsoidalCS);
-        if (isGeographicWKT1 && cs.getDimension() == 3) {
+        final boolean isGeographic = (cs instanceof EllipsoidalCS);
+        if (isWKT1 && isGeographic && cs.getDimension() == 3) {
             /*
              * Version 1 of WKT format did not have three-dimensional GeographicCRS. Instead, such CRS were formatted
              * as a CompoundCRS made of a two-dimensional GeographicCRS with a VerticalCRS for the ellipsoidal height.
@@ -237,7 +237,7 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
          */
         final boolean isBaseCRS;
         if (isWKT1) {
-            if (!isGeographicWKT1) {                        // If not geographic, then presumed geocentric.
+            if (!isGeographic) {                            // If not geographic, then presumed geocentric.
                 if (cs instanceof CartesianCS) {
                     cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
                 } else {
@@ -271,7 +271,10 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
          * have a GeodeticCRS. We need to make the choice in this base class. The CS type is a sufficient criterion.
          */
         if (isWKT1) {
-            return isGeographicWKT1 ? WKTKeywords.GeogCS : WKTKeywords.GeocCS;
+            return isGeographic ? WKTKeywords.GeogCS : WKTKeywords.GeocCS;
+        } else if (isGeographic && convention.supports(Convention.WKT2_2019)) {
+            return isBaseCRS ? WKTKeywords.BaseGeogCRS
+                   : formatter.shortOrLong(WKTKeywords.GeogCRS, WKTKeywords.GeographicCRS);
         } else {
             return isBaseCRS ? WKTKeywords.BaseGeodCRS
                    : formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);

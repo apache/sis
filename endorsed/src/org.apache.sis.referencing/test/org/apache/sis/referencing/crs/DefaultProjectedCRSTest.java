@@ -266,7 +266,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.INTERNAL,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Française”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269],\n" +
                 "      Usage[\n" +
@@ -279,7 +279,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 "      Unit[“grad”, 0.015707963267948967, Id[“EPSG”, 9105]]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801], Id[“GeoTIFF”, 9]],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0, Id[“EPSG”, 8801], Id[“GeoTIFF”, 3081]],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grad”, 0.015707963267948967, Id[“EPSG”, 9105]], Id[“EPSG”, 8801], Id[“GeoTIFF”, 3081]],\n" +
                 "    Parameter[“Longitude of natural origin”, 0.0, Id[“EPSG”, 8802], Id[“GeoTIFF”, 3080]],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.99987742, Id[“EPSG”, 8805], Id[“GeoTIFF”, 3092]],\n" +
                 "    Parameter[“False easting”, 600000.0, Id[“EPSG”, 8806], Id[“GeoTIFF”, 3082]],\n" +
@@ -304,14 +304,14 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213],\n" +
                 "    Unit[“grad”, 0.015707963267948967]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Parameter[“Longitude of natural origin”, 0.0],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
                 "    Parameter[“False easting”, 600000.0],\n" +
@@ -329,7 +329,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
@@ -382,7 +382,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
@@ -467,7 +467,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“Equidistant Cylindrical (Spherical)”,\n" +
-                "  BaseGeodCRS[“WGS 84”,\n" +
+                "  BaseGeogCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
                 "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "    Unit[“degree”, 0.017453292519943295]],\n" +

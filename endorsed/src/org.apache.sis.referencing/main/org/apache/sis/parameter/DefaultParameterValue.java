@@ -38,6 +38,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
@@ -51,6 +52,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.measure.Units;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
@@ -1058,7 +1060,7 @@ convert:            if (componentType != null) {
      * <p><b>WKT 2:</b></p>
      * {@snippet lang="wkt" :
      *   ProjectedCRS[…
-     *     BaseGeodCRS[…
+     *     BaseGeogCRS[…
      *       AngleUnit[“grad”, 0.015707963267948967]],
      *     Conversion[“Lambert zone II”,
      *       Method[“Lambert Conic Conformal (1SP)”],
@@ -1088,103 +1090,96 @@ convert:            if (componentType != null) {
                 return WKTKeywords.ParameterFile;
             } else {
                 formatter.appendAny(value);
+                return WKTKeywords.Parameter;
             }
-        } else {
+        }
+        /*
+         * In the WKT 1 specification, the unit of measurement is given by the context.
+         * If this parameter value does not use the same unit, we will need to convert it.
+         * Otherwise we can write the value as-is.
+         *
+         * Note that we take the descriptor unit as a starting point instead of this parameter unit
+         * in order to give precedence to the descriptor units in Convention.WKT1_COMMON_UNITS mode.
+         */
+        Unit<?> contextualUnit;
+        if (descriptor == null || (contextualUnit = descriptor.getUnit()) == null) {
+            // Should be very rare (probably a buggy descriptor), but we try to be safe.
+            contextualUnit = unit;
+        }
+        contextualUnit = formatter.toContextualUnit(contextualUnit);
+        if (isWKT1) {
+            unit = contextualUnit;
+        } else if (convention != Convention.INTERNAL) {
+            unit = WKTUtilities.toFormattable(unit);
+        }
+        double value;
+        try {
+            value = doubleValue(unit);
+        } catch (IllegalStateException exception) {
             /*
-             * In the WKT 1 specification, the unit of measurement is given by the context.
-             * If this parameter value does not use the same unit, we will need to convert it.
-             * Otherwise we can write the value as-is.
-             *
-             * Note that we take the descriptor unit as a starting point instead of this parameter unit
-             * in order to give precedence to the descriptor units in Convention.WKT1_COMMON_UNITS mode.
+             * May happen if a parameter is mandatory (e.g. "semi-major") but no value has been set for this parameter.
+             * The name of the problematic parameter (needed for producing an error message) is given by the descriptor.
+             * Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
+             * We make this WKT formatting robust since it is used by `toString()` implementation.
              */
-            Unit<?> contextualUnit;
-            if (descriptor == null || (contextualUnit = descriptor.getUnit()) == null) {
-                // Should be very rare (probably a buggy descriptor), but we try to be safe.
-                contextualUnit = unit;
-            }
-            contextualUnit = formatter.toContextualUnit(contextualUnit);
-            boolean ignoreUnits;
-            if (isWKT1) {
-                unit = contextualUnit;
-                ignoreUnits = true;
+            if (descriptor != null) {
+                formatter.setInvalidWKT(descriptor, exception);
             } else {
-                if (convention != Convention.INTERNAL) {
-                    unit = WKTUtilities.toFormattable(unit);
-                }
-                ignoreUnits = unit.equals(contextualUnit);
+                formatter.setInvalidWKT(DefaultParameterValue.class, exception);
             }
-            double value;
-            try {
-                value = doubleValue(unit);
-            } catch (IllegalStateException exception) {
-                /*
-                 * May happen if a parameter is mandatory (e.g. "semi-major")
-                 * but no value has been set for this parameter.
-                 */
-                if (descriptor != null) {
-                    formatter.setInvalidWKT(descriptor, exception);
-                } else {
-                    /*
-                     * Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
-                     * We make this WKT formatting robust since it is used by 'toString()' implementation.
-                     */
-                    formatter.setInvalidWKT(DefaultParameterValue.class, exception);
-                }
-                value = Double.NaN;
-            }
-            formatter.append(value);
+            value = Double.NaN;
+        }
+        formatter.append(value);
+        /*
+         * In the WKT 2 specification, the unit and the identifier are optional but recommended.
+         * We follow that recommendation in strict WKT2 mode, but omit unit in non-strict modes.
+         * Except if the parameter unit is not the same as the contextual unit, in which case it
+         * is not possible to omit the unit (unless the value is the same in both units, like 0).
+         */
+        boolean ignoreUnits = false;
+        if (convention.isSimplified()) {
             /*
-             * In the WKT 2 specification, the unit and the identifier are optional but recommended.
-             * We follow that recommendation in strict WKT2 mode, but omit them in non-strict modes.
-             * The only exception is when the parameter unit is not the same as the contextual unit,
-             * in which case we have no choice: we must format that unit, unless the numerical value
-             * is identical in both units (typically the 0 value).
+             * The contextual units may be defined either in the direct parent, or in the parent of the parent,
+             * depending if we are formatting WKT 1 or WKT 2 respectively. This is because WKT 2 wraps the
+             * parameters in an additional `CONVERSION[…]` element which is not present in WKT 1.
+             * Taking the example documented in the Javadoc of this method:
+             *
+             * - in WKT 1, `PROJCS[…]` is the immediate parent of `PARAMETER[…]`, but
+             * - in WKT 2, `ProjectedCRS[…]` is the parent of `Conversion[…]`,
+             *   which is the parent of `Parameter[…]`.
              */
-            if (!ignoreUnits && !Double.isNaN(value)) {
-                // Test equivalent to unit.equals(contextualUnit) but more aggressive.
-                ignoreUnits = Numerics.equals(value, doubleValue(contextualUnit));
-            }
-            if (ignoreUnits && convention != Convention.INTERNAL) {
-                // One last check about if we are really allowed to ignore units.
-                ignoreUnits = convention.isSimplified() && hasContextualUnit(formatter);
-            }
-            if (!ignoreUnits) {
-                if (!isWKT1) {
-                    formatter.append(unit);
-                } else if (!ignoreUnits) {
-                    if (descriptor != null) {
-                        formatter.setInvalidWKT(descriptor, null);
-                    } else {
-                        /*
-                         * Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
-                         * We make this WKT formatting robust since it is used by 'toString()' implementation.
-                         */
-                        formatter.setInvalidWKT(DefaultParameterValue.class, null);
-                    }
+            if (formatter.hasContextualUnit(isWKT1 ? 1 : 2) ||
+                formatter.getEnclosingElement(1) instanceof MathTransform)
+            {
+                ignoreUnits = Double.isNaN(value)
+                        ? unit.equals(contextualUnit)
+                        : doubleValue(contextualUnit) == value;   // Equivalent to above line but more aggressive.
+                /*
+                 * ISO 19162:2019 became more restrictive than older standards about contextual units in parameters.
+                 * For avoiding ambiguity, allow the omission only for decimal degrees and base units.
+                 */
+                if (ignoreUnits && !isWKT1) {
+                    ignoreUnits = Units.isAngular(unit)
+                            ? Units.DEGREE.equals(unit)
+                            : Units.toStandardUnit(unit) == 1;
                 }
+            }
+        }
+        if (!ignoreUnits) {
+            if (!isWKT1) {
+                formatter.append(unit);
+            } else if (descriptor != null) {
+                formatter.setInvalidWKT(descriptor, null);
+            } else {
+                /*
+                 * Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
+                 * We make this WKT formatting robust since it is used by `toString()` implementation.
+                 */
+                formatter.setInvalidWKT(DefaultParameterValue.class, null);
             }
         }
         // ID will be added by the Formatter itself.
         return WKTKeywords.Parameter;
-    }
-
-    /**
-     * Returns {@code true} if the given formatter has contextual units, in which case the WKT format can omit
-     * the unit of measurement. The contextual units may be defined either in the direct parent or in the parent
-     * of the parent, depending if we are formatting WKT1 or WKT2 respectively. This is because WKT2 wraps the
-     * parameters in an additional {@code CONVERSION[…]} element which is not present in WKT1.
-     *
-     * <p>Taking the example documented in {@link #formatTo(Formatter)}:</p>
-     * <ul>
-     *   <li>in WKT 1, {@code PROJCS[…]} is the immediate parent of {@code PARAMETER[…]}, but</li>
-     *   <li>in WKT 2, {@code ProjectedCRS[…]} is the parent of {@code Conversion[…]},
-     *       which is the parent of {@code Parameter[…]}.</li>
-     * </ul>
-     */
-    private static boolean hasContextualUnit(final Formatter formatter) {
-        return formatter.hasContextualUnit(1) ||    // In WKT1
-               formatter.hasContextualUnit(2);      // In WKT2
     }
 
 

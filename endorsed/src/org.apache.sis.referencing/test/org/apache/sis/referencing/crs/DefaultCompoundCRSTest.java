@@ -294,7 +294,7 @@ public final class DefaultCompoundCRSTest extends TestCase {
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "CompoundCRS[“WGS 84 + height + time”,\n" +
-                "  GeodeticCRS[“WGS 84”,\n" +
+                "  GeographicCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
                 "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "    CS[ellipsoidal, 2],\n" +

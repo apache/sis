@@ -27,7 +27,6 @@ import java.time.temporal.ChronoField;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.privy.Constants;
 
 
@@ -50,18 +49,19 @@ public final class Epoch extends FormattableObject {
     public final int precision;
 
     /**
-     * Whether this epoch is the frame epoch instead of the coordinate epoch.
+     * The keyword of the <abbr>WKT</abbr> element which will contain the epoch.
+     * This is {@code "Epoch"}, {@code "FrameEpoch"} or {@code "AnchorEpoch"}.
      */
-    private final boolean frame;
+    private final String keyword;
 
     /**
      * Converts the given epoch to a fractional year.
      *
-     * @param  epoch  the epoch to express as a fractional year.
-     * @param  frame  whether this epoch is the frame epoch instead of the coordinate epoch
+     * @param  epoch    the epoch to express as a fractional year.
+     * @param  keyword  the keyword of the <abbr>WKT</abbr> element which will contain the epoch.
      */
-    public Epoch(Temporal epoch, final boolean frame) {
-        this.frame = frame;
+    public Epoch(Temporal epoch, final String keyword) {
+        this.keyword = keyword;
         if (epoch instanceof Instant) {
             epoch = OffsetDateTime.ofInstant((Instant) epoch, ZoneOffset.UTC);
         }
@@ -140,11 +140,11 @@ public final class Epoch extends FormattableObject {
      * Formats this epoch as a <i>Well Known Text</i> {@code CoordinateMetadata[…]} element.
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
-     * @return {@code "Epoch"} or {@code "FrameEpoch"}.
+     * @return {@code "Epoch"}, {@code "FrameEpoch"} or {@code "AnchorEpoch"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         formatter.append(value, precision);
-        return frame ? WKTKeywords.FrameEpoch : WKTKeywords.Epoch;
+        return keyword;
     }
 }

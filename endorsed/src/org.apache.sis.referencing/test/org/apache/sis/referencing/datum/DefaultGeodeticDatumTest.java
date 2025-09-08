@@ -343,6 +343,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
                 "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, Id[“EPSG”, 7030],\n" +
                 "    Remark[“Defining parameters cited in EPSG database.”]],\n" +
                 "  Anchor[“Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.”],\n" +
+                "  AnchorEpoch[1984.000],\n" +  // The 3 digits are because of <gml:realizationEpoch> in test file.
                 "  Usage[\n" +
                 "    Scope[“Satellite navigation.”],\n" +
                 "    Area[“World.”],\n" +

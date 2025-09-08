@@ -367,7 +367,7 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public Date parse(final String text, final ParsePosition position) {
         try {
-            return Date.from(TemporalDate.toInstant(format.parse(text, position), getZone()));
+            return TemporalDate.toDate(TemporalDate.toInstant(format.parse(text, position), getZone()));
         } catch (DateTimeException | ArithmeticException e) {
             position.setErrorIndex(getErrorIndex(e, position));
             return null;
@@ -384,7 +384,7 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public Date parse(final String text) throws ParseException {
         try {
-            return Date.from(TemporalDate.toInstant(format.parse(toISO(text, 0, text.length())), getZone()));
+            return TemporalDate.toDate(TemporalDate.toInstant(format.parse(toISO(text, 0, text.length())), getZone()));
         } catch (RuntimeException e) {
             throw (ParseException) new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null)).initCause(e);
         }

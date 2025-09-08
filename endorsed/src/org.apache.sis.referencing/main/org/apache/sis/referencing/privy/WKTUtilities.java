@@ -157,8 +157,8 @@ public final class WKTUtilities extends Static {
     }
 
     /**
-     * If the given unit is one of the unit that cannot be formatted without ambiguity in WKT format,
-     * return a proposed replacement. Otherwise returns {@code unit} unchanged.
+     * If the given unit is one of the units that cannot be formatted without ambiguity in <abbr>WKT</abbr> format,
+     * returns a proposed replacement. Otherwise returns {@code unit} unchanged.
      *
      * @param  <Q>   the unit dimension.
      * @param  unit  the unit to test.

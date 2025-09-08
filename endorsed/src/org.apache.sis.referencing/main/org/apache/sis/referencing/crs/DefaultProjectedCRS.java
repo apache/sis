@@ -338,7 +338,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      *
      * {@snippet lang="wkt" :
      *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
-     *     BaseGeodCRS[“NTF (Paris)”,
+     *     BaseGeogCRS[“NTF (Paris)”,
      *       Datum[“Nouvelle Triangulation Francaise”,
      *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],
      *         PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grad”, 0.015707963267948967]]],

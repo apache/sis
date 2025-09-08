@@ -220,11 +220,11 @@ public abstract class FormattableObject implements Printable {
      * This method is automatically invoked by {@link WKTFormat} when a formattable element is found.
      *
      * <p>Keywords, opening and closing brackets shall not be formatted here.
-     * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
+     * For example if this formattable element is for a {@code GeographicCRS[…]} element,
      * then this method shall write the content starting at the insertion point shown below:</p>
      *
      * <pre class="text">
-     *   GeodeticCRS[ ]
+     *   GeographicCRS[ ]
      *               ↑
      *       (insertion point)</pre>
      *

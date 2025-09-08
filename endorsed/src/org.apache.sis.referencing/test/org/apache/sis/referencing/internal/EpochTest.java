@@ -21,6 +21,7 @@ import java.time.YearMonth;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import org.apache.sis.referencing.privy.WKTKeywords;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ public final class EpochTest extends TestCase {
      */
     @Test
     public void testYear() {
-        var epoch = new Epoch(Year.of(2010), false);
+        var epoch = new Epoch(Year.of(2010), WKTKeywords.Epoch);
         assertEquals(2010, epoch.value);
         assertEquals(0, epoch.precision);
         assertEquals("Epoch[2010]", epoch.toString());
@@ -58,12 +59,12 @@ public final class EpochTest extends TestCase {
      */
     @Test
     public void testYearMonth() {
-        var epoch = new Epoch(YearMonth.of(2016, 1), false);
+        var epoch = new Epoch(YearMonth.of(2016, 1), WKTKeywords.Epoch);
         assertEquals(2016, epoch.value);
         assertEquals(2, epoch.precision);
         assertEquals("Epoch[2016.00]", epoch.toString());
 
-        epoch = new Epoch(YearMonth.of(2016, 7), false);
+        epoch = new Epoch(YearMonth.of(2016, 7), WKTKeywords.Epoch);
         assertEquals(2016.49726775956, epoch.value, 1E-11);
         assertEquals(2, epoch.precision);
         assertEquals("Epoch[2016.50]", epoch.toString());
@@ -74,7 +75,7 @@ public final class EpochTest extends TestCase {
      */
     @Test
     public void testLocalDate() {
-        var epoch = new Epoch(LocalDate.of(2016, 7, 20), false);
+        var epoch = new Epoch(LocalDate.of(2016, 7, 20), WKTKeywords.Epoch);
         assertEquals(2016.54918032787, epoch.value, 1E-11);
         assertEquals(3, epoch.precision);
         assertEquals("Epoch[2016.549]", epoch.toString());
@@ -85,7 +86,7 @@ public final class EpochTest extends TestCase {
      */
     @Test
     public void testLocalDateTime() {
-        var epoch = new Epoch(LocalDateTime.of(2014, 2, 15, 10, 40), false);
+        var epoch = new Epoch(LocalDateTime.of(2014, 2, 15, 10, 40), WKTKeywords.Epoch);
         assertEquals(2014.12450532725, epoch.value, 1E-11);
         assertEquals(8, epoch.precision);
         assertEquals("Epoch[2014.12450533]", epoch.toString());

@@ -36,6 +36,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.operation.Conversion;
@@ -680,6 +681,9 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
 
         /** Returns the WKT keyword for this derived CRS type. */
         @Override String keyword(final Formatter formatter) {
+            if (formatter.getConvention().supports(Convention.WKT2_2019) && getCoordinateSystem() instanceof EllipsoidalCS) {
+                return formatter.shortOrLong(WKTKeywords.GeogCRS, WKTKeywords.GeographicCRS);
+            }
             return formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
         }
 

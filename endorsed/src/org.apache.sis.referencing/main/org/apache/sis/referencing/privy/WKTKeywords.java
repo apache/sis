@@ -55,10 +55,10 @@ public final class WKTKeywords extends Static {
             URI       = "URI",
             Citation  = "Citation",
             Authority = "Authority",
-            Anchor    = "Anchor",
             Usage     = "Usage",
             Scope     = "Scope",
             Area      = "Area",
+            BBox      = "BBox",
             Remark    = "Remark";
 
     /**
@@ -100,7 +100,9 @@ public final class WKTKeywords extends Static {
      * and {@link org.apache.sis.referencing.crs.DefaultGeographicCRS}.
      */
     public static final String
-            BBox          = "BBox",
+            Anchor        = "Anchor",
+            AnchorEpoch   = "AnchorEpoch",
+            TRF           = "TRF",
             Datum         = "Datum",
             GeodeticDatum = "GeodeticDatum",
             GeodeticCRS   = "GeodeticCRS",
@@ -120,6 +122,7 @@ public final class WKTKeywords extends Static {
             VerticalDatum  = "VerticalDatum",
             VerticalCRS    = "VerticalCRS",
             BaseVertCRS    = "BaseVertCRS",
+            VRF            = "VRF",
             VDatum         = "VDatum",
             Vert_Datum     = "Vert_Datum",
             VertCRS        = "VertCRS",
@@ -269,9 +272,9 @@ public final class WKTKeywords extends Static {
          * `Datum` subtypes.
          */
         subtypes = new String[][] {
-            addType(org.opengis.referencing.datum.GeodeticDatum.class,    GeodeticDatum,    Datum),
+            addType(org.opengis.referencing.datum.GeodeticDatum.class,    GeodeticDatum,    Datum, TRF),
             addType(org.opengis.referencing.datum.TemporalDatum.class,    TimeDatum,        TDatum),
-            addType(org.opengis.referencing.datum.VerticalDatum.class,    VerticalDatum,    VDatum, Vert_Datum),
+            addType(org.opengis.referencing.datum.VerticalDatum.class,    VerticalDatum,    VDatum, Vert_Datum, VRF),
             addType(org.opengis.referencing.datum.EngineeringDatum.class, EngineeringDatum, EDatum, Local_Datum)
         };
         addType(org.opengis.referencing.datum.Datum.class, ArraysExt.concatenate(subtypes));

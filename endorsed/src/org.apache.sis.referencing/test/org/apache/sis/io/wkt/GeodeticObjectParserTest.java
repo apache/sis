@@ -774,8 +774,8 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
                      "    Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grad”, 0.015707963267948967]],\n" +
                      "    Parameter[“Longitude of natural origin”, 0.0],\n" +
                      "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
-                     "    Parameter[“False easting”, 600.0],\n" +
-                     "    Parameter[“False northing”, 2200.0]],\n" +
+                     "    Parameter[“False easting”, 600.0, LengthUnit[“kilometre”, 1000]],\n" +
+                     "    Parameter[“False northing”, 2200.0, LengthUnit[“kilometre”, 1000]]],\n" +
                      "  CS[Cartesian, 2],\n" +
                      "    Axis[“Easting (E)”, east],\n" +
                      "    Axis[“Northing (N)”, north],\n" +
@@ -810,8 +810,8 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
                      "    Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grad”, 0.015707963267948967]],\n" +
                      "    Parameter[“Longitude of natural origin”, 0.0],\n" +
                      "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
-                     "    Parameter[“False easting”, 600.0],\n" +
-                     "    Parameter[“False northing”, 2200.0]],\n" +
+                     "    Parameter[“False easting”, 600.0, LengthUnit[“kilometre”, 1000]],\n" +
+                     "    Parameter[“False northing”, 2200.0, LengthUnit[“kilometre”, 1000]]],\n" +
                      "  CS[Cartesian, 2],\n" +
                      "    Axis[“Easting (E)”, east],\n" +
                      "    Axis[“Northing (N)”, north],\n" +

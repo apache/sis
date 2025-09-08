@@ -891,13 +891,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      *
      * Keywords and metadata (scope, extent, identifier and remarks) shall not be formatted here.
-     * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
+     * For example if this formattable element is for a {@code GeographicCRS[…]} element,
      * then subclasses shall write the content starting at the insertion point shown below:
      *
      * <div class="horizontal-flow">
      * <div><p><b>WKT example</b></p>
      * <pre class="text">
-     *   GeodeticCRS["WGS 84", ID["EPSG", 4326]]
+     *   GeographicCRS["WGS 84", ID["EPSG", 4326]]
      *                       ↑
      *               (insertion point)</pre>
      * </div><div>

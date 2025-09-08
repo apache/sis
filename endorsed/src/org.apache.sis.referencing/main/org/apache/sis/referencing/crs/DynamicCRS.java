@@ -67,7 +67,7 @@ final class DynamicCRS extends FormattableObject {
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(new Epoch(epoch, true));
+        formatter.append(new Epoch(epoch, WKTKeywords.FrameEpoch));
         return WKTKeywords.Dynamic;
     }
 }

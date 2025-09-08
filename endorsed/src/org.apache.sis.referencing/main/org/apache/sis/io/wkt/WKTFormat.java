@@ -89,14 +89,14 @@ import org.opengis.metadata.Identifier;
  *
  * <h3>Example</h3>
  * In the example below, the {@code $WGS84} substring which appear in the argument given to the
- * {@code parseObject(…)} method will be expanded into the full {@code GeodeticCRS[“WGS84”, …]}
+ * {@code parseObject(…)} method will be expanded into the full {@code GeographicCRS[“WGS84”, …]}
  * string before the parsing proceed.
  *
  * <blockquote><code>
  * {@linkplain #addFragment addFragment}("deg", "AngleUnit[“degree”, 0.0174532925199433]");<br>
  * {@linkplain #addFragment addFragment}("lat", "Axis[“Latitude”, NORTH, <strong>$deg</strong>]");<br>
  * {@linkplain #addFragment addFragment}("lon", "Axis[“Longitude”, EAST, <strong>$deg</strong>]");<br>
- * {@linkplain #addFragment addFragment}("MyBaseCRS", "GeodeticCRS[“WGS84”, Datum[</code> <i>…etc…</i> <code>],
+ * {@linkplain #addFragment addFragment}("MyBaseCRS", "GeographicCRS[“WGS84”, Datum[</code> <i>…etc…</i> <code>],
  * CS[</code> <i>…etc…</i> <code>], <strong>$lat</strong>, <strong>$lon</strong>]");<br>
  * Object crs = {@linkplain #parseObject(String) parseObject}("ProjectedCRS[“Mercator_1SP”, <strong>$MyBaseCRS</strong>,
  * </code> <i>…etc…</i> <code>]");
@@ -858,7 +858,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * (WKT after the ellipsoid omitted for brevity):
      *
      * {@snippet lang="java" :
-     *     Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
+     *     Object crs = parseObject("GeographicCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
      *     }
      *
      * For removing a fragment, use <code>{@linkplain #getFragmentNames()}.remove(name)</code>.

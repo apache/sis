@@ -315,7 +315,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *
      * {@snippet lang="wkt" :
      *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
-     *     BaseGeodCRS[“NTF (Paris)”,
+     *     BaseGeogCRS[“NTF (Paris)”,
      *       Datum[“Nouvelle Triangulation Francaise”,
      *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],
      *       PrimeMeridian[“Paris”, 2.5969213],

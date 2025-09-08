@@ -197,7 +197,7 @@ public final class DefaultGeographicCRSTest extends TestCase {
     @Test
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
-                "GeodeticCRS[“WGS 84”,\n" +
+                "GeographicCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
@@ -216,7 +216,7 @@ public final class DefaultGeographicCRSTest extends TestCase {
     @Test
     public void testWKT2_Internal() {
         assertWktEquals(Convention.INTERNAL,
-                "GeodeticCRS[“WGS 84”,\n" +
+                "GeographicCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
                 "    Usage[\n" +
@@ -242,7 +242,7 @@ public final class DefaultGeographicCRSTest extends TestCase {
     @Test
     public void testWKT2_ForNonGreenwich() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
-                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "GeographicCRS[“NTF (Paris)”,\n" +
                 "  Datum[“Nouvelle Triangulation Francaise”,\n" +           // Formatter should replace "ç" by "c".
                 "    Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "    PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +

@@ -537,7 +537,8 @@ public final class DefaultParameterValueTest extends TestCase {
         DefaultParameterValue<Double> p = create("Angle", 10.3, degreesAndMinutes);
         assertWktEquals(Convention.WKT1,     "PARAMETER[“Angle”, 10.3]", p);  // 10.3 DM  ==  10.5°
         assertWktEquals(Convention.WKT2,     "PARAMETER[“Angle”, 10.5, ANGLEUNIT[“degree”, 0.017453292519943295]]", p);
-        assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3]", p);   // Value in same unit as descriptor.
+        assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3, Unit[“D.M”, 0.017453292519943295, Id[“EPSG”, 9111]]]", p);
+        // In above line, the parameter value in `INTERNAL` mode was formatted in the same unit as the descriptor.
 
         p = create("Angle", 0, Units.DEGREE);
         p.setValue(10.3, degreesAndMinutes);  // Cannot be formatted in WKT1.

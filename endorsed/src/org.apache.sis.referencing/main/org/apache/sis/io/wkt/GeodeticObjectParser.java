@@ -31,7 +31,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import static java.util.Collections.singletonMap;
 import javax.measure.Unit;
@@ -220,7 +220,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     {
         super(sourceFile, fragments, symbols, numberFormat, dateFormat, unitFormat, factories, errorLocale);
         this.transliterator = transliterator;
-        usesCommonUnits = convention.usesCommonUnits;
+        usesCommonUnits = convention.usesCommonUnits();
         ignoreAxes      = convention == Convention.WKT1_IGNORE_AXES;
     }
 
@@ -515,12 +515,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * String, IdentifiedObject)} method. If an anchor has been found, its value is stored in the returned map.
      */
     private Map<String,Object> parseAnchorAndClose(final Element element, final String name) throws ParseException {
-        final Element anchor = element.pullElement(OPTIONAL, WKTKeywords.Anchor);
+        String   anchor = pullElementAsString(element, WKTKeywords.Anchor);
+        Temporal epoch  = Epoch.fromYear(pullElementAsDouble(element, WKTKeywords.AnchorEpoch, OPTIONAL), 0);
         final Map<String,Object> properties = parseMetadataAndClose(element, name, null);
-        if (anchor != null) {
-            properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor.pullString("anchorDefinition"));
-            anchor.close(ignoredElements);
-        }
+        if (anchor != null) properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
+        if (epoch  != null) properties.put(Datum.ANCHOR_EPOCH_KEY, epoch);
         return properties;
     }
 
@@ -593,8 +592,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 element.close(ignoredElements);
                 warning(parent, element, Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
             } else {
-                final Instant startTime = element.pullDate("startTime");
-                final Instant endTime   = element.pullDate("endTime");
+                final Temporal startTime = element.pullTime("startTime");
+                final Temporal endTime   = element.pullTime("endTime");
                 element.close(ignoredElements);
                 final var t = new DefaultTemporalExtent(startTime, endTime);
                 if (extent == null) extent = new DefaultExtent();
@@ -1267,7 +1266,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Map<String,?> properties = parseMetadataAndClose(element, name, null);
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            if (inverseFlattening == 0) {                           // OGC convention for a sphere.
+            if (inverseFlattening == 0) {       // OGC and ISO 19162 convention for a sphere.
                 return datumFactory.createEllipsoid(properties, semiMajorAxis, semiMajorAxis, unit);
             } else {
                 return datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
@@ -1359,8 +1358,18 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @throws ParseException if the {@code "Method"} element cannot be parsed.
      */
     private Conversion parseDerivingConversion(final int mode, Element parent, final String wrapper,
-            final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
+            Unit<?> defaultUnit, Unit<Angle> defaultAngularUnit) throws ParseException
     {
+        /*
+         * ISO 19162:2015 was not very specific about the default units of measurement for parameters.
+         * ISO 19162:2019 clarified the policy by saying that default units should be metres or degrees.
+         * This is different than our understanding of OGC 01-009, which seems to inherit the units from
+         * the context.
+         */
+        if (wrapper != null) {
+            defaultUnit = Units.METRE;
+            defaultAngularUnit = Units.DEGREE;
+        }
         final String name;
         if (wrapper == null) {
             name = null;  // Will actually be ignored. WKT 1 does not provide name for Conversion objects.
@@ -1518,7 +1527,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     private GeodeticDatum parseDatum(final int mode, final Element parent, final PrimeMeridian meridian, final Temporal epoch)
             throws ParseException
     {
-        final Element element = parent.pullElement(mode, WKTKeywords.Datum, WKTKeywords.GeodeticDatum);
+        final Element element = parent.pullElement(mode,
+                WKTKeywords.GeodeticDatum,
+                WKTKeywords.Datum,
+                WKTKeywords.TRF);
         if (element == null) {
             return null;
         }
@@ -1562,7 +1574,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Element element = parent.pullElement(mode,
                 WKTKeywords.VerticalDatum,
                 WKTKeywords.VDatum,
-                WKTKeywords.Vert_Datum);
+                WKTKeywords.Vert_Datum,
+                WKTKeywords.VRF);
         if (element == null) {
             return null;
         }
@@ -1593,6 +1606,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     TimeDatum["<name>", TimeOrigin[<time origin>] {,<authority>}]
      *     }
      *
+     * @todo {@code CALANDAR[…]} element is not yet supported.
+     *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "TimeDatum"} element as a {@link TemporalDatum} object.
@@ -1603,10 +1618,16 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (element == null) {
             return null;
         }
-        final String  name   = element.pullString ("name");
-        final Element origin = element.pullElement(MANDATORY, WKTKeywords.TimeOrigin);
-        final Instant epoch  = origin .pullDate("origin");
-        origin.close(ignoredElements);
+        final String   name = element.pullString ("name");
+        final Element  origin = element.pullElement(OPTIONAL, WKTKeywords.TimeOrigin);
+        final Temporal epoch;
+        if (origin != null) {
+            epoch = origin .pullTime("origin");
+            origin.close(ignoredElements);
+        } else {
+            // Default to the date of signing of the Convention du Mètre (from ISO 19162:2019 specification)
+            epoch = LocalDate.of(1875, 5, 20);
+        }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createTemporalDatum(parseAnchorAndClose(element, name), epoch);
@@ -2068,8 +2089,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * But sometimes the axis (which was not available when we created the datum) provides
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  *
-                 * TODO: remove this hack. It is mostly for old standard. The check for dynamic datum
-                 * is a dirty trick for checking if we have a newer standard.
+                 * Note: we exclude the reconstruction of dynamic datum for simplicity in the use of the factory.
+                 * This block is a dirty trick anyway (a workaround for a metadata excluded from the WKT standard).
                  */
                 if (method == null && datum != null && !(datum instanceof DynamicReferenceFrame)) {
                     var type = VerticalDatumTypes.fromDatum(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));

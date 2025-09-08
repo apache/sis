@@ -212,7 +212,7 @@ public final class DefaultDerivedCRSTest extends TestCase {
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticCRS[“Back to Greenwich”,\n" +
-                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "  BaseGeogCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +

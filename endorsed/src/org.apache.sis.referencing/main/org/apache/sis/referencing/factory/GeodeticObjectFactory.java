@@ -1795,7 +1795,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * {@snippet lang="wkt" :
      *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
-     *     BaseGeodCRS["SIRGAS 2000",
+     *     BaseGeogCRS["SIRGAS 2000",
      *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
      *         Ellipsoid["GRS 1980", 6378137, 298.257222101]]],
      *     Conversion["Petrobras Mercator",

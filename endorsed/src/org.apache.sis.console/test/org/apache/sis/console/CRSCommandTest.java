@@ -43,7 +43,7 @@ public final class CRSCommandTest extends TestCase {
     public CRSCommandTest() {
         final String name = "\"WGS\\E\\s?(?:19)?\\Q84\"";                                       // Accept "WGS 84" or "WGS 1984".
         WGS84 = "(?m)\\Q" +                                                                     // Multilines.
-            "GeodeticCRS[" + name + ",\n" +
+            "GeographicCRS[" + name + ",\n" +
             "  Ensemble[\"World Geodetic System 1984\\E\\s?\\w*\\Q\",\n" +                      // Ignore any suffix in the name.
             "\\E(?:    Member\\[\".+\"\\],\n)+\\Q" +                                            // At least one MEMBER[…].
             "    Ellipsoid[" + name + ", 6378137.0, 298.257223563],\n" +
