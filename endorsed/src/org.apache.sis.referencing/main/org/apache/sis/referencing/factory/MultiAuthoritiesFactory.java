@@ -894,7 +894,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
             throws FactoryException
     {
-        return Optional.ofNullable(create(AuthorityFactoryProxy.description(type), code));
+        return Optional.ofNullable(create(new AuthorityFactoryProxy.Description(type), code));
     }
 
     /**

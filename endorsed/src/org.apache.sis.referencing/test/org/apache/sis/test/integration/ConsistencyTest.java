@@ -22,11 +22,9 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import org.opengis.metadata.Identifier;
-import org.opengis.util.CodeList;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.FactoryDataException;
@@ -66,8 +64,6 @@ public final class ConsistencyTest extends TestCase {
      */
     private final Set<String> EXCLUDES = Set.of(
         "CRS:1",            // Computer display: WKT parser alters the (i,j) axis names.
-        "EPSG:5819",        // EPSG topocentric example A: DerivedCRS wrongly handled as a ProjectedCRS. See SIS-518.
-        "EPSG:5820",        // EPSG topocentric example B.
         "AUTO2:42001",      // This projection requires parameters, but we provide none.
         "AUTO2:42002",      // This projection requires parameters, but we provide none.
         "AUTO2:42003",      // This projection requires parameters, but we provide none.
@@ -77,11 +73,16 @@ public final class ConsistencyTest extends TestCase {
     /**
      * Elements to ignore when comparing the <abbr>WKT</abbr> strings.
      * We ignore the vertical extent because in the current <abbr>SIS</abbr> implementation,
-     * the unit of measurement is inferred from the <abbr>CRS</abbr> and there is no east way
+     * the unit of measurement is inferred from the <abbr>CRS</abbr> and there is no easy way
      * to rebuild the <abbr>CRS</abbr> at parsing time.
+     *
+     * <p>We ignore also the vertical datum type when using <abbr>WKT</abbr> 1 because that
+     * element contained a "Vertical Datum Type" numerical code, which has been removed in
+     * more recent standards and is very difficult to preserve.</p>
      */
     private final String[] WKT_TO_IGNORE = {
-        "VERTICALEXTENT"
+        "VERTICALEXTENT",
+        "VERT_DATUM"        // WKT 1.
     };
 
     /**
@@ -115,26 +116,6 @@ public final class ConsistencyTest extends TestCase {
     }
 
     /**
-     * Returns whether testing the given <abbr>CRS</abbr> requires the 2019 version of <abbr>WKT</abbr> format.
-     * We skip the vertical datum having the "local" realization method because this information is lost during
-     * the roundtrip with WKT or WKT 2 version 2015, and the WKT parser tries to guess the method from the axis
-     * abbreviation "d" which result in "tidal".
-     */
-    private static boolean requiresWKT2019(final CoordinateReferenceSystem crs) {
-        final VerticalCRS c = CRS.getVerticalComponent(crs, false);
-        if (c != null) {
-            final var datum = c.getDatum();
-            if (datum != null) {
-                final String method = datum.getRealizationMethod().map(CodeList::name).orElse("");
-                if (method.equalsIgnoreCase("local")) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Verifies the WKT consistency of all CRS instances.
      *
      * @throws FactoryException if an error other than "unsupported operation method" occurred.
@@ -165,14 +146,6 @@ public final class ConsistencyTest extends TestCase {
                 }
                 lookup(parseAndFormat(v2,  code, crs), crs);
                 lookup(parseAndFormat(v2s, code, crs), crs);
-                /*
-                 * There is more information lost in WKT 1 than in WKT 2, so we cannot test everything.
-                 * For example, we cannot format fully three-dimensional geographic CRS because the unit
-                 * is not the same for all axes. We cannot format neither some axis directions.
-                 */
-                if (requiresWKT2019(crs)) {
-                    continue;
-                }
                 try {
                     parseAndFormat(v1, code, crs);
                 } catch (UnformattableObjectException e) {

@@ -207,7 +207,7 @@ final class TransformCommand extends FormattedOutputCommand {
     private void fetchOperation(Object identifier) throws Exception {
         if (identifier instanceof CharSequence) {
             final String c = identifier.toString();
-            if (CodeType.guess(c).isCRS) try {
+            if (CodeType.guess(c).isAuthorityCode) try {
                 var factory = (CoordinateOperationAuthorityFactory) CRS.getAuthorityFactory(null);
                 operation = factory.createCoordinateOperation(c);
                 return;
@@ -239,7 +239,7 @@ final class TransformCommand extends FormattedOutputCommand {
         }
         if (identifier instanceof CharSequence) {
             final String c = identifier.toString();
-            if (CodeType.guess(c).isCRS) try {
+            if (CodeType.guess(c).isAuthorityCode) try {
                 return CRS.forCode(c);
             } catch (NoSuchAuthorityCodeException e) {
                 throw illegalOptionValue(option, identifier, e);

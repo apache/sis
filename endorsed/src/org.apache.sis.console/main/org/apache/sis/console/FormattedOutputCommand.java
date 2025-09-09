@@ -201,7 +201,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
             final Object file = files.get(0);
             if (file instanceof CharSequence) {
                 final String c = file.toString();
-                if (CodeType.guess(c).isCRS) {
+                if (CodeType.guess(c).isAuthorityCode) {
                     return CRS.forCode(c);
                 }
             }

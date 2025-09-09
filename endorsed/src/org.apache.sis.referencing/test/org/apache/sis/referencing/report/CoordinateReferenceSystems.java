@@ -311,7 +311,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
      * we need to cut before those numbers in order to use sorting by EPSG codes instead.
      *
      * Note 2: if alphabetical sorting is okay for Roman numbers, it is actually preferable
-     * because it give better position of names with height like "zone II + NGF IGN69 height".
+     * because it give better position of names with height like "zone II + NGF-IGN69 height".
      */
     private static final String[] CUT_AFTER = {
         " cs ",                     // "JGD2000 / Japan Plane Rectangular CS IX"
@@ -321,7 +321,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
         " philippines zone ",       // "Luzon 1911 / Philippines zone IV"
         " california zone ",        // "NAD27 / California zone V"
         " ngo zone ",               // "NGO 1948 (Oslo) / NGO zone I"
-        " lambert zone ",           // "NTF (Paris) / Lambert zone II + NGF IGN69 height"
+        " lambert zone ",           // "NTF (Paris) / Lambert zone II + NGF-IGN69 height"
         "fiji 1956 / utm zone "     // Two zones: 60S and 1S with 60 before 1.
     };
 

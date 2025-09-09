@@ -172,18 +172,31 @@ abstract class AuthorityFactoryProxy<T> {
 
     /**
      * The proxy for the {@link GeodeticAuthorityFactory#getDescriptionText(Class, String)} method.
-     *
-     * @param  classe  the type of object for which to get a description.
      */
-    static final AuthorityFactoryProxy<InternationalString> description(final Class<? extends IdentifiedObject> classe) {
-        return new AuthorityFactoryProxy<InternationalString>(InternationalString.class, AuthorityFactoryIdentifier.Type.ANY) {
-            @Override InternationalString createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
-                return factory.getDescriptionText(classe, code).orElse(null);
-            }
-            @Override AuthorityFactoryProxy<InternationalString> specialize(String typeName) {
+    static final class Description extends AuthorityFactoryProxy<InternationalString> {
+        /** The type of object for which to get a description. */
+        private Class<? extends IdentifiedObject> typeToSearch;
+
+        /** Creates a new proxy for fetching an object description. */
+        Description(final Class<? extends IdentifiedObject> typeToSearch) {
+            super(InternationalString.class, AuthorityFactoryIdentifier.Type.ANY);
+            this.typeToSearch = typeToSearch;
+        }
+
+        /** Creates the object for the given code using only GeoAPI interfaces. */
+        @Override InternationalString createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+            return factory.getDescriptionText(typeToSearch, code).orElse(null);
+        }
+
+        /** Specialize the type of object to search. */
+        @Override AuthorityFactoryProxy<InternationalString> specialize(String typeName) {
+            final AuthorityFactoryProxy<?> c = BY_URN_TYPE.get(typeName.toLowerCase(Locale.US));
+            if (c != null && typeToSearch.isAssignableFrom(c.type)) {
+                typeToSearch = c.type.asSubclass(IdentifiedObject.class);
                 return this;
             }
-        };
+            return null;     // The given type is illegal.
+        }
     }
 
     /**
@@ -627,7 +640,7 @@ abstract class AuthorityFactoryProxy<T> {
     }
 
     /**
-     * The proxy to use for a given type declared in a URN.
+     * The proxy to use for a given type declared in a <abbr>URN</abbr>.
      * For example in the {@code "urn:ogc:def:crs:EPSG::4326"} URN, the proxy to use is {@link #CRS}.
      *
      * @param  typeName  the name of URN type.

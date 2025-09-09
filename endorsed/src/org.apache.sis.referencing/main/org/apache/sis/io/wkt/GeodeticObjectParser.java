@@ -529,7 +529,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * wrapped inside an {@code USAGE} element in <abbr>ISO</abbr> 19162:2019.
      *
      * <h4>Extension to <abbr>ISO</abbr> 19162 specification</h4>
-     * The specification saids that at most one extent of each type can appear in the same {@code USAGE}.
+     * The specification said that at most one extent of each type can appear in the same {@code USAGE}.
      * However, Apache <abbr>SIS</abbr> puts no limit on the number of occurrence of each extent type.
      *
      * <h4>Limitations</h4>
@@ -1482,7 +1482,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     if (ellipsoid != null) {    // `memberType` may be `Datum` or `GeodeticDatum`
                         member = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
                     } else if (vertical) {
-                        member = datumFactory.createVerticalDatum(properties, null);
+                        member = datumFactory.createVerticalDatum(properties, VerticalDatumTypes.fromDatum(name, null, null));
                     } else if (datumType == TemporalDatum.class) {
                         member = datumFactory.createTemporalDatum(properties, null);
                     } else if (datumType == ParametricDatum.class) {
