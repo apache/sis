@@ -105,7 +105,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
     @Test
     public void testWKT() throws FactoryException, NoninvertibleTransformException {
         final DefaultConcatenatedOperation op = createGeocentricTranslation();
-        assertWktEquals(Convention.WKT2_SIMPLIFIED,                             // Pseudo-WKT actually.
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ConcatenatedOperation[“Tokyo to JGD2000”,\n" +
                 "  SourceCRS[GeographicCRS[“Tokyo”,\n" +
                 "    Datum[“Tokyo 1918”,\n" +
@@ -121,14 +121,60 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
                 "      Axis[“Longitude (L)”, east, Unit[“degree”, 0.017453292519943295]],\n" +
                 "      Axis[“Latitude (B)”, north, Unit[“degree”, 0.017453292519943295]],\n" +
                 "      Axis[“Ellipsoidal height (h)”, up, Unit[“metre”, 1]]]],\n" +
-                "  CoordinateOperationStep[“Geographic to geocentric”,\n" +
+                "  Step[“Geographic to geocentric”,\n" +
+                "    SourceCRS[GeographicCRS[“Tokyo”,\n" +
+                "      Datum[“Tokyo 1918”,\n" +
+                "        Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128]],\n" +
+                "      CS[ellipsoidal, 3],\n" +
+                "        Axis[“Longitude (L)”, east, Unit[“degree”, 0.017453292519943295]],\n" +
+                "        Axis[“Latitude (B)”, north, Unit[“degree”, 0.017453292519943295]],\n" +
+                "        Axis[“Ellipsoidal height (h)”, up, Unit[“metre”, 1]]]],\n" +
+                "    TargetCRS[GeodeticCRS[“Tokyo 1918”,\n" +
+                "      Datum[“Tokyo 1918”,\n" +
+                "        Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128]],\n" +
+                "      CS[Cartesian, 3],\n" +
+                "        Axis[“(X)”, geocentricX],\n" +
+                "        Axis[“(Y)”, geocentricY],\n" +
+                "        Axis[“(Z)”, geocentricZ],\n" +
+                "        Unit[“metre”, 1]]],\n" +
                 "    Method[“Geographic/geocentric conversions”]],\n" +         // Omit non-EPSG parameters for EPSG method.
-                "  CoordinateOperationStep[“Tokyo to JGD2000 (GSI)”,\n" +
+                "  Step[“Tokyo to JGD2000 (GSI)”, Version[“GSI-Jpn”],\n" +
+                "    SourceCRS[GeodeticCRS[“Tokyo 1918”,\n" +
+                "      Datum[“Tokyo 1918”,\n" +
+                "        Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128]],\n" +
+                "      CS[Cartesian, 3],\n" +
+                "        Axis[“(X)”, geocentricX],\n" +
+                "        Axis[“(Y)”, geocentricY],\n" +
+                "        Axis[“(Z)”, geocentricZ],\n" +
+                "        Unit[“metre”, 1]]],\n" +
+                "    TargetCRS[GeodeticCRS[“JGD2000”,\n" +
+                "      Datum[“Japanese Geodetic Datum 2000”,\n" +
+                "        Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101]],\n" +
+                "      CS[Cartesian, 3],\n" +
+                "        Axis[“(X)”, geocentricX],\n" +
+                "        Axis[“(Y)”, geocentricY],\n" +
+                "        Axis[“(Z)”, geocentricZ],\n" +
+                "        Unit[“metre”, 1]]],\n" +
                 "    Method[“Geocentric translations”],\n" +
                 "      Parameter[“X-axis translation”, -146.414],\n" +
                 "      Parameter[“Y-axis translation”, 507.337],\n" +
                 "      Parameter[“Z-axis translation”, 680.507]],\n" +
-                "  CoordinateOperationStep[“Geocentric to geographic”,\n" +
+                "  Step[“Geocentric to geographic”,\n" +
+                "    SourceCRS[GeodeticCRS[“JGD2000”,\n" +
+                "      Datum[“Japanese Geodetic Datum 2000”,\n" +
+                "        Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101]],\n" +
+                "      CS[Cartesian, 3],\n" +
+                "        Axis[“(X)”, geocentricX],\n" +
+                "        Axis[“(Y)”, geocentricY],\n" +
+                "        Axis[“(Z)”, geocentricZ],\n" +
+                "        Unit[“metre”, 1]]],\n" +
+                "    TargetCRS[GeographicCRS[“JGD2000”,\n" +
+                "      Datum[“Japanese Geodetic Datum 2000”,\n" +
+                "        Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101]],\n" +
+                "      CS[ellipsoidal, 3],\n" +
+                "        Axis[“Longitude (L)”, east, Unit[“degree”, 0.017453292519943295]],\n" +
+                "        Axis[“Latitude (B)”, north, Unit[“degree”, 0.017453292519943295]],\n" +
+                "        Axis[“Ellipsoidal height (h)”, up, Unit[“metre”, 1]]]],\n" +
                 "    Method[“Geographic/geocentric conversions”],\n" +
                 "      Parameter[“semi_major”, 6378137.0, Unit[“metre”, 1]],\n" +
                 "      Parameter[“semi_minor”, 6356752.314140356, Unit[“metre”, 1]]]]", op);

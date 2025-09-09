@@ -37,6 +37,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
@@ -47,6 +48,7 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 
 
@@ -449,8 +451,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * Formats this coordinate operation in pseudo-WKT. This is specific to Apache SIS since
-     * there is no concatenated operation in the Well Known Text (WKT) version 2 format.
+     * Formats this coordinate operation in Well Known Text (WKT) version 2 format.
      *
      * @param  formatter  the formatter to use.
      * @return {@code "ConcatenatedOperation"}.
@@ -462,8 +463,10 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             formatter.newLine();
             formatter.append(castOrCopy(component));
         }
-        formatter.setInvalidWKT(this, null);
-        return "ConcatenatedOperation";
+        if (!formatter.getConvention().supports(Convention.WKT2_2019)) {
+            formatter.setInvalidWKT(this, null);
+        }
+        return WKTKeywords.ConcatenatedOperation;
     }
 
 
