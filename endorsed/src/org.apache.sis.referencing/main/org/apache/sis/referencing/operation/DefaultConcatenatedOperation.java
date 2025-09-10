@@ -38,6 +38,7 @@ import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
@@ -49,6 +50,7 @@ import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 
 
@@ -58,6 +60,9 @@ import org.apache.sis.io.wkt.Formatter;
  * the target coordinate reference system of step (<var>n</var>). The source coordinate reference system of the
  * first step and the target coordinate reference system of the last step are the source and target coordinate
  * reference system associated with the concatenated operation.
+ *
+ * <p>Above requirements are relaxed when the source and target <abbr>CRS</abbr> of a step are swapped.
+ * In such case, this step will actually be implemented by the inverse operation.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
@@ -136,18 +141,26 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * or for overriding the automatic concatenation.
      *
      * @param  properties  the properties to be given to the identified object.
+     * @param  sourceCRS   the source <abbr>CRS</abbr>, or {@code null} for the source of the first step.
+     * @param  targetCRS   the target <abbr>CRS</abbr>, or {@code null} for the target of the last effective step.
      * @param  operations  the sequence of operations. Shall contain at least two operations.
      * @param  mtFactory   the math transform factory to use for math transforms concatenation.
      * @throws FactoryException if this constructor or the factory cannot concatenate the operation steps.
      */
-    public DefaultConcatenatedOperation(final Map<String,?> properties, final CoordinateOperation[] operations,
-            final MathTransformFactory mtFactory) throws FactoryException
+    public DefaultConcatenatedOperation(final Map<String,?>             properties,
+                                        final CoordinateReferenceSystem sourceCRS,
+                                        final CoordinateReferenceSystem targetCRS,
+                                        final CoordinateOperation[]     operations,
+                                        final MathTransformFactory      mtFactory)
+            throws FactoryException
     {
         super(properties);
         if (operations.length < 2) {
             throw new InvalidGeodeticParameterException(Errors.forProperties(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));
         }
+        this.sourceCRS = sourceCRS;
+        this.targetCRS = targetCRS;
         transform = Containers.property(properties, TRANSFORM_KEY, MathTransform.class);
         initialize(properties, operations, (transform == null) ? mtFactory : null);
         checkDimensions(properties);
@@ -155,8 +168,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
 
     /**
      * Initializes the {@link #sourceCRS}, {@link #targetCRS} and {@link #operations} fields.
-     * If the source or target CRS is already non-null (which may happen on JAXB unmarshalling),
-     * leaves that CRS unchanged.
+     * If the source and target <abbr>CRS</abbr> are already non-null, leaves them unchanged
+     * but verifies that they are consistent with the first and last steps.
      *
      * @param  properties   the properties specified at construction time, or {@code null} if unknown.
      * @param  operations   the operations to concatenate.
@@ -317,7 +330,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 }
             }
         }
-        if (!(mtFactory instanceof DefaultMathTransformFactory)) {
+        if (mtFactory != null) {
             verifyStepChaining(properties, operations.length, target, targetCRS, null);
             // Else verification will be done by the caller.
         }
@@ -461,8 +474,15 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
         super.formatTo(formatter);
         for (final CoordinateOperation component : operations) {
             formatter.newLine();
-            formatter.append(castOrCopy(component));
+            formatter.append(new FormattableObject() {
+                @Override protected String formatTo(Formatter formatter) {
+                    formatter.newLine();
+                    formatter.appendFormattable(component, AbstractCoordinateOperation::castOrCopy);
+                    return WKTKeywords.Step;
+                }
+            });
         }
+        WKTUtilities.appendElementIfPositive(WKTKeywords.OperationAccuracy, getLinearAccuracy(), formatter);
         if (!formatter.getConvention().supports(Convention.WKT2_2019)) {
             formatter.setInvalidWKT(this, null);
         }

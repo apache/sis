@@ -975,8 +975,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
          * because the WKT 2 specification does not define pass-through operations.
          * This choice may change in any future SIS version.
          */
-        final FormattableObject enclosing = formatter.getEnclosingElement(1);
-        final boolean isSubOperation = (enclosing instanceof PassThroughOperation);
+        final boolean isSubOperation = (formatter.getEnclosingElement(1) instanceof PassThroughOperation);
         boolean isGeogTran = false;
         if (!isSubOperation) {
             isGeogTran = isWKT1 && (sourceCRS instanceof GeographicCRS) && (targetCRS instanceof GeographicCRS);
@@ -1042,17 +1041,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 return WKTKeywords.GeogTran;
             }
         }
-        /*
-         * If the coordinate operation is a step in a chain of operations, returns "step".
-         * Otherwise, if formatting a top-level single operation, add the interpolation CRS.
-         */
-        if (enclosing instanceof ConcatenatedOperation) {
-            return WKTKeywords.Step;
-        }
-        if (isSubOperation) {
-            if (!(this instanceof ConcatenatedOperation)) {
-                append(formatter, getInterpolationCRS().orElse(null), WKTKeywords.InterpolationCRS);
-            }
+        if (!(isSubOperation || this instanceof ConcatenatedOperation)) {
+            append(formatter, getInterpolationCRS().orElse(null), WKTKeywords.InterpolationCRS);
             WKTUtilities.appendElementIfPositive(WKTKeywords.OperationAccuracy, getLinearAccuracy(), formatter);
         }
         return WKTKeywords.CoordinateOperation;
