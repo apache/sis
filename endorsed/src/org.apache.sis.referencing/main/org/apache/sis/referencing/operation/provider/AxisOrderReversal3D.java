@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <q>axis order reversal (geographic3D horizontal)</q> (EPSG:9844).
+ * The provider for <q>Axis Order Reversal (Geographic3D horizontal)</q> (EPSG:9844).
  * This is a trivial operation that just swap the two first axes.
  * The inverse operation is this operation itself.
  *
@@ -38,7 +38,7 @@ public final class AxisOrderReversal3D extends AxisOrderReversal {
      * The group of all parameters expected by this coordinate operation (in this case, none).
      */
     private static final ParameterDescriptorGroup PARAMETERS = builder()
-            .addIdentifier("9844").addName("Axis order reversal (geographic3D horizontal)").createGroup();
+            .addIdentifier("9844").addName("Axis Order Reversal (Geographic3D horizontal)").createGroup();
 
     /**
      * The canonical instance of this operation method.

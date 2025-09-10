@@ -195,8 +195,10 @@ public class Mercator extends ConformalProjection {
          * The "scale factor" is not formally a "Mercator 2SP" argument, but we accept it anyway
          * for all Mercator projections because it may be used in some Well Known Text (WKT).
          */
-        roles.put(ParameterRole.SCALE_FACTOR,     Mercator1SP.SCALE_FACTOR);
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, Mercator1SP.LONGITUDE_OF_ORIGIN);
+        roles.put(ParameterRole.SCALE_FACTOR, Mercator1SP.SCALE_FACTOR);
+        roles.put(ParameterRole.CENTRAL_MERIDIAN,
+                (variant == Variant.REGIONAL) ? RegionalMercator.LONGITUDE_OF_FALSE_ORIGIN
+                                              : Mercator1SP.LONGITUDE_OF_ORIGIN);
         switch (variant) {
             case REGIONAL: {
                 roles.put(ParameterRole.FALSE_EASTING,  RegionalMercator.EASTING_AT_FALSE_ORIGIN);
@@ -252,8 +254,9 @@ public class Mercator extends ConformalProjection {
          * "Latitude of origin" cannot have a non-zero value, if it still have non-zero value we will process as
          * for "Latitude of false origin".
          */
-        final double φ0 = toRadians(initializer.getAndStore((variant == Variant.REGIONAL)
-                ? RegionalMercator.LATITUDE_OF_FALSE_ORIGIN : Mercator1SP.LATITUDE_OF_ORIGIN));
+        final double φ0 = toRadians(initializer.getAndStore(
+                (variant == Variant.REGIONAL) ? RegionalMercator.LATITUDE_OF_FALSE_ORIGIN
+                                              : Mercator1SP.LATITUDE_OF_ORIGIN));
         /*
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
          * are mutually exclusive. The former is for projections of category "2SP" (namely variant B and C) while

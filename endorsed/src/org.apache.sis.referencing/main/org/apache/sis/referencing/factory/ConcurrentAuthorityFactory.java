@@ -2010,12 +2010,15 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * Used in lambda expression and defined as a separated method because of generic type.
          * The {@code object} argument is present only for having the required method signature.
          *
+         * <p>The array length is {@value #DOMAIN_COUNT} × 2 for whether axes are ignored or not,
+         * and ×2 again for whether a singleton is searched instead of the collection.</p>
+         *
          * @param  object  the user-specified object which was searched.
          * @return a new array to use as a cache for the specified object.
          */
         @SuppressWarnings({"unchecked", "rawtypes"})            // Generic array creation.
         private static Set<IdentifiedObject>[] createCacheEntry(IdentifiedObject object) {
-            return new Set[DOMAIN_COUNT * 3];
+            return new Set[DOMAIN_COUNT * 4];
         }
 
         /**

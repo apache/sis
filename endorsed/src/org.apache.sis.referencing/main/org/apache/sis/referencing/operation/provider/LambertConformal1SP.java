@@ -111,6 +111,7 @@ public final class LambertConformal1SP extends AbstractLambert {
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)
                 .addName(                    "Lambert Conic Conformal (1SP)")
+                .addName(                    "Lambert Conic Conformal (1SP variant A)")
                 .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
                 .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")
                 .addName(Citations.PROJ4,    "lcc")

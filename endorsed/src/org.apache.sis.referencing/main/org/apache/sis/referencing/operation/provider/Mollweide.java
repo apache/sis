@@ -53,7 +53,7 @@ public final class Mollweide extends MapProjection {
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
-     *   <tr><td> EPSG:    </td><td> Longitude of projection centre </td></tr>
+     *   <tr><td> EPSG:    </td><td> Longitude of natural origin </td></tr>
      * </table>
      */
     public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = Sinusoidal.CENTRAL_MERIDIAN;
