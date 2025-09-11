@@ -45,8 +45,8 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.datum.Datum;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.MismatchedDimensionException;

@@ -93,8 +93,8 @@ import org.apache.sis.util.iso.Types;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.coordinate.CoordinateMetadata;
 import org.opengis.referencing.ObjectDomain;
+import org.opengis.coordinate.CoordinateMetadata;
 
 
 /**

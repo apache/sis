@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Locale;
 import java.time.Instant;
+import java.time.Year;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.time.Year;
 import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
@@ -38,6 +38,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -47,7 +48,6 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.measure.Units;
 import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 
 // Test dependencies
