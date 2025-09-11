@@ -35,6 +35,7 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.AbstractDatum;
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -50,7 +51,6 @@ import org.opengis.geometry.MismatchedDimensionException;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 
 

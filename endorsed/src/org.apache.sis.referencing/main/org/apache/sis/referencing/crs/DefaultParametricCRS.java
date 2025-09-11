@@ -24,10 +24,10 @@ import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.referencing.datum.DefaultParametricDatum;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.cs.DefaultParametricCS;
-import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 

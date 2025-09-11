@@ -52,11 +52,11 @@ import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 
-// Specific to the main branch:
-import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
-
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeocentricCRS;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 
 /**

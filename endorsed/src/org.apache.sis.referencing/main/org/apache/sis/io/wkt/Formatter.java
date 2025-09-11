@@ -82,6 +82,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.internal.Epoch;
@@ -93,7 +94,6 @@ import org.apache.sis.xml.NilObject;
 // Specific to the main branch:
 import org.opengis.util.CodeList;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.datum.AbstractDatum;
 
 

@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Locale;
 import java.time.Instant;
+import java.time.Year;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.time.Year;
 import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
@@ -38,6 +38,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -47,7 +48,6 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.measure.Units;
 import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 
 // Test dependencies
@@ -60,14 +60,14 @@ import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.temporal.TemporalDate;
+
 // Specific to the main branch:
+import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
-import org.apache.sis.referencing.datum.DefaultVerticalDatum;
-
-// Specific to the main and geoapi-3.1 branches:
-import org.apache.sis.temporal.TemporalDate;
 
 
 /**

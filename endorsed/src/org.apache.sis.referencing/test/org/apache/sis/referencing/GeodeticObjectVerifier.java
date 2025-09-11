@@ -42,8 +42,8 @@ import static org.junit.jupiter.api.Assertions.*;
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.Datum;
-import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 
 /**

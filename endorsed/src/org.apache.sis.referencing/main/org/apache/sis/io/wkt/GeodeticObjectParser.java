@@ -94,12 +94,12 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
+import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.temporal.TemporalDate;
 
