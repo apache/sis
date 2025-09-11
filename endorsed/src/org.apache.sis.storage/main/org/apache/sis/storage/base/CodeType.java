@@ -36,50 +36,57 @@ public enum CodeType {
      * The code is a filename like {@code "/path/to/file"} or {@code "C:\path\to\file"}.
      * Could also be a directory name.
      */
-    FILE(false),
+    FILE(false, false),
 
     /**
      * The code is a URL like {@code "http:"} or {@code "file:"},
      * with the exception of HTTP in the "www.opengis.net" domain.
      * The latter case is identified by {@link #HTTP_OGC} instead of this enum.
      */
-    URL(false),
+    URL(false, true),
 
     /**
      * The code is an authority code defined in the {@code "urn:"} namespace.
      */
-    URN(true),
+    URN(true, true),
 
     /**
      * The code is an URL in the {@code "http://www.opengis.net"} namespace.
      */
-    HTTP_OGC(true),
+    HTTP_OGC(true, true),
 
     /**
      * The code is not defined in the URN namespace but is nevertheless presumed to be an authority code.
      * Example: {@code "EPSG:4326"}.
      */
-    IDENTIFIER(true),
+    IDENTIFIER(true, false),
 
     /**
      * Cannot resolve whether the code is a local file like {@code "myfile.wkt"} or an identifier without
      * authority like {@code "4326"}. Such code without cannot be decoded by {@code CRS.forCode(String)},
      * but may be understood by a more specific authority factory.
      */
-    UNKNOWN(false);
+    UNKNOWN(false, false);
 
     /**
      * Whether the code may be understood by the {@link org.apache.sis.referencing.CRS#forCode(String)}.
      * A value of {@code true} does not guaranteed the code is valid. It only said that there is some
      * chances that the code is valid.
      */
-    public final boolean isCRS;
+    public final boolean isAuthorityCode;
+
+    /**
+     * Whether the code is a <abbr>URL</abbr> or <abbr>URN</abbr>.
+     * This is not necessarily the <abbr>URI</abbr> of an authority code.
+     */
+    public final boolean isURI;
 
     /**
      * Creates a new enum value.
      */
-    private CodeType(final boolean isCRS) {
-        this.isCRS = isCRS;
+    private CodeType(final boolean isAuthorityCode, final boolean isURI) {
+        this.isAuthorityCode = isAuthorityCode;
+        this.isURI = isURI;
     }
 
     /**

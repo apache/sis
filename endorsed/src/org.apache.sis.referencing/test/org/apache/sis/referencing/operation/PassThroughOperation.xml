@@ -35,7 +35,7 @@
     -->
     <gml:CompoundCRS gml:id="test-crs-source">
       <gml:identifier codeSpace="test">source</gml:identifier>
-      <gml:name>NTF (Paris) + NGF IGN69 height</gml:name>
+      <gml:name>NTF (Paris) + NGF-IGN69 height</gml:name>
       <gml:scope>None.</gml:scope>
       <gml:componentReferenceSystem>
         <gml:GeodeticCRS gml:id="test-crs-paris">
@@ -133,7 +133,7 @@
   <gml:targetCRS>
     <gml:CompoundCRS gml:id="test-crs-target">
       <gml:identifier codeSpace="test">target</gml:identifier>
-      <gml:name>NTF + NGF IGN69 height</gml:name>
+      <gml:name>NTF + NGF-IGN69 height</gml:name>
       <gml:scope>None.</gml:scope>
       <gml:componentReferenceSystem>
         <gml:GeodeticCRS gml:id="test-crs-greenwich">

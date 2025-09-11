@@ -89,6 +89,8 @@ public final class ZonedTransverseMercator extends AbstractProvider {
         PARAMETERS = builder
                 .addIdentifier("9824")
                 .addName("Transverse Mercator Zoned Grid System")
+                .addName("UTM grid system")
+                .addName("UTM")
                 .createGroupForMapProjection(
                         TransverseMercator.LATITUDE_OF_ORIGIN,
                         INITIAL_LONGITUDE,

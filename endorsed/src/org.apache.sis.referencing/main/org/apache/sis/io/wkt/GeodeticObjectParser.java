@@ -81,6 +81,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;
@@ -313,6 +314,13 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
+     * Returns the prime meridian to use by default when none is specified.
+     */
+    private static PrimeMeridian greenwich() {
+        return CommonCRS.WGS84.primeMeridian();
+    }
+
+    /**
      * Parses the next element in the specified <i>Well Know Text</i> (WKT) tree.
      *
      * @param  element  the element to be parsed.
@@ -323,19 +331,20 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     final Object buildFromTree(final Element element) throws ParseException {
         Object object;
         if    (null == (object = parseCoordinateReferenceSystem(element, false))
-            && null == (object = parseMathTransform            (element, false))
-            && null == (object = parseAxis              (FIRST, element, null,  Units.METRE ))
-            && null == (object = parsePrimeMeridian     (FIRST, element, false, Units.DEGREE))
-            && null == (object = parseEnsemble          (FIRST, element, Datum.class, greenwich()))
+            && null == (object = parseCoordinateMetadata(FIRST, element))
+            && null == (object = parseOperation         (FIRST, element))
+            && null == (object = parseMathTransform     (       element, false))
+            && null == (object = parseEnsemble          (FIRST, element, greenwich(), Datum.class))
             && null == (object = parseDatum             (FIRST, element, greenwich(), null))
-            && null == (object = parseEllipsoid         (FIRST, element))
-            && null == (object = parseToWGS84           (FIRST, element))
             && null == (object = parseVerticalDatum     (FIRST, element, null, false))
             && null == (object = parseTimeDatum         (FIRST, element))
             && null == (object = parseParametricDatum   (FIRST, element))
             && null == (object = parseEngineeringDatum  (FIRST, element, false))
             && null == (object = parseImageDatum        (FIRST, element))
-            && null == (object = parseOperation         (FIRST, element))
+            && null == (object = parseEllipsoid         (FIRST, element))
+            && null == (object = parsePrimeMeridian     (FIRST, element, false, Units.DEGREE))
+            && null == (object = parseAxis              (FIRST, element, null,  Units.METRE ))
+            && null == (object = parseToWGS84           (FIRST, element))
             && null == (object = parseGeogTranslation   (FIRST, element)))
         {
             throw element.missingOrUnknownComponent(WKTKeywords.GeodeticCRS);
@@ -394,6 +403,25 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
+     * Parses a {@code "CoordinateMetadata"} element.
+     *
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "CoordinateMetadata"} element.
+     * @throws ParseException if the {@code "CoordinateMetadata"} element cannot be parsed.
+     */
+    private DefaultCoordinateMetadata parseCoordinateMetadata(final int mode, final Element parent) throws ParseException {
+        final Element element = parent.pullElement(mode, WKTKeywords.CoordinateMetadata);
+        if (element == null) {
+            return null;
+        }
+        final CoordinateReferenceSystem crs = parseCoordinateReferenceSystem(element, true);
+        final Temporal epoch = parseEpoch(OPTIONAL, element, WKTKeywords.Epoch);
+        element.close(ignoredElements);
+        return new DefaultCoordinateMetadata(crs, epoch);
+    }
+
+    /**
      * Returns the value associated to {@link IdentifiedObject#IDENTIFIERS_KEY} as an {@code Identifier} object.
      * This method shall accept all value types that {@link #parseMetadataAndClose(Element, String, IdentifiedObject)}
      * may store.
@@ -425,6 +453,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return a properties map with the parent name and the optional authority code.
      * @throws ParseException if an element cannot be parsed.
      *
+     * @see #parseAnchorAndClose(Element, String)
      * @see #parseParametersAndClose(Element, String, OperationMethod)
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -522,19 +551,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (parent.isRoot) {
             completeRoot(properties);
         }
-        return properties;
-    }
-
-    /**
-     * Parses the datum {@code ANCHOR[]} element and pass the values to the {@link #parseMetadataAndClose(Element,
-     * String, IdentifiedObject)} method. If an anchor has been found, its value is stored in the returned map.
-     */
-    private Map<String,Object> parseAnchorAndClose(final Element element, final String name) throws ParseException {
-        String   anchor = pullElementAsString(element, WKTKeywords.Anchor);
-        Temporal epoch  = Epoch.fromYear(pullElementAsDouble(element, WKTKeywords.AnchorEpoch, OPTIONAL), 0);
-        final Map<String,Object> properties = parseMetadataAndClose(element, name, null);
-        if (anchor != null) properties.put(AbstractDatum.ANCHOR_DEFINITION_KEY, anchor);
-        if (epoch  != null) properties.put(AbstractDatum.ANCHOR_EPOCH_KEY, epoch);
         return properties;
     }
 
@@ -1440,7 +1456,20 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "FrameEoch"} (WKT 2) element.
+     * Parses an epoch.
+     *
+     * @param  mode     {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent   the parent element.
+     * @param  keyword  {@code "Epoch"}, {@code "FrameEpoch"} or {@code "AnchorEpoch"}.
+     * @return the epoch, or {@code null} if none.
+     * @throws ParseException if the epoch cannot be parsed.
+     */
+    private Temporal parseEpoch(final int mode, final Element parent, final String keyword) throws ParseException {
+        return Epoch.fromYear(pullElementAsDouble(parent, keyword, mode), 0);
+    }
+
+    /**
+     * Parses a {@code "FrameEpoch"} (WKT 2) element.
      *
      * @param  parent  the parent element.
      * @return the frame epoch, or {@code null} if none.
@@ -1451,9 +1480,22 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (element == null) {
             return null;
         }
-        Temporal epoch = Epoch.fromYear(pullElementAsDouble(element, WKTKeywords.FrameEpoch, MANDATORY), 0);
+        Temporal epoch = parseEpoch(MANDATORY, element, WKTKeywords.FrameEpoch);
         element.close(ignoredElements);
         return epoch;
+    }
+
+    /**
+     * Parses the datum {@code ANCHOR[]} element and pass the values to the {@link #parseMetadataAndClose(Element,
+     * String, IdentifiedObject)} method. If an anchor has been found, its value is stored in the returned map.
+     */
+    private Map<String,Object> parseAnchorAndClose(final Element element, final String name) throws ParseException {
+        String   anchor = pullElementAsString(element, WKTKeywords.Anchor);
+        Temporal epoch  = parseEpoch(OPTIONAL, element, WKTKeywords.AnchorEpoch);
+        final Map<String,Object> properties = parseMetadataAndClose(element, name, null);
+        if (anchor != null) properties.put(AbstractDatum.ANCHOR_DEFINITION_KEY, anchor);
+        if (epoch  != null) properties.put(AbstractDatum.ANCHOR_EPOCH_KEY, epoch);
+        return properties;
     }
 
     /**
@@ -1461,15 +1503,15 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent     the parent element.
-     * @param  datumType  GeoAPI interface of the type of datum to create.
      * @param  meridian   the prime meridian, or {@code null} if the ensemble is not geodetic.
+     * @param  datumType  GeoAPI interface of the type of datum to create.
      * @return the {@code "Ensemble"} element as a {@code DatumEnsemble} object.
      * @throws ParseException if the {@code "Ensemble"} element cannot be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultDatumEnsemble#formatTo(Formatter)
      */
     private <D extends Datum> DefaultDatumEnsemble<D> parseEnsemble(final int mode, final Element parent,
-            final Class<D> datumType, final PrimeMeridian meridian) throws ParseException
+            final PrimeMeridian meridian, final Class<D> datumType) throws ParseException
     {
         final Element ensemble = parent.pullElement(mode, WKTKeywords.Ensemble);
         if (ensemble == null) {
@@ -1807,7 +1849,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         if (baseCRS == null) {      // The most usual case.
-            ensemble = parseEnsemble(OPTIONAL, element, EngineeringDatum.class, null);
+            ensemble = parseEnsemble(OPTIONAL, element, null, EngineeringDatum.class);
             datum = parseEngineeringDatum(ensemble == null ? MANDATORY : OPTIONAL, element, isWKT1);
         }
         final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
@@ -2017,7 +2059,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 meridian = greenwich();
             }
             final Temporal epoch = parseDynamic(element);
-            final DefaultDatumEnsemble<GeodeticDatum> ensemble = parseEnsemble(OPTIONAL, element, GeodeticDatum.class, meridian);
+            final DefaultDatumEnsemble<GeodeticDatum> ensemble = parseEnsemble(OPTIONAL, element, meridian, GeodeticDatum.class);
             final GeodeticDatum datum = parseDatum(ensemble == null ? MANDATORY : OPTIONAL, element, meridian, epoch);
             final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
             final Map<String,?> properties = parseMetadataAndClose(element, name, datumOrEnsemble);
@@ -2092,7 +2134,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         if (baseCRS == null) {      // The most usual case.
             final Temporal epoch = parseDynamic(element);
-            ensemble = parseEnsemble(OPTIONAL, element, VerticalDatum.class, null);
+            ensemble = parseEnsemble(OPTIONAL, element, null, VerticalDatum.class);
             datum = parseVerticalDatum(ensemble == null ? MANDATORY : OPTIONAL, element, epoch, isWKT1);
         }
         final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
@@ -2180,7 +2222,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         if (baseCRS == null) {      // The most usual case.
-            ensemble = parseEnsemble(OPTIONAL, element, TemporalDatum.class, null);
+            ensemble = parseEnsemble(OPTIONAL, element, null, TemporalDatum.class);
             datum = parseTimeDatum(ensemble == null ? MANDATORY : OPTIONAL, element);
         }
         final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
@@ -2244,7 +2286,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         if (baseCRS == null) {      // The most usual case.
-            ensemble = parseEnsemble(OPTIONAL, element, DefaultParametricDatum.class, null);
+            ensemble = parseEnsemble(OPTIONAL, element, null, DefaultParametricDatum.class);
             datum = parseParametricDatum(ensemble == null ? MANDATORY : OPTIONAL, element);
         }
         final IdentifiedObject datumOrEnsemble = (datum != null) ? datum : ensemble;
@@ -2471,34 +2513,64 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a {@code "CoordinateOperation"} element.
+     * Parses a {@code "CoordinateOperation"} or {@code "ConcatenatedOperation"} element.
+     * This method accepts nested concatenated operations, even if not valid according
+     * <abbr>ISO</abbr> standards. Those nested operations will be flattened.
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
-     * @return the {@code "CoordinateOperation"} element as a {@link CoordinateOperation} object.
-     * @throws ParseException if the {@code "CoordinateOperation"} element cannot be parsed.
+     * @return the {@code "CoordinateOperation"} or {@code "ConcatenatedOperation"} element.
+     * @throws ParseException if the element cannot be parsed.
      */
     private CoordinateOperation parseOperation(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.CoordinateOperation);
+        final Element element = parent.pullElement(mode, WKTKeywords.CoordinateOperation, WKTKeywords.ConcatenatedOperation);
         if (element == null) {
             return null;
         }
-        final String name = element.pullString("name");
-        final CoordinateReferenceSystem sourceCRS        = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.SourceCRS);
-        final CoordinateReferenceSystem targetCRS        = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.TargetCRS);
-        final CoordinateReferenceSystem interpolationCRS = parseCoordinateReferenceSystem(element, OPTIONAL,  WKTKeywords.InterpolationCRS);
-        final OperationMethod           method           = parseMethod(element, WKTKeywords.Method);
-        final double                    accuracy         = pullElementAsDouble(element, WKTKeywords.OperationAccuracy, OPTIONAL);
-        final Map<String,Object>        properties       = parseParametersAndClose(element, name, method);
+        final boolean concat   = element.getKeywordIndex() != 0;
+        final String  name     = element.pullString("name");
+        final String  version  = pullElementAsString(element, WKTKeywords.Version);
+        final double  accuracy = pullElementAsDouble(element, WKTKeywords.OperationAccuracy, OPTIONAL);
+        final CoordinateReferenceSystem sourceCRS = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.SourceCRS);
+        final CoordinateReferenceSystem targetCRS = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.TargetCRS);
+        final DefaultCoordinateOperationFactory df = getOperationFactory();
+        try {
+            if (concat) {
+                final var steps = new ArrayList<CoordinateOperation>();
+                Element step;
+                while ((step = element.pullElement(steps.isEmpty() ? MANDATORY : OPTIONAL, WKTKeywords.Step)) != null) {
+                    steps.add(parseOperation(MANDATORY, step));
+                    step.close(ignoredElements);
+                }
+                Map<String,Object> properties = parseMetadataAndClose(element, name, null);
+                addOperationMetadata(properties, version, accuracy);
+                return df.createConcatenatedOperation(properties, sourceCRS, targetCRS, steps.toArray(CoordinateOperation[]::new));
+            } else {
+                CoordinateReferenceSystem interpolationCRS = parseCoordinateReferenceSystem(element, OPTIONAL, WKTKeywords.InterpolationCRS);
+                OperationMethod method = parseMethod(element, WKTKeywords.Method);
+                Map<String,Object> properties = parseParametersAndClose(element, name, method);
+                addOperationMetadata(properties, version, accuracy);
+                return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
+            }
+        } catch (FactoryException e) {
+            throw element.parseFailed(e);
+        }
+    }
+
+    /**
+     * Stores in the given map some additional metadata that are specific to coordinate operations.
+     *
+     * @param properties  where to add the metadata.
+     * @param version     the operation version, or {@code null} if none.
+     * @param accuracy    the operation accuracy, or {@code null} if none.
+     */
+    private static void addOperationMetadata(final Map<String,Object> properties, final String version, final double accuracy) {
+        if (version != null) {
+            properties.put(CoordinateOperation.OPERATION_VERSION_KEY, version);
+        }
         if (Double.isFinite(accuracy)) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
                            PositionalAccuracyConstant.transformation(accuracy));
-        }
-        try {
-            final DefaultCoordinateOperationFactory df = getOperationFactory();
-            return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
-        } catch (FactoryException e) {
-            throw element.parseFailed(e);
         }
     }
 
@@ -2533,12 +2605,5 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         } else {
             return DefaultCoordinateOperationFactory.provider();
         }
-    }
-
-    /**
-     * Returns the prime meridian to use by default when none is specified.
-     */
-    private static PrimeMeridian greenwich() {
-        return CommonCRS.WGS84.primeMeridian();
     }
 }

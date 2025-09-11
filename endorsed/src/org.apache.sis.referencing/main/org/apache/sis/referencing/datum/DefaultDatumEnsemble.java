@@ -45,6 +45,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
+import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.metadata.privy.SecondaryTrait;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -412,6 +413,20 @@ check:  if (it.hasNext()) {
             }
         }
         return value;
+    }
+
+    /**
+     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
+     * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
+     * This method performs the comparison documented in the
+     * {@linkplain AbstractDatum#isHeuristicMatchForName(String) datum-class}.
+     *
+     * @param  name  the name to compare.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
+     */
+    @Override
+    public boolean isHeuristicMatchForName(final String name) {
+        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, AbstractDatum.Simplifier.INSTANCE);
     }
 
     /**

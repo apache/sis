@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 
 /**
- * The provider for <q>axis order reversal (2D)</q> (EPSG:9843).
+ * The provider for <q>Axis Order Reversal (2D)</q> (EPSG:9843).
  * This is a trivial operation that just swap the two first axes.
  * The inverse operation is this operation itself.
  *
@@ -44,7 +44,7 @@ public class AxisOrderReversal extends AbstractProvider {
      * The group of all parameters expected by this coordinate operation (in this case, none).
      */
     private static final ParameterDescriptorGroup PARAMETERS = builder()
-            .addIdentifier("9843").addName("Axis order reversal (2D)").createGroup();
+            .addIdentifier("9843").addName("Axis Order Reversal (2D)").createGroup();
 
     /**
      * The canonical instance of this operation method.

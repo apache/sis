@@ -118,7 +118,10 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         final EPSGFactory factory = dataEPSG.factory();
         final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs);
-        assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, DatumOrEnsemble.of(crs));
+
+        String expected = "World Geodetic System 1984";
+        if (crs.getDatum() == null) expected += " ensemble";
+        assertEpsgNameAndIdentifierEqual(expected, 6326, DatumOrEnsemble.of(crs));
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         assertSame(crs, factory.createCoordinateReferenceSystem("4326"), "CRS shall be cached.");
@@ -382,7 +385,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     }
 
     /**
-     * Tests the "NTF (Paris) + NGF IGN69 height" compound CRS (EPSG:7400).
+     * Tests the "NTF (Paris) + NGF-IGN69 height" compound CRS (EPSG:7400).
      * This method tests also the domain of validity.
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -391,7 +394,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     public void testCompound() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
         final CompoundCRS crs = factory.createCompoundCRS("EPSG:7400");
-        assertEpsgNameAndIdentifierEqual("NTF (Paris) + NGF IGN69 height", 7400, crs);
+        assertEpsgNameAndIdentifierEqual("NTF (Paris) + NGF-IGN69 height", 7400, crs);
 
         final List<CoordinateReferenceSystem> components = crs.getComponents();
         assertEquals(2, components.size());

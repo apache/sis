@@ -112,8 +112,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         final Object obj = parser.createFromWKT(text, position);
         assertEquals(-1, position.getErrorIndex(), "errorIndex");
         assertEquals(text.length(), position.getIndex(), "index");
-        assertInstanceOf(type, obj, "GeodeticObjectParser.parseObject");
-        return type.cast(obj);
+        return assertInstanceOf(type, obj, "GeodeticObjectParser.parseObject");
     }
 
     /**
@@ -517,7 +516,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     public void testGeographicCRSWithEnsemble() throws ParseException {
         final var crs = parse(DefaultGeographicCRS.class,
                 "GeodeticCRS[“WGS 84”,\n" +
-                "  Ensemble[“World Geodetic System 1984”,\n" +
+                "  Ensemble[“World Geodetic System 1984”,\n" +    // No "ensemble" suffix because of `verifyGeographicCRS(…)`
                 "    Member[“World Geodetic System 1984 (Transit)”],\n" +
                 "    Member[“World Geodetic System 1984 (G730)”],\n" +
                 "    Member[“World Geodetic System 1984 (G873)”],\n" +
@@ -1082,6 +1081,8 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
 
     /**
      * Tests the parsing of a derived CRS from a WKT 2 string.
+     * Note: this test uses an example from an old <abbr>EPSG</abbr>
+     * geodetic dataset which is no longer present in more recent versions.
      *
      * @throws ParseException if the parsing failed.
      */

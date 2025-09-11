@@ -81,20 +81,6 @@ public final class Assertions extends Static {
     }
 
     /**
-     * Replacements to perform in <abbr>WKT</abbr> strings for compatibility between different versions
-     * of the <abbr>EPSG</abbr> geodetic dataset. Values at even indexes are legacy names that may still
-     * be present in the tests. Values at odd indexes are the names as they may be formatted when using
-     * newer versions of the <abbr>EPSG</abbr> geodetic dataset.
-     *
-     * <p>We may remove this hack in a future <abbr>SIS</abbr> version if we abandon support of version 9
-     * of <abbr>EPSG</abbr> dataset (the current version at the time of writing is 12).</p>
-     */
-    private static final String[] REPLACEMENTS = {
-        "“World Geodetic System 1984”", "“World Geodetic System 1984 ensemble”",
-        "“NGF IGN69 height”",           "“NGF-IGN69 height”"
-    };
-
-    /**
      * Do not allow instantiation of this class.
      */
     private Assertions() {
@@ -140,10 +126,10 @@ public final class Assertions extends Static {
      */
     public static void assertEpsgIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
-        assertLegacyEquals(expected, actual.getCode(), "code");
+        assertEquals(expected, actual.getCode(), "code");
         assertEquals(Constants.EPSG,  (actual instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) actual).getCodeSpace() : null, "codeSpace");
         assertEquals(Constants.EPSG,  Citations.toCodeSpace(actual.getAuthority()), "authority");
-        assertLegacyEquals(Constants.EPSG + Constants.DEFAULT_SEPARATOR + expected, IdentifiedObjects.toString(actual), "identifier");
+        assertEquals(Constants.EPSG + Constants.DEFAULT_SEPARATOR + expected, IdentifiedObjects.toString(actual), "identifier");
     }
 
     /**
@@ -503,48 +489,6 @@ public final class Assertions extends Static {
     }
 
     /**
-     * Asserts that the given string is equal to the expected string,
-     * with a tolerance for name changes in <abbr>EPSG</abbr> database.
-     * If the expected string is a old name while the actual string is a new name,
-     * then they are considered equal.
-     *
-     * <p>We may remove this hack in a future <abbr>SIS</abbr> version if we abandon support of version 9
-     * of <abbr>EPSG</abbr> dataset (the current version at the time of writing is 12). If this method is
-     * removed, it would be replaced by an ordinary {@code assertEquals}.</p>
-     *
-     * @param expected  the expected string.
-     * @param actual    the actual string.
-     */
-    public static void assertLegacyEquals(final String expected, final String actual) {
-        assertLegacyEquals(expected, actual, null);
-    }
-
-    static void assertLegacyEquals(String expected, final String actual, final String message) {
-        if (expected != null && actual != null) {
-            for (int i=0; i < REPLACEMENTS.length;) {
-                final String oldName = REPLACEMENTS[i++];
-                final String newName = REPLACEMENTS[i++];
-                final int ol = oldName.length() - 2;    // Omit quotes.
-                final int nl = newName.length() - 2;
-                final int s  = expected.length() - ol;
-                if (expected.regionMatches(s, oldName, 1, ol) &&
-                        actual.regionMatches(actual.length() - nl, newName, 1, nl))
-                {
-                    expected = expected.substring(0, s) + newName.substring(1, nl + 1);
-                }
-            }
-            if (expected.replace("GeodeticDatum", "DatumEnsemble").equals(actual)) {
-                return;
-            }
-        }
-        if (message != null) {
-            assertEquals(expected, actual, message);
-        } else {
-            assertEquals(expected, actual);
-        }
-    }
-
-    /**
      * Asserts that the WKT of the given object according the given convention is equal to the expected one.
      * This method expected the {@code “…”} quotation marks instead of {@code "…"} for easier readability of
      * {@link String} constants in Java code.
@@ -562,13 +506,6 @@ public final class Assertions extends Static {
             synchronized (WKT_FORMAT) {
                 WKT_FORMAT.setConvention(convention);
                 wkt = WKT_FORMAT.format(object);
-            }
-            for (int i=0; i < REPLACEMENTS.length;) {
-                final String oldName = REPLACEMENTS[i++];
-                final String newName = REPLACEMENTS[i++];
-                if (expected.contains(oldName) && wkt.contains(newName)) {
-                    expected = expected.replace(oldName, newName);
-                }
             }
             assertMultilinesEquals(expected, wkt, (object instanceof IdentifiedObject) ?
                     ((IdentifiedObject) object).getName().getCode() : object.getClass().getSimpleName());

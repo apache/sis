@@ -50,6 +50,7 @@ public class GeographicOffsets extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude offset </td></tr>
+     *   <tr><td> EPSG:    </td><td> Longitude rotation </td></tr>
      * </table>
      */
     static final ParameterDescriptor<Double> TX;
@@ -83,7 +84,7 @@ public class GeographicOffsets extends AbstractProvider {
     static {
         final ParameterBuilder builder = builder();
         TY = builder.addIdentifier("8601").addName("Latitude offset") .create(0, Units.DEGREE);
-        TX = builder.addIdentifier("8602").addName("Longitude offset").create(0, Units.DEGREE);
+        TX = builder.addIdentifier("8602").addName("Longitude offset").addName("Longitude rotation").create(0, Units.DEGREE);
         TZ = builder.addIdentifier("8603").addName("Vertical Offset") .create(0, Units.METRE);
         PARAMETERS = builder.addIdentifier("9660").addName("Geographic3D offsets").createGroup(TY, TX, TZ);
     }

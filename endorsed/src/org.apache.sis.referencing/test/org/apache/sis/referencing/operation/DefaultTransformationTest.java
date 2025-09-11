@@ -95,6 +95,7 @@ public final class DefaultTransformationTest extends TestCase {
          */
         final Map<String, Object> properties = new HashMap<>(4);
         properties.put(DefaultTransformation.NAME_KEY, "Tokyo to JGD2000 (GSI)");
+        properties.put(DefaultTransformation.OPERATION_VERSION_KEY, "GSI-Jpn");
         properties.put(CoordinateOperations.PARAMETERS_KEY, pg);
         return new DefaultTransformation(properties,
                 createCRS(null,      HardCodedDatum.TOKYO),     // SourceCRS
@@ -182,7 +183,7 @@ public final class DefaultTransformationTest extends TestCase {
                 "    PARAMETER[“Z-axis translation”, 680.507, ID[“EPSG”, 8607]]]", op);
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
-                "CoordinateOperation[“Tokyo to JGD2000 (GSI)”,\n" +
+                "CoordinateOperation[“Tokyo to JGD2000 (GSI)”, Version[“GSI-Jpn”],\n" +
                 "  SourceCRS[GeodeticCRS[“Tokyo 1918”,\n" +
                 "    Datum[“Tokyo 1918”,\n" +
                 "      Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128]],\n" +

@@ -47,164 +47,118 @@ public final class WKTKeywords extends Static {
     }
 
     /**
-     * Related to {@link org.apache.sis.referencing.AbstractIdentifiedObject}
-     * (including {@link org.apache.sis.referencing.ImmutableIdentifier}).
+     * Keywords defined by <abbr>WKT</abbr> 2. Some of those keywords are inherited from <abbr>WKT</abbr> 1
+     * but have been kept in <abbr>WKT</abbr> 2 for compatibility reasons.
      */
     public static final String
-            Id        = "Id",
-            URI       = "URI",
-            Citation  = "Citation",
-            Authority = "Authority",
-            Usage     = "Usage",
-            Scope     = "Scope",
-            Area      = "Area",
-            BBox      = "BBox",
-            Remark    = "Remark";
+            Anchor                = "Anchor",
+            AnchorEpoch           = "AnchorEpoch",
+            AngleUnit             = "AngleUnit",
+            Area                  = "Area",
+            Authority             = "Authority",
+            Axis                  = "Axis",
+            AxisMaxValue          = "AxisMaxValue",
+            AxisMinValue          = "AxisMinValue",
+            BaseEngCRS            = "BaseEngCRS",
+            BaseGeodCRS           = "BaseGeodCRS",
+            BaseGeogCRS           = "BaseGeogCRS",
+            BaseParamCRS          = "BaseParamCRS",
+            BaseProjCRS           = "BaseProjCRS",
+            BaseTimeCRS           = "BaseTimeCRS",
+            BaseVertCRS           = "BaseVertCRS",
+            BBox                  = "BBox",
+            BoundCRS              = "BoundCRS",
+            Citation              = "Citation",
+            Compd_CS              = "Compd_CS",
+            CompoundCRS           = "CompoundCRS",
+            ConcatenatedOperation = "ConcatenatedOperation",
+            Conversion            = "Conversion",
+            CoordinateMetadata    = "CoordinateMetadata",
+            CoordinateOperation   = "CoordinateOperation",
+            CS                    = "CS",
+            Datum                 = "Datum",
+            DerivingConversion    = "DerivingConversion",
+            Dynamic               = "Dynamic",
+            EDatum                = "EDatum",
+            Ellipsoid             = "Ellipsoid",
+            EngCRS                = "EngCRS",
+            EngineeringCRS        = "EngineeringCRS",
+            EngineeringDatum      = "EngineeringDatum",
+            EnsembleAccuracy      = "EnsembleAccuracy",
+            Ensemble              = "Ensemble",
+            Epoch                 = "Epoch",
+            Formula               = "Formula",
+            FrameEpoch            = "FrameEpoch",
+            GeocCS                = "GeocCS",
+            GeodCRS               = "GeodCRS",
+            GeodeticCRS           = "GeodeticCRS",
+            GeodeticDatum         = "GeodeticDatum",
+            GeogCRS               = "GeogCRS",
+            GeogCS                = "GeogCS",
+            GeographicCRS         = "GeographicCRS",
+            IDatum                = "IDatum",
+            Id                    = "Id",
+            ImageCRS              = "ImageCRS",
+            ImageDatum            = "ImageDatum",
+            InterpolationCRS      = "InterpolationCRS",
+            LengthUnit            = "LengthUnit",
+            Local_CS              = "Local_CS",
+            Local_Datum           = "Local_Datum",
+            Member                = "Member",
+            Meridian              = "Meridian",
+            Method                = "Method",
+            OperationAccuracy     = "OperationAccuracy",
+            Order                 = "Order",
+            ParameterFile         = "ParameterFile",
+            ParameterGroup        = "ParameterGroup",
+            Parameter             = "Parameter",
+            ParametricCRS         = "ParametricCRS",
+            ParametricDatum       = "ParametricDatum",
+            ParametricUnit        = "ParametricUnit",
+            PDatum                = "PDatum",
+            Point                 = "Point",
+            PrimeMeridian         = "PrimeMeridian",
+            PrimeM                = "PrimeM",
+            ProjCRS               = "ProjCRS",
+            ProjCS                = "ProjCS",
+            ProjectedCRS          = "ProjectedCRS",
+            Projection            = "Projection",
+            RangeMeaning          = "RangeMeaning",
+            Remark                = "Remark",
+            ScaleUnit             = "ScaleUnit",
+            Scope                 = "Scope",
+            SourceCRS             = "SourceCRS",
+            Spheroid              = "Spheroid",
+            Step                  = "Step",
+            TargetCRS             = "TargetCRS",
+            TDatum                = "TDatum",
+            TemporalQuantity      = "TemporalQuantity",
+            TimeCRS               = "TimeCRS",
+            TimeDatum             = "TimeDatum",
+            TimeExtent            = "TimeExtent",
+            TimeOrigin            = "TimeOrigin",
+            TimeUnit              = "TimeUnit",
+            ToWGS84               = "ToWGS84",
+            TRF                   = "TRF",
+            Unit                  = "Unit",
+            URI                   = "URI",
+            Usage                 = "Usage",
+            VDatum                = "VDatum",
+            Version               = "Version",
+            VertCRS               = "VertCRS",
+            Vert_CS               = "Vert_CS",
+            Vert_Datum            = "Vert_Datum",
+            VerticalCRS           = "VerticalCRS",
+            VerticalDatum         = "VerticalDatum",
+            VerticalExtent        = "VerticalExtent",
+            VRF                   = "VRF";
 
     /**
-     * Related to unit of measurements.
+     * The following keywords are specific to <abbr>WKT</abbr> 1 or <abbr>ESRI</abbr>.
+     * Those keywords have not been kept in <abbr>WKT</abbr> 2.
      */
     public static final String
-            Unit             = "Unit",
-            LengthUnit       = "LengthUnit",
-            AngleUnit        = "AngleUnit",
-            ScaleUnit        = "ScaleUnit",
-            TimeUnit         = "TimeUnit",
-            TemporalQuantity = "TemporalQuantity",
-            ParametricUnit   = "ParametricUnit";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.cs.AbstractCS}
-     * and {@link org.apache.sis.referencing.datum.AbstractDatum}.
-     */
-    public static final String
-            CS               = "CS",
-            Axis             = "Axis",
-            AxisMinValue     = "AxisMinValue",
-            AxisMaxValue     = "AxisMaxValue",
-            RangeMeaning     = "RangeMeaning",
-            Order            = "Order",
-            Meridian         = "Meridian",
-            PrimeMeridian    = "PrimeMeridian",
-            PrimeM           = "PrimeM",
-            Ellipsoid        = "Ellipsoid",
-            Spheroid         = "Spheroid",
-            Ensemble         = "Ensemble",
-            Member           = "Member",
-            EnsembleAccuracy = "EnsembleAccuracy",
-            Dynamic          = "Dynamic",
-            ToWGS84          = "ToWGS84";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.crs.DefaultGeocentricCRS}
-     * and {@link org.apache.sis.referencing.crs.DefaultGeographicCRS}.
-     */
-    public static final String
-            Anchor        = "Anchor",
-            AnchorEpoch   = "AnchorEpoch",
-            TRF           = "TRF",
-            Datum         = "Datum",
-            GeodeticDatum = "GeodeticDatum",
-            GeodeticCRS   = "GeodeticCRS",
-            GeographicCRS = "GeographicCRS",
-            BaseGeodCRS   = "BaseGeodCRS",
-            BaseGeogCRS   = "BaseGeogCRS",
-            GeodCRS       = "GeodCRS",
-            GeogCRS       = "GeogCRS",
-            GeogCS        = "GeogCS",
-            GeocCS        = "GeocCS";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.crs.DefaultVerticalCRS}.
-     */
-    public static final String
-            VerticalExtent = "VerticalExtent",
-            VerticalDatum  = "VerticalDatum",
-            VerticalCRS    = "VerticalCRS",
-            BaseVertCRS    = "BaseVertCRS",
-            VRF            = "VRF",
-            VDatum         = "VDatum",
-            Vert_Datum     = "Vert_Datum",
-            VertCRS        = "VertCRS",
-            Vert_CS        = "Vert_CS";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.crs.DefaultTemporalCRS}.
-     */
-    public static final String
-            TimeExtent  = "TimeExtent",
-            TimeOrigin  = "TimeOrigin",
-            TimeDatum   = "TimeDatum",
-            TDatum      = "TDatum",
-            TimeCRS     = "TimeCRS",
-            BaseTimeCRS = "BaseTimeCRS";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.crs.DefaultParametricCRS}.
-     */
-    public static final String
-            ParametricDatum = "ParametricDatum",
-            PDatum          = "PDatum",
-            ParametricCRS   = "ParametricCRS",
-            BaseParamCRS    = "BaseParamCRS";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.crs.DefaultImageCRS}
-     * and {@link org.apache.sis.referencing.crs.DefaultEngineeringCRS}.
-     * Former can be seen as a special case of the latter.
-     */
-    public static final String
-            ImageDatum       = "ImageDatum",
-            ImageCRS         = "ImageCRS",
-            IDatum           = "IDatum",
-            EngineeringDatum = "EngineeringDatum",
-            EngineeringCRS   = "EngineeringCRS",
-            BaseEngCRS       = "BaseEngCRS",
-            EngCRS           = "EngCRS",
-            EDatum           = "EDatum",
-            Local_Datum      = "Local_Datum",
-            Local_CS         = "Local_CS";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.crs.DefaultCompoundCRS}.
-     */
-    public static final String
-            CompoundCRS = "CompoundCRS",
-            Compd_CS    = "Compd_CS";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.crs.DefaultProjectedCRS}.
-     */
-    public static final String
-            ProjectedCRS = "ProjectedCRS",
-            BaseProjCRS  = "BaseProjCRS",
-            ProjCRS      = "ProjCRS",
-            ProjCS       = "ProjCS";
-
-    /**
-     * Related to {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.
-     */
-    public static final String
-            BoundCRS            = "BoundCRS",
-            Method              = "Method",
-            Formula             = "Formula",
-            Projection          = "Projection",
-            Conversion          = "Conversion",
-            DerivingConversion  = "DerivingConversion",
-            CoordinateOperation = "CoordinateOperation",
-            OperationAccuracy   = "OperationAccuracy",
-            SourceCRS           = "SourceCRS",
-            TargetCRS           = "TargetCRS",
-            InterpolationCRS    = "InterpolationCRS",
-            Parameter           = "Parameter",
-            ParameterFile       = "ParameterFile",
-            ParameterGroup      = "ParameterGroup",
-            GeogTran            = "GeogTran";               // ESRI-specific.
-
-    /**
-     * Related to {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform}.
-     */
-    public static final String
+            GeogTran       = "GeogTran",               // ESRI-specific.
             Param_MT       = "Param_MT",
             Inverse_MT     = "Inverse_MT",
             Concat_MT      = "Concat_MT",
@@ -226,15 +180,6 @@ public final class WKTKeywords extends Static {
             spherical   = "spherical",
             temporal    = "temporal",
             vertical    = "vertical";
-
-    /**
-     * Coordinates and epoch.
-     */
-    public static final String
-            CoordinateMetadata = "CoordinateMetadata",
-            FrameEpoch         = "FrameEpoch",
-            Epoch              = "Epoch",
-            Point              = "Point";
 
     /**
      * Mapping between types of object and WKT keywords. Each GeoAPI interfaces is associated to one

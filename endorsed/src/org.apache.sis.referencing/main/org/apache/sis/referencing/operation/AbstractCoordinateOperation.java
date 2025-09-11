@@ -1019,25 +1019,32 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = (convention.majorVersion() == 1);
+        if (convention.supports(Convention.WKT2_2019)) {
+            String version = getOperationVersion();
+            if (version != null) {
+                formatter.append(new FormattableObject() {
+                    @Override protected String formatTo(final Formatter formatter) {
+                        formatter.append(version, null);
+                        return WKTKeywords.Version;
+                    }
+                });
+            };
+        }
         formatter.newLine();
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final CoordinateReferenceSystem sourceCRS = getSourceCRS(),
                                         targetCRS = getTargetCRS();
-        final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = (convention.majorVersion() == 1);
         /*
-         * If the WKT is a component of a ConcatenatedOperation, do not format the source CRS since it is identical
-         * to the target CRS of the previous step, or to the source CRS of the enclosing "ConcatenatedOperation" if
-         * this step is the first step.
-         *
-         * This decision is SIS-specific since the WKT 2 specification does not define concatenated operations.
+         * If the WKT is a component of a PassThroughOperation, do not format the source CRS since it is identical
+         * to a component of the Source CRS of the enclosing `PassThroughOperation`. This decision is SIS-specific
+         * because the WKT 2 specification does not define pass-through operations.
          * This choice may change in any future SIS version.
          */
-        final FormattableObject enclosing = formatter.getEnclosingElement(1);
-        final boolean isSubOperation = (enclosing instanceof PassThroughOperation);
-        final boolean isComponent    = (enclosing instanceof ConcatenatedOperation);
+        final boolean isSubOperation = (formatter.getEnclosingElement(1) instanceof PassThroughOperation);
         boolean isGeogTran = false;
-        if (!isSubOperation && !isComponent) {
+        if (!isSubOperation) {
             isGeogTran = isWKT1 && (sourceCRS instanceof GeographicCRS) && (targetCRS instanceof GeographicCRS);
             if (isGeogTran) {
                 // ESRI-specific, similar to WKT 1.
@@ -1088,27 +1095,22 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
             }
         }
         /*
-         * Add interpolation CRS if we are formatting a top-level WKT 2 single operation.
+         * If formatting a WKT 1 string, we need to declare the string as invalid (because `CoordinateOperation`
+         * did not existed at that time) except if the CRS types are compliant with the ESRI extension and that
+         * extension was enabled. Even if the ESRI extensions are not enabled, we still use the ESRI keyword if
+         * applicable and use `setInvalidWKT(…)` for warning the user.
          */
-        if (!isSubOperation && !isGeogTran && !(this instanceof ConcatenatedOperation)) {
-            append(formatter, getInterpolationCRS().orElse(null), WKTKeywords.InterpolationCRS);
-            WKTUtilities.appendElementIfPositive(WKTKeywords.OperationAccuracy, getLinearAccuracy(), formatter);
-        }
-        /*
-         * Verifies if what we wrote is allowed by the standard.
-         */
-        if (isGeogTran) {
-            if (method == null || convention != Convention.WKT1_IGNORE_AXES) {
+        if (isWKT1) {
+            if (!(isGeogTran && method != null && convention == Convention.WKT1_IGNORE_AXES)) {
                 formatter.setInvalidWKT(this, null);
             }
-            return WKTKeywords.GeogTran;
+            if (isGeogTran) {
+                return WKTKeywords.GeogTran;
+            }
         }
-        if (isWKT1) {
-            formatter.setInvalidWKT(this, null);
-        }
-        if (isComponent) {
-            formatter.setInvalidWKT(this, null);
-            return "CoordinateOperationStep";
+        if (!(isSubOperation || this instanceof ConcatenatedOperation)) {
+            append(formatter, getInterpolationCRS().orElse(null), WKTKeywords.InterpolationCRS);
+            WKTUtilities.appendElementIfPositive(WKTKeywords.OperationAccuracy, getLinearAccuracy(), formatter);
         }
         return WKTKeywords.CoordinateOperation;
     }
