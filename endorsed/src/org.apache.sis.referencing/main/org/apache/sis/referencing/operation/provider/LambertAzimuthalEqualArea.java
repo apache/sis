@@ -71,6 +71,8 @@ public class LambertAzimuthalEqualArea extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude of natural origin </td></tr>
+     *   <tr><td> EPSG:    </td><td> Central Meridian </td></tr>
+     *   <tr><td> EPSG:    </td><td> CM </td></tr>
      *   <tr><td> OGC:     </td><td> longitude_of_center </td></tr>
      *   <tr><td> ESRI:    </td><td> Central_Meridian </td></tr>
      *   <tr><td> NetCDF:  </td><td> longitude_of_projection_origin </td></tr>
@@ -88,6 +90,7 @@ public class LambertAzimuthalEqualArea extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False easting </td></tr>
+     *   <tr><td> EPSG:    </td><td> False westing </td></tr>
      *   <tr><td> OGC:     </td><td> false_easting </td></tr>
      *   <tr><td> ESRI:    </td><td> False_Easting </td></tr>
      *   <tr><td> NetCDF:  </td><td> false_easting </td></tr>
@@ -105,6 +108,7 @@ public class LambertAzimuthalEqualArea extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False northing </td></tr>
+     *   <tr><td> EPSG:    </td><td> False southing </td></tr>
      *   <tr><td> OGC:     </td><td> false_northing </td></tr>
      *   <tr><td> ESRI:    </td><td> False_Northing </td></tr>
      *   <tr><td> NetCDF:  </td><td> false_northing </td></tr>

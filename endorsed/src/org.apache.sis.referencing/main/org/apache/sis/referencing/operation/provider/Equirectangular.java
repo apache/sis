@@ -138,6 +138,8 @@ public final class Equirectangular extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude of natural origin </td></tr>
+     *   <tr><td> EPSG:    </td><td> Central Meridian </td></tr>
+     *   <tr><td> EPSG:    </td><td> CM </td></tr>
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> ESRI:    </td><td> Central_Meridian </td></tr>
      *   <tr><td> NetCDF:  </td><td> longitude_of_projection_origin </td></tr>
@@ -155,6 +157,7 @@ public final class Equirectangular extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False easting </td></tr>
+     *   <tr><td> EPSG:    </td><td> False westing </td></tr>
      *   <tr><td> OGC:     </td><td> false_easting </td></tr>
      *   <tr><td> ESRI:    </td><td> False_Easting </td></tr>
      *   <tr><td> NetCDF:  </td><td> false_easting </td></tr>
@@ -172,6 +175,7 @@ public final class Equirectangular extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False northing </td></tr>
+     *   <tr><td> EPSG:    </td><td> False southing </td></tr>
      *   <tr><td> OGC:     </td><td> false_northing </td></tr>
      *   <tr><td> ESRI:    </td><td> False_Northing </td></tr>
      *   <tr><td> NetCDF:  </td><td> false_northing </td></tr>
@@ -202,6 +206,8 @@ public final class Equirectangular extends AbstractProvider {
                 .addIdentifier("8802")
                 .addIdentifier(Citations.GEOTIFF, "3088")
                 .addName("Longitude of natural origin")
+                .addName("Central Meridian")
+                .addName("CM")
                 .addName(Citations.OGC,     Constants.CENTRAL_MERIDIAN)
                 .addName(Citations.ESRI,    "Central_Meridian")
                 .addName(Citations.NETCDF,  "longitude_of_projection_origin")
@@ -212,6 +218,7 @@ public final class Equirectangular extends AbstractProvider {
                 .addIdentifier("8806")
                 .addIdentifier(Citations.GEOTIFF, "3082")
                 .addName("False easting")
+                .addName("False westing")
                 .addName(Citations.OGC,     Constants.FALSE_EASTING)
                 .addName(Citations.ESRI,    "False_Easting")
                 .addName(Citations.NETCDF,  Constants.FALSE_EASTING)
@@ -222,6 +229,7 @@ public final class Equirectangular extends AbstractProvider {
                 .addIdentifier("8807")
                 .addIdentifier(Citations.GEOTIFF, "3083")
                 .addName("False northing")
+                .addName("False southing")
                 .addName(Citations.OGC,     Constants.FALSE_NORTHING)
                 .addName(Citations.ESRI,    "False_Northing")
                 .addName(Citations.NETCDF,  Constants.FALSE_NORTHING)

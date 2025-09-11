@@ -70,6 +70,8 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude of natural origin </td></tr>
+     *   <tr><td> EPSG:    </td><td> Central Meridian </td></tr>
+     *   <tr><td> EPSG:    </td><td> CM </td></tr>
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
@@ -85,6 +87,7 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False easting </td></tr>
+     *   <tr><td> EPSG:    </td><td> False westing </td></tr>
      *   <tr><td> OGC:     </td><td> false_easting </td></tr>
      *   <tr><td> GeoTIFF: </td><td> FalseEasting </td></tr>
      *   <tr><td> Proj4:   </td><td> x_0 </td></tr>
@@ -100,6 +103,7 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False northing </td></tr>
+     *   <tr><td> EPSG:    </td><td> False southing </td></tr>
      *   <tr><td> OGC:     </td><td> false_northing </td></tr>
      *   <tr><td> GeoTIFF: </td><td> FalseNorthing </td></tr>
      *   <tr><td> Proj4:   </td><td> y_0 </td></tr>

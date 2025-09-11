@@ -64,6 +64,8 @@ public final class ObliqueStereographic extends AbstractStereographic {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude of natural origin </td></tr>
+     *   <tr><td> EPSG:    </td><td> Central Meridian </td></tr>
+     *   <tr><td> EPSG:    </td><td> CM </td></tr>
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> ESRI:    </td><td> Central_Meridian </td></tr>
      *   <tr><td> NetCDF:  </td><td> longitude_of_projection_origin </td></tr>

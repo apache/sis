@@ -271,9 +271,9 @@ public final class ProvidersTest extends TestCase {
         final var aliasUsageCount = new HashMap<String, Integer>(256);
         for (final Class<?> c : methods()) {
             final AbstractProvider method = instance(c);
-            final Identifier identifier = IdentifiedObjects.getIdentifier(method, Citations.EPSG);
+            final String identifier = getCodeEPSG(method);
             if (identifier != null) {
-                final OperationMethod authoritative = factory.createOperationMethod(identifier.getCode());
+                final OperationMethod authoritative = factory.createOperationMethod(identifier);
                 final String[] aliases = getAliases(authoritative);
                 for (final String alias : aliases) {
                     aliasUsageCount.merge(alias, 1, Math::addExact);
@@ -296,10 +296,23 @@ public final class ProvidersTest extends TestCase {
                     GeneralParameterDescriptor parameter;
                     do {
                         if (index >= parameters.size()) {
-                            fail("Parameter \"" + name + "\" not found or not in expected order in " + classe);
+                            fail("Parameter \"" + name + "\" not found or not in expected order in class " + classe);
                         }
                         parameter = parameters.get(index++);
                     } while (!name.equals(parameter.getName().getCode()));
+                    /*
+                     * Found a match. The EPSG code must be identical.
+                     * Check also the aliases, ignoring the deprecated ones.
+                     */
+                    assertEquals(getCodeEPSG(expected), getCodeEPSG(parameter), name);
+                    final var hardCoded = new HashSet<String>(Arrays.asList(getAliases(parameter)));
+                    for (final String alias : getAliases(expected)) {
+                        assertTrue(hardCoded.remove(alias),
+                                () -> "Alias \"" + alias + "\" not found in parameter \"" + name + "\" of class " + classe);
+                    }
+                    assertTrue(hardCoded.isEmpty(),
+                            () -> "Unexpected alias \"" + hardCoded.iterator().next()
+                                    + "\" in parameter \"" + name + "\" of class " + classe);
                 }
             }
         }
@@ -313,15 +326,20 @@ public final class ProvidersTest extends TestCase {
             final var hardCoded = new HashSet<String>(Arrays.asList(getAliases(method)));
             for (final String alias : entry.getValue()) {
                 if (aliasUsageCount.get(alias) == 1) {
-                    if (!hardCoded.remove(alias)) {
-                        fail("Alias \"" + alias + "\" not found or not in expected order in " + classe);
-                    }
+                    assertTrue(hardCoded.remove(alias), () -> "Alias \"" + alias + "\" not found in class " + classe);
                 }
             }
-            if (!hardCoded.isEmpty()) {
-                fail("Unexpected alias \"" + hardCoded.iterator().next() + "\" in " + classe);
-            }
+            assertTrue(hardCoded.isEmpty(),
+                    () -> "Unexpected alias \"" + hardCoded.iterator().next() + "\" in " + classe);
         }
+    }
+
+    /**
+     * Returns the identifier code in <abbr>EPSG</abbr> namespace for the given object, or {@code null} if none.
+     */
+    private static String getCodeEPSG(final IdentifiedObject object) {
+        Identifier identifier = IdentifiedObjects.getIdentifier(object, Citations.EPSG);
+        return (identifier != null) ? identifier.getCode() : null;
     }
 
     /**

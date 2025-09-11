@@ -91,6 +91,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> X-axis translation </td></tr>
+     *   <tr><td> EPSG:    </td><td> tX </td></tr>
      *   <tr><td> OGC:     </td><td> dx </td></tr>
      * </table>
      */
@@ -105,6 +106,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Y-axis translation </td></tr>
+     *   <tr><td> EPSG:    </td><td> tY </td></tr>
      *   <tr><td> OGC:     </td><td> dy </td></tr>
      * </table>
      */
@@ -119,6 +121,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Z-axis translation </td></tr>
+     *   <tr><td> EPSG:    </td><td> tZ </td></tr>
      *   <tr><td> OGC:     </td><td> dz </td></tr>
      * </table>
      */
@@ -133,6 +136,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> X-axis rotation </td></tr>
+     *   <tr><td> EPSG:    </td><td> rX </td></tr>
      *   <tr><td> OGC:     </td><td> ex </td></tr>
      * </table>
      * <b>Notes:</b>
@@ -151,6 +155,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Y-axis rotation </td></tr>
+     *   <tr><td> EPSG:    </td><td> rY </td></tr>
      *   <tr><td> OGC:     </td><td> ey </td></tr>
      * </table>
      * <b>Notes:</b>
@@ -169,6 +174,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Z-axis rotation </td></tr>
+     *   <tr><td> EPSG:    </td><td> rZ </td></tr>
      *   <tr><td> OGC:     </td><td> ez </td></tr>
      * </table>
      * <b>Notes:</b>
@@ -188,26 +194,33 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Scale difference </td></tr>
+     *   <tr><td> EPSG:    </td><td> dS </td></tr>
      *   <tr><td> OGC:     </td><td> ppm </td></tr>
      * </table>
      */
     static final ParameterDescriptor<Double> DS;
     static {
         final ParameterBuilder builder = builder();
-        TX = createShift(builder.addIdentifier("8605").addName("X-axis translation").addName(Citations.OGC, "dx"));
-        TY = createShift(builder.addIdentifier("8606").addName("Y-axis translation").addName(Citations.OGC, "dy"));
-        TZ = createShift(builder.addIdentifier("8607").addName("Z-axis translation").addName(Citations.OGC, "dz"));
-        RX = createRotation(builder.addIdentifier("8608"), "X-axis rotation", "ex");
-        RY = createRotation(builder.addIdentifier("8609"), "Y-axis rotation", "ey");
-        RZ = createRotation(builder.addIdentifier("8610"), "Z-axis rotation", "ez");
-        DS = builder.addIdentifier("8611").addName("Scale difference").addName(Citations.OGC, "ppm").create(0, Units.PPM);
+        TX = createShift(builder.addIdentifier("8605").addName("X-axis translation").addName("tX").addName(Citations.OGC, "dx"));
+        TY = createShift(builder.addIdentifier("8606").addName("Y-axis translation").addName("tY").addName(Citations.OGC, "dy"));
+        TZ = createShift(builder.addIdentifier("8607").addName("Z-axis translation").addName("tZ").addName(Citations.OGC, "dz"));
+        RX = createRotation(builder, "8608", "X-axis rotation", "rX", "ex");
+        RY = createRotation(builder, "8609", "Y-axis rotation", "rY", "ey");
+        RZ = createRotation(builder, "8610", "Z-axis rotation", "rZ", "ez");
+        DS = builder.addIdentifier("8611").addName("Scale difference").addName("dS").addName(Citations.OGC, "ppm").create(0, Units.PPM);
     }
 
     /**
      * Convenience method for building the rotation parameters.
      */
-    private static ParameterDescriptor<Double> createRotation(final ParameterBuilder builder, final String name, final String alias) {
-        return builder.addName(name).addName(Citations.OGC, alias).createBounded(-180*60*60, 180*60*60, 0, Units.ARC_SECOND);
+    private static ParameterDescriptor<Double> createRotation(final ParameterBuilder builder, final String identifier,
+            final String name, final String alias, final String ogc)
+    {
+        return builder.addIdentifier(identifier)
+                .addName(name)
+                .addName(alias)
+                .addName(Citations.OGC, ogc)
+                .createBounded(-180*60*60, 180*60*60, 0, Units.ARC_SECOND);
     }
 
     /**

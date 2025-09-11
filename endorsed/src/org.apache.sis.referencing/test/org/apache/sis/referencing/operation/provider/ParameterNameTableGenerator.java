@@ -88,7 +88,7 @@ public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
      * For {@link #main(String[])} only.
      */
     private ParameterNameTableGenerator() {
-        directory = new ProjectDirectories(getClass()).getSourcesPackageDirectory("core/sis-referencing");
+        directory = new ProjectDirectories(getClass()).getSourcesPackageDirectory();
         toSearch  = Pattern.compile(".*\\s+static\\s+.*ParameterDescriptor<\\w+>\\s*(\\w+)\\s*[=;].*");
         buffer    = new StringBuilder();
     }
