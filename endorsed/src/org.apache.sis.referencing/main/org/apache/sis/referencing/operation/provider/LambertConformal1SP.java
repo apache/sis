@@ -72,6 +72,8 @@ public final class LambertConformal1SP extends AbstractLambert {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude of natural origin </td></tr>
+     *   <tr><td> EPSG:    </td><td> Central Meridian </td></tr>
+     *   <tr><td> EPSG:    </td><td> CM </td></tr>
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> ESRI:    </td><td> Central_Meridian </td></tr>
      *   <tr><td> NetCDF:  </td><td> longitude_of_projection_origin </td></tr>
@@ -111,6 +113,7 @@ public final class LambertConformal1SP extends AbstractLambert {
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)
                 .addName(                    "Lambert Conic Conformal (1SP)")
+                .addName(                    "Lambert Conic Conformal (1SP variant A)")
                 .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
                 .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")
                 .addName(Citations.PROJ4,    "lcc")

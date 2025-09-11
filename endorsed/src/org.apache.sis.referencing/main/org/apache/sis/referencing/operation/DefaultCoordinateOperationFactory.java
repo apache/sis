@@ -579,10 +579,36 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
 
     /**
      * Creates an ordered sequence of two or more single coordinate operations.
+     *
+     * @deprecated Replaced by {@linkplain #createConcatenatedOperation(Map, CoordinateReferenceSystem,
+     * CoordinateReferenceSystem, CoordinateOperation...) a method with explicit CRS arguments} because
+     * of potential <abbr>CRS</abbr> swapping.
+     *
+     * @param  properties  the properties to be given to the identified object.
+     * @param  operations  the sequence of operations. Shall contain at least two operations.
+     * @return the concatenated operation created from the given arguments.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    @Deprecated(since="1.5", forRemoval=true)
+    public CoordinateOperation createConcatenatedOperation(final Map<String,?> properties,
+            final CoordinateOperation... operations) throws FactoryException
+    {
+        return createConcatenatedOperation(properties, null, null, operations);
+    }
+
+    /**
+     * Creates an ordered sequence of two or more single coordinate operations.
      * The sequence of operations is constrained by the requirement that the source coordinate reference system
      * of step (<var>n</var>+1) must be the same as the target coordinate reference system of step (<var>n</var>).
      * The source coordinate reference system of the first step and the target coordinate reference system of the
      * last step are the source and target coordinate reference system associated with the concatenated operation.
+     *
+     * <p>As an exception to the above-cited constraint, a step can swap its source and target <abbr>CRS</abbr>.
+     * In such case, the effectively executed operation will be the inverse of that step. The {@code sourceCRS}
+     * and {@code targetCRS} arguments of this method are needed for detecting whether such swapping occurred
+     * in the first step or in the last step. Those optional arguments can be {@code null} if the caller did
+     * not swapped any <abbr>CRS</abbr>.</p>
      *
      * <p>The properties given in argument follow the same rules as for any other
      * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
@@ -607,12 +633,18 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
      * </table>
      *
      * @param  properties  the properties to be given to the identified object.
+     * @param  sourceCRS   the source <abbr>CRS</abbr>, or {@code null} for the source of the first step.
+     * @param  targetCRS   the target <abbr>CRS</abbr>, or {@code null} for the target of the last effective step.
      * @param  operations  the sequence of operations. Shall contain at least two operations.
      * @return the concatenated operation created from the given arguments.
      * @throws FactoryException if the object creation failed.
+     *
+     * @since 1.5
      */
-    @Override
-    public CoordinateOperation createConcatenatedOperation(final Map<String,?> properties,
+    public CoordinateOperation createConcatenatedOperation(
+            final Map<String,?> properties,
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS,
             final CoordinateOperation... operations) throws FactoryException
     {
         /*
@@ -622,10 +654,10 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
          * code, in which case we do not want to modify any other metadata in order to stay compliant
          * with EPSG definition).
          */
-        if (operations != null && operations.length == 1) {
+        if (operations.length == 1 && sourceCRS == null && targetCRS == null) {
             return operations[0];
         }
-        final var op = new DefaultConcatenatedOperation(properties, operations, getMathTransformFactory());
+        final var op = new DefaultConcatenatedOperation(properties, sourceCRS, targetCRS, operations, getMathTransformFactory());
         /*
          * Verifies again the number of single operations.  We may have a singleton if some operations
          * were omitted because their associated math transform were identity. This happen for example

@@ -61,8 +61,8 @@ public final class SchemaComplianceTest extends TestCase {
          * Locate the root of metadata class directory. In a Maven build:
          * "core/sis-metadata/target/classes/org/apache/sis/metadata/iso"
          */
-        final ProjectDirectories dir = new ProjectDirectories(ISOMetadata.class);
-        final SchemaCompliance checker = new SchemaCompliance(dir.classesRootDirectory, directory);
+        final var dir = new ProjectDirectories(ISOMetadata.class);
+        final var checker = new SchemaCompliance(dir.classesRootDirectory, directory);
         checker.loadDefaultSchemas();
         checker.verify(dir.classesPackageDirectory);
     }

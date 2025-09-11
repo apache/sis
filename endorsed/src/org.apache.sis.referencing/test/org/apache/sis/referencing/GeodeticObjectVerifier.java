@@ -41,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**
@@ -206,7 +207,7 @@ public final class GeodeticObjectVerifier {
      * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
-     *     <td>{@code "World Geodetic System 1984"}</td></tr>
+     *     <td>{@code "World Geodetic System 1984 [ensemble]"}</td></tr>
      * <tr><td>{@linkplain GeodeticDatum#getDomains() Domain of validity}</td>
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
      * <tr><td>{@linkplain GeodeticDatum#getPrimeMeridian() Prime meridian}</td>
@@ -220,7 +221,12 @@ public final class GeodeticObjectVerifier {
      *                            {@code Extent} element for the world, or {@code false} if optional.
      */
     public static void assertIsWGS84(final GeodeticDatum datum, final boolean isExtentMandatory) {
-        Assertions.assertLegacyEquals("World Geodetic System 1984", datum.getName().getCode(), "name");
+        final String name = datum.getName().getCode();
+        String expected = "World Geodetic System 1984";
+        if (datum instanceof DatumEnsemble<?>) {
+            expected += " ensemble";
+        }
+        assertEquals     (expected, name, "name");
         assertIsWorld    (datum, isExtentMandatory);
         assertIsGreenwich(datum.getPrimeMeridian());
         assertIsWGS84    (datum.getEllipsoid());

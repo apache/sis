@@ -26,7 +26,6 @@ import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.referencing.Assertions;
 
 
 /**
@@ -67,7 +66,8 @@ public final class ReferencingFunctionsTest extends TestCase {
         assertEquals("WGS 84", instance.getName("urn:ogc:def:crs:epsg::4326"));
         assertEquals("WGS 84", instance.getName("http://www.opengis.net/gml/srs/epsg.xml#4326"));
         assertEquals("WGS 84", instance.getName("EPSG:4326"));
-        Assertions.assertLegacyEquals("World Geodetic System 1984", instance.getName("urn:ogc:def:datum:epsg::6326"));
+        String name = instance.getName("urn:ogc:def:datum:epsg::6326");
+        assertTrue(name.startsWith("World Geodetic System 1984"), name);
     }
 
     /**
@@ -89,8 +89,8 @@ public final class ReferencingFunctionsTest extends TestCase {
         assertEquals("Latitude (°)",              instance.getAxis("EPSG:4326", 1));
         assertEquals("Longitude (°)",             instance.getAxis("EPSG:4326", 2));
         assertEquals("Index 3 is out of bounds.", instance.getAxis("EPSG:4326", 3));
-        Assertions.assertLegacyEquals("Expected “urn:ogc:def:datum:epsg::6326” to reference an instance of ‘CoordinateReferenceSystem’, " +
-                "but found an instance of ‘GeodeticDatum’.", instance.getAxis("urn:ogc:def:datum:epsg::6326", 1));
+        assertEquals("Expected “urn:ogc:def:datum:epsg::6322” to reference an instance of ‘CoordinateReferenceSystem’, " +
+                "but found an instance of ‘GeodeticDatum’.", instance.getAxis("urn:ogc:def:datum:epsg::6322", 1));
     }
 
     /**

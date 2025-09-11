@@ -21,6 +21,7 @@ import org.apache.sis.util.CharSequences;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import org.apache.sis.test.TestCase;
 
 
@@ -67,6 +68,15 @@ public final class CRSCommandTest extends TestCase {
     }
 
     /**
+     * Interrupts the test if the <abbr>EPSG</abbr> database does not seem present.
+     * We recognize this situation by the fact that the {@code CommonCRS} fallback
+     * defines the datum in the old way.
+     */
+    private static void assumeEPSG(final String wkt) {
+        assumeFalse(wkt.contains("Datum[\"World Geodetic System 1984\""), "Requires EPSG geodetic database.");
+    }
+
+    /**
      * Tests fetching the CRS from a simple code ({@code "EPSG:4326"}).
      *
      * @throws Exception if an error occurred while creating the command.
@@ -76,6 +86,7 @@ public final class CRSCommandTest extends TestCase {
         var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "EPSG:4326"});
         test.run();
         String wkt = test.outputBuffer.toString();
+        assumeEPSG(wkt);
         assertTrue(wkt.matches(WGS84), wkt);
     }
 
@@ -89,6 +100,7 @@ public final class CRSCommandTest extends TestCase {
         var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "urn:ogc:def:crs:epsg::4326"});
         test.run();
         String wkt = test.outputBuffer.toString();
+        assumeEPSG(wkt);
         assertTrue(wkt.matches(WGS84), wkt);
     }
 
@@ -102,6 +114,7 @@ public final class CRSCommandTest extends TestCase {
         var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "http://www.opengis.net/gml/srs/epsg.xml#4326"});
         test.run();
         String wkt = test.outputBuffer.toString();
+        assumeEPSG(wkt);
         assertTrue(wkt.matches(WGS84), wkt);
     }
 }

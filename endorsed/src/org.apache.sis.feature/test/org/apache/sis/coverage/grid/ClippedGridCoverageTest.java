@@ -72,7 +72,7 @@ public final class ClippedGridCoverageTest extends TestCase {
         RenderedImage image = data;
         if (processor != null) {
             // We are not really interrested in statistics, we just want to get a different implementation class.
-            image = processor.imageProcessor.statistics(image, null, null);
+            image = processor.imageProcessor.statistics(image, null);
         }
         return new GridCoverageBuilder().setDomain(domain).setValues(image).build();
     }

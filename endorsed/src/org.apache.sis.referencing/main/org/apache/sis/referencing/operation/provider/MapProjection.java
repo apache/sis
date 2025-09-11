@@ -380,13 +380,15 @@ public abstract class MapProjection extends AbstractProvider {
             newCodes[i] = IdentifiedObjects.getIdentifier(replacement[i], toRename[i]);
         }
         for (GenericName alias : template.getAlias()) {
-            final Citation authority = ((Identifier) alias).getAuthority();
-            for (int i=0; i<toRename.length; i++) {
-                if (authority == toRename[i]) {
-                    if (newNames[i] == null) continue;
-                    alias = newNames[i];
-                    newNames[i] = null;
-                    break;
+            if (alias instanceof Identifier) {
+                final Citation authority = ((Identifier) alias).getAuthority();
+                for (int i=0; i<toRename.length; i++) {
+                    if (authority == toRename[i]) {
+                        if (newNames[i] == null) continue;
+                        alias = newNames[i];
+                        newNames[i] = null;
+                        break;
+                    }
                 }
             }
             builder.addName(alias);

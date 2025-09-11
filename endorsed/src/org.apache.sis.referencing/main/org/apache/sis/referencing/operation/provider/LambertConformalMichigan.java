@@ -48,6 +48,7 @@ public final class LambertConformalMichigan extends AbstractLambert {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Ellipsoid scaling factor </td></tr>
+     *   <tr><td> EPSG:    </td><td> K </td></tr>
      * </table>
      * <b>Notes:</b>
      * <ul>
@@ -63,8 +64,9 @@ public final class LambertConformalMichigan extends AbstractLambert {
     static {
         final ParameterBuilder builder = builder();
         SCALE_FACTOR = builder
-                .addIdentifier("1051")
+                .addIdentifier("1038")
                 .addName("Ellipsoid scaling factor")
+                .addName("K")
                 .createStrictlyPositive(Double.NaN, Units.UNITY);
 
         PARAMETERS = builder

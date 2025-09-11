@@ -16,18 +16,31 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.VerticalCS;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.abort;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -152,9 +165,9 @@ public final class ProvidersTest extends TestCase {
      */
     @Test
     public void ensureParameterUniqueness() throws ReflectiveOperationException {
-        final Map<GeneralParameterDescriptor, String> groupNames = new IdentityHashMap<>();
-        final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> parameters = new HashMap<>();
-        final Map<Object, Object> namesAndIdentifiers = new HashMap<>();
+        final var groupNames = new IdentityHashMap<GeneralParameterDescriptor, String>();
+        final var parameters = new HashMap<GeneralParameterDescriptor, GeneralParameterDescriptor>();
+        final var namesAndIdentifiers = new HashMap<Object, Object>();
         for (final Class<?> c : methods()) {
             final AbstractProvider method = instance(c);
             final ParameterDescriptorGroup group = method.getParameters();
@@ -236,5 +249,107 @@ public final class ProvidersTest extends TestCase {
         assertNotEquals(0, SatelliteTracking.SATELLITE_ORBIT_INCLINATION.getDescription().orElseThrow().length());
         assertNotEquals(0, SatelliteTracking.SATELLITE_ORBITAL_PERIOD   .getDescription().orElseThrow().length());
         assertNotEquals(0, SatelliteTracking.ASCENDING_NODE_PERIOD      .getDescription().orElseThrow().length());
+    }
+
+    /**
+     * Compares the method and parameter names against the declarations in the <abbr>EPSG</abbr> database.
+     *
+     * @throws ReflectiveOperationException if the instantiation of a service provider failed.
+     * @throws FactoryException if an error occurred while using the <abbr>EPSG</abbr> database.
+     */
+    @Test
+    public void compareWithEPSG() throws ReflectiveOperationException, FactoryException {
+        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
+        final EPSGFactory factory;
+        try {
+            factory = (EPSGFactory) CRS.getAuthorityFactory(Constants.EPSG);
+        } catch (ClassCastException e) {
+            abort("This test requires the EPSG geodetic dataset.");
+            throw e;
+        }
+        final var methodAliases   = new HashMap<AbstractProvider, String[]>(256);
+        final var aliasUsageCount = new HashMap<String, Integer>(256);
+        for (final Class<?> c : methods()) {
+            final AbstractProvider method = instance(c);
+            final String identifier = getCodeEPSG(method);
+            if (identifier != null) {
+                final OperationMethod authoritative = factory.createOperationMethod(identifier);
+                final String[] aliases = getAliases(authoritative);
+                for (final String alias : aliases) {
+                    aliasUsageCount.merge(alias, 1, Math::addExact);
+                }
+                /*
+                 * Verify that the name of the operation method is identical to the name used in the EPSG database.
+                 * Aliases will be checked later, after we know which aliases are used multiple times.
+                 */
+                final String classe = c.getName();
+                assertNull(methodAliases.put(method, aliases), classe);
+                assertEquals(authoritative.getName().getCode(), method.getName().getCode(), classe);
+                /*
+                 * Verify that all parameters declared in the EPSG database are present with an identical name.
+                 * The Apache SIS's method provider may contain additional parameters. They will be ignored.
+                 */
+                int index = 0;
+                final List<GeneralParameterDescriptor> parameters = method.getParameters().descriptors();
+                for (GeneralParameterDescriptor expected : authoritative.getParameters().descriptors()) {
+                    final String name = expected.getName().getCode();
+                    GeneralParameterDescriptor parameter;
+                    do {
+                        if (index >= parameters.size()) {
+                            fail("Parameter \"" + name + "\" not found or not in expected order in class " + classe);
+                        }
+                        parameter = parameters.get(index++);
+                    } while (!name.equals(parameter.getName().getCode()));
+                    /*
+                     * Found a match. The EPSG code must be identical.
+                     * Check also the aliases, ignoring the deprecated ones.
+                     */
+                    assertEquals(getCodeEPSG(expected), getCodeEPSG(parameter), name);
+                    final var hardCoded = new HashSet<String>(Arrays.asList(getAliases(parameter)));
+                    for (final String alias : getAliases(expected)) {
+                        assertTrue(hardCoded.remove(alias),
+                                () -> "Alias \"" + alias + "\" not found in parameter \"" + name + "\" of class " + classe);
+                    }
+                    assertTrue(hardCoded.isEmpty(),
+                            () -> "Unexpected alias \"" + hardCoded.iterator().next()
+                                    + "\" in parameter \"" + name + "\" of class " + classe);
+                }
+            }
+        }
+        /*
+         * AFter we checked all operation methods, execute a second loop for checking method aliases.
+         * We need to ignore the aliases that are used by more than one method.
+         */
+        for (final Map.Entry<AbstractProvider, String[]> entry : methodAliases.entrySet()) {
+            final AbstractProvider method = entry.getKey();
+            final String classe = method.getClass().getName();
+            final var hardCoded = new HashSet<String>(Arrays.asList(getAliases(method)));
+            for (final String alias : entry.getValue()) {
+                if (aliasUsageCount.get(alias) == 1) {
+                    assertTrue(hardCoded.remove(alias), () -> "Alias \"" + alias + "\" not found in class " + classe);
+                }
+            }
+            assertTrue(hardCoded.isEmpty(),
+                    () -> "Unexpected alias \"" + hardCoded.iterator().next() + "\" in " + classe);
+        }
+    }
+
+    /**
+     * Returns the identifier code in <abbr>EPSG</abbr> namespace for the given object, or {@code null} if none.
+     */
+    private static String getCodeEPSG(final IdentifiedObject object) {
+        Identifier identifier = IdentifiedObjects.getIdentifier(object, Citations.EPSG);
+        return (identifier != null) ? identifier.getCode() : null;
+    }
+
+    /**
+     * Returns the collection of <abbr>EPSG</abbr> aliases or abbreviations for the given object.
+     */
+    private static String[] getAliases(final IdentifiedObject object) {
+        return object.getAlias()
+                .stream()
+                .filter((alias) -> alias.scope().name().toString().startsWith(Constants.EPSG))
+                .map(GenericName::toString)
+                .toArray(String[]::new);
     }
 }

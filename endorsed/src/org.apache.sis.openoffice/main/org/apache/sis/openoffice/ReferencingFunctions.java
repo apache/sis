@@ -28,6 +28,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
@@ -121,8 +122,9 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                         type = CodeType.guess(codeOrPath);
                     }
                     if (type.equals(CodeType.URN)) {
-                        object = CRS.getAuthorityFactory(null).createObject(codeOrPath);
-                    } else if (type.isCRS) {
+                        CRSAuthorityFactory factory = CRS.getAuthorityFactory(null);
+                        object = factory.createObject(codeOrPath);
+                    } else if (type.isAuthorityCode) {
                         object = CRS.forCode(codeOrPath);
                     } else {
                         /*
@@ -166,8 +168,12 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
         try {
             final IdentifiedObject object;
             final CodeType type = CodeType.guess(codeOrPath);
-            if (type.isCRS) {
+            Class<? extends IdentifiedObject> classe = CoordinateReferenceSystem.class;
+            if (type.isAuthorityCode) {
                 object = new CacheKey<>(IdentifiedObject.class, codeOrPath, null, null).peek();
+                if (type.isURI) {
+                    classe = IdentifiedObject.class;    // The actual type will be detected from the URI.
+                }
             } else {
                 object = getIdentifiedObject(codeOrPath, type);
             }
@@ -175,7 +181,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                 return object.getName().getCode();
             }
             // In Apache SIS implementation, `getDescriptionText(…)` returns the identified object name.
-            name = CRS.getAuthorityFactory(null).getDescriptionText(CoordinateReferenceSystem.class, codeOrPath).orElse(null);
+            name = CRS.getAuthorityFactory(null).getDescriptionText(classe, codeOrPath).orElse(null);
         } catch (Exception exception) {
             return getLocalizedMessage(exception);
         }

@@ -28,25 +28,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Provides methods that depend on assumption on the project directory layout.
- * We currently use Maven conventions, but this class provide a central place
- * to revisit if we want to change convention in the future.
+ * This class provideS a central place to revisit when the layout changes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class ProjectDirectories {
     /**
      * The directory where are stored the compiled Java classes for the package of the given class.
-     * The constructor used the given class as a sample member for getting this package directory.
+     * The constructor uses the given class as a sample member for getting this package directory.
      */
     public final Path classesPackageDirectory;
 
     /**
-     * The root directory where are stored the compiled Java classes.
-     * The constructor used the given class as a sample member for getting this directory.
-     *
-     * <p>If we are running the tests from another environment than Maven (e.g. from NetBeans project),
-     * then this directory may contain all modules instead of only the module of the class given to
-     * the constructor.</p>
+     * The root directory where are stored the compiled Java classes in the module.
+     * The constructor uses the given class as a sample member for getting this directory.
+     * This is the directory of the package hierarchy. For example, if the class is in the
+     * {@code org.apache.sis.referencing} module, then the filename (tip) of this directory
+     * is that module name.
      */
     public final Path classesRootDirectory;
 
@@ -87,34 +85,13 @@ public final class ProjectDirectories {
     /**
      * Returns the root directory of source Java code.
      *
-     * @param  module  module name, e.g. {@code "core/sis-referencing"}.
-     *                 Used only if the project is not a Maven project.
      * @return root directory of source Java files.
      */
-    public Path getSourcesRootDirectory(final String module) {
-        Path dir = getMavenModule();
-        if (dir == null) {
-            /*
-             * This block is executed only if the compiled class file was not found in the location
-             * that we would have expected for a Maven project. Maybe the class is in the NetBeans
-             * build directory instead.
-             */
-            dir = classesRootDirectory;
-            do {
-                if (dir == null) {
-                    throw new AssertionError("No more parent directory.");
-                }
-                dir = dir.getParent();
-            } while (!Files.exists(dir.resolve("pom.xml")));
-            dir = dir.resolve(module.replace('/', File.separatorChar));
-        }
-        /*
-         * At this point `dir` is the root of the Maven module
-         * which contains the class given to the constructor.
-         */
-        dir = dir.resolve("src").resolve("main").resolve("java");
+    public Path getSourcesRootDirectory() {
+        Path dir = getProjectDirectory();
+        dir = dir.resolve("src").resolve(classesRootDirectory.getFileName()).resolve("main");
         if (!Files.isDirectory(dir)) {
-            throw new AssertionError("Not a directory: " + dir);
+            throw new RuntimeException("Not a directory: " + dir);
         }
         return dir;
     }
@@ -122,39 +99,23 @@ public final class ProjectDirectories {
     /**
      * Returns the directory of source code for the package of the class given at construction time.
      *
-     * @param  module  module name, e.g. {@code "core/sis-referencing"}.
-     *                 Used only if the project is not a Maven project.
      * @return package directory of source Java files.
      */
-    public Path getSourcesPackageDirectory(final String module) {
-        return getSourcesRootDirectory(module).resolve(packageName.replace('.', File.separatorChar));
+    public Path getSourcesPackageDirectory() {
+        return getSourcesRootDirectory().resolve(packageName.replace('.', File.separatorChar));
     }
 
     /**
-     * Returns whether the {@link #classesRootDirectory} is the sub-directory of a tree following Maven conventions.
-     * This method verifies that the parent directories are {@code "target/*classes"} and that the parent directory
-     * contains a {@code pom.xml} file.
-     *
-     * @return whether we are in a Maven module.
+     * Returns the path to the sub-project.
      */
-    public boolean isMavenModule() {
-        return getMavenModule() != null;
-    }
-
-    /**
-     * Returns the path to Maven module, or {@code null} if none.
-     */
-    private Path getMavenModule() {
+    private Path getProjectDirectory() {
         Path dir = classesRootDirectory;
-        if (dir.getFileName().toString().endsWith("classes")) {
-            dir = dir.getParent();
-            if (dir != null && dir.getFileName().toString().equals("target")) {
-                dir = dir.getParent();
-                if (dir != null && Files.isRegularFile(dir.resolve("pom.xml"))) {
-                    return dir;
-                }
+        while ((dir = dir.getParent()) != null) {
+            Path p = dir.resolve("endorsed");
+            if (Files.exists(p)) {
+                return p;
             }
         }
-        return null;
+        throw new RuntimeException("Directory not found.");
     }
 }

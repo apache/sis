@@ -169,7 +169,7 @@ public final class PT_FreeText extends GO_CharacterString {
              * If the <gco:CharacterString> value is repeated in one of the
              * <lan:LocalisedCharacterString> elements, keep only the localized
              * version  (because it specifies the locale, while the unlocalized
-             * string saids nothing on that matter).
+             * string said nothing on that matter).
              */
             defaultValue = null;
         }

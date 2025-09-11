@@ -178,12 +178,8 @@ public final class LambertConformal2SP extends AbstractLambert {
          * GeoTIFF: FalseOriginLong
          */
         LONGITUDE_OF_FALSE_ORIGIN = createLongitude(builder
-                .addNamesAndIdentifiers(LambertConformal1SP.LONGITUDE_OF_ORIGIN)
-                .rename(Citations.EPSG, "Longitude of false origin")
-                .rename(Citations.NETCDF, "longitude_of_central_meridian")
-                .rename(Citations.GEOTIFF, "FalseOriginLong")
-                .reidentify(Citations.EPSG, "8822")
-                .reidentify(Citations.GEOTIFF, "3084"));
+                .addNamesAndIdentifiers(RegionalMercator.LONGITUDE_OF_FALSE_ORIGIN)
+                .rename(Citations.NETCDF, "longitude_of_central_meridian"));
         /*
          * EPSG:    Latitude of 1st standard parallel
          * OGC:     standard_parallel_1

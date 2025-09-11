@@ -59,6 +59,7 @@ public final class LambertConformalWest extends AbstractLambert {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False easting </td></tr>
+     *   <tr><td> EPSG:    </td><td> False westing </td></tr>
      *   <tr><td> OGC:     </td><td> false_easting </td></tr>
      *   <tr><td> ESRI:    </td><td> False_Easting </td></tr>
      *   <tr><td> NetCDF:  </td><td> false_easting </td></tr>

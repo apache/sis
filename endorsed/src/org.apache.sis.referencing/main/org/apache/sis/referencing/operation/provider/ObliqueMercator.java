@@ -94,6 +94,7 @@ public class ObliqueMercator extends AbstractMercator {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Azimuth at projection centre </td></tr>
+     *   <tr><td> EPSG:    </td><td> Azimuth of initial line </td></tr>
      *   <tr><td> OGC:     </td><td> azimuth </td></tr>
      *   <tr><td> ESRI:    </td><td> Azimuth </td></tr>
      *   <tr><td> GeoTIFF: </td><td> AzimuthAngle </td></tr>
@@ -140,6 +141,7 @@ public class ObliqueMercator extends AbstractMercator {
      *   <tr><td> ESRI:    </td><td> Scale_Factor </td></tr>
      *   <tr><td> GeoTIFF: </td><td> ScaleAtCenter </td></tr>
      *   <tr><td> Proj4:   </td><td> k </td></tr>
+     *   <tr><td> EPSG:    </td><td> Scale factor on initial line </td></tr>
      * </table>
      */
     public static final ParameterDescriptor<Double> SCALE_FACTOR;

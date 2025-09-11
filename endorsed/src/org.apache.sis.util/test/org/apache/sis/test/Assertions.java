@@ -25,7 +25,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.stream.Stream;
 import java.util.function.Consumer;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -225,7 +224,7 @@ public final class Assertions extends Static {
      */
     public static <E> void assertParallelStreamEquals(final Iterator<E> expected, final Stream<E> actual) {
         final Integer ONE = 1;          // For doing autoboxing only once.
-        final ConcurrentMap<E,Integer> count = new ConcurrentHashMap<>();
+        final var count = new ConcurrentHashMap<E,Integer>();
         while (expected.hasNext()) {
             count.merge(expected.next(), ONE, (old, one) -> old + 1);
         }
@@ -266,7 +265,7 @@ public final class Assertions extends Static {
      */
     public static void assertSetEquals(final Collection<?> expected, final Collection<?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final Set<Object> r = new LinkedHashSet<>(expected);
+            final var r = new LinkedHashSet<Object>(expected);
             assertTrue(r.removeAll(actual),   "The two sets are disjoint.");
             assertTrue(r.isEmpty(),           "The set is missing elements: " + r);
             assertTrue(r.addAll(actual),      "The set unexpectedly became empty.");
@@ -288,7 +287,7 @@ public final class Assertions extends Static {
      */
     public static void assertMapEquals(final Map<?,?> expected, final Map<?,?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final Map<Object,Object> r = new LinkedHashMap<>(expected);
+            final var r = new LinkedHashMap<Object,Object>(expected);
             for (final Map.Entry<?,?> entry : actual.entrySet()) {
                 final Object key = entry.getKey();
                 if (!r.containsKey(key)) {
@@ -337,13 +336,13 @@ public final class Assertions extends Static {
         Objects.requireNonNull(object);
         final Object deserialized;
         try {
-            final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            try (ObjectOutputStream out = new ObjectOutputStream(buffer)) {
+            final var buffer = new ByteArrayOutputStream();
+            try (var out = new ObjectOutputStream(buffer)) {
                 out.writeObject(object);
             }
             // Now reads the object we just serialized.
             final byte[] data = buffer.toByteArray();
-            try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data))) {
+            try (var in = new ObjectInputStream(new ByteArrayInputStream(data))) {
                 try {
                     deserialized = in.readObject();
                 } catch (ClassNotFoundException e) {
