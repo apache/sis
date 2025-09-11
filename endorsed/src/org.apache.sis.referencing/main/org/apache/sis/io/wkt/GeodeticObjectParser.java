@@ -90,8 +90,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.coordinate.CoordinateMetadata;
 import org.opengis.referencing.ObjectDomain;
+import org.opengis.coordinate.CoordinateMetadata;
 
 // Specific to the geoapi-4.0 branch:
 import org.apache.sis.referencing.crs.DefaultImageCRS;

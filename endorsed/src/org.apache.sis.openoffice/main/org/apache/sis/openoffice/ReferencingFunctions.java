@@ -28,6 +28,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
@@ -42,12 +43,11 @@ import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.CodeType;
 
+// Specific to the main and geoapi-4.0 branches:
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
-
-// Specific to the geoapi-4.0 branch:
-import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 
 
 /**

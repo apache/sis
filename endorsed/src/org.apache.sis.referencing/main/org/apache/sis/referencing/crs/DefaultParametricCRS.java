@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlType;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -32,6 +31,7 @@ import org.opengis.referencing.cs.ParametricCS;
 import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.datum.ParametricDatum;
 import org.opengis.referencing.datum.DatumEnsemble;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
 
 
 /**

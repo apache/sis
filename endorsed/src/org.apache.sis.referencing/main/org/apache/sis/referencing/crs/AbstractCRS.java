@@ -46,8 +46,8 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.DatumEnsemble;
+import org.opengis.metadata.Identifier;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.referencing.crs.DerivedCRS;
