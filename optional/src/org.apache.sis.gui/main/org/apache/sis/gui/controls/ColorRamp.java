@@ -251,7 +251,7 @@ public final class ColorRamp {
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof ColorRamp) {
-            final ColorRamp other = (ColorRamp) obj;
+            final var other = (ColorRamp) obj;
             if (Arrays.equals(colors, other.colors)) {
                 return (colors != null) || Objects.equals(name, other.name);
             }
