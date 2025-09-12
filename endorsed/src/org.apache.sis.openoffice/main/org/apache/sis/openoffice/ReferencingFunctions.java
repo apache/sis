@@ -55,9 +55,10 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @author  Richard Deplanque (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.5
  * @since   0.8
  */
+@SuppressWarnings("UseSpecificCatch")
 public class ReferencingFunctions extends CalcAddins implements XReferencing {
     /**
      * The name for the registration of this component.
@@ -202,7 +203,6 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      */
     @Override
     public String getScope(final String codeOrPath) {
-        final Object value;
         try {
             final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
             for (final ObjectDomain domain : object.getDomains()) {

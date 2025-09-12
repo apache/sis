@@ -170,7 +170,7 @@ public final class Axis extends NamedElement {
      */
     Axis(final Variable coordinates) {
         this.coordinates = coordinates;
-        abbreviation = AxisType.abbreviation(coordinates);
+        abbreviation = AxisType.abbreviation(coordinates, true);
         final AxisDirection dir = direction(coordinates.getUnitsString());
         direction = (dir != null) ? dir : AxisDirections.fromAbbreviation(abbreviation);
         gridDimensionIndices = null;

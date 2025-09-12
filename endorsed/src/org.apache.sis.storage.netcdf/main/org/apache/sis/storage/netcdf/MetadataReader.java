@@ -691,6 +691,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     private void addSpatialRepresentationInfo(final Axis[] axes) throws IOException, DataStoreException {
+        newGridRepresentation(GridType.UNSPECIFIED);
         for (int i=0; i<axes.length; i++) {
             final Axis axis = axes[i];
             /*

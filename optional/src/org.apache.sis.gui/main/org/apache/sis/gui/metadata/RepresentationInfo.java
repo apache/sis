@@ -77,7 +77,7 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
         if (info instanceof GridSpatialRepresentation) {
             build((GridSpatialRepresentation) info);
         }
-        addLine(Vocabulary.Keys.ReferenceSystem, IdentifiedObjects.getDisplayName(referenceSystem, owner.vocabulary.getLocale()));
+        addLine(Vocabulary.Keys.ReferenceSystem, IdentifiedObjects.getDisplayName(referenceSystem, owner.getLocale()));
     }
 
     /**
@@ -89,19 +89,24 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
      */
     private void build(final GridSpatialRepresentation info) {
         addLine(Vocabulary.Keys.NumberOfDimensions, owner.format(info.getNumberOfDimensions()));
-        final StringBuffer gridSize   = new StringBuffer(20);
-        final StringBuffer resolution = new StringBuffer(20);
+        final var gridSize   = new StringBuffer(20);
+        final var resolution = new StringBuffer(20);
+        boolean hasName = false;
         for (final Dimension dim : nonNull(info.getAxisDimensionProperties())) {
-            final String  name = owner.string(Types.getCodeTitle(dim.getDimensionName()));
+            String name = owner.string(Types.getCodeTitle(dim.getDimensionName()));
             final Integer size = dim.getDimensionSize();
             if (name != null || size != null) {
                 if (gridSize.length() != 0) {
                     gridSize.append(" × ");
                 }
                 owner.format(size, gridSize);
+                if (hasName && name == null) {
+                    name = owner.vocabulary.getString(Vocabulary.Keys.Other);
+                }
                 if (name != null) {
                     if (size != null) gridSize.append(' ');
-                    gridSize.append(name);
+                    gridSize.append(name.toLowerCase(owner.getLocale()));
+                    hasName = true;
                 }
             }
             final Double r = dim.getResolution();
