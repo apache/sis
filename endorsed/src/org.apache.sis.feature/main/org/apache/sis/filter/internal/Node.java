@@ -28,6 +28,7 @@ import java.io.Serializable;
 import org.opengis.util.CodeList;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.internal.Resources;
@@ -35,6 +36,9 @@ import org.apache.sis.feature.privy.FeatureExpression;
 import org.apache.sis.filter.privy.WarningEvent;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.DefaultTreeTable;
@@ -328,6 +332,10 @@ public abstract class Node implements Serializable {
                 } else {
                     value = Vocabulary.format(Vocabulary.Keys.CycleOmitted);
                 }
+            } else if (child instanceof IdentifiedObject) {
+                final var object = (IdentifiedObject) child;
+                value = Classes.getShortName(ReferencingUtilities.getInterface(object))
+                        + "[“" + IdentifiedObjects.getDisplayName(object, null) + "”]";
             } else {
                 value = String.valueOf(child);
             }
