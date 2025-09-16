@@ -23,7 +23,6 @@ import static org.apache.sis.geometries.math.Vectors.*;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.Numerics;
 
 
@@ -32,7 +31,7 @@ import org.apache.sis.util.privy.Numerics;
  *
  * Math utilities.
  */
-public final class Maths extends Static {
+public final class Maths {
 
     /**
      * Calculate normal of triangle made of given 3 points.

@@ -18,7 +18,6 @@ package org.apache.sis.referencing.privy;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -39,7 +38,7 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-public final class WKTKeywords extends Static {
+public final class WKTKeywords {
     /**
      * Do not allow instantiation of this class.
      */

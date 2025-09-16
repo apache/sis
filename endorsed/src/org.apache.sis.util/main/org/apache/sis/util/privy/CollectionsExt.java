@@ -20,7 +20,6 @@ import java.util.*;
 import java.lang.reflect.Array;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.InvalidParameterCardinalityException;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.CheckedContainer;
@@ -53,7 +52,7 @@ import org.apache.sis.pending.jdk.JDK19;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class CollectionsExt extends Static {
+public final class CollectionsExt {
     /**
      * Do not allow instantiation of this class.
      */

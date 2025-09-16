@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.gpx;
 
-import org.apache.sis.util.Static;
-
 
 /**
  * GPX attribute names in XML files.
@@ -27,7 +25,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Johann Sorel (Geomatys)
  */
-final class Attributes extends Static {
+final class Attributes {
     /** A main GPX attribute.           */ static final String VERSION   = "version";
     /** A main GPX attribute.           */ static final String CREATOR   = "creator";
     /** A copyright attribute (v1.1+).  */ static final String AUTHOR    = "author";

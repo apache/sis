@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.gpx;
 
-import org.apache.sis.util.Static;
-
 
 /**
  * GPX tag names in XML files and their namespaces. Also used for feature property names.
@@ -26,7 +24,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Johann Sorel (Geomatys)
  */
-final class Tags extends Static {
+final class Tags {
     /**
      * GPX scope name used for feature type names.
      */

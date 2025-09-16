@@ -23,7 +23,6 @@ import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.URLs;
 
@@ -37,7 +36,7 @@ import org.apache.sis.util.privy.URLs;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class HardCodedCitations extends Static {
+public final class HardCodedCitations {
     /**
      * The ISO 19111 standard.
      */

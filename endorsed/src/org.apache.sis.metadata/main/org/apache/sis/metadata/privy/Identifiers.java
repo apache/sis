@@ -23,7 +23,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
@@ -39,7 +38,7 @@ import org.apache.sis.xml.NilReason;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Identifiers extends Static {
+public final class Identifiers {
     /**
      * Do not allow instantiation of this class.
      */

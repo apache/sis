@@ -25,7 +25,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
-import org.apache.sis.util.Static;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.privy.LegacyNamespaces;
 
@@ -45,7 +44,7 @@ import org.opengis.metadata.content.FeatureTypeInfo;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Assertions extends Static {
+public final class Assertions {
     /**
      * Do not allow instantiation of this class.
      */

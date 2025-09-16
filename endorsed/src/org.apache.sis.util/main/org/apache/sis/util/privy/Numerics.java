@@ -25,7 +25,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.abs;
 import static java.lang.Math.ulp;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
@@ -42,7 +41,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Numerics extends Static {
+public final class Numerics {
     /**
      * Maximum number of rows or columns in Apache SIS matrices. We define a maximum because SIS is expected to work
      * mostly with small matrices, because their sizes are related to the number of dimensions in coordinate systems.

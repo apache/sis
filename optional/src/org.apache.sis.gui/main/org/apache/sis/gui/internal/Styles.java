@@ -29,7 +29,6 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
@@ -43,7 +42,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Styles extends Static {
+public final class Styles {
     /**
      * Approximate size of vertical scroll bar.
      */

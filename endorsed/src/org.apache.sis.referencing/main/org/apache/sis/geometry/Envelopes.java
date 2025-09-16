@@ -292,7 +292,7 @@ public final class Envelopes extends Static {
      * Invoked when a recoverable exception occurred.
      * Those exceptions must be minor enough that they can be silently ignored in most cases.
      */
-    static void recoverableException(final Class<? extends Static> caller, final TransformException exception) {
+    static void recoverableException(final Class<?> caller, final TransformException exception) {
         Logging.recoverableException(LOGGER, caller, "transform", exception);
     }
 

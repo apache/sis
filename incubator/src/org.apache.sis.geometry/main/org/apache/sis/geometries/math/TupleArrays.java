@@ -31,14 +31,13 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Static;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class TupleArrays extends Static {
+public final class TupleArrays {
 
     public static TupleArray of(List<? extends Tuple> vectors, int dimension, DataType dataType) {
         return of(vectors, SampleSystem.ofSize(dimension), dataType);

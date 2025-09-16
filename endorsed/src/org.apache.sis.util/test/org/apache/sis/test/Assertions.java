@@ -35,7 +35,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Static;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-public final class Assertions extends Static {
+public final class Assertions {
     /**
      * Do not allow instantiation of this class.
      */

@@ -39,7 +39,6 @@ import javax.measure.quantity.Length;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Workaround;
 
@@ -49,7 +48,7 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class GUIUtilities extends Static {
+public final class GUIUtilities {
     /**
      * Do not allow instantiation of this class.
      */

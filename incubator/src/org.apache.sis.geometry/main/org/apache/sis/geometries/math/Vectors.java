@@ -26,7 +26,6 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -35,7 +34,7 @@ import org.apache.sis.util.Static;
  * @author Johann Sorel
  * @author Bertrand COTE
  */
-public final class Vectors extends Static {
+public final class Vectors {
 
     public static Vector<?> create(CoordinateReferenceSystem crs, DataType dataType) {
         return create(SampleSystem.of(crs), dataType);

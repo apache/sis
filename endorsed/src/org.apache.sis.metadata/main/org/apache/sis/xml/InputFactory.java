@@ -28,7 +28,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -38,7 +37,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class InputFactory extends Static {
+final class InputFactory {
     /**
      * The SIS-wide factory. This factory can be specified by the user, for example using the
      * {@code javax.xml.stream.XMLInputFactory} system property.

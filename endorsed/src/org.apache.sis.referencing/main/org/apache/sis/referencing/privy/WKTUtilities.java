@@ -43,7 +43,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.privy.Constants;
@@ -66,7 +65,7 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class WKTUtilities extends Static {
+public final class WKTUtilities {
     /**
      * The logger for Well Known Text operations.
      */

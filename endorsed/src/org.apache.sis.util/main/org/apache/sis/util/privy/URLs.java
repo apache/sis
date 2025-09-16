@@ -16,8 +16,6 @@
  */
 package org.apache.sis.util.privy;
 
-import org.apache.sis.util.Static;
-
 
 /**
  * Hard-coded URLs other than XML namespaces. Those URLs are mostly for documentation.
@@ -30,7 +28,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class URLs extends Static {
+public final class URLs {
     /**
      * EPSG home page.
      */

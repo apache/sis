@@ -27,7 +27,6 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.DefinitionURI;
@@ -44,7 +43,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @see <a href="https://www.ogc.org/ogcna">https://www.ogc.org/ogcna</a>
  * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  */
-public final class NameMeaning extends Static {
+public final class NameMeaning {
     /**
      * Subtypes of {@link IdentifiedObject} for which an object type is defined.
      * For each interface at index <var>i</var>, the type is {@code TYPES[i]}.

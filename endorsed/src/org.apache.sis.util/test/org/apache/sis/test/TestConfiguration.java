@@ -16,15 +16,13 @@
  */
 package org.apache.sis.test;
 
-import org.apache.sis.util.Static;
-
 
 /**
  * Information about the configuration of tests
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class TestConfiguration extends Static {
+public final class TestConfiguration {
     /**
      * Environment variable to use as a fallback if a system property is not set.
      * This is a comma-separated list of the following keywords, without spaces:
