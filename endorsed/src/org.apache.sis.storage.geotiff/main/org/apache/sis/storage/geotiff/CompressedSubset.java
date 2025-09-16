@@ -36,15 +36,6 @@ import org.apache.sis.image.privy.RasterFactory;
  */
 final class CompressedSubset extends DataSubset {
     /**
-     * Number of sample values to skip for moving to the next row of a tile in the <abbr>TIFF</abbr> file.
-     * This is not necessarily the same scanline stride as the one for the tiles created by this class.
-     *
-     * @see #sourcePixelStride
-     * @see java.awt.image.ComponentSampleModel#getScanlineStride()
-     */
-    private final long sourceScanlineStride;
-
-    /**
      * Number of sample values to skip before to read the first value of the first pixel in a row.
      * The first pixel is at column index 0; subsampling offset is not included in this calculation.
      */
@@ -110,9 +101,8 @@ final class CompressedSubset extends DataSubset {
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(source, subset);
-        sourceScanlineStride = source.getScanlineStride(sourcePixelStride);
-        long afterLastBand   = sourceScanlineStride - sourcePixelStride;
-        final int between    = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(X_DIMENSION) - 1));
+        long afterLastBand = sourceScanlineStride - sourcePixelStride;
+        final int between  = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(X_DIMENSION) - 1));
         if (includedBands != null && sourcePixelStride > 1) {
             final int[] skips = new int[includedBands.length];
             final int m = skips.length - 1;
