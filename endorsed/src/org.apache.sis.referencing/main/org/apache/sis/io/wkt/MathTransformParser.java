@@ -216,15 +216,17 @@ class MathTransformParser extends AbstractParser {
      * {@code UNIT} elements are rare, so risk of conflicts should be low.
      *
      * @param  parent  the parent {@code "UNIT"} element.
+     * @param  unitID  where to store the authority code for caller's information, or {@code null} if none.
      * @return the unit from the identifier code, or {@code null} if none.
      * @throws ParseException if the {@code "ID"} cannot be parsed.
      */
-    final Unit<?> parseUnitID(final Element parent) throws ParseException {
+    final Unit<?> parseUnitID(final Element parent, final Object[] unitID) throws ParseException {
         final Element element = parent.pullElement(OPTIONAL, ID_KEYWORDS);
         if (element != null) {
             final String codeSpace = element.pullString("codeSpace");
             final Object code      = element.pullObject("code");            // Accepts Integer as well as String.
             element.close(ignoredElements);
+            if (unitID != null) unitID[0] = code;
             if (Constants.EPSG.equalsIgnoreCase(codeSpace)) try {
                 final int n;
                 if (Numbers.isInteger(code.getClass())) {
@@ -257,7 +259,7 @@ class MathTransformParser extends AbstractParser {
         }
         final int     index  = element.getKeywordIndex() - 1;
         final String  name   = element.pullString("name");
-        final Unit<?> unit   = parseUnitID(element);
+        final Unit<?> unit   = parseUnitID(element, null);
         final Unit<?> base   = (index >= 0 && index < BASE_UNITS.length) ? BASE_UNITS[index] : null;
         /*
          * The conversion factor form base unit is mandatory, except for temporal units
