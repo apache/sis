@@ -38,7 +38,7 @@ import org.apache.sis.gui.internal.RecentChoices;
 /**
  * Formatter for cell values with a number of fraction digits determined from the sample value resolution.
  * The property value is the localized format pattern as produced by {@link DecimalFormat#toLocalizedPattern()}.
- * This property is usually available but not always; see {@link #hasPattern()}.
+ * This property is usually available but not always, see {@link #hasPattern()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -51,9 +51,9 @@ final class CellFormat extends SimpleStringProperty {
     /**
      * The "classic" number format pattern (as opposed to scientific notation). This is non-null only after
      * {@link #cellFormat} switched to scientific notation and is used for switching back to classic notation.
-     * This is a workaround for the absence of `DecimalFormat.useScientificNotation(boolean)` method.
+     * This is a workaround for the absence of {@code DecimalFormat.useScientificNotation(boolean)} method.
      */
-    @Workaround(library="JDK", version="13")
+    @Workaround(library="JDK", version="24")
     private String classicFormatPattern;
 
     /**
@@ -94,6 +94,11 @@ final class CellFormat extends SimpleStringProperty {
      * with fraction digits.
      */
     boolean dataTypeIsInteger;
+
+    /**
+     * Whether the pattern has been made shorter by calls to {@link #shorterPattern()}.
+     */
+    private boolean shortenedPattern;
 
     /**
      * Temporarily set to {@code true} when the user selects or enters a new pattern in a GUI control, then
@@ -142,10 +147,46 @@ final class CellFormat extends SimpleStringProperty {
      */
     @Override
     public void setValue(final String pattern) {
+        shortenedPattern = false;
         if (cellFormat instanceof DecimalFormat) {
             ((DecimalFormat) cellFormat).applyLocalizedPattern(pattern);
             updatePropertyValue();
-            ((GridView) getBean()).contentChanged(false);
+            ((GridView) getBean()).updateCellValues();
+        }
+    }
+
+    /**
+     * Tries to reduce the size of the pattern used for formatting the numbers.
+     * This method is invoked when the numbers are too large for the cell width.
+     *
+     * @return whether the pattern has been made smaller.
+     */
+    final boolean shorterPattern() {
+        int n = cellFormat.getMaximumFractionDigits() - 1;
+        if (n >= 0) {
+            cellFormat.setMaximumFractionDigits(n);
+        } else if (cellFormat.isGroupingUsed()) {
+            cellFormat.setGroupingUsed(false);
+        } else {
+            return false;
+        }
+        shortenedPattern = true;
+        formatCell(lastValue);
+        return true;
+    }
+
+    /**
+     * Restores the pattern to the value specified in the pattern property.
+     * This method cancels the effect of {@link #shorterPattern()}.
+     * This method should be invoked when the cells have been made wider,
+     * and this change may allow the original pattern to fit in the new size.
+     */
+    final void restorePattern() {
+        if (shortenedPattern) {
+            shortenedPattern = false;
+            if (cellFormat instanceof DecimalFormat) {
+                ((DecimalFormat) cellFormat).applyLocalizedPattern(getValue());
+            }
         }
     }
 
@@ -199,7 +240,7 @@ final class CellFormat extends SimpleStringProperty {
          */
         final int min = cellFormat.getMinimumFractionDigits();
         final int max = cellFormat.getMaximumFractionDigits();
-        final String[] patterns = new String[max + 2];
+        final var patterns = new String[max + 2];
         patterns[max + 1] = getValue();
         cellFormat.setMinimumFractionDigits(max);
         for (int n=max; n >= 0; n--) {
@@ -211,7 +252,7 @@ final class CellFormat extends SimpleStringProperty {
         /*
          * Create the combo-box with above patterns and register listeners in both directions.
          */
-        final ComboBox<String> choices = new ComboBox<>();
+        final var choices = new ComboBox<String>();
         choices.setEditable(true);
         choices.getItems().setAll(patterns);
         choices.getSelectionModel().selectFirst();
@@ -222,7 +263,7 @@ final class CellFormat extends SimpleStringProperty {
 
     /**
      * Invoked when the {@link #cellFormat} configuration needs to be updated.
-     * Callers should invoke {@link GridView#contentChanged(boolean)} after this method.
+     * Callers should invoke {@link GridView#updateCellValues()} after this method.
      *
      * @param  image  the source image (shall be non-null).
      * @param  band   index of the band to show in this grid view.
@@ -256,7 +297,7 @@ final class CellFormat extends SimpleStringProperty {
 
     /**
      * Returns the number of fraction digits to use for formatting sample values in the given band of the given image.
-     * This method use the {@value PlanarImage#SAMPLE_RESOLUTIONS_KEY} property value.
+     * This method uses the {@value PlanarImage#SAMPLE_RESOLUTIONS_KEY} property value.
      *
      * @param  image  the image from which to get the number of fraction digits.
      * @param  band   the band for which to get the number of fraction digits.
@@ -276,9 +317,11 @@ final class CellFormat extends SimpleStringProperty {
     }
 
     /**
-     * Get the desired sample value from the specified tile and formats its string representation.
+     * Gets the desired sample value from the specified tile and formats its string representation.
      * As a slight optimization, we reuse the previous string representation if the number is the same.
      * It may happen in particular with fill values.
+     *
+     * @throws IndexOutOfBoundsException if the given pixel coordinates are out of bounds.
      */
     final String format(final Raster tile, final int x, final int y, final int b) {
         buffer.setLength(0);
@@ -286,7 +329,7 @@ final class CellFormat extends SimpleStringProperty {
             final int  integer = tile.getSample(x, y, b);
             final double value = integer;
             if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                // The `format` method invoked here is not the same as in `double` case.
+                // The `format` method invoked here is not the same as in the `double` case.
                 lastValueAsText = cellFormat.format(integer, buffer, formatField).toString();
                 lastValue = value;
             }

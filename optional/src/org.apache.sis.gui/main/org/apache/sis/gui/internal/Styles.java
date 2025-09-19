@@ -44,9 +44,14 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  */
 public final class Styles {
     /**
-     * Approximate size of vertical scroll bar.
+     * Approximate width of the vertical scroll bar.
      */
     public static final int SCROLLBAR_WIDTH = 20;
+
+    /**
+     * Approximate height of the horizontal scroll bar.
+     */
+    public static final int SCROLLBAR_HEIGHT = 20;
 
     /**
      * "Standard" height of table rows. Can be approximate.
@@ -164,9 +169,9 @@ public final class Styles {
      * @return a pane with each (label, control) pair on a row.
      */
     public static GridPane createControlGrid(int row, final Label... controls) {
-        final GridPane gp = new GridPane();
-        final ColumnConstraints labelColumn   = new ColumnConstraints();
-        final ColumnConstraints controlColumn = new ColumnConstraints();
+        final var gp = new GridPane();
+        final var labelColumn   = new ColumnConstraints();
+        final var controlColumn = new ColumnConstraints();
         labelColumn  .setHgrow(Priority.NEVER);
         controlColumn.setHgrow(Priority.ALWAYS);
         gp.getColumnConstraints().setAll(labelColumn, controlColumn);
@@ -192,8 +197,8 @@ public final class Styles {
      * @param  gp  the grid pane in which to set row constraints.
      */
     public static void setAllRowToSameHeight(final GridPane gp) {
-        final RowConstraints[] constraints = new RowConstraints[gp.getRowCount()];
-        final RowConstraints c = new RowConstraints();
+        final var constraints = new RowConstraints[gp.getRowCount()];
+        final var c = new RowConstraints();
         c.setPercentHeight(100.0 / constraints.length);
         Arrays.fill(constraints, c);
         gp.getRowConstraints().setAll(constraints);

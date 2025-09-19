@@ -21,6 +21,8 @@ import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -38,6 +40,11 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class GridError extends VBox {
+    /**
+     * The background for error boxes.
+     */
+    private static final Background BACKGROUND = new Background(new BackgroundFill(Color.FLORALWHITE, null, null));
+
     /**
      * The tile in error.
      */
@@ -60,7 +67,7 @@ final class GridError extends VBox {
     private final Label message;
 
     /**
-     * The zero-based row and column indices of the tile.
+     * The row and column indices of the tile.
      * This is computed by {@link GridView#getTileBounds(int, int)} and should be constant.
      */
     private final Rectangle region;
@@ -75,9 +82,9 @@ final class GridError extends VBox {
         this.region    = view.getTileBounds(tile.tileX, tile.tileY);
         this.header    = Resources.format(Resources.Keys.CanNotFetchTile_2, tile.tileX, tile.tileY);
 
-        final Button   details = new Button(Vocabulary.format(Vocabulary.Keys.Details));
-        final Button   retry   = new Button(Vocabulary.format(Vocabulary.Keys.Retry));
-        final TilePane buttons = new TilePane(12, 0, details, retry);
+        final var details = new Button(Vocabulary.format(Vocabulary.Keys.Details));
+        final var retry   = new Button(Vocabulary.format(Vocabulary.Keys.Retry));
+        final var buttons = new TilePane(12, 0, details, retry);
         buttons.setPrefRows(1);
         buttons.setPrefColumns(2);
         buttons.setAlignment(Pos.CENTER);
@@ -96,6 +103,7 @@ final class GridError extends VBox {
         setPadding(new Insets(12, 18, 24, 18));
         details.setOnAction((e) -> showDetails());
         retry  .setOnAction((e) -> retry());
+        setBackground(BACKGROUND);
     }
 
     /**
@@ -120,8 +128,9 @@ final class GridError extends VBox {
      * Invoked when the user asked to retry a tile computation.
      */
     private void retry() {
-        final GridView view = (GridView) getParent();
+        final var view = (GridView) getParent();
         ((GridViewSkin) view.getSkin()).removeError(this);
         tile.clear();
+        view.requestLayout();
     }
 }
