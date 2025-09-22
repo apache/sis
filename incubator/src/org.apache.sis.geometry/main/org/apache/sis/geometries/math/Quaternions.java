@@ -16,14 +16,12 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.util.Static;
-
 
 /**
  *
  * Original code from Unlicense.science
  */
-public final class Quaternions extends Static {
+public final class Quaternions {
 
     private static final double DELTA = 0.00001;
 

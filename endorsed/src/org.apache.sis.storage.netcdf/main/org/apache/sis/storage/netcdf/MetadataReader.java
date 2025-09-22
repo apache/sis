@@ -694,6 +694,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     private void addSpatialRepresentationInfo(final Axis[] axes) throws IOException, DataStoreException {
+        newGridRepresentation(GridType.UNSPECIFIED);
         for (int i=0; i<axes.length; i++) {
             final Axis axis = axes[i];
             /*
@@ -750,7 +751,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @return {@code true} if at least one numerical value has been added.
      */
     private boolean addExtent() {
-        addExtent(stringValue(GEOGRAPHIC_IDENTIFIER));
+        addExtent(null, stringValue(GEOGRAPHIC_IDENTIFIER));
         final double[] extent = new double[4];
         /*
          * If at least one geographic coordinate is available, add a GeographicBoundingBox.

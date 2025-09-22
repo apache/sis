@@ -23,8 +23,8 @@ import org.apache.sis.gui.internal.BackgroundThreads;
 
 
 /**
- * A {@link Raster} for a {@link RenderedImage} tile,
- * potentially fetched (loaded or computed) in a background thread.
+ * A single tile potentially fetched (loaded or computed) from an image in a background thread.
+ * The source is a {@link RenderedImage} and the cached object is {@link Raster}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -33,13 +33,6 @@ final class GridTile {
      * The tile coordinates.
      */
     final int tileX, tileY;
-
-    /**
-     * Hash code value computed from tile indices only. Other fields must be ignored.
-     *
-     * @see #hashCode()
-     */
-    private final int hashCode;
 
     /**
      * The tile, or {@code null} if not yet fetched.
@@ -62,30 +55,30 @@ final class GridTile {
     /**
      * Creates a new tile for the given tile coordinates.
      */
-    GridTile(final int tileX, final int tileY, final int numXTiles) {
+    GridTile(final int tileX, final int tileY) {
         this.tileX = tileX;
         this.tileY = tileY;
-        hashCode = tileX + tileY * numXTiles;
     }
 
     /**
-     * Returns a hash code value for this tile. This hash code value must be based only on tile indices;
-     * the {@link #tile} and the {@link #error} must be ignored, because we will use {@link GridTile}
+     * Returns a hash code value for this tile. This hash code value must be based only on tile indices.
+     * The {@link #tile} and the {@link #error} must be ignored, because we will use {@link GridTile}
      * instances also as keys for locating tiles in a hash map.
      */
     @Override
     public int hashCode() {
-        return hashCode;
+        return tileX ^ Integer.reverse(tileY);
     }
 
     /**
      * Compares the indices of this tile with the given object for equality.
-     * Only indices are compared; the raster is ignored. See {@link #hashCode()} for more information.
+     * Only indices are compared, the raster is ignored.
+     * See {@link #hashCode()} for more information.
      */
     @Override
     public boolean equals(final Object other) {
         if (other instanceof GridTile) {
-            final GridTile that = (GridTile) other;
+            final var that = (GridTile) other;
             return tileX == that.tileX && tileY == that.tileY;
             // Intentionally no other comparisons.
         }
@@ -147,8 +140,11 @@ final class GridTile {
             loading = true;
             final RenderedImage image = view.getImage();
             BackgroundThreads.execute(new Task<Raster>() {
-                /** Invoked in background thread for fetching the tile. */
-                @Override protected Raster call() {
+                /**
+                 * Invoked in background thread for fetching the tile.
+                 */
+                @Override
+                protected Raster call() {
                     return image.getTile(tileX, tileY);
                 }
 
@@ -157,11 +153,12 @@ final class GridTile {
                  * the same image, it will be informed that the tile is available. Otherwise
                  * (if the image has changed) we ignore the result.
                  */
-                @Override protected void succeeded() {
+                @Override
+                protected void succeeded() {
                     clear();
                     if (view.getImage() == image) {
                         tile = getValue();
-                        view.contentChanged(false);
+                        view.updateCellValues();
                     }
                 }
 
@@ -169,7 +166,8 @@ final class GridTile {
                  * Invoked in JavaFX thread on failure. Discards everything and sets the error message
                  * if {@link GridView} is still showing the image for which we failed to load a tile.
                  */
-                @Override protected void failed() {
+                @Override
+                protected void failed() {
                     clear();
                     if (view.getImage() == image) {
                         error = new GridError(view, GridTile.this, getException());
@@ -182,7 +180,8 @@ final class GridTile {
                  * Ideally we should interrupt the {@link RenderedImage#getTile(int, int)}
                  * process, but we currently have no API for that.
                  */
-                @Override protected void cancelled() {
+                @Override
+                protected void cancelled() {
                     clear();
                 }
             });

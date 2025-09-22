@@ -39,7 +39,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -59,7 +58,7 @@ import static org.apache.sis.geometry.wrapper.Geometries.LOGGER;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-public final class JTS extends Static {
+public final class JTS {
     /**
      * Key used in {@linkplain Geometry#getUserData() user data} map for storing an instance of {@link CoordinateReferenceSystem}.
      *

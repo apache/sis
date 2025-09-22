@@ -28,7 +28,6 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stax.StAXResult;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
-import org.apache.sis.util.Static;
 import org.apache.sis.xml.privy.StreamWriterDelegate;
 
 
@@ -39,7 +38,7 @@ import org.apache.sis.xml.privy.StreamWriterDelegate;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class OutputFactory extends Static {
+final class OutputFactory {
     /**
      * The SIS-wide factory. This factory can be specified by the user, for example using the
      * {@code javax.xml.stream.XMLOutputFactory} system property.

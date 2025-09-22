@@ -27,7 +27,6 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -35,7 +34,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class SampleDimensions extends Static {
+public final class SampleDimensions {
     /**
      * A hidden argument passed to some {@link ImageProcessor} operations.
      * Used for a parameter that we do not want to expose in the public API,

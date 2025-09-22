@@ -46,7 +46,6 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.privy.URLs;
@@ -63,7 +62,7 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class CoordinateOperations extends Static {
+public final class CoordinateOperations {
     /**
      * The logger where to report warnings.
      */

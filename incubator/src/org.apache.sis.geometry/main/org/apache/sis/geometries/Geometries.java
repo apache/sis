@@ -68,7 +68,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -76,7 +75,7 @@ import org.apache.sis.util.Static;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class Geometries extends Static {
+public final class Geometries {
 
     private static final CoordinateReferenceSystem UNDEFINED_CRS_1D = createUndefined(1);
     private static final CoordinateReferenceSystem UNDEFINED_CRS_2D = createUndefined(2);

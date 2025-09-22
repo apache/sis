@@ -24,14 +24,13 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.Static;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ProcessorUtils extends Static {
+public final class ProcessorUtils {
 
     /**
      * Ensure given geometries have the same CRS.

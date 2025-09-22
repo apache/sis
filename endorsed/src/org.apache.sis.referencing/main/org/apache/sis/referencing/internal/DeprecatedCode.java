@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.internal;
 
+import java.util.Objects;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.referencing.ImmutableIdentifier;
@@ -24,12 +25,7 @@ import org.apache.sis.util.Deprecable;
 
 /**
  * An identifier which should not be used anymore.
- * This is used mostly for deprecated EPSG codes.
- *
- * <h2>Implementation note</h2>
- * This class opportunistically recycles the {@linkplain #getDescription() description} property into a
- * {@linkplain #getRemarks() remarks} property. This is a lazy way to inherit {@link #equals(Object)} and
- * {@link #hashCode()} implementations without adding code in this class for taking in account a new field.
+ * This is used mostly for deprecated <abbr>EPSG</abbr> codes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -37,12 +33,18 @@ public final class DeprecatedCode extends ImmutableIdentifier implements Depreca
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 357222258307746767L;
+    private static final long serialVersionUID = 8186104136524932846L;
 
     /**
      * The replacement for the deprecated object, or {@code null} if none.
      */
     public final String replacedBy;
+
+    /**
+     * Comments on or information about why this identifier is deprecated, or {@code null} if none.
+     */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
+    private final InternationalString remarks;
 
     /**
      * Creates a deprecated identifier.
@@ -51,15 +53,17 @@ public final class DeprecatedCode extends ImmutableIdentifier implements Depreca
      * @param codeSpace   name or identifier of the person or organization responsible for namespace.
      * @param code        identifier code or name, optionally from a controlled list or pattern defined by a code space.
      * @param version     the version of the associated code space or code as specified by the code authority, or {@code null} if none.
+     * @param description a description associated with the identifier. May be {@code null}.
      * @param replacedBy  the replacement for the deprecated object, or {@code null} if none.
      * @param remarks     comments on or information about why this identifier is deprecated, or {@code null} if none.
      */
     public DeprecatedCode(final Citation authority, final String codeSpace,
-            final String code, final String version, final String replacedBy,
-            InternationalString remarks)
+            final String code, final String version, final InternationalString description,
+            final String replacedBy, final InternationalString remarks)
     {
         super(authority, codeSpace, code, version, remarks);
         this.replacedBy = replacedBy;
+        this.remarks = remarks;
     }
 
     /**
@@ -81,17 +85,26 @@ public final class DeprecatedCode extends ImmutableIdentifier implements Depreca
      */
     @Override
     public InternationalString getRemarks() {
-        return super.getDescription();
+        return remarks;
     }
 
     /**
-     * Returns {@code null}, since we used the description for the superseded information.
-     * See <q>Implementation note</q> in class javadoc.
-     *
-     * @return {@code null}.
+     * Returns an hash code value for this identifier.
      */
     @Override
-    public InternationalString getDescription() {
-        return null;
+    public int hashCode() {
+        return super.hashCode() + 37 * Objects.hash(replacedBy, remarks);
+    }
+
+    /**
+     * Tests whether this object is equal to the given object.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (super.equals(obj)) {
+            final var other = (DeprecatedCode) obj;
+            return Objects.equals(replacedBy, other.replacedBy) && Objects.equals(remarks, other.remarks);
+        }
+        return false;
     }
 }

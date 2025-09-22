@@ -20,7 +20,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -29,7 +28,7 @@ import org.apache.sis.util.Static;
  * @author Johann Sorel
  * @author Bertrand COTE
  */
-public final class Matrices extends Static {
+public final class Matrices {
 
     public static Matrix2 toMatrix2(double[][] m) {
         return new Matrix2(

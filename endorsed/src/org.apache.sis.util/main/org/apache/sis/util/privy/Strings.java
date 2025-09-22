@@ -19,7 +19,6 @@ package org.apache.sis.util.privy;
 import java.lang.reflect.Array;
 import java.util.Formatter;
 import java.util.FormattableFlags;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
@@ -33,7 +32,7 @@ import org.apache.sis.pending.jdk.JDK15;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Strings extends Static {
+public final class Strings {
     /**
      * The character to write at the beginning of lines that are continuation of a single log record.
      * This constant is defined here only for a little bit more uniform {@code toString()} in SIS.

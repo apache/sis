@@ -32,10 +32,12 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
 import javafx.scene.control.Control;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -43,7 +45,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.LogHandler;
-import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.image.DataType;
 
@@ -54,12 +55,10 @@ import org.apache.sis.image.DataType;
  * The view shows one band at a time, but the band to show can be changed (thus providing a navigation in a third
  * dimension).
  *
- * <p>This class is designed for large images, with tiles loaded in a background thread only when first needed.
- * This is not a general purpose grid viewer; for matrices of relatively small size (e.g. less than 100 columns),
- * consider using the standard JavaFX {@link javafx.scene.control.TableView} instead.</p>
+ * <p>This class is designed for large images, with tiles loaded in a background thread only when first needed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @see CoverageExplorer
  *
@@ -67,18 +66,6 @@ import org.apache.sis.image.DataType;
  */
 @DefaultProperty("image")
 public class GridView extends Control {
-    /**
-     * Minimum cell width and height. Must be greater than zero, otherwise infinite loops may happen.
-     *
-     * @see #getSizeValue(DoubleProperty)
-     */
-    static final int MIN_CELL_SIZE = 1;
-
-    /**
-     * The string value for sample values that are out of image bounds.
-     */
-    static final String OUT_OF_BOUNDS = "";
-
     /**
      * If a loading is in progress, the loading process. Otherwise {@code null}.
      */
@@ -96,8 +83,10 @@ public class GridView extends Control {
 
     /**
      * Information copied from {@link #imageProperty} for performance.
+     * Those values are used only for checking if a coordinate is inside image bounds.
+     * The maximum coordinates are exclusive.
      */
-    private int width, height, minX, minY, numXTiles;
+    private int minX, minY, maxX, maxY;
 
     /**
      * Information copied from {@link #imageProperty} for performance.
@@ -106,17 +95,16 @@ public class GridView extends Control {
     private int tileWidth, tileHeight;
 
     /**
-     * Information copied and adjusted from {@link #imageProperty} for performance. Values are adjusted for using
-     * zero-based indices as expected by JavaFX tables (by contrast, pixel indices in a {@link RenderedImage} may
-     * start at a non-zero value).
+     * Information copied from {@link #imageProperty} for performance.
      */
     private int tileGridXOffset, tileGridYOffset;
 
     /**
-     * A cache of most recently used {@link #imageProperty} tiles. We use a very simple caching mechanism here,
-     * keeping the most recently used tiles up to 10 Mb of memory. We do not need more sophisticated mechanism
-     * since "real" caching is done by {@link org.apache.sis.image.ComputedImage}. The purpose of this cache is
-     * to remember that a tile is immediately available and that we do not need to start a background thread.
+     * A cache of most recently used {@link #imageProperty} tiles.
+     * We use a simple caching mechanism, keeping the most recently used tiles up to some maximal amount of memory.
+     * No need for something more advanced because the real cache is done by {@link org.apache.sis.image.ComputedImage}.
+     * The purpose of this cache is to remember that a tile is immediately available and that we do not need to start
+     * a background thread.
      */
     private final GridTileCache tiles;
 
@@ -142,7 +130,7 @@ public class GridView extends Control {
      * It shall be a number strictly greater than zero.
      *
      * <h4>API note</h4>
-     * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * We do not provide getter/setter for this property, use {@link DoubleProperty#set(double)}
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final DoubleProperty headerWidth;
@@ -153,7 +141,7 @@ public class GridView extends Control {
      * It shall be a number strictly greater than zero.
      *
      * <h4>API note</h4>
-     * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * We do not provide getter/setter for this property, use {@link DoubleProperty#set(double)}
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final DoubleProperty cellWidth;
@@ -163,7 +151,7 @@ public class GridView extends Control {
      * It shall be a number strictly greater than zero.
      *
      * <h4>API note</h4>
-     * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * We do not provide getter/setter for this property, use {@link DoubleProperty#set(double)}
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final DoubleProperty cellHeight;
@@ -174,7 +162,7 @@ public class GridView extends Control {
      * {@linkplain #cellHeight cell height} should be sufficient.
      *
      * <h4>API note</h4>
-     * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * We do not provide getter/setter for this property, use {@link DoubleProperty#set(double)}
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final DoubleProperty cellSpacing;
@@ -183,7 +171,7 @@ public class GridView extends Control {
      * The background color of row and column headers.
      *
      * <h4>API note</h4>
-     * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
+     * We do not provide getter/setter for this property, use {@link ObjectProperty#set(Object)}
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final ObjectProperty<Paint> headerBackground;
@@ -204,13 +192,13 @@ public class GridView extends Control {
     final CellFormat cellFormat;
 
     /**
-     * If this grid view is associated with controls, the controls. Otherwise {@code null}.
-     * This is used only for notifications; a future version may use a more generic listener.
+     * If this grid view is associated with controls, these controls. Otherwise {@code null}.
+     * This is used only for notifications. A future version may use a more generic listener.
      * We use this specific mechanism because there is no {@code coverageProperty} in this class.
      *
      * @see GridControls#notifyDataChanged(GridCoverageResource, GridCoverage)
      */
-    private final GridControls controls;
+    final GridControls controls;
 
     /**
      * Creates an initially empty grid view. The content can be set after
@@ -231,7 +219,7 @@ public class GridView extends Control {
         this.controls    = controls;
         bandProperty     = new BandProperty();
         imageProperty    = new SimpleObjectProperty<>(this, "image");
-        headerWidth      = new SimpleDoubleProperty  (this, "headerWidth", 60);
+        headerWidth      = new SimpleDoubleProperty  (this, "headerWidth", 80);
         cellWidth        = new SimpleDoubleProperty  (this, "cellWidth",   60);
         cellHeight       = new SimpleDoubleProperty  (this, "cellHeight",  20);
         cellSpacing      = new SimpleDoubleProperty  (this, "cellSpacing",  4);
@@ -250,6 +238,7 @@ public class GridView extends Control {
     /**
      * The property for selecting the band to show. This property verifies
      * the validity of given band argument before to modify the value.
+     * The expected value is a zero-based band index.
      *
      * @see #getBand()
      * @see #setBand(int)
@@ -269,7 +258,7 @@ public class GridView extends Control {
                 ArgumentChecks.ensurePositive("band", band);
             }
             super.set(band);
-            contentChanged(false);
+            updateCellValues();
         }
 
         /** Sets the band without performing checks, except ensuring that value is positive. */
@@ -292,7 +281,8 @@ public class GridView extends Control {
 
     /**
      * Sets the image to show in this table.
-     * This method shall be invoked from JavaFX thread and returns quickly; it does not attempt to fetch any tile.
+     * This method shall be invoked from the JavaFX thread.
+     * This method returns quickly, it does not attempt to fetch any tile.
      * Calls to {@link RenderedImage#getTile(int, int)} will be done in a background thread when first needed.
      *
      * @param  image  the image to show in this table, or {@code null} if none.
@@ -307,8 +297,8 @@ public class GridView extends Control {
     /**
      * Loads image in a background thread from the given source.
      * This method shall be invoked from JavaFX thread and returns immediately.
-     * The grid content may appear unmodified after this method returns;
-     * the modifications will appear after an undetermined amount of time.
+     * The grid content may appear unmodified after this method returns.
+     * The modifications will appear after an undetermined amount of time.
      *
      * @param  source  the coverage or resource to load, or {@code null} if none.
      *
@@ -467,24 +457,19 @@ public class GridView extends Control {
      * See {@link #setImage(RenderedImage)} for more description.
      *
      * @param  image  the new image to show. May be {@code null}.
-     * @throws ArithmeticException if the "tile grid x/y offset" property is too large.
+     * @throws ArithmeticException if the "max x/y" property is too large.
      */
     private void onImageSpecified(final RenderedImage image) {
         cancelLoader();
-        tiles.clear();          // Let garbage collector dispose the rasters.
+        tiles.clear();              // Let the garbage collector disposes the rasters.
         lastTile = null;
-        width    = 0;
-        height   = 0;
+        maxX = Integer.MIN_VALUE;   // A way to make sure that all coordinates are considered out of bounds.
+        maxY = Integer.MIN_VALUE;
         if (image != null) {
-            minX            = image.getMinX();
-            minY            = image.getMinY();
-            width           = image.getWidth();
-            height          = image.getHeight();
-            numXTiles       = image.getNumXTiles();
             tileWidth       = Math.max(1, image.getTileWidth());
             tileHeight      = Math.max(1, image.getTileHeight());
-            tileGridXOffset = Math.subtractExact(image.getTileGridXOffset(), minX);
-            tileGridYOffset = Math.subtractExact(image.getTileGridYOffset(), minY);
+            tileGridXOffset = image.getTileGridXOffset();
+            tileGridYOffset = image.getTileGridYOffset();
             cellFormat.dataTypeIsInteger = false;           // To be kept consistent with `cellFormat` pattern.
             final SampleModel sm = image.getSampleModel();
             if (sm != null) {                               // Should never be null, but we are paranoiac.
@@ -495,64 +480,71 @@ public class GridView extends Control {
                 cellFormat.dataTypeIsInteger = DataType.isInteger(sm);
             }
             cellFormat.configure(image, getBand());
+            // Set image bounds only after everything else succeeded.
+            minX = image.getMinX();
+            maxX = Math.addExact(minX, image.getWidth());
+            minY = image.getMinY();
+            maxY = Math.addExact(minY, image.getHeight());
         }
-        contentChanged(true);
-    }
-
-    /**
-     * Invoked when the content may have changed. If {@code all} is {@code true}, then everything
-     * may have changed including the number of rows and columns. If {@code all} is {@code false}
-     * then the number of rows and columns is assumed the same.
-     */
-    final void contentChanged(final boolean all) {
         final Skin<?> skin = getSkin();             // May be null if the view is not yet shown.
         if (skin instanceof GridViewSkin) {         // Could be a user instance (not recommended).
-            ((GridViewSkin) skin).contentChanged(all);
+            ((GridViewSkin) skin).clear();
+        }
+        requestLayout();
+    }
+
+    /**
+     * Rewrites the cell values. This method can be invoked when the band to show has changed,
+     * or when a change is detected in a writable image. This method assumes that the image size
+     * has not changed.
+     */
+    final void updateCellValues() {
+        final Skin<?> skin = getSkin();             // May be null if the view is not yet shown.
+        if (skin instanceof GridViewSkin) {         // Could be a user instance (not recommended).
+            ((GridViewSkin) skin).updateCellValues();
         }
     }
 
     /**
-     * Returns the width that this view would have if it was fully shown (without horizontal scroll bar).
-     * This value depends on the number of columns in the image and the size of each cell.
-     * This method does not take in account the space occupied by the vertical scroll bar.
-     */
-    final double getContentWidth() {
-        /*
-         * Add one more column for avoiding offsets caused by the rounding of scroll bar position to
-         * integer multiple of column size. The SCROLLBAR_WIDTH minimal value used below is arbitrary;
-         * we take a value close to the vertical scrollbar width as a safety.
-         */
-        final double w = getSizeValue(cellWidth);
-        return width * w + getSizeValue(headerWidth) + Math.max(w, Styles.SCROLLBAR_WIDTH);
-    }
-
-    /**
-     * Returns the value of the given property as a real number not smaller than {@value #MIN_CELL_SIZE}.
-     * We use this method instead of {@link Math#max(double, double)} because we want {@link Double#NaN}
-     * values to be replaced by {@value #MIN_CELL_SIZE}.
-     */
-    static double getSizeValue(final DoubleProperty property) {
-        final double value = property.get();
-        return (value >= MIN_CELL_SIZE) ? value : MIN_CELL_SIZE;
-    }
-
-    /**
-     * Returns the number of rows in the image. This is also the number of rows in the
-     * {@link GridViewSkin} virtual flow, which is using a vertical primary direction.
+     * Configures the given scroll bar.
      *
-     * @see javafx.scene.control.skin.VirtualContainerBase#getItemCount()
+     * @param  bar       the scroll bar to configure.
+     * @param  numCells  number of cells created by the caller (one more than the number of visible cells).
+     * @param  vertical  {@code true} if the scroll bar is vertical, or {@code false} if horizontal.
      */
-    final int getImageHeight() {
-        return height;
+    final void scaleScrollBar(final ScrollBar bar, int numCells, final boolean vertical) {
+        int min, max;
+        if (vertical) {
+            min = minY;
+            max = maxY;
+        } else {
+            min = minX;
+            max = maxX;
+        }
+        if (max > min) {
+            numCells = Math.max(1, Math.min(numCells - 2, max));
+            max -= numCells;
+            bar.setMin(min);
+            bar.setMax(max);
+            bar.setVisibleAmount(numCells);
+            double value = bar.getValue();
+            if (value < min) {
+                value = min;
+            } else if (value > max) {
+                value = max;
+            } else {
+                return;
+            }
+            bar.setValue(value);
+        }
     }
 
     /**
      * Returns the bounds of a single tile in the image. This method is invoked only
      * if an error occurred during {@link RenderedImage#getTile(int, int)} invocation.
-     * The returned bounds are zero-based (may not be the bounds in image coordinates).
      *
      * <h4>Design note</h4>
-     * We use AWT rectangle instead of JavaFX rectangle
+     * We use <abbr>AWT</abbr> rectangle instead of JavaFX rectangle
      * because generally we use AWT for everything related to {@link RenderedImage}.
      *
      * @param  tileX  <var>x</var> coordinates of the tile for which to get the bounds.
@@ -560,51 +552,39 @@ public class GridView extends Control {
      * @return the zero-based bounds of the specified tile in the image.
      */
     final Rectangle getTileBounds(final int tileX, final int tileY) {
-        return new Rectangle(tileX * tileWidth  + tileGridXOffset,
-                             tileY * tileHeight + tileGridYOffset,
+        return new Rectangle(Numerics.clamp(tileGridXOffset + Math.multiplyFull(tileX, tileWidth)),
+                             Numerics.clamp(tileGridYOffset + Math.multiplyFull(tileY, tileHeight)),
                              tileWidth, tileHeight);
     }
 
     /**
-     * Converts a grid row index to tile index. Note that those {@link RenderedImage}
-     * tile coordinates do not necessarily start at 0; negative values may be valid.
+     * Formats the sample value at the image coordinates. If the tile is not available at the time
+     * that this method is invoked, then the tile will be loaded in a background thread and the grid
+     * view will be refreshed when the tile become available.
      *
-     * @see GridRow#tileY
+     * @param  x  image <var>x</var> coordinate of the sample value to get.
+     * @param  y  image <var>y</var> coordinate of the sample value to get.
+     * @return the sample value at the specified coordinates, or {@code null} if not available.
+     *
+     * @see #formatCoordinateValue(long)
+     *
+     * @since 1.5
      */
-    final int toTileY(final int row) {
-        return Math.floorDiv(Math.subtractExact(row, tileGridYOffset), tileHeight);
-    }
-
-    /**
-     * Returns the sample value in the given column of the given row. If the tile is not available at the
-     * time this method is invoked, then the tile will loaded in a background thread and the grid view will
-     * be refreshed when the tile become available.
-     *
-     * <p>The {@code tileY} parameter is computed by {@link #toTileY(int)} and stored in {@link GridRow}.</p>
-     *
-     * @param  tileY    arbitrary-based <var>y</var> coordinate of the tile.
-     * @param  row      zero-based <var>y</var> coordinate of sample to get (may differ from image coordinate Y).
-     * @param  column   zero-based <var>x</var> coordinate of sample to get (may differ from image coordinate X).
-     * @return the sample value in the specified column, or {@code null} if unknown (because the loading process
-     *         is still under progress), or the empty string ({@code ""}) if out of bounds.
-     * @throws ArithmeticException if an index is too large for the 32 bits integer capacity.
-     *
-     * @see GridRow#getSampleValue(int)
-     */
-    final String getSampleValue(final int tileY, final int row, final int column) {
-        if (row < 0 || row >= height || column < 0 || column >= width) {
-            return OUT_OF_BOUNDS;
+    public final String formatSampleValue(final long x, final long y) {
+        if (x < minX || x >= maxX || y < minY || y >= maxY) {
+            return null;
         }
         /*
          * Fetch the tile where is located the (x,y) image coordinate of the pixel to get.
          * If that tile has never been requested before, or has been discarded by the cache,
-         * start a background thread for fetching the tile and return null immediately; this
+         * start a background thread for fetching the tile and return null immediately. This
          * method will be invoked again with the same coordinates after the tile become ready.
          */
-        final int tileX = Math.floorDiv(Math.subtractExact(column, tileGridXOffset), tileWidth);
+        final int tileX = Math.toIntExact(Math.floorDiv(x - tileGridXOffset, tileWidth));
+        final int tileY = Math.toIntExact(Math.floorDiv(y - tileGridYOffset, tileHeight));
         GridTile cache = lastTile;
         if (cache == null || cache.tileX != tileX || cache.tileY != tileY) {
-            final GridTile key = new GridTile(tileX, tileY, numXTiles);
+            final var key = new GridTile(tileX, tileY);
             cache = tiles.putIfAbsent(key, key);
             if (cache == null) cache = key;
             lastTile = cache;
@@ -614,28 +594,21 @@ public class GridView extends Control {
             cache.load(this);
             return null;
         }
-        /*
-         * At this point we have the tile. Get the desired number and format its string representation.
-         * As a slight optimization, we reuse the previous string representation if the number is the same.
-         * It may happen in particular with fill values.
-         */
-        return cellFormat.format(tile,
-                Math.addExact(column, minX),
-                Math.addExact(row,    minY),
-                getBand());
+        // The casts are sure to be valid because of the range check at the beginning of this method.
+        return cellFormat.format(tile, (int) x, (int) y, getBand());
     }
 
     /**
-     * Formats a row index or column index.
+     * Formats a <var>x</var> or <var>y</var> pixel coordinate values.
+     * They are the values to write in the header row or header column.
      *
-     * @param  index     the zero-based row or column index to format.
-     * @param  vertical  {@code true} if formatting row index, or {@code false} if formatting column index.
+     * @param  index  the pixel coordinate to format.
+     * @return string representation of the given pixel coordinate.
+     *
+     * @since 1.5
      */
-    final String formatHeaderValue(final int index, final boolean vertical) {
-        if (index >= 0 && index < (vertical ? height : width)) {
-            return cellFormat.format(headerFormat, index + (long) (vertical ? minY : minX));
-        }
-        return OUT_OF_BOUNDS;
+    public final String formatCoordinateValue(final long index) {
+        return cellFormat.format(headerFormat, index);
     }
 
     /**
@@ -652,18 +625,6 @@ public class GridView extends Control {
     }
 
     /**
-     * Converts and formats the given cell coordinates. An offset is added to the coordinate values for converting
-     * cell indices to pixel indices. Those two kind of indices often have the same values, but may differ if the
-     * {@link RenderedImage} uses a coordinate system where coordinates of the upper-left corner is not (0,0).
-     * Then the pixel coordinates are converted to "real world" coordinates and formatted.
-     */
-    final void formatCoordinates(final int x, final int y) {
-        if (controls != null) {
-            controls.status.setLocalCoordinates(minX + x, minY + y);
-        }
-    }
-
-    /**
      * Hides coordinates in the status bar.
      */
     final void hideCoordinates() {
@@ -676,7 +637,7 @@ public class GridView extends Control {
      * Creates a new instance of the skin responsible for rendering this grid view.
      * From the perspective of this {@link Control}, the {@link Skin} is a black box.
      * It listens and responds to changes in state of this grid view. This method is
-     * called if no skin is provided via CSS or {@link #setSkin(Skin)}.
+     * called if no skin is provided via <abbr>CSS</abbr> or {@link #setSkin(Skin)}.
      *
      * @return the renderer of this grid view.
      */

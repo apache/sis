@@ -438,7 +438,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
             return true;
         }
         if (object != null && object.getClass() == getClass()) {
-            final ImmutableIdentifier that = (ImmutableIdentifier) object;
+            final var that = (ImmutableIdentifier) object;
             return Objects.equals(code,        that.code)      &&
                    Objects.equals(codeSpace,   that.codeSpace) &&
                    Objects.equals(authority,   that.authority) &&
@@ -501,7 +501,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
              *     if the parameter value is the root element (in which case we will format full identifier).
              */
             final FormattableObject enclosing = formatter.getEnclosingElement(1);
-            final boolean              isRoot = formatter.getEnclosingElement(2) == null;
+            final boolean isRoot = (formatter.getEnclosingElement(2) == null);
             if (isRoot || !(enclosing instanceof ParameterValue<?>)) {
                 final String citation = Identifiers.getIdentifier(authority, false);
                 if (citation != null && !citation.equals(codeSpace)) {

@@ -16,8 +16,6 @@
  */
 package org.apache.sis.util.privy;
 
-import org.apache.sis.util.Static;
-
 
 /**
  * Hard coded values (typically identifiers).
@@ -32,7 +30,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Constants extends Static {
+public final class Constants {
     /**
      * The default separator, which is {@code ':'}.
      * The separator is inserted between the code space and the code in identifiers.

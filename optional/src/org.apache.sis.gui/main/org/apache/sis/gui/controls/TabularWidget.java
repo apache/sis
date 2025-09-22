@@ -57,17 +57,17 @@ abstract class TabularWidget extends Widget {
     }
 
     /**
-     * Creates a new column for a boolean value represented by a checkbox.
+     * Creates a new column for a Boolean value represented by a checkbox.
      *
      * @param  <S>      the type of objects contained within the {@link TableView} items list.
      * @param  header   column header.
-     * @param  factory  link to the boolean property.
+     * @param  factory  link to the Boolean property.
      * @return a column for checkbox.
      */
     static <S> TableColumn<S,Boolean> newBooleanColumn(final String header,
             final Callback<CellDataFeatures<S,Boolean>, ObservableValue<Boolean>> factory)
     {
-        final TableColumn<S,Boolean> c = new TableColumn<>(header);
+        final var c = new TableColumn<S,Boolean>(header);
         c.setCellFactory(CheckBoxTableCell.forTableColumn(c));
         c.setCellValueFactory(factory);
         c.setSortable(false);
@@ -88,7 +88,7 @@ abstract class TabularWidget extends Widget {
     static <S> TableColumn<S,String> newStringColumn(final String header,
             final Callback<CellDataFeatures<S,String>, ObservableValue<String>> factory)
     {
-        final TableColumn<S,String> c = new TableColumn<>(header);
+        final var c = new TableColumn<S,String>(header);
         c.setCellFactory(TextFieldTableCell.forTableColumn());
         c.setCellValueFactory(factory);
         return c;

@@ -999,7 +999,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                  * However if it is not, try to copy it in such object.
                  */
                 final SingleOperation op;
-                if (SubTypes.isSingleOperation(subOperation)) {
+                if (AbstractCoordinateOperation.isSingleOperation(subOperation)) {
                     op = (SingleOperation) subOperation;
                 } else {
                     final MathTransform subTransform = subOperation.getMathTransform();
@@ -1151,7 +1151,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             if (isAxisChange1 && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
             if (isAxisChange2 && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
         }
-        if (SubTypes.isSingleOperation(main)) {
+        if (AbstractCoordinateOperation.isSingleOperation(main)) {
             final SingleOperation op = (SingleOperation) main;
             main = createFromMathTransform(
                     new HashMap<>(IdentifiedObjects.getProperties(main)),

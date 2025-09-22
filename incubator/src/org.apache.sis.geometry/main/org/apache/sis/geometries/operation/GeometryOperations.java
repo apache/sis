@@ -69,14 +69,13 @@ import org.apache.sis.geometries.operation.spatialrelations2d.Relate;
 import org.apache.sis.geometries.operation.spatialrelations2d.Touches;
 import org.apache.sis.geometries.operation.spatialrelations2d.Within;
 import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.util.Static;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class GeometryOperations extends Static {
+public final class GeometryOperations {
 
     private static final Processor NONE = new Processor() {
         @Override
@@ -123,7 +122,7 @@ public final class GeometryOperations extends Static {
      * @see OGC Simple Feature Access 1.2.1 - 6.1.2.4 Methods that support spatial analysis
      */
     @UML(identifier="Query2D", specification=ISO_19107) // section 6.4.8
-    public static final class SpatialAnalysis2D extends Static {
+    public static final class SpatialAnalysis2D {
 
         private SpatialAnalysis2D(){}
 
@@ -201,7 +200,7 @@ public final class GeometryOperations extends Static {
     }
 
     @UML(identifier="Query3D", specification=ISO_19107) // section 6.4.9
-    public static final class SpatialAnalysis3D extends Static {
+    public static final class SpatialAnalysis3D {
 
         private SpatialAnalysis3D(){}
 
@@ -245,7 +244,7 @@ public final class GeometryOperations extends Static {
      * @see OGC Simple Feature Access 1.2.1 - 6.1.2.3 Methods for testing spatial relations between geometric objects
      */
     @UML(identifier="Query2D", specification=ISO_19107) // section 6.4.8
-    public static final class SpatialRelations2D extends Static {
+    public static final class SpatialRelations2D {
 
         private SpatialRelations2D(){}
 
@@ -357,7 +356,7 @@ public final class GeometryOperations extends Static {
     }
 
     @UML(identifier="Query3D", specification=ISO_19107) // section 6.4.9
-    public static final class SpatialRelations3D extends Static {
+    public static final class SpatialRelations3D {
 
         private SpatialRelations3D(){}
 
@@ -412,7 +411,7 @@ public final class GeometryOperations extends Static {
         }
     }
 
-    public static final class SpatialEdition extends Static {
+    public static final class SpatialEdition {
 
         private SpatialEdition(){}
 

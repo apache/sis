@@ -21,7 +21,6 @@ import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import org.apache.sis.image.PixelIterator;
-import org.apache.sis.util.Static;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,7 +35,7 @@ import org.opengis.coverage.grid.SequenceType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Assertions extends Static {
+public final class Assertions {
     /**
      * Do not allow instantiation of this class.
      */

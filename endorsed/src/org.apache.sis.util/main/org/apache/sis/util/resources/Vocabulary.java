@@ -970,6 +970,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short OriginalColors = 272;
 
         /**
+         * Other
+         */
+        public static final short Other = 280;
+
+        /**
          * Other surface
          */
         public static final short OtherSurface = 156;

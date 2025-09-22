@@ -58,7 +58,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void verifyUnitConstants() {
-        final Set<String> declared = new HashSet<>(64);
+        final var declared = new HashSet<String>(64);
         for (final Field f : Units.class.getFields()) {
             if (Unit.class.isAssignableFrom(f.getType())) {
                 declared.add(f.getName());
@@ -182,7 +182,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testLabel() {
-        final UnitFormat f = new UnitFormat(Locale.ENGLISH);
+        final var f = new UnitFormat(Locale.ENGLISH);
         f.label(Units.METRE,  "mFoo");
         f.label(Units.SECOND, "sFoo");
         assertEquals("mFoo", f.format(Units.METRE));
@@ -212,7 +212,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testDuplicatedLabels() {
-        final UnitFormat f = new UnitFormat(Locale.ENGLISH);
+        final var f = new UnitFormat(Locale.ENGLISH);
         f.label(Units.DEGREE, "deg");
         f.label(Units.DEGREE, "dd");        // For "decimal degrees"
         roundtrip(f, "dd", "dd");
@@ -223,7 +223,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testFormatUCUM() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         f.setStyle(UnitFormat.Style.UCUM);
         assertEquals("m",   f.format(Units.METRE));
         assertEquals("km",  f.format(Units.KILOMETRE));
@@ -243,7 +243,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testFormatName() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         f.setStyle(UnitFormat.Style.NAME);
         assertEquals("metre",        f.format(Units.METRE));
         assertEquals("kilometre",    f.format(Units.KILOMETRE));
@@ -282,7 +282,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testFormatScaled() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         f.setStyle(UnitFormat.Style.SYMBOL);
         assertEquals("Mm",      f.format(Units.KILOMETRE .multiply(1000)));
         assertEquals("10⁵⋅m",   f.format(Units.KILOMETRE .multiply( 100)));
@@ -299,7 +299,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testFormatPower() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         f.setStyle(UnitFormat.Style.SYMBOL);
         assertEquals("m²",  f.format(Units.METRE     .pow(2)));
         assertEquals("cm²", f.format(Units.CENTIMETRE.pow(2)));
@@ -311,7 +311,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testFormatRatio() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         f.setStyle(UnitFormat.Style.SYMBOL);
         assertEquals( "m∕h", f.format(Units.METRE.divide(Units.HOUR)));
         assertEquals("mm∕h", f.format(Units.MILLIMETRE.divide(Units.HOUR)));
@@ -323,7 +323,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testFormatUnusual() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         final Unit<?> u1 = Units.SECOND.pow(-1).multiply(3);
         assertEquals("3∕s",        f.format(u1));
         assertEquals("3⋅m∕s",      f.format(Units.METRE.multiply(u1)));
@@ -338,7 +338,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testUnity() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertEquals(   "1∕m²", f.format(Units.UNITY.divide(Units.SQUARE_METRE)));
         assertEquals("10⁻²∕m²", f.format(Units.UNITY.divide(100).divide(Units.SQUARE_METRE)));
         assertEquals("%∕m²",    f.format(Units.PERCENT.divide(Units.SQUARE_METRE)));
@@ -403,11 +403,21 @@ public final class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests parsing of names such "metres per second".
+     */
+    @Test
+    public void testParseNameWithRatio() {
+        final var f = new UnitFormat(Locale.UK);
+        assertSame(Units.METRES_PER_SECOND, f.parse("metres per second"));
+        assertSame(Units.METRES_PER_SECOND, f.parse("metres per seconds"));     // Mispelling sometime encoutered.
+    }
+
+    /**
      * Tests parsing of names raised to some power, for example {@code "meter2"}.
      */
     @Test
     public void testParseNameRaisedToPower() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.SQUARE_METRE, f.parse("meter2"));
         assertSame(Units.HERTZ,        f.parse("second-1"));
     }
@@ -418,7 +428,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseEPSG() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.METRE,             f.parse("EPSG:9001"));
         assertSame(Units.METRE,             f.parse("urn:ogc:def:uom:EPSG::9001"));
         assertSame(Units.METRES_PER_SECOND, f.parse("urn:ogc:def:uom:EPSG::1026"));
@@ -429,7 +439,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseURL() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.METRE, f.parse("http://www.opengis.net/def/uom/EPSG/0/9001"));
         assertSame(Units.DAY,   f.parse("http://www.opengis.net/def/uom/UCUM/0/d"));
     }
@@ -439,7 +449,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseSymbol() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.METRE,         f.parse("m"));
         assertSame(Units.UNITY,         f.parse("m⁰"));
         assertSame(Units.METRE,         f.parse("m¹"));
@@ -461,7 +471,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParsePrefix() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         ConventionalUnitTest.verify(Units.JOULE,       f.parse("kJ"),   "kJ",   1E+3);
         ConventionalUnitTest.verify(Units.HERTZ,       f.parse("MHz"),  "MHz",  1E+6);
         ConventionalUnitTest.verify(Units.PASCAL,      f.parse("daPa"), "daPa", 1E+1);
@@ -494,7 +504,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseTerms() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.SQUARE_METRE,      f.parse("m⋅m"));
         assertSame(Units.CUBIC_METRE,       f.parse("m⋅m⋅m"));
         assertSame(Units.CUBIC_METRE,       f.parse("m²⋅m"));
@@ -510,7 +520,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseTermsSeparatedBySpace() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.METRES_PER_SECOND, f.parse("m s**-1"));
         assertEqualsIgnoreSymbol(Units.KILOGRAM.divide(Units.SQUARE_METRE), f.parse("kg m**-2"));
 
@@ -525,7 +535,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseMultiplier() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.MILLIMETRE, f.parse("m/1000"));
         assertSame(Units.KILOMETRE,  f.parse( "1000*m"));
         assertSame(Units.KILOMETRE,  f.parse( "1000.0*m"));
@@ -548,7 +558,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseKilogram() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         /*
          * Kilograms should be identified even if they appear in an expression.
          * Current implementation creates a symbol early when it detects such case.
@@ -562,7 +572,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseInverseL() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         final Unit<?> u = f.parse("1/l");
         assertEquals("1∕L", u.toString());
     }
@@ -574,7 +584,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseExponentiation() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.HERTZ,             f.parse("s^-1"));
         assertSame(Units.HERTZ,             f.parse("s**-1"));
         assertSame(Units.METRES_PER_SECOND, f.parse("m*s^-1"));
@@ -586,7 +596,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseWithParenthesis() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         assertSame(Units.PASCAL, f.parse("kg∕(m⋅s²)"));
         assertSame(Units.PASCAL, f.parse("(kg)∕m∕s²"));
         assertSame(Units.VOLT,   f.parse("kg⋅m²∕(s³⋅A)"));
@@ -599,8 +609,8 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParsePosition() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
-        final ParsePosition pos = new ParsePosition(4);
+        final var f = new UnitFormat(Locale.UK);
+        final var pos = new ParsePosition(4);
         assertSame(Units.CENTIMETRE, f.parse("ABC cm foo", pos));
         assertEquals( 6, pos.getIndex(), "ParsePosition.getIndex()");
         assertEquals(-1, pos.getErrorIndex(), "ParsePosition.getErrorIndex()");
@@ -620,7 +630,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testClone() {
-        final UnitFormat f1 = new UnitFormat(Locale.FRANCE);
+        final var f1 = new UnitFormat(Locale.FRANCE);
         f1.label(Units.METRE,  "myMeterLabel");
         f1.label(Units.SECOND, "mySecondLabel");
         final UnitFormat f2 = f1.clone();
@@ -643,7 +653,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void testParseAndFormat() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         roundtrip(f, "K.m2.kg-1.s-1",    "K⋅m²∕(kg⋅s)");
         roundtrip(f, "m.m6.m-3",         "m⋅m⁶∕m³");
         roundtrip(f, "Pa.s-1",           "Pa∕s");
@@ -713,7 +723,7 @@ public final class UnitFormatTest extends TestCase {
     public void testParseAndFormatLabel() {
         final Unit<Length> yard  = Units.METRE.multiply(0.9144);
         final Unit<?>      yard2 = yard.pow(2);
-        final UnitFormat f = new UnitFormat(Locale.ENGLISH);
+        final var f = new UnitFormat(Locale.ENGLISH);
         f.label(yard, "yd");
         roundtrip(f, "yd",    "yd",  yard);
         roundtrip(f, "yd**2", "yd²", yard2);
@@ -733,7 +743,7 @@ public final class UnitFormatTest extends TestCase {
      */
     @Test
     public void needForImprovements() {
-        final UnitFormat f = new UnitFormat(Locale.UK);
+        final var f = new UnitFormat(Locale.UK);
         roundtrip(f, "kg.kg-1.m.s-1",    "m∕s");
         roundtrip(f, "(m2.s.sr)-1",      "1∕(m²⋅s)");
         roundtrip(f, "m-2.s.rad-1",      "s∕m²");

@@ -25,7 +25,7 @@
  * See {@code endorsed/src/org.apache.sis.openoffice/bundle/build-instruction.html} for more information.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.5
  * @since   0.8
  */
 package org.apache.sis.openoffice;

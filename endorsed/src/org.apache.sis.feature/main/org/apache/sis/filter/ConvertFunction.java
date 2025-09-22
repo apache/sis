@@ -174,7 +174,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
         if (fex == null) {
             return null;
         }
-        final FeatureProjectionBuilder.Item item = fex.expectedType(addTo);
+        final FeatureProjectionBuilder.Item item = addTo.addTemplateProperty(fex);
         item.replaceValueClass((c) -> getValueClass());
         return item;
     }

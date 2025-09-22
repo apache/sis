@@ -94,7 +94,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
      * Parses the given text. It is caller's responsibility to verify if some warnings have been emitted.
      *
      * @param  type  the expected object type.
-     * @param  text  the WKT string to parse.
+     * @param  text  the <abbr>WKT</abbr> string to parse.
      * @return the parsed object.
      * @throws ParseException if an error occurred during the parsing.
      */
@@ -102,7 +102,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         if (parser == null) {
             newParser(Convention.DEFAULT);
         }
-        final ParsePosition position = new ParsePosition(0);
+        final var position = new ParsePosition(0);
         final Object obj = parser.createFromWKT(text, position);
         assertEquals(-1, position.getErrorIndex(), "errorIndex");
         assertEquals(text.length(), position.getIndex(), "index");
@@ -110,10 +110,10 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Parses the given text and ensure that no warnings have been emitted.
+     * Parses the given text and ensures that no warnings have been emitted.
      *
      * @param  type  the expected object type.
-     * @param  text  the WKT string to parse.
+     * @param  text  the <abbr>WKT</abbr> string to parse.
      * @return the parsed object.
      * @throws ParseException if an error occurred during the parsing.
      */
@@ -148,7 +148,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
 
     /**
      * Asserts that the given axis is a longitude axis. This method expects the name to be
-     * <q>Geodetic longitude</q> even if the WKT string contained a different name,
+     * <q>Geodetic longitude</q> even if the <abbr>WKT</abbr> string contained a different name,
      * because {@link GeodeticObjectParser} should have done the replacement.
      */
     private static void assertLongitudeAxisEquals(final CoordinateSystemAxis axis) {
@@ -157,7 +157,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
 
     /**
      * Asserts that the given axis is a latitude axis. This method expects the name to be
-     * <q>Geodetic latitude</q> even if the WKT string contained a different name,
+     * <q>Geodetic latitude</q> even if the <abbr>WKT</abbr> string contained a different name,
      * because {@link GeodeticObjectParser} should have done the replacement.
      */
     private static void assertLatitudeAxisEquals(final CoordinateSystemAxis axis) {
@@ -234,7 +234,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a geodetic reference frame from a WKT 2 string.
+     * Tests the parsing of a geodetic reference frame from a <abbr>WKT</abbr> 2 string.
      *
      * @throws ParseException if the parsing failed.
      */
@@ -257,7 +257,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a geocentric CRS from a WKT 1 string. The parser
+     * Tests the parsing of a geocentric CRS from a <abbr>WKT</abbr> 1 string. The parser
      * shall replace the OGC 01-009 axis directions (OTHER, EAST, NORTH) by
      * ISO 19111 axis directions (Geocentric X, Geocentric Y, Geocentric Z).
      *
@@ -296,7 +296,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a geographic CRS from a WKT 1 string using (longitude, latitude) axis order.
+     * Tests the parsing of a geographic CRS from a <abbr>WKT</abbr> 1 string using (longitude, latitude) axis order.
      *
      * @throws ParseException if the parsing failed.
      */
@@ -313,7 +313,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a geographic CRS from a WKT 1 string using (latitude, longitude) axis order.
+     * Tests the parsing of a geographic CRS from a <abbr>WKT</abbr> 1 string using (latitude, longitude) axis order.
      *
      * @throws ParseException if the parsing failed.
      */
@@ -330,7 +330,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a geographic CRS from a WKT 1 string that does not declare explicitly the axes.
+     * Tests the parsing of a geographic CRS from a <abbr>WKT</abbr> 1 string that does not declare explicitly the axes.
      *
      * @throws ParseException if the parsing failed.
      *
@@ -360,7 +360,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
                 "DATUM[“North_American_Datum_1983”,\n" +
                 "SPHEROID[“GRS 1980”, 6378137, 298.257222101]],\n" +
                 "PRIMEM[“Greenwich”, 0],\n" +
-                "UNIT[“Decimal_Second”, 4.84813681109536e-06],\n" +
+                "UNIT[“arc-second”, 4.84813681109536e-06],\n" +
                 "AUTHORITY[“EPSG”, “100001”]]");
 
         assertNameAndIdentifierEqual("NAD83 / NFIS Seconds", 100001, crs);
@@ -569,7 +569,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a projected CRS from a WKT 1 string.
+     * Tests the parsing of a projected CRS from a <abbr>WKT</abbr> 1 string.
      *
      * @throws ParseException if the parsing failed.
      */
@@ -617,7 +617,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a projected CRS from a WKT 1 string with authority and Bursa-Wolf parameters.
+     * Tests the parsing of a projected CRS from a <abbr>WKT</abbr> 1 string with authority and Bursa-Wolf parameters.
      *
      * @throws ParseException if the parsing failed.
      */
@@ -888,7 +888,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests parsing a WKT with a missing Geographic CRS name.
+     * Tests parsing a <abbr>WKT</abbr> with a missing Geographic <abbr>CRS</abbr> name.
      * This should be considered invalid, but happen in practice.
      *
      * <p>The WKT tested in this method also contains some other oddities compared to the usual WKT:</p>
@@ -1074,7 +1074,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a derived CRS from a WKT 2 string.
+     * Tests the parsing of a derived CRS from a <abbr>WKT</abbr> 2 string.
      * Note: this test uses an example from an old <abbr>EPSG</abbr>
      * geodetic dataset which is no longer present in more recent versions.
      *
@@ -1123,7 +1123,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of an engineering CRS from a WKT 2 string.
+     * Tests the parsing of an engineering CRS from a <abbr>WKT</abbr> 2 string.
      *
      * @throws ParseException if the parsing failed.
      */
@@ -1151,7 +1151,8 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a compound CRS from a WKT 1 string, except the time dimension which is WKT 2.
+     * Tests the parsing of a compound CRS from a <abbr>WKT</abbr> 1 string,
+     * except the time dimension which is <abbr>WKT</abbr> 2.
      *
      * @throws ParseException if the parsing failed.
      */
@@ -1207,8 +1208,8 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Tests the parsing of a compound CRS from a WKT 1 string with ellipsoidal height and its conversion
-     * to a three-dimensional geographic CRS.
+     * Tests the parsing of a compound CRS from a <abbr>WKT</abbr> 1 string with ellipsoidal height
+     * and its conversion to a three-dimensional geographic <abbr>CRS</abbr>.
      *
      * @throws ParseException if the parsing failed.
      *
@@ -1274,7 +1275,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     }
 
     /**
-     * Ensures that parsing a WKT with wrong units throws an exception.
+     * Ensures that parsing a <abbr>WKT</abbr> with wrong units throws an exception.
      */
     @Test
     public void testIncompatibleUnits() {
@@ -1283,13 +1284,37 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
                     "  DATUM[“North American Datum 1983”,\n" +
                     "    SPHEROID[“GRS 1980”, 6378137.0, 298.257222]],\n" +
                     "  PRIMEM[“Greenwich”, 0],\n" +
-                    "  UNIT[“kilometre”, 1000]]"));                                      // Wrong unit);
+                    "  UNIT[“kilometre”, 1000]]"));     // Wrong unit
 
-        assertMessageContains(exception, "km");
+        assertMessageContains(exception, "kilometre");
     }
 
     /**
-     * Tests the production of a warning messages when the WKT contains unknown elements.
+     * Ensures that parsing a <abbr>WKT</abbr> with an <abbr>EPSG</abbr> code inconsistent with the unit definition.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testInconsistentUnitAuthorityCode() throws ParseException {
+        final GeographicCRS crs = parseIgnoreWarnings(GeographicCRS.class,
+               "GEOGCS[“WGS 84”,\n" +
+               "  DATUM[“World Geodetic System 1984”,\n" +
+               "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "  PRIMEM[“Greenwich”, 0],\n" +
+               "  UNIT[“degree”, 0.0174532925199433, AUTHORITY[“EPSG”, “9108”]]]");   // DMSH unit.
+
+        verifyGeographicCRS(0, crs);
+        final Warnings warnings = parser.getAndClearWarnings(crs);
+        assertNotNull(warnings, "warnings");
+        assertTrue(warnings.getExceptions().isEmpty());
+        assertEquals("WGS 84", warnings.getRootElement());
+        final String message = warnings.toString(Locale.US);
+        assertTrue(message.contains("EPSG:9108"), message);
+        assertTrue(message.contains("Unit[\"degree\"].Id"), message);
+    }
+
+    /**
+     * Tests the production of a warning messages when the <abbr>WKT</abbr> contains unknown elements.
      *
      * @throws ParseException if the parsing failed.
      */
@@ -1313,14 +1338,14 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         assertArrayEquals(new String[] {"SPHEROID"},                 warnings.getUnknownElementLocations("Ext2").toArray());
 
         assertMultilinesEquals("Parsing of “WGS 84” done, but some elements were ignored.\n" +
-                               " • Unexpected scale factor 0.01746 for unit of measurement “°”.\n" +
+                               " • Unexpected scale factor 0.01746 for unit of measurement “degree”.\n" +
                                " • The text contains unknown elements:\n" +
                                "    ‣ “Intruder” in PRIMEM, GEOGCS.\n" +
                                "    ‣ “Ext1” in SPHEROID.\n" +
                                "    ‣ “Ext2” in SPHEROID.", warnings.toString(Locale.US));
 
         assertMultilinesEquals("La lecture de « WGS 84 » a été faite, mais en ignorant certains éléments.\n" +
-                               " • Le facteur d’échelle 0,01746 est inattendu pour l’unité de mesure « ° ».\n" +
+                               " • Le facteur d’échelle 0,01746 est inattendu pour l’unité de mesure « degree ».\n" +
                                " • Le texte contient des éléments inconnus :\n" +
                                "    ‣ « Intruder » dans PRIMEM, GEOGCS.\n" +
                                "    ‣ « Ext1 » dans SPHEROID.\n" +

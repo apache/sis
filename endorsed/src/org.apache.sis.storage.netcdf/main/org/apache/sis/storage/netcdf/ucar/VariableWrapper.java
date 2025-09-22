@@ -171,7 +171,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
              * "2 hours since 1970-01-01 00:00:00". If there is no such number, then the two methods
              * are equivalent. It is not clear that adding such number is the right thing to do.
              */
-            final DateUnit temporal = new DateUnit(symbols);
+            final var temporal = new DateUnit(symbols);
             epoch = temporal.getDateOrigin().toInstant();
             return Units.SECOND.multiply(temporal.getTimeUnit().getValueInSeconds());
         } else {
@@ -446,7 +446,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
     @Override
     protected NumberRange<?> getRangeFallback() {
         if (variable instanceof EnhanceScaleMissingUnsigned) {
-            final EnhanceScaleMissingUnsigned ev = (EnhanceScaleMissingUnsigned) variable;
+            final var ev = (EnhanceScaleMissingUnsigned) variable;
             if (ev.hasValidData()) {
                 // Returns a MeasurementRange instance for signaling the caller that this is converted values.
                 return MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
@@ -618,7 +618,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
             throws IOException, DataStoreException
     {
         if (variable instanceof CoordinateAxis1D) {
-            final CoordinateAxis1D axis = (CoordinateAxis1D) variable;
+            final var axis = (CoordinateAxis1D) variable;
             if (axis.isRegular()) {
                 final double start     = axis.getStart();
                 final double increment = axis.getIncrement();

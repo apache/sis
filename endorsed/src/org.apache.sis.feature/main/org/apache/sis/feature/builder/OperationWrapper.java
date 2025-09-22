@@ -28,7 +28,7 @@ import org.opengis.feature.PropertyType;
 
 /**
  * Wraps an existing operation. This package cannot create new operations, except for a few special cases.
- * The user need to specify fully formed objects.
+ * The user needs to specify fully formed objects.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

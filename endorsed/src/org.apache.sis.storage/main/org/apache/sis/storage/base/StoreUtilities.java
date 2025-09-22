@@ -34,7 +34,6 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
@@ -65,7 +64,7 @@ import org.opengis.feature.Feature;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class StoreUtilities extends Static {
+public final class StoreUtilities {
     /**
      * Whether to allow computation of statistics when no minimum/maximum values can be determined.
      * This is a costly operation because it requires loading all data, so any code enabled by this

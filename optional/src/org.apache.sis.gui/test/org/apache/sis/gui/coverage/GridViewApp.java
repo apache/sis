@@ -65,8 +65,8 @@ public final class GridViewApp extends Application {
      */
     @Override
     public void start(final Stage window) {
-        final GridView   view = new GridView();
-        final BorderPane pane = new BorderPane(view);
+        final var view = new GridView();
+        final var pane = new BorderPane(view);
         window.setTitle("GridView Test");
         window.setScene(new Scene(pane));
         window.setWidth (400);
@@ -91,7 +91,7 @@ public final class GridViewApp extends Application {
      * have artificial errors in order to see the error controls.
      */
     private static TiledImageMock createImage() {
-        final TiledImageMock image = new TiledImageMock(
+        final var image = new TiledImageMock(
                 DataBuffer.TYPE_USHORT, 1,
                 -50,                            // minX
                  70,                            // minY

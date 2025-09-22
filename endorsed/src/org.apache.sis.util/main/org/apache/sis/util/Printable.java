@@ -21,7 +21,7 @@ package org.apache.sis.util;
  * Object providing a {@code print()} method for sending a string representation to the standard output stream.
  * A call to {@code object.print()} is often (but not necessarily) equivalent to {@code System.out.println(object)},
  * except that <i>ANSI escape codes</i> (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64 standards) may be used for
- * syntax coloring if the terminal support it. The character encoding may also be more suitable on some platforms.
+ * syntax coloring if the terminal supports it. The character encoding may also be more suitable on some platforms.
  * Finally, some implementations may be more verbose than {@code toString()}.
  *
  * @author  Martin Desruisseaux (Geomatys)

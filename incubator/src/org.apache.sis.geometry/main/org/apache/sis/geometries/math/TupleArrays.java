@@ -18,6 +18,7 @@ package org.apache.sis.geometries.math;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
@@ -27,18 +28,16 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Static;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class TupleArrays extends Static {
+public final class TupleArrays {
 
     public static TupleArray of(List<? extends Tuple> vectors, int dimension, DataType dataType) {
         return of(vectors, SampleSystem.ofSize(dimension), dataType);
@@ -197,20 +196,35 @@ public final class TupleArrays extends Static {
      * @return vectors with the same crs as the array, lower and upper bounds.
      */
     public static BBox computeRange(TupleArray array) {
+
+        final int dim = array.getDimension();
+        final double[] min = new double[dim];
+        final double[] max = new double[dim];
+        final double[] buffer = new double[dim];
+        Arrays.fill(min, Double.NaN);
+        Arrays.fill(max, Double.NaN);
+
+        final TupleArrayCursor cursor = array.cursor();
+        if (cursor.next()) {
+            cursor.samples().toArrayDouble(buffer, 0);
+            System.arraycopy(buffer, 0, min, 0, dim);
+            System.arraycopy(buffer, 0, max, 0, dim);
+        }
+
+        int i;
+        while (cursor.next()) {
+            cursor.samples().toArrayDouble(buffer, 0);
+            for (i = 0; i < dim; i++) {
+                if (Double.isNaN(buffer[i])) continue;
+                if (Double.isNaN(min[i]) || (buffer[i] < min[i])) min[i] = buffer[i];
+                if (Double.isNaN(max[i]) || (buffer[i] > max[i])) max[i] = buffer[i];
+            }
+        }
+
         final CoordinateReferenceSystem crs = array.getCoordinateReferenceSystem();
         final BBox bbox = crs == null ? new BBox(array.getDimension()) : new BBox(crs);
-        bbox.setToNaN();
-        boolean first = true;
-        final TupleArrayCursor cursor = array.cursor();
-        while (cursor.next()) {
-            final Tuple samples = cursor.samples();
-            if (first) {
-                bbox.getLower().set(samples);
-                bbox.getUpper().set(samples);
-                first = false;
-            } else {
-                bbox.add(samples);
-            }
+        for (i = 0; i < dim; i++) {
+            bbox.setRange(i, min[i], max[i]);
         }
         return bbox;
     }

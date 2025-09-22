@@ -69,8 +69,8 @@ final class GridControls extends ViewAndControls {
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
             final GridPane gp = Styles.createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Width,  createSlider(view.cellWidth,  30, 200)),
-                label(vocabulary, Vocabulary.Keys.Height, createSlider(view.cellHeight, 10,  50)),
+                label(vocabulary, Vocabulary.Keys.Width,  createSlider(view.cellWidth)),
+                label(vocabulary, Vocabulary.Keys.Height, createSlider(view.cellHeight)),
                 label(vocabulary, Vocabulary.Keys.Format, view.cellFormat.createEditor()));
 
             Styles.setAllRowToSameHeight(gp);
@@ -92,8 +92,8 @@ final class GridControls extends ViewAndControls {
      * Creates a new slider for the given range of values and bound to the specified properties.
      * This is used for creating the sliders to show in the "Display" pane.
      */
-    private static Slider createSlider(final DoubleProperty property, final double min, final double max) {
-        final Slider slider = new Slider(min, max, property.getValue());
+    private static Slider createSlider(final DoubleProperty property) {
+        final var slider = new Slider(20, 120, property.getValue());
         property.bind(slider.valueProperty());
         slider.setShowTickMarks(false);
         return slider;

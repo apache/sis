@@ -118,12 +118,13 @@ public enum AxisType {
      * Returns the axis type (identified by its abbreviation) for the given axis, or 0 if unknown.
      * The returned code is one of the controlled vocabulary documented in {@link Axis#abbreviation}.
      *
-     * @param  axis  axis for which to get an abbreviation.
+     * @param  axis     axis for which to get an abbreviation.
+     * @param  useUnit  whether this method is allowed to check the unit of measurement.
      * @return abbreviation for the given axis, or 0 if none.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-552">SIS-552</a>
      */
-    public static char abbreviation(final Variable axis) {
+    public static char abbreviation(final Variable axis, final boolean useUnit) {
         /*
          * In Apache SIS implementation, the abbreviation determines the axis type. If a "_CoordinateAxisType" attribute
          * exists, il will have precedence over all other heuristic rules in this method because it is the most specific
@@ -151,7 +152,7 @@ public enum AxisType {
                      * already verified by Axis constructor. By checking the variable attributes first, we give a chance
                      * to Axis constructor to report a warning if there is an inconsistency.
                      */
-                    if (Units.isAngular(axis.getUnit())) {
+                    if (useUnit && Units.isAngular(axis.getUnit())) {
                         final AxisDirection direction = AxisDirections.absolute(Axis.direction(axis.getUnitsString()));
                         if (direction == AxisDirection.EAST) {
                             return 'λ';
@@ -166,16 +167,15 @@ public enum AxisType {
                     abbreviation = abbreviation(axis.getName());
                     if (fallback == null) fallback = abbreviation;
                     if (isNullOrAmbiguous(abbreviation)) {
-                        final Unit<?> unit = axis.getUnit();
-                        if (Units.isTemporal(unit)) {
-                            return 't';
-                        } else if (Units.isPressure(unit)) {
-                            return 'z';
-                        } else if (fallback != null) {
-                            return fallback;
-                        } else {
-                            return 0;
+                        if (useUnit) {
+                            final Unit<?> unit = axis.getUnit();
+                            if (Units.isTemporal(unit)) {
+                                return 't';
+                            } else if (Units.isPressure(unit)) {
+                                return 'z';
+                            }
                         }
+                        return (fallback != null) ? fallback : 0;
                     }
                 }
             }
@@ -185,9 +185,13 @@ public enum AxisType {
 
     /**
      * Returns the enumeration value for the given variable, or {@code null} if none.
+     *
+     * @param  axis     axis for which to get an enumeration value.
+     * @param  useUnit  whether this method is allowed to check the unit of measurement.
+     * @return enumeration value for the given axis, or {@code null} if none.
      */
-    static AxisType valueOf(final Variable axis) {
-        final char abbreviation = abbreviation(axis);
+    static AxisType valueOf(final Variable axis, final boolean useUnit) {
+        final char abbreviation = abbreviation(axis, useUnit);
         return (abbreviation != 0) ? VALUES.get(abbreviation) : null;
     }
 }

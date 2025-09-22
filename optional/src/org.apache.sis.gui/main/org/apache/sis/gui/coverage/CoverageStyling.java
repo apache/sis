@@ -30,6 +30,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.property.SimpleObjectProperty;
 import org.opengis.util.InternationalString;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.image.Colorizer;
@@ -48,13 +50,15 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class CoverageStyling extends ColorColumnHandler<Category> implements Function<Category,Color[]> {
+final class CoverageStyling extends ColorColumnHandler<Category>
+        implements Function<Category, Color[]>, ChangeListener<ColorRamp>
+{
     /**
      * Customized colors selected by user. Keys are English names of categories.
      *
      * @see #apply(Category)
      */
-    private final Map<String,ColorRamp> customizedColors;
+    private final Map<String, SimpleObjectProperty<ColorRamp>> customizedColors;
 
     /**
      * The view to notify when a color changed, or {@code null} if none.
@@ -77,7 +81,11 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      * This is used when the user clicks on "New window" button.
      */
     final void copyStyling(final CoverageStyling source) {
-        customizedColors.putAll(source.customizedColors);
+        for (Map.Entry<String, SimpleObjectProperty<ColorRamp>> entry : source.customizedColors.entrySet()) {
+            final var property = new SimpleObjectProperty<>(entry.getValue().getValue());
+            customizedColors.put(entry.getKey(), property);
+            property.addListener(this);
+        }
         if (canvas != null) {
             canvas.stylingChanged();
         }
@@ -109,18 +117,28 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      * Returns the colors to apply for the given category as an observable value.
      *
      * @param  row  the row item for which to get color to show in color cell. Never {@code null}.
-     * @return the color(s) to use for the given row, or {@code null} if none (transparent).
+     * @return the color(s) to use for the given row. A property value of {@code null} means transparent.
      */
     @Override
-    protected ObservableValue<ColorRamp> getObservableValue(final Category category) {
-        ColorRamp ramp = customizedColors.get(key(category));
-        if (ramp == null) {
-            if (!category.isQuantitative()) {
-                return null;
+    protected SimpleObjectProperty<ColorRamp> getObservableValue(final Category category) {
+        return customizedColors.computeIfAbsent(key(category), (key) -> {
+            final var property = new SimpleObjectProperty<ColorRamp>();
+            if (category.isQuantitative()) {
+                property.setValue(ColorRamp.DEFAULT);
             }
-            ramp = ColorRamp.DEFAULT;
+            property.addListener(this);
+            return property;
+        });
+    }
+
+    /**
+     * Invoked when the colors have changed. This method notifies the canvas that it needs to repaint itself.
+     */
+    @Override
+    public void changed(ObservableValue<? extends ColorRamp> property, ColorRamp old, ColorRamp colors) {
+        if (canvas != null && !Objects.equals(colors, old)) {
+            canvas.stylingChanged();
         }
-        return new ImmutableObjectProperty<>(ramp);
     }
 
     /**
@@ -133,15 +151,18 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      */
     @Override
     public Color[] apply(final Category category) {
-        final ColorRamp ramp = customizedColors.get(key(category));
-        if (ramp != null) {
-            final int[] ARGB = ramp.colors;
-            if (ARGB != null) {
-                final Color[] colors = new Color[ARGB.length];
-                for (int i=0; i<colors.length; i++) {
-                    colors[i] = new Color(ARGB[i], true);
+        final SimpleObjectProperty<ColorRamp> property = customizedColors.get(key(category));
+        if (property != null) {
+            final ColorRamp ramp = property.getValue();
+            if (ramp != null) {
+                final int[] ARGB = ramp.colors;
+                if (ARGB != null) {
+                    final var colors = new Color[ARGB.length];
+                    for (int i=0; i<colors.length; i++) {
+                        colors[i] = new Color(ARGB[i], true);
+                    }
+                    return colors;
                 }
-                return colors;
             }
         }
         return null;
@@ -157,15 +178,15 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      */
     @Override
     protected ColorRamp.Type applyColors(final Category category, final ColorRamp colors) {
-        final String key = key(category);
-        final ColorRamp old;
+        final SimpleObjectProperty<ColorRamp> property;
         if (colors != null) {
-            old = customizedColors.put(key, colors);
+            property = getObservableValue(category);
+            property.setValue(colors);
         } else {
-            old = customizedColors.remove(key);
-        }
-        if (canvas != null && !Objects.equals(colors, old)) {
-            canvas.stylingChanged();
+            property = customizedColors.get(key(category));
+            if (property != null) {
+                property.setValue(category.isQuantitative() ? ColorRamp.DEFAULT : null);
+            }
         }
         return category.isQuantitative() ? ColorRamp.Type.GRADIENT : ColorRamp.Type.SOLID;
     }

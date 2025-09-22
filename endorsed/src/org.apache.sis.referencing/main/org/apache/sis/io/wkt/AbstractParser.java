@@ -222,18 +222,6 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Logs the given record for a warning that occurred during parsing.
-     * This is used when we cannot use the {@link #warning warning methods},
-     * or when the information is not worth to report as a warning.
-     */
-    final void log(final LogRecord record) {
-        record.setSourceClassName (getPublicFacade());
-        record.setSourceMethodName(getFacadeMethod());
-        record.setLoggerName(Loggers.WKT);
-        LOGGER.log(record);
-    }
-
-    /**
      * Creates the object from a WKT string and logs the warnings if any.
      * This method is for implementation of {@code createFromWKT(String)} method in SIS factories only.
      * Callers should ensure that {@code wkt} is non-null and non-empty (this method does not verify).
@@ -269,7 +257,11 @@ abstract class AbstractParser implements Parser {
                         CharSequences.token(wkt, 0) + "[…]", unparsed));
         }
         if (warnings != null) {
-            log(new LogRecord(Level.WARNING, warnings.toString()));
+            final var record = new LogRecord(Level.WARNING, warnings.toString());
+            record.setSourceClassName (getPublicFacade());
+            record.setSourceMethodName(getFacadeMethod());
+            record.setLoggerName(Loggers.WKT);
+            LOGGER.log(record);
         }
         return result;
     }

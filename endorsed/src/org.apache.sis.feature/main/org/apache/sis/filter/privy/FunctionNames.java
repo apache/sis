@@ -16,7 +16,6 @@
  */
 package org.apache.sis.filter.privy;
 
-import org.apache.sis.util.Static;
 import org.apache.sis.filter.sqlmm.SQLMM;
 
 
@@ -26,7 +25,7 @@ import org.apache.sis.filter.sqlmm.SQLMM;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class FunctionNames extends Static {
+public final class FunctionNames {
     /** Value of {@link org.opengis.filter.NullOperator#getOperatorType()}. */
     public static final String PROPERTY_IS_NULL = "PROPERTY_IS_NULL";
 

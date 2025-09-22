@@ -43,7 +43,6 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.WeakHashSet;
 
@@ -54,7 +53,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class RasterFactory extends Static {
+public final class RasterFactory {
     /**
      * Shared instances of {@link SampleModel}s.
      *

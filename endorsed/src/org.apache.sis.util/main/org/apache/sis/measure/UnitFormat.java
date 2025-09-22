@@ -17,7 +17,6 @@
 package org.apache.sis.measure;
 
 import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -555,15 +554,12 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             nameToUnit = map;
         }
         /*
-         * The `nameToUnit` map contains plural forms (declared in UnitAliases.properties),
-         * but we make a special case for "degrees", "metres" and "meters" because they
-         * appear in numerous places.
+         * The `nameToUnit` map contains plural forms (declared in "UnitAliases.properties" file),
+         * but we make a special case for common units such as "degrees", "radians", "seconds",
+         * "metres" and "meters" because they are repeated in units such as "kilometers".
          */
         uom = uom.replace('_', ' ').toLowerCase(locale);
-        uom = CharSequences.replace(CharSequences.replace(CharSequences.replace(CharSequences.toASCII(uom),
-                "meters",  "meter"),
-                "metres",  "metre"),
-                 DEGREES,  "degree").toString();
+        uom = removePlural(CharSequences.toASCII(uom));
         /*
          * Returns the unit with application of the power if it is part of the name.
          * For example, this method interprets "meter2" as "meter" raised to power 2.
@@ -589,14 +585,30 @@ appPow: if (unit == null) {
     /**
      * Copies all entries from the given "symbols to names" mapping to the given "names to units" mapping.
      * During this copy, keys are converted from symbols to names and values are converted from symbols to
-     * {@code Unit} instance. We use {@code Unit} values instead of their symbols because all {@code Unit}
+     * {@code Unit} instances. We use {@code Unit} values instead of their symbols because all {@code Unit}
      * instances are created at {@link Units} class initialization anyway (so we do not create new instance
-     * here), and it avoid to retain references to the {@link String} instances loaded by the resource bundle.
+     * here), and it avoids to retain references to the {@link String} instances loaded by the resource bundle.
      */
     private static void copy(final Locale locale, final ResourceBundle symbolToName, final Map<String,Unit<?>> nameToUnit) {
         for (final String symbol : symbolToName.keySet()) {
-            nameToUnit.put(CharSequences.toASCII(symbolToName.getString(symbol).toLowerCase(locale)).toString().intern(), Units.get(symbol));
+            String name = CharSequences.toASCII(symbolToName.getString(symbol).toLowerCase(locale)).toString().intern();
+            nameToUnit.put(removePlural(name), Units.get(symbol));
         }
+    }
+
+    /**
+     * Returns the given string with common units such as "degrees", "radians", "seconds", "metres" and "meters"
+     * replaced by their singular forms. All these units may have a prefix, for example as in "kilometres".
+     * The result may not be grammatically correct English, but those strings will not be visible to users.
+     * This is similar to making a string in lower cases before comparison in order to be case-insensitive.
+     */
+    private static String removePlural(CharSequence uom) {
+        uom = CharSequences.replace(uom,  DEGREES,  "degree");
+        uom = CharSequences.replace(uom, "radians", "radian");
+        uom = CharSequences.replace(uom, "seconds", "second");
+        uom = CharSequences.replace(uom, "meters",  "meter");
+        uom = CharSequences.replace(uom, "metres",  "metre");
+        return uom.toString();
     }
 
     /**
@@ -795,7 +807,7 @@ appPow: if (unit == null) {
             throws IOException
     {
         boolean isFirst = true;
-        final List<Map.Entry<?,? extends Number>> deferred = new ArrayList<>(components.size());
+        final var deferred = new ArrayList<Map.Entry<?,? extends Number>>(components.size());
         for (final Map.Entry<?,? extends Number> entry : components.entrySet()) {
             final Number power = entry.getValue();
             final int n = (power instanceof Fraction) ? ((Fraction) power).numerator : power.intValue();
@@ -1071,7 +1083,7 @@ appPow: if (unit == null) {
      */
     @Override
     public Unit<?> parse(final CharSequence symbols) throws MeasurementParseException {
-        final Position position = new Position();
+        final var position = new Position();
         Unit<?> unit = parse(symbols, position);
         final int length = symbols.length();
         int unrecognized;
@@ -1156,7 +1168,7 @@ appPow: if (unit == null) {
          *
          * The `start` variable is the index of the first character of the next unit term to parse.
          */
-        final Operation operation = new Operation(symbols);    // Enumeration value: NOOP, IMPLICIT, MULTIPLY, DIVIDE.
+        final var operation = new Operation(symbols);    // Enumeration value: NOOP, IMPLICIT, MULTIPLY, DIVIDE.
         Unit<?> unit = null;
         boolean hasSpaces = false;
         int i = start;
@@ -1240,7 +1252,7 @@ scan:   for (int n; i < end; i += n) {
                  */
                 case Style.OPEN: {
                     final int pos = i + Character.charCount(c);
-                    final ParsePosition sub = new ParsePosition(pos);
+                    final var sub = new ParsePosition(pos);
                     final Unit<?> term = parse(symbols, sub);
                     i = CharSequences.skipLeadingWhitespaces(symbols, sub.getIndex(), end);
                     if (i >= end || Character.codePointAt(symbols, i) != Style.CLOSE) {
@@ -1581,7 +1593,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                 return Double.parseDouble(term);                     // No exponent symbol and no superscript found.
             }
             // Example: "10⁻⁴". Split in base and exponent.
-            final StringBuilder buffer = new StringBuilder(s);
+            final var buffer = new StringBuilder(s);
             do {
                 buffer.appendCodePoint(Characters.toNormalScript(c));
                 if ((s -= Character.charCount(c)) <= 0) break;

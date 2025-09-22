@@ -19,7 +19,6 @@ package org.apache.sis.metadata.sql.privy;
 import java.sql.SQLException;
 import java.sql.SQLDataException;
 import java.sql.DatabaseMetaData;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
@@ -36,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class SQLUtilities extends Static {
+public final class SQLUtilities {
     /**
      * Do not allow instantiation of this class.
      */
