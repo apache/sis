@@ -57,7 +57,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * The provider for <q>Geocentric translation by Grid Interpolation (IGN)</q> (EPSG:1087).
+ * The provider for <q>Geocentric translations (geog2D domain) by grid (IGN)</q> (EPSG:1087).
  * This method replaces the deprecated <q>France geocentric interpolation</q> (ESPG:9655).
  * This operation requires a grid file provided by the French mapping agency.
  *
@@ -198,7 +198,8 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                 .addName("EPSG code for \"standard\" CT")
                 .create(Integer.class, null);
         PARAMETERS = builder
-                .addIdentifier("1087").addName("Geocentric translation by Grid Interpolation (IGN)")
+                .addIdentifier("1087").addName("Geocentric translations (geog2D domain) by grid (IGN)")
+                .addName("Geocentric translation by Grid Interpolation (IGN)")
                 .setDeprecated(true).addIdentifier("9655").addName("France geocentric interpolation")
                 .setDeprecated(false)
                 .createGroup(Molodensky.DIMENSION,              // Not an EPSG parameter.

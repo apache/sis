@@ -38,7 +38,7 @@ This page assumes that the database name is "Referencing", but any other name ca
 if the argument given to `TableScriptUpdater` (later in this page) is adjusted accordingly.
 
 If a copy of the original SQL scripts (as downloaded from EPSG) for the previous version is still available,
-and if the following commands report no difference, then jump to "execute main" step.
+and if the following commands report no difference, then jump to "Automatic updates after the manual checks" step.
 
 ```bash
 cd _<directory containing EPSG scripts of previous version>_
@@ -113,6 +113,7 @@ Adjust version numbers as needed in the following commands:
 cd _<path to SIS project directory>_
 gradle clean test jar
 export CLASSPATH=~/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
+export CLASSPATH=~/.m2/repository/org/postgresql/postgresql/42.7.7/postgresql-42.7.7.jar:$CLASSPATH
 export CLASSPATH=~/.m2/repository/javax/measure/unit-api/2.1.3/unit-api-2.1.3.jar:$CLASSPATH
 export CLASSPATH=$PWD/geoapi/snapshot/geoapi/target/geoapi-4.0-SNAPSHOT.jar:$CLASSPATH
 export CLASSPATH=$PWD/endorsed/build/libs/org.apache.sis.referencing.jar:$CLASSPATH
