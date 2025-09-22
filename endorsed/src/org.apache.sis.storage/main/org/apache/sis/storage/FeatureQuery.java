@@ -267,7 +267,8 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
             for (int i=0; i<properties.length; i++) {
                 final NamedExpression c = properties[i];
                 ArgumentChecks.ensureNonNullElement("properties", i, c);
-                Object key = (c.alias != null) ? c.alias : c.expression;
+                GenericName alias = c.alias();
+                Object key = (alias != null) ? alias : c.expression();
                 final Integer p = uniques.putIfAbsent(key, i);
                 if (p != null) {
                     if (key instanceof Expression) {
@@ -540,7 +541,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      * @version 1.5
      * @since   1.1
      */
-    public static class NamedExpression implements Serializable {
+    public static final class NamedExpression implements Serializable {
         /**
          * For cross-version compatibility.
          */
@@ -549,13 +550,19 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
         /**
          * The literal, value reference or more complex expression to be retrieved by a {@code Query}.
          * Never {@code null}.
+         *
+         * @deprecated Replaced by {@link #expression()} in preparation for making {@code NamedExpression} a record.
          */
+        @Deprecated(since = "1.5")
         @SuppressWarnings("serial")
         public final Expression<? super Feature, ?> expression;
 
         /**
          * The name to assign to the expression result, or {@code null} if unspecified.
+         *
+         * @deprecated Replaced by {@link #alias()} in preparation for making {@code NamedExpression} a record.
          */
+        @Deprecated(since = "1.5")
         @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
         public final GenericName alias;
 
@@ -565,8 +572,11 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
          * a feature {@link Operation}. The latter are commonly called "computed fields" and are equivalent
          * to SQL {@code GENERATED ALWAYS} keyword for columns.
          *
+         * @deprecated Replaced by {@link #type()} in preparation for making {@code NamedExpression} a record.
+         *
          * @since 1.4
          */
+        @Deprecated(since = "1.5")
         public final ProjectionType type;
 
         /**
@@ -636,6 +646,37 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
                 }
             }
             return false;
+        }
+
+        /**
+         * The literal, value reference or more complex expression to be retrieved by a {@code Query}.
+         * Never {@code null}.
+         *
+         * @since 1.5
+         */
+        public Expression<? super Feature, ?> expression() {
+            return expression;
+        }
+
+        /**
+         * The name to assign to the expression result, or {@code null} if unspecified.
+         *
+         * @since 1.5
+         */
+        public GenericName alias() {
+            return alias;
+        }
+
+        /**
+         * Whether the expression result should be stored or evaluated every times that it is requested.
+         * A stored value will exist as a feature {@link Attribute}, while a virtual value will exist as
+         * a feature {@link Operation}. The latter are commonly called "computed fields" and are equivalent
+         * to SQL {@code GENERATED ALWAYS} keyword for columns.
+         *
+         * @since 1.5
+         */
+        public ProjectionType type() {
+            return type;
         }
 
         /**
@@ -732,7 +773,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
         Set<String> xpaths = ListingPropertyVisitor.xpaths(selection, null);
         if (projection != null) {
             for (NamedExpression e : projection) {
-                xpaths = ListingPropertyVisitor.xpaths(e.expression, xpaths);
+                xpaths = ListingPropertyVisitor.xpaths(e.expression(), xpaths);
             }
         }
         return xpaths;
@@ -763,7 +804,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
         for (int column = 0; column < projection.length; column++) {
             final NamedExpression item = projection[column];
             if (!item.addTo(builder)) {
-                final var name = item.expression.getFunctionName().toInternationalString();
+                final var name = item.expression().getFunctionName().toInternationalString();
                 throw new InvalidFilterValueException(Resources.forLocale(locale)
                             .getString(Resources.Keys.InvalidExpression_2, column, name));
             }

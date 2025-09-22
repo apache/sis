@@ -75,7 +75,6 @@ import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.privy.AxisNames;
@@ -573,7 +572,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (extent == null) {
                 extent = new DefaultExtent(area, null, null, null);
             } else {
-                extent.getGeographicElements().add(new DefaultGeographicDescription(area));
+                extent.setDescription(Types.toInternationalString(area));
             }
         }
         /*

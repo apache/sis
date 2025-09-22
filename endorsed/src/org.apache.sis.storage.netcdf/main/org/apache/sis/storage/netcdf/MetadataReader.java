@@ -748,7 +748,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @return {@code true} if at least one numerical value has been added.
      */
     private boolean addExtent() {
-        addExtent(stringValue(GEOGRAPHIC_IDENTIFIER));
+        addExtent(null, stringValue(GEOGRAPHIC_IDENTIFIER));
         final double[] extent = new double[4];
         /*
          * If at least one geographic coordinate is available, add a GeographicBoundingBox.

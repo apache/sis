@@ -57,7 +57,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "EX_GeographicDescription_Type")
@@ -78,6 +78,19 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * Constructs an initially empty geographic description.
      */
     public DefaultGeographicDescription() {
+    }
+
+    /**
+     * Constructs a geographic description initialized to the given identifier.
+     *
+     * @param  value  the new geographic identifier, or {@code null} if none.
+     *
+     * @see #setGeographicIdentifier(Identifier)
+     *
+     * @since 1.5
+     */
+    public DefaultGeographicDescription(final Identifier value) {
+        geographicIdentifier = value;
     }
 
     /**
@@ -118,11 +131,14 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * @param description  the natural language description of the meaning of the code value, or {@code null} if none.
      *
      * @since 0.6
+     *
+     * @deprecated This constructor applies too arbitrary rules.
      */
+    @Deprecated(since = "1.5", forRemoval = true)
     public DefaultGeographicDescription(final CharSequence description) {
         super(true);
         if (description != null) {
-            final DefaultIdentifier id = new DefaultIdentifier();
+            final var id = new DefaultIdentifier();
             if (CharSequences.isUnicodeIdentifier(description)) {
                 id.setCode(description.toString());
                 if (description instanceof InternationalString) {

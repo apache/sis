@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso.extent;
 
 import java.util.Date;
 import java.util.Locale;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.LinkedHashSet;
@@ -58,6 +57,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
@@ -120,10 +120,14 @@ public final class Extents extends Static {
     /**
      * A geographic extent ranging from 180°W to 180°E and 90°S to 90°N.
      * This extent has no vertical and no temporal components.
+     *
+     * @see #isWorld(Extent)
      */
     public static final Extent WORLD;
     static {
-        final var box = new DefaultGeographicBoundingBox(-180, 180, -90, 90);
+        final var box = new DefaultGeographicBoundingBox(
+                Longitude.MIN_VALUE, Longitude.MAX_VALUE,
+                 Latitude.MIN_VALUE,  Latitude.MAX_VALUE);
         box.transitionTo(DefaultGeographicBoundingBox.State.FINAL);
         var world = new DefaultExtent(Vocabulary.formatInternational(Vocabulary.Keys.World), box, null, null);
         world.transitionTo(DefaultExtent.State.FINAL);
@@ -276,7 +280,7 @@ public final class Extents extends Static {
         if (extent == null) {
             return null;
         }
-        final Extents m = new Extents();
+        final var m = new Extents();
         try {
             m.addHorizontal(extent);
         } catch (TransformException e) {
@@ -294,14 +298,14 @@ public final class Extents extends Static {
      */
     private void addHorizontal(final Extent extent) throws TransformException {
         boolean useOnlyGeographicEnvelopes = false;
-        final List<Envelope> fallbacks = new ArrayList<>();
+        final var fallbacks = new ArrayList<Envelope>();
         for (final GeographicExtent element : nonNull(extent.getGeographicElements())) {
             /*
              * If a geographic bounding box can be obtained, add it to the previous boxes (if any).
              * All exclusion boxes before the first inclusion box are ignored.
              */
             if (element instanceof GeographicBoundingBox) {
-                final GeographicBoundingBox item = (GeographicBoundingBox) element;
+                final var item = (GeographicBoundingBox) element;
                 if (bounds == null) {
                     /*
                      * We use DefaultGeographicBoundingBox.getInclusion(Boolean) below because
@@ -845,5 +849,35 @@ public final class Extents extends Static {
         if (result.equals(e1, ComparisonMode.BY_CONTRACT)) return e1;
         if (result.equals(e2, ComparisonMode.BY_CONTRACT)) return e2;
         return (I) result;
+    }
+
+    /**
+     * Returns {@code true} if the given extent covers the world.
+     * The current implementation checks if at least one geographic bounding box has
+     * a latitude range of {@value Latitude#MIN_VALUE} to {@value Latitude#MAX_VALUE} and
+     * a longitude range of {@value Longitude#MIN_VALUE} to {@value Longitude#MAX_VALUE}.
+     *
+     * @param  extent  the extent to check, or {@code null} if none.
+     * @return whether the given extent covers the world.
+     *
+     * @see #WORLD
+     * @since 1.5
+     */
+    public static boolean isWorld(final Extent extent) {
+        if (extent != null) {
+            for (final GeographicExtent element : nonNull(extent.getGeographicElements())) {
+                if (element instanceof GeographicBoundingBox) {
+                    final var item = (GeographicBoundingBox) element;
+                    if (item.getWestBoundLongitude() <= Longitude.MIN_VALUE &&
+                        item.getEastBoundLongitude() >= Longitude.MAX_VALUE &&
+                        item.getSouthBoundLatitude() <=  Latitude.MIN_VALUE &&
+                        item.getNorthBoundLatitude() >=  Latitude.MAX_VALUE)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

@@ -119,6 +119,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
@@ -1193,7 +1194,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @param  code    the deprecated code.
      * @return the proposed replacement (may be the "(none)" text). Never empty.
      */
-    private String getReplacement(final TableInfo source, final Integer code, final Locale locale) throws SQLException {
+    private String getReplacement(final TableInfo source, final int code, final Locale locale) throws SQLException {
         String reason = null;
         String replacedBy;
 search: try (ResultSet result = executeMetadataQuery("Deprecation",
@@ -1233,7 +1234,43 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     }
 
     /**
-     * Returns the name and aliases for the {@link IdentifiedObject} to construct.
+     * Returns the identifier for the {@link IdentifiedObject} to construct.
+     *
+     * @param  source       information about the table on which a query has been executed.
+     * @param  code         the <abbr>EPSG</abbr> code of the object to construct.
+     * @param  identifier   the code to assign to the identifier, usually {@code code.toString()}.
+     * @param  description  a description associated with the identifier. May be {@code null}.
+     * @param  deprecated   {@code true} if the object to create is deprecated.
+     * @return an identifier for the object to create.
+     */
+    private Identifier createIdentifier(final TableInfo source, final int code, final String identifier,
+            final InternationalString description, final Locale locale, final boolean deprecated)
+            throws SQLException, FactoryException
+    {
+        final Citation authority = owner.getAuthority();
+        final String version = Types.toString(authority.getEdition(), locale);
+        if (deprecated) {
+            final String replacedBy = getReplacement(source, code, locale);
+            return new DeprecatedCode(
+                    authority,
+                    Constants.EPSG,
+                    identifier,
+                    version,
+                    description,
+                    Character.isDigit(replacedBy.charAt(0)) ? replacedBy : null,
+                    Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy));
+        } else {
+            return new ImmutableIdentifier(
+                    authority,
+                    Constants.EPSG,
+                    identifier,
+                    version,
+                    description);
+        }
+    }
+
+    /**
+     * Returns the identifier, name and aliases for the {@link IdentifiedObject} to construct.
      *
      * <h4>Possible recursive calls</h4>
      * Invoking this method may cause a recursive call to {@link #createCoordinateReferenceSystem(String)}
@@ -1358,29 +1395,14 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
          */
         properties.clear();
         properties.put(IdentifiedObject.NAME_KEY, nameAsIdentifier);
+        properties.put(IdentifiedObject.IDENTIFIERS_KEY, createIdentifier(
+                source, code, code.toString(), scopedName.toInternationalString(), locale, deprecated));
         if (!aliases.isEmpty()) {
             properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(GenericName[]::new));
         }
-        final ImmutableIdentifier identifier;
         if (deprecated) {
             properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
-            final String replacedBy = getReplacement(source, code, locale);
-            identifier = new DeprecatedCode(
-                    authority,
-                    Constants.EPSG,
-                    code.toString(),
-                    version,
-                    Character.isDigit(replacedBy.charAt(0)) ? replacedBy : null,
-                    Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy));
-        } else {
-            identifier = new ImmutableIdentifier(
-                    authority,
-                    Constants.EPSG,
-                    code.toString(),
-                    version,
-                    scopedName.toInternationalString());
         }
-        properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
         properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
         properties.put(ReferencingFactoryContainer.MT_FACTORY, owner.mtFactory);
@@ -2320,29 +2342,35 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
                 TableInfo.EXTENT,
-                "SELECT"+ /* column  1 */ " EXTENT_DESCRIPTION,"
-                        + /* column  2 */ " BBOX_SOUTH_BOUND_LAT,"
-                        + /* column  3 */ " BBOX_NORTH_BOUND_LAT,"
-                        + /* column  4 */ " BBOX_WEST_BOUND_LON,"
-                        + /* column  5 */ " BBOX_EAST_BOUND_LON,"
-                        + /* column  6 */ " VERTICAL_EXTENT_MIN,"
-                        + /* column  7 */ " VERTICAL_EXTENT_MAX,"
-                        + /* column  8 */ " VERTICAL_EXTENT_CRS_CODE,"
-                        + /* column  9 */ " TEMPORAL_EXTENT_BEGIN,"
-                        + /* column 10 */ " TEMPORAL_EXTENT_END"
+                "SELECT"+ /* column  1 */ " EXTENT_CODE,"
+                        + /* column  2 */ " EXTENT_NAME,"
+                        + /* column  3 */ " EXTENT_DESCRIPTION,"
+                        + /* column  4 */ " BBOX_SOUTH_BOUND_LAT,"
+                        + /* column  5 */ " BBOX_NORTH_BOUND_LAT,"
+                        + /* column  6 */ " BBOX_WEST_BOUND_LON,"
+                        + /* column  7 */ " BBOX_EAST_BOUND_LON,"
+                        + /* column  8 */ " VERTICAL_EXTENT_MIN,"
+                        + /* column  9 */ " VERTICAL_EXTENT_MAX,"
+                        + /* column 10 */ " VERTICAL_EXTENT_CRS_CODE,"
+                        + /* column 11 */ " TEMPORAL_EXTENT_BEGIN,"
+                        + /* column 12 */ " TEMPORAL_EXTENT_END,"
+                        + /* column 13 */ " DEPRECATED"
                         + " FROM \"Extent\""
                         + " WHERE EXTENT_CODE = ?", code))
         {
             while (result.next()) {
-                final String description = getOptionalString(result, 1);
-                double   ymin = getOptionalDouble  (result,  2);
-                double   ymax = getOptionalDouble  (result,  3);
-                double   xmin = getOptionalDouble  (result,  4);
-                double   xmax = getOptionalDouble  (result,  5);
-                double   zmin = getOptionalDouble  (result,  6);
-                double   zmax = getOptionalDouble  (result,  7);
-                Temporal tmin = getOptionalTemporal(result,  9, "createExtent");
-                Temporal tmax = getOptionalTemporal(result, 10, "createExtent");
+                Integer  epsg        = getOptionalInteger (result,  1);
+                String   name        = getOptionalString  (result,  2);
+                String   description = getOptionalString  (result,  3);
+                double   ymin        = getOptionalDouble  (result,  4);
+                double   ymax        = getOptionalDouble  (result,  5);
+                double   xmin        = getOptionalDouble  (result,  6);
+                double   xmax        = getOptionalDouble  (result,  7);
+                double   zmin        = getOptionalDouble  (result,  8);
+                double   zmax        = getOptionalDouble  (result,  9);
+                Temporal tmin        = getOptionalTemporal(result, 11, "createExtent");
+                Temporal tmax        = getOptionalTemporal(result, 12, "createExtent");
+                boolean  deprecated  = getOptionalBoolean (result, 13);
                 DefaultGeographicBoundingBox bbox = null;
                 if (!(Double.isNaN(ymin) && Double.isNaN(ymax) && Double.isNaN(xmin) && Double.isNaN(xmax))) {
                     /*
@@ -2362,7 +2390,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 DefaultVerticalExtent vertical = null;
                 if (!(Double.isNaN(zmin) && Double.isNaN(zmax))) {
                     vertical = new DefaultVerticalExtent(zmin, zmax, null);
-                    final Integer crs = getOptionalInteger(result, 8);
+                    final Integer crs = getOptionalInteger(result, 10);
                     if (crs != null) {
                         var c = new QueryID("Coordinate Reference System", new int[] {crs}, currentSingletonQuery);
                         if (!c.isAlreadyInProgress()) {
@@ -2375,6 +2403,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     temporal = new DefaultTemporalExtent(tmin, tmax);
                 }
                 var extent = new DefaultExtent(description, bbox, vertical, temporal);
+                if (epsg != null && name != null) {     // Should never be null, but we don't need to be strict.
+                    var identifier = createIdentifier(TableInfo.EXTENT, epsg, name, null, getLocale(), deprecated);
+                    extent.getGeographicElements().add(new DefaultGeographicDescription(identifier));
+                }
                 if (!extent.isEmpty()) {
                     returnValue = ensureSingleton(extent, returnValue, code);
                 }

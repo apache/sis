@@ -343,7 +343,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     private Identifier createIdentifier(final Citation authority, final String codeSpace, final String identifier, final String version) {
         if (isDeprecated()) {
-            return new DeprecatedCode(authority, codeSpace, identifier, version, null, getRemarks());
+            return new DeprecatedCode(authority, codeSpace, identifier, version, getDescription(), null, getRemarks());
         } else {
             return new ImmutableIdentifier(authority, codeSpace, identifier, version, getDescription());
         }

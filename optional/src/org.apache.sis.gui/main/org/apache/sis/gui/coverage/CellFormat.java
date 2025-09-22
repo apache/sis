@@ -158,10 +158,15 @@ final class CellFormat extends SimpleStringProperty {
     /**
      * Tries to reduce the size of the pattern used for formatting the numbers.
      * This method is invoked when the numbers are too large for the cell width.
+     * The method should be invoked soon after a call to a {@code format(…)} method,
+     * because its behavior depends on which value was formatted last time.
      *
      * @return whether the pattern has been made smaller.
      */
     final boolean shorterPattern() {
+        if (Double.isNaN(lastValue)) {
+            return false;
+        }
         int n = cellFormat.getMaximumFractionDigits() - 1;
         if (n >= 0) {
             cellFormat.setMaximumFractionDigits(n);

@@ -56,9 +56,9 @@ public final class MetadataCopierTest extends TestCase {
      */
     @Test
     public void testCopy() {
-        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final var copier = new MetadataCopier(MetadataStandard.ISO_19115);
         final DefaultCitation original = HardCodedCitations.EPSG;
-        final DefaultCitation copy = (DefaultCitation) copier.copy(original);
+        final var copy = (DefaultCitation) copier.copy(original);
         assertNotSame(original, copy);
         assertNotSame(getSingleton(original.getCitedResponsibleParties()),
                       getSingleton(copy.getCitedResponsibleParties()));
@@ -70,7 +70,7 @@ public final class MetadataCopierTest extends TestCase {
      */
     @Test
     public void testCopyWithType() {
-        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final var copier = new MetadataCopier(MetadataStandard.ISO_19115);
         final DefaultCitation original = HardCodedCitations.EPSG;
         final Citation copy = copier.copy(Citation.class, original);
         assertNotSame(original, copy);
@@ -85,8 +85,8 @@ public final class MetadataCopierTest extends TestCase {
      */
     @Test
     public void testCopyWithSuperType() {
-        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
-        final DefaultGeographicDescription original = new DefaultGeographicDescription("Some area.");
+        final var copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final var original = new DefaultGeographicDescription(null, "Some area.");
         final GeographicExtent copy = copier.copy(GeographicExtent.class, original);
         assertNotSame(original, copy);
         assertEquals (original, copy);
@@ -97,7 +97,7 @@ public final class MetadataCopierTest extends TestCase {
      */
     @Test
     public void testWrongArgument() {
-        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final var copier = new MetadataCopier(MetadataStandard.ISO_19115);
         final DefaultCitation original = HardCodedCitations.EPSG;
         var e = assertThrows(IllegalArgumentException.class, () -> copier.copy(DefaultCitation.class, original));
         assertMessageContains(e, "DefaultCitation");
@@ -109,8 +109,8 @@ public final class MetadataCopierTest extends TestCase {
      */
     @Test
     public void testLocaleAndCharsets() {
-        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
-        final DefaultMetadata original = new DefaultMetadata();
+        final var copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final var original = new DefaultMetadata();
         original.getLocalesAndCharsets().put(Locale.FRENCH,   StandardCharsets.UTF_8);
         original.getLocalesAndCharsets().put(Locale.JAPANESE, StandardCharsets.UTF_16);
         final Metadata copy = copier.copy(Metadata.class, original);
