@@ -229,7 +229,7 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
      * @see #setColorItem(ColorRamp)
      */
     private Rectangle createRectangle(final double adjust) {
-        final Rectangle gr = new Rectangle();
+        final var gr = new Rectangle();
         gr.setHeight(HEIGHT);
         gr.widthProperty().bind(widthProperty().add(adjust));
         return gr;

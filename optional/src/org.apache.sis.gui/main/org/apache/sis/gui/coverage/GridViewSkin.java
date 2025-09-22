@@ -16,120 +16,116 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.List;
+import java.util.Arrays;
 import java.awt.image.RenderedImage;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Cursor;
 import javafx.scene.control.ScrollBar;
-import javafx.scene.control.skin.VirtualFlow;
-import javafx.scene.control.skin.VirtualContainerBase;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.SkinBase;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
+import javafx.geometry.Bounds;
 import org.apache.sis.gui.internal.MouseDrags;
 import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.util.privy.Numerics;
 
 
 /**
- * The {@link GridView} renderer as a virtualized and scrollable content.
- * The primary direction of virtualization is vertical (rows will stack vertically on top of each other).
- *
- * <p>Relationships:</p>
- * <ul>
- *   <li>This is created by {@link GridView#createDefaultSkin()}.</li>
- *   <li>The {@link GridView} which own this skin is given by {@link #getSkinnable()}.</li>
- *   <li>This {@code GridViewSkin} contains an arbitrary number of {@link GridRow} children.
- *       It should be limited to the number of children that are visible at the same time,
- *       not the total number of rows in the image.</li>
- * </ul>
+ * The {@link GridView} renderer as a scrollable content.
+ * This is created by {@link GridView#createDefaultSkin()}.
+ * The {@link GridView} which owns this skin is given by {@link #getSkinnable()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> implements EventHandler<MouseEvent> {
+final class GridViewSkin extends SkinBase<GridView> implements EventHandler<MouseEvent> {
     /**
-     * The cells that we put in the header row on the top of the view. The children list is initially empty;
-     * new elements are added or removed when first needed and when the view size changed.
+     * Margin to add to the header row or header column.
      */
-    private final HBox headerRow;
+    private static final int HEADER_MARGIN = 9;
 
     /**
-     * Background of the header row (top side) and header column (left side) of the view.
-     */
-    private final Rectangle topBackground, leftBackground;
-
-    /**
-     * Zero-based index of the first column visible in the view, ignoring the header column.
-     * This is equal to the {@link RenderedImage} <var>x</var> index if the image coordinates
-     * also start at zero (i.e. {@link RenderedImage#getMinX()} = 0).
+     * Minimum cell width and height. Must be greater than zero, otherwise infinite loops may happen.
      *
-     * <p>This field is written by {@link #layoutChildren(double, double, double, double)}.
-     * All other accesses (especially from outside of this class) should be read-only.</p>
+     * @see #toValidCellSize(double)
      */
-    int firstVisibleColumn;
+    private static final int MIN_CELL_SIZE = 4;
 
     /**
-     * Horizontal position in the virtual flow where to start writing the text of the header column.
-     * This value changes during horizontal scrolls, even if the cells continue to start at the same
-     * visual position on the screen. The position of the column showing {@link #firstVisibleColumn}
-     * sample values is {@code leftPosition} + {@link #headerWidth}, and that position is incremented
-     * by {@link #cellWidth} for all other columns.
+     * Minimal width and height of the error box for showing it.
+     */
+    private static final int MIN_ERROR_BOX_SIZE = 140;
+
+    /**
+     * The cells that we put in the header row on the top of the view.
+     * The length of this array is the number of columns that are visible.
+     * This array is recreated when the view's width changed.
      *
-     * <p>This field is written by {@link #layoutChildren(double, double, double, double)}.
-     * All other accesses (especially from outside of this class) should be read-only.</p>
+     * @see #topBackground
      */
-    double leftPosition;
+    private Text[] headerRow;
 
     /**
-     * Horizontal position where to stop rendering the cells.
-     * This is {@link #leftPosition} + the view width.
+     * The cells that we put in the header column on the left of the view.
+     * The length of this array is the number of rows that are visible.
+     * This array is recreated when the view's height changed.
      *
-     * <p>This field is written by {@link #layoutChildren(double, double, double, double)}.
-     * All other accesses (especially from outside of this class) should be read-only.</p>
+     * @see #leftBackground
      */
-    double rightPosition;
+    private Text[] headerColumn;
 
     /**
-     * Width of the header column ({@code headerWidth}) and of all other columns ({@code cellWidth}).
-     * Must be greater than zero, otherwise infinite loop may happen.
+     * All grid cells (row major) containing the pixel values of the selected band.
+     * The length of this array shall be {@code headerRow.length * headerColumn.length}.
+     * This array is recreated when the view's size changed.
      *
-     * <p>This field is written by {@link #layoutChildren(double, double, double, double)}.
-     * All other accesses (especially from outside of this class) should be read-only.</p>
+     * @see #valuesRegionX()
+     * @see #valuesRegionY()
      */
-    double headerWidth, cellWidth;
+    private Text[] valueCells;
 
     /**
-     * Width of the region where to write the text in a cell. Should be equal or slightly smaller
-     * than {@link #cellWidth}. We use a smaller width for leaving a small margin between cells.
+     * Background of the header row (top side) of the view. The bottom coordinate of this
+     * rectangle is the <var>y</var> coordinate where to start drawing the value cells.
      *
-     * <p>This field is written by {@link #layoutChildren(double, double, double, double)}.
-     * All other accesses (especially from outside of this class) should be read-only.</p>
+     * @see #headerRow
+     * @see #valuesRegionY()
      */
-    double cellInnerWidth;
+    private final Rectangle topBackground;
 
     /**
-     * Whether a new image has been set, in which case we should recompute everything
-     * including the labels in header row.
+     * Background of the header header column (left side) of the view. The right coordinate of
+     * this rectangle is the <var>x</var> coordinate where to start drawing the value cells.
+     *
+     * @see #headerColumn
+     * @see #valuesRegionX()
      */
-    private boolean layoutAll;
+    private final Rectangle leftBackground;
 
     /**
-     * Whether the grid view contains at least one tile that we failed to fetch.
+     * Width of all columns other than the header column.
+     * This is the {@link GridView#cellWidth} value forced to at least {@value #MIN_CELL_SIZE}.
      */
-    private boolean hasErrors;
+    private double cellWidth;
 
     /**
-     * A rectangle around selected the cell in the content area or in the row/column header.
+     * Height of all cells other than the header row.
+     * This is the {@link GridView#cellHeight} value forced to at least {@value #MIN_CELL_SIZE}.
+     */
+    private double cellHeight;
+
+    /**
+     * A rectangle behind the selected cell in the content area or in the row/column header.
+     * Used to highlight which cells is below the mouse cursor.
      */
     private final Rectangle selection, selectedRow, selectedColumn;
 
@@ -142,6 +138,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
 
     /**
      * Cursor position at the time of previous pan event.
+     * The coordinate units are related to {@link RenderedImage} coordinates.
      * This is used for computing the translation to apply during drag events.
      *
      * @see #onDrag(MouseEvent)
@@ -149,94 +146,139 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     private double xPanPrevious, yPanPrevious;
 
     /**
+     * Horizontal and vertical scroll bars. Units are {@link RenderedImage} pixel coordinates.
+     * The minimum value is the minimum image pixel coordinate, which is not necessarily zero.
+     */
+    private final ScrollBar xScrollBar, yScrollBar;
+
+    /**
+     * Range if indexes of the children which is an instance of {@link GridError}.
+     */
+    private int indexOfFirstError, indexAfterLastError;
+
+    /**
+     * The clip to apply on the view.
+     */
+    private final Rectangle clip;
+
+    /**
      * Creates a new skin for the specified view.
      */
     GridViewSkin(final GridView view) {
         super(view);
-        headerRow = new HBox();
+        headerRow = new Text[0];
+        headerColumn = headerRow;
+        valueCells   = headerRow;
         /*
          * Main content where sample values will be shown.
          */
-        final VirtualFlow<GridRow> flow = getVirtualFlow();
-        flow.setCellFactory(GridRow::new);
-        flow.setFocusTraversable(true);
-        flow.setFixedCellSize(GridView.getSizeValue(view.cellHeight));
-        view.cellHeight .addListener((p,o,n) -> cellHeightChanged(n));
-        view.cellWidth  .addListener((p,o,n) -> cellWidthChanged(n, true));
-        view.headerWidth.addListener((p,o,n) -> cellWidthChanged(n, false));
+        cellWidth  = toValidCellSize(view.cellWidth.get());
+        cellHeight = toValidCellSize(view.cellHeight.get());
         /*
          * Rectangles for filling the background of the cells in the header row and header column.
-         * Those rectangles will be resized and relocated by the `layout(…)` method.
+         * Those rectangles will be resized and relocated by the `layoutChildren(…)` method.
          */
-        topBackground  = new Rectangle();
-        leftBackground = new Rectangle();
-        leftBackground.fillProperty().bind(view.headerBackground);
-        topBackground .fillProperty().bind(view.headerBackground);
+        final double valuesRegionX = toValidCellSize(view.headerWidth.get());
+        final double valuesRegionY = cellHeight + HEADER_MARGIN;     // No independent property yet.
+        leftBackground = new Rectangle(valuesRegionX, 0);
+        topBackground  = new Rectangle(0, valuesRegionY);
         /*
          * Rectangle around the selected cell (for example the cell below mouse position).
-         * Become visible only when the mouse enter in the widget area. The rectangles are
-         * declared unmanaged for avoiding relayout of the whole widget every time that a
-         * rectangle position changed.
+         * They become visible only when the mouse enter in the widget area.
          */
-        selection      = new Rectangle();
-        selectedRow    = new Rectangle();
-        selectedColumn = new Rectangle();
+        selection      = new Rectangle(valuesRegionX, valuesRegionY, cellWidth, cellHeight);
+        selectedRow    = new Rectangle(0, valuesRegionY, valuesRegionX, cellHeight);
+        selectedColumn = new Rectangle(valuesRegionX, 0, cellWidth, valuesRegionY);
         selection     .setFill(Styles.SELECTION_BACKGROUND);
         selectedRow   .setFill(Color.SILVER);
         selectedColumn.setFill(Color.SILVER);
         selection     .setVisible(false);
         selectedRow   .setVisible(false);
         selectedColumn.setVisible(false);
-        selection     .setManaged(false);
-        selectedRow   .setManaged(false);
-        selectedColumn.setManaged(false);
-        flow.setOnMouseExited((e) -> hideSelection());
         /*
-         * The list of children is initially empty. We need to add the virtual flow
-         * (together with headers, selection, etc.), otherwise nothing will appear.
+         * Scroll bars.
          */
-        getChildren().addAll(topBackground, leftBackground, selectedColumn,
-                             selectedRow, headerRow, selection, flow);
-        /*
-         * Keyboard and drag events for moving the viewed bounds.
-         */
+        xScrollBar = new ScrollBar();
+        yScrollBar = new ScrollBar();
+        yScrollBar.setOrientation(Orientation.VERTICAL);
+        view.setClip(clip = new Rectangle());
+    }
+
+    /**
+     * Registers the listeners. This is done outside the constructor because this
+     * method creates references from {@link GridView} to this {@code GridViewSkin}.
+     */
+    @Override
+    public void install() {
+        super.install();
+        xScrollBar.valueProperty().addListener((p,o,n) -> positionChanged(o, n, false));
+        yScrollBar.valueProperty().addListener((p,o,n) -> positionChanged(o, n, true));
+
+        final GridView view = getSkinnable();
+        topBackground .fillProperty().bind(view.headerBackground);
+        leftBackground.fillProperty().bind(view.headerBackground);
+        view.headerWidth.addListener((p,o,n) -> cellSizeChanged(o, n, HEADER_PROPERTY));
+        view.cellWidth  .addListener((p,o,n) -> cellSizeChanged(o, n, WIDTH_PROPERTY));
+        view.cellHeight .addListener((p,o,n) -> cellSizeChanged(o, n, HEIGHT_PROPERTY));
         view.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyTyped);
+        view.setOnMouseExited((e) -> hideSelection());
+        view.setOnMouseMoved(this);
         MouseDrags.setHandlers(view, this::onDrag);
+    }
+
+    /**
+     * Removes the listeners installed by {@link #install()}.
+     *
+     * <h4>Limitations</h4>
+     * We don't have an easy way to remove the listeners on properties.
+     * But it should not be an issue, because this method is defined mostly as
+     * a matter of principle since we don't expect users to remove this skin.
+     */
+    @Override
+    public void dispose() {
+        final GridView view = getSkinnable();
+        topBackground .fillProperty().unbind();
+        leftBackground.fillProperty().unbind();
+        view.setOnMouseExited(null);
+        view.setOnMouseMoved(null);
+        MouseDrags.setHandlers(view, null);
+        super.dispose();
     }
 
     /**
      * Invoked when the mouse is moving over the cells. This method computes cell indices
      * and draws the selection rectangle around that cell. Then, listeners are notified.
      *
-     * <p>This listener is registered for each {@link GridRow} instances.
-     * It is not designed for other kinds of event source.</p>
-     *
      * @see #onDrag(MouseEvent)
      */
     @Override
     public final void handle(final MouseEvent event) {
-        double x = event.getX() - (leftPosition + headerWidth);
-        boolean visible = (x >= 0);
+        final double valuesRegionX = valuesRegionX();
+        double x = (event.getX() - valuesRegionX) / cellWidth;
+        boolean visible = (x >= 0 && x < headerRow.length);
         if (visible) {
-            final double column = Math.floor(x / cellWidth);
-            visible = (column >= 0);
+            final double valuesRegionY = valuesRegionY();
+            double y = (event.getY() - valuesRegionY) / cellHeight;
+            visible = (y >= 0 && y < headerColumn.length);
             if (visible) {
-                final GridRow row = (GridRow) event.getSource();
-                double y = row.getLayoutY();
-                visible = y < ((Flow) getVirtualFlow()).getVisibleHeight();
-                if (visible) {
-                    x  = column * cellWidth + leftBackground.getWidth() + row.getLayoutX();
-                    y += topBackground.getHeight();
-                    selection.setX(x);                  // NOT equivalent to `relocate(x,y)`.
-                    selection.setY(y);
-                    selectedRow.setY(y);
-                    selectedColumn.setX(x);
-                    getSkinnable().formatCoordinates(firstVisibleColumn + (int) column, row.getIndex());
+                final double xminOfValues = xScrollBar.getValue();
+                final double yminOfValues = yScrollBar.getValue();
+                x = Math.floor(x + xminOfValues);
+                y = Math.floor(y + yminOfValues);
+                final double xpos = valuesRegionX + (x - xminOfValues) * cellWidth;
+                final double ypos = valuesRegionY + (y - yminOfValues) * cellHeight;
+                selection.setX(xpos);      // NOT equivalent to `relocate(x,y)`.
+                selection.setY(ypos);
+                selectedRow.setY(ypos);
+                selectedColumn.setX(xpos);
+                final GridControls controls = getSkinnable().controls;
+                if (controls != null) {
+                    controls.status.setLocalCoordinates(x, y);
                 }
             }
         }
-        selection     .setVisible(visible);
-        selectedRow   .setVisible(visible);
+        selection.setVisible(visible);
+        selectedRow.setVisible(visible);
         selectedColumn.setVisible(visible);
         if (!visible) {
             getSkinnable().hideCoordinates();
@@ -245,36 +287,35 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
 
     /**
      * Invoked when the user presses the button, drags the grid and releases the button.
-     * The position of the selection rectangles become invalid has a result of the drag.
-     * Instead of bothering to adjust it, we hide it. It may also be less confusing for
-     * the user, because it shows that we are not exploring values of different cells.
      *
      * @see #handle(MouseEvent)
      */
     private void onDrag(final MouseEvent event) {
         if (event.getButton() == MouseButton.PRIMARY) {
-            final double x = event.getX() - leftBackground.getWidth();
-            final double y = event.getY() - topBackground.getHeight();
-            final Flow flow = (Flow) getVirtualFlow();
-            if (x >= 0 && y >= 0 && y < flow.getVisibleHeight()) {
-                final GridView view = getSkinnable();
-                final EventType<? extends MouseEvent> type = event.getEventType();
-                if (type == MouseEvent.MOUSE_PRESSED) {
-                    view.setCursor(Cursor.CLOSED_HAND);
-                    view.requestFocus();
+            final double x = (event.getX() - valuesRegionX()) / cellWidth;
+            if (x >= 0 && x < headerRow.length) {
+                final double y = (event.getY() - valuesRegionY()) / cellHeight;
+                if (y >= 0 && y < headerColumn.length) {
+                    final GridView view = getSkinnable();
+                    final EventType<? extends MouseEvent> type = event.getEventType();
+                    if (type == MouseEvent.MOUSE_PRESSED) {
+                        view.setCursor(Cursor.CLOSED_HAND);
+                        view.requestFocus();
+                        isDragging = true;
+                    } else if (isDragging) {
+                        if (type == MouseEvent.MOUSE_RELEASED) {
+                            view.setCursor(Cursor.DEFAULT);
+                            isDragging = false;
+                        }
+                        shift(xScrollBar, xPanPrevious - x, false);
+                        shift(yScrollBar, yPanPrevious - y, false);
+                    } else {
+                        return;
+                    }
                     xPanPrevious = x;
                     yPanPrevious = y;
-                    isDragging = true;
-                    hideSelection();
-                } else if (isDragging) {
-                    if (type == MouseEvent.MOUSE_RELEASED) {
-                        view.setCursor(Cursor.DEFAULT);
-                        isDragging = false;
-                    }
-                    xPanPrevious -= flow.scrollHorizontal(xPanPrevious - x);
-                    yPanPrevious -= flow.scrollPixels(yPanPrevious - y);
+                    event.consume();
                 }
-                event.consume();
             }
         }
     }
@@ -285,23 +326,106 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
      * scrolling instead of the selection rectangle moving.
      */
     private void onKeyTyped(final KeyEvent event) {
-        double tx=0, ty=0;
+        int tx=0, ty=0;
         switch (event.getCode()) {
             case RIGHT: case KP_RIGHT: tx =  1; break;
             case LEFT:  case KP_LEFT:  tx = -1; break;
             case DOWN:  case KP_DOWN:  ty = +1; break;
             case UP:    case KP_UP:    ty = -1; break;
+            case PAGE_DOWN: ty = Math.max(headerColumn.length - 3,  1); break;
+            case PAGE_UP:   ty = Math.min(3 - headerColumn.length, -1); break;
             default: return;
         }
-        if (event.isShiftDown()) {
-            tx *= 10;
-            ty *= 10;
-        }
-        final Flow flow = (Flow) getVirtualFlow();
-        flow.scrollPixels(flow.getFixedCellSize() * ty);
-        flow.scrollHorizontal(cellWidth * tx);
-        hideSelection();
+        if (tx != 0) shift(xScrollBar, tx, true);
+        if (ty != 0) shift(yScrollBar, ty, true);
         event.consume();
+    }
+
+    /**
+     * Increments or decrements the value of the given scroll bar by the given amount.
+     *
+     * @param  bar    the scroll bar for which to modify the position.
+     * @param  shift  the increment to add, in units of {@link RenderedImage} coordinates.
+     */
+    private static void shift(final ScrollBar bar, final double shift, final boolean snap) {
+        double value = bar.getValue() + shift;
+        if (snap) {
+            value = Math.rint(value);
+        }
+        bar.setValue(Math.max(bar.getMin(), Math.min(bar.getMax(), value)));
+    }
+
+    /**
+     * Invoked when the scroll bar changed its position. This is not only in reaction to direct interaction
+     * with the scroll bar, but may also be in response to a key pressed on the keyboard or a drag event.
+     */
+    private void positionChanged(final Number oldValue, final Number newValue, final boolean vertical) {
+        final double shift = newValue.doubleValue() - oldValue.doubleValue();
+        if (vertical) {
+            final double ypos = selection.getY() - shift * cellHeight;
+            selection.setY(ypos);
+            selectedRow.setY(ypos);
+        } else {
+            final double xpos = selection.getX() - shift * cellWidth;
+            selection.setX(xpos);
+            selectedColumn.setX(xpos);
+        }
+        updateCellValues();
+    }
+
+    /**
+     * Identification of which size property has changed.
+     * Used as argument in {@link #cellSizeChanged(Number, int)}.
+     */
+    private static final int WIDTH_PROPERTY = 0, HEIGHT_PROPERTY = 1, HEADER_PROPERTY = 2;
+
+    /**
+     * Returns the given value inside the range expected by this class for cell values.
+     * We use this method instead of {@link Math#max(double, double)} because we want
+     * {@link Double#NaN} values to be replaced by {@value #MIN_CELL_SIZE}.
+     */
+    private static double toValidCellSize(final double value) {
+        return (value >= MIN_CELL_SIZE) ? value : MIN_CELL_SIZE;
+    }
+
+    /**
+     * Invoked when a cell width or cell height changed.
+     *
+     * @param  oldValue  the old cell width or cell height.
+     * @param  newValue  the new cell width or cell height.
+     * @param  property  one of the {@code *_PROPERTY} constants.
+     */
+    private void cellSizeChanged(final Number oldValue, final Number newValue, final int property) {
+        double value = toValidCellSize(newValue.doubleValue());
+        switch (property) {
+            case HEADER_PROPERTY: {
+                leftBackground.setWidth(value);
+                selectedRow.setWidth(value);
+                selectedColumn.setX(value);
+                break;
+            }
+            case WIDTH_PROPERTY: {
+                cellWidth = value;
+                selection.setWidth(value);
+                selectedColumn.setWidth(value);
+                if (value > oldValue.doubleValue()) {
+                    // Maybe there is enough space for the full pattern now.
+                    getSkinnable().cellFormat.restorePattern();
+                }
+                break;
+            }
+            case HEIGHT_PROPERTY: {
+                cellHeight = value;
+                selection.setHeight(value);
+                selectedRow.setHeight(value);
+                value += HEADER_MARGIN;     // No independent property yet.
+                selectedColumn.setHeight(value);
+                topBackground.setWidth(value);
+                break;
+            }
+        }
+        hideSelection();
+        getSkinnable().requestLayout();
     }
 
     /**
@@ -316,51 +440,20 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     }
 
     /**
-     * Invoked when the value of {@link GridView#cellHeight} property changed.
-     * This method copies the new value into {@link VirtualFlow#fixedCellSizeProperty()} after bounds check.
-     */
-    private void cellHeightChanged(Number newValue) {
-        final Flow flow = (Flow) getVirtualFlow();
-        double value = newValue.doubleValue();
-        if (!(value >= GridView.MIN_CELL_SIZE)) {           // Use ! for catching NaN values.
-            value = GridView.MIN_CELL_SIZE;
-        }
-        flow.setFixedCellSize(value);
-        selection.setVisible(false);
-        selection.setHeight(value);
-        contentChanged(false);
-    }
-
-    /**
-     * Invoked when the cell width or header width changed.
-     * This method notifies all children about the new width.
-     *
-     * @param  cell  {@code true} if modifying the width of cells, or
-     *               {@code false} if modifying the width of headers.
-     */
-    private void cellWidthChanged(Number newValue, final boolean cell) {
-        final GridView view = getSkinnable();
-        final double width = view.getContentWidth();
-        for (final Node child : getChildren()) {
-            if (child instanceof GridRow) {             // The first instances are not a GridRow.
-                ((GridRow) child).setPrefWidth(width);
-            }
-        }
-        if (cell) {
-            selection.setVisible(false);
-            selection.setWidth(newValue.doubleValue());
-        }
-        layoutAll = true;
-        contentChanged(false);
-    }
-
-    /**
-     * Invoked when an error occurred while fetching a tile. The given {@link GridError} node is added as last
-     * child (i.e. will be drawn on top of everything else). That child will be removed if a new image is set.
+     * Invoked when an error occurred while fetching a tile. The given {@link GridError}
+     * node will be added after the value cells, in order to be drawn on top of them.
+     * That child will be removed if a new image is set.
      */
     final void errorOccurred(final GridError error) {
-        hasErrors = true;
-        getChildren().add(error);
+        getChildren().add(indexAfterLastError, error);
+        indexAfterLastError++;  // Increment only after success.
+    }
+
+    /**
+     * Returns all {@link GridError} instances. This is a view over the children of this skin.
+     */
+    private List<Node> errors() {
+        return getChildren().subList(indexOfFirstError, indexAfterLastError);
     }
 
     /**
@@ -368,326 +461,271 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
      * Callers is responsible for invoking {@link GridTile#clear()}.
      */
     final void removeError(final GridError error) {
-        final ObservableList<Node> children = getChildren();
-        children.remove(error);
-        // The list should never be empty, so IndexOutOfBoundsException here would be a bug.
-        hasErrors = children.get(children.size() - 1) instanceof GridError;
-        contentChanged(false);
+        if (errors().remove(error)) {
+            indexAfterLastError--;
+        }
     }
 
     /**
-     * Invoked when the content may have changed. If {@code all} is {@code true}, then everything
-     * may have changed including the number of rows and columns. If {@code all} is {@code false}
-     * then the number of rows and columns is assumed the same.
-     *
-     * <p>This method is invoked by {@link GridView} when the image has changed ({@code all=true}),
-     * or the band in the image to show has changed ({@code all=false}).</p>
-     *
-     * @see GridView#contentChanged(boolean)
+     * Removes all {@link GridError} instances.
      */
-    final void contentChanged(final boolean all) {
-        if (all) {
-            updateItemCount();
-            getChildren().removeIf((node) -> (node instanceof GridError));
-            layoutAll = true;
-            hasErrors = false;
-        }
-        /*
-         * Following call may be redundant with `updateItemCount()` except if the number of
-         * rows did not changed, in which case `updateItemCount()` may have sent no event.
-         */
-        ((Flow) getVirtualFlow()).changed(null, null, null);
+    final void clear() {
+        errors().clear();
     }
 
     /**
-     * Creates the virtual flow used by this {@link GridViewSkin}. The virtual flow
-     * created by this method registers a listener for horizontal scroll bar events.
-     */
-    @Override
-    protected VirtualFlow<GridRow> createVirtualFlow() {
-        return new Flow(getSkinnable());
-    }
-
-    /**
-     * The virtual flow used by {@link GridViewSkin}. We define that class
-     * mostly for getting access to the protected {@link #getHbar()} method.
-     * There are two main properties that we want:
+     * Resizes the given array of cells. If the array become longer, new labels are created.
+     * This is an helper method for {@link #layoutChildren(double, double, double, double)}.
      *
-     * <ul>
-     *   <li>{@link #getHorizontalPosition()} for the position of the horizontal scroll bar.</li>
-     *   <li>{@link #getWidth()} for the width of the visible region.
-     * </ul>
-     *
-     * Those two properties are used for creating the minimal amount
-     * of {@link GridCell}s needed for rendering the {@link GridRow}.
+     * @param  cells   the array to resize.
+     * @param  count   the desired number of elements.
+     * @param  header  whether the cells are for a header row or column.
+     * @return the resized array.
      */
-    private static final class Flow extends VirtualFlow<GridRow> implements ChangeListener<Number> {
-        /**
-         * Creates a new flow for the given view. This method registers listeners
-         * on the properties that may require a redrawn of the full view port.
-         */
-        Flow(final GridView view) {
-            setPannable(false);         // We will use our own pan listeners.
-            getHbar().valueProperty().addListener(this);
-            view.bandProperty.addListener(this);
-            view.cellSpacing .addListener(this);
-            // Other listeners are registered by enclosing class.
-        }
-
-        /**
-         * The position of the horizontal scroll bar. This is a value between 0 and
-         * the width that the {@link GridView} would have if we were showing it fully.
-         */
-        final double getHorizontalPosition() {
-            return getHbar().getValue();
-        }
-
-        /**
-         * Attempts to scroll horizontally the view by the given number of pixels.
-         *
-         * @param  delta  the number of pixels to scroll.
-         * @return the number of pixels actually moved.
-         */
-        final double scrollHorizontal(final double delta) {
-            final ScrollBar bar = getHbar();
-            final double previous = bar.getValue();
-            final double value = Math.max(bar.getMin(), Math.min(bar.getMax(), previous + delta));
-            bar.setValue(value);
-            return value - previous;
-        }
-
-        /**
-         * Returns the height of the view area, not counting the horizontal scroll bar.
-         * This height does not include the row header neither, because it is managed by
-         * a separated node ({@link #headerRow}).
-         */
-        final double getVisibleHeight() {
-            double height = getHeight();
-            final ScrollBar bar = getHbar();
-            if (bar.isVisible()) {
-                height -= bar.getHeight();
+    private static Text[] resize(Text[] cells, final int count, final boolean header) {
+        int i = cells.length;
+        if (i != count) {
+            cells = Arrays.copyOf(cells, count);
+            if (count > i) {
+                final Font font = header ? Font.font(null, FontWeight.BOLD, -1) : null;
+                do {
+                    final var cell = new Text();
+                    if (header) {
+                        cell.setFont(font);
+                    }
+                    cells[i] = cell;
+                } while (++i < count);
             }
-            return height;
         }
-
-        /**
-         * Invoked when the content to show changed because of a change in a property.
-         * The most important event is a change in the position of horizontal scroll bar,
-         * which is handled as a change of content because we will need to change values
-         * shown by the cells (because we reuse a small number of cells in visible region).
-         * But this method is also invoked for real changes of content like changes in the
-         * index of the band to show, provided that the number of rows and columns is the same.
-         *
-         * @param  property  the property that changed (ignored).
-         * @param  oldValue  the old value (ignored).
-         * @param  newValue  the new value (ignored).
-         */
-        @Override
-        public void changed(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
-            // Inform VirtualFlow that a layout pass should be done, but no GridRows have been added or removed.
-            reconfigureCells();
-        }
+        return cells;
     }
 
     /**
-     * Invoked when it is possible that the item count has changed. JavaFX may invoke this method
-     * when scrolling has occurred, the control has resized, <i>etc.</i>, but for {@link GridView}
-     * the count will change only if a new {@link RenderedImage} has been specified.
+     * Returns the leftmost coordinate where value cells are rendered. This is in units of the
+     * coordinates given to the {@link #layoutChildren(double, double, double, double)} method,
+     * with {@code xmin} assumed to be zero.
      */
-    @Override
-    protected void updateItemCount() {
-        /*
-         * VirtualFlow.setCellCount(int) indicates the number of cells that should be in the flow.
-         * When the cell count changes, VirtualFlow responds by updating the visuals. If the items
-         * backing the cells change but the count has not changed, then reconfigureCells() should
-         * be invoked instead. This is done by the `Flow` inner class above.
-         */
-        getVirtualFlow().setCellCount(getItemCount());      // Fires event only if count changed.
+    private double valuesRegionX() {
+        return leftBackground.getWidth();
     }
 
     /**
-     * Returns the total number of image rows, including those that are currently hidden because
-     * they are out of view. The returned value is (indirectly) {@link RenderedImage#getHeight()}.
+     * Returns the topmost coordinate where value cells are rendered. This is in units of the
+     * coordinates given to the {@link #layoutChildren(double, double, double, double)} method,
+     * with {@code ymin} assumed to be zero.
      */
-    @Override
-    public int getItemCount() {
-        return getSkinnable().getImageHeight();
+    private double valuesRegionY() {
+        return topBackground.getHeight();
     }
 
     /**
      * Called during the layout pass of the scene graph. The (x,y) coordinates are usually zero
      * and the (width, height) are the size of the control as shown (not the full content size).
-     * Current implementation sets the virtual flow size to the given size.
+     * Current implementation assume that the visible part is the given size.
+     *
+     * <h4>Assumptions</h4>
+     * This implementation ignores {@code xmin} and {@code ymin} on the assumption that they are always zero.
+     * If this assumption is false, we need to add those values in pretty much everything that set a position
+     * in this class.
      */
     @Override
-    protected void layoutChildren(final double x, final double y, final double width, final double height) {
-        /*
-         * Super-class only invokes `updateItemCount()` if needed.
-         * It does not perform any layout by itself in this method.
-         */
-        super.layoutChildren(x, y, width, height);
-        final GridView view = getSkinnable();
-        double cellSpacing  = Math.min(view.cellSpacing.get(), cellWidth);
-        if (!(cellSpacing  >= 0)) cellSpacing = 0;          // Use ! for catching NaN (cannot use Math.max).
-        /*
-         * Do layout of the flow first because it may cause scroll bars to appear or disappear,
-         * which may change the size calculations done after that. The flow is located below the
-         * header row, so we adjust y and height accordingly.
-         */
-        final Flow   flow         = (Flow) getVirtualFlow();
-        final double cellHeight   = flow.getFixedCellSize();
-        final double headerHeight = cellHeight + 2*cellSpacing;
-        final double dataY        = y + headerHeight;
-        final double dataHeight   = height - headerHeight;
-        layoutAll |= (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
-        flow.resizeRelocate(x, dataY, width, dataHeight);
-        /*
-         * Recompute all values which will be needed by GridRowSkin. They are mostly information about
-         * the horizontal dimension, because the vertical dimension is already managed by VirtualFlow.
-         * We compute here for avoiding to recompute the same values in each GridRowSkin instance.
-         */
-        final double oldPos = leftPosition;
-        headerWidth         = GridView.getSizeValue(view.headerWidth);
-        cellWidth           = GridView.getSizeValue(view.cellWidth);
-        cellInnerWidth      = cellWidth - cellSpacing;
-        leftPosition        = flow.getHorizontalPosition();         // Horizontal position in the virtual view.
-        rightPosition       = leftPosition + width;                 // Horizontal position where to stop.
-        firstVisibleColumn  = (int) (leftPosition / cellWidth);     // Zero-based column index in the image.
-        /*
-         * Set the rectangle position before to do final adjustment on cell position,
-         * because the background to fill should include the `cellSpacing` margin.
-         */
-        topBackground .setX(x);                                     // As a matter of principle, but should be zero.
-        topBackground .setY(y);
-        topBackground .setWidth(width);
-        topBackground .setHeight(headerHeight);
-        leftBackground.setX(x);
-        leftBackground.setY(dataY);
-        leftBackground.setWidth(headerWidth);
-        leftBackground.setHeight(flow.getVisibleHeight());
-        selection     .setWidth (cellWidth);
-        selectedRow   .setWidth (headerWidth);
-        selectedColumn.setWidth (cellWidth);
-        selection     .setHeight(cellHeight);
-        selectedRow   .setHeight(cellHeight);
-        selectedColumn.setHeight(headerHeight);
-        selectedRow   .setX(x);
-        selectedColumn.setY(y);
-        if (cellSpacing < headerWidth) {
-            headerWidth  -= cellSpacing;
-            leftPosition += cellSpacing;
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    protected void layoutChildren(final double xmin, final double ymin, final double width, final double height) {
+        // Do not invoke `super.layoutChildren(…)` because we manage all children outselves.
+        clip.setX(xmin);
+        clip.setY(xmin);
+        clip.setWidth(width);
+        clip.setHeight(height);
+
+        final double sy = height - Styles.SCROLLBAR_HEIGHT;
+        xScrollBar.resizeRelocate(0, sy, width, Styles.SCROLLBAR_HEIGHT);
+        yScrollBar.resizeRelocate(width - Styles.SCROLLBAR_WIDTH, 0, Styles.SCROLLBAR_WIDTH, sy);
+        leftBackground.setHeight(height);
+        topBackground .setWidth (width);
+
+        final double valuesRegionX = valuesRegionX();
+        final double valuesRegionY = valuesRegionY();
+        final int nx = Math.max(0, (int) Math.ceil((width  - valuesRegionX - Styles.SCROLLBAR_WIDTH)  / cellWidth  + 1));
+        final int ny = Math.max(0, (int) Math.ceil((height - valuesRegionY - Styles.SCROLLBAR_HEIGHT) / cellHeight + 1));
+        final int n  = Math.multiplyExact(nx, ny);
+
+        // Intentionally use `GridError` instead of `Node` for detecting errors.
+        final GridError[] errors = errors().toArray(GridError[]::new);
+        final Text[] headerRow    = resize(this.headerRow,    nx, true);
+        final Text[] headerColumn = resize(this.headerColumn, ny, true);
+        final Text[] valueCells   = resize(this.valueCells,   n, false);
+        final Node[] all = new Node[headerRow.length + headerColumn.length + valueCells.length + errors.length + 7];
+
+        // Order matter: nodes added last will hide nodes added first.
+        int i = 0;
+        all[i++] = selection;
+        System.arraycopy(valueCells, 0, all, i, n);
+        final int indexOfFirstError = i += n;
+        System.arraycopy(errors, 0, all, i, errors.length);
+        final int indexAfterLastError = i += errors.length;
+        all[i++] = topBackground;
+        all[i++] = selectedColumn;
+        all[i++] = leftBackground;
+        all[i++] = selectedRow;
+        System.arraycopy(headerRow,    0, all, i, nx); i += nx;
+        System.arraycopy(headerColumn, 0, all, i, ny); i += ny;
+        all[i++] = xScrollBar;
+        all[i++] = yScrollBar;
+        if (i != all.length) {
+            throw new AssertionError(i);
         }
         /*
-         * Reformat the row header if its content changed. It may be because a horizontal scroll has been
-         * detected (in which case values changed), or because the view size changed (in which case cells
-         * may need to be added or removed).
+         * It is important to ensure that all nodes are unmanaged, otherwise adding the nodes
+         * causes a new layout attempt, which causes infinite enqueued calls of this method
+         * in the JavaFX events thread (the application is not frozen, but wastes CPU).
          */
-        if (layoutAll || oldPos != leftPosition) {
-            layoutInArea(headerRow, x, y, width, headerHeight,
-                         Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
-            final ObservableList<Node> children = headerRow.getChildren();
-            final int count   = children.size();
-            final int missing = (int) Math.ceil((width - headerWidth) / cellWidth) - count;
-            if (missing != 0) {
-                if (missing < 0) {
-                    children.remove(missing + count, count);        // Too many children. Remove the extra ones.
-                } else {
-                    final GridCell[] more = new GridCell[missing];
-                    final Font font = Font.font(null, FontWeight.BOLD, -1);
-                    for (int i=0; i<missing; i++) {
-                        final GridCell cell = new GridCell();
-                        cell.setFont(font);
-                        more[i] = cell;
-                    }
-                    children.addAll(more);             // Single addAll(…) operation for sending only one event.
+        for (Node node : all) {
+            node.setManaged(false);
+        }
+        getChildren().setAll(all);
+        this.headerRow           = headerRow;       // Save only after the above succeeded.
+        this.headerColumn        = headerColumn;
+        this.valueCells          = valueCells;
+        this.indexOfFirstError   = indexOfFirstError;
+        this.indexAfterLastError = indexAfterLastError;
+        final GridView view = getSkinnable();
+        view.scaleScrollBar(xScrollBar, nx, false);
+        view.scaleScrollBar(yScrollBar, ny, true);
+        updateCellValues();
+    }
+
+    /**
+     * Formats the values in all cells. This method is invoked when a new image is set or after scrolling.
+     * It can also be invoked when the band to show has changed.
+     */
+    final void updateCellValues() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final double cellWidth  = this.cellWidth,
+                     cellHeight = this.cellHeight;
+
+        final double valuesRegionX = valuesRegionX();
+        final double valuesRegionY = valuesRegionY();
+        double xminOfValues = xScrollBar.getValue();
+        double yminOfValues = yScrollBar.getValue();
+        double xposOfValues = valuesRegionX - (xminOfValues - (xminOfValues = Math.floor(xminOfValues))) * cellWidth;
+        double yposOfValues = valuesRegionY - (yminOfValues - (yminOfValues = Math.floor(yminOfValues))) * cellHeight;
+        final long xmin = (long) xminOfValues;  // Those `double` values are already integers at this point.
+        final long ymin = (long) yminOfValues;
+        /*
+         * Render the header column. That column has its own width,
+         * different than the width of all other cells.
+         */
+        double cellInnerWidth = toValidCellSize(valuesRegionX - HEADER_MARGIN);
+        final GridView view = getSkinnable();
+        Text[] cells = headerColumn;
+        final int ny = cells.length;
+        for (int y=0; y<ny; y++) {
+            final double ypos = yposOfValues + cellHeight*y;
+            setRightAlignedText(null, cells[y], view.formatCoordinateValue(ymin + y), 0, ypos, cellInnerWidth, cellHeight);
+        }
+        /*
+         * Compute the width of all cells other than the header column,
+         * then render the header row. Finally, render the cell values.
+         */
+        cellInnerWidth = cellWidth;
+        double cellSpacing = view.cellSpacing.get();
+        if (cellSpacing > 0) {
+            cellInnerWidth = toValidCellSize(cellInnerWidth - cellSpacing);
+        }
+        cells = headerRow;
+        final int nx = cells.length;
+        for (int x=0; x<nx; x++) {
+            final double xpos = xposOfValues + cellWidth*x;
+            setRightAlignedText(null, cells[x], view.formatCoordinateValue(xmin + x), xpos, 0, cellInnerWidth, valuesRegionY);
+        }
+        cells = valueCells;
+redo:   for (;;) {
+            for (int i=0; i<cells.length; i++) {
+                final int x = i % nx;
+                final int y = i / nx;
+                final double xpos = xposOfValues + x * cellWidth;
+                final double ypos = yposOfValues + y * cellHeight;
+                if (setRightAlignedText(view, cells[i], view.formatSampleValue(xmin+x, ymin+y),
+                                        xpos, ypos, cellInnerWidth, cellHeight))
+                {
+                    // The format pattern has been made shorter. Rewrite previous cells with the new pattern.
+                    continue redo;
                 }
             }
-            double pos = x + headerWidth;
-            int column = firstVisibleColumn;
-            for (final Node cell : children) {
-                ((GridCell) cell).setText(view.formatHeaderValue(column++, false));
-                layoutInArea(cell, pos, y, cellWidth, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.RIGHT, VPos.CENTER);
-                pos += cellWidth;
-            }
-            /*
-             * For a mysterious reason, all row headers except the first one (0) are invisible on the first time
-             * that the grid is shown. I have been unable to identify the reason; all `GridCell` are created and
-             * received a non-empty text string. Doing a full layout again makes them appear. So as a workaround
-             * we request the next layout to be full again if it seems that we have done the initial layout. The
-             * very first layout create one cell (count = 0 & missing = 1), the next layout create missing cells
-             * (count = 1 & missing = 18) — this is where we want to force a third layout — then the third layout
-             * is stable (count = 19 & missing = 0).
-             */
-            layoutAll = (count <= missing);
+            break;
         }
         /*
-         * Update position of the highlights at mouse cursor position. Usually the correction computed below is
-         * zero and this block does not change any position (but it may change the geographic coordinates shown
-         * in status bar). However if the user was scrolling and reached the end of the virtial flow, the last
-         * scrolling action may have caused a displacement which is a fractional number of cells, in which case
-         * the highlights appear misaligned if we do not apply the correction below.
+         * Relocate the error boxes. Usually, there is none.
          */
-        if (selection.isVisible()) {
-            GridRow row = flow.getFirstVisibleCell();
-            if (row != null) {
-                double sy = selection.getY() - (row.getLayoutY() + headerHeight);
-                final int i = ((int) Math.rint(sy / cellHeight)) + row.getIndex();
-                row = flow.getCell(i);                      // Empty cell if beyond the range.
-                sy  = row.getLayoutY() + headerHeight;      // Usually same as `selection.y` (see above comment).
-                final double offset = row.getLayoutX() + leftBackground.getWidth();
-                final double column = Math.rint((selection.getX() - offset) / cellWidth);
-                final double sx     = column * cellWidth + offset;
-                selection.setX(sx);
-                selection.setY(sy);
-                selectedRow.setY(sy);
-                selectedColumn.setX(sx);
-                getSkinnable().formatCoordinates(firstVisibleColumn + (int) column, i);
+        if (indexOfFirstError != indexAfterLastError) {
+            final var viewArea = new java.awt.Rectangle(Numerics.clamp(xmin), Numerics.clamp(ymin), nx-1, ny-1);
+            for (Node node : errors()) {
+                boolean visible = false;
+                final var error = (GridError) node;
+                final var area = error.getVisibleRegion(viewArea);
+                if (!area.isEmpty()) {
+                    error.resizeRelocate(
+                            (area.x - xmin) * cellWidth  + xposOfValues,
+                            (area.y - ymin) * cellHeight + yposOfValues,
+                             area.width     * cellWidth,
+                             area.height    * cellHeight);
+                    /*
+                     * If after layout the error message size appears too small, hide it.
+                     */
+                    visible = error.getHeight() >= MIN_ERROR_BOX_SIZE
+                           && error.getWidth()  >= MIN_ERROR_BOX_SIZE;
+                }
+                error.setVisible(visible);
             }
-        }
-        if (hasErrors) {
-            computeErrorBounds(flow);
         }
     }
 
     /**
-     * If an error exists somewhere, computes as estimation of the visible region
-     * as zero-based column and row indices. We use an AWT rectangle instead of
-     * JavaFX object because this rectangle will be intersected with AWT rectangle.
+     * Sets the text and sets its position for making it aligned on the right.
+     * If the text does not fit in the space specified by {@code width}, then
+     * this method tries to format the number using a shorter pattern.
+     * If this method cannot use a shorter pattern, then the text is truncated.
+     *
+     * <p>This method returns {@code true} if it has shortened the pattern.
+     * In such case, the caller should rewrite all cells in order to use a
+     * consistent pattern.</p>
+     *
+     * @param view    the view for which cells are rendered, or {@code null} for not shortening the pattern.
+     * @param cell    the cell where to set the text.
+     * @param value   the text to set.
+     * @param x       horizontal position of the cell.
+     * @param y       vertical position of the cell.
+     * @param width   width of the cell.
+     * @param height  height of the cell.
      */
-    private void computeErrorBounds(final Flow flow) {
-        final java.awt.Rectangle viewArea = new java.awt.Rectangle();
-        final GridRow first = flow.getFirstVisibleCell();
-        int firstVisibleRow = 0;
-        if (first != null) {
-            viewArea.x      = firstVisibleColumn;
-            viewArea.y      = firstVisibleRow = first.getIndex();
-            viewArea.width  = (int) ((flow.getWidth() - leftBackground.getWidth()) / cellWidth);
-            viewArea.height = (int) (flow.getVisibleHeight() / flow.getFixedCellSize());
-        }
-        final ObservableList<Node> children = getChildren();
-        for (int i=children.size(); --i >= 0;) {
-            final Node node = children.get(i);
-            if (!(node instanceof GridError)) break;
-            final GridError error = (GridError) node;
-            boolean visible = false;
-            final java.awt.Rectangle area = error.getVisibleRegion(viewArea);
-            if (!area.isEmpty()) {
-                final double cellHeight = flow.getFixedCellSize();
-                final double width  = area.width  * cellWidth;
-                final double height = area.height * cellHeight;
-                layoutInArea(error,
-                        cellWidth  * (area.x - firstVisibleColumn) + leftBackground.getWidth(),
-                        cellHeight * (area.y - firstVisibleRow)    + topBackground.getHeight(),
-                        width, height, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);
-                /*
-                 * If after layout the error message size appears too large for the remaining space, hide it.
-                 * The intent is to avoid having the message and buttons on top of cell values in valid tiles.
-                 * It does not seem to work fully however (some overlaps can still happen), so we added some
-                 * inset to mitigate the problem and also for more aerated presentation.
-                 */
-                visible = error.getHeight() <= height && error.getWidth() <= width;
+    private static boolean setRightAlignedText(GridView view, final Text cell, String value,
+            double x, double y, final double width, final double height)
+    {
+        boolean redo = false;
+        cell.setText(value);
+        if (value != null) {
+            double dx, dy;
+            for (;;) {
+                Bounds bounds = cell.getLayoutBounds();
+                dy = height - bounds.getHeight();
+                dx = width  - bounds.getWidth();
+                if (dx >= 0) break;
+                if (view != null) {
+                    if (view.cellFormat.shorterPattern()) {
+                        redo = true;
+                        break;
+                    }
+                    view = null;
+                }
+                int cut = value.length() - 2;
+                if (cut < 0) break;
+                value = value.substring(0, cut) + '…';
+                cell.setText(value);
             }
-            error.setVisible(visible);
+            x += dx;
+            y += dy * 0.5;
         }
+        cell.relocate(x, y);
+        return redo;
     }
 }

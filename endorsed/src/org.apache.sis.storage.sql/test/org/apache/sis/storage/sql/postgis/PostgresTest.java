@@ -42,16 +42,18 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.storage.sql.SimpleFeatureStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
+import org.apache.sis.storage.sql.feature.BinaryEncoding;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.sql.feature.BinaryEncoding;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.Version;
@@ -69,6 +71,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 
 
@@ -160,6 +163,7 @@ public final class PostgresTest extends TestCase {
                 testAllFeatures(resource);
                 testFilteredFeatures(resource, false);
                 testFilteredFeatures(resource, true);
+                testGeometryTransform(resource);
             }
         }
     }
@@ -266,6 +270,61 @@ public final class PostgresTest extends TestCase {
     }
 
     /**
+     * Tests the {@code ST_Transform} <abbr>SQLMM</abbr> operation.
+     *
+     * @param  resource  the set of all features.
+     */
+    private static void testGeometryTransform(final FeatureSet resource) throws Exception {
+        final var factory   = DefaultFilterFactory.forFeatures();
+        final var targetCRS = (Literal<AbstractFeature,?>) factory.literal(GeometryGetterTest.getExpectedCRS(4326));
+        final var geometry  = factory.function("ST_Transform", factory.property("geometry"), targetCRS);
+        final var alias     = factory.function("ST_Transform", factory.property(AttributeConvention.GEOMETRY), targetCRS);
+        final var query     = new FeatureQuery();
+        query.setProjection(new FeatureQuery.NamedExpression(factory.property("filename")),
+                            new FeatureQuery.NamedExpression(geometry, "transformed"),
+                            new FeatureQuery.NamedExpression(alias),
+                            new FeatureQuery.NamedExpression(factory.property("image")));
+        final FeatureSet subset = resource.subset(query);
+        assertNull(getCRSCharacteristic(resource, "geometry"), "Expected no CRS because it is not the same for all rows.");
+        assertNull(getCRSCharacteristic(resource, AttributeConvention.GEOMETRY));
+        assertEquals(targetCRS.getValue(), getCRSCharacteristic(subset, "transformed"));
+        assertEquals(targetCRS.getValue(), getCRSCharacteristic(subset, AttributeConvention.GEOMETRY));
+        subset.features(false).forEach(PostgresTest::validateTransformed);
+    }
+
+    /**
+     * Invoked for each feature instances which is expected to have been transformed to WGS84.
+     */
+    private static void validateTransformed(final AbstractFeature feature) {
+        final Geometry geometry;
+        switch (feature.getPropertyValue("filename").toString()) {
+            case "point-prj": {
+                final var p = (Point) feature.getPropertyValue("transformed");
+                assertEquals(1.79663056824E-5, p.getX(), 1E-14);
+                assertEquals(2.71310843105E-5, p.getY(), 1E-14);
+                geometry = p;
+                break;
+            }
+            case "polygon-prj": {
+                geometry = (Geometry) feature.getPropertyValue("transformed");
+                final var envelope = geometry.getEnvelopeInternal();
+                // Tolerance is specified even if zero in order to ignore the sign of zero.
+                assertEquals(0, envelope.getMinX(), 0);
+                assertEquals(0, envelope.getMinY(), 0);
+                assertEquals(8.983152841195214E-6, envelope.getMaxX(), 1E-14);
+                assertEquals(9.043694770179478E-6, envelope.getMaxY(), 1E-14);
+                break;
+            }
+            default: {
+                validate(feature);
+                return;
+            }
+        }
+        verifySRID(4326, geometry);
+        assertEquals(geometry, feature.getPropertyValue(AttributeConvention.GEOMETRY));
+    }
+
+    /**
      * Invoked for each feature instances for performing some checks on the feature.
      * This method performs only a superficial verification of geometries.
      */
@@ -302,6 +361,18 @@ public final class PostgresTest extends TestCase {
             case "multi-polygon": geomSRID = 4326; break;
             default: throw new AssertionError(filename);
         }
+        assertNull(raster);
+        verifySRID(geomSRID, geometry);
+        assertEquals(geometry, feature.getPropertyValue(AttributeConvention.GEOMETRY));
+    }
+
+    /**
+     * Asserts that the given geometry as the expected <abbr>CRS</abbr>.
+     *
+     * @param geomSRID  the expected reference system identifier.
+     * @param geometry  the geometry to validate.
+     */
+    private static void verifySRID(final int geomSRID, final Geometry geometry) {
         try {
             final CoordinateReferenceSystem expected = GeometryGetterTest.getExpectedCRS(geomSRID);
             final CoordinateReferenceSystem actual = JTS.getCoordinateReferenceSystem(geometry);
@@ -316,6 +387,15 @@ public final class PostgresTest extends TestCase {
         } catch (FactoryException e) {
             throw new AssertionError(e);
         }
-        assertNull(raster);
+    }
+
+    /**
+     * Returns the {@code crs} characteristic of the geometry column of the given resource.
+     */
+    private static CoordinateReferenceSystem getCRSCharacteristic(final FeatureSet resource, final String property)
+            throws DataStoreException
+    {
+        final var type = resource.getType();
+        return AttributeConvention.getCRSCharacteristic(type, type.getProperty(property));
     }
 }

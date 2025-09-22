@@ -18,7 +18,6 @@ package org.apache.sis.referencing.privy;
 
 import static java.lang.Math.*;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.system.Configuration;
@@ -35,7 +34,7 @@ import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Formulas extends Static {
+public final class Formulas {
     /**
      * Default tolerance threshold for comparing coordinate values in a projected CRS,
      * assuming that the unit of measurement is metre. This constant determines also

@@ -958,7 +958,7 @@ public class Formatter implements Localized {
                 warning(e, WKTKeywords.BBox, WKTKeywords.Usage);
                 bbox = null;
             }
-            appendOnNewLine(WKTKeywords.Area, area.getDescription(), ElementKind.EXTENT);
+            appendOnNewLine(WKTKeywords.Area, WKTUtilities.descriptionOfMediumLength(area), ElementKind.EXTENT);
             append(bbox, BBOX_ACCURACY);
             appendVerticalExtent(area);
             appendTemporalExtent(area);

@@ -26,7 +26,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -35,7 +34,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Johann Sorel (Geomatys)
  */
-public final class CpgFiles extends Static {
+public final class CpgFiles {
     /**
      * Do not allow instantiation of this class.
      */

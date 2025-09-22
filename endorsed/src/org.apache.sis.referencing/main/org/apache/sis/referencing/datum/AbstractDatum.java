@@ -31,6 +31,10 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.TemporalDatum;
+import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -53,6 +57,9 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.referencing.internal.Legacy;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.ImageDatum;
 
 
 /**
@@ -306,8 +313,33 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
+    @SuppressWarnings("deprecation")
     public static AbstractDatum castOrCopy(final Datum object) {
-        return SubTypes.castOrCopy(object);
+        if (object instanceof GeodeticDatum) {
+            return DefaultGeodeticDatum.castOrCopy((GeodeticDatum) object);
+        }
+        if (object instanceof VerticalDatum) {
+            return DefaultVerticalDatum.castOrCopy((VerticalDatum) object);
+        }
+        if (object instanceof TemporalDatum) {
+            return DefaultTemporalDatum.castOrCopy((TemporalDatum) object);
+        }
+        if (object instanceof EngineeringDatum) {
+            return DefaultEngineeringDatum.castOrCopy((EngineeringDatum) object);
+        }
+        if (object instanceof ImageDatum) {
+            return DefaultImageDatum.castOrCopy((ImageDatum) object);
+        }
+        /*
+         * Intentionally check for `AbstractDatum` after the interfaces because users may have defined their own
+         * subclass implementing the interfaces. If we were checking for `AbstractDatum` before the interfaces,
+         * the returned instance could have been a user subclass without the JAXB annotations required for XML
+         * marshalling.
+         */
+        if (object == null || object instanceof AbstractDatum) {
+            return (AbstractDatum) object;
+        }
+        return new AbstractDatum(object);
     }
 
     /**

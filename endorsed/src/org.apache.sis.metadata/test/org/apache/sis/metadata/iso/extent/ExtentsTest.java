@@ -63,6 +63,15 @@ public final class ExtentsTest extends TestCase {
     }
 
     /**
+     * Tests the {@link Extents#isWorld(Extent)} method.
+     */
+    @Test
+    public void testIsWorld() {
+        assertTrue (Extents.isWorld(Extents.WORLD));
+        assertFalse(Extents.isWorld(new DefaultExtent(null, new DefaultGeographicBoundingBox(10, 20, 30, 40), null, null)));
+    }
+
+    /**
      * Tests {@link Extents#getVerticalRange(Extent)}.
      *
      * @throws IncommensurableException if a conversion between incompatible units were attempted.
@@ -198,7 +207,7 @@ public final class ExtentsTest extends TestCase {
      * because it has a dependency to a referencing implementation class.
      */
     public static void testCentroid() {
-        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(140, 160, 30, 50);
+        final var bbox = new DefaultGeographicBoundingBox(140, 160, 30, 50);
         DirectPosition pos = Extents.centroid(bbox);
         assertEquals(150, pos.getOrdinate(0), "longitude");
         assertEquals( 40, pos.getOrdinate(1), "latitude");

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.BiFunction;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.ConditionallySafe;
 
 
@@ -32,7 +31,7 @@ import org.apache.sis.util.ConditionallySafe;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Unsafe extends Static {
+public final class Unsafe {
     /**
      * Do not allow instantiation of this class.
      */

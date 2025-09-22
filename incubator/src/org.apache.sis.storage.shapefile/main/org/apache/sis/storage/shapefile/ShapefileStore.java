@@ -589,9 +589,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 if (projection != null) {
                     properties = ListingPropertyVisitor.xpaths(selection, properties);
                     for (FeatureQuery.NamedExpression ne : projection) {
-                        properties = ListingPropertyVisitor.xpaths(ne.expression, properties);
-                        simpleSelection &= (ne.alias == null);
-                        simpleSelection &= (ne.expression.getFunctionName().tip().toString().equals(FunctionNames.ValueReference));
+                        properties = ListingPropertyVisitor.xpaths(ne.expression(), properties);
+                        simpleSelection &= (ne.alias() == null);
+                        simpleSelection &= (ne.expression().getFunctionName().tip().toString().equals(FunctionNames.ValueReference));
                     }
 
                     //if link fields are referenced, add target fields

@@ -221,7 +221,7 @@ next:       for (final String name : axisNames) {
                     }
                 }
             }
-            final char abbreviation = AxisType.abbreviation(axis);
+            final char abbreviation = AxisType.abbreviation(axis, true);
             axes[targetDim] = new Axis(abbreviation, axis.getAttributeAsString(CF.POSITIVE), indices, sizes, i, axis);
         }
         return axes;

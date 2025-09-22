@@ -191,7 +191,7 @@ final class VariableTransformer {
                 matchers = new Matcher[candidates.length];
             }
             for (final UnitPattern candidate : candidates) {
-                if (!candidate.requireTimeAxis || AxisType.valueOf(variable) == AxisType.T) {
+                if (!candidate.requireTimeAxis || AxisType.valueOf(variable, false) == AxisType.T) {
                     Matcher matcher = matchers[candidate.ordinal()];
                     if (matcher == null) {
                         matcher = candidate.pattern.matcher(units);

@@ -25,7 +25,6 @@ import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.privy.Strings;
@@ -39,7 +38,7 @@ import org.apache.sis.util.privy.CollectionsExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class ImplementationHelper extends Static {
+public final class ImplementationHelper {
     /**
      * The root directory of ISO namespaces. Value is {@value}.
      */

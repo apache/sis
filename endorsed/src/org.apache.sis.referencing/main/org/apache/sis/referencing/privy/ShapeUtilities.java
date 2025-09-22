@@ -27,7 +27,6 @@ import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.hypot;
 import static java.lang.Double.isInfinite;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -35,7 +34,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  */
-public final class ShapeUtilities extends Static {
+public final class ShapeUtilities {
     /**
      * Threshold value for determining whether two points are the same, or whether two lines are colinear.
      */

@@ -36,6 +36,9 @@ import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.Transformation;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
@@ -466,7 +469,45 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractCoordinateOperation castOrCopy(final CoordinateOperation object) {
-        return SubTypes.castOrCopy(object);
+        if (object instanceof Transformation) {
+            return DefaultTransformation.castOrCopy((Transformation) object);
+        }
+        if (object instanceof Conversion) {
+            return DefaultConversion.castOrCopy((Conversion) object);
+        }
+        if (object instanceof PassThroughOperation) {
+            return DefaultPassThroughOperation.castOrCopy((PassThroughOperation) object);
+        }
+        if (object instanceof ConcatenatedOperation) {
+            return DefaultConcatenatedOperation.castOrCopy((ConcatenatedOperation) object);
+        }
+        if (isSingleOperation(object)) {
+            if (object instanceof AbstractSingleOperation) {
+                return (AbstractSingleOperation) object;
+            }
+            return new AbstractSingleOperation((SingleOperation) object);
+        }
+        /*
+         * Intentionally check for `AbstractCoordinateOperation` after the interfaces because users may have defined
+         * their own subclass implementing the same interfaces. If we were checking for `AbstractCoordinateOperation`
+         * before the interfaces, the returned instance could have been a user subclass without the JAXB annotations
+         * required for XML marshalling.
+         */
+        if (object == null || object instanceof AbstractCoordinateOperation) {
+            return (AbstractCoordinateOperation) object;
+        }
+        return new AbstractCoordinateOperation(object);
+    }
+
+    /**
+     * Returns {@code true} if the given operation is a single operation but not a pass-through operation.
+     * In an older ISO 19111 model, {@link PassThroughOperation} extended {@link SingleOperation}, which
+     * was a problem for providing a value to the inherited {@link SingleOperation#getMethod()} method.
+     * This has been fixed in newer ISO 19111 model, but for safety with objects following the older model
+     * (e.g. GeoAPI 3.0) we are better to perform an explicit exclusion of {@link PassThroughOperation}.
+     */
+    static boolean isSingleOperation(final CoordinateOperation operation) {
+        return (operation instanceof SingleOperation) && !(operation instanceof PassThroughOperation);
     }
 
     /**
@@ -482,13 +523,10 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
-     * Returns {@code true} if this coordinate operation is for the definition of a
-     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
-     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
-     * The standard (ISO 19111) approach constructs <i>defining conversion</i>
-     * as an operation of type {@link org.opengis.referencing.operation.Conversion}
-     * with null {@linkplain #getSourceCRS() source} and {@linkplain #getTargetCRS() target CRS}.
-     * But SIS supports also defining conversions with non-null CRS provided that:
+     * Returns whether this coordinate operation is for the definition of a derived or projected <abbr>CRS</abbr>.
+     * The <abbr>ISO</abbr> 19111 approach constructs <dfn>defining conversion</dfn> as an operation of type
+     * {@link Conversion} with null {@linkplain #getSourceCRS() source} and {@linkplain #getTargetCRS() target CRS}.
+     * But <abbr>SIS</abbr> supports also defining conversions with non-null <abbr>CRS</abbrr> provided that:
      *
      * <ul>
      *   <li>{@link GeneralDerivedCRS#getBaseCRS()} is the {@linkplain #getSourceCRS() source CRS} of this operation, and</li>

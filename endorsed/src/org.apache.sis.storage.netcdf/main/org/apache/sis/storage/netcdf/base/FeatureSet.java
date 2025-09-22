@@ -432,7 +432,7 @@ final class FeatureSet extends DiscreteSampling {
              * We handle separately the axes having coordinates provided by static and dynamic properties.
              * We will decide at the end of this loop which one of those two groups to use.
              */
-            final AxisType axisType = AxisType.valueOf(data);
+            final AxisType axisType = AxisType.valueOf(data, true);
             if (axisType != null) {
                 final Variable previous = (dynamic ? trajectory : coordinates).putIfAbsent(axisType, data);
                 if (previous != null) {

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.metadata;
 
+import java.util.Locale;
 import java.util.Collection;
 import java.util.StringJoiner;
 import javafx.application.Platform;
@@ -54,7 +55,7 @@ import org.opengis.util.CodeList;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  * @since   1.1
  */
 @DefaultProperty("metadata")
@@ -126,7 +127,7 @@ public class MetadataSummary extends Widget {
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public MetadataSummary() {
         vocabulary  = Vocabulary.forLocale(null);
-        formats     = new VerboseFormats(vocabulary.getLocale());
+        formats     = new VerboseFormats(getLocale());
         information = new TitledPane[] {
             // If order is modified, revisit `getIdentificationInfo()`.
             new TitledPane(vocabulary.getString(Vocabulary.Keys.ResourceIdentification), new IdentificationInfo(this)),
@@ -303,7 +304,7 @@ public class MetadataSummary extends Widget {
     private static void applyChange(final ObservableValue<? extends Metadata> property,
                                     final Metadata oldValue, final Metadata metadata)
     {
-        final MetadataSummary s = (MetadataSummary) ((SimpleObjectProperty<?>) property).getBean();
+        final var s = (MetadataSummary) ((SimpleObjectProperty<?>) property).getBean();
         s.getter = null;                // In case this method is invoked before `Getter` completed.
         s.error  = null;
         if (metadata != oldValue) {
@@ -318,7 +319,7 @@ public class MetadataSummary extends Widget {
              */
             int i = 0;
             for (TitledPane pane : s.information) {
-                final Section<?> info = (Section<?>) pane.getContent();
+                final var info = (Section<?>) pane.getContent();
                 info.setInformation(metadata);
                 final boolean isEmpty   = info.isEmpty();
                 final boolean isPresent = (i < children.size()) && children.get(i) == pane;
@@ -364,6 +365,14 @@ public class MetadataSummary extends Widget {
      * Returns the given international string as a non-empty localized string, or {@code null} if none.
      */
     final String string(final InternationalString i18n) {
-        return (i18n != null) ? Strings.trimOrNull(i18n.toString(vocabulary.getLocale())) : null;
+        return (i18n != null) ? Strings.trimOrNull(i18n.toString(getLocale())) : null;
+    }
+
+    /**
+     * Returns the locale used by this widget for controls and messages.
+     */
+    @Override
+    public final Locale getLocale() {
+        return vocabulary.getLocale();
     }
 }

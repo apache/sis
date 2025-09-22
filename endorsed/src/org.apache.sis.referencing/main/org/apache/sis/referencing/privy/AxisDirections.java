@@ -29,7 +29,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.CharSequences.*;
@@ -46,7 +45,7 @@ import static org.opengis.annotation.Specification.ISO_19111;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class AxisDirections extends Static {
+public final class AxisDirections {
     /**
      * Number of directions like "North", "North-North-East", "North-East", etc.
      * The first of those directions is {@link AxisDirection#NORTH}.

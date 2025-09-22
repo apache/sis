@@ -277,6 +277,14 @@ public final class ProvidersTest extends TestCase {
                 final OperationMethod authoritative = factory.createOperationMethod(identifier);
                 final String[] aliases = getAliases(authoritative);
                 for (final String alias : aliases) {
+                    if (alias.contains("(geocen domain)")) {
+                        /*
+                         * Ignore aliases such as "Coordinate Frame rotation (geocen domain)"
+                         * as there is already "Coordinate Frame rotation (geocentric domain)".
+                         * The more readable name is sufficient.
+                         */
+                        continue;
+                    }
                     aliasUsageCount.merge(alias, 1, Math::addExact);
                 }
                 /*
@@ -326,7 +334,7 @@ public final class ProvidersTest extends TestCase {
             final String classe = method.getClass().getName();
             final var hardCoded = new HashSet<String>(Arrays.asList(getAliases(method)));
             for (final String alias : entry.getValue()) {
-                if (aliasUsageCount.get(alias) == 1) {
+                if (aliasUsageCount.getOrDefault(alias, 0) == 1) {
                     assertTrue(hardCoded.remove(alias), () -> "Alias \"" + alias + "\" not found in class " + classe);
                 }
             }

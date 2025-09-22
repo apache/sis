@@ -40,7 +40,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.TreeTable;
@@ -64,7 +63,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class TestUtilities extends Static {
+public final class TestUtilities {
     /**
      * Width of the separator to print to {@link TestCase#out}, in number of characters.
      */

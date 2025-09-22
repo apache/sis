@@ -794,7 +794,7 @@ class CoordinateOperationRegistry {
     private CoordinateOperation inverse(final CoordinateOperation operation)
             throws NoninvertibleTransformException, FactoryException
     {
-        if (SubTypes.isSingleOperation(operation)) {
+        if (AbstractCoordinateOperation.isSingleOperation(operation)) {
             return inverse((SingleOperation) operation);
         }
         CoordinateOperation inverse = AbstractCoordinateOperation.getCachedInverse(operation);
@@ -1006,7 +1006,7 @@ class CoordinateOperationRegistry {
          * For example the "Affine" set of parameters depend on the number of dimensions.
          * The capability to resize an operation method is specific to Apache SIS.
          */
-        if (SubTypes.isSingleOperation(operation)) {
+        if (AbstractCoordinateOperation.isSingleOperation(operation)) {
             final SingleOperation single = (SingleOperation) operation;
             properties.put(CoordinateOperations.PARAMETERS_KEY, single.getParameterValues());
             if (method == null) {
@@ -1154,7 +1154,7 @@ class CoordinateOperationRegistry {
              */
             Matrix matrix = MathTransforms.getMatrix(op.getMathTransform());
             if (matrix == null) {
-                if (SubTypes.isSingleOperation(op)) {
+                if (AbstractCoordinateOperation.isSingleOperation(op)) {
                     if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);
                     else         targetCRS = toGeodetic3D(targetCRS, target3D);
                     final MathTransformBuilder builder;

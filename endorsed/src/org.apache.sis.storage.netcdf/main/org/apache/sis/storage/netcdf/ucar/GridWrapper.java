@@ -280,7 +280,7 @@ next:       for (final String name : axisNames) {
                 case RadialDistance:  abbreviation = 'r'; break;    // Geocentric radius
             }
             if (abbreviation == 0) {
-                abbreviation = org.apache.sis.storage.netcdf.base.AxisType.abbreviation(wrapper);
+                abbreviation = org.apache.sis.storage.netcdf.base.AxisType.abbreviation(wrapper, true);
             }
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing

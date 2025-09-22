@@ -48,7 +48,6 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.sis.pending.jdk.JDK20;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.storage.internal.Resources;
@@ -69,7 +68,7 @@ import org.apache.sis.storage.internal.InputStreamAdapter;
  *
  * @see org.apache.sis.io.IO
  */
-public final class IOUtilities extends Static {
+public final class IOUtilities {
     /**
      * The symbol for current directory.
      */

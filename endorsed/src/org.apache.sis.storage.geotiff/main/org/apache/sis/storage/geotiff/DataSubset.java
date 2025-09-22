@@ -114,6 +114,15 @@ class DataSubset extends TiledGridCoverage implements Localized {
     protected final int numBanks;
 
     /**
+     * Number of sample values to skip for moving to the next row of a tile in the <abbr>TIFF</abbr> file.
+     * This is not necessarily the same scanline stride as the one for the tiles created by this class.
+     *
+     * @see #sourcePixelStride
+     * @see java.awt.image.ComponentSampleModel#getScanlineStride()
+     */
+    protected final long sourceScanlineStride;
+
+    /**
      * Number of interleaved sample values in a pixel in the <abbr>TIFF</abbr> file (ignoring band subset).
      * For planar images (banded sample model), this is equal to 1. For pixel interleaved image,
      * this is equal to the number of bands in the original image.
@@ -170,6 +179,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             sourcePixelStride = source.getNumBands();
             targetPixelStride = model .getNumBands();
         }
+        sourceScanlineStride = source.getScanlineStride(sourcePixelStride);
         final int n = tileOffsets.size();
         if (maxBank >= n / numTiles) {
             throw new DataStoreContentException(source.reader.errors().getString(
@@ -511,10 +521,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * This length is used only for verification purpose so it does not need to be exact.
          */
         final long length = ceilDiv(width * height * sourcePixelStride * sampleSize, Byte.SIZE);
-        final long[] size = new long[] {
-            multiplyExact(getTileSize(X_DIMENSION), sourcePixelStride),
-                          getTileSize(Y_DIMENSION)
-        };
+        final long[] size = new long[] {sourceScanlineStride, getTileSize(Y_DIMENSION)};
         /*
          * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually a
          * group of `sourcePixelStride` values. Note that in such case, we cannot handle subsampling on the first axis.

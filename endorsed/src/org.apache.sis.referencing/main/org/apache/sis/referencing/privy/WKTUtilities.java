@@ -22,6 +22,11 @@ import java.util.logging.Logger;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.metadata.extent.GeographicDescription;
+import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
@@ -31,6 +36,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
@@ -43,8 +49,8 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;
@@ -66,7 +72,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class WKTUtilities extends Static {
+public final class WKTUtilities {
     /**
      * The logger for Well Known Text operations.
      */
@@ -467,5 +473,41 @@ fill:   for (;;) {
             previous[empty[0]] = tensor.apply(source);
         }
         return numbers;
+    }
+
+    /**
+     * Returns a description of the given extent. If the description is too long, tries to find a shorter one.
+     * In the particular case of extents created by {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess},
+     * a shorter name is available as a geographic identifier in the <abbr>EPSG</abbr> namespace.
+     * This is a name similar to the name of an {@link IdentifiedObject}, which is also an {@link Identifier}.
+     * In the latter case, this method checks that the first character is a letter for avoiding to return a
+     * numerical <abbr>EPSG</abbr> code.
+     *
+     * @param  extent  the extent from which to get a description.
+     * @return description of medium length for the given extent, or {@code null} if none.
+     */
+    public static InternationalString descriptionOfMediumLength(final Extent extent) {
+        InternationalString description = extent.getDescription();
+        if (description != null && description.length() > 255) {    // 255 is the limit recommended by ISO 19162:2019.
+            if (Extents.isWorld(extent)) {
+                description = Extents.WORLD.getDescription();
+            } else {
+                for (GeographicExtent element : extent.getGeographicElements()) {
+                    if (element instanceof GeographicDescription) {
+                        Identifier id = ((GeographicDescription) element).getGeographicIdentifier();
+                        if (id instanceof ReferenceIdentifier &&
+                                Constants.EPSG.equalsIgnoreCase(((ReferenceIdentifier) id).getCodeSpace()))
+                        {
+                            String name = id.getCode();
+                            if (name != null && !name.isEmpty() && Character.isLetter(name.codePointAt(0))) {
+                                description = new SimpleInternationalString(name);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return description;
     }
 }

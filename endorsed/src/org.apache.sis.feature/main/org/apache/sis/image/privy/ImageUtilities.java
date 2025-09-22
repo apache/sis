@@ -40,7 +40,6 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.privy.Numerics.COMPARISON_THRESHOLD;
@@ -53,7 +52,7 @@ import static org.apache.sis.util.privy.Numerics.COMPARISON_THRESHOLD;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class ImageUtilities extends Static {
+public final class ImageUtilities {
     /**
      * The logger for operations on images and rasters.
      */

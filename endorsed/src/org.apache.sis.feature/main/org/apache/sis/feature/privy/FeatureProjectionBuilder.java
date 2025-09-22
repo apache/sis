@@ -141,6 +141,14 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
     private final Map<String, List<Item>> dependencies;
 
     /**
+     * Whether to store operations as attributes. By default, when a {@linkplain #addSourceProperty source
+     * property is added in the projection}, operation are forwarded as given (with their dependencies).
+     * But if this flag is set to {@code true}, then operations are replaced by an attribute.
+     * Then, it will be caller's responsibility to store the value.
+     */
+    private boolean operationResultAsAttribute;
+
+    /**
      * Creates a new builder instance using the default factories.
      *
      * @todo provides a way to specify the factories used by the data store.
@@ -175,7 +183,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      *
      * @param  childType   the feature type to use.
      * @param  expression  the expression from which to get the expected type.
-     * @return the expected type, or {@code null}.
+     * @return handler for the property, or {@code null} if it cannot be resolved.
      *
      * @see FeatureExpression#expectedType(FeatureProjectionBuilder)
      */
@@ -189,6 +197,27 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         } finally {
             source = previous;
             sourceIsDependency = status;
+        }
+    }
+
+    /**
+     * Adds a property from the source feature type, but replacing operation results by attributes.
+     * This method is invoked when an operation uses a source property as a template, usually because
+     * the result will be of the same type as one of the operation argument (usually the first argument).
+     * In such case, the caller does not want the operation to be executed, since the property will rather
+     * be used as a slot for receiving the result.
+     *
+     * @param  childType   the feature type to use.
+     * @param  expression  the expression from which to get the expected type.
+     * @return handler for the property, or {@code null} if it cannot be resolved.
+     */
+    public Item addTemplateProperty(final FeatureExpression<?,?> expression) {
+        final boolean status = operationResultAsAttribute;
+        try {
+            operationResultAsAttribute = true;
+            return expression.expectedType(this);
+        } finally {
+            operationResultAsAttribute = status;
         }
     }
 
@@ -257,7 +286,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
             reserve(property.getName(), null);
             deferred = new ArrayList<>();
             builder = addPropertyResult(property, deferred);
-        } else if (property instanceof AbstractOperation) {
+        } else if (!operationResultAsAttribute && property instanceof AbstractOperation) {
             /*
              * For operations, remember the dependencies in order to determine (after we added all properties)
              * if we can keep the property as an operation or if we will need to copy the value in an attribute.

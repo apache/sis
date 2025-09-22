@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
@@ -41,11 +39,11 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import javax.measure.quantity.Time;
 import javax.measure.format.MeasurementParseException;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ObjectFactory;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
@@ -77,7 +75,6 @@ import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.privy.AxisNames;
@@ -131,6 +128,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * field names, which are derived from the EPSG database.
      */
     private static final String[] ToWGS84 = {"dx", "dy", "dz", "ex", "ey", "ez", "ppm"};
+
+    /**
+     * Symbol of units to not try to parse. Those symbols are used in the <abbr>EPSG</abbr> database
+     * or by {@link org.apache.sis.measure.SexagesimalConverter} but not yet accepted by the parser.
+     */
+    private static final String[] UNIT_SYMBOLS_TO_IGNORE = {"DMSH", "DMS", "D.MS", "D.M"};
 
     /**
      * During WKT 1 parsing, {@code true} means that {@code PRIMEM} and {@code PARAMETER} angular units
@@ -583,7 +586,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (extent == null) {
                 extent = new DefaultExtent(area, null, null, null);
             } else {
-                extent.getGeographicElements().add(new DefaultGeographicDescription(area));
+                extent.setDescription(Types.toInternationalString(area));
             }
         }
         /*
@@ -664,48 +667,63 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (element == null) {
             return null;
         }
-        final String name   = element.pullString("name");
-        final double factor = element.pullDouble("factor");
-        Unit<Q> unit   = baseUnit.multiply(completeUnitFactor(baseUnit, factor));
-        Unit<?> verify = parseUnitID(element);
+        final String  name   = element.pullString("name");
+        final double  factor = element.pullDouble("factor");
+        final var     unitID = new Object[2];
+        final Unit<?> byID   = parseUnitID(element, unitID);
+        Unit<Q> unit = baseUnit.multiply(completeUnitFactor(baseUnit, factor));
         element.close(ignoredElements);
         /*
-         * Consider the following element: UNIT[“kilometre”, 1000, ID[“EPSG”, “9036”]]
-         *
-         *  - if the authority code (“9036”) refers to a unit incompatible with `baseUnit` (“metre”), log a warning.
-         *  - otherwise: 1) unconditionally replace the parsed unit (“km”) by the unit referenced by the authority code.
-         *               2) if the new unit is not equivalent to the old one (i.e. different scale factor), log a warning.
+         * Verify the consistency of the unit defined by scale factor with the unit parsed from the name.
+         * If they agree, the parsed unit replaces the declared unit because it may fix rounding errors.
          */
-        if (verify != null) {
-            if (!baseUnit.getSystemUnit().equals(verify.getSystemUnit())) {
-                warning(parent, element, Errors.formatInternational(Errors.Keys.InconsistentUnitsForCS_1, verify), null);
-            } else if (Math.abs(unit.getConverterTo(unit = (Unit<Q>) verify).convert(1) - 1) > Numerics.COMPARISON_THRESHOLD) {
-                warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, verify, factor), null);
+        if (!ArraysExt.containsIgnoreCase(UNIT_SYMBOLS_TO_IGNORE, name)) try {
+            final Unit<?> parsed = parseUnit(name);
+            if (verifyUnitConsistency(unit, parsed)) {
+                unit = (Unit<Q>) parsed;
             } else {
-                verify = null;                                          // Means to perform additional verifications.
+                warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, name, factor), null);
             }
+        } catch (IncommensurableException e) {
+            unitID[0] = WKTKeywords.Unit;
+            unitID[1] = name;
+            throw new UnparsableObjectException(errorLocale, Errors.Keys.InconsistentAttribute_2, unitID, element.offset).initCause(e);
+        } catch (MeasurementParseException e) {
+            warning(parent, element, Errors.formatInternational(Errors.Keys.UnknownUnit_1, name), e);
         }
         /*
-         * Above block verified the ID[“EPSG”, “9036”] authority code. Now verify the unit parsed from the “km” symbol.
-         * This is only a verification; we will not replace the unit by the parsed one (i.e. authority code or scale
-         * factor have precedence over the unit symbol).
+         * Verify the consistency of the defined unit with the unit specified by authority code.
+         * If they disagree, a warning is logged and the unit defined by scale factor is kept.
+         * If they agree, the unit specified by authority code replaces the unit defined by
+         * scale factor, because the latter is often written in WKT with rounding errors.
          */
-        if (verify == null) {
+        if (byID != null && byID != unit) {
+            IncommensurableException cause = null;
             try {
-                verify = parseUnit(name);
-            } catch (MeasurementParseException e) {
-                log(new LogRecord(Level.FINE, e.toString()));
-            }
-            if (verify != null) try {
-                if (Math.abs(verify.getConverterToAny(unit).convert(1) - 1) > Numerics.COMPARISON_THRESHOLD) {
-                    warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, verify, factor), null);
+                if (verifyUnitConsistency(unit, byID)) {
+                    return (Unit<Q>) byID;
+                }
+                if (Units.isAngular(unit) && verifyUnitConsistency(unit, Units.DEGREE)) {
+                    unit = (Unit<Q>) Units.DEGREE;      // Replace DMS by decimal degrees.
                 }
             } catch (IncommensurableException e) {
-                throw new UnparsableObjectException(errorLocale, Errors.Keys.InconsistentUnitsForCS_1,
-                        new Object[] {verify}, element.offset).initCause(e);
+                cause = e;
             }
+            unitID[1] = Constants.EPSG + ':' + unitID[0];
+            unitID[0] = WKTKeywords.Unit + "[\"" + name + "\"]." + WKTKeywords.Id;
+            warning(parent, element, Errors.formatInternational(Errors.Keys.InconsistentAttribute_2, unitID), cause);
         }
         return unit;
+    }
+
+    /**
+     * Verifies if the two given units are equivalent, within a small tolerance factor.
+     * A tolerance factor is applied because scale factors are often written in WKT with
+     * some rounding errors.
+     */
+    private static boolean verifyUnitConsistency(Unit<?> unit, Unit<?> expected) throws IncommensurableException {
+        // Use 1.5 instead of 1.0 because identification of DMS units requires a number with a fractional part.
+        return Math.abs(expected.getConverterToAny(unit).convert(1.5) - 1.5) <= 1.5*Numerics.COMPARISON_THRESHOLD;
     }
 
     /**
@@ -1436,7 +1454,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (wrapper != null) {
             properties = parseMetadataAndClose(parent, name, method);
             /*
-             * DEPARTURE FROM ISO 19162: the specification in §9.3.2 said:
+             * DEPARTURE FROM THE SPECIFICATION: ISO 19162:2015 §9.3.2 said:
              *
              *     "If an identifier is provided as an attribute within the <map projection conversion> object,
              *     because it is expected to describe a complete collection of zone name, method, parameters and
@@ -1945,7 +1963,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             default: {
                 /*
                  * WKT 2 "GeodeticCRS" element.
-                 * The specification in §8.2.2 (ii) said:
+                 * ISO 19162:2015 §8.2.2 (ii) said:
                  *
                  *     "If the subtype of the geodetic CRS to which the prime meridian is an attribute
                  *     is geographic, the prime meridian’s <irm longitude> value shall be given in the
@@ -2039,7 +2057,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
             }
             /*
-             * The specification in §8.2.2 (ii) said:
+             * ISO 19162:2015 §8.2.2 (ii) said:
              *
              *     "(snip) the prime meridian’s <irm longitude> value shall be given in the
              *     same angular units as those for the horizontal axes of the geographic CRS."
@@ -2361,7 +2379,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * all parameters that do not specify explicitly a LengthUnit. If no such crs-wide unit was
                  * specified, then the default will be degrees.
                  *
-                 * More specifically §9.3.4 in the specification said about the default units:
+                 * More specifically ISO 19162:2015 §9.3.4 said about the default units:
                  *
                  *    - lengths shall be given in the unit for the projected CRS axes.
                  *    - angles shall be given in the unit for the base geographic CRS of the projected CRS.

@@ -1737,22 +1737,19 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a geographic extent described by an identifier. The given identifier is stored as-is as
-     * the natural language description, and possibly in a modified form as the geographic identifier.
-     * See {@link DefaultGeographicDescription#DefaultGeographicDescription(CharSequence)} for details.
-     * Storage locations are:
+     * Adds a geographic extent described by an identifier.
+     * Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/extent/geographicElement/description}</li>
      *   <li>{@code metadata/identificationInfo/extent/geographicElement/identifier}</li>
      * </ul>
      *
-     * @param  identifier  identifier or description of spatial and temporal extent, or {@code null} for no-operation.
+     * @param authority  the authority of the identifier code, or {@code null} if none.
+     * @param code       the identifier code used to represent a geographic area, or {@code null} if none.
      */
-    public final void addExtent(final CharSequence identifier) {
-        final InternationalString i18n = trim(identifier);
-        if (i18n != null) {
-            addIfNotPresent(extent().getGeographicElements(), new DefaultGeographicDescription(identifier));
+    public final void addExtent(final Citation authority, final String identifier) {
+        if (authority != null || identifier != null) {
+            addIfNotPresent(extent().getGeographicElements(), new DefaultGeographicDescription(authority, identifier));
         }
     }
 

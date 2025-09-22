@@ -100,6 +100,7 @@ public final class NTv2 extends AbstractProvider {
         PARAMETERS = builder
                 .addIdentifier("9615")
                 .addName("NTv2")
+                .addName("Geographic2D Offsets (NTv2)")
                 .createGroup(FILE);
     }
 

@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -31,7 +30,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class ESRI extends Static {
+final class ESRI {
     /**
      * The operation parameter descriptor for the <cite>Longitude of origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.

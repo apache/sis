@@ -114,6 +114,7 @@ public final class NADCON extends AbstractProvider {
         PARAMETERS = builder
                 .addIdentifier("9613")
                 .addName("NADCON")
+                .addName("Geographic2D Offsets (NADCON)")
                 .createGroup(LATITUDE, LONGITUDE);
     }
 

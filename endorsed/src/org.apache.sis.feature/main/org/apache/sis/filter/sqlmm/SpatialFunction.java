@@ -173,8 +173,8 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      * <ul class="verbose">
      *   <li>If the operation expects at least one geometric parameter and returns a geometry,
      *       then the characteristics of the first parameter (in particular the CRS) are copied.
-     *       The first parameter is used as a template for compliance with SQLMM specification.</li>
-     *   <li>Otherwise an attribute is created with the return value specified by the operation.</li>
+     *       The use of the first parameter is mandated by the <abbr>SQLMM</abbr> specification.</li>
+     *   <li>Otherwise, an attribute is created with the return value specified by the operation.</li>
      * </ul>
      *
      * @param  addTo  where to add the type of properties evaluated by this expression.
@@ -188,7 +188,7 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
         if (operation.isGeometryInOut()) {
             final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(getParameters().get(0));
             if (fex != null) {
-                final FeatureProjectionBuilder.Item item = fex.expectedType(addTo);
+                final FeatureProjectionBuilder.Item item = addTo.addTemplateProperty(fex);
                 final boolean success = item.replaceValueClass((c) -> {
                     final Geometries<?> library = Geometries.factory(c);
                     return (library == null) ? null : operation.getReturnType(library);

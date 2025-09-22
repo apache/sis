@@ -24,7 +24,6 @@ import javafx.scene.text.Font;
 import javafx.scene.control.Button;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.ToggleButton;
-import org.apache.sis.util.Static;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.logging.Logging;
 
@@ -41,7 +40,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @see <a href="https://viglino.github.io/font-gis/">Font-GIS project</a>
  */
-public final class FontGIS extends Static {
+public final class FontGIS {
     /**
      * The font, or {@code null} if not found or if an error occurred.
      * This is loaded at class-initialization time.
@@ -157,7 +156,7 @@ public final class FontGIS extends Static {
      * Those constants are defined in a separated class for avoiding to load hundreds of field names in memory.
      * Because all field values are constants of primitive type, the compiler should inline them in the caller code.
      */
-    public static final class Code extends Static {
+    public static final class Code {
         /**
          * Do not allow instantiation of this class.
          */

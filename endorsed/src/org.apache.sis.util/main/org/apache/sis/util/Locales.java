@@ -32,9 +32,8 @@ import static org.apache.sis.util.resources.IndexedResourceBundle.LOGGER;
 
 
 /**
- * Static methods working on {@link Locale} instances. While this class is documented as
- * providing static methods, a few methods are actually non-static. Those methods need to be
- * invoked on the {@link #ALL} or {@link #SIS} instance in order to specify the scope.
+ * Utility methods working on {@link Locale} instances.
+ * Non-static methods need to be invoked on the {@link #ALL} or {@link #SIS} instance in order to specify the scope.
  * Examples:
  *
  * {@snippet lang="java" :

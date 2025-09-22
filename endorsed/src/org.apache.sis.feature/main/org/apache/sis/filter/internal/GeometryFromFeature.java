@@ -96,7 +96,7 @@ final class GeometryFromFeature<G> extends GeometryConverter<AbstractFeature, G>
     @Override
     public GeometryWrapper apply(final AbstractFeature input) {
         final GeometryWrapper wrapper = super.apply(input);
-        if (wrapper.getCoordinateReferenceSystem() == null) {
+        if (wrapper != null && wrapper.getCoordinateReferenceSystem() == null) {
             final CoordinateReferenceSystem crs = AttributeConvention.getCRSCharacteristic(input, propertyName);
             if (crs != null) {
                 wrapper.setCoordinateReferenceSystem(crs);

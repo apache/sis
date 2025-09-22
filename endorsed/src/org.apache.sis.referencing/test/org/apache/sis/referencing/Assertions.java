@@ -39,7 +39,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Symbols;
@@ -67,7 +66,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Assertions extends Static {
+public final class Assertions {
     /**
      * The formatter to be used by {@link #assertWktEquals(Convention, String, Object)}.
      * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}

@@ -21,7 +21,6 @@ import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.AbstractFeature;
@@ -66,7 +65,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class AttributeConvention extends Static {
+public final class AttributeConvention {
     /**
      * Scope of all names defined by SIS convention.
      */

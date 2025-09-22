@@ -32,7 +32,6 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
@@ -69,7 +68,7 @@ import org.apache.sis.xml.NilObject;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class ReferencingUtilities extends Static {
+public final class ReferencingUtilities {
     /**
      * Do not allow instantiation of this class.
      */

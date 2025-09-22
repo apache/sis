@@ -86,7 +86,7 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
      *                 The use of singular or plural depends on whether the column allows color gradients.
      */
     protected final void addColumnTo(final TableView<S> table, final String header) {
-        final TableColumn<S,ColorRamp> colors = new TableColumn<>(header);
+        final var colors = new TableColumn<S,ColorRamp>(header);
         colors.setCellFactory((column) -> new ColorCell<S>(this));
         colors.setCellValueFactory(this);
         colors.setSortable(false);
