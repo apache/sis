@@ -56,9 +56,9 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.MetadataServices;
-import org.apache.sis.util.privy.LocalizedParseException;
-import static org.apache.sis.util.privy.Constants.UTC;
+import org.apache.sis.util.internal.shared.MetadataServices;
+import org.apache.sis.util.internal.shared.LocalizedParseException;
+import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 
 /**

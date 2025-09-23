@@ -27,7 +27,7 @@
  * to a particular class are provided in the package of that class. Examples:
  *
  * <ul>
- *   <li>{@link org.apache.sis.referencing.privy.ShapeUtilitiesViewer}</li>
+ *   <li>{@link org.apache.sis.referencing.internal.shared.ShapeUtilitiesViewer}</li>
  *   <li>{@link org.apache.sis.referencing.gazetteer.LocationViewer}</li>
  *   <li>{@link org.apache.sis.image.ImageTestCase}</li>
  * </ul>

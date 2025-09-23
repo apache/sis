@@ -30,7 +30,7 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

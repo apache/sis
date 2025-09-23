@@ -32,7 +32,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.map.MapLayer;
 import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;

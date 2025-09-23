@@ -33,8 +33,8 @@ import java.time.ZoneOffset;
 import java.math.BigDecimal;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

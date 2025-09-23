@@ -22,7 +22,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.logging.MonolineFormatter;
 
 // Test dependencies

@@ -19,7 +19,7 @@ package org.apache.sis.metadata.sql;
 import java.sql.Statement;
 import java.sql.SQLException;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.metadata.sql.privy.SQLBuilder;
+import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

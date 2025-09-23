@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.CancellationException;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.feature.internal.Resources;
 
 

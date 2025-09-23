@@ -21,7 +21,7 @@ import javax.measure.quantity.Length;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
 import org.apache.sis.measure.Units;
 
 // Test dependencies

@@ -27,9 +27,9 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.feature.internal.Resources;
-import static org.apache.sis.util.privy.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
+import static org.apache.sis.util.internal.shared.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
 
 
 /**

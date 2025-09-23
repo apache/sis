@@ -28,15 +28,15 @@ import org.opengis.referencing.cs.AxisDirection;    // For javadoc
 import org.apache.sis.util.Static;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import static org.apache.sis.measure.UnitRegistry.SI;
 import static org.apache.sis.measure.UnitRegistry.ACCEPTED;
 import static org.apache.sis.measure.UnitRegistry.CGS;
 import static org.apache.sis.measure.UnitRegistry.IMPERIAL;
 import static org.apache.sis.measure.UnitRegistry.OTHER;
 import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
-import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
-import static org.apache.sis.util.privy.Constants.MILLIS_PER_TROPICAL_YEAR;
+import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
+import static org.apache.sis.util.internal.shared.Constants.MILLIS_PER_TROPICAL_YEAR;
 
 
 /**

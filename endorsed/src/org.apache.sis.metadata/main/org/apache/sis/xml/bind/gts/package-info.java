@@ -35,4 +35,4 @@ import jakarta.xml.bind.annotation.XmlSchema;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;

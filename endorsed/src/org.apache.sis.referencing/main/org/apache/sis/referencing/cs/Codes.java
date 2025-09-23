@@ -24,8 +24,8 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
-import static org.apache.sis.util.privy.Constants.EPSG_METRE;
-import static org.apache.sis.util.privy.Constants.EPSG_AXIS_DEGREES;
+import static org.apache.sis.util.internal.shared.Constants.EPSG_METRE;
+import static org.apache.sis.util.internal.shared.Constants.EPSG_AXIS_DEGREES;
 
 
 /**

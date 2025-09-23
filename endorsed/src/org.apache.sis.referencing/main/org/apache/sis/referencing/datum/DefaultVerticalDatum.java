@@ -31,10 +31,10 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.datum.VerticalDatumType;

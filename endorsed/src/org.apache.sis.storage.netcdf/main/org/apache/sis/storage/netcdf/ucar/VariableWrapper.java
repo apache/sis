@@ -50,7 +50,7 @@ import org.apache.sis.storage.netcdf.base.DataType;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.GridAdjustment;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;

@@ -35,7 +35,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.geotiff.base.Resources;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.PixelInCell;

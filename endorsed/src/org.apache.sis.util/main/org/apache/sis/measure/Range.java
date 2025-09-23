@@ -26,7 +26,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.collection.CheckedContainer;
 
 

@@ -31,10 +31,10 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.temporal.TemporalDate;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
 

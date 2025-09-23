@@ -24,8 +24,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.coverage.privy.BandAggregateArgument;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.coverage.internal.shared.BandAggregateArgument;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**

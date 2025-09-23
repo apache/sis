@@ -21,7 +21,7 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

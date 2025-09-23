@@ -55,7 +55,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.metadata.InvalidMetadataException;
-import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -71,9 +71,9 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.temporal.TemporalDate;
-import static org.apache.sis.util.privy.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.shared.CollectionsExt.nonNull;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.shared.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.RealizationMethod;

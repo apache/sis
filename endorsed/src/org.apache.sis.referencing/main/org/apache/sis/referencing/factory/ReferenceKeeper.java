@@ -20,7 +20,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.DelayedExecutor;
 import org.apache.sis.system.DelayedRunnable;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

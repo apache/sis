@@ -27,8 +27,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 

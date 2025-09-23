@@ -27,7 +27,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

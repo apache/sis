@@ -31,9 +31,9 @@ import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.image.privy.TileOpExecutor;
-import org.apache.sis.image.privy.ImageUtilities;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.image.internal.shared.TileOpExecutor;
+import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

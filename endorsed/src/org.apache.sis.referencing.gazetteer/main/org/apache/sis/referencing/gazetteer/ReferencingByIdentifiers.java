@@ -40,9 +40,9 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

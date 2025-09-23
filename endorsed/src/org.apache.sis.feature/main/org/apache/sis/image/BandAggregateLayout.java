@@ -28,15 +28,15 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.util.collection.FrequencySortedSet;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.coverage.privy.BandAggregateArgument;
-import org.apache.sis.coverage.privy.CommonDomainFinder;
-import org.apache.sis.coverage.privy.SampleDimensions;
-import org.apache.sis.image.privy.ImageUtilities;
-import org.apache.sis.image.privy.ColorModelFactory;
+import org.apache.sis.coverage.internal.shared.BandAggregateArgument;
+import org.apache.sis.coverage.internal.shared.CommonDomainFinder;
+import org.apache.sis.coverage.internal.shared.SampleDimensions;
+import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.image.internal.shared.ColorModelFactory;
 
 
 /**

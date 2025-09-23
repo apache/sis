@@ -23,7 +23,7 @@ import static org.apache.sis.geometries.math.Vectors.*;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**

@@ -19,7 +19,7 @@ package org.apache.sis.io.wkt;
 import java.util.EnumMap;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
-import org.apache.sis.util.privy.X364;
+import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.util.resources.Errors;
 
 

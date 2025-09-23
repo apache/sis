@@ -31,7 +31,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PreparedTIN;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.privy.DefaultPointSequence;
+import org.apache.sis.geometries.internal.shared.DefaultPointSequence;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MeshPrimitive;

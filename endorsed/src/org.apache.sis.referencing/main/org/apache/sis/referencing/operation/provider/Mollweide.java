@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

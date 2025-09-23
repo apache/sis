@@ -20,7 +20,7 @@ import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 
 

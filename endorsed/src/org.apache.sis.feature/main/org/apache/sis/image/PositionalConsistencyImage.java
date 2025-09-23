@@ -22,7 +22,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.image.privy.ColorModelFactory;
+import org.apache.sis.image.internal.shared.ColorModelFactory;
 
 
 /**

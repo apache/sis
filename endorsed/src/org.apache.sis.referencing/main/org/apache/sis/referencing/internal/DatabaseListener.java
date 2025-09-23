@@ -22,7 +22,7 @@ import static java.util.logging.Logger.getLogger;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
-import org.apache.sis.metadata.sql.privy.Initializer;
+import org.apache.sis.metadata.sql.internal.shared.Initializer;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 
@@ -30,7 +30,7 @@ import org.apache.sis.util.logging.Logging;
 /**
  * Invoked when a new database is created or when the data source changed.
  * This listener is registered in {@code module-info.java} as a provider
- * of the {@code org.apache.sis.metadata.sql.privy.Initializer} service.
+ * of the {@code org.apache.sis.metadata.sql.internal.shared.Initializer} service.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

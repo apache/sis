@@ -45,7 +45,7 @@ import java.lang.reflect.Modifier;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
 

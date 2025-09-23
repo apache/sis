@@ -26,7 +26,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.TensorParameters;
@@ -71,7 +71,7 @@ public final class Affine extends AbstractProvider {
      *
      * <p>Note: in contrast, the name used by OGC is just "Affine".</p>
      *
-     * @see org.apache.sis.util.privy.Constants#AFFINE
+     * @see org.apache.sis.util.internal.shared.Constants#AFFINE
      */
     public static final String NAME = "Affine parametric transformation";
 

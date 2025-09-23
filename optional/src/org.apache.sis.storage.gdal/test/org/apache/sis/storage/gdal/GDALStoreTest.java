@@ -27,7 +27,7 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;

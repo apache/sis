@@ -30,7 +30,7 @@ import org.opengis.metadata.identification.Usage;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gml.TM_Primitive;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.internal.Dependencies;

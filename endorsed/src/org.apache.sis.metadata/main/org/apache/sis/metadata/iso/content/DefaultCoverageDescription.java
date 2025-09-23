@@ -30,13 +30,13 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
-import static org.apache.sis.metadata.privy.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.valueIfDefined;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.AttributeGroup;

@@ -30,7 +30,7 @@ import javax.measure.format.MeasurementParseException;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.logging.Logging;
 
 

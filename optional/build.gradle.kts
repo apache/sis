@@ -141,7 +141,7 @@ fun patchForTests(args : MutableList<String>) {
                     "org.apache.sis.gui," +
                     "org.apache.sis.referencing.epsg," +
                     "org.apache.sis.referencing.database")
-    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.sql.privy",
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.sql.internal.shared",
                     "org.apache.sis.referencing.epsg")
 }
 

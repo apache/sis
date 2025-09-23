@@ -24,8 +24,8 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import javax.sql.DataSource;
 import org.apache.derby.jdbc.EmbeddedDataSource;
-import org.apache.sis.util.privy.MetadataServices;
-import org.apache.sis.metadata.sql.privy.Initializer;
+import org.apache.sis.util.internal.shared.MetadataServices;
+import org.apache.sis.metadata.sql.internal.shared.Initializer;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.util.resources.Errors;
 

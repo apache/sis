@@ -16,7 +16,7 @@
  */
 package org.apache.sis.xml;
 
-import static org.apache.sis.metadata.privy.ImplementationHelper.ISO_NAMESPACE;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_NAMESPACE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

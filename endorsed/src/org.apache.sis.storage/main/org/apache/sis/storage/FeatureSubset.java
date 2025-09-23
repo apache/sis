@@ -19,7 +19,7 @@ package org.apache.sis.storage;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.feature.privy.FeatureProjection;
+import org.apache.sis.feature.internal.shared.FeatureProjection;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.internal.Resources;

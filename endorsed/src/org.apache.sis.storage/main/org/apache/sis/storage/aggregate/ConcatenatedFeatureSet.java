@@ -31,8 +31,8 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.storage.internal.Resources;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

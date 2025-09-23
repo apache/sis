@@ -25,8 +25,8 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.privy.CloneAccess;
-import org.apache.sis.util.privy.Cloner;
+import org.apache.sis.util.internal.shared.CloneAccess;
+import org.apache.sis.util.internal.shared.Cloner;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Property;

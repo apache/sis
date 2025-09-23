@@ -21,7 +21,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.collection.WeakHashSet;
 

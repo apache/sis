@@ -32,7 +32,7 @@ import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;

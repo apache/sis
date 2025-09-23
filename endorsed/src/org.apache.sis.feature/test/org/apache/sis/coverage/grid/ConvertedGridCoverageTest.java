@@ -21,7 +21,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.math.MathFunctions;

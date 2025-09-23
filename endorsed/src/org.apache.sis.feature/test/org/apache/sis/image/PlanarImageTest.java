@@ -19,7 +19,7 @@ package org.apache.sis.image;
 import java.util.Random;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

@@ -22,7 +22,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.metadata.simple.SimpleIdentifiedObject;
-import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
 import org.apache.sis.util.ComparisonMode;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

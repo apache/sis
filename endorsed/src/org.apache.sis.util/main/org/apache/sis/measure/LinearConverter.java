@@ -25,8 +25,8 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 
 
 /**

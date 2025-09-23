@@ -42,7 +42,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.image.DataType;
-import org.apache.sis.image.privy.ColorModelBuilder;
+import org.apache.sis.image.internal.shared.ColorModelBuilder;
 import org.apache.sis.geometry.Envelope2D;
 
 // Test dependencies

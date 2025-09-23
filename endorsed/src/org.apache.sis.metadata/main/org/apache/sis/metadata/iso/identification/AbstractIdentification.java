@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.util.iso.Types;
 
 // Specific to the main and geoapi-3.1 branches:

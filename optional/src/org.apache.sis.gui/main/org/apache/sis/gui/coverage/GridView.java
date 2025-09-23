@@ -37,7 +37,7 @@ import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;

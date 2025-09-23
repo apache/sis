@@ -29,7 +29,7 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.coverage.privy.RangeArgument;
+import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -40,7 +40,7 @@ import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

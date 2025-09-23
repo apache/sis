@@ -34,15 +34,15 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
-import org.apache.sis.referencing.privy.WKTUtilities;
-import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.DoubleDouble;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.DefaultParameterValue;
@@ -53,7 +53,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.referencing.privy.WKTUtilities.LOGGER;
+import static org.apache.sis.referencing.internal.shared.WKTUtilities.LOGGER;
 
 
 /**

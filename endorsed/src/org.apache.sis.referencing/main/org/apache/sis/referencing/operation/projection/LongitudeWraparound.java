@@ -31,8 +31,8 @@ import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.DoubleDouble;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.measure.Longitude;
 
 

@@ -29,7 +29,7 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.converter.FractionConverter;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**

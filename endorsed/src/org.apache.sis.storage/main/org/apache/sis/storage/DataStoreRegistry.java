@@ -30,10 +30,10 @@ import org.apache.sis.system.SystemListener;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.referencing.privy.LazySet;
+import org.apache.sis.referencing.internal.shared.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

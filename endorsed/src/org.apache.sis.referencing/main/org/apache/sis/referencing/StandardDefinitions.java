@@ -45,8 +45,8 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.metadata.internal.shared.AxisNames;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
@@ -74,7 +74,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.shared.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;
@@ -103,7 +103,7 @@ final class StandardDefinitions {
     /**
      * The <abbr>EPSG</abbr> code for Greenwich meridian.
      *
-     * @see org.apache.sis.util.privy.Constants#EPSG_GREENWICH
+     * @see org.apache.sis.util.internal.shared.Constants#EPSG_GREENWICH
      */
     static final String GREENWICH = "8901";
 

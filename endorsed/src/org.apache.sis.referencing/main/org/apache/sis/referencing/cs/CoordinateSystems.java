@@ -41,10 +41,10 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.referencing.privy.AxisDirections;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 

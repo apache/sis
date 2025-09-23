@@ -37,7 +37,7 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 // Test dependencies
 import org.junit.jupiter.api.Disabled;

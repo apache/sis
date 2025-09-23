@@ -23,7 +23,7 @@ import static java.lang.Math.*;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 
 
 /**

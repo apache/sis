@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.io.ObjectStreamException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.metadata.iso.citation.Citations;
 

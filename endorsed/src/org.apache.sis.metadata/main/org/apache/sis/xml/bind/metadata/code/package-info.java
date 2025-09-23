@@ -59,4 +59,4 @@ import jakarta.xml.bind.annotation.XmlNs;
 import jakarta.xml.bind.annotation.XmlNsForm;
 import jakarta.xml.bind.annotation.XmlSchema;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;

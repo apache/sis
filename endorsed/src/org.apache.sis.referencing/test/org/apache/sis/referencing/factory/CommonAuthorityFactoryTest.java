@@ -33,7 +33,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Datum;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CommonCRS;

@@ -40,13 +40,13 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.image.privy.DeferredProperty;
-import org.apache.sis.image.privy.TiledImage;
+import org.apache.sis.image.internal.shared.DeferredProperty;
+import org.apache.sis.image.internal.shared.TiledImage;
 import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 // Specific to the main and geoapi-3.1 branches:

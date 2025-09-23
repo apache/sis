@@ -23,9 +23,9 @@ import java.text.ParsePosition;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.privy.Strings;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.MetadataServices;
+import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.MetadataServices;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

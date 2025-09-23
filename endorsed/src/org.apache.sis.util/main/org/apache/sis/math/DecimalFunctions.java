@@ -19,7 +19,7 @@ package org.apache.sis.math;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import static org.apache.sis.pending.jdk.JDK19.FLOAT_PRECISION;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 

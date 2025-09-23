@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.provider;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Units;
 

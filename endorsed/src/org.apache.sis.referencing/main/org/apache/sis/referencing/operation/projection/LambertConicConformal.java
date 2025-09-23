@@ -40,12 +40,12 @@ import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.LambertConformalWest;
 import org.apache.sis.referencing.operation.provider.LambertConformalBelgium;
 import org.apache.sis.referencing.operation.provider.LambertConformalMichigan;
-import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import static org.apache.sis.math.MathFunctions.isPositive;
-import static org.apache.sis.referencing.privy.Formulas.fastHypot;
+import static org.apache.sis.referencing.internal.shared.Formulas.fastHypot;
 
 
 /**

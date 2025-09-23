@@ -31,7 +31,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.privy.X364;
+import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Vocabulary;

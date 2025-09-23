@@ -22,7 +22,7 @@ import java.util.EnumSet;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.io.stream.ByteWriter;
 import org.apache.sis.math.Vector;
 

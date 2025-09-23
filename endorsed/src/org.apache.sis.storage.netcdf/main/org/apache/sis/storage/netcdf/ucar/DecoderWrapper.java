@@ -45,7 +45,7 @@ import ucar.nc2.ft.DsgFeatureCollection;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.metadata.sql.MetadataSource;

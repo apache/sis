@@ -28,7 +28,7 @@ import org.opengis.util.MemberName;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

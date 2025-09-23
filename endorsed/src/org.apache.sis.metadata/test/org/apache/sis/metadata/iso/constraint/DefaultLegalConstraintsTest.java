@@ -20,8 +20,8 @@ import java.util.Set;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.privy.LegacyNamespaces;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ISO_NAMESPACE;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_NAMESPACE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

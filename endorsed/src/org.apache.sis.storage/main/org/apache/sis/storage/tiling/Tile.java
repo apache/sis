@@ -24,7 +24,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**

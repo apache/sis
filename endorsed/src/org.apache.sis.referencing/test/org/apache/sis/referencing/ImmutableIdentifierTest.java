@@ -24,8 +24,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.simple.SimpleCitation;
-import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.pending.jdk.JDK19;
 

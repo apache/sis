@@ -20,7 +20,7 @@ import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.TemporalPrimitive;
-import org.apache.sis.xml.privy.XmlUtilities;
+import org.apache.sis.xml.internal.shared.XmlUtilities;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.temporal.TemporalObjects;

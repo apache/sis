@@ -25,7 +25,7 @@ import java.util.Collection;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**

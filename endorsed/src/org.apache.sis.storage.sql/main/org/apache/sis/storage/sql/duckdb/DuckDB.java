@@ -22,7 +22,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.metadata.sql.privy.Dialect;
+import org.apache.sis.metadata.sql.internal.shared.Dialect;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.sql.feature.Column;
 import org.apache.sis.storage.sql.feature.Database;

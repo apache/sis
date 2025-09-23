@@ -28,7 +28,7 @@ import org.opengis.metadata.spatial.Georeferenceable;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
 import org.apache.sis.xml.bind.gco.GO_Integer;
 import org.apache.sis.measure.ValueRange;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 
 /**

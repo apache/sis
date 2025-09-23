@@ -32,7 +32,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;

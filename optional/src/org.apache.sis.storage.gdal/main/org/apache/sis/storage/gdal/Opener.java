@@ -23,7 +23,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;

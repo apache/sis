@@ -53,8 +53,8 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.XML;
-import org.apache.sis.xml.privy.URISource;
-import org.apache.sis.xml.privy.ExceptionSimplifier;
+import org.apache.sis.xml.internal.shared.URISource;
+import org.apache.sis.xml.internal.shared.ExceptionSimplifier;
 
 
 /**

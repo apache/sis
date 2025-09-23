@@ -23,7 +23,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.util.Exceptions;
 

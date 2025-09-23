@@ -25,7 +25,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;

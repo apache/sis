@@ -30,11 +30,11 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.util.privy.CollectionsExt;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ensurePositive;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.Obligation;

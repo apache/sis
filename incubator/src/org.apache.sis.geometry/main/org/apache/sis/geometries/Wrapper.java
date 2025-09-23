@@ -32,7 +32,7 @@ import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.privy.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;

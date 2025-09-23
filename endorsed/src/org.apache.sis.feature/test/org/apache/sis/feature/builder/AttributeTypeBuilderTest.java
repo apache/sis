@@ -22,7 +22,7 @@ import com.esri.core.geometry.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.Features;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

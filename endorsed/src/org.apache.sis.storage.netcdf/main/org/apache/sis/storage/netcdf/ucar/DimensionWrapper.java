@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import ucar.nc2.Dimension;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

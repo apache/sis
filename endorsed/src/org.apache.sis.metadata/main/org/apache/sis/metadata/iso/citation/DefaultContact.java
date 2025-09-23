@@ -35,8 +35,8 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.TelephoneType;

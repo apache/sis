@@ -21,7 +21,7 @@ import java.util.OptionalInt;
 import java.util.zip.Deflater;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.io.stream.InternalOptionKey;

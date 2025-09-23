@@ -33,7 +33,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.metadata.privy.NameToIdentifier;
+import org.apache.sis.metadata.internal.shared.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.iso.DefaultNameFactory;
 

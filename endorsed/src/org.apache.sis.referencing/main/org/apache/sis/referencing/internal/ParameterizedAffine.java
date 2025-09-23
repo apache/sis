@@ -21,7 +21,7 @@ import java.awt.geom.AffineTransform;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.system.Semaphores;
 
 

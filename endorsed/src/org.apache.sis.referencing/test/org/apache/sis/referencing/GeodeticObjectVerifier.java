@@ -33,7 +33,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
-import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.metadata.internal.shared.AxisNames;
 import org.apache.sis.measure.Units;
 
 // Test dependencies

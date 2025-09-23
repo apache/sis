@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.privy.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 
 
 /**

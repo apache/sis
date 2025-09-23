@@ -75,7 +75,7 @@ import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.system.DelayedExecutor;
 import org.apache.sis.system.DelayedRunnable;
 import org.apache.sis.gui.internal.BackgroundThreads;
@@ -83,13 +83,13 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.MouseDrags;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.referencing.privy.AxisDirections;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
-import static org.apache.sis.util.privy.Constants.NANOS_PER_MILLISECOND;
+import static org.apache.sis.util.internal.shared.Constants.NANOS_PER_MILLISECOND;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.MismatchedDimensionException;

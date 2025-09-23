@@ -25,7 +25,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import static org.apache.sis.util.privy.Constants.OGC;
+import static org.apache.sis.util.internal.shared.Constants.OGC;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

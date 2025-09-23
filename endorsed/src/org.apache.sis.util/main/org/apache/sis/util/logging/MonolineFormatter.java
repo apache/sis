@@ -37,12 +37,12 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.privy.X364;
-import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.internal.AutoMessageFormat;
+import org.apache.sis.util.internal.shared.X364;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
-import static org.apache.sis.util.privy.Constants.UTC;
+import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 
 /**

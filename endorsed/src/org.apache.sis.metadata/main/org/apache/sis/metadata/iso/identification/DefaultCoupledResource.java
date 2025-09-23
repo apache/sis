@@ -29,9 +29,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.SV_OperationMetadata;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.iso.Names;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

@@ -29,9 +29,9 @@ import static java.awt.geom.AffineTransform.*;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.privy.AffineTransform2D;
-import org.apache.sis.referencing.privy.IntervalRectangle;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.IntervalRectangle;
 import org.apache.sis.util.Static;
 
 

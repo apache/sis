@@ -22,8 +22,8 @@ import java.util.Date;
 import java.util.Map;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.io.wkt.Convention;
-import static org.apache.sis.util.privy.Constants.MILLISECONDS_PER_DAY;
-import static org.apache.sis.util.privy.Constants.NANOS_PER_MILLISECOND;
+import static org.apache.sis.util.internal.shared.Constants.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.internal.shared.Constants.NANOS_PER_MILLISECOND;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

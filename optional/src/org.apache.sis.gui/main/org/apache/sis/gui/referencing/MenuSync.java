@@ -34,7 +34,7 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.referencing.gazetteer.GazetteerFactory;

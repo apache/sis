@@ -41,8 +41,8 @@ import org.opengis.filter.*;
 import org.opengis.feature.Feature;
 import org.opengis.filter.capability.AvailableFunction;
 import org.opengis.filter.capability.FilterCapabilities;
-import org.apache.sis.util.privy.Strings;
-import org.apache.sis.util.privy.AbstractMap;
+import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.AbstractMap;
 
 
 /**

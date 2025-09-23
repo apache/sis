@@ -25,7 +25,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import org.apache.sis.pending.jdk.JDK22;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

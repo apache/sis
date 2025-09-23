@@ -28,7 +28,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.TemporalDatum;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.xml.bind.gml.TemporalAdapter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;

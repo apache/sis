@@ -29,11 +29,11 @@ import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.privy.CoordinateOperations;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

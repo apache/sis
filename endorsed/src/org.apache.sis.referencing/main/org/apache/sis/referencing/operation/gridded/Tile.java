@@ -32,7 +32,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 
 
 /**

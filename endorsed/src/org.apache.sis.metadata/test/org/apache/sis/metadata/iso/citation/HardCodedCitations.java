@@ -23,8 +23,8 @@ import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.URLs;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.URLs;
 
 // Specific to the main and geoapi-3.1 branches:
 import static java.util.Collections.singleton;

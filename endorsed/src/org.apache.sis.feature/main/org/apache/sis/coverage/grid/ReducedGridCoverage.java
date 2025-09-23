@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**

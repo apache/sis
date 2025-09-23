@@ -34,7 +34,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.system.DataDirectory;
-import static org.apache.sis.util.privy.Constants.EPSG;
+import static org.apache.sis.util.internal.shared.Constants.EPSG;
 
 
 /**

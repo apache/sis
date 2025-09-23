@@ -34,7 +34,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.storage.event.CloseEvent;
 import org.apache.sis.storage.event.StoreEvent;

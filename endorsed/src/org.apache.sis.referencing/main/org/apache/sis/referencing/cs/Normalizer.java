@@ -34,10 +34,10 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.measure.Units;
 
 
@@ -47,7 +47,7 @@ import org.apache.sis.measure.Units;
  * guess what the new name should be. This constant is used as a sentinel value set by Normalizer and checked
  * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
  */
-import static org.apache.sis.referencing.privy.NilReferencingObject.UNNAMED;
+import static org.apache.sis.referencing.internal.shared.NilReferencingObject.UNNAMED;
 
 
 /**

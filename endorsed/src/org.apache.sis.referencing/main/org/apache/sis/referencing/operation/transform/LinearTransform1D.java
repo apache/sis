@@ -26,12 +26,12 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
-import org.apache.sis.referencing.privy.Formulas;
-import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Arithmetic;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.internal.shared.Formulas;
+import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 
 
 /*

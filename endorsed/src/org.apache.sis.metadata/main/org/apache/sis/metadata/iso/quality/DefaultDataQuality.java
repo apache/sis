@@ -25,7 +25,7 @@ import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.quality.Scope;

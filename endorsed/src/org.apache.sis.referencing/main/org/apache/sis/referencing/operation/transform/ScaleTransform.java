@@ -23,8 +23,8 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Arithmetic;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -34,7 +34,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * <h2>Design note</h2>
  * We do not provide two-dimensional specialization because
- * {@link org.apache.sis.referencing.privy.AffineTransform2D} should be used in such case.
+ * {@link org.apache.sis.referencing.internal.shared.AffineTransform2D} should be used in such case.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

@@ -32,7 +32,7 @@ import java.nio.channels.Channel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.storage.internal.Resources;
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 

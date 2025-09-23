@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.quality;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 
 /**

@@ -21,7 +21,7 @@ import static java.lang.Double.NaN;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Range;
-import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.metadata.internal.shared.AxisNames;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.io.wkt.Convention;
 

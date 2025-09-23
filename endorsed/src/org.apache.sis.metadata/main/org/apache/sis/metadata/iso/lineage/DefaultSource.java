@@ -41,7 +41,7 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.metadata.RS_ReferenceSystem;
 import org.apache.sis.xml.bind.metadata.MD_Resolution;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.util.iso.Types;
 

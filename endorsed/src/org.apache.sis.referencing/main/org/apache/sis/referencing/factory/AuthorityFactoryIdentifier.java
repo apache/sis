@@ -29,8 +29,8 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.metadata.privy.NameMeaning;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.metadata.internal.shared.NameMeaning;
 import org.apache.sis.referencing.internal.Resources;
 
 
@@ -112,13 +112,13 @@ final class AuthorityFactoryIdentifier {
 
     /**
      * The authority of the factory, in upper case. The upper case policy should be kept
-     * consistent with {@link org.apache.sis.metadata.privy.NameMeaning#AUTHORITIES}.
+     * consistent with {@link org.apache.sis.metadata.internal.shared.NameMeaning#AUTHORITIES}.
      *
      * <h4>Example</h4>
      * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.
      *
-     * @see org.apache.sis.util.privy.DefinitionURI
-     * @see org.apache.sis.metadata.privy.NameMeaning
+     * @see org.apache.sis.util.internal.shared.DefinitionURI
+     * @see org.apache.sis.metadata.internal.shared.NameMeaning
      */
     private String authority;
 

@@ -26,7 +26,7 @@ import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.geometries.math.TupleArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.geometries.privy.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.geometries.triangulate.EarClipping;
 

@@ -23,7 +23,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

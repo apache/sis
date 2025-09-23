@@ -19,7 +19,7 @@ package org.apache.sis.xml;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

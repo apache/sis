@@ -23,7 +23,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 

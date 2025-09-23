@@ -30,7 +30,7 @@ import javax.measure.quantity.Time;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

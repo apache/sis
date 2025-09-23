@@ -22,13 +22,13 @@ import java.util.Iterator;
 import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;

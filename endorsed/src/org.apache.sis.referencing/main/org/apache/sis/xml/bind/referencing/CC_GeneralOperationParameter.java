@@ -38,7 +38,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.IdentifierSpace;

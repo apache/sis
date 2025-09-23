@@ -20,15 +20,15 @@ import java.util.Map;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
-import static org.apache.sis.util.privy.Constants.SEMI_MAJOR;
-import static org.apache.sis.util.privy.Constants.SEMI_MINOR;
-import static org.apache.sis.util.privy.Constants.EARTH_RADIUS;
-import static org.apache.sis.util.privy.Constants.INVERSE_FLATTENING;
-import static org.apache.sis.util.privy.Constants.IS_IVF_DEFINITIVE;
-import static org.apache.sis.util.privy.Constants.CENTRAL_MERIDIAN;
-import static org.apache.sis.util.privy.Constants.STANDARD_PARALLEL;
-import static org.apache.sis.util.privy.Constants.STANDARD_PARALLEL_1;
-import static org.apache.sis.util.privy.Constants.STANDARD_PARALLEL_2;
+import static org.apache.sis.util.internal.shared.Constants.SEMI_MAJOR;
+import static org.apache.sis.util.internal.shared.Constants.SEMI_MINOR;
+import static org.apache.sis.util.internal.shared.Constants.EARTH_RADIUS;
+import static org.apache.sis.util.internal.shared.Constants.INVERSE_FLATTENING;
+import static org.apache.sis.util.internal.shared.Constants.IS_IVF_DEFINITIVE;
+import static org.apache.sis.util.internal.shared.Constants.CENTRAL_MERIDIAN;
+import static org.apache.sis.util.internal.shared.Constants.STANDARD_PARALLEL;
+import static org.apache.sis.util.internal.shared.Constants.STANDARD_PARALLEL_1;
+import static org.apache.sis.util.internal.shared.Constants.STANDARD_PARALLEL_2;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

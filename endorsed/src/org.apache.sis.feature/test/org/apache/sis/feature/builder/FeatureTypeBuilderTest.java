@@ -22,7 +22,7 @@ import com.esri.core.geometry.Point;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.FeatureOperations;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

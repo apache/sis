@@ -21,10 +21,10 @@ import jakarta.xml.bind.annotation.XmlValue;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.DefinitionURI;
-import org.apache.sis.metadata.privy.NameMeaning;
-import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.DefinitionURI;
+import org.apache.sis.metadata.internal.shared.NameMeaning;
+import org.apache.sis.metadata.internal.shared.Identifiers;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.NamedIdentifier;
 

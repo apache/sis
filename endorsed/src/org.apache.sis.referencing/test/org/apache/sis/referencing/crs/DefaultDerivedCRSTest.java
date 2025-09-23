@@ -25,7 +25,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;

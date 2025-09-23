@@ -24,7 +24,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;

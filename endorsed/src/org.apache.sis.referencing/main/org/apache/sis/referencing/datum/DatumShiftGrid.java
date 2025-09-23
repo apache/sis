@@ -32,8 +32,8 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.DoubleDouble;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 

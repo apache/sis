@@ -24,7 +24,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;

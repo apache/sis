@@ -27,7 +27,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 
 
 /**

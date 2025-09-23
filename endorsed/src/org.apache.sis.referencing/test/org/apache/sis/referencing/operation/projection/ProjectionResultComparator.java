@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;

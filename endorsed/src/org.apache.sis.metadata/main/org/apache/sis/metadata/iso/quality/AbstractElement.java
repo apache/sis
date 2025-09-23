@@ -43,7 +43,7 @@ import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.iso.legacy.DateToTemporal;
 import org.apache.sis.metadata.iso.legacy.TemporalToDate;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

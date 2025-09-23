@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.math.MathFunctions.isNegative;
-import static org.apache.sis.referencing.privy.Formulas.isPoleToPole;
+import static org.apache.sis.referencing.internal.shared.Formulas.isPoleToPole;
 
 
 /**

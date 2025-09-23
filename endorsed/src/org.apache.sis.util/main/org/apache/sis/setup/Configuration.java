@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import org.apache.sis.system.Shutdown;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.MetadataServices;
+import org.apache.sis.util.internal.shared.MetadataServices;
 
 
 /**

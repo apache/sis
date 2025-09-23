@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

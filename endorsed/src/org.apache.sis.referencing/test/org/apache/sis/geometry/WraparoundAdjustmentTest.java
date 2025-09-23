@@ -21,7 +21,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

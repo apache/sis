@@ -31,8 +31,8 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import static org.apache.sis.referencing.privy.Formulas.ANGULAR_TOLERANCE;
-import static org.apache.sis.referencing.privy.Formulas.LINEAR_TOLERANCE;
+import static org.apache.sis.referencing.internal.shared.Formulas.ANGULAR_TOLERANCE;
+import static org.apache.sis.referencing.internal.shared.Formulas.LINEAR_TOLERANCE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

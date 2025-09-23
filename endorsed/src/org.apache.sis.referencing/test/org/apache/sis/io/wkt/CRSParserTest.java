@@ -20,7 +20,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.RealizationMethod;
-import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.metadata.internal.shared.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.system.Loggers;
 

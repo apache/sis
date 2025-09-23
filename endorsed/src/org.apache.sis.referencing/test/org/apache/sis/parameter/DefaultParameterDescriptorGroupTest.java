@@ -22,7 +22,7 @@ import java.util.HashMap;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import static org.opengis.referencing.IdentifiedObject.*;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies

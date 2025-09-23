@@ -22,8 +22,8 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import static org.apache.sis.util.privy.Constants.NUM_ROW;
-import static org.apache.sis.util.privy.Constants.NUM_COL;
+import static org.apache.sis.util.internal.shared.Constants.NUM_ROW;
+import static org.apache.sis.util.internal.shared.Constants.NUM_COL;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

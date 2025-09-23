@@ -29,7 +29,7 @@ import org.opengis.metadata.extent.VerticalExtent;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.gco.GO_Real;
-import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;

@@ -33,7 +33,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Configuration;
 

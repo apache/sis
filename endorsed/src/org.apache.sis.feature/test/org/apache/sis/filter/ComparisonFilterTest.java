@@ -30,7 +30,7 @@ import org.opengis.filter.ComparisonOperator;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.BetweenComparisonOperator;
-import org.apache.sis.filter.privy.FunctionNames;
+import org.apache.sis.filter.internal.shared.FunctionNames;
 
 
 /**

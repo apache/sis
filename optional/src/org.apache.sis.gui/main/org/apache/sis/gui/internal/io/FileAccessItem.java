@@ -38,7 +38,7 @@ import javafx.scene.shape.StrokeType;
 import javafx.animation.FadeTransition;
 import javafx.util.Duration;
 import org.apache.sis.measure.Range;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.collection.RangeSet;
 import org.apache.sis.io.stream.ByteRangeChannel;
 

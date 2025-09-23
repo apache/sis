@@ -21,7 +21,7 @@ import java.util.HashMap;
 import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.measure.Units;
 
 

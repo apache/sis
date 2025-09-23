@@ -30,8 +30,8 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.image.privy.ImageUtilities;
-import org.apache.sis.image.privy.RasterFactory;
+import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.awt.Transparency;
 import java.awt.image.IndexColorModel;
 import org.apache.sis.image.DataType;
-import org.apache.sis.image.privy.ColorModelFactory;
+import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.base.ArrayOfLongs;
 import org.apache.sis.storage.isobmff.FullBox;

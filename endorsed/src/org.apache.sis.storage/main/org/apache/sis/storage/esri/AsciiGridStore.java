@@ -36,7 +36,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.coverage.privy.RangeArgument;
+import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.measure.NumberRange;

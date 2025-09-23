@@ -35,9 +35,9 @@ import java.sql.SQLException;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.util.privy.URLs;
-import org.apache.sis.metadata.sql.privy.SQLBuilder;
-import org.apache.sis.metadata.sql.privy.ScriptRunner;
+import org.apache.sis.util.internal.shared.URLs;
+import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
+import org.apache.sis.metadata.sql.internal.shared.ScriptRunner;
 
 
 /**

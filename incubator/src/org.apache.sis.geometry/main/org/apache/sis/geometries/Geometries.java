@@ -54,7 +54,7 @@ import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.privy.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
@@ -65,7 +65,7 @@ import org.apache.sis.referencing.cs.DefaultLinearCS;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
 

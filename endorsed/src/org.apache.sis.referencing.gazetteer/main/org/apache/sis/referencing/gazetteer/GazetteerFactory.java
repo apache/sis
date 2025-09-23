@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.Optional;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.iso.DefaultNameSpace;

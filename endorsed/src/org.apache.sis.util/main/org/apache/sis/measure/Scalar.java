@@ -23,7 +23,7 @@ import javax.measure.UnitConverter;
 import javax.measure.UnconvertibleException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.logging.Logging;
 
 

@@ -38,7 +38,7 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
-import org.apache.sis.util.privy.URLs;
+import org.apache.sis.util.internal.shared.URLs;
 
 
 /**

@@ -20,7 +20,7 @@ import java.io.Serializable;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

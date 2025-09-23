@@ -34,7 +34,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;

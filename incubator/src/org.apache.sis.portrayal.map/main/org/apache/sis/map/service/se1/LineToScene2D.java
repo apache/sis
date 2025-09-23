@@ -33,7 +33,7 @@ import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
 import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.jts.JTS;

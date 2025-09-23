@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.provider.LambertConformal1SP;
 import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 // Test dependencies
 import org.apache.sis.referencing.crs.HardCodedCRS;

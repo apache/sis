@@ -21,11 +21,11 @@ import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.provider.Equirectangular;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.shared.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

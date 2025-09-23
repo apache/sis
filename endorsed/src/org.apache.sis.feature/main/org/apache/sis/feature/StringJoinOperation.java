@@ -32,11 +32,11 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.converter.SurjectiveConverter;
-import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

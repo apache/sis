@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**

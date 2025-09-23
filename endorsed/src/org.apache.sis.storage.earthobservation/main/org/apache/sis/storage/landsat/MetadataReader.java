@@ -57,14 +57,14 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.referencing.privy.GeodeticObjectBuilder;
-import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
+import org.apache.sis.referencing.internal.shared.GeodeticObjectBuilder;
+import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.Strings;
-import static org.apache.sis.util.privy.CollectionsExt.singletonOrNull;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.Strings;
+import static org.apache.sis.util.internal.shared.CollectionsExt.singletonOrNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.operation.MathTransform;

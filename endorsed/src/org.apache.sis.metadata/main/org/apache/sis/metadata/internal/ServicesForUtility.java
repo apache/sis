@@ -28,11 +28,11 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.MetadataServices;
+import org.apache.sis.util.internal.shared.MetadataServices;
 import org.apache.sis.system.SystemListener;
-import org.apache.sis.metadata.sql.privy.Initializer;
-import org.apache.sis.metadata.privy.Identifiers;
-import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.metadata.sql.internal.shared.Initializer;
+import org.apache.sis.metadata.internal.shared.Identifiers;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
 import org.apache.sis.xml.bind.Context;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
