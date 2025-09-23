@@ -28,7 +28,7 @@ import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolati
 import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
 import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
 import org.apache.sis.referencing.operation.provider.Molodensky;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.provider.AbridgedMolodensky;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Statistics;
-import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.shared.ReferencingServices.NAUTICAL_MILE;
 import org.opengis.test.CalculationType;
 import org.opengis.test.ToleranceModifier;
 import org.opengis.test.ToleranceModifiers;

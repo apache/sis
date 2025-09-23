@@ -49,7 +49,7 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.folder.ConcurrentCloser;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.setup.OptionKey;
 

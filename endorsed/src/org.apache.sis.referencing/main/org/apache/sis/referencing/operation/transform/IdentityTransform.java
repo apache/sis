@@ -21,7 +21,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 
 
 /**

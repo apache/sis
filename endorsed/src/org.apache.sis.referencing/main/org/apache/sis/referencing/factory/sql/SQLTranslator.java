@@ -30,9 +30,9 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.metadata.sql.privy.Reflection;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.metadata.sql.internal.shared.Reflection;
+import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.referencing.internal.Resources;
 
 

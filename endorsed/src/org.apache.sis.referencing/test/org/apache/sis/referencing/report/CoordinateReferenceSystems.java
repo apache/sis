@@ -53,7 +53,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.iso.DefaultNameSpace;

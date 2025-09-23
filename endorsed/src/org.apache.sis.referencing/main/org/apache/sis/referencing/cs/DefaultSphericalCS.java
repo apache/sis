@@ -23,7 +23,7 @@ import javax.measure.Unit;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.measure.Units;
 
 

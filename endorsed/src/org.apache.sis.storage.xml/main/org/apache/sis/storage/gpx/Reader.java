@@ -30,7 +30,7 @@ import jakarta.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.gps.Fix;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.storage.xml.stream.StaxStreamReader;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.BackingStoreException;

@@ -52,7 +52,7 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Classes;

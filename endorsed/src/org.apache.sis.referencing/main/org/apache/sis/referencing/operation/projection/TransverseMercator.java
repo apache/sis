@@ -37,7 +37,7 @@ import org.apache.sis.referencing.operation.provider.TransverseMercatorSouth;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import static org.apache.sis.math.MathFunctions.asinh;
 import static org.apache.sis.math.MathFunctions.atanh;

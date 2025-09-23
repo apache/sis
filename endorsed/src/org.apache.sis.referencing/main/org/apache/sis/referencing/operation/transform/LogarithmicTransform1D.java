@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.math.MathFunctions;
 
 

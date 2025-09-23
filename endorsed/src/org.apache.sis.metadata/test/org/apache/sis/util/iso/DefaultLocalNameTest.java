@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
-import static org.apache.sis.util.privy.Constants.EPSG;
+import static org.apache.sis.util.internal.shared.Constants.EPSG;
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 // Test dependencies

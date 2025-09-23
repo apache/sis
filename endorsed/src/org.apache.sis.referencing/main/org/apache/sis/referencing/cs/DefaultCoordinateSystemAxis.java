@@ -39,12 +39,12 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.metadata.privy.AxisNames;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.metadata.internal.shared.AxisNames;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -67,7 +67,7 @@ import org.apache.sis.io.wkt.FormattableObject;
  * guess what the new name should be. This constant is used as a sentinel value set by Normalizer and checked
  * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
  */
-import static org.apache.sis.referencing.privy.NilReferencingObject.UNNAMED;
+import static org.apache.sis.referencing.internal.shared.NilReferencingObject.UNNAMED;
 
 
 /**
@@ -924,7 +924,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultCoordinateSystemAxis() {
-        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.internal.shared.NilReferencingObject.INSTANCE);
         minimumValue = NEGATIVE_INFINITY;
         maximumValue = POSITIVE_INFINITY;
         /*

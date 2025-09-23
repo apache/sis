@@ -82,7 +82,7 @@ public final class ProcessorUtils {
 
 
     /**
-     * @todo Duplicate of {@link org.apache.sis.referencing.privy.ReferencingFactoryContainer}?
+     * @todo Duplicate of {@link org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer}?
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-162">SIS-162</a>
      */

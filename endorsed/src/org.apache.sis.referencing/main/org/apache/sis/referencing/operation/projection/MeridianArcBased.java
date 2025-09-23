@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import static java.lang.Math.*;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 
 
 /**

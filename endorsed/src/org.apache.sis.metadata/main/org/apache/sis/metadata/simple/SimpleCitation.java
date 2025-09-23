@@ -21,7 +21,7 @@ import java.io.Serializable;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.WKTFormat;

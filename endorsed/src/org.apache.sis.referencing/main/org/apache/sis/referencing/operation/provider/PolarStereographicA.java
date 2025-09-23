@@ -22,10 +22,10 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.referencing.internal.shared.Formulas;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 

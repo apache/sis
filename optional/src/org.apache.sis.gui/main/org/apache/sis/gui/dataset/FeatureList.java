@@ -26,7 +26,7 @@ import javafx.concurrent.Worker;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;

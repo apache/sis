@@ -37,11 +37,11 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
-import static org.apache.sis.util.privy.Constants.CRS;
-import static org.apache.sis.util.privy.Constants.EPSG;
-import static org.apache.sis.util.privy.Constants.CRS27;
-import static org.apache.sis.util.privy.Constants.CRS83;
-import static org.apache.sis.util.privy.Constants.CRS84;
+import static org.apache.sis.util.internal.shared.Constants.CRS;
+import static org.apache.sis.util.internal.shared.Constants.EPSG;
+import static org.apache.sis.util.internal.shared.Constants.CRS27;
+import static org.apache.sis.util.internal.shared.Constants.CRS83;
+import static org.apache.sis.util.internal.shared.Constants.CRS84;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;

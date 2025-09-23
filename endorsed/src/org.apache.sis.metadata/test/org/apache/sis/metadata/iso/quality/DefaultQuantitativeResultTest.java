@@ -26,9 +26,9 @@ import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.QuantitativeResult;
-import org.apache.sis.metadata.privy.RecordSchemaSIS;
+import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
 import org.apache.sis.xml.XML;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultRecord;
 

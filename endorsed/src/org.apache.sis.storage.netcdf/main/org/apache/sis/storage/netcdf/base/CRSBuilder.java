@@ -41,7 +41,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
+import org.apache.sis.referencing.internal.shared.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;

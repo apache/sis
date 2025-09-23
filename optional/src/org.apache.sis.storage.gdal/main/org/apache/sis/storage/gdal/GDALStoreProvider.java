@@ -43,7 +43,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.system.Cleaners;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.TreeTable;
 
 

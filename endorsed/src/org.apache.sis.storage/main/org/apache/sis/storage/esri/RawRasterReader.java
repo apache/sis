@@ -33,16 +33,16 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
-import org.apache.sis.coverage.privy.RangeArgument;
-import org.apache.sis.image.privy.RasterFactory;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.coverage.internal.shared.RangeArgument;
+import org.apache.sis.image.internal.shared.RasterFactory;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.ArraysExt;
-import static org.apache.sis.util.privy.Numerics.wholeDiv;
+import static org.apache.sis.util.internal.shared.Numerics.wholeDiv;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 

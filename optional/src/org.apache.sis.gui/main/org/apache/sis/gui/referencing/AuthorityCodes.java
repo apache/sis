@@ -42,8 +42,8 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 

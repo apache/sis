@@ -21,7 +21,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.privy.CodeLists;
+import org.apache.sis.util.internal.shared.CodeLists;
 import org.apache.sis.xml.bind.Context;
 
 

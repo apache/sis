@@ -28,7 +28,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
-import org.apache.sis.geometries.privy.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 

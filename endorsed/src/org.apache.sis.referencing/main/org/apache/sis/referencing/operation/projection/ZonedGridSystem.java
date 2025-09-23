@@ -40,7 +40,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import static org.apache.sis.referencing.operation.provider.TransverseMercator.*;
 import static org.apache.sis.referencing.operation.provider.ZonedTransverseMercator.*;
 

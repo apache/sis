@@ -44,13 +44,13 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.privy.AxisDirections;
-import org.apache.sis.referencing.privy.CoordinateOperations;
-import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.AnnotatedMatrix;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
+import org.apache.sis.referencing.internal.shared.EllipsoidalHeightCombiner;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
@@ -62,8 +62,8 @@ import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.util.resources.Vocabulary;
 
 

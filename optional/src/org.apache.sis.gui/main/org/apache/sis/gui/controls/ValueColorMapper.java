@@ -42,7 +42,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.resources.Vocabulary;

@@ -20,7 +20,7 @@ import java.time.DateTimeException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.temporal.TimeMethods;
-import org.apache.sis.feature.privy.FeatureExpression;
+import org.apache.sis.feature.internal.shared.FeatureExpression;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Period;

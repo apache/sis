@@ -21,9 +21,9 @@ import java.util.function.DoubleUnaryOperator;
 import static java.lang.Double.*;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.DoubleDouble;
+import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

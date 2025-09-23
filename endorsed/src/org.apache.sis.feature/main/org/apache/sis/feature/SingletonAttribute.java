@@ -17,7 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Objects;
-import org.apache.sis.util.privy.CloneAccess;
+import org.apache.sis.util.internal.shared.CloneAccess;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;

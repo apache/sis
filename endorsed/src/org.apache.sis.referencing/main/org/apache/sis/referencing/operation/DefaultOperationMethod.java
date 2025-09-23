@@ -45,12 +45,12 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.referencing.privy.NilReferencingObject;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.NilReferencingObject;
 import org.apache.sis.xml.bind.gco.StringAdapter;
 import org.apache.sis.xml.bind.referencing.CC_OperationMethod;
-import org.apache.sis.metadata.privy.Identifiers;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.metadata.internal.shared.Identifiers;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.Formatter;
@@ -566,7 +566,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultOperationMethod() {
-        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.internal.shared.NilReferencingObject.INSTANCE);
     }
 
     /**

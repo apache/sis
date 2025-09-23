@@ -26,8 +26,8 @@ import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
-import org.apache.sis.image.privy.ColorModelFactory;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.internal.shared.ColorModelFactory;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

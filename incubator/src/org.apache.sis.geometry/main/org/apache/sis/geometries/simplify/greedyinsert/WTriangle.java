@@ -26,7 +26,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.privy.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.operation.OperationException;

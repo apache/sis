@@ -21,7 +21,7 @@ import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.image.privy.ReshapedImage;
+import org.apache.sis.image.internal.shared.ReshapedImage;
 
 
 /**

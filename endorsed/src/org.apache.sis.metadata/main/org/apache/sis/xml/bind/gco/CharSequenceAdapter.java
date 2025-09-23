@@ -21,7 +21,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.ReferenceResolver;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gcx.Anchor;

@@ -20,7 +20,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.metadata.internal.shared.AxisNames;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

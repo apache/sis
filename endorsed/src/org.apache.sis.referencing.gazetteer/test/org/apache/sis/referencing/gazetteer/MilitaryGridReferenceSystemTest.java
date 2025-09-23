@@ -37,7 +37,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.measure.Quantities;
-import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.shared.ReferencingServices.NAUTICAL_MILE;
 import static org.apache.sis.measure.Units.ARC_MINUTE;
 
 // Test dependencies

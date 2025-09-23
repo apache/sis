@@ -25,8 +25,8 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.metadata.privy.ReferencingServices;
-import static org.apache.sis.util.privy.Constants.NANOS_PER_SECOND;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
+import static org.apache.sis.util.internal.shared.Constants.NANOS_PER_SECOND;
 
 // Test dependencies
 import org.apache.sis.test.Benchmark;

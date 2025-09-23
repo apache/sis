@@ -52,7 +52,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

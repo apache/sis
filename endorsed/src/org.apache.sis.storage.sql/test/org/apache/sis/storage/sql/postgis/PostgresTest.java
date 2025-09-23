@@ -51,7 +51,7 @@ import org.apache.sis.storage.sql.SimpleFeatureStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.sql.feature.BinaryEncoding;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.geometry.wrapper.jts.JTS;

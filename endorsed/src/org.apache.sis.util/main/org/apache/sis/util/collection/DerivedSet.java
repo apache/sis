@@ -23,7 +23,7 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.SetOfUnknownSize;
+import org.apache.sis.util.internal.shared.SetOfUnknownSize;
 
 
 /**

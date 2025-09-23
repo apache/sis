@@ -25,9 +25,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.metadata.sql.privy.Reflection;
+import org.apache.sis.metadata.sql.internal.shared.Reflection;
 
 
 /**

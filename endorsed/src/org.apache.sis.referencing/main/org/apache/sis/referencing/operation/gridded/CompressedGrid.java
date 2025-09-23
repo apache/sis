@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.gridded;
 import java.util.Arrays;
 import javax.measure.Quantity;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**

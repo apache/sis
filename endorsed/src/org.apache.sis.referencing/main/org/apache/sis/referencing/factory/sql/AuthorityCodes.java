@@ -25,11 +25,11 @@ import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
+import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.IntegerList;
-import org.apache.sis.util.privy.AbstractMap;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.AbstractMap;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

@@ -35,7 +35,7 @@ import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Vocabulary;
 
 

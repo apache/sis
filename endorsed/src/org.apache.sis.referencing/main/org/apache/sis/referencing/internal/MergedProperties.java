@@ -18,7 +18,7 @@ package org.apache.sis.referencing.internal;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.apache.sis.util.privy.AbstractMap;
+import org.apache.sis.util.internal.shared.AbstractMap;
 
 
 /**

@@ -29,7 +29,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
-import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.shared.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

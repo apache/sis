@@ -24,7 +24,7 @@ import java.lang.reflect.Field;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.metadata.sql.privy.Dialect;
+import org.apache.sis.metadata.sql.internal.shared.Dialect;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStoreReferencingException;

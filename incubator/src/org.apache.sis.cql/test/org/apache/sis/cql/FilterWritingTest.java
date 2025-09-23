@@ -24,7 +24,7 @@ import org.locationtech.jts.geom.LinearRing;
 import org.opengis.filter.Filter;
 import org.opengis.feature.Feature;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 

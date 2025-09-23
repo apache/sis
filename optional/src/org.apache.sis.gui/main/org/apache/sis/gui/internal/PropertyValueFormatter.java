@@ -19,7 +19,7 @@ package org.apache.sis.gui.internal;
 import java.util.Locale;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.privy.PropertyFormat;
+import org.apache.sis.util.internal.shared.PropertyFormat;
 
 
 /**

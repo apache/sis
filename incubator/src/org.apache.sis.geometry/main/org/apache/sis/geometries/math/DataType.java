@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.math;
 
 import java.awt.image.RasterFormatException;
-import static org.apache.sis.util.privy.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
+import static org.apache.sis.util.internal.shared.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Numbers;

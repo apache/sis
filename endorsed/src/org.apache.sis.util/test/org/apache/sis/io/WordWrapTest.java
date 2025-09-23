@@ -18,7 +18,7 @@ package org.apache.sis.io;
 
 import java.io.IOException;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.privy.X364;
+import org.apache.sis.util.internal.shared.X364;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

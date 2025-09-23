@@ -24,7 +24,7 @@ import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.Context;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ISO_NAMESPACE;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_NAMESPACE;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.ControlledVocabulary;

@@ -55,11 +55,11 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
+import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

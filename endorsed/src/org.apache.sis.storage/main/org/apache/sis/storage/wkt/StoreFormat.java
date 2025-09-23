@@ -31,7 +31,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.referencing.privy.DefinitionVerifier;
+import org.apache.sis.referencing.internal.shared.DefinitionVerifier;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.storage.event.StoreListeners;

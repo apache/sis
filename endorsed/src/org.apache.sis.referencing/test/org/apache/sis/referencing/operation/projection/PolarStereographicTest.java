@@ -20,7 +20,7 @@ import static java.lang.Double.NaN;
 import static java.lang.StrictMath.*;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;

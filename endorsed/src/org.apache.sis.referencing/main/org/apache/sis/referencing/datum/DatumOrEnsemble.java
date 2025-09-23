@@ -44,7 +44,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.metadata.internal.shared.Identifiers;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
 

@@ -24,7 +24,7 @@ import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Collection;
 import java.util.StringJoiner;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

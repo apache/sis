@@ -31,11 +31,11 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.privy.CloneAccess;
+import org.apache.sis.util.internal.shared.CloneAccess;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.metadata.privy.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.valueIfDefined;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.quality.EvaluationMethod;

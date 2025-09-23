@@ -37,7 +37,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.coverage.privy.RangeArgument;
+import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -45,13 +45,13 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.image.DataType;
-import static org.apache.sis.util.privy.Numerics.wholeDiv;
+import static org.apache.sis.util.internal.shared.Numerics.wholeDiv;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 

@@ -23,8 +23,8 @@ import org.opengis.util.ScopedName;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.feature.privy.FeatureExpression;
-import org.apache.sis.feature.privy.FeatureProjectionBuilder;
+import org.apache.sis.feature.internal.shared.FeatureExpression;
+import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 
@@ -41,7 +41,7 @@ import org.opengis.filter.Expression;
  * @param  <S>  the type of value computed by the wrapped exception. This is the type to convert.
  * @param  <V>  the type of value computed by this expression. This is the type after conversion.
  *
- * @see org.apache.sis.filter.privy.GeometryConverter
+ * @see org.apache.sis.filter.internal.shared.GeometryConverter
  */
 final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
         implements FeatureExpression<R,V>, Optimization.OnExpression<R,V>

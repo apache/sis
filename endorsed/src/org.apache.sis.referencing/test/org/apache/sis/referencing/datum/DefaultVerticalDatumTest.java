@@ -24,7 +24,7 @@ import jakarta.xml.bind.JAXBException;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Version;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;

@@ -20,7 +20,7 @@ import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.coordinate.GriddedSurface;
-import org.apache.sis.geometries.privy.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 
 
 /**

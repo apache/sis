@@ -21,7 +21,7 @@ import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.Citations;
-import static org.apache.sis.util.privy.Constants.*;
+import static org.apache.sis.util.internal.shared.Constants.*;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

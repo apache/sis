@@ -45,11 +45,11 @@ module org.apache.sis.metadata {
     provides org.apache.sis.xml.bind.TypeRegistration
         with org.apache.sis.metadata.internal.MetadataTypes;
 
-    provides org.apache.sis.util.privy.MetadataServices
+    provides org.apache.sis.util.internal.shared.MetadataServices
         with org.apache.sis.metadata.internal.ServicesForUtility;
 
-    uses org.apache.sis.metadata.privy.ReferencingServices;
-    uses org.apache.sis.metadata.sql.privy.Initializer;
+    uses org.apache.sis.metadata.internal.shared.ReferencingServices;
+    uses org.apache.sis.metadata.sql.internal.shared.Initializer;
     uses org.apache.sis.xml.bind.AdapterReplacement;
     uses org.apache.sis.xml.bind.TypeRegistration;
 
@@ -86,7 +86,7 @@ module org.apache.sis.metadata {
             org.apache.sis.storage.shapefile,   // In the "incubator" sub-project.
             org.apache.sis.cql;                 // In the "incubator" sub-project.
 
-    exports org.apache.sis.metadata.privy to
+    exports org.apache.sis.metadata.internal.shared to
             org.apache.sis.referencing,
             org.apache.sis.feature,
             org.apache.sis.storage,
@@ -157,7 +157,7 @@ module org.apache.sis.metadata {
             org.glassfish.jaxb.core,            // For access to various classes.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.metadata.sql.privy to
+    exports org.apache.sis.metadata.sql.internal.shared to
             org.apache.sis.referencing,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.geopackage,      // In the "incubator" sub-project.
@@ -169,7 +169,7 @@ module org.apache.sis.metadata {
             org.apache.sis.storage,
             org.apache.sis.storage.xml;
 
-    exports org.apache.sis.xml.privy to
+    exports org.apache.sis.xml.internal.shared to
             org.apache.sis.referencing,
             org.apache.sis.storage,
             org.apache.sis.storage.xml,

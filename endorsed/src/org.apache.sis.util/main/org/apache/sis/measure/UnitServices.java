@@ -34,7 +34,7 @@ import javax.measure.spi.FormatService;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.logging.Logging;
 
 

@@ -31,12 +31,12 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DimensionalityReduction;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.coverage.privy.RangeArgument;
-import org.apache.sis.referencing.privy.DirectPositionView;
+import org.apache.sis.coverage.internal.shared.RangeArgument;
+import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.pending.jdk.JDK16;
 
 

@@ -29,8 +29,8 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.feature.privy.AttributeConvention;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

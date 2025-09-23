@@ -41,7 +41,7 @@ module org.apache.sis.feature {
     exports org.apache.sis.filter;
     exports org.apache.sis.index.tree;
 
-    exports org.apache.sis.filter.privy to
+    exports org.apache.sis.filter.internal.shared to
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
@@ -51,7 +51,7 @@ module org.apache.sis.feature {
     exports org.apache.sis.filter.sqlmm to
             org.apache.sis.geometry;                // In the "incubator" sub-project.
 
-    exports org.apache.sis.feature.privy to
+    exports org.apache.sis.feature.internal.shared to
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
@@ -81,12 +81,12 @@ module org.apache.sis.feature {
             org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
             org.apache.sis.cql;                     // In the "incubator" sub-project.
 
-    exports org.apache.sis.coverage.privy to
+    exports org.apache.sis.coverage.internal.shared to
             org.apache.sis.storage,
             org.apache.sis.storage.netcdf,
             org.apache.sis.portrayal;
 
-    exports org.apache.sis.image.privy to
+    exports org.apache.sis.image.internal.shared to
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,

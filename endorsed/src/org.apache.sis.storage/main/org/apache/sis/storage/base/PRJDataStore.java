@@ -46,7 +46,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.xml.privy.ExceptionSimplifier;
+import org.apache.sis.xml.internal.shared.ExceptionSimplifier;
 
 
 /**

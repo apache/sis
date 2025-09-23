@@ -20,7 +20,7 @@ import java.util.Map;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
-import org.apache.sis.image.privy.BatchComputedImage;
+import org.apache.sis.image.internal.shared.BatchComputedImage;
 
 
 /**

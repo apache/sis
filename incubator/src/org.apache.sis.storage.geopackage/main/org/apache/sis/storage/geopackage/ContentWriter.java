@@ -30,7 +30,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Identification;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.sql.DataAccess;
-import org.apache.sis.metadata.sql.privy.SQLBuilder;
+import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 
 
 /**

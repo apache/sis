@@ -31,15 +31,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.filter.privy.SortByComparator;
-import org.apache.sis.filter.privy.WarningEvent;
-import org.apache.sis.metadata.sql.privy.SQLBuilder;
+import org.apache.sis.filter.internal.shared.SortByComparator;
+import org.apache.sis.filter.internal.shared.WarningEvent;
+import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.feature.privy.FeatureProjection;
+import org.apache.sis.feature.internal.shared.FeatureProjection;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;

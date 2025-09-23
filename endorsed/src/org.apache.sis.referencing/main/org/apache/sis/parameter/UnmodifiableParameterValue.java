@@ -20,7 +20,7 @@ import java.net.URI;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterValue;
-import org.apache.sis.util.privy.Cloner;
+import org.apache.sis.util.internal.shared.Cloner;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 

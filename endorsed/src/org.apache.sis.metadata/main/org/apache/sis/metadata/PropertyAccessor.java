@@ -38,9 +38,9 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.Unsafe;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.util.internal.shared.Unsafe;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
@@ -49,8 +49,8 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
-import static org.apache.sis.util.privy.CollectionsExt.snapshot;
-import static org.apache.sis.util.privy.CollectionsExt.modifiableCopy;
+import static org.apache.sis.util.internal.shared.CollectionsExt.snapshot;
+import static org.apache.sis.util.internal.shared.CollectionsExt.modifiableCopy;
 
 
 /**

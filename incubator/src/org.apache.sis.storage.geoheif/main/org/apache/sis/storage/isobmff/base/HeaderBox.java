@@ -23,7 +23,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

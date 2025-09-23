@@ -25,7 +25,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.util.Vector;
-import org.apache.sis.image.privy.TilePlaceholder;
+import org.apache.sis.image.internal.shared.TilePlaceholder;
 
 
 /**

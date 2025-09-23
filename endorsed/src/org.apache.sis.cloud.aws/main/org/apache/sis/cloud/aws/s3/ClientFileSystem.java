@@ -37,7 +37,7 @@ import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

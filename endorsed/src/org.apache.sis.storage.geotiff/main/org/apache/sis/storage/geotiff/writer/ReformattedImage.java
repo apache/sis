@@ -31,8 +31,8 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.image.privy.ImageUtilities;
-import org.apache.sis.image.privy.SampleModelBuilder;
+import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.image.internal.shared.SampleModelBuilder;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 
 

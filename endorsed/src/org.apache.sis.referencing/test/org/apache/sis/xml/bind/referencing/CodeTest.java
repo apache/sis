@@ -18,7 +18,7 @@ package org.apache.sis.xml.bind.referencing;
 
 import java.util.Set;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;

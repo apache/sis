@@ -26,8 +26,8 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.privy.AffineTransform2D;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 

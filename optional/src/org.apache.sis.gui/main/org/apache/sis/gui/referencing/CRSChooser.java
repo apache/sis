@@ -57,7 +57,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.IdentityValueFactory;

@@ -28,7 +28,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

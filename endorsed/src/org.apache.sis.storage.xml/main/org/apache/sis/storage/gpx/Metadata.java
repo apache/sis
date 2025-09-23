@@ -43,7 +43,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.metadata.simple.SimpleMetadata;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.extent.Extents;

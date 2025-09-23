@@ -21,7 +21,7 @@ import java.time.YearMonth;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

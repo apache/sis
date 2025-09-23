@@ -162,14 +162,14 @@ fun addExportForTests(args : MutableList<String>) {
      * an internal API.
      */
     // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
-    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.privy",
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.internal.shared",
                     "org.apache.sis.referencing.gazetteer")
 
     addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.xml",
                     "org.apache.sis.storage," +
                     "org.apache.sis.console")
 
-    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.privy",
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.internal.shared",
                     "org.apache.sis.storage.geotiff")
 
     addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.bind.gcx",
@@ -178,7 +178,7 @@ fun addExportForTests(args : MutableList<String>) {
     addExport(args, "org.apache.sis.referencing",       "org.apache.sis.referencing.internal",
                     "org.apache.sis.openoffice")
 
-    addExport(args, "org.apache.sis.feature",           "org.apache.sis.feature.privy",
+    addExport(args, "org.apache.sis.feature",           "org.apache.sis.feature.internal.shared",
                     "org.apache.sis.storage.sql")
 
     addExport(args, "org.apache.sis.feature",           "org.apache.sis.geometry.wrapper.jts",

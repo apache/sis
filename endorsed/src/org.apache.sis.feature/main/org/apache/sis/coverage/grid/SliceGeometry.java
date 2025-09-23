@@ -31,11 +31,11 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.referencing.privy.DirectPositionView;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.DirectPositionView;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * {@link GridGeometry#selectDimensions(int[])} and {@link ImageRenderer#getImageGeometry(int)} methods.
  *
  * <p>This class implements {@link Function} for allowing {@code apply(…)} to be invoked from outside this package.
- * That function is invoked (indirectly) by {@link org.apache.sis.image.privy.TiledImage#getProperty(String)}.</p>
+ * That function is invoked (indirectly) by {@link org.apache.sis.image.internal.shared.TiledImage#getProperty(String)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

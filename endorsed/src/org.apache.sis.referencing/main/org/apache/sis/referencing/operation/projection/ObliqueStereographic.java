@@ -29,10 +29,10 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
-import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.util.Workaround;
-import static org.apache.sis.referencing.privy.Formulas.fastHypot;
+import static org.apache.sis.referencing.internal.shared.Formulas.fastHypot;
 import static org.apache.sis.referencing.operation.provider.ObliqueStereographic.*;
 
 

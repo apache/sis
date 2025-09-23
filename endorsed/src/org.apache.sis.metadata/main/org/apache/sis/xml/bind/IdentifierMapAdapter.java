@@ -32,8 +32,8 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.util.privy.Strings;
-import org.apache.sis.util.privy.SetOfUnknownSize;
+import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.SetOfUnknownSize;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.pending.jdk.JDK19;
 

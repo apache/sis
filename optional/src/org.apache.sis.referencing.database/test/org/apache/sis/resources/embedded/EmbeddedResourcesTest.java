@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.apache.sis.setup.InstallationResources;
-import org.apache.sis.metadata.sql.privy.Initializer;
+import org.apache.sis.metadata.sql.internal.shared.Initializer;
 import org.apache.sis.system.DataDirectory;
 import org.apache.sis.referencing.CRS;
 

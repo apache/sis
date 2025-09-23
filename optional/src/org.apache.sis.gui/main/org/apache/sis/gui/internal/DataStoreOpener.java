@@ -45,7 +45,7 @@ import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.io.stream.InternalOptionKey;

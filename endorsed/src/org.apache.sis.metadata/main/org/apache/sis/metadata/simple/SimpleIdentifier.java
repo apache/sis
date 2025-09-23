@@ -23,7 +23,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 // Specific to the geoapi-4.0 branch:
 import java.util.Optional;

@@ -35,7 +35,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;

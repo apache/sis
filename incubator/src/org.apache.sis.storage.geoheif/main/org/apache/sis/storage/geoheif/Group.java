@@ -22,7 +22,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import javax.imageio.plugins.tiff.TIFFTag;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.Vector;

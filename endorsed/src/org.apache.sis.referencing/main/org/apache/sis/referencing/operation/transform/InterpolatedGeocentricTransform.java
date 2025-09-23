@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolati
 import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;

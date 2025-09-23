@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Printable;
-import org.apache.sis.util.privy.X364;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.X364;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.system.Environment;
 
 

@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.privy.AbstractIterator;
+import org.apache.sis.util.internal.shared.AbstractIterator;
 import org.apache.sis.util.resources.Messages;
 
 

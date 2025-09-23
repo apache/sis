@@ -30,7 +30,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Errors;
 
 

@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.GridGroup;

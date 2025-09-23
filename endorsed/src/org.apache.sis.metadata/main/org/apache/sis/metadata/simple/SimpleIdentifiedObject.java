@@ -22,10 +22,10 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.metadata.internal.shared.Identifiers;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

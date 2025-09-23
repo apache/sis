@@ -24,7 +24,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.measure.Units;
 
 // Test dependencies

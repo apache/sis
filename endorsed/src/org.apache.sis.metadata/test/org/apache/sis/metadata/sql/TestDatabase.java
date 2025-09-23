@@ -28,9 +28,9 @@ import java.sql.SQLException;
 import java.sql.SQLDataException;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.apache.derby.jdbc.EmbeddedDataSource;
-import org.apache.sis.metadata.sql.privy.Dialect;
-import org.apache.sis.metadata.sql.privy.LocalDataSource;
-import org.apache.sis.metadata.sql.privy.ScriptRunner;
+import org.apache.sis.metadata.sql.internal.shared.Dialect;
+import org.apache.sis.metadata.sql.internal.shared.LocalDataSource;
+import org.apache.sis.metadata.sql.internal.shared.ScriptRunner;
 import org.apache.sis.util.Debug;
 
 // Test dependencies

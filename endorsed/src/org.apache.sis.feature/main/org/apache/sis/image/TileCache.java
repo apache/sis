@@ -21,7 +21,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.lang.ref.Reference;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.pending.jdk.JDK16;
 

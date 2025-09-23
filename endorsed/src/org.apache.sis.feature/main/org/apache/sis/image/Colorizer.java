@@ -31,13 +31,13 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.image.privy.ColorModelBuilder;
-import org.apache.sis.image.privy.ColorScaleBuilder;
-import org.apache.sis.image.privy.ColorModelFactory;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.internal.shared.ColorModelBuilder;
+import org.apache.sis.image.internal.shared.ColorScaleBuilder;
+import org.apache.sis.image.internal.shared.ColorModelFactory;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

@@ -45,7 +45,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.X364;
+import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.measure.Range;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.xml.MarshallerPool;

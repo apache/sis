@@ -20,7 +20,7 @@ import java.util.Random;
 import static java.lang.StrictMath.*;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import static org.apache.sis.math.MathFunctions.atanh;
 
 // Test dependencies

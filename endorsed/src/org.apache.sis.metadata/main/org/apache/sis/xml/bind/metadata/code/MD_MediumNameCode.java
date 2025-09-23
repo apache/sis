@@ -19,7 +19,7 @@ package org.apache.sis.xml.bind.metadata.code;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.apache.sis.xml.bind.cat.CodeListAdapter;
 import org.apache.sis.xml.bind.cat.CodeListUID;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Specific to the geoapi-4.0 branch:
 import org.apache.sis.metadata.iso.legacy.MediumName;

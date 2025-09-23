@@ -19,8 +19,8 @@ package org.apache.sis.referencing.factory;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Strings;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.internal.Resources;
 
 

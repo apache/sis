@@ -50,9 +50,9 @@ import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.Markable;
-import org.apache.sis.util.privy.AbstractMap;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.AbstractMap;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.io.wkt.WKTFormat;
 
 

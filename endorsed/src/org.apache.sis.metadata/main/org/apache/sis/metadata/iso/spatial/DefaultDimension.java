@@ -30,7 +30,7 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.ArgumentChecks;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 
 /**

@@ -35,8 +35,8 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.internal.ParameterizedAffine;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.DoubleDouble;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

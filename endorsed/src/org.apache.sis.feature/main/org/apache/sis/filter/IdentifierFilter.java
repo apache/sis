@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;

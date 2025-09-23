@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.io.Serializable;
 import java.util.function.IntSupplier;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.measure.NumberRange;
 
 

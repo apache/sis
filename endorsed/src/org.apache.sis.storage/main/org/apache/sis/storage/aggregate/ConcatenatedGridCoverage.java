@@ -33,8 +33,8 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Numerics;
-import static org.apache.sis.image.privy.ImageUtilities.LOGGER;
+import org.apache.sis.util.internal.shared.Numerics;
+import static org.apache.sis.image.internal.shared.ImageUtilities.LOGGER;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;

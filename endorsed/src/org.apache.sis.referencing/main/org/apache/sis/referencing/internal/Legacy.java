@@ -27,7 +27,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 
 
 /**
@@ -55,7 +55,7 @@ public final class Legacy {
      * The "other" direction used in WKT 1 definition of geocentric CRS.
      * It was used for meaning "toward prime meridian".
      *
-     * @see org.apache.sis.referencing.privy.AxisDirections#isLegacyOther(AxisDirection)
+     * @see org.apache.sis.referencing.internal.shared.AxisDirections#isLegacyOther(AxisDirection)
      */
     public static final AxisDirection OTHER = AxisDirection.valueOf("OTHER");
 

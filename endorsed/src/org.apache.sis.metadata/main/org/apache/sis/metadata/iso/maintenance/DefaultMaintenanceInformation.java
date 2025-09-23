@@ -35,9 +35,9 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.util.privy.CollectionsExt;
-import static org.apache.sis.metadata.privy.ImplementationHelper.valueIfDefined;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.valueIfDefined;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.maintenance.Scope;

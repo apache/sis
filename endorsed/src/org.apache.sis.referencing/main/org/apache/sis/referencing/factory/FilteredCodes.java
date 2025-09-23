@@ -18,7 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Iterator;
 import java.util.Map;
-import org.apache.sis.util.privy.AbstractMap;
+import org.apache.sis.util.internal.shared.AbstractMap;
 
 
 /**

@@ -18,10 +18,10 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.privy.Cloner;
-import org.apache.sis.util.privy.CloneAccess;
-import org.apache.sis.util.privy.AbstractMap;
-import org.apache.sis.util.privy.AbstractMapEntry;
+import org.apache.sis.util.internal.shared.Cloner;
+import org.apache.sis.util.internal.shared.CloneAccess;
+import org.apache.sis.util.internal.shared.AbstractMap;
+import org.apache.sis.util.internal.shared.AbstractMapEntry;
 import org.apache.sis.feature.internal.Resources;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

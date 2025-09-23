@@ -19,7 +19,7 @@ package org.apache.sis.util.iso;
 import org.opengis.util.Factory;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.simple.SimpleCitation;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.util.FactoryException;

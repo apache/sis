@@ -25,12 +25,12 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.privy.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.referencing.privy.ShapeUtilities;
+import org.apache.sis.referencing.internal.shared.ShapeUtilities;
 
 
 /**

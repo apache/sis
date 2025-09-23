@@ -34,9 +34,9 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
 

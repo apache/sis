@@ -31,8 +31,8 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.privy.CodeLists;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.CodeLists;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.measure.Units;
 
 

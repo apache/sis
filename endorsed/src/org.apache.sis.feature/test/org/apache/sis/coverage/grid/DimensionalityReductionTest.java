@@ -20,7 +20,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.privy.DirectPositionView;
+import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;

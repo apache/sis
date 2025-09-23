@@ -27,12 +27,12 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.lan.PT_Locale;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import static org.apache.sis.metadata.privy.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.valueIfDefined;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.FeatureTypeInfo;

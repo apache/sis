@@ -26,7 +26,7 @@ import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.privy.XmlUtilities;
+import org.apache.sis.xml.internal.shared.XmlUtilities;
 
 
 /**

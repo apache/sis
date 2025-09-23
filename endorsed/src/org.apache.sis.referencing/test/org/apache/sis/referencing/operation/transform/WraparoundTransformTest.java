@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.List;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.WraparoundApplicator;
+import org.apache.sis.referencing.internal.shared.WraparoundApplicator;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;

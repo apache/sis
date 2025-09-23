@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.io.ObjectStreamException;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.operation.provider.EPSGName;
-import static org.apache.sis.util.privy.CollectionsExt.first;
+import static org.apache.sis.util.internal.shared.CollectionsExt.first;
 
 
 /**

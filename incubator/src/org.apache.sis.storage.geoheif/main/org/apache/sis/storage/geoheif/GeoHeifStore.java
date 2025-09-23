@@ -49,7 +49,7 @@ import org.apache.sis.storage.isobmff.Root;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 
 

@@ -43,16 +43,16 @@ import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
-import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.referencing.privy.WKTUtilities;
-import org.apache.sis.metadata.privy.NameToIdentifier;
-import org.apache.sis.metadata.privy.SecondaryTrait;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
+import org.apache.sis.metadata.internal.shared.NameToIdentifier;
+import org.apache.sis.metadata.internal.shared.SecondaryTrait;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Optional;

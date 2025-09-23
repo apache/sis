@@ -31,7 +31,7 @@ import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.xml.XML;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.DataFormats;
 import org.apache.sis.gui.internal.Resources;

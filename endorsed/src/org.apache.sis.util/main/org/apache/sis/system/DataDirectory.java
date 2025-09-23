@@ -24,7 +24,7 @@ import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Messages;
 
 

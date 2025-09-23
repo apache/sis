@@ -48,10 +48,10 @@ import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.TransformJoiner;
 import org.apache.sis.referencing.operation.provider.MapProjection;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.Numerics;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

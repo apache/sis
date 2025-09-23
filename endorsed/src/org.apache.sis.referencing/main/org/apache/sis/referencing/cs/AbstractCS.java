@@ -39,15 +39,15 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.privy.WKTUtilities;
-import org.apache.sis.referencing.privy.AxisDirections;
-import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.ElementKind;
@@ -678,7 +678,7 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      */
     @SuppressWarnings("this-escape")
     AbstractCS() {
-        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.internal.shared.NilReferencingObject.INSTANCE);
         forConvention = forConvention(this);
         axes = EMPTY;
         /*

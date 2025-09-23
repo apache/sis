@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.X364;
+import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.Initializer;

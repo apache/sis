@@ -26,7 +26,7 @@ import java.awt.image.RenderedImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 
 
 /**

@@ -30,7 +30,7 @@ import java.text.AttributedCharacterIterator;
 import static java.lang.StrictMath.*;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static org.apache.sis.util.privy.Constants.UTC;
+import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

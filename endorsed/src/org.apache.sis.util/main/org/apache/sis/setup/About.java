@@ -51,15 +51,15 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
 import org.apache.sis.util.collection.DefaultTreeTable;
-import org.apache.sis.util.privy.MetadataServices;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.MetadataServices;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Shutdown;
 import org.apache.sis.system.DataDirectory;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
-import static org.apache.sis.util.privy.Constants.UTC;
+import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 
 /**

@@ -35,7 +35,7 @@ import org.apache.sis.xml.bind.gco.GO_Integer;
 import org.apache.sis.xml.bind.gco.GO_Record;
 import org.apache.sis.xml.bind.gco.GO_RecordType;
 import org.apache.sis.xml.bind.metadata.MI_RangeElementDescription;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.SampleDimension;

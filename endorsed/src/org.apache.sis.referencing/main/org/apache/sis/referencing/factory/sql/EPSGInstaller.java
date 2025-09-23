@@ -25,11 +25,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
-import org.apache.sis.metadata.sql.privy.ScriptRunner;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
+import org.apache.sis.metadata.sql.internal.shared.ScriptRunner;
+import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.setup.InstallationResources;
 

@@ -33,8 +33,8 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.apache.sis.geometry.wrapper.j2d.EmptyShape;
-import org.apache.sis.referencing.privy.AbstractShape;
-import org.apache.sis.referencing.privy.IntervalRectangle;
+import org.apache.sis.referencing.internal.shared.AbstractShape;
+import org.apache.sis.referencing.internal.shared.IntervalRectangle;
 
 
 /**

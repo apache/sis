@@ -28,7 +28,7 @@ import java.io.Closeable;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

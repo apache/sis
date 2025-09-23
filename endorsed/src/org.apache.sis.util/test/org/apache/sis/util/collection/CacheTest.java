@@ -29,7 +29,7 @@ import static java.lang.StrictMath.*;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;

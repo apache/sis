@@ -49,7 +49,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.apache.sis.pending.jdk.JDK20;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.internal.InputStreamAdapter;
 

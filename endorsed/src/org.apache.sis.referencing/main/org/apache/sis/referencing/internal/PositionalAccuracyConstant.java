@@ -40,7 +40,7 @@ import org.apache.sis.metadata.iso.quality.DefaultEvaluationMethod;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
 import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
-import org.apache.sis.metadata.privy.RecordSchemaSIS;
+import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.DefaultRecord;

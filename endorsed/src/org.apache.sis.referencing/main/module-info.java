@@ -30,7 +30,7 @@ module org.apache.sis.referencing {
     requires transitive java.desktop;
     requires transitive org.apache.sis.metadata;
 
-    provides org.apache.sis.metadata.sql.privy.Initializer
+    provides org.apache.sis.metadata.sql.internal.shared.Initializer
         with org.apache.sis.referencing.internal.DatabaseListener;
 
     provides org.opengis.referencing.RegisterOperations
@@ -157,7 +157,7 @@ module org.apache.sis.referencing {
     provides org.apache.sis.xml.bind.AdapterReplacement
         with org.apache.sis.xml.bind.referencing.SC_VerticalCRS;
 
-    provides org.apache.sis.metadata.privy.ReferencingServices
+    provides org.apache.sis.metadata.internal.shared.ReferencingServices
         with org.apache.sis.referencing.internal.ServicesForMetadata;
 
     exports org.apache.sis.coordinate;
@@ -175,7 +175,7 @@ module org.apache.sis.referencing {
     exports org.apache.sis.referencing.operation.matrix;
     exports org.apache.sis.referencing.operation.transform;
 
-    exports org.apache.sis.referencing.privy to
+    exports org.apache.sis.referencing.internal.shared to
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
             org.apache.sis.geometry,                        // In the "incubator" sub-project.

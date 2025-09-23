@@ -18,7 +18,7 @@ package org.apache.sis.xml.bind.cat;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.privy.CodeLists;
+import org.apache.sis.util.internal.shared.CodeLists;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
 

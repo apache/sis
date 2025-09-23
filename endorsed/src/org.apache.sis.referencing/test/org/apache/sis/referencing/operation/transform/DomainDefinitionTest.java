@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

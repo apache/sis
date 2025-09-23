@@ -22,7 +22,7 @@ import static java.lang.StrictMath.toRadians;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.NilReferencingObject;
+import org.apache.sis.referencing.internal.shared.NilReferencingObject;
 import org.apache.sis.referencing.operation.provider.SatelliteTracking;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;

@@ -63,16 +63,16 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.referencing.privy.CoordinateOperations;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.referencing.privy.WKTUtilities;
-import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.metadata.privy.ImplementationHelper;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.Loggers;
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -1118,7 +1118,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractCoordinateOperation() {
-        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.internal.shared.NilReferencingObject.INSTANCE);
     }
 
     /**

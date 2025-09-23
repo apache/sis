@@ -33,7 +33,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.InvalidMetadataException;
-import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
 
 
 /**

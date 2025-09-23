@@ -23,7 +23,7 @@ import java.text.ParseException;
 import java.io.ObjectStreamException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.privy.LocalizedParseException;
+import org.apache.sis.util.internal.shared.LocalizedParseException;
 
 
 /**

@@ -34,7 +34,7 @@ import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
 

@@ -40,8 +40,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.image.privy.ImageUtilities;
-import org.apache.sis.image.privy.TilePlaceholder;
+import org.apache.sis.image.internal.shared.ImageUtilities;
+import org.apache.sis.image.internal.shared.TilePlaceholder;
 
 
 /**

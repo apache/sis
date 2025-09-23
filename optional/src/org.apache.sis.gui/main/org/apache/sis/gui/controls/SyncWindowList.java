@@ -32,7 +32,7 @@ import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.GestureFollower;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

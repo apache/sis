@@ -26,7 +26,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.internal.EPSGFactoryProxy;
 import org.apache.sis.referencing.factory.CommonAuthorityFactory;

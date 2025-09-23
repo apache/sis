@@ -20,7 +20,7 @@ import java.util.Random;
 import static java.lang.Double.*;
 import static java.lang.StrictMath.*;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
 import static org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.TOLERANCE;
 

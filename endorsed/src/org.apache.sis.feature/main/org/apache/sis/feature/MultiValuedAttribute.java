@@ -18,8 +18,8 @@ package org.apache.sis.feature;
 
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.CloneAccess;
-import org.apache.sis.util.privy.CheckedArrayList;
+import org.apache.sis.util.internal.shared.CloneAccess;
+import org.apache.sis.util.internal.shared.CheckedArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.Resources;

@@ -27,7 +27,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.resources.Vocabulary;
 

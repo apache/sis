@@ -18,7 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.CheckedArrayList;
+import org.apache.sis.util.internal.shared.CheckedArrayList;
 import org.apache.sis.feature.internal.Resources;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
