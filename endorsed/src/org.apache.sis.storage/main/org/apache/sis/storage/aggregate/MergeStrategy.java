@@ -25,10 +25,10 @@ import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.referencing.privy.ExtentSelector;
+import org.apache.sis.referencing.internal.shared.ExtentSelector;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

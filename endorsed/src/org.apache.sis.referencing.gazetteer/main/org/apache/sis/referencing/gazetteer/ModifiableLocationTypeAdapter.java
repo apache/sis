@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

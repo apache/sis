@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.citation;
 import java.util.Set;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

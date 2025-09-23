@@ -26,8 +26,8 @@ import org.opengis.metadata.Metadata;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.bind.cat.CodeListUID;
-import org.apache.sis.xml.privy.LegacyNamespaces;
-import static org.apache.sis.util.privy.Constants.UTC;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
+import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

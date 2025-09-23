@@ -31,7 +31,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.TransformationList;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.gui.internal.Styles;
 
 // Specific to the main branch:

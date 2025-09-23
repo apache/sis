@@ -20,7 +20,7 @@ import static java.lang.StrictMath.*;
 import static java.lang.Double.NaN;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

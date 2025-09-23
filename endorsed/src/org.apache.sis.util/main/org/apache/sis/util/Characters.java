@@ -17,8 +17,8 @@
 package org.apache.sis.util;
 
 import org.opengis.metadata.citation.Citation;  // For javadoc.
-import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
 

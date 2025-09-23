@@ -22,8 +22,8 @@ import java.awt.Dimension;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.awt.image.BandedSampleModel;
-import org.apache.sis.image.privy.TiledImage;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.image.internal.shared.TiledImage;
+import org.apache.sis.util.internal.shared.Numerics;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

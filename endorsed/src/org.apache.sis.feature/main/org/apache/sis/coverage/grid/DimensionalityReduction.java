@@ -33,7 +33,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;

@@ -23,8 +23,8 @@ import org.apache.sis.feature.Features;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.feature.privy.FeatureProjectionBuilder;
-import org.apache.sis.filter.privy.XPath;
+import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
+import org.apache.sis.filter.internal.shared.XPath;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:

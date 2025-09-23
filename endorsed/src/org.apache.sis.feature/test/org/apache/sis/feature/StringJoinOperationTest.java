@@ -17,7 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

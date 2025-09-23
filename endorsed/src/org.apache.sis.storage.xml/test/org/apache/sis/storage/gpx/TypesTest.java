@@ -19,7 +19,7 @@ package org.apache.sis.storage.gpx;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.storage.IllegalNameException;
 
 // Test dependencies

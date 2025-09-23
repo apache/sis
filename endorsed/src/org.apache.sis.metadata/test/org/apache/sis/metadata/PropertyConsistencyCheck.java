@@ -26,7 +26,7 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.metadata.internal.Dependencies;
 
 // Test dependencies

@@ -27,14 +27,14 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.referencing.privy.Formulas;
-import org.apache.sis.referencing.privy.WKTUtilities;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.referencing.internal.shared.Formulas;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
@@ -409,7 +409,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultPrimeMeridian() {
-        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.internal.shared.NilReferencingObject.INSTANCE);
         /*
          * Angular units are mandatory for SIS working. We do not verify their presence here (because the
          * verification would have to be done in an 'afterMarshal(…)' method and throwing an exception in

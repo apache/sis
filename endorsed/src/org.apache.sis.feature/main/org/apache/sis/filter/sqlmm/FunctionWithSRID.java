@@ -24,8 +24,8 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
-import org.apache.sis.feature.privy.FeatureProjectionBuilder;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:

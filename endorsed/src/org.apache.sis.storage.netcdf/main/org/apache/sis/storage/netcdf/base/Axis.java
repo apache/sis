@@ -41,7 +41,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.operation.builder.LocalizationGridException;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.operation.transform.TransferFunction;

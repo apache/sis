@@ -22,7 +22,7 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
-import org.apache.sis.referencing.privy.IntervalRectangle;
+import org.apache.sis.referencing.internal.shared.IntervalRectangle;
 import org.apache.sis.util.Classes;
 
 

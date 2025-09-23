@@ -41,7 +41,7 @@ import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.sql.DataAccess;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.metadata.sql.privy.ScriptRunner;
+import org.apache.sis.metadata.sql.internal.shared.ScriptRunner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;

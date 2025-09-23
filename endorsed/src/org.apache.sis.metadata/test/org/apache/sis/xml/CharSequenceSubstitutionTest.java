@@ -23,9 +23,9 @@ import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.xml.bind.metadata.replace.SensorType;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.util.iso.Types;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ISO_NAMESPACE;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_NAMESPACE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

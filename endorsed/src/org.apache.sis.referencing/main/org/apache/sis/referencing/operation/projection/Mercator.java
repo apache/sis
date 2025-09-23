@@ -37,7 +37,7 @@ import org.apache.sis.referencing.operation.provider.MercatorAuxiliarySphere;
 import org.apache.sis.referencing.operation.provider.RegionalMercator;
 import org.apache.sis.referencing.operation.provider.PseudoMercator;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;

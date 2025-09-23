@@ -44,13 +44,13 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.WKTUtilities;
-import org.apache.sis.referencing.privy.TemporalAccessor;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
+import org.apache.sis.referencing.internal.shared.TemporalAccessor;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.Vector;
 
 import static java.lang.Double.doubleToLongBits;
-import static org.apache.sis.util.privy.Numerics.SIGN_BIT_MASK;
+import static org.apache.sis.util.internal.shared.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.math.MathFunctions.epsilonEqual;
@@ -239,7 +239,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @param  axis  the axis to test, or {@code null}.
      * @return {@code true} if the range meaning is {@code WRAPAROUND}.
      *
-     * @see org.apache.sis.referencing.privy.CoordinateOperations#isWrapAround(CoordinateSystemAxis)
+     * @see org.apache.sis.referencing.internal.shared.CoordinateOperations#isWrapAround(CoordinateSystemAxis)
      */
     static boolean isWrapAround(final CoordinateSystemAxis axis) {
         return (axis != null) && axis.getRangeMeaning() == RangeMeaning.WRAPAROUND;

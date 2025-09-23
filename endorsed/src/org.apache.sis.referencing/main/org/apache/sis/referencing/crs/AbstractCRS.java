@@ -36,8 +36,8 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
@@ -619,7 +619,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractCRS() {
-        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.internal.shared.NilReferencingObject.INSTANCE);
         forConvention = forConvention();
         /*
          * The coordinate system is mandatory for SIS working. We do not verify its presence here

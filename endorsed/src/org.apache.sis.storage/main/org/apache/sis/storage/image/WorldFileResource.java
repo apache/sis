@@ -45,10 +45,10 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.StoreResource;
 import static org.apache.sis.storage.modifier.CoverageModifier.BandSource;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.coverage.privy.RangeArgument;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.coverage.internal.shared.RangeArgument;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Names;
 

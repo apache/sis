@@ -48,7 +48,7 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.metadata.internal.shared.Identifiers;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.resources.Errors;

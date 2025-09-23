@@ -23,7 +23,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
-import static org.apache.sis.util.privy.Constants.MILLIS_PER_TROPICAL_YEAR;
+import static org.apache.sis.util.internal.shared.Constants.MILLIS_PER_TROPICAL_YEAR;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

@@ -44,9 +44,9 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.image.privy.ImageUtilities;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 

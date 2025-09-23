@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.internal.shared.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

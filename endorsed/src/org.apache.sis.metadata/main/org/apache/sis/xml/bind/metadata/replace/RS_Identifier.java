@@ -21,7 +21,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.*;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.Citation;

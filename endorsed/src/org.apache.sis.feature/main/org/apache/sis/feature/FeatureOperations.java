@@ -26,9 +26,9 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.filter.privy.XPath;
+import org.apache.sis.filter.internal.shared.XPath;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Specific to the main branch:

@@ -39,12 +39,12 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
-import static org.apache.sis.util.privy.Constants.NANOS_PER_SECOND;
-import static org.apache.sis.util.privy.Constants.MILLIS_PER_SECOND;
+import static org.apache.sis.util.internal.shared.Constants.NANOS_PER_SECOND;
+import static org.apache.sis.util.internal.shared.Constants.MILLIS_PER_SECOND;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.temporal.TemporalDate;

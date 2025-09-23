@@ -17,7 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Objects;
-import org.apache.sis.util.privy.CloneAccess;
+import org.apache.sis.util.internal.shared.CloneAccess;
 
 
 /**

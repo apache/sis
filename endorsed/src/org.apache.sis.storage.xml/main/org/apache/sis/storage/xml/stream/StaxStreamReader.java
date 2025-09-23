@@ -39,7 +39,7 @@ import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.storage.DataStoreException;

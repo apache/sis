@@ -28,9 +28,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.metadata.privy.ReferencingServices;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.referencing.privy.WraparoundAxesFinder;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.referencing.internal.shared.WraparoundAxesFinder;
 import org.apache.sis.util.logging.Logging;
 
 

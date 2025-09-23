@@ -26,10 +26,10 @@ import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
-import org.apache.sis.referencing.privy.AffineTransform2D;
-import org.apache.sis.referencing.privy.IntervalRectangle;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.IntervalRectangle;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.pending.jdk.JDK19;
 
 

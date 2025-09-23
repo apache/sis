@@ -48,7 +48,7 @@ import javax.swing.event.ChangeListener;
 import java.util.function.BiConsumer;
 import java.util.concurrent.CountDownLatch;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

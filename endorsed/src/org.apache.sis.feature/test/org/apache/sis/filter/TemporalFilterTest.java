@@ -18,7 +18,7 @@ package org.apache.sis.filter;
 
 import java.time.Instant;
 import org.apache.sis.geometry.WraparoundMethod;
-import static org.apache.sis.util.privy.Constants.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.internal.shared.Constants.MILLISECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

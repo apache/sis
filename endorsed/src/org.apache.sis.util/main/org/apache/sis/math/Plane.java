@@ -25,9 +25,9 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.ulp;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.DoubleDouble;
+import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:

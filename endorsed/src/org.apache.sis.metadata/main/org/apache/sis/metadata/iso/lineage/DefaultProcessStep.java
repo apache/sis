@@ -36,7 +36,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gml.TM_Primitive;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.temporal.TemporalObjects;
 
 // Specific to the main and geoapi-3.1 branches:

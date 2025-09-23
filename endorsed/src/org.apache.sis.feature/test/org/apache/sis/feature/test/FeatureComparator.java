@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

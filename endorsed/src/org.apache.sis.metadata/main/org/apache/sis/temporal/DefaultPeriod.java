@@ -24,7 +24,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.LazyCandidate;
+import org.apache.sis.util.internal.shared.LazyCandidate;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Instant;

@@ -31,7 +31,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.xml.XML;
-import org.apache.sis.xml.privy.URISource;
+import org.apache.sis.xml.internal.shared.URISource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
@@ -41,7 +41,7 @@ import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.referencing.privy.DefinitionVerifier;
+import org.apache.sis.referencing.internal.shared.DefinitionVerifier;
 import org.apache.sis.setup.OptionKey;
 
 

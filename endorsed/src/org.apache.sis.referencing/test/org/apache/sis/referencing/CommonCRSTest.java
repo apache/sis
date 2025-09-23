@@ -37,10 +37,10 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.metadata.internal.shared.AxisNames;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
-import org.apache.sis.util.privy.Constants;
-import static org.apache.sis.util.privy.Constants.UTC;
+import org.apache.sis.util.internal.shared.Constants;
+import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

@@ -19,7 +19,7 @@ package org.apache.sis.referencing.internal;
 import java.util.Set;
 import javax.measure.Unit;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**

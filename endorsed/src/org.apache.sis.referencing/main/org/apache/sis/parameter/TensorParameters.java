@@ -41,7 +41,7 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Errors;

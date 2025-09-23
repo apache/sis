@@ -23,7 +23,7 @@ import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ensureInRange;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensureInRange;
 
 
 /**

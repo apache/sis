@@ -46,8 +46,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.internal.AutoMessageFormat;
-import org.apache.sis.util.privy.MetadataServices;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.MetadataServices;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 

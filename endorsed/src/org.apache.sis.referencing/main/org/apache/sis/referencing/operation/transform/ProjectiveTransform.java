@@ -19,14 +19,14 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.privy.DirectPositionView;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.Arithmetic;
+import org.apache.sis.referencing.internal.shared.DirectPositionView;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.internal.Arithmetic;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.math.Fraction;
 
 

@@ -32,7 +32,7 @@ import org.apache.sis.referencing.internal.EPSGParameterDomain;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.logging.Logging;

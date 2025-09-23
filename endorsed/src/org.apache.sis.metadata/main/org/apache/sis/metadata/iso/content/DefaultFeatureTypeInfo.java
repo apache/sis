@@ -23,7 +23,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ensurePositive;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;

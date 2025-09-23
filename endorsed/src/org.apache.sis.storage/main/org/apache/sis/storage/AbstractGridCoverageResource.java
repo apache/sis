@@ -37,7 +37,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.internal.Resources;
 

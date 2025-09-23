@@ -22,7 +22,7 @@ import java.util.logging.LogRecord;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.IndexedResourceBundle;

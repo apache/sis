@@ -37,7 +37,7 @@ import org.apache.sis.util.iso.Names;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
-import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
 
 
 /**

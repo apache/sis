@@ -28,9 +28,9 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.referencing.internal.shared.Formulas;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.io.wkt.WKTFormat;
 

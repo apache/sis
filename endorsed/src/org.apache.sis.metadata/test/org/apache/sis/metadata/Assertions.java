@@ -26,7 +26,7 @@ import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

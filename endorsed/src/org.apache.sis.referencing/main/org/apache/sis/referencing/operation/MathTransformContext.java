@@ -30,20 +30,20 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
+import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole;
-import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 
 
 /**

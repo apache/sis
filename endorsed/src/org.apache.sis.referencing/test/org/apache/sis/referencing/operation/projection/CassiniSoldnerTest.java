@@ -21,7 +21,7 @@ import static java.lang.StrictMath.*;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.MapProjection;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.parameter.Parameters;
 

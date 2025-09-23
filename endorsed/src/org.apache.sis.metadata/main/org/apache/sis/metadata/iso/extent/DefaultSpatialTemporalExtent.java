@@ -27,8 +27,8 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.metadata.privy.ReferencingServices;
-import static org.apache.sis.metadata.privy.ImplementationHelper.valueIfDefined;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.valueIfDefined;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;

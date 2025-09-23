@@ -17,7 +17,7 @@
 package org.apache.sis.setup;
 
 import org.opengis.metadata.acquisition.GeometryType;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

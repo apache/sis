@@ -53,10 +53,10 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.X364;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.metadata.privy.NameToIdentifier;
+import org.apache.sis.metadata.internal.shared.NameToIdentifier;
 import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the main and geoapi-3.1 branches:

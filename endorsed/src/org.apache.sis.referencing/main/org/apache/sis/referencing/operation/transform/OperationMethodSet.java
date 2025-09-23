@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.util.privy.SetOfUnknownSize;
+import org.apache.sis.util.internal.shared.SetOfUnknownSize;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 

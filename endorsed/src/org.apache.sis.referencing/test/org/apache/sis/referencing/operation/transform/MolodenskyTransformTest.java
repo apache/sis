@@ -28,7 +28,7 @@ import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolati
 import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
 import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
 import org.apache.sis.referencing.operation.provider.Molodensky;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolati
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 
 // Specific to the main branch:
-import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
+import static org.apache.sis.referencing.internal.shared.CoordinateOperations.builder;
 
 
 /**

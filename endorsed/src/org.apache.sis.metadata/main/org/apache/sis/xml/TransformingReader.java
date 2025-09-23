@@ -62,13 +62,13 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * This set will contain at least the following namespaces:
      *
      * <ul>
-     *   <li>{@value org.apache.sis.xml.privy.LegacyNamespaces#GMI}</li>
-     *   <li>{@value org.apache.sis.xml.privy.LegacyNamespaces#GMI_ALIAS}</li>
-     *   <li>{@value org.apache.sis.xml.privy.LegacyNamespaces#GMD}</li>
-     *   <li>{@value org.apache.sis.xml.privy.LegacyNamespaces#SRV}</li>
-     *   <li>{@value org.apache.sis.xml.privy.LegacyNamespaces#GCO}</li>
-     *   <li>{@value org.apache.sis.xml.privy.LegacyNamespaces#GMX}</li>
-     *   <li>{@value org.apache.sis.xml.privy.LegacyNamespaces#GML}</li>
+     *   <li>{@value org.apache.sis.xml.internal.shared.LegacyNamespaces#GMI}</li>
+     *   <li>{@value org.apache.sis.xml.internal.shared.LegacyNamespaces#GMI_ALIAS}</li>
+     *   <li>{@value org.apache.sis.xml.internal.shared.LegacyNamespaces#GMD}</li>
+     *   <li>{@value org.apache.sis.xml.internal.shared.LegacyNamespaces#SRV}</li>
+     *   <li>{@value org.apache.sis.xml.internal.shared.LegacyNamespaces#GCO}</li>
+     *   <li>{@value org.apache.sis.xml.internal.shared.LegacyNamespaces#GMX}</li>
+     *   <li>{@value org.apache.sis.xml.internal.shared.LegacyNamespaces#GML}</li>
      * </ul>
      *
      * More namespaces may appear depending on the optional module on the module path.

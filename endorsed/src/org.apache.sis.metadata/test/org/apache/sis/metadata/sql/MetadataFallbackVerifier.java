@@ -23,8 +23,8 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.internal.CitationConstant;
 import org.apache.sis.metadata.iso.citation.Citations;
-import static org.apache.sis.util.privy.CollectionsExt.first;
-import org.apache.sis.util.privy.Constants;
+import static org.apache.sis.util.internal.shared.CollectionsExt.first;
+import org.apache.sis.util.internal.shared.Constants;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

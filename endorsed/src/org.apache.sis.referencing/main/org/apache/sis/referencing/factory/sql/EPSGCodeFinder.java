@@ -48,21 +48,21 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Strings;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.pending.jdk.JDK19;
-import org.apache.sis.metadata.privy.ReferencingServices;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
+import org.apache.sis.metadata.internal.shared.ReferencingServices;
+import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
-import static org.apache.sis.metadata.privy.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
+import static org.apache.sis.metadata.internal.shared.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeneralDerivedCRS;

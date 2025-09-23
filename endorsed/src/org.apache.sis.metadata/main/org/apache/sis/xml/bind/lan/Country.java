@@ -22,11 +22,11 @@ import jakarta.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.xml.bind.gco.GO_CharacterString;
 import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
 

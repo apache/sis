@@ -29,7 +29,7 @@ import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.panama.LibraryLoader;

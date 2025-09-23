@@ -35,20 +35,20 @@ import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.util.privy.CollectionsExt;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ensurePositive;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.distribution.MediumName;
-import org.apache.sis.util.privy.CodeLists;
+import org.apache.sis.util.internal.shared.CodeLists;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import static org.apache.sis.metadata.privy.ImplementationHelper.valueIfDefined;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.valueIfDefined;
 
 
 /**

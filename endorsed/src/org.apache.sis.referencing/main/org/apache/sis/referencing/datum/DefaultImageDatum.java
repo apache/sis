@@ -23,8 +23,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 

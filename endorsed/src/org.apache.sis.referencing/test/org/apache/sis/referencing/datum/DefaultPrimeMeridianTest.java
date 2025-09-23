@@ -27,7 +27,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 

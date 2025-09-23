@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.stream.Stream;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.storage.base.ArrayOfLongs;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;

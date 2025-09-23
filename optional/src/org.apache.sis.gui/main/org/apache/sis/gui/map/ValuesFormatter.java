@@ -42,7 +42,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 // Specific to the main branch:

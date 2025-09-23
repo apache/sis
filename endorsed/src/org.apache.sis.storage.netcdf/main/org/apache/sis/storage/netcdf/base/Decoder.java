@@ -47,9 +47,9 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
+import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 
 
 /**

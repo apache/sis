@@ -32,7 +32,7 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**

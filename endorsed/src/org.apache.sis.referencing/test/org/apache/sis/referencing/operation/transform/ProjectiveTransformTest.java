@@ -26,9 +26,9 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.provider.Affine;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.math.Fraction;
 
@@ -255,7 +255,7 @@ public class ProjectiveTransformTest extends TransformTestCase {
      * The other source is rounding errors inside the {@code transform(…)} methods,
      * which is reduced by a denominator column in {@link ProjectiveTransform#elt}.
      * For demonstrating the latter rounding errors, it may be necessary to set the
-     * {@link org.apache.sis.referencing.privy.Formulas#USE_FMA} flag to {@code false}.
+     * {@link org.apache.sis.referencing.internal.shared.Formulas#USE_FMA} flag to {@code false}.
      *
      * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate conversion failed.

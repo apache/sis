@@ -19,7 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Iterator;
 import java.util.Collection;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import static org.apache.sis.metadata.ValueExistencePolicy.*;
 
 // Specific to the main branch:

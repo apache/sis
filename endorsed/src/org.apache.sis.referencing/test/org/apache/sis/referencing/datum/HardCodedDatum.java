@@ -22,7 +22,7 @@ import java.time.Instant;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
+import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
 
 // Test dependencies
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;

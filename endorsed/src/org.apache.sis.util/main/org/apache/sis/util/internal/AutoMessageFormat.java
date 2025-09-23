@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.MessageFormat;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**

@@ -21,7 +21,7 @@ import static java.lang.StrictMath.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.provider.ObliqueStereographic;
 import org.apache.sis.parameter.Parameters;
 

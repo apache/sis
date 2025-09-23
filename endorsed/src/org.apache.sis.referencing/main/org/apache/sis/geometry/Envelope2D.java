@@ -35,7 +35,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isNegativeZero;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
-import static org.apache.sis.referencing.privy.Formulas.isPoleToPole;
+import static org.apache.sis.referencing.internal.shared.Formulas.isPoleToPole;
 import static org.apache.sis.geometry.AbstractEnvelope.getAxis;
 import static org.apache.sis.geometry.AbstractEnvelope.isWrapAround;
 import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;

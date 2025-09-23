@@ -19,7 +19,7 @@ package org.apache.sis.style.se1;
 import java.net.URI;
 import java.awt.Color;
 import java.util.Objects;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
 // Specific to the main branch:

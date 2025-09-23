@@ -20,7 +20,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.image.privy.RasterFactory;
+import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies

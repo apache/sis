@@ -32,7 +32,7 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.xml.bind.lan.OtherLocales;
 import org.apache.sis.xml.bind.lan.PT_Locale;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 
 // Specific to the main and geoapi-3.1 branches:

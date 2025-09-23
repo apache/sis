@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.io.Console;
 import java.io.PrintWriter;
-import org.apache.sis.util.privy.X364;
+import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.system.Environment;
 import org.apache.sis.setup.OptionalInstallations;

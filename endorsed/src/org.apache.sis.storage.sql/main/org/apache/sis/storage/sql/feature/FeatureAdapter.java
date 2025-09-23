@@ -26,7 +26,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.apache.sis.metadata.sql.privy.SQLBuilder;
+import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakValueHashMap;

@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.Context;
 import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
 

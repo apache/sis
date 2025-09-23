@@ -25,7 +25,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.xml.privy.XmlUtilities;
+import org.apache.sis.xml.internal.shared.XmlUtilities;
 
 
 /**
@@ -42,7 +42,7 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
     /**
      * The timezone of the date to marshal with this adapter.
      */
-    private static final TimeZone UTC = TimeZone.getTimeZone(org.apache.sis.util.privy.Constants.UTC);
+    private static final TimeZone UTC = TimeZone.getTimeZone(org.apache.sis.util.internal.shared.Constants.UTC);
 
     /**
      * Empty constructor for JAXB only.

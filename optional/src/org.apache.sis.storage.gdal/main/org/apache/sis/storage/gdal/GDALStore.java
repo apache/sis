@@ -50,8 +50,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.system.Cleaners;
 

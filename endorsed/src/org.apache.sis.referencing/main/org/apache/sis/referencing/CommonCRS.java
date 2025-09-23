@@ -69,8 +69,8 @@ import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
-import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;
@@ -79,14 +79,14 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
+import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
 
 // Specific to the main branch:
 import org.opengis.referencing.crs.GeocentricCRS;

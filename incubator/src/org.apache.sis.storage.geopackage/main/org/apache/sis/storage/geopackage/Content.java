@@ -47,7 +47,7 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.sql.DataAccess;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.base.MetadataFetcher;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
+import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 
 
 /**

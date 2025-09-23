@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.provider.ObliqueMercatorTwoPoints;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Workaround;
 import static org.apache.sis.math.MathFunctions.atanh;
-import static org.apache.sis.referencing.privy.Formulas.fastHypot;
+import static org.apache.sis.referencing.internal.shared.Formulas.fastHypot;
 import static org.apache.sis.referencing.operation.provider.ObliqueMercatorCenter.*;
 
 

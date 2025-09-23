@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.util.ArraysExt;
 import static org.apache.sis.referencing.internal.Arithmetic.add;
 import static org.apache.sis.referencing.internal.Arithmetic.subtract;

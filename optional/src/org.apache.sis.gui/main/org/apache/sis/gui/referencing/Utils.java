@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;

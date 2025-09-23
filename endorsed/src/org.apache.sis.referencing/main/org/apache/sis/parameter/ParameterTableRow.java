@@ -39,11 +39,11 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
-import org.apache.sis.metadata.privy.NameToIdentifier;
-import org.apache.sis.util.privy.X364;
-import static org.apache.sis.util.privy.X364.*;
+import org.apache.sis.metadata.internal.shared.NameToIdentifier;
+import org.apache.sis.util.internal.shared.X364;
+import static org.apache.sis.util.internal.shared.X364.*;
 import static org.apache.sis.util.CharSequences.spaces;
-import static org.apache.sis.util.privy.Constants.DEFAULT_SEPARATOR;
+import static org.apache.sis.util.internal.shared.Constants.DEFAULT_SEPARATOR;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.util.InternationalString;

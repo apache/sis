@@ -31,8 +31,8 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import org.apache.sis.image.privy.RasterFactory;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.image.internal.shared.RasterFactory;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

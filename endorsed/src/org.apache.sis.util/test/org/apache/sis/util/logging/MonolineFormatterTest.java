@@ -19,7 +19,7 @@ package org.apache.sis.util.logging;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

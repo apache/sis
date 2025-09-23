@@ -31,7 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.privy.CheckedArrayList;
+import org.apache.sis.util.internal.shared.CheckedArrayList;
 import org.apache.sis.feature.internal.Resources;
 
 

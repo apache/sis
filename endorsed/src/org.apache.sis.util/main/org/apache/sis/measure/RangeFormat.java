@@ -48,8 +48,8 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.LocalizedParseException;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.LocalizedParseException;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**

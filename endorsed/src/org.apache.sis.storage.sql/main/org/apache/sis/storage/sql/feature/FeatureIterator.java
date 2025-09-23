@@ -24,8 +24,8 @@ import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.apache.sis.metadata.sql.privy.SQLBuilder;
-import org.apache.sis.feature.privy.FeatureProjection;
+import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
+import org.apache.sis.feature.internal.shared.FeatureProjection;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 // Specific to the main branch:

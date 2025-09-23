@@ -32,7 +32,7 @@ import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.sql.feature.TableReference;
 

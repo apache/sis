@@ -37,7 +37,7 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -50,7 +50,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the main branch:
-import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
+import static org.apache.sis.referencing.internal.shared.CoordinateOperations.builder;
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 

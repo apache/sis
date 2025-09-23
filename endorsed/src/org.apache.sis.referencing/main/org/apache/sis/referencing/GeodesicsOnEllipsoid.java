@@ -21,7 +21,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.Debug;
 

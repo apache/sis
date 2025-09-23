@@ -38,7 +38,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
-import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

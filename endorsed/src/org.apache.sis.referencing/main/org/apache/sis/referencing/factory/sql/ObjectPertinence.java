@@ -23,10 +23,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

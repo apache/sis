@@ -38,9 +38,9 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.DoubleDouble;
-import static org.apache.sis.util.privy.Numerics.SIGN_BIT_MASK;
-import static org.apache.sis.util.privy.Numerics.SIGNIFICAND_MASK;
+import org.apache.sis.util.internal.shared.DoubleDouble;
+import static org.apache.sis.util.internal.shared.Numerics.SIGN_BIT_MASK;
+import static org.apache.sis.util.internal.shared.Numerics.SIGNIFICAND_MASK;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 

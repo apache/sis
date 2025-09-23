@@ -29,11 +29,11 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.image.privy.ReshapedImage;
+import org.apache.sis.image.internal.shared.ReshapedImage;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.privy.Strings;
-import static org.apache.sis.image.privy.ImageUtilities.LOGGER;
+import org.apache.sis.util.internal.shared.Strings;
+import static org.apache.sis.image.internal.shared.ImageUtilities.LOGGER;
 
 
 /**

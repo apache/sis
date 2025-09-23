@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.awt.image.RenderedImage;
 import javafx.geometry.Orientation;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Cursor;
 import javafx.scene.control.ScrollBar;
@@ -34,10 +35,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
-import javafx.geometry.Bounds;
 import org.apache.sis.gui.internal.MouseDrags;
 import org.apache.sis.gui.internal.Styles;
-import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**

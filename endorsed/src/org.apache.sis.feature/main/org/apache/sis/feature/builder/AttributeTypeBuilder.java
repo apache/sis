@@ -32,11 +32,11 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.SetOfUnknownSize;
-import org.apache.sis.util.privy.AbstractIterator;
-import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.SetOfUnknownSize;
+import org.apache.sis.util.internal.shared.AbstractIterator;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.resources.Errors;
 

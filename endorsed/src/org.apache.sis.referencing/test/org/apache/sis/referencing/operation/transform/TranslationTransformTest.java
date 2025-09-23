@@ -17,11 +17,11 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

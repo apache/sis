@@ -26,7 +26,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
-import static org.apache.sis.util.privy.Strings.trimOrNull;
+import static org.apache.sis.util.internal.shared.Strings.trimOrNull;
 
 
 /**

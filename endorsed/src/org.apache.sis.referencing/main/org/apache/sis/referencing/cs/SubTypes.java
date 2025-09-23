@@ -28,7 +28,7 @@ import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.VerticalCS;
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.cs.UserDefinedCS;

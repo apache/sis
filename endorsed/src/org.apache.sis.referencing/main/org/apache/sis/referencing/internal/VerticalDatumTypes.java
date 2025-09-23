@@ -25,7 +25,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.privy.CodeLists;
+import org.apache.sis.util.internal.shared.CodeLists;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.datum.VerticalDatumType;

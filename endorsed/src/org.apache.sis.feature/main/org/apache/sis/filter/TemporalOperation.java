@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.io.Serializable;
 import java.time.DateTimeException;
 import java.time.temporal.Temporal;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.temporal.TimeMethods;
 import static org.apache.sis.temporal.TimeMethods.BEFORE;

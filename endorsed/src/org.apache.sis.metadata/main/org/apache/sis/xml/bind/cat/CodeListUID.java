@@ -24,11 +24,11 @@ import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.Context;
-import static org.apache.sis.metadata.privy.ImplementationHelper.ISO_NAMESPACE;
+import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_NAMESPACE;
 
 // Specific to the main branch:
 import java.util.ResourceBundle;
-import org.apache.sis.util.privy.CodeLists;
+import org.apache.sis.util.internal.shared.CodeLists;
 
 
 /**

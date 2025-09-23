@@ -28,7 +28,7 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.privy.CloneAccess;
+import org.apache.sis.util.internal.shared.CloneAccess;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 // Specific to the main branch:

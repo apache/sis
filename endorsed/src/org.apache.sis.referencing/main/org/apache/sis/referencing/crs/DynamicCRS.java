@@ -21,7 +21,7 @@ import org.opengis.referencing.datum.Datum;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.referencing.internal.Epoch;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;

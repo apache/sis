@@ -29,7 +29,7 @@ import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.xml.privy.XmlUtilities;
+import org.apache.sis.xml.internal.shared.XmlUtilities;
 import org.apache.sis.temporal.TemporalObjects;
 
 // Test dependencies

@@ -28,7 +28,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;

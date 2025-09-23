@@ -25,7 +25,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -356,7 +356,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractParameterDescriptor() {
-        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.internal.shared.NilReferencingObject.INSTANCE);
         minimumOccurs = DEFAULT_OCCURRENCE;  // Default value if XML element is omitted.
         maximumOccurs = DEFAULT_OCCURRENCE;
     }

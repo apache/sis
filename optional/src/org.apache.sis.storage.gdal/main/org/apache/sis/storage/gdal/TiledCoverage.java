@@ -29,7 +29,7 @@ import org.apache.sis.storage.base.TiledGridCoverage;
 import org.apache.sis.storage.base.TiledGridResource;
 
 // Test dependencies
-import org.apache.sis.image.privy.AssertionMessages;
+import org.apache.sis.image.internal.shared.AssertionMessages;
 
 
 /**

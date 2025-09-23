@@ -36,7 +36,7 @@ import org.apache.sis.system.DelayedRunnable;
 import org.apache.sis.xml.bind.AdapterReplacement;
 import org.apache.sis.xml.bind.TypeRegistration;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

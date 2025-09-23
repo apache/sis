@@ -22,8 +22,8 @@ import java.util.Optional;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.CloneAccess;
-import org.apache.sis.util.privy.Cloner;
+import org.apache.sis.util.internal.shared.CloneAccess;
+import org.apache.sis.util.internal.shared.Cloner;
 
 
 /**

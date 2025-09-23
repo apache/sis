@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.function.Function;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.filter.privy.FunctionNames;
-import org.apache.sis.filter.privy.Visitor;
+import org.apache.sis.filter.internal.shared.FunctionNames;
+import org.apache.sis.filter.internal.shared.Visitor;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Filter;

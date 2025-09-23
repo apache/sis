@@ -33,12 +33,12 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.image.privy.RasterFactory;
+import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.apache.sis.image.privy.AssertionMessages;
+import org.apache.sis.image.internal.shared.AssertionMessages;
 
 
 /**

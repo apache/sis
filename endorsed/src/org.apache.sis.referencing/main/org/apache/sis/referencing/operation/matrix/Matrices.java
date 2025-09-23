@@ -29,15 +29,15 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.pending.jdk.JDK21;
-import org.apache.sis.referencing.privy.AxisDirections;
-import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.Arithmetic;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.MathTransforms;       // For javadoc
 
 // Specific to the main branch:

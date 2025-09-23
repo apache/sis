@@ -56,12 +56,12 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.privy.Strings;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.metadata.privy.NameToIdentifier;
-import org.apache.sis.metadata.privy.ImplementationHelper;
-import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.metadata.internal.shared.NameToIdentifier;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
+import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
@@ -70,9 +70,9 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.util.privy.CollectionsExt.nonNull;
-import static org.apache.sis.util.privy.CollectionsExt.nonEmpty;
-import static org.apache.sis.util.privy.CollectionsExt.immutableSet;
+import static org.apache.sis.util.internal.shared.CollectionsExt.nonNull;
+import static org.apache.sis.util.internal.shared.CollectionsExt.nonEmpty;
+import static org.apache.sis.util.internal.shared.CollectionsExt.immutableSet;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -81,8 +81,8 @@ import org.opengis.referencing.operation.Projection;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.referencing.internal.Legacy;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 
 
 /**
@@ -1028,7 +1028,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * elements separated by hyphens:</p>
      * <ul>
      *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
-     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.util.privy.DefinitionURI})</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.util.internal.shared.DefinitionURI})</li>
      *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
      * </ul>
      *

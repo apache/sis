@@ -33,8 +33,8 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.sqlmm.SQLMM;
-import org.apache.sis.referencing.privy.ShapeUtilities;
-import org.apache.sis.referencing.privy.AbstractShape;
+import org.apache.sis.referencing.internal.shared.ShapeUtilities;
+import org.apache.sis.referencing.internal.shared.AbstractShape;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 

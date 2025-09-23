@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
 import org.apache.sis.feature.Features;
-import org.apache.sis.feature.privy.FeatureProjectionBuilder;
+import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
 import org.apache.sis.math.FunctionProperty;
 
 // Specific to the main branch:

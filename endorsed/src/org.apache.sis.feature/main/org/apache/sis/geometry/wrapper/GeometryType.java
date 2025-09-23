@@ -23,7 +23,7 @@ import org.opengis.util.NameSpace;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 
 
 /**

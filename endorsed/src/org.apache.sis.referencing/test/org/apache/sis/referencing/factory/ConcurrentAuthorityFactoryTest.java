@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
-import static org.apache.sis.util.privy.Constants.NANOS_PER_MILLISECOND;
+import static org.apache.sis.util.internal.shared.Constants.NANOS_PER_MILLISECOND;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

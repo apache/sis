@@ -25,7 +25,7 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.parameter.ParameterDescriptor;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;

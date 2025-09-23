@@ -27,7 +27,7 @@ import org.opengis.util.CodeList;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.filter.internal.Node;
-import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 // Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;

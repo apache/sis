@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 

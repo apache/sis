@@ -30,10 +30,10 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MolodenskyTransform;
-import org.apache.sis.referencing.privy.NilReferencingObject;
-import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.internal.shared.NilReferencingObject;
+import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.measure.Units;
 
 

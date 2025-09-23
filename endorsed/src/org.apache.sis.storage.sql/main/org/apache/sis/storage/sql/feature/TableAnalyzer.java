@@ -22,8 +22,8 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.SQLFeatureNotSupportedException;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.metadata.sql.privy.Reflection;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.metadata.sql.internal.shared.Reflection;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

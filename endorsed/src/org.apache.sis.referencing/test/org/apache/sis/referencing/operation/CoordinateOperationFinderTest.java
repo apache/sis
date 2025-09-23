@@ -54,9 +54,9 @@ import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
-import static org.apache.sis.referencing.privy.Formulas.LINEAR_TOLERANCE;
-import static org.apache.sis.referencing.privy.Formulas.ANGULAR_TOLERANCE;
+import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
+import static org.apache.sis.referencing.internal.shared.Formulas.LINEAR_TOLERANCE;
+import static org.apache.sis.referencing.internal.shared.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.internal.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
 
 // Test dependencies

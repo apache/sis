@@ -39,8 +39,8 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
-import org.apache.sis.metadata.privy.AxisNames;
-import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
+import org.apache.sis.metadata.internal.shared.AxisNames;
+import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -48,7 +48,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
+import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

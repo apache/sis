@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

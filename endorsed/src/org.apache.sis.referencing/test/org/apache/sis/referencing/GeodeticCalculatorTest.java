@@ -32,14 +32,14 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.privy.Formulas;
-import org.apache.sis.referencing.privy.ShapeUtilitiesExt;
+import org.apache.sis.referencing.internal.shared.Formulas;
+import org.apache.sis.referencing.internal.shared.ShapeUtilitiesExt;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.internal.shared.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

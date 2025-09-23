@@ -31,7 +31,7 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.logging.Logging;
 
 // Specific to the main and geoapi-3.1 branches:

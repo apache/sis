@@ -22,8 +22,8 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
-import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.LogicalOperator;

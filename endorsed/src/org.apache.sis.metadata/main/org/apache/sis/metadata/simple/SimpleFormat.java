@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.Format;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.internal.shared.Strings;
 
 // Specific to the main branch:
 import org.opengis.metadata.distribution.Distributor;

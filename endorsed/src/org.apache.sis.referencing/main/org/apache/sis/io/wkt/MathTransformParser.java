@@ -37,18 +37,18 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 
 

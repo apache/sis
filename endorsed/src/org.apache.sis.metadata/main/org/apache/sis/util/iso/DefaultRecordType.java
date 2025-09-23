@@ -42,7 +42,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.converter.SurjectiveConverter;
-import org.apache.sis.metadata.privy.RecordSchemaSIS;
+import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
 
 
 /**

@@ -35,7 +35,7 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;

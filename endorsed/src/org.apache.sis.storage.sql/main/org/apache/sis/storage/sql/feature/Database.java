@@ -42,10 +42,10 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.citation.PresentationForm;
-import org.apache.sis.metadata.sql.privy.Syntax;
-import org.apache.sis.metadata.sql.privy.Dialect;
-import org.apache.sis.metadata.sql.privy.Reflection;
-import org.apache.sis.metadata.sql.privy.SQLBuilder;
+import org.apache.sis.metadata.sql.internal.shared.Syntax;
+import org.apache.sis.metadata.sql.internal.shared.Dialect;
+import org.apache.sis.metadata.sql.internal.shared.Reflection;
+import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -61,8 +61,8 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.util.privy.Strings;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
 
 

@@ -37,29 +37,29 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.temporal.TemporalDate;
-import org.apache.sis.metadata.privy.Identifiers;
-import org.apache.sis.metadata.privy.NameToIdentifier;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.metadata.internal.shared.Identifiers;
+import org.apache.sis.metadata.internal.shared.NameToIdentifier;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.ImageDatum;
+
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.referencing.internal.Legacy;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.ImageDatum;
 
 
 /**
@@ -694,7 +694,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractDatum() {
-        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.internal.shared.NilReferencingObject.INSTANCE);
         publicationDate = null;
         conventionalRS  = null;
     }

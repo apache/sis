@@ -19,8 +19,8 @@ package org.apache.sis.filter.internal;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.feature.privy.AttributeConvention;
-import org.apache.sis.filter.privy.XPath;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.filter.internal.shared.XPath;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;

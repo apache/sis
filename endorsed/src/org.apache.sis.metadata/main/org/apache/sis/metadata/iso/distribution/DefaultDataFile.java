@@ -28,7 +28,7 @@ import org.opengis.metadata.distribution.DataFile;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
 
 // Specific to the main and geoapi-3.1 branches:

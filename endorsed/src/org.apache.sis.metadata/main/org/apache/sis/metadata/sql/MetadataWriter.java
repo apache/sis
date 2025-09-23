@@ -45,10 +45,10 @@ import org.apache.sis.metadata.TypeValuePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.sql.privy.SQLBuilder;
-import org.apache.sis.metadata.sql.privy.Reflection;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.Strings;
+import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
+import org.apache.sis.metadata.sql.internal.shared.Reflection;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.xml.IdentifiedObject;
 
 // Specific to the main branch:
