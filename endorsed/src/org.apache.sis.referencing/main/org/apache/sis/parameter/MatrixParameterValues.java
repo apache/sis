@@ -58,7 +58,7 @@ import org.apache.sis.util.resources.Errors;
  * @param <E>  the type of tensor element values.
  */
 @XmlTransient
-final class TensorValues<E> extends AbstractParameterDescriptor
+final class MatrixParameterValues<E> extends AbstractParameterDescriptor
         implements ParameterDescriptorGroup, ParameterValueGroup, CloneAccess
 {
     /**
@@ -70,10 +70,10 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * A provider of descriptors for matrix parameters. This object is used like a collection of
      * {@link ParameterDescriptor}s, even if it does not implement any standard collection API.
      *
-     * @see TensorParameters#descriptor(ParameterDescriptorGroup, String, int[])
-     * @see TensorParameters#getAllDescriptors(int[])
+     * @see MatrixParameters#descriptor(ParameterDescriptorGroup, String, int[])
+     * @see MatrixParameters#getAllDescriptors(int[])
      */
-    private final TensorParameters<E> descriptors;
+    private final MatrixParameters<E> descriptors;
 
     /**
      * The parameter for the number of row, columns and other dimensions in the tensor.
@@ -83,7 +83,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
 
     /**
      * The parameter values. Each array element is itself an {@code ParameterValue} array,
-     * and so on until we have nested {@link TensorParameters#rank()} arrays.
+     * and so on until we have nested {@link MatrixParameters#order()} arrays.
      *
      * <p>Will be constructed only when first requested.
      * May be resized at any moment if a {@link #dimensions} parameter value change.</p>
@@ -95,10 +95,10 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * Constructs a new group of tensor parameters for the given properties.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    TensorValues(final Map<String,?> properties, final TensorParameters<E> descriptors) {
+    MatrixParameterValues(final Map<String,?> properties, final MatrixParameters<E> descriptors) {
         super(properties, 1, 1);
         this.descriptors = descriptors;
-        dimensions = new ParameterValue[descriptors.rank()];
+        dimensions = new ParameterValue[descriptors.order()];
         for (int i=0; i<dimensions.length; i++) {
             dimensions[i] = descriptors.getDimensionDescriptor(i).createValue();
         }
@@ -109,7 +109,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * If {@code clone} is true, the new group will be a clone of the given group.
      * If {@code clone} is false, the new group will be initialized to default values.
      */
-    TensorValues(final TensorValues<E> other, final boolean clone) {
+    MatrixParameterValues(final MatrixParameterValues<E> other, final boolean clone) {
         super(other);
         descriptors = other.descriptors;
         dimensions = other.dimensions.clone();
@@ -148,7 +148,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public ParameterValueGroup clone() {
-        return new TensorValues<>(this, true);
+        return new MatrixParameterValues<>(this, true);
     }
 
     /**
@@ -156,7 +156,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public ParameterValueGroup createValue() {
-        return new TensorValues<>(this, false);
+        return new MatrixParameterValues<>(this, false);
     }
 
     /**
@@ -220,7 +220,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
         }
         if (indices != null) {
             final int[] actualSize = size();
-            if (TensorParameters.isInBounds(indices, actualSize)) {
+            if (MatrixParameters.isInBounds(indices, actualSize)) {
                 return parameter(indices, actualSize);
             }
         }
@@ -229,8 +229,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
          * Verify if the requested parameters is one of those that
          * specify the matrix/tensor size ("num_row" or "num_col").
          */
-        final int rank = descriptors.rank();
-        for (int i=0; i<rank; i++) {
+        final int order = descriptors.order();
+        for (int i=0; i<order; i++) {
             final ParameterDescriptor<Integer> param = descriptors.getDimensionDescriptor(i);
             if (IdentifiedObjects.isHeuristicMatchForName(param, name)) {
                 return dimensions[i];
@@ -244,26 +244,26 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * Returns the tensor element at the given indices.
      */
     private ParameterValue<E> parameter(final int[] indices, final int[] actualSize) {
-        final int rank = dimensions.length;
-        if (indices.length != rank) {
+        final int order = dimensions.length;
+        if (indices.length != order) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.UnexpectedArrayLength_2, rank, indices.length));
+                    Errors.Keys.UnexpectedArrayLength_2, order, indices.length));
         }
         /*
-         * At the end of the following loop, 'element' will be the TensorValues element
-         * and 'parent' will be the array which contain it at index indices[rank - 1].
+         * At the end of the following loop, `element` will be the `MatrixParameterValues`
+         * element and `parent` will be the array which contain it at index `indices[order - 1]`.
          */
         Object[] parent = null;
         Object element = values;
-        for (int i=0; i<rank; i++) {
+        for (int i=0; i<order; i++) {
             if (element == null) {
                 /*
                  * Creates new arrays only when first needed.
-                 * For rank 2, creates ParameterValue[][];
-                 * For rank 3, creates ParameterValue[][][];
+                 * For order 2, creates `ParameterValue[][]`.
+                 * For order 3, creates `ParameterValue[][][]`.
                  * etc.
                  */
-                final Class<?> componentType = Classes.changeArrayDimension(ParameterValue.class, rank - i - 1);
+                final Class<?> componentType = Classes.changeArrayDimension(ParameterValue.class, order - i - 1);
                 element = Array.newInstance(componentType, actualSize[i]);
                 if (parent != null) {
                     parent[indices[i-1]] = element;
@@ -276,7 +276,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
                  * could also be too long if the user reduced some tensor dimensions. We do not trim too long
                  * arrays in order to avoid inconsistent behavior if the user later brings back the sensor
                  * dimension to its old value. The inconsistent behavior would be to discard the references to
-                 * existing values above 'actualSize[i]', because we would have some sequences of operations
+                 * existing values above `actualSize[i]`, because we would have some sequences of operations
                  * that discard them and some other sequences of operations that do not discard them.
                  * The easiest strategy is to never discard those extraneous references - may not be ideal,
                  * but at least it keep the behavior consistent for all sequences of operations.
@@ -291,7 +291,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
         }
         if (element == null) {
             element = descriptors.getElementDescriptor(indices).createValue();
-            parent[indices[rank - 1]] = element;
+            parent[indices[order - 1]] = element;
         }
         return Parameters.cast((ParameterValue<?>) element, descriptors.getElementType());
     }
@@ -369,7 +369,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
 
     /**
      * Creates a matrix from this group of parameters.
-     * This operation is allowed only for tensors of {@linkplain TensorParameters#rank() rank} 2.
+     * This operation is allowed only for tensors of {@linkplain MatrixParameters#order() order} 2.
      *
      * @return a matrix created from this group of parameters.
      */
@@ -379,7 +379,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
         final Matrix matrix = Matrices.createDiagonal(numRow, numCol);
         if (values != null) {
             for (int j=0; j<numRow; j++) {
-                final ParameterValue<?>[] row = (ParameterValue<?>[]) values[j];
+                final var row = (ParameterValue<?>[]) values[j];
                 if (row != null) {
                     for (int i=0; i<numCol; i++) {
                         final ParameterValue<?> element = row[i];
@@ -442,7 +442,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
             return true;                            // Slight optimization.
         }
         if (super.equals(object, mode)) {
-            final TensorValues<?> that = (TensorValues<?>) object;
+            final MatrixParameterValues<?> that = (MatrixParameterValues<?>) object;
             return Utilities.deepEquals(descriptors, that.descriptors, mode) &&
                    Utilities.deepEquals(values(),    that.values(),    mode);
         }

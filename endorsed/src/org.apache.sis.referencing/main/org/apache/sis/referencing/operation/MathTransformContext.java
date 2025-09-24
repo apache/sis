@@ -37,7 +37,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole;
-import org.apache.sis.parameter.TensorParameters;
+import org.apache.sis.parameter.MatrixParameters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.measure.Units;
@@ -138,7 +138,7 @@ final class MathTransformContext extends ParameterizedTransformBuilder {
     final MathTransform createAffineGeocentric(final Matrix datumShift) throws FactoryException {
         if (datumShift != null) {
             final var properties = Map.of(IdentifiedObject.NAME_KEY, Constants.AFFINE);
-            parameters = TensorParameters.WKT1.createValueGroup(properties, datumShift);
+            parameters = MatrixParameters.WKT1.createValueGroup(properties, datumShift);
         } else {
             parameters = Affine.identity(3);        // Dimension of geocentric CRS.
         }

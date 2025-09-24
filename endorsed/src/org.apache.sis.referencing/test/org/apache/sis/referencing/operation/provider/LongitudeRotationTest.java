@@ -82,7 +82,9 @@ public final class LongitudeRotationTest extends TestCase {
         final ParameterValueGroup p = provider.getParameters().createValue();
         p.parameter("Longitude offset").setValue(2.5969213, Units.GRAD);
         assertWktEquals(Convention.WKT2,
-                "PARAM_MT[“Affine parametric transformation”,\n" +
-                "  PARAMETER[“A2”, 2.33722917, ID[“EPSG”, 8625]]]", provider.createMathTransform(null, p));
+                "PARAM_MT[“Affine”,\n" +
+                "  PARAMETER[“num_row”, 3],\n"  +
+                "  PARAMETER[“num_col”, 3],\n"  +
+                "  PARAMETER[“elt_0_2”, 2.33722917]]", provider.createMathTransform(null, p));
     }
 }

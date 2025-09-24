@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.provider;
 
 import java.util.Map;
-import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -26,12 +25,12 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.parameter.TensorParameters;
+import org.apache.sis.parameter.MatrixParameters;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 
@@ -45,12 +44,12 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  *   <tr><th>EPSG code</th><th>EPSG name</th><th>OGC name</th><th>Default value</th></tr>
  *   <tr><td>    </td> <td>          </td> <td>{@code num_row}</td> <td>3</td></tr>
  *   <tr><td>    </td> <td>          </td> <td>{@code num_col}</td> <td>3</td></tr>
- *   <tr><td>8623</td> <td>{@code A0}</td> <td>{@code elt_0_0}</td> <td>1</td></tr>
- *   <tr><td>8624</td> <td>{@code A1}</td> <td>{@code elt_0_1}</td> <td>0</td></tr>
- *   <tr><td>8625</td> <td>{@code A2}</td> <td>{@code elt_0_2}</td> <td>0</td></tr>
- *   <tr><td>8639</td> <td>{@code B0}</td> <td>{@code elt_1_0}</td> <td>0</td></tr>
- *   <tr><td>8640</td> <td>{@code B1}</td> <td>{@code elt_1_1}</td> <td>1</td></tr>
- *   <tr><td>8641</td> <td>{@code B2}</td> <td>{@code elt_1_2}</td> <td>0</td></tr>
+ *   <tr><td>8623</td> <td>{@code A0}</td> <td>{@code elt_0_2}</td> <td>1</td></tr>
+ *   <tr><td>8624</td> <td>{@code A1}</td> <td>{@code elt_0_0}</td> <td>0</td></tr>
+ *   <tr><td>8625</td> <td>{@code A2}</td> <td>{@code elt_0_1}</td> <td>0</td></tr>
+ *   <tr><td>8639</td> <td>{@code B0}</td> <td>{@code elt_1_2}</td> <td>0</td></tr>
+ *   <tr><td>8640</td> <td>{@code B1}</td> <td>{@code elt_1_0}</td> <td>1</td></tr>
+ *   <tr><td>8641</td> <td>{@code B2}</td> <td>{@code elt_1_1}</td> <td>0</td></tr>
  *   <tr><td>    </td> <td>          </td> <td>{@code elt_2_0}</td> <td>0</td></tr>
  *   <tr><td>    </td> <td>          </td> <td>{@code elt_2_1}</td> <td>0</td></tr>
  *   <tr><td>    </td> <td>          </td> <td>{@code elt_2_2}</td> <td>1</td></tr>
@@ -133,9 +132,25 @@ public final class Affine extends AbstractProvider {
      *       Implementation will be moved to {@link #EPSG_METHOD}.
      */
     public Affine() {
-        this(IDENTIFICATION_EPSG, Arrays.copyOfRange(
-                // Discards param 0 and 1, take only the ones in index range [2…7].
-                TensorParameters.ALPHANUM.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1), 2, 8));
+        this(IDENTIFICATION_EPSG, descriptors());
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private static ParameterDescriptor<?>[] descriptors() {
+        final ParameterDescriptor<?>[] descriptors =
+                MatrixParameters.EPSG.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1);
+        return new ParameterDescriptor<?>[] {
+            descriptors[4],     // A0
+            descriptors[2],     // A1
+            descriptors[3],     // A2
+            descriptors[7],     // B0
+            descriptors[5],     // B1
+            descriptors[6]      // B2
+        };
     }
 
     /**
@@ -171,7 +186,7 @@ public final class Affine extends AbstractProvider {
          */
         @Override
         public ParameterValueGroup createValue() {
-            return TensorParameters.WKT1.createValueGroup(IDENTIFICATION_OGC);
+            return MatrixParameters.WKT1.createValueGroup(IDENTIFICATION_OGC);
         }
     }
 
@@ -211,11 +226,7 @@ public final class Affine extends AbstractProvider {
      */
     @Override
     public MathTransform createMathTransform(final Context context) {
-        /*
-         * The TensorParameters constant used below (WKT1 or EPSG) does not matter,
-         * since both of them understand the names of the other TensorParameters.
-         */
-        return MathTransforms.linear(TensorParameters.WKT1.toMatrix(context.getCompletedParameters()));
+        return MathTransforms.linear(MatrixParameters.EPSG.toMatrix(context.getCompletedParameters()));
     }
 
     /**
@@ -264,7 +275,7 @@ public final class Affine extends AbstractProvider {
              * At this point, no existing instance has been found in the cache.
              * Create a new instance and cache it if its dimension is not too large.
              */
-            var parameters = TensorParameters.WKT1.getAllDescriptors(targetDimensions + 1, sourceDimensions + 1);
+            var parameters = MatrixParameters.WKT1.getAllDescriptors(targetDimensions + 1, sourceDimensions + 1);
             method = new Affine(IDENTIFICATION_OGC, parameters);
             if (index >= 0) {
                 synchronized (CACHED) {
@@ -287,7 +298,7 @@ public final class Affine extends AbstractProvider {
      * @return parameters for an identity transform of the given dimensions.
      */
     public static ParameterValueGroup identity(int dimension) {
-        final var values = TensorParameters.WKT1.createValueGroup(Map.of(NAME_KEY, Constants.AFFINE));
+        final var values = MatrixParameters.WKT1.createValueGroup(Map.of(NAME_KEY, Constants.AFFINE));
         values.parameter(Constants.NUM_COL).setValue(++dimension);
         values.parameter(Constants.NUM_ROW).setValue(  dimension);
         return values;
@@ -297,21 +308,17 @@ public final class Affine extends AbstractProvider {
      * Returns the parameter values for the given matrix. This method is invoked by implementations of
      * {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()}.
      *
+     * <h4>Historical note</h4>
+     * Before Apache <abbr>SIS</abbr> 1.5, this method sometime used the <abbr>EPSG</abbr>:9624 parameters.
+     * However, the wrong values were assigned to the wrong parameters. Since Apache <abbr>SIS</abbr> 1.5,
+     * the <abbr>OGC</abbr> names are always used for avoiding confusion.
+     *
      * @param  matrix  the matrix for which to get parameter values.
      * @return the parameters of the given matrix.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-619">SIS-619</a>
      */
     public static ParameterValueGroup parameters(final Matrix matrix) {
-        final int sourceDimensions = matrix.getNumCol() - 1;
-        final int targetDimensions = matrix.getNumRow() - 1;
-        final TensorParameters<Double> parameters;
-        final Map<String,?> properties;
-        if (sourceDimensions == EPSG_DIMENSION && targetDimensions == EPSG_DIMENSION && Matrices.isAffine(matrix)) {
-            parameters = TensorParameters.ALPHANUM;
-            properties = IDENTIFICATION_EPSG;
-        } else {
-            parameters = TensorParameters.WKT1;
-            properties = IDENTIFICATION_OGC;
-        }
-        return parameters.createValueGroup(properties, matrix);
+        return MatrixParameters.WKT1.createValueGroup(IDENTIFICATION_OGC, matrix);
     }
 }
