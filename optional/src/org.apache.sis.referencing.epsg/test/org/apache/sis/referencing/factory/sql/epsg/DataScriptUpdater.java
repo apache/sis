@@ -83,7 +83,17 @@ public final class DataScriptUpdater {
             formatter.addAccentedCharacters("Nivellement Général de Nouvelle Calédonie");
             formatter.addAccentedCharacters("Nivellement Général de Polynésie Française");
             formatter.addAccentedCharacters("Nivellement Général Guyanais");
+            formatter.addAccentedCharacters("Réseau de Référence des Antilles Françaises");
+            formatter.addAccentedCharacters("Réseau Géodesique Français");
+            formatter.addAccentedCharacters("Réseau Géodésique de la Polynésie Française");
+            formatter.addAccentedCharacters("Réseau Géodésique de la RDC");
+            formatter.addAccentedCharacters("Réseau Géodésique de la Réunion");
+            formatter.addAccentedCharacters("Réseau Géodésique de Mayotte");
             formatter.addAccentedCharacters("Réseau Géodésique de Nouvelle Calédonie");
+            formatter.addAccentedCharacters("Réseau Géodésique de Saint Pierre et Miquelon");
+            formatter.addAccentedCharacters("Réseau Géodésique de Wallis et Futuna");
+            formatter.addAccentedCharacters("Réseau Géodésique des Antilles Françaises");
+            formatter.addAccentedCharacters("Réseau Géodésique des Terres Australes et Antarctiques Françaises");
             formatter.addAccentedCharacters("Réseau National Belge");
             formatter.addAccentedCharacters("Posiciones Geodésicas Argentinas");
             formatter.run(Path.of(arguments[0]), Path.of(arguments[1]));

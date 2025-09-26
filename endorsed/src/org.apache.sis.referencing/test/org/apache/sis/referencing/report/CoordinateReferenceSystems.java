@@ -16,18 +16,18 @@
  */
 package org.apache.sis.referencing.report;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
-import java.util.Map;
-import java.util.HashSet;
 import java.util.TreeMap;
-import java.util.NavigableMap;
 import java.util.Optional;
-import java.io.File;
+import java.util.Collections;
 import java.io.IOException;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
@@ -41,6 +41,7 @@ import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -56,221 +57,38 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.util.internal.shared.URLs;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
-
-// Test dependencies
-import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.test.report.AuthorityCodesReport;
 
 
 /**
  * Generates a list of supported Coordinate Reference Systems in the current directory.
- * This class is for manual execution after the EPSG database has been updated,
- * or the projection implementations changed.
+ * This class is for manual execution after the <abbr>EPSG</abbr> database has been updated,
+ * or after some implementations of operation methods changed.
  *
- * <p><b>WARNING:</b>
+ * <h2>WARNING:</h2>
  * this class implements heuristic rules for nicer sorting (e.g. of CRS having numbers as Roman letters).
  * Those heuristic rules were determined specifically for the EPSG dataset expanded with WMS codes.
  * This class is not likely to produce good results for any other authorities, and many need to be updated
- * after any upgrade of the EPSG dataset.</p>
+ * after any upgrade of the <abbr>EPSG</abbr> dataset.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class CoordinateReferenceSystems extends AuthorityCodesReport {
+public final class CoordinateReferenceSystems extends HTMLGenerator {
     /**
-     * The titles of some sections where to group CRS. By default CRS are grouped by datum names.
-     * But if a name is listed in this map, then that alternative name will be used for grouping purpose.
-     * Sometimes the change is only cosmetic (e.g. "Reseau Geodesique Francais" → "Réseau Géodésique Français").
-     * But sometimes the changes have the effect of merging different datum under the same section.
-     * For example, we merge the "Arc 1950" and "Arc 1960" sections into a single "Arc" section,
-     * since those sections were small and we do not want to scatter the HTML page with too many sections.
-     * However, we do not merge "NAD83" and "NAD83(HARN)" because those sections are already quite large,
-     * and merging them will result in a too large section.
+     * Generates the <abbr>HTML</abbr> report.
      *
-     * <p>The decision to merge or not is arbitrary. Generally, we try to avoid small sections (less that 5 CRS)
-     * but without merging together unrelated datum. Every CRS having a datum whose name <em>starts</em> with a
-     * value in the left column will be reported in the section given in the right column.</p>
+     * @param  args  ignored.
+     * @throws FactoryException if an error occurred while fetching the CRS.
+     * @throws IOException if an error occurred while writing the HTML file.
      */
-    private static final NavigableMap<String,String> SECTION_TITLES = new TreeMap<>();
-    static {
-        rd("American Samoa",                                          "American Samoa");
-        rd("Arc",                                                     "Arc");
-        rd("Ancienne Triangulation Francaise",                        "Ancienne Triangulation Française");
-        rd("Australian Geodetic Datum",                               "Australian Geodetic Datum");
-        rd("Australian Height Datum",                                 "Australian Height Datum");
-        rd("Azores Central Islands",                                  "Azores Islands");
-        rd("Azores Occidental Islands",                               "Azores Islands");
-        rd("Azores Oriental Islands",                                 "Azores Islands");
-        rd("Baltic",                                                  "Baltic");
-        rd("Batavia",                                                 "Batavia");
-        rd("Bermuda",                                                 "Bermuda");
-        rd("Bogota 1975",                                             "Bogota 1975");
-        rd("Carthage",                                                "Carthage");
-        rd("Bern 1938",                                               "Bern / CH1903");
-        rd("Cais",                                                    "Cais");
-        rd("Cayman Brac",                                             "Cayman Islands");
-        rd("Cayman Islands",                                          "Cayman Islands");
-        rd("CH1903",                                                  "Bern / CH1903");
-        rd("CH1903+",                                                 "Bern / CH1903");
-        rd("Canadian Geodetic Vertical Datum",                        "Canadian Geodetic Vertical Datum");
-        rd("Chatham Islands Datum",                                   "Chatham Islands Datum");
-        rd("Corrego Alegre",                                          "Corrego Alegre");
-        rd("Croatian Terrestrial Reference System",                   "Croatian Reference System");
-        rd("Croatian Vertical Reference Datum",                       "Croatian Reference System");
-        rd("Danger 1950",                                             "Saint Pierre et Miquelon 1950");
-        rd("Dansk",                                                   "Dansk");
-        rd("Dealul Piscului",                                         "Dealul Piscului");
-        rd("Deutsches Haupthoehennetz",                               "Deutsches Haupthoehennetz");
-        rd("Douala",                                                  "Douala");
-        rd("Dunedin",                                                 "Dunedin");
-        rd("Dunedin-Bluff",                                           "Dunedin");
-        rd("EGM2008 geoid",                                           "EGM geoid");
-        rd("EGM84 geoid",                                             "EGM geoid");
-        rd("EGM96 geoid",                                             "EGM geoid");
-        rd("Egypt",                                                   "Egypt");
-        rd("EPSG example",                                            "EPSG example");
-        rd("Estonia",                                                 "Estonia");
-        rd("European Datum",                                          "European Datum");
-        rd("European Terrestrial Reference Frame",                    "European Terrestrial Reference Frame");
-        rd("European Vertical Reference Frame",                       "European Vertical Reference Frame");
-        rd("Fahud",                                                   "Fahud");
-        rd("Fao",                                                     "Fao");
-        rd("Fehmarnbelt",                                             "Fehmarnbelt");
-        rd("Faroe Datum",                                             "Faroe Islands");
-        rd("Faroe Islands",                                           "Faroe Islands");
-        rd("fk89",                                                    "Faroe Islands");
-        rd("Fiji",                                                    "Fiji");
-        rd("Gan 1970",                                                "Gandajika");
-        rd("Grand Cayman",                                            "Grand Cayman");
-        rd("Greek",                                                   "Greek");
-        rd("Greenland",                                               "Greenland");
-        rd("Guadeloupe",                                              "Guadeloupe");
-        rd("Guam",                                                    "Guam");
-        rd("Gunung Segara",                                           "Gunung Segara");
-        rd("Helsinki",                                                "Helsinki");
-        rd("High Water",                                              "High Water");
-        rd("Higher High Water",                                       "High Water");
-        rd("Highest Astronomical Tide",                               "High Water");
-        rd("Hong Kong",                                               "Hong Kong");
-        rd("Hungarian",                                               "Hungarian Datum");
-        rd("IG05",                                                    "Israeli Grid");
-        rd("IGb",                                                     "IGb");
-        rd("IGN",                                                     "IGN");
-        rd("IGS",                                                     "IGS");
-        rd("Indian",                                                  "Indian");
-        rd("International Great Lakes Datum",                         "International Great Lakes Datum");
-        rd("International Terrestrial Reference Frame",               "International Terrestrial Reference Frame");
-        rd("Islands Net",                                             "Islands Net");
-        rd("Israeli Geodetic Datum",                                  "Israeli Geodetic Datum");
-        rd("Jamaica",                                                 "Jamaica");
-        rd("Japanese Geodetic Datum 2000",                            "Japanese Geodetic Datum 2000");
-        rd("Japanese Geodetic Datum 2011",                            "Japanese Geodetic Datum 2011");
-        rd("Japanese Standard Levelling Datum",                       "Japanese Standard Levelling Datum");
-        rd("Kalianpur",                                               "Kalianpur");
-        rd("Kertau",                                                  "Kertau");
-        rd("KOC Construction Datum",                                  "KOC Construction Datum / Well Datum");
-        rd("KOC Well Datum",                                          "KOC Construction Datum / Well Datum");
-        rd("Korean Datum",                                            "Korean Datum");
-        rd("Kuwait Oil Company",                                      "Kuwait Oil Company / Kuwait Utility");
-        rd("Kuwait PWD",                                              "Kuwait Oil Company / Kuwait Utility");
-        rd("Kuwait Utility",                                          "Kuwait Oil Company / Kuwait Utility");
-        rd("Lao",                                                     "Lao");
-        rd("Latvia",                                                  "Latvia");
-        rd("Lisbon",                                                  "Lisbon");
-        rd("Lower Low Water Large Tide",                              "Low Water");
-        rd("Lowest Astronomical Tide",                                "Low Water");
-        rd("Macao",                                                   "Macao");
-        rd("Makassar",                                                "Makassar");
-        rd("Manoca",                                                  "Manoca");
-        rd("Martinique",                                              "Martinique");
-        rd("Maupiti",                                                 "Maupiti");
-        rd("Mean High Water",                                         "Mean Sea Level");
-        rd("Mean Higher High Water",                                  "Mean Sea Level");
-        rd("Mean Low Water",                                          "Mean Sea Level");
-        rd("Mean Lower Low Water",                                    "Mean Sea Level");
-        rd("Missao Hidrografico Angola y Sao Tome 1951",              "Missao Hidrografico Angola y Sao Tome");
-        rd("Mhast (offshore)",                                        "Missao Hidrografico Angola y Sao Tome");
-        rd("Mhast (onshore)",                                         "Missao Hidrografico Angola y Sao Tome");
-        rd("Militar-Geographische Institut (Ferro)",                  "Militar-Geographische Institut");
-        rd("MOMRA",                                                   "MOMRA");
-        rd("Monte Mario (Rome)",                                      "Monte Mario");
-        rd("Moorea",                                                  "Moorea");
-        rd("Nahrwan",                                                 "Nahrwan");
-        rd("Naparima",                                                "Naparima");
-        rd("Nivellement General de la Corse",                         "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General de la France",                        "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General de Nouvelle Caledonie",               "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General de Polynesie Francaise",              "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General du Luxembourg",                       "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General Guyanais",                            "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("NGO 1948",                                                "NGO 1948");
-        rd("Nouvelle Triangulation Francaise",                        "Nouvelle Triangulation Française");
-        rd("NAD83 Canadian Spatial Reference System",                 "North American Datum 1983 — Canadian Spatial Reference System");
-        rd("NAD83 (Continuously Operating Reference Station 1996)",   "North American Datum 1983 — Continuously Operating Reference Station 1996");       // For better sort order.
-        rd("NAD83 (Federal Base Network)",                            "North American Datum 1983 — Federal Base Network");
-        rd("NAD83 (High Accuracy Reference Network)",                 "North American Datum 1983 — High Accuracy Reference Network");
-        rd("NAD83 (High Accuracy Reference Network - Corrected)",     "North American Datum 1983 — High Accuracy Reference Network");
-        rd("NAD83 (National Spatial Reference System 2007)",          "North American Datum 1983 — National Spatial Reference System 2007");
-        rd("NAD83 (National Spatial Reference System 2011)",          "North American Datum 1983 — National Spatial Reference System 2011");
-        rd("NAD83 (National Spatial Reference System MA11)",          "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
-        rd("NAD83 (National Spatial Reference System PA11)",          "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
-        rd("North American Datum of 1983 (CSRS)",                     "North American Datum 1983 — CSRS");
-        rd("North American Datum of 1983 (CSRS96)",                   "North American Datum 1983 — CSRS");
-        rd("New Zealand Vertical Datum",                              "New Zealand Vertical Datum");
-        rd("Norway Normal Null",                                      "Norway Normal Null");
-        rd("Ordnance Datum Newlyn",                                   "Ordnance Datum Newlyn");
-        rd("OSGB",                                                    "OSGB");
-        rd("Parametry Zemli 1990",                                    "Parametry Zemli 1990");
-        rd("PDO Height Datum 1993",                                   "PDO Survey / Height Datum 1993");
-        rd("PDO Survey Datum 1993",                                   "PDO Survey / Height Datum 1993");
-        rd("Pitcairn",                                                "Pitcairn");
-        rd("Port Moresby",                                            "Port Moresby");
-        rd("Porto Santo",                                             "Porto Santo");
-        rd("Posiciones Geodésicas Argentinas",                        "Posiciones Geodésicas Argentinas");
-        rd("Puerto Rico",                                             "Puerto Rico");
-        rd("Qatar",                                                   "Qatar");
-        rd("Qornoq",                                                  "Qornoq");
-        rd("Reseau Geodesique de Nouvelle Caledonie",                 "Réseau Géodésique de Nouvelle-Calédonie");
-        rd("Reseau National Belge",                                   "Réseau National Belge");
-        rd("Reunion",                                                 "Réunion");
-        rd("Rikets hojdsystem",                                       "Rikets hojdsystem");
-        rd("Santa Cruz",                                              "Santa Cruz");
-        rd("Serbian",                                                 "Serbian Reference System / Network");
-        rd("Sierra Leone",                                            "Sierra Leone");
-        rd("SIRGAS",                                                  "SIRGAS");
-        rd("Slovenia",                                                "Slovenia");
-        rd("Slovenian",                                               "Slovenia");
-        rd("South American Datum",                                    "South American Datum");
-        rd("Sri Lanka",                                               "Sri Lanka");
-        rd("Stockholm 1938",                                          "Stockholm 1938");
-        rd("St. Helena",                                              "St. Helena");
-        rd("System of the Unified Trigonometrical Cadastral Network", "System of the Unified Trigonometrical Cadastral Network");
-        rd("Tahaa",                                                   "Tahaa");
-        rd("Tahiti",                                                  "Tahiti");
-        rd("Taiwan",                                                  "Taiwan");
-        rd("Tananarive 1925",                                         "Tananarive 1925");
-        rd("Tokyo",                                                   "Tokyo");
-        rd("Viti Levu",                                               "Viti Levu");
-        rd("Voirol",                                                  "Voirol");
-        rd("WGS 72 Transit Broadcast Ephemeris",                      "World Geodetic System 1972 — Transit Broadcast Ephemeris");
-        rd("World Geodetic System 1984",                              "World Geodetic System 1984");
-        rd("Yellow Sea",                                              "Yellow Sea");
-    }
-
-    /**
-     * The datums from the above list which are deprecated, but that we do not want to replace by the non-deprecated
-     * datum. We disable some replacements when they allow better sorting of deprecated CRS.
-     */
-    private static final Set<String> KEEP_DEPRECATED_DATUM = Set.of(
-        "Dealul Piscului 1970");            // Datum does not exist but is an alias for S-42 in Romania.
-
-    /**
-     * Shortcut for {@link #SECTION_TITLES} initialization.
-     * {@code "rd"} stands for "rename datum".
-     */
-    private static void rd(final String datum, final String display) {
-        assertNull(datum, SECTION_TITLES.put(datum, display));
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public static void main(final String[] args) throws FactoryException, IOException {
+        Locale.setDefault(LOCALE);   // We have to use this hack for now because exceptions are formatted in the current locale.
+        try (var writer = new CoordinateReferenceSystems()) {
+            writer.write();
+        }
     }
 
     /**
@@ -289,7 +107,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
 
     /**
      * The keywords before which to cut the CRS names when sorting by alphabetical order.
-     * The main intent here is to preserve the "far west", "west", "central west", "central",
+     * The intent is to preserve the "far west", "west", "central west", "central",
      * "central east", "east", "far east" order.
      */
     private static final String[] CUT_BEFORE = {
@@ -326,8 +144,8 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     };
 
     /**
-     * The symbol to write in from of EPSG code of CRS having an axis order different
-     * then the (longitude, latitude) one.
+     * The symbol to write in front of <abbr>EPSG</abbr> code of <abbr>CRS</abbr>
+     * having an axis order different than the (longitude, latitude) order.
      */
     private static final char YX_ORDER = '\u21B7';
 
@@ -337,78 +155,86 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     private final CRSAuthorityFactory factory;
 
     /**
-     * The datum from the {@link #SECTION_TITLES} that we didn't found after we processed all codes.
-     * Used for verification purpose only.
+     * Version of the <abbr>EPSG</abbr> geodetic dataset.
      */
-    private final Set<String> unusedDatumMapping;
+    private final String versionEPSG;
 
     /**
      * Creates a new instance.
      */
-    private CoordinateReferenceSystems() throws FactoryException {
-        super(null);
-        unusedDatumMapping = new HashSet<>(SECTION_TITLES.keySet());
-        properties.setProperty("TITLE",           "Apache SIS™ Coordinate Reference System (CRS) codes");
-        properties.setProperty("PRODUCT.NAME",    "Apache SIS™");
-        properties.setProperty("PRODUCT.VERSION", getVersion());
-        properties.setProperty("PRODUCT.URL",     "https://sis.apache.org");
-        properties.setProperty("JAVADOC.GEOAPI",  "https://www.geoapi.org/snapshot/javadoc");
-        properties.setProperty("FACTORY.NAME",    "EPSG");
-        properties.setProperty("FACTORY.VERSION", "9.9.1");
-        properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
-        properties.setProperty("PRODUCT.VERSION.SUFFIX", " (provided that <a href=\"https://sis.apache.org/epsg.html\">a connection to an EPSG database exists</a>)");
-        properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +
-                "<ul>\n" +
-                "  <li>The " + YX_ORDER + " symbol in front of authority codes (${PERCENT.ANNOTATED} of them) identifies" +
-                " left-handed coordinate systems (for example with <var>latitude</var> axis before <var>longitude</var>).</li>\n" +
-                "  <li>The <del>codes with a strike</del> (${PERCENT.DEPRECATED} of them) identify deprecated CRS." +
-                " In some cases, the remarks column indicates the replacement.</li>\n" +
-                "</ul>");
+    private CoordinateReferenceSystems() throws FactoryException, IOException {
+        super("CoordinateReferenceSystems.html",
+              "Coordinate Reference Systems recognized by Apache SIS™",
+              "crs-report.css");
         factory = CRS.getAuthorityFactory(null);
-        add(factory);
+        final GeographicCRS anyCRS = factory.createGeographicCRS("EPSG:4326");
+        versionEPSG = IdentifiedObjects.getIdentifier(anyCRS, Citations.EPSG).getVersion();
     }
 
     /**
-     * Generates the HTML report.
-     *
-     * @param  args  ignored.
-     * @throws FactoryException if an error occurred while fetching the CRS.
-     * @throws IOException if an error occurred while writing the HTML file.
+     * Writes the report after all rows have been collected.
      */
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    public static void main(final String[] args) throws FactoryException, IOException {
-        Locale.setDefault(Locale.US);   // We have to use this hack for now because exceptions are formatted in the current locale.
-        final CoordinateReferenceSystems writer = new CoordinateReferenceSystems();
-        final File file = writer.write(new File("CoordinateReferenceSystems.html"));
-        System.out.println("Created " + file.getAbsolutePath());
-        if (!writer.unusedDatumMapping.isEmpty()) {
-            System.out.println();
-            System.out.println("WARNING: the following datums were expected but not found. Maybe their spelling changed?");
-            for (final String name : writer.unusedDatumMapping) {
-                System.out.print("  - ");
-                System.out.println(name);
+    private void write() throws IOException, FactoryException {
+        int numSupportedCRS  = 0;
+        int numDeprecatedCRS = 0;
+        int numAnnotatedCRS  = 0;
+        final var rows = new ArrayList<Row>(10000);
+        for (final String code : factory.getAuthorityCodes(CoordinateReferenceSystem.class)) {
+            final var row = new Row();
+            row.code = escape(code).toString();
+            try {
+                row.setValues(factory, factory.createCoordinateReferenceSystem(code));
+            } catch (FactoryException exception) {
+                if (row.setValues(factory, exception, code)) {
+                    continue;
+                }
+            }
+            rows.add(row);
+            if (!row.hasError)       numSupportedCRS++;
+            if (row.annotation != 0) numAnnotatedCRS++;
+            if (row.isDeprecated)    numDeprecatedCRS++;
+        }
+        final int numCRS = rows.size();
+        sortRows(rows);     // May add new rows as section separators.
+        println("h1", "Coordinate Reference Systems recognized by Apache <abbr title=\"Spatial Information System\">SIS</abbr>™");
+        int item = openTag("p");
+        println("This list is generated from the <abbr>EPSG</abbr> geodetic dataset version " + versionEPSG + ", together with other sources.");
+        println("Those Coordinate Reference Systems (<abbr>CRS</abbr>) are supported by the Apache <abbr>SIS</abbr>™ library version " + Version.SIS);
+        println("(provided that a <a href=\"" + URLs.EPSG_INSTALL + "\">connection to an <abbr>EPSG</abbr> database</a> exists),");
+        println("except those with a red text in the last column.");
+        println("There are " + numCRS + " codes, " + (100 * numSupportedCRS / numCRS) + "% of them being supported.");
+        closeTags(item);
+        println("p", "<b>Notation:</b>");
+        item = openTag("ul");
+        openTag("li");
+        println("The " + YX_ORDER + " symbol in front of authority codes (" + Math.round(100f * numAnnotatedCRS / numCRS) + "% of them) "
+                + "identifies left-handed coordinate systems (for example with <var>latitude</var> axis before <var>longitude</var>).");
+        reopenTag("li");
+        println("The <del>codes with a strike</del> (" + Math.round(100f * numDeprecatedCRS / numCRS) + "% of them) "
+                + "identify deprecated definitions. In some cases, the remarks column indicates the replacement.");
+        reopenTag("li");
+        println("Coordinate Reference Systems are grouped by their reference frame or datum.");
+        closeTags(item);
+        item = openTag("table");
+        printlnWithoutIndentation("<tr><th class=\"narrow\"></th><th class=\"left-align\">Code</th><th class=\"left-align\">Name</th><th class=\"left-align\">Remarks</th></tr>");
+        final var buffer = new StringBuilder();
+        int counterForHighlight = 0;
+        for (final Row row : rows) {
+            row.write(buffer, (counterForHighlight & 2) != 0);
+            printlnWithoutIndentation(buffer);
+            buffer.setLength(0);
+            counterForHighlight++;
+            if (row.isSectionHeader) {
+                counterForHighlight = 0;
             }
         }
-    }
-
-    /**
-     * Returns the current Apache SIS version, with the {@code -SNAPSHOT} trailing part omitted.
-     *
-     * @return the current Apache SIS version.
-     */
-    private static String getVersion() {
-        String version = Version.SIS.toString();
-        final int snapshot = version.lastIndexOf('-');
-        if (snapshot >= 2) {
-            version = version.substring(0, snapshot);
-        }
-        return version;
+        closeTags(item);
     }
 
     /**
      * Creates the text to show in the "Remarks" column for the given CRS.
      */
-    private String getRemark(final CoordinateReferenceSystem crs) {
+    private static String getRemark(final CoordinateReferenceSystem crs) {
         if (crs instanceof GeographicCRS) {
             return (crs.getCoordinateSystem().getDimension() == 3) ? "Geographic 3D" : "Geographic";
         }
@@ -430,13 +256,17 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             return "Geodetic";
         }
         if (crs instanceof VerticalCRS vertical) {
-            final Optional<RealizationMethod> method = vertical.getDatum().getRealizationMethod();
-            if (method.isPresent()) {
-                return CharSequences.camelCaseToSentence(method.get().name().toLowerCase(getLocale())) + " realization method";
+            VerticalDatum datum = vertical.getDatum();
+            if (datum != null) {
+                Optional<RealizationMethod> method = datum.getRealizationMethod();
+                if (method.isPresent()) {
+                    String name = method.get().name().toLowerCase(LOCALE);
+                    return CharSequences.camelCaseToSentence(name) + " realization method";
+                }
             }
         }
         if (crs instanceof CompoundCRS compound) {
-            final StringBuilder buffer = new StringBuilder();
+            final var buffer = new StringBuilder();
             for (final CoordinateReferenceSystem component : compound.getComponents()) {
                 if (buffer.length() != 0) {
                     buffer.append(" + ");
@@ -471,7 +301,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
      * If the first word of the CRS name seems to be an acronym of the datum name,
      * puts that acronym in a {@code <abbr title="datum name">...</abbr>} element.
      */
-    static String insertAbbreviationTitle(final String crsName, final String datumName) {
+    private static String insertAbbreviationTitle(final String crsName, final String datumName) {
         int s = crsName.indexOf(' ');
         if (s < 0) s = crsName.length();
         int p = crsName.indexOf('(');
@@ -511,115 +341,28 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
         return "<abbr title=\"" + datumName + "\">" + acronym + "</abbr>" + crsName.substring(s);
     }
 
-    /**
-     * Invoked when a CRS has been successfully created. This method modifies the default
-     * {@link org.opengis.test.report.AuthorityCodesReport.Row} attribute values created
-     * by GeoAPI.
-     *
-     * @param  code    the authority code of the created object.
-     * @param  object  the object created from the given authority code.
-     * @return the created row, or {@code null} if the row should be ignored.
-     */
-    @Override
-    protected Row createRow(final String code, final IdentifiedObject object) {
-        final Row row = super.createRow(code, object);
-        final CoordinateReferenceSystem crs = (CoordinateReferenceSystem) object;
-        final CoordinateReferenceSystem crsXY = AbstractCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
-        if (!Utilities.deepEquals(crs.getCoordinateSystem(), crsXY.getCoordinateSystem(), ComparisonMode.IGNORE_METADATA)) {
-            row.annotation = YX_ORDER;
-        }
-        CoordinateReferenceSystem replacement = crs;
-        row.remark = getRemark(crs);
-        /*
-         * If the object is deprecated, find the replacement.
-         * We do not take the whole comment because it may be pretty long.
-         */
-        if (object instanceof Deprecable dep) {
-            row.isDeprecated = dep.isDeprecated();
-            if (row.isDeprecated) {
-                String replacedBy = null;
-                InternationalString i18n = object.getRemarks().orElse(null);
-                for (final Identifier id : object.getIdentifiers()) {
-                    if (id instanceof Deprecable did && did.isDeprecated()) {
-                        i18n = did.getRemarks().orElse(null);
-                        if (id instanceof DeprecatedCode dc) {
-                            replacedBy = dc.replacedBy;
-                        }
-                        break;
-                    }
-                }
-                if (i18n != null) {
-                    row.remark = i18n.toString(getLocale());
-                }
-                /*
-                 * If a replacement exists for a deprecated CRS, use the datum of the replacement instead of
-                 * the datum of the deprecated CRS for determining in which section to put the CRS. The reason
-                 * is that some CRS are deprecated because they were associated to the wrong datum, in which
-                 * case the deprecated CRS would appear in the wrong section if we do not apply this correction.
-                 */
-                if (!KEEP_DEPRECATED_DATUM.contains(CRS.getSingleComponents(crs).get(0).getDatum().getName().getCode())) {
-                    if (replacedBy != null) try {
-                        replacement = factory.createCoordinateReferenceSystem("EPSG:" + replacedBy);
-                    } catch (FactoryException e) {
-                        // Ignore - keep the datum of the deprecated object.
-                    }
-                }
-            }
-        }
-        ((ByName) row).setup(CRS.getSingleComponents(replacement).get(0).getDatum(), unusedDatumMapping);
-        return row;
-    }
-
-    /**
-     * Invoked when a CRS creation failed. This method modifies the default
-     * {@link org.opengis.test.report.AuthorityCodesReport.Row} attribute values
-     * created by GeoAPI.
-     *
-     * @param  code       the authority code of the object to create.
-     * @param  exception  the exception that occurred while creating the identified object.
-     * @return the created row, or {@code null} if the row should be ignored.
-     */
-    @Override
-    protected Row createRow(final String code, final FactoryException exception) {
-        if (code.startsWith(Constants.PROJ4 + DefaultNameSpace.DEFAULT_SEPARATOR)) {
-            return null;
-        }
-        final Row row = super.createRow(code, exception);
-        try {
-            row.name = factory.getDescriptionText(CoordinateReferenceSystem.class, code).get().toString(getLocale());
-        } catch (FactoryException e) {
-            Logging.unexpectedException(null, CoordinateReferenceSystems.class, "createRow", e);
-        }
-        if (code.startsWith("AUTO2:")) {
-            // It is normal to be unable to instantiate an "AUTO" CRS,
-            // because those authority codes need parameters.
-            row.hasError = false;
-            row.remark = "Projected";
-            ((ByName) row).setup(CommonCRS.WGS84.datum(true), unusedDatumMapping);
-        } else {
-            row.remark = exception.getLocalizedMessage();
-            ((ByName) row).setup(null, unusedDatumMapping);
-        }
-        return row;
-    }
-
-    /**
-     * Invoked by {@link AuthorityCodesReport} for creating a new row instance.
-     *
-     * @return the new row instance.
-     */
-    @Override
-    protected Row newRow() {
-        return new ByName();
-    }
-
 
 
 
     /**
      * A row with a natural ordering that use the first part of the name before to use the authority code.
+     * Every {@link String} fields in this class must be valid HTML. If some text is expected to print
+     * {@code <} or {@code >} characters, then those characters need to be escaped to their HTML entities.
+     *
+     * <p>Content of each {@code Row} instance is written in the following order:</p>
+     * <ol>
+     *   <li>{@link #annotation} if explicitly set (the default is none).</li>
+     *   <li>{@link #code}</li>
+     *   <li>{@link #name}</li>
+     *   <li>{@link #remark}</li>
+     * </ol>
+     *
+     * <p>Other attributes ({@link #isSectionHeader}, {@link #isDeprecated} and {@link #hasError})
+     * are not directly written in the table, but affect their styling.</p>
+     *
+     * <h2>Rules for sorting the rows</h2>
      * We use only the part of the name prior some keywords (e.g. {@code "zone"}).
-     * For example if the following codes:
+     * For example in the following codes:
      *
      * <pre class="text">
      *    EPSG:32609    WGS 84 / UTM zone 9N
@@ -628,11 +371,12 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
      * We compare only the "WGS 84 / UTM" string, then the code. This is a reasonably easy way to keep a more
      * natural ordering ("9" sorted before "10", "UTM North" projections kept together and same for South).
      */
-    private static final class ByName extends Row {
+    private static final class Row implements Comparable<Row> {
         /**
-         * A string derived from the {@link #name} to use for sorting.
+         * {@code true} if this row should actually be used as a section header.
+         * We insert rows with this flag set to {@code true} for splitting the large table is smaller sections.
          */
-        private String reducedName;
+        boolean isSectionHeader;
 
         /**
          * The datum name, or {@code null} if unknown.
@@ -641,40 +385,143 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
         String section;
 
         /**
+         * The authority code in HTML.
+         */
+        String code;
+
+        /**
+         * The object name in HTML, or {@code null} if none. By default, this field is set to the value of
+         * <code>{@linkplain IdentifiedObject#getName()}.{@linkplain Identifier#getCode() getCode()}</code>.
+         */
+        String name;
+
+        /**
+         * A remark in HTML to display after the name, or {@code null} if none.
+         */
+        private String remark;
+
+        /**
+         * A string derived from the {@link #name} to use for sorting.
+         */
+        private String reducedName;
+
+        /**
+         * A small symbol to put before the {@linkplain #code} and {@linkplain #name}, or 0 (the default) if none.
+         * For example, it can indicate a <abbr>CRS</abbr> having unusual axes order.
+         */
+        char annotation;
+
+        /**
+         * {@code true} if this authority code is deprecated, or {@code false} otherwise.
+         */
+        boolean isDeprecated;
+
+        /**
+         * {@code true} if an exception occurred while creating the identified object.
+         * If {@code true}, then the {@link #remark} field will contains the exception localized message.
+         */
+        boolean hasError;
+
+        /**
          * Creates a new row.
          */
-        ByName() {
+        Row() {
+        }
+
+        /**
+         * Invoked when the <abbr>CRS</abbr> cannot be constructed because of the given error.
+         *
+         * @param  factory  the factory which created the <abbr>CRS</abbr>.
+         * @param  cause    the reason why the <abbr>CRS</abbr> cannot be constructed.
+         * @param  code     the authority code without <abbr>HTML</abbr> escapes.
+         * @return whether to ignore this row.
+         */
+        final boolean setValues(final CRSAuthorityFactory factory, final FactoryException cause, final String code) {
+            if (code.startsWith(Constants.PROJ4 + DefaultNameSpace.DEFAULT_SEPARATOR)) {
+                return true;
+            }
+            String message = cause.getMessage();
+            if (message == null) {
+                message = cause.toString();
+            }
+            remark = escape(message).toString();
+            hasError = true;
+            try {
+                name = toLocalizedString(factory.getDescriptionText(CoordinateReferenceSystem.class, code).get());
+            } catch (FactoryException e) {
+                Logging.unexpectedException(null, CoordinateReferenceSystems.class, "createRow", e);
+            }
+            if (code.startsWith("AUTO2:")) {
+                // It is normal to be unable to instantiate an "AUTO" CRS,
+                // because those authority codes need parameters.
+                hasError = false;
+                remark = "Projected";
+                setSection(CommonCRS.WGS84.datum(true));
+            } else {
+                if (cause instanceof NoSuchIdentifierException e) {
+                    remark = '“' + e.getIdentifierCode() + "” operation method is not yet supported.";
+                } else {
+                    remark = cause.getLocalizedMessage();
+                }
+                setSection(null);
+            }
+            return false;
+        }
+
+        /**
+         * Invoked when a <abbr>CRS</abbr> has been successfully created.
+         *
+         * @param  factory  the factory which created the <abbr>CRS</abbr>.
+         * @param  crs      the object created from the authority code.
+         * @return the created row, or {@code null} if the row should be ignored.
+         */
+        final void setValues(final CRSAuthorityFactory factory, CoordinateReferenceSystem crs) {
+            name = escape(crs.getName().getCode()).toString();
+            final CoordinateReferenceSystem crsXY = AbstractCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
+            if (!Utilities.deepEquals(crs.getCoordinateSystem(), crsXY.getCoordinateSystem(), ComparisonMode.IGNORE_METADATA)) {
+                annotation = YX_ORDER;
+            }
+            remark = getRemark(crs);
+            /*
+             * If the object is deprecated, find the replacement.
+             * We do not take the whole comment because it may be pretty long.
+             */
+            if (crs instanceof Deprecable dep) {
+                isDeprecated = dep.isDeprecated();
+                if (isDeprecated) {
+                    String replacedBy = null;
+                    InternationalString i18n = crs.getRemarks().orElse(null);
+                    for (final Identifier id : crs.getIdentifiers()) {
+                        if (id instanceof Deprecable did && did.isDeprecated()) {
+                            i18n = did.getRemarks().orElse(null);
+                            if (id instanceof DeprecatedCode dc) {
+                                replacedBy = dc.replacedBy;
+                            }
+                            break;
+                        }
+                    }
+                    remark = toLocalizedString(i18n);
+                    /*
+                     * If a replacement exists for a deprecated CRS, use the datum of the replacement instead of
+                     * the datum of the deprecated CRS for determining in which section to put the CRS. The reason
+                     * is that some CRS are deprecated because they were associated to the wrong datum, in which
+                     * case the deprecated CRS would appear in the wrong section if we do not apply this correction.
+                     */
+                    if (replacedBy != null) try {
+                        crs = factory.createCoordinateReferenceSystem("EPSG:" + replacedBy);
+                    } catch (FactoryException e) {
+                        // Ignore - keep the datum of the deprecated object.
+                    }
+                }
+            }
+            setSection(CRS.getSingleComponents(crs).get(0).getDatum());
         }
 
         /**
          * Computes the {@link #reducedName} field value.
+         * It determines the section where the <abbr>CRS</abbr> will be placed.
          */
-        final void setup(final Datum datum, final Set<String> unusedDatumMapping) {
-            final String datumName;
-            if (datum != null) {
-                datumName = datum.getName().getCode();
-            } else {
-                // Temporary patch (TODO: remove after we implemented the missing methods in SIS)
-                if (name.startsWith("NSIDC EASE-Grid")) {
-                    datumName = "Unspecified datum";
-                } else if (code.equals("EPSG:2163")) {
-                    datumName = "Unspecified datum";
-                } else if (code.equals("EPSG:5818")) {
-                    datumName = "Seismic bin grid datum";
-                } else {
-                    datumName = null;       // Keep ordering based on the name.
-                }
-            }
-            if (datumName != null) {
-                final String prefix;
-                final Map.Entry<String,String> group = SECTION_TITLES.floorEntry(datumName);
-                if (group != null && datumName.startsWith(prefix = group.getKey())) {
-                    unusedDatumMapping.remove(prefix);
-                    section = group.getValue();
-                } else {
-                    section = datumName;
-                }
-            }
+        private void setSection(final Datum datum) {
             /*
              * Get a copy of the name in all lower case.
              */
@@ -703,8 +550,9 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             if (s != 0) b.setLength(s);
             uniformizeZoneNumber(b);
             reducedName = b.toString();
-            if (datumName != null) {
-                name = insertAbbreviationTitle(name, datumName);
+            if (datum != null) {
+                section = datum.getName().getCode().replace('_', ' ');
+                name = insertAbbreviationTitle(name, section);
             }
         }
 
@@ -753,13 +601,51 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
         }
 
         /**
-         * Compares this row with the given row for ordering by name.
+         * Writes this row to the given stream.
+         *
+         * @param  out        where to write this row.
+         * @param  highlight  whether to highlight this row.
+         * @throws IOException if an error occurred while writing this row.
+         */
+        final void write(final StringBuilder out, final boolean highlight) {
+            if (isSectionHeader) {
+                out.append("<tr class=\"separator\"><td colspan=\"4\">").append(name).append("</td></tr>");
+                return;
+            }
+            out.append("<tr");
+            if (highlight) out.append(" class=\"HL\"");
+            out.append("><td class=\"narrow\">");
+            if (annotation != 0) out.append(annotation);
+            out.append("</td><td>");
+            if (code != null) {
+                out.append("<code>");
+                if (isDeprecated) out.append("<del>");
+                out.append(code);
+                if (isDeprecated) out.append("</del>");
+                out.append("</code>");
+            }
+            out.append("</td><td>");
+            if (name != null) out.append(name);
+            out.append("</td><td");
+            if (hasError) out.append(" class=\"error\"");
+            else if (isDeprecated) out.append(" class=\"warning\"");
+            out.append('>');
+            if (remark != null) out.append(remark);
+            out.append("</td></tr>");
+        }
+
+        /**
+         * Compares this row with the given row for ordering by name and authority code.
          */
         @Override
         public int compareTo(final Row o) {
-            int n = reducedName.compareTo(((ByName) o).reducedName);
+            int n = reducedName.compareTo(o.reducedName);
             if (n == 0) {
-                n = super.compareTo(o);
+                try {
+                    n = Integer.compare(Integer.parseInt(code), Integer.parseInt(o.code));
+                } catch (NumberFormatException e) {
+                    n = code.compareTo(o.code);
+                }
             }
             return n;
         }
@@ -768,13 +654,12 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**
      * Sorts the rows, then inserts sections between CRS instances that use different datums.
      */
-    @Override
-    protected void sortRows() {
-        super.sortRows();
+    private static void sortRows(final List<Row> rows) {
+        Collections.sort(rows);
         @SuppressWarnings("SuspiciousToArrayCall")
-        final ByName[] data = rows.toArray(ByName[]::new);
-        final Map<String,String> sections = new TreeMap<>();
-        for (final ByName row : data) {
+        final Row[] data = rows.toArray(Row[]::new);
+        final var sections = new TreeMap<String,String>();
+        for (final Row row : data) {
             final String section = row.section;
             if (section != null) {
                 sections.put(CharSequences.toASCII(section).toString().toLowerCase(), section);
@@ -793,7 +678,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             rows.add(separator);
             boolean found = false;
             for (int i=0; i<data.length; i++) {
-                final ByName row = data[i];
+                final Row row = data[i];
                 if (row != null) {
                     if (row.section != null) {
                         found = section.equals(row.section);
@@ -807,7 +692,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             }
         }
         boolean found = false;
-        for (final ByName row : data) {
+        for (final Row row : data) {
             if (row != null) {
                 if (!found) {
                     final Row separator = new Row();

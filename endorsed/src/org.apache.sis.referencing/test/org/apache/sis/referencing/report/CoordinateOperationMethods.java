@@ -36,10 +36,7 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.URLs;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.AlbersEqualArea;
 import org.apache.sis.referencing.operation.provider.LambertConformal2SP;
 import org.apache.sis.referencing.operation.provider.ObliqueMercator;
@@ -60,8 +57,8 @@ import org.opengis.referencing.crs.DerivedCRS;
  * Generates a list of projection parameters in a HTML page. This class is used for updating the
  * <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">CoordinateOperationMethods.html</a> page.
  * The {@linkplain #main(String[])} method creates the "{@code CoordinateOperationMethods.html}" file in the current
- * default directory if it does not already exists. Users is responsible for moving the generated file to the Apache
- * SIS {@code "content/"} site directory.
+ * default directory if it does not already exists. Maintainers need to move themselves the generated file to the
+ * Apache SIS {@code "content/"} site directory.
  *
  * <p><b>This class is designed for Apache SIS operation methods only</b> - this is not a general purpose generator
  * for arbitrary operation methods. The reason is that we make some assumptions in various place (e.g. EPSG name is
@@ -78,35 +75,23 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      */
     public static void main(final String[] args) throws IOException {
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
-        final List<OperationMethod> methods = new ArrayList<>(factory.getAvailableMethods(SingleOperation.class));
+        final var methods = new ArrayList<OperationMethod>(factory.getAvailableMethods(SingleOperation.class));
         methods.removeIf((method) -> method.getClass().getName().endsWith("Mock"));
         Collections.sort(methods, (final OperationMethod o1, final OperationMethod o2) -> {
-            int c = category(o1) - category(o2);
-            if (c == 0) {  // If the two methods are in the same category, sort by name.
-                final String n1 = o1.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
-                final String n2 = o2.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
-                c = n1.compareTo(n2);
-            }
-            return c;
+            final String n1 = o1.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
+            final String n2 = o2.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
+            return n1.compareTo(n2);
         });
-        try (CoordinateOperationMethods writer = new CoordinateOperationMethods()) {
-            writer.writeIndex(methods);
-            for (final OperationMethod method : methods) {
-                writer.write(method);
-            }
+        try (var writer = new CoordinateOperationMethods()) {
+            writer.write(methods);
         }
     }
-
-    /**
-     * Values returned by {@link #category(OperationMethod)}.
-     */
-    private static final int CONVERSION = 1, TRANSFORMATION = 3;
 
     /**
      * Parameters to default to the latitude of origin. We can hardly detect those cases
      * automatically, since the behavior for the default value is hard-coded in Java.
      */
-    private final GeneralParameterDescriptor defaultToLatitudeOfOrigin[] = {
+    private final GeneralParameterDescriptor[] defaultToLatitudeOfOrigin = {
         AlbersEqualArea    .STANDARD_PARALLEL_1,
         LambertConformal2SP.STANDARD_PARALLEL_1
     };
@@ -115,7 +100,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      * Parameters to default to the first standard parallel. We can hardly detect those
      * cases automatically, since the behavior for the default value is hard-coded in Java.
      */
-    private final GeneralParameterDescriptor defaultToStandardParallel1[] = {
+    private final GeneralParameterDescriptor[] defaultToStandardParallel1 = {
         AlbersEqualArea    .STANDARD_PARALLEL_2,
         LambertConformal2SP.STANDARD_PARALLEL_2
     };
@@ -124,7 +109,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      * Parameters to default to the azimuth. We can hardly detect those cases automatically,
      * since the behavior for the default value is hard-coded in Java.
      */
-    private final GeneralParameterDescriptor defaultToAzimuth[] = {
+    private final GeneralParameterDescriptor[] defaultToAzimuth = {
         ObliqueMercator      .RECTIFIED_GRID_ANGLE,
 //      HotineObliqueMercator.PARAMETERS.descriptor("Angle from Rectified to Skew Grid")
     };
@@ -149,30 +134,40 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      * @throws IOException if an error occurred while writing to the file.
      */
     public CoordinateOperationMethods() throws IOException {
-        super("CoordinateOperationMethods.html", "Apache SIS Coordinate Operation Methods", "authority-codes.css");
+        super("CoordinateOperationMethods.html",
+              "Coordinate Operation Methods supported by Apache SIS",
+              "authority-codes.css");
+
         domainOfValidity = Map.of();                // TODO: not yet available.
         rangeFormat = new RangeFormat(LOCALE);
+    }
+
+    /**
+     * Writes the table of content, the summary, and the tables of operation methods.
+     *
+     * @param  methods  all methods to write.
+     * @throws IOException if an error occurred while writing to the file.
+     */
+    private void write(final List<OperationMethod> methods) throws IOException {
+        writeIndex(methods);
+        final int div = openTag("div", "methods");
         final int header = openTag("header");
-        println("h1", "Apache <abbr title=\"Spatial Information System\">SIS</abbr>™ Coordinate Operation Methods");
-        int item = openTag("p");
+        println("h1", "Coordinate Operation Methods supported by Apache <abbr title=\"Spatial Information System\">SIS</abbr>™");
+        final int item = openTag("p");
         println("The following tables summarize the coordinate operation methods known to Apache <abbr title=\"Spatial Information System\">SIS</abbr> " + Version.SIS);
-        println("together with the recognized parameters. There are three kinds of parameters:");
+        println("together with the recognized parameters. In each table, the following parameters are handled in a special way:");
         closeTags(item);
-        openTag("ul", "verbose");
+        openTag("ul");
         openTag("li");
-        println("The <code>semi-major</code> and <code>semi-minor</code> parameters are needed for all map projections,");
-        println("but usually do not need to be specified explicitly since they are inferred from the ellipsoid");
-        println("(unless <a href=\"https://sis.apache.org/apidocs/org/apache/sis/referencing/operation/transform/DefaultMathTransformFactory.html\">creating parameterized transforms directly</a>).");
-        println("For this reason, those parameters are usually not shown in <a href=\"" + URLs.EPSG + "\"><abbr>EPSG</abbr> repository</a>");
-        println("or <a href=\"https://www.ogc.org/standards/wkt-crs/\">Well Known Text</a> (<abbr>WKT</abbr>) definitions.");
+        println("The <code>semi_major</code> and <code>semi_minor</code> parameters usually do not need to be specified explicitly as they are inferred from the ellipsoid.");
         reopenTag("li");
-        println("The <code>earth_radius</code> and <code>inverse_flattening</code> parameters (not shown below) are implicitly supported by all map projections.");
-        println("They are other ways to specify the ellipsoid (actually rarely used).");
-        println("Read and write operations on those implicit parameters are converted into equivalent operations on <code>semi-major</code> and <code>semi-minor</code> parameters.");
-        reopenTag("li");
-        println("Unless otherwise noticed, all other parameters are mandatory");
-        println("(in the sense that they should always be shown in forms, regardless of whether they have default value).");
+        println("Hidden <code>earth_radius</code> and <code>inverse_flattening</code> parameters are");
+        println("alternatives to <code>semi_major</code> and <code>semi_minor</code> for specifying the ellipsoid.");
         closeTags(header);
+        for (final OperationMethod method : methods) {
+            write(method);
+        }
+        closeTags(div);
     }
 
     /**
@@ -183,22 +178,9 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      */
     public void writeIndex(final Iterable<? extends OperationMethod> methods) throws IOException {
         final int nav = openTag("nav");
-        println("h2", "Table of content:");
-        int innerUL  = openTag("ul") + 1;
-        int category = 0;
+        println("p", "Table of content");
+        openTag("ul");
         for (final OperationMethod method : methods) {
-            final int nc = category(method);
-            if (nc != category) {
-                closeTags(innerUL);
-                reopenTag("li");
-                switch (nc) {
-                    case CONVERSION:     println("Conversions");    break;
-                    case TRANSFORMATION: println("Tranformations"); break;
-                    default: throw new AssertionError(category);
-                }
-                innerUL = openTag("ul");
-                category = nc;
-            }
             println("li", "<a href=\"#" + getAnchor(method) + "\">" + escape(method.getName().getCode()) + "</a>");
         }
         closeTags(nav);
@@ -234,10 +216,8 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      */
     private void writeIdentification(final OperationMethod method) throws IOException {
         final int table = openTag("table class=\"info\"");
-        /*
-         * ────────────────    EPSG IDENTIFIERS    ────────────────────────────────────
-         */
-        final StringBuilder buffer = new StringBuilder();
+        // ────────────────    EPSG IDENTIFIERS    ────────────────────────────────────
+        final var buffer = new StringBuilder();
         for (final Identifier id : method.getIdentifiers()) {
             if (Constants.EPSG.equalsIgnoreCase(id.getCodeSpace())) {
                 if (buffer.length() != 0) {
@@ -259,9 +239,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
             println("td", buffer);
             closeTags(tr);
         }
-        /*
-         * ────────────────    ALIASES    ─────────────────────────────────────────────
-         */
+        // ────────────────    ALIASES    ─────────────────────────────────────────────
         buffer.setLength(0);
         for (final GenericName alias : method.getAlias()) {
             if (buffer.length() != 0) {
@@ -281,9 +259,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
             println("td", buffer);
             closeTags(tr);
         }
-        /*
-         * ────────────────    DOMAIN OF VALIDITY    ──────────────────────────────────
-         */
+        // ────────────────    DOMAIN OF VALIDITY    ──────────────────────────────────
         buffer.setLength(0);
         final DefaultGeographicBoundingBox domain = getDomainOfValidity(method);
         if (domain != null) {
@@ -298,15 +274,27 @@ public class CoordinateOperationMethods extends HTMLGenerator {
     }
 
     /**
+     * Returns {@code true} if at least one non-deprecated parameter has a remark.
+     */
+    private static boolean hasRemarks(final ParameterDescriptorGroup group) {
+        for (final GeneralParameterDescriptor gp : group.descriptors()) {
+            if (!isDeprecated(gp) && ((ParameterDescriptor<?>) gp).getRemarks().isPresent()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Writes the table of parameters.
      * Table columns will be:
      *
      * <ul>
      *   <li>First EPSG code</li>
      *   <li>Primary name</li>
-     *   <li>Reference to remarks, if any</li>
      *   <li>Domain of values</li>
      *   <li>Default values</li>
+     *   <li>Reference to remarks, if any</li>
      * </ul>
      */
     private void writeParameters(final ParameterDescriptorGroup group) throws IOException {
@@ -320,37 +308,21 @@ public class CoordinateOperationMethods extends HTMLGenerator {
         }
         println("th", "EPSG");
         println("th class=\"sep\"", "Name");
-        println("th class=\"sep\"", "Remarks");
         println("th class=\"sep\" colspan=\"3\"", "Value domain");
         println("th class=\"sep\"", "Default");
-        final Map<String, Integer> footnotes = new LinkedHashMap<>();
+        final boolean hasRemarks = hasRemarks(group);
+        if (hasRemarks) {
+            println("th class=\"sep\"", "Remarks");
+        }
+        final var footnotes = new LinkedHashMap<String, Integer>();
         for (final GeneralParameterDescriptor gp : group.descriptors()) {
             if (isDeprecated(gp)) {
                 continue;                                                       // Hide deprecated parameters.
             }
-            final ParameterDescriptor<?> param = (ParameterDescriptor<?>) gp;
+            final var param = (ParameterDescriptor<?>) gp;
             reopenTag("tr");
             println("td", escape(getFirstEpsgCode(param.getIdentifiers())));
             writeName(param);
-            String remarks = toLocalizedString(param.getRemarks().orElse(null));
-            if (remarks != null) {
-                Integer index = footnotes.putIfAbsent(remarks, footnotes.size() + 1);
-                if (index == null) {
-                    index = footnotes.size();
-                }
-                if (param.getMinimumOccurs() == 0) {
-                    remarks = "Optional ";
-                } else {
-                    final Comparable<?> min = param.getMinimumValue();
-                    if ((min instanceof Number n) && n.doubleValue() == ((Number) param.getMaximumValue()).doubleValue()) {
-                        remarks = "Unmodifiable ";
-                    } else {
-                        remarks = "See note ";
-                    }
-                }
-                remarks += toSuperScript(index);
-            }
-            println("td class=\"sep\"", escape(remarks));
             final String domain = toLocalizedString(Parameters.getValueDomain(param));
             final int s;
             if (domain != null && ((s = domain.indexOf('…')) >= 0)) {
@@ -361,6 +333,27 @@ public class CoordinateOperationMethods extends HTMLGenerator {
                 println("td class=\"sep center\" colspan=\"3\"", domain);
             }
             println("td class=\"sep\"", escape(getDefaultValue(param, getUnit(param))));
+            if (hasRemarks) {
+                String remarks = toLocalizedString(param.getRemarks().orElse(null));
+                if (remarks != null) {
+                    Integer index = footnotes.putIfAbsent(remarks, footnotes.size() + 1);
+                    if (index == null) {
+                        index = footnotes.size();
+                    }
+                    if (param.getMinimumOccurs() == 0) {
+                        remarks = "Optional ";
+                    } else {
+                        final Comparable<?> min = param.getMinimumValue();
+                        if ((min instanceof Number n) && n.doubleValue() == ((Number) param.getMaximumValue()).doubleValue()) {
+                            remarks = "Unmodifiable ";
+                        } else {
+                            remarks = "See note ";
+                        }
+                    }
+                    remarks += toSuperScript(index);
+                }
+                println("td class=\"sep\"", escape(remarks));
+            }
         }
         closeTags(table);
         if (!footnotes.isEmpty()) {
@@ -413,7 +406,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
     public static Map<String, DefaultGeographicBoundingBox> computeUnionOfAllDomainOfValidity(
             final CRSAuthorityFactory factory) throws FactoryException
     {
-        final Map<String, DefaultGeographicBoundingBox> domainOfValidity = new HashMap<>();
+        final var domainOfValidity = new HashMap<String, DefaultGeographicBoundingBox>();
         for (final String code : factory.getAuthorityCodes(DerivedCRS.class)) {
             final CoordinateReferenceSystem crs;
             try {
@@ -501,29 +494,6 @@ public class CoordinateOperationMethods extends HTMLGenerator {
             }
         }
         return "";
-    }
-
-    /**
-     * Returns the operation type of the given method.
-     */
-    private static Class<?> getOperationType(final DefaultOperationMethod method) {
-        Class<?> type = method.getOperationType();
-        if (type == SingleOperation.class) {
-            if (method instanceof Affine) {     // EPSG:9624 - Affine parametric transformation
-                type = Transformation.class;
-            }
-        }
-        return type;
-    }
-
-    /**
-     * Returns a code for sorting methods in categories.
-     */
-    private static int category(final OperationMethod method) {
-        final Class<?> c = getOperationType((DefaultOperationMethod) method);
-        if (Conversion    .class.isAssignableFrom(c)) return CONVERSION;
-        if (Transformation.class.isAssignableFrom(c)) return TRANSFORMATION;
-        return 0;
     }
 
     /**
