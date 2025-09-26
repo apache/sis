@@ -117,21 +117,18 @@ final class Verifier {
         Object convertedValue = value;
         if (unit != null) {
             final Unit<?> def = descriptor.getUnit();
-            if (def == null) {
-                final String name = getDisplayName(descriptor);
-                throw new InvalidParameterValueException(Resources.format(Resources.Keys.UnitlessParameter_1, name), name, unit);
-            }
-            if (!unit.equals(def)) {
+            if (def != null && !unit.equals(def)) {
+                // Verify the unit dimension: linear, angular, temporal or scale.
                 final short expectedID = getUnitMessageID(def);
                 if (getUnitMessageID(unit) != expectedID) {
-                    throw new IllegalArgumentException(Errors.format(expectedID, unit));
+                    throw new InvalidParameterValueException(Errors.format(expectedID, unit), getDisplayName(descriptor), value);
                 }
-                /*
-                 * Verify the value type before to perform unit conversion. This will indirectly verifies that the value
-                 * is an instance of `java.lang.Number` or an array of numbers because non-null units are associated to
-                 * `MeasurementRange` in SIS implementation, which accepts only numeric values.
-                 */
                 if (value != null) {
+                    /*
+                     * Verify the value type before to perform unit conversion. This will indirectly verifies that the value
+                     * is an instance of `java.lang.Number` or an array of numbers because non-null units are associated to
+                     * `MeasurementRange` in SIS implementation, which accepts only numeric values.
+                     */
                     if (!expectedClass.isInstance(value)) {
                         final String name = getDisplayName(descriptor);
                         throw new InvalidParameterValueException(
@@ -149,37 +146,32 @@ final class Verifier {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, unit, def), e);
                     }
                     final Class<?> componentType = expectedClass.getComponentType();
-                    if (componentType != null) {
-                        final int length = Array.getLength(value);
-                        if (length != 0) {
-                            final Class<? extends Number> numberType = Numbers.primitiveToWrapper(componentType).asSubclass(Number.class);
-                            convertedValue = Array.newInstance(componentType, length);
-                            int i = 0;
-                            try {
-                                do {
+                    int i = -1;
+                    try {
+                        if (componentType == null) {
+                            // Usual case where the expected value is a singleton.
+                            Number n = converter.convert((Number) value);
+                            convertedValue = Numbers.cast(n, expectedClass.asSubclass(Number.class));
+                        } else {
+                            final int length = Array.getLength(value);
+                            if (length != 0) {
+                                final Class<? extends Number> numberType =
+                                        Numbers.primitiveToWrapper(componentType).asSubclass(Number.class);
+                                convertedValue = Array.newInstance(componentType, length);
+                                for (i=0; i<length; i++) {
                                     Number n = (Number) Array.get(value, i);
                                     n = converter.convert(n);                       // Value in units that we can compare.
                                     n = Numbers.cast(n, numberType);
                                     Array.set(convertedValue, i, n);
-                                } while (++i < length);
-                            } catch (IllegalArgumentException e) {
-                                throw (InvalidParameterValueException) new InvalidParameterValueException(e.getLocalizedMessage(),
-                                        Strings.toIndexed(getDisplayName(descriptor), i), value).initCause(e);
+                                }
                             }
                         }
-                    } else {
-                        /*
-                         * Usual case where the expected value is a singleton. A ClassCastException below could be
-                         * a bug in our code logic since non-null units is allowed only with numeric values in SIS
-                         * implementation. However, the given descriptor could be a "foreigner" implementation.
-                         */
-                        try {
-                            Number n = converter.convert((Number) value);
-                            convertedValue = Numbers.cast(n, expectedClass.asSubclass(Number.class));
-                        } catch (ClassCastException | IllegalArgumentException e) {
-                            throw (InvalidParameterValueException) new InvalidParameterValueException(
-                                    e.getLocalizedMessage(), getDisplayName(descriptor), value).initCause(e);
-                        }
+                    } catch (ClassCastException | IllegalArgumentException cause) {
+                        String name = getDisplayName(descriptor);
+                        if (i >= 0) name = Strings.toIndexed(name, i);
+                        var e = new InvalidParameterValueException(cause.getLocalizedMessage(), name, value);
+                        e.initCause(cause);
+                        throw e;
                     }
                 }
             }

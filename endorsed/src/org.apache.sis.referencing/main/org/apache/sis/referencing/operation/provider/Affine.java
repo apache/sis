@@ -21,6 +21,7 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
@@ -30,6 +31,7 @@ import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.MatrixParameters;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -65,56 +67,56 @@ public final class Affine extends AbstractProvider {
     private static final long serialVersionUID = 6001828063655967608L;
 
     /**
-     * The operation method name as defined in the EPSG database.
+     * The <abbr>EPSG</abbr> code of this operation.
+     */
+    private static final int CODE = 9624;
+
+    /**
+     * The operation method name as defined in the <abbr>EPSG</abbr> database.
      * Must matches exactly the EPSG name (this will be verified by JUnit tests).
+     * Note: in contrast, the name used by <abbr>OGC</abbr> is just "Affine".
      *
-     * <p>Note: in contrast, the name used by OGC is just "Affine".</p>
-     *
-     * @see org.apache.sis.util.internal.shared.Constants#AFFINE
+     * @see #IDENTIFICATION_OGC
      */
     public static final String NAME = "Affine parametric transformation";
 
     /**
-     * The number of dimensions used by the EPSG:9624 definition. This will be used as the
-     * default number of dimensions. Operation methods of other dimensions, where we have
-     * no EPSG definition, shall use the Well Known Text (WKT) parameter names.
+     * The number of dimensions used by the <abbr>EPSG</abbr>:9624 definition.
+     * Operation methods with a different number of dimensions should use the
+     * Well Known Text (<abbr>WKT</abbr>) parameter names instead.
      */
     public static final int EPSG_DIMENSION = 2;
 
     /**
      * The maximal number of dimensions to be cached. Descriptors having more than
-     * this number of dimensions will be recreated every time they are requested.
+     * this number of dimensions will be recreated every time that they are requested.
      */
     private static final int MAX_CACHED_DIMENSION = 6;
 
     /**
-     * Cached providers for methods of dimension 1×1 to {@link #MAX_CACHED_DIMENSION}.
+     * Cached providers for methods using matrices of dimension 1×1 inclusive to
+     * {@value #MAX_CACHED_DIMENSION}×{@value #MAX_CACHED_DIMENSION} inclusive.
      * The index of each element is computed by {@link #cacheIndex(int, int)}.
      * All usages of this array shall be synchronized on {@code CACHED}.
      */
     private static final Affine[] CACHED = new Affine[MAX_CACHED_DIMENSION * MAX_CACHED_DIMENSION];
 
     /**
-     * A map containing identification properties for creating {@code OperationMethod} or
-     * {@code ParameterDescriptorGroup} instances.
+     * The <abbr>OGC</abbr> name of this operation method.
      */
-    private static final Map<String,?> IDENTIFICATION_EPSG, IDENTIFICATION_OGC;
-    static {
-        final NamedIdentifier nameOGC = new NamedIdentifier(Citations.OGC, Constants.OGC, Constants.AFFINE, null, null);
-        IDENTIFICATION_OGC  = Map.of(NAME_KEY, nameOGC);
-        IDENTIFICATION_EPSG = EPSGName.properties(9624, NAME, nameOGC);
-    }
+    private static final NamedIdentifier IDENTIFICATION_OGC =
+            new NamedIdentifier(Citations.OGC, Constants.OGC, Constants.AFFINE, null, null);
 
     /**
      * The EPSG:9624 compliant instance.
-     * This is restricted to {@value #EPSG_DIMENSION} dimensions.
+     * The number of dimensions is {@value #EPSG_DIMENSION}.
      *
      * @see #provider()
      */
     private static final Affine EPSG_METHOD = new Affine();
 
     /**
-     * Returns a provider for affine transform with a default matrix size (standard EPSG:9624 instance).
+     * Returns a provider for affine transforms defined by EPSG:9624 parameters.
      * This method is invoked by {@link java.util.ServiceLoader} using reflection.
      *
      * @return the EPSG case of affine transform.
@@ -124,7 +126,7 @@ public final class Affine extends AbstractProvider {
     }
 
     /**
-     * Creates a provider for affine transform with a default matrix size (standard EPSG:9624 instance).
+     * Creates a provider for affine transforms defined by EPSG:9624 parameters.
      *
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory
      *
@@ -132,7 +134,7 @@ public final class Affine extends AbstractProvider {
      *       Implementation will be moved to {@link #EPSG_METHOD}.
      */
     public Affine() {
-        this(IDENTIFICATION_EPSG, descriptors());
+        this(EPSGName.properties(CODE, NAME, IDENTIFICATION_OGC), descriptors());
     }
 
     /**
@@ -141,8 +143,7 @@ public final class Affine extends AbstractProvider {
      */
     @Workaround(library="JDK", version="1.7")
     private static ParameterDescriptor<?>[] descriptors() {
-        final ParameterDescriptor<?>[] descriptors =
-                MatrixParameters.EPSG.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1);
+        final var descriptors = MatrixParameters.EPSG.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1);
         return new ParameterDescriptor<?>[] {
             descriptors[4],     // A0
             descriptors[2],     // A1
@@ -154,13 +155,14 @@ public final class Affine extends AbstractProvider {
     }
 
     /**
-     * Creates a provider for affine transform with the specified parameters.
+     * Creates a provider for affine transforms defined by the given parameters.
      * This is created when first needed by {@link #provider(int, int, boolean)}.
      *
      * @see #provider(int, int, boolean)
      */
     private Affine(final Map<String,?> properties, final ParameterDescriptor<?>[] parameters) {
-        super(SingleOperation.class, new Descriptor(properties, parameters),
+        super(SingleOperation.class,
+              new Descriptor(properties, parameters),
               CoordinateSystem.class, false,
               CoordinateSystem.class, false,
               (byte) 1);
@@ -175,19 +177,29 @@ public final class Affine extends AbstractProvider {
         private static final long serialVersionUID = 8320799650519834830L;
 
         /** Creates a new descriptor for the given parameters. */
-        Descriptor(final Map<String,?> properties, final ParameterDescriptor<?>[] parameters) {
+        Descriptor(Map<String,?> properties, ParameterDescriptor<?>[] parameters) {
             super(properties, 1, 1, parameters);
         }
 
         /**
-         * Returns default parameter values for the "Affine" operation. Unconditionally use the WKT1 parameter names,
-         * regardless of whether this descriptor is for the EPSG:9624 case, because the caller is free to change the
-         * matrix size, in which case (strictly speaking) the parameters would no longer be for EPSG:9624 operation.
+         * Returns default parameter values for the "Affine" or "Affine parametric transformation" operation.
+         * Note that in the latter case, the matrix should not be resizable but this implementation does not
+         * block the caller to nevertheless change the matrix size. In such case, the EPSG:9624 identifiers
+         * are not okay anymore.
          */
         @Override
         public ParameterValueGroup createValue() {
-            return MatrixParameters.WKT1.createValueGroup(IDENTIFICATION_OGC);
+            return convention(this).createValueGroup(Map.of(NAME_KEY, getName()));
         }
+    }
+
+    /**
+     * Returns the parameter names convention for an operation of the given name.
+     * The heuristics applied in this method may change in any future version.
+     */
+    private static MatrixParameters<Double> convention(final IdentifiedObject object) {
+        return EPSGName.isCodeEquals(object, CODE) || IdentifiedObjects.isHeuristicMatchForName(object, NAME)
+                ? MatrixParameters.EPSG : MatrixParameters.WKT1;
     }
 
     /*
@@ -205,6 +217,15 @@ public final class Affine extends AbstractProvider {
     public AbstractProvider variantFor(final MathTransform transform) {
         final boolean isAffine = (transform instanceof LinearTransform) && ((LinearTransform) transform).isAffine();
         return provider(transform.getSourceDimensions(), transform.getTargetDimensions(), isAffine);
+    }
+
+    /**
+     * Specifies that this operation shall be applied verbatim,
+     * without normalization of source and target <abbr>CRS</abbr>.
+     */
+    @Override
+    public FormulaCategory getFormulaCategory() {
+        return FormulaCategory.APPLIED_VERBATIM;
     }
 
     /**
@@ -226,7 +247,8 @@ public final class Affine extends AbstractProvider {
      */
     @Override
     public MathTransform createMathTransform(final Context context) {
-        return MathTransforms.linear(MatrixParameters.EPSG.toMatrix(context.getCompletedParameters()));
+        final ParameterValueGroup parameters = context.getCompletedParameters();
+        return MathTransforms.linear(convention(parameters.getDescriptor()).toMatrix(parameters));
     }
 
     /**
@@ -254,14 +276,10 @@ public final class Affine extends AbstractProvider {
     public static Affine provider(final int sourceDimensions, final int targetDimensions, final boolean isAffine) {
         Affine method;
         if (isAffine && sourceDimensions == EPSG_DIMENSION && targetDimensions == EPSG_DIMENSION) {
-            /*
-             * Matrix complies with EPSG:9624 definition. This is the most common case.
-             */
+            // Matrix complies with EPSG:9624 definition. This is the most common case.
             method = EPSG_METHOD;
         } else {
-            /*
-             * All other cases. We will use the WKT1 parameter names instead of the EPSG ones.
-             */
+            // All other cases. We will use the WKT1 parameter names instead of the EPSG ones.
             final int index = cacheIndex(sourceDimensions, targetDimensions);
             if (index >= 0) {
                 synchronized (CACHED) {
@@ -276,7 +294,7 @@ public final class Affine extends AbstractProvider {
              * Create a new instance and cache it if its dimension is not too large.
              */
             var parameters = MatrixParameters.WKT1.getAllDescriptors(targetDimensions + 1, sourceDimensions + 1);
-            method = new Affine(IDENTIFICATION_OGC, parameters);
+            method = new Affine(Map.of(NAME_KEY, IDENTIFICATION_OGC), parameters);
             if (index >= 0) {
                 synchronized (CACHED) {
                     final Affine other = CACHED[index];     // May have been created in another thread.
@@ -319,6 +337,6 @@ public final class Affine extends AbstractProvider {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-619">SIS-619</a>
      */
     public static ParameterValueGroup parameters(final Matrix matrix) {
-        return MatrixParameters.WKT1.createValueGroup(IDENTIFICATION_OGC, matrix);
+        return MatrixParameters.WKT1.createValueGroup(Map.of(NAME_KEY, IDENTIFICATION_OGC), matrix);
     }
 }

@@ -668,7 +668,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
             if (provider instanceof AbstractProvider) {
                 provider = ((AbstractProvider) provider).variantFor(transform);
             }
-            return swapAndScaleAxes(unique(transform));
+            return unique(swapAndScaleAxes(transform));
         } catch (FactoryException exception) {
             if (warning != null) {
                 exception.addSuppressed(warning);
@@ -714,6 +714,11 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
      */
     public MathTransform swapAndScaleAxes(final MathTransform normalized) throws FactoryException {
         ArgumentChecks.ensureNonNull("normalized", normalized);
+        if (provider instanceof AbstractProvider) {
+            switch (((AbstractProvider) provider).getFormulaCategory()) {
+                case APPLIED_VERBATIM: return normalized;
+            }
+        }
         /*
          * Compute matrices for swapping axes and performing units conversion.
          * There is one matrix to apply before projection from (λ,φ) coordinates,

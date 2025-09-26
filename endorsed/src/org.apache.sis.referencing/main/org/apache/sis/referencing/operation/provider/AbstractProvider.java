@@ -311,6 +311,27 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     }
 
     /**
+     * Whether this provider expects source and target <abbr>CRS</abbr> in normalized units and axis order.
+     * The <abbr>EPSG</abbr> guidance note identifies two categories of formulas regarding their relationship
+     * with axis order and units of measurement:
+     *
+     * <ul>
+     *   <li>Formulas where an intrinsic unambiguous relationship exists.</li>
+     *   <li>Formulas where no intrinsic relationship exists, in particular affine and polynomial transformations.</li>
+     * </ul>
+     *
+     * The default implementation returns {@link FormulaCategory#ASSUME_NORMALIZED_CRS}
+     * as most coordinate operation methods fall into this category.
+     *
+     * @return whether axes should be swapped and scaled to normalized order and units.
+     *
+     * @todo consider moving this method to {@link MathTransformProvider}.
+     */
+    public FormulaCategory getFormulaCategory() {
+        return FormulaCategory.ASSUME_NORMALIZED_CRS;
+    }
+
+    /**
      * Returns the operation method which is the inverse of this method.
      * The returns value may be {@code null}, {@code this} or other:
      *

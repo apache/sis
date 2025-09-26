@@ -96,8 +96,7 @@ public final class DefaultParameterValueTest extends TestCase {
      * @return a new parameter instance for the given name and value.
      */
     private static Watcher<Integer> createOptional(final String name, final int value) {
-        final Watcher<Integer> parameter = new Watcher<>(
-                DefaultParameterDescriptorTest.createSimpleOptional(name, Integer.class));
+        var parameter = new Watcher<Integer>(DefaultParameterDescriptorTest.createSimpleOptional(name, Integer.class));
         parameter.setValue(value, null);
         return parameter;
     }
@@ -111,7 +110,7 @@ public final class DefaultParameterValueTest extends TestCase {
      * @return a new parameter instance for the given name and value.
      */
     private static Watcher<Double> create(final String name, final double value, final Unit<?> unit) {
-        final Watcher<Double> parameter = new Watcher<>(DefaultParameterDescriptorTest.create(
+        final var parameter = new Watcher<Double>(DefaultParameterDescriptorTest.create(
                 name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN, unit));
         parameter.setValue(value, unit);
         return parameter;
@@ -172,8 +171,7 @@ public final class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testBoundedInteger() {
-        final Watcher<Integer> parameter = new Watcher<>(
-                DefaultParameterDescriptorTest.create("Bounded param", -30, +40, 15));
+        final var parameter = new Watcher<Integer>(DefaultParameterDescriptorTest.create("Bounded param", -30, +40, 15));
         assertEquals(Integer.class, parameter.getDescriptor().getValueClass());
         assertEquals(Integer.valueOf(15), parameter.getValue());
         assertEquals(15, parameter.intValue());
@@ -214,12 +212,13 @@ public final class DefaultParameterValueTest extends TestCase {
         assertEquals(10, parameter.doubleValue());
         validate(parameter);
         /*
-         * Invalid operation: set the same value as above, but with a unit of measurement.
-         * This shall be an invalid operation since we created a unitless parameter.
+         * Verifies that setting a value with a unit of measurement is accepted.
+         * The parameter descriptor is unitless, but a null unit is interpreted
+         * as no verification. This is needed for example by affine transform,
+         * where it is okay to give the translation term in units of the CRS.
          */
-        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(10.0, Units.METRE), "setValue(double,Unit)");
-        assertMessageContains(exception, "Bounded param");
-        assertEquals("Bounded param", exception.getParameterName());
+        parameter.setValue(10.0, Units.METRE);
+        assertSame(Units.METRE, parameter.getUnit());
     }
 
     /**
@@ -261,6 +260,12 @@ public final class DefaultParameterValueTest extends TestCase {
         assertEquals(400, parameter.doubleValue(Units.CENTIMETRE));
         assertEquals(  4, parameter.doubleValue(Units.METRE));
         validate(parameter);
+        /*
+         * Invalid operation: use an incompatible unit of measurement.
+         */
+        assertMessageContains(assertThrows(InvalidParameterValueException.class,
+                () -> parameter.setValue(10.0, Units.KILOGRAM), "setValue(double,Unit)"),
+                "kg");
     }
 
     /**
@@ -269,7 +274,7 @@ public final class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testBoundedDouble() {
-        final Watcher<Double> parameter = new Watcher<>(
+        final var parameter = new Watcher<Double>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30.0, +40.0, 15.0, null));
         assertEquals(Double.class, parameter.getDescriptor().getValueClass());
         assertEquals(Double.valueOf(15), parameter.getValue());
@@ -300,7 +305,7 @@ public final class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testBoundedMeasure() {
-        final Watcher<Double> parameter = new Watcher<>(
+        final var parameter = new Watcher<Double>(
                 DefaultParameterDescriptorTest.create("Length measure", 4, 20, 12, Units.METRE));
         assertEquals(Double.valueOf(12), parameter.getValue());
         assertEquals(12,                 parameter.intValue());
@@ -341,7 +346,7 @@ public final class DefaultParameterValueTest extends TestCase {
     @Test
     public void testArray() {
         double[] values = {5, 10, 15};
-        final Watcher<double[]> parameter = new Watcher<>(
+        final var parameter = new Watcher<double[]>(
                 DefaultParameterDescriptorTest.createForArray("myValues", 4, 4000, Units.METRE));
         parameter.setValue(values);
         assertArrayEquals(values, parameter.getValue());
@@ -382,7 +387,7 @@ public final class DefaultParameterValueTest extends TestCase {
         };
         final ParameterDescriptor<AxisDirection> descriptor = DefaultParameterDescriptorTest.create(
                 "Direction", AxisDirection.class, directions, AxisDirection.NORTH);
-        final DefaultParameterValue<AxisDirection> parameter = new DefaultParameterValue<>(descriptor);
+        final var parameter = new DefaultParameterValue<AxisDirection>(descriptor);
         validate(parameter);
 
         assertEquals     ("Direction",         descriptor.getName().getCode());
@@ -551,7 +556,7 @@ public final class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testIdentifiedParameterWKT() {
-        final Watcher<Double> parameter = new Watcher<>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0));
+        var parameter = new Watcher<Double>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0));
         assertWktEquals(Convention.WKT2, "PARAMETER[“A0”, null, ID[“EPSG”, 8623]]", parameter);
     }
 }
