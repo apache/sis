@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +29,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.StringJoiner;
 import java.util.stream.IntStream;
 import java.util.function.ToIntFunction;
 import java.util.logging.Level;
@@ -86,7 +84,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.referencing.internal.Epoch;
-import org.apache.sis.referencing.internal.EPSGParameterDomain;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.SignReversalComment;
@@ -112,7 +109,6 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.temporal.LenientDateFormat;
@@ -2944,10 +2940,11 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     /**
      * Determines the most frequently used units of measurement of a parameter.
      * We can have many different units for the same parameter, but usually all units have the same dimension.
-     * For example, we may have meters, kilometers, and feet. In such case, the set of units will have only
-     * one element and that element will be the most frequently used unit. However, some parameters accept
-     * units of different dimensions. For example, the "Coordinate 1 of evaluation point" (EPSG:8617) parameter
-     * may be in meters or in degrees. In such case, the set of units will have two elements.
+     * For example, we may have meters, kilometers, and feet. In such case, the declared unit will be the most
+     * frequently used unit. However, some parameters accept units of different dimensions. For example, the
+     * "Coordinate 1 of evaluation point" (EPSG:8617) parameter may be in meters or in degrees. In such case,
+     * the {@code dimension} argument is necessary for considering only compatible units when searching for
+     * the most frequently used unit.
      *
      * @param  parameter  the <abbr>EPSG</abbr> code of the parameter descriptor.
      * @param  options    the options where to store the {@value #UOM_CODE_OPTION} value.
@@ -2956,8 +2953,6 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     private void getParameterUnit(final int parameter, final Map<String, String> options, final Unit<?> dimension)
             throws SQLException, FactoryException
     {
-        final var codes = new StringJoiner(",");
-        final var units = new ArrayList<Unit<?>>();
         try (ResultSet result = executeQueryForCodes(
                 "Parameter Unit",
                 "SELECT UOM_CODE"
@@ -2966,25 +2961,19 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         + " GROUP BY UOM_CODE"
                         + " ORDER BY COUNT(UOM_CODE) DESC", parameter))
         {
-next:       while (result.next()) {
+            while (result.next()) {
                 final String uom_code = getOptionalString(result, 1);
                 if (uom_code != null) {
-                    final Unit<?> candidate = owner.createUnit(uom_code);
-                    if (dimension != null && !candidate.isCompatible(dimension)) {
-                        continue;
-                    }
-                    for (final Unit<?> e : units) {
-                        if (candidate.isCompatible(e)) {
-                            continue next;
+                    if (dimension != null) {
+                        final Unit<?> candidate = owner.createUnit(uom_code);
+                        if (!candidate.isCompatible(dimension)) {
+                            continue;
                         }
                     }
-                    units.add(candidate);
-                    codes.add(uom_code);
+                    options.put(UOM_CODE_OPTION, uom_code);
+                    return;
                 }
             }
-        }
-        if (codes.length() != 0) {
-            options.put(UOM_CODE_OPTION, codes.toString());
         }
     }
 
@@ -3125,20 +3114,22 @@ next:       while (result.next()) {
             throws SQLException, FactoryException
     {
         final Class<?> type;
-        final Set<Unit<?>> units;
+        NumberRange<?> valueDomain = null;
         if (EPSG_CODE_PARAMETERS.contains(code)) {
             // If the parameter is an EPSG code, the type is integer and there is no unit.
-            type  = Integer.class;
-            units = Set.of();
+            type = Integer.class;
         } else {
             if (URI_TYPE.equalsIgnoreCase(options.remove(PARAMETER_TYPE_OPTION))) {
                 type = String.class;
             } else {
                 type = Double.class;
             }
-            units = new LinkedHashSet<>();
-            for (String uom_code : (String[]) CharSequences.split(options.remove(UOM_CODE_OPTION), ',')) {
-                units.add(owner.createUnit(uom_code));
+            final String uom_code = options.remove(UOM_CODE_OPTION);
+            if (uom_code != null) {
+                valueDomain = MeasurementRange.create(
+                        Double.NEGATIVE_INFINITY, false,
+                        Double.POSITIVE_INFINITY, false,
+                        owner.createUnit(uom_code));
             }
         }
         /*
@@ -3149,17 +3140,6 @@ next:       while (result.next()) {
          */
         metadata.put(IdentifiedObject.REMARKS_KEY, SignReversalComment.of(
                 SQLUtilities.parseBoolean(options.remove(SIGN_REVERSAL_OPTION))));
-        /*
-         * Now creates the parameter descriptor.
-         */
-        final NumberRange<?> valueDomain;
-        switch (units.size()) {
-            case 0:  valueDomain = null; break;
-            default: valueDomain = new EPSGParameterDomain(units); break;
-            case 1:  valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
-                                                           Double.POSITIVE_INFINITY, false,
-                                                           CollectionsExt.first(units)); break;
-        }
         return new DefaultParameterDescriptor<>(metadata, 1, 1, type, valueDomain, null, null);
     }
 

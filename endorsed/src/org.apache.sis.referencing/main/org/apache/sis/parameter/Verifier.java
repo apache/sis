@@ -28,7 +28,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
-import org.apache.sis.referencing.internal.EPSGParameterDomain;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.Numbers;
@@ -117,13 +116,10 @@ final class Verifier {
         UnitConverter converter = null;
         Object convertedValue = value;
         if (unit != null) {
-            Unit<?> def = descriptor.getUnit();
+            final Unit<?> def = descriptor.getUnit();
             if (def == null) {
-                def = getCompatibleUnit(Parameters.getValueDomain(descriptor), unit);
-                if (def == null) {
-                    final String name = getDisplayName(descriptor);
-                    throw new InvalidParameterValueException(Resources.format(Resources.Keys.UnitlessParameter_1, name), name, unit);
-                }
+                final String name = getDisplayName(descriptor);
+                throw new InvalidParameterValueException(Resources.format(Resources.Keys.UnitlessParameter_1, name), name, unit);
             }
             if (!unit.equals(def)) {
                 final short expectedID = getUnitMessageID(def);
@@ -322,22 +318,6 @@ final class Verifier {
                 }
             }
         }
-    }
-
-    /**
-     * If the given domain of values accepts units of incompatible dimensions, return the unit which is compatible
-     * with the given units. This is a non-public mechanism handling a few parameters in the EPSG database, like
-     * <cite>Coordinate 1 of evaluation point</cite> (EPSG:8617).
-     */
-    private static Unit<?> getCompatibleUnit(final Range<?> valueDomain, final Unit<?> unit) {
-        if (valueDomain instanceof EPSGParameterDomain) {
-            for (final Unit<?> valid : ((EPSGParameterDomain) valueDomain).units) {
-                if (unit.isCompatible(valid)) {
-                    return valid;
-                }
-            }
-        }
-        return null;
     }
 
     /**
