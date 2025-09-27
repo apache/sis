@@ -35,8 +35,9 @@ import org.apache.sis.util.internal.shared.Constants;
  * Base class of some classes used to generate HTML pages to be published on
  * the <a href="https://sis.apache.org/">https://sis.apache.org/</a> web site.
  *
- * <p>This class creates files in the current default directory. It is user's responsibility
- * to move the files to the appropriate Apache SIS {@code "content/"} site directory.</p>
+ * <p>This class creates files in the current default directory.
+ * Maintainers need to move the files to the Apache <abbr>SIS</abbr>
+ * {@code "content/"} site directory.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -87,7 +88,7 @@ abstract class HTMLGenerator implements Closeable {
      * @throws IOException if the file cannot be created (e.g. because it already exists).
      */
     HTMLGenerator(final String filename, final String title, final String css) throws IOException {
-        final File file = new File(filename);
+        final var file = new File(filename);
         if (file.exists()) {
             throw new IOException("File " + file.getAbsolutePath() + " already exists.");
         }
@@ -243,7 +244,7 @@ abstract class HTMLGenerator implements Closeable {
     }
 
     /**
-     * Writes the given text on its own line, then write EOL sequence.
+     * Writes the given text on its own line, then write <abbr>EOL</abbr> sequence.
      * The {@code &}, {@code <} and {@code >} characters are <strong>not</strong> escaped.
      * For escaping those characters, invoke <code>println({@linkplain #escape(CharSequence) escape}(value))</code>.
      *
@@ -253,6 +254,21 @@ abstract class HTMLGenerator implements Closeable {
     final void println(final CharSequence value) throws IOException {
         if (value != null) {
             out.write(margin);
+            out.write(value.toString());
+            out.newLine();
+        }
+    }
+
+    /**
+     * Writes the given text on its own line without indentation.
+     * This is the same as {@link #println(CharSequence)} but more compact.
+     * Should be used only for very large tables.
+     *
+     * @param  value  the text to write, or {@code null} if none.
+     * @throws IOException if an error occurred while writing to the file.
+     */
+    final void printlnWithoutIndentation(final CharSequence value) throws IOException {
+        if (value != null) {
             out.write(value.toString());
             out.newLine();
         }

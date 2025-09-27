@@ -62,6 +62,16 @@ public final class SignReversalComment extends AbstractInternationalString imple
     }
 
     /**
+     * Returns the constant for the given  {@code PARAM_SIGN_REVERSAL} value.
+     *
+     * @param  value  the  {@code PARAM_SIGN_REVERSAL} value, potentially {@code null}.
+     * @return {@link #OPPOSITE} if {@code value} is true, {@link #SAME} if false, or {@code null} if null.
+     */
+    public static SignReversalComment of(final Boolean value) {
+        return (value == null) ? null : value ? OPPOSITE : SAME;
+    }
+
+    /**
      * Returns a human-readable text for this constant.
      *
      * @param  locale  the desired locale, or {@code null}.

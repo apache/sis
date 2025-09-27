@@ -77,7 +77,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
  *
- * @see org.apache.sis.parameter.TensorParameters
+ * @see org.apache.sis.parameter.MatrixParameters
  *
  * @since 0.4
  */

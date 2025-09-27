@@ -151,11 +151,16 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         buffer.append(" FROM ").append(table.fromClause);
         cacheKey = table.appendWhere(factory, object, buffer);
         final int conditionStart = buffer.length();
-        if (table.showColumn != null) {
-            buffer.append(table.showColumn).append("=TRUE AND ");
+        if (factory.owner.showDeprecated) {
+            buffer.append("TRUE");
+        } else {
+            // Do not put spaces around "=" - SQLTranslator searches for these exact matches.
+            if (table.showColumn != null) {
+                buffer.append(table.showColumn).append("=TRUE AND ");
+            }
+            buffer.append("DEPRECATED=FALSE");
         }
-        // Do not put spaces around "=" - SQLTranslator searches for this exact match.
-        sql[ALL_CODES] = buffer.append("DEPRECATED=FALSE ORDER BY ").append(table.codeColumn).toString();
+        sql[ALL_CODES] = buffer.append(" ORDER BY ").append(table.codeColumn).toString();
         /*
          * Build the SQL query for fetching the codes of object having a name matching a pattern.
          * It is of the form:

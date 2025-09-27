@@ -42,6 +42,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.referencing.CRS;
@@ -50,9 +51,12 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;
@@ -71,6 +75,7 @@ import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
 import static org.apache.sis.test.TestCase.TAG_SLOW;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assertions.assertMatrixEquals;
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
@@ -795,6 +800,44 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertInstanceOf(Transformation.class, operation);
         assertSame(operation, factory.createCoordinateOperation("1764"), "Operation shall be cached");
         loggings.assertNoUnexpectedLog();
+        final LinearTransform tr = assertInstanceOf(LinearTransform.class, operation.getMathTransform());
+        final var matrix = new Matrix3();
+        matrix.m00 = 0.9;
+        matrix.m11 = 0.9;
+        matrix.m12 = 2.3372083333333333;
+        assertMatrixEquals(matrix, tr.getMatrix(), 1E-16, null);
+    }
+
+    /**
+     * Tests "Jamaica 1875 / Jamaica (Old Grid) to JAD69 / Jamaica National Grid (1)" (EPSG:10087) transformation.
+     * This is for testing that there is no attempt to magically convert units in this case.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     * @throws TransformException if the test of a coordinate transformation failed.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-619">619</a>
+     */
+    @Test
+    public void testAffineTransformation() throws FactoryException, TransformException {
+        final EPSGFactory factory = dataEPSG.factory();
+        final CoordinateOperation operation = factory.createCoordinateOperation("10087");
+        assertEpsgNameAndIdentifierEqual(
+                "Jamaica 1875 / Jamaica (Old Grid) to JAD69 / Jamaica National Grid (1)", 10087, operation);
+        assertEquals(1.5, ((AbstractCoordinateOperation) operation).getLinearAccuracy());
+        loggings.assertNoUnexpectedLog();
+        final LinearTransform tr = assertInstanceOf(LinearTransform.class, operation.getMathTransform());
+        final var matrix = new Matrix3();
+        matrix.m00 =  0.304794369;
+        matrix.m11 =  0.304794369;
+        matrix.m01 =  1.5417425E-5;
+        matrix.m10 = -1.5417425E-5;
+        matrix.m02 =  82357.457;
+        matrix.m12 =  28091.324;
+        assertMatrixEquals(matrix, tr.getMatrix(), 1E-16, null);
+        final var point = new DirectPosition2D(553900, 482500);     // Example form EPSG guidance note.
+        assertSame(point, tr.transform(point, point));
+        assertEquals(251190.497, point.x, 0.001);
+        assertEquals(175146.067, point.y, 0.001);
     }
 
     /**
