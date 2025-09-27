@@ -21,12 +21,11 @@ import java.util.HashMap;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
-import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
@@ -111,11 +110,31 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      */
     public static Map<String,Object> properties(final int identifier, final String name, final GenericName nameOGC) {
         final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(IDENTIFIERS_KEY, identifier(identifier));
-        properties.put(NAME_KEY, create(name));
+        properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier(identifier));
+        properties.put(IdentifiedObject.NAME_KEY, create(name));
         if (nameOGC != null) {
-            properties.put(ALIAS_KEY, nameOGC);
+            properties.put(IdentifiedObject.ALIAS_KEY, nameOGC);
         }
         return properties;
+    }
+
+    /**
+     * Returns whether the <abbr>EPSG</abbr> code of the given object is equal to the expected value.
+     *
+     * @param  object    the object for which to test the code.
+     * @param  expected  the expected <abbr>EPSG</abbr> code.
+     * @return whether the code is equal to the expected value?
+     */
+    public static boolean isCodeEquals(final IdentifiedObject object, final int expected) {
+        final Identifier identifier = IdentifiedObjects.getIdentifier(object, Citations.EPSG);
+        if (identifier != null) {
+            final String code = identifier.getCode();
+            if (code != null) try {
+                return Integer.parseInt(code) == expected;
+            } catch (NumberFormatException e) {
+                // Ignore.
+            }
+        }
+        return false;
     }
 }

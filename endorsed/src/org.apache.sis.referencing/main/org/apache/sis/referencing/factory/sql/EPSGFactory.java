@@ -169,6 +169,13 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     private volatile SQLTranslator translator;
 
     /**
+     * Whether to include deprecated objects in the list of objects returned by {@code getAuthorityCodes(…)}.
+     * This flag is set to {@code true} if the properties given to the constructor contains a key named
+     * {@code "showDeprecated"} associated to {@link Boolean#TRUE}.
+     */
+    final boolean showDeprecated;
+
+    /**
      * The locale for producing error messages. This is usually the default locale.
      *
      * @see #getLocale()
@@ -228,6 +235,10 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *   <td>{@link InstallationScriptProvider}</td>
      *   <td>A provider of SQL scripts to use if {@code EPSGFactory} needs to create the database.</td>
      *  </tr><tr>
+     *   <td>{@code showDeprecated}</td>
+     *   <td>{@link Boolean}</td>
+     *   <td>Whether the {@linkplain #getAuthorityCodes(Class) list of <abbr>EPSG</abbr> codes} should includes deprecated codes.</td>
+     *  </tr><tr>
      *   <td>{@code locale}</td>
      *   <td>{@link Locale}</td>
      *   <td>The locale for producing error messages on a <em>best effort</em> basis.</td>
@@ -262,6 +273,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         schema         = (String)                     properties.get("schema");
         catalog        = (String)                     properties.get("catalog");
         scriptProvider = (InstallationScriptProvider) properties.get("scriptProvider");
+        showDeprecated = Boolean.TRUE.equals         (properties.get("showDeprecated"));
         if (locale == null) {
             locale = Locale.getDefault(Locale.Category.DISPLAY);
         }

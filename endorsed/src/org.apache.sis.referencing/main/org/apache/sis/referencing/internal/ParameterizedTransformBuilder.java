@@ -666,7 +666,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
                 provider = ((AbstractProvider) provider).variantFor(transform);
             }
             // A call to `unique` needs to be last because it sets `factory.lastMethod` as a side-effect.
-            return unique(swapAndScaleAxes(unique(transform)));
+            return unique(swapAndScaleAxes(transform));
         } catch (FactoryException exception) {
             if (warning != null) {
                 exception.addSuppressed(warning);
@@ -712,6 +712,11 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
      */
     public MathTransform swapAndScaleAxes(final MathTransform normalized) throws FactoryException {
         ArgumentChecks.ensureNonNull("normalized", normalized);
+        if (provider instanceof AbstractProvider) {
+            switch (((AbstractProvider) provider).getFormulaCategory()) {
+                case APPLIED_VERBATIM: return normalized;
+            }
+        }
         /*
          * Compute matrices for swapping axes and performing units conversion.
          * There is one matrix to apply before projection from (λ,φ) coordinates,

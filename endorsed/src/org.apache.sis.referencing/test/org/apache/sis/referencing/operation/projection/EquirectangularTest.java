@@ -92,9 +92,11 @@ public final class EquirectangularTest extends MapProjectionTestCase {
                 "  Parameter[“semi_minor”, 6371007.0, Unit[“metre”, 1]]]", transform);
 
         Assertions.assertWktEquals(Convention.INTERNAL,
-                "Param_MT[“Affine parametric transformation”,\n" +
-                "  Parameter[“A0”, 111195.04881760638, Id[“EPSG”, 8623]],\n" +
-                "  Parameter[“B1”, 111195.04881760638, Id[“EPSG”, 8640]]]", transform);
+                "Param_MT[“Affine”,\n" +
+                "  Parameter[“num_row”, 3],\n" +
+                "  Parameter[“num_col”, 3],\n" +
+                "  Parameter[“elt_0_0”, 111195.04881760638],\n" +
+                "  Parameter[“elt_1_1”, 111195.04881760638]]", transform);
     }
 
     /**

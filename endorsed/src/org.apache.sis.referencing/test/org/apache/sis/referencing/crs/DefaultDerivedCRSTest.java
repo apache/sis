@@ -163,6 +163,8 @@ public final class DefaultDerivedCRSTest extends TestCase {
         assertWktEquals(Convention.WKT1,
                 "FITTED_CS[“Back to Greenwich”,\n" +
                 "  PARAM_MT[“Affine”,\n" +
+                "    PARAMETER[“num_row”, 3],\n"  +
+                "    PARAMETER[“num_col”, 3],\n"  +
                 "    PARAMETER[“elt_0_0”, 0.0],\n" +
                 "    PARAMETER[“elt_0_1”, 1.0],\n" +
                 "    PARAMETER[“elt_0_2”, -2.33722917],\n" +

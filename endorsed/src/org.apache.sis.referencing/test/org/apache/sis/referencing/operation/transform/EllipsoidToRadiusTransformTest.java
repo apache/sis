@@ -173,8 +173,10 @@ public final class EllipsoidToRadiusTransformTest extends MathTransformTestCase 
         createGeodeticConversion(HardCodedDatum.WGS84.getEllipsoid());
         assertInternalWktEquals(
                 "Concat_MT[\n" +
-                "  Param_MT[“Affine parametric transformation”,\n" +
-                "    Parameter[“B1”, 0.017453292519943295, Id[“EPSG”, 8640]]],\n" +
+                "  Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 3],\n"  +
+                "    Parameter[“num_col”, 3],\n"  +
+                "    Parameter[“elt_1_1”, 0.017453292519943295]],\n" +
                 "  Param_MT[“Spherical2D to 3D (radians domain)”,\n" +
                 "    Parameter[“eccentricity”, 0.0818191908426215]],\n" +
                 "  Param_MT[“Affine”,\n" +

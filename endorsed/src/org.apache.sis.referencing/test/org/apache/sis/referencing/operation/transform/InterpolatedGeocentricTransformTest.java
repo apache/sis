@@ -187,9 +187,11 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
         createGeodeticTransformation();
         assertInternalWktEqualsRegex("(?m)\\Q" +
                 "Concat_MT[\n" +
-                "  Param_MT[“Affine parametric transformation”,\n" +
-                "    Parameter[“A0”, 0.017453292519943295, Id[“EPSG”, 8623]],\n" +   // Degrees to radians conversion
-                "    Parameter[“B1”, 0.017453292519943295, Id[“EPSG”, 8640]]],\n" +
+                "  Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 3],\n"  +
+                "    Parameter[“num_col”, 3],\n"  +
+                "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +   // Degrees to radians conversion
+                "    Parameter[“elt_1_1”, 0.017453292519943295]],\n" +
                 "  Param_MT[“Geocentric inverse interpolation”,\n" +
                 "    Parameter[“dim”, 2],\n" +
                 "    Parameter[“src_semi_major”, 6378249.2],\n" +
@@ -198,8 +200,10 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
                 "    Parameter[“tgt_semi_minor”, 6356752.314140356],\n" +
                 "    ParameterFile[“Geocentric translation file”, “\\E.*\\W\\Q" +
                                    FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727]]],\n" +
-                "  Param_MT[“Affine parametric transformation”,\n" +
-                "    Parameter[“A0”, 57.29577951308232, Id[“EPSG”, 8623]],\n" +      // Radians to degrees conversion
-                "    Parameter[“B1”, 57.29577951308232, Id[“EPSG”, 8640]]]]\\E");
+                "  Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 3],\n"  +
+                "    Parameter[“num_col”, 3],\n"  +
+                "    Parameter[“elt_0_0”, 57.29577951308232],\n" +      // Radians to degrees conversion
+                "    Parameter[“elt_1_1”, 57.29577951308232]]]\\E");
     }
 }

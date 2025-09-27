@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,14 +55,13 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.util.Factory;
 import org.opengis.util.FactoryException;
-import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.cs.*;
@@ -73,6 +72,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
@@ -84,7 +84,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.referencing.internal.Epoch;
-import org.apache.sis.referencing.internal.EPSGParameterDomain;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.SignReversalComment;
@@ -110,7 +109,6 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.temporal.LenientDateFormat;
@@ -219,6 +217,48 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private static final String UNKNOWN_SCOPE = "?";
 
     /**
+     * An option added to the code of a parameter descriptor for specifying the type of parameter values.
+     * This is an undocumented extension specific to Apache <abbr>SIS</abbr>
+     *
+     * @see #getParameterType(int, Map)
+     * @see #separateOptions(String, Map)
+     * @see #createParameterDescriptor(String)
+     */
+    private static final String PARAMETER_TYPE_OPTION = "type";
+
+    /**
+     * Possible value for {@link #PARAMETER_TYPE_OPTION}.
+     */
+    private static final String URI_TYPE = "URI";
+
+    /**
+     * An option added to the code of a parameter descriptor for specifying the {@code uom_code} integer value.
+     * The same operation method may have different units of measurement and "sign reversal" flag depending on
+     * the operation which uses it, at least in the way that the <abbr>EPSG</abbr> database is structured.
+     * This is an undocumented extension specific to Apache <abbr>SIS</abbr>
+     *
+     * <h4>Example</h4>
+     * The EPSG:8617 (<cite>Coordinate 1 of evaluation point</cite>) parameter may be used in the
+     * <abbr>EPSG</abbr> database with either meters or degrees units, depending on which operation
+     * uses that parameter.
+     *
+     * @see #getParameterUnit(int, Map)
+     * @see #separateOptions(String, Map)
+     * @see #createParameterDescriptor(String)
+     */
+    private static final String UOM_CODE_OPTION = "uom_code";
+
+    /**
+     * An option added to the code of a parameter descriptor for specifying the {@code sign_reversal} Boolean value.
+     * This is an undocumented extension specific to Apache <abbr>SIS</abbr>
+     *
+     * @see #getSignReversal(int, Map)
+     * @see #separateOptions(String, Map)
+     * @see #createParameterDescriptor(String)
+     */
+    private static final String SIGN_REVERSAL_OPTION = "sign_reversal";
+
+    /**
      * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
      * The {@code EPSGDataAccess} constructor relies on the {@link EPSGFactory#nameFactory} caching mechanism
      * for giving us the same {@code NameSpace} instance than the one used by previous {@code EPSGDataAccess}
@@ -269,7 +309,8 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * However, this duplication should not happen often. For example, each conventional <abbr>RS</abbr> should appear
      * in only one datum ensemble created by {@link #createDatumEnsemble(Integer, Map)}.
      *
-     * <p>Keys are {@link Long} except the keys for naming systems which are {@link String}.</p>
+     * <p>Keys are {@link Long} except the keys for naming systems which are {@link String}.
+     * The {@code Long} values are computed by {@link #cacheKey(int, int)}.</p>
      *
      * @see #getAxisName(Integer)
      * @see #getRealizationMethod(Integer)
@@ -319,7 +360,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
 
     /**
      * Identification of a query under execution. The query is identified by a table name and the <abbr>EPSG</abbr>
-     * code(s) of the object to search. It is legal to have have two queries in progress on the same table, provided
+     * code(s) of the object to search. It is legal to have two queries in progress on the same table, provided
      * that the <abbr>EPSG</abbr> codes are different. For example, if a projected <abbr>CRS</abbr> is read from the
      * "Coordinate Reference System" table, that query will require another query on the same table but for the base
      * geographic <abbr>CRS</abbr>. Therefore, a limited form of recursive queries need to be accepted, but we want
@@ -683,6 +724,56 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
             throw new FactoryException(exception.getLocalizedMessage(), Exceptions.unwrap(exception));
         }
         return Optional.empty();
+    }
+
+    /**
+     * Formats a code with options. The returned string can be parsed by {@link #separateOptions(String, Map)}.
+     * This is used for passing options when creating an object from an authority code through public <abbr>API</abbr>.
+     * Formatting options with the authority code allows to differentiate variants in the {@linkplain #owner} cache.
+     * This is specific to Apache <abbr>SIS</abbr>.
+     *
+     * @param  code     the raw authority code, without options.
+     * @param  options  the options to format in order. Should be a map with deterministic entry order.
+     * @return the given code with the given options appended.
+     */
+    private static String codeWithOptions(final String code, final Map<String, String> options) {
+        if (options.isEmpty()) {
+            return code;
+        }
+        final var s = new StringBuilder(code);
+        char separator = '?';
+        for (final Map.Entry<String, String> entry : options.entrySet()) {
+            s.append(separator).append(entry.getKey()).append('=').append(entry.getValue());
+            separator = '&';
+        }
+        return s.toString();
+    }
+
+    /**
+     * If the given code has any options, stores them in the given map and returns the code alone.
+     * The keys are strings defined by the {@code *_OPTION} constants in this class.
+     * Example: {@code 8623?uom_code=9001&sign_reversal=false} (a parameter descriptor).
+     *
+     * @param  code     the code potentially followed by options.
+     * @param  options  the map where to store the options.
+     * @return the code without options.
+     *
+     * @see #UOM_CODE_OPTION
+     * @see #SIGN_REVERSAL_OPTION
+     * @see #createParameterDescriptor(String)
+     */
+    private static String separateOptions(final String code, final Map<String, String> options) {
+        final int s = code.indexOf('?');
+        if (s < 0) {
+            return code;
+        }
+        for (String option : (String[]) CharSequences.split(code.substring(s+1), '&')) {
+            final int e = option.indexOf('=');
+            if (s >= 0) {
+                options.put(option.substring(0, e).trim().toLowerCase(Locale.US), option.substring(e+1).trim());
+            }
+        }
+        return code.substring(0, s);
     }
 
     /**
@@ -1866,7 +1957,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             currentSingletonQuery = previousSingletonQuery;
         }
         if (returnValue == null) {
-             throw noSuchAuthorityCode(CoordinateReferenceSystem.class, code);
+            throw noSuchAuthorityCode(CoordinateReferenceSystem.class, code);
         }
         return returnValue;
     }
@@ -2107,7 +2198,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
          * @return the component created from the given code.
          * @throws FactoryException if an error occurred while creating the component.
          */
-        C create(GeodeticAuthorityFactory factory, String code) throws FactoryException;
+        C create(GeodeticAuthorityFactory factory, String code) throws SQLException, FactoryException;
     }
 
     /**
@@ -2210,10 +2301,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final double  semiMajorAxis     = getDouble   (code, result, 3);
                 final double  inverseFlattening = getOptionalDouble (result, 4);
                 final double  semiMinorAxis     = getOptionalDouble (result, 5);
-                final String  unitCode          = getString   (code, result, 6);
+                final String  uom_code          = getString   (code, result, 6);
                 final String  remarks           = getOptionalString (result, 7);
                 final boolean deprecated        = getOptionalBoolean(result, 8);
-                final Unit<Length> unit         = owner.createUnit(unitCode).asType(Length.class);
+                final Unit<Length> unit         = owner.createUnit(uom_code).asType(Length.class);
                 final boolean useSemiMinor      = Double.isNaN(inverseFlattening);
                 if (useSemiMinor && Double.isNaN(semiMinorAxis)) {
                     // Both are null, which is not allowed.
@@ -2252,7 +2343,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             currentSingletonQuery = previousSingletonQuery;
         }
         if (returnValue == null) {
-             throw noSuchAuthorityCode(Ellipsoid.class, code);
+            throw noSuchAuthorityCode(Ellipsoid.class, code);
         }
         return returnValue;
     }
@@ -2303,10 +2394,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final Integer epsg       = getInteger  (code, result, 1);
                 final String  name       = getString   (code, result, 2);
                 final double  longitude  = getDouble   (code, result, 3);
-                final String  unitCode   = getString   (code, result, 4);
+                final String  uom_code   = getString   (code, result, 4);
                 final String  remarks    = getOptionalString (result, 5);
                 final boolean deprecated = getOptionalBoolean(result, 6);
-                final Unit<Angle> unit = owner.createUnit(unitCode).asType(Angle.class);
+                final Unit<Angle> unit = owner.createUnit(uom_code).asType(Angle.class);
                 /*
                  * Map of properties should be populated only after we extracted all
                  * information needed from the `ResultSet`, because it may be closed.
@@ -2670,7 +2761,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final Integer nameCode     = getInteger(code, result, 2);
                 final String  orientation  = getString (code, result, 3);
                 final String  abbreviation = getString (code, result, 4);
-                final String  unit         = getString (code, result, 5);
+                final String  uom_code     = getString (code, result, 5);
                 final AxisDirection direction;
                 try {
                     direction = CoordinateSystems.parseAxisDirection(orientation);
@@ -2684,7 +2775,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  */
                 final CoordinateSystemAxis axis = owner.csFactory.createCoordinateSystemAxis(
                         createProperties(TableInfo.AXIS, epsg, an.name, an.description, null, null, an.remarks, false),
-                        abbreviation, direction, owner.createUnit(unit));
+                        abbreviation, direction, owner.createUnit(uom_code));
                 returnValue = ensureSingleton(axis, returnValue, code);
                 if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
@@ -2850,6 +2941,112 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
     }
 
     /**
+     * Determines the type of values in a parameter. If the parameter has at least one non-null value in the
+     * "Parameter File Name" column, then the value type is assumed to be <abbr>URI</abbr> stored as string.
+     * Otherwise, the type is assumed floating point number.
+     *
+     * @param  parameter  the <abbr>EPSG</abbr> code of the parameter descriptor.
+     * @param  options    the options where to store the {@value #PARAMETER_TYPE_OPTION} value.
+     */
+    private void getParameterType(final int parameter, final Map<String, String> options) throws SQLException {
+        try (ResultSet result = executeQueryForCodes(
+                "Parameter Type",
+                "SELECT PARAM_VALUE_FILE_REF"
+                        + " FROM \"Coordinate_Operation Parameter Value\""
+                        + " WHERE PARAM_VALUE_FILE_REF IS NOT NULL"
+                        + " AND (PARAMETER_CODE = ?)", parameter))
+        {
+            while (result.next()) {
+                String element = getOptionalString(result, 1);
+                if (element != null && !element.isBlank()) {
+                    options.put(PARAMETER_TYPE_OPTION, URI_TYPE);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines the most frequently used units of measurement of a parameter.
+     * We can have many different units for the same parameter, but usually all units have the same dimension.
+     * For example, we may have meters, kilometers, and feet. In such case, the declared unit will be the most
+     * frequently used unit. However, some parameters accept units of different dimensions. For example, the
+     * "Coordinate 1 of evaluation point" (EPSG:8617) parameter may be in meters or in degrees. In such case,
+     * the {@code dimension} argument is necessary for considering only compatible units when searching for
+     * the most frequently used unit.
+     *
+     * @param  parameter  the <abbr>EPSG</abbr> code of the parameter descriptor.
+     * @param  options    the options where to store the {@value #UOM_CODE_OPTION} value.
+     * @param  dimension  if non-null, consider only the units compatible with {@code dimension}.
+     */
+    private void getParameterUnit(final int parameter, final Map<String, String> options, final Unit<?> dimension)
+            throws SQLException, FactoryException
+    {
+        try (ResultSet result = executeQueryForCodes(
+                "Parameter Unit",
+                "SELECT UOM_CODE"
+                        + " FROM \"Coordinate_Operation Parameter Value\""
+                        + " WHERE (PARAMETER_CODE = ?)"
+                        + " GROUP BY UOM_CODE"
+                        + " ORDER BY COUNT(UOM_CODE) DESC", parameter))
+        {
+            while (result.next()) {
+                final String uom_code = getOptionalString(result, 1);
+                if (uom_code != null) {
+                    if (dimension != null) {
+                        final Unit<?> candidate = owner.createUnit(uom_code);
+                        if (!candidate.isCompatible(dimension)) {
+                            continue;
+                        }
+                    }
+                    options.put(UOM_CODE_OPTION, uom_code);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines if the inverse operation can be performed by reversing the parameter sign.
+     * The <abbr>EPSG</abbr> dataset uses "Yes" or "No" value while <abbr>SIS</abbr> scripts
+     * use Boolean type. This method accepts the two forms. If a string is not recognized as
+     * a Boolean value, then this method throws a {@link SQLException} because a wrong value
+     * would let {@code EPSGDataAccess} finishes its work without apparent problem but would
+     * cause failures later when Apache <abbr>SIS</abbr> tries to infer an inverse operation.
+     * An exception thrown at a later time is much more difficult to relate to the root cause
+     * than if we throw the exception here.
+     *
+     * @param  parameter  the <abbr>EPSG</abbr> code of the parameter descriptor.
+     * @param  options    the options where to store the {@value #SIGN_REVERSAL_OPTION} value.
+     */
+    private void getSignReversal(final int parameter, final Map<String, String> options) throws SQLException {
+        try (ResultSet result = executeQueryForCodes(
+                "Sign Reversal",
+                "SELECT DISTINCT PARAM_SIGN_REVERSAL"
+                        + " FROM \"Coordinate_Operation Parameter Usage\""
+                        + " WHERE (PARAMETER_CODE = ?)", parameter))
+        {
+            Boolean reversibility = null;
+            while (result.next()) {
+                Boolean value;
+                if (translator.useBoolean()) {
+                    value = result.getBoolean(1);
+                    if (result.wasNull()) return;
+                } else {
+                    // May throw SQLException - see above comment.
+                    value = SQLUtilities.parseBoolean(result.getString(1));
+                    if (value == null) return;
+                }
+                if (reversibility == null) reversibility = value;
+                else if (!reversibility.equals(value)) return;
+            }
+            if (reversibility != null) {
+                options.put(SIGN_REVERSAL_OPTION, reversibility.toString());
+            }
+        }
+    }
+
+    /**
      * Creates a definition of a single parameter used by an operation method.
      *
      * <h4>Examples</h4>
@@ -2877,6 +3074,25 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ArgumentChecks.ensureNonNull("code", code);
+        final var options = new HashMap<String, String>(4);
+        final String base = separateOptions(code, options);
+        /*
+         * If the code has options (e.g., "8623?uom_code=9001&sign_reversal=false"),
+         * get the descriptor with default options, then amends that descriptor with
+         * the given options. We take this approach for leveraging the `owner` cache.
+         */
+        if (!options.isEmpty()) try {
+            final ParameterDescriptor<?> generic = owner.createParameterDescriptor(base);
+            final var metadata = new HashMap<String, Object>(IdentifiedObjects.getProperties(generic));
+            final var returnValue = createParameterDescriptor(Integer.valueOf(base), metadata, options);
+            return generic.equals(returnValue) ? generic : returnValue;     // Share the existing instance.
+        } catch (SQLException exception) {
+            throw databaseFailure(OperationMethod.class, code, exception);
+        }
+        /*
+         * Case of parameters without options. This case is indirectly executed even when
+         * options were present, in order to get the base parameter to be used as template.
+         */
         ParameterDescriptor<?> returnValue = null;
         final QueryID previousSingletonQuery = currentSingletonQuery;
         try (ResultSet result = executeSingletonQuery(
@@ -2893,117 +3109,13 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final String  name        = getString   (code, result, 2);
                 final String  description = getOptionalString (result, 3);
                 final boolean deprecated  = getOptionalBoolean(result, 4);
-                /*
-                 * If the parameter is an integer code, the type is integer and there is no unit.
-                 */
-                Class<?> type;
-                final Set<Unit<?>> units;
-                if (epsg != null && EPSG_CODE_PARAMETERS.contains(epsg)) {
-                    type  = Integer.class;
-                    units = Set.of();
-                } else {
-                    /*
-                     * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
-                     * then the type is assumed to be URI as a string. Otherwise, the type is a floating point number.
-                     */
-                    type = Double.class;
-                    try (ResultSet r = executeQueryForCodes(
-                            "Parameter Type",
-                            "SELECT PARAM_VALUE_FILE_REF"
-                                    + " FROM \"Coordinate_Operation Parameter Value\""
-                                    + " WHERE PARAM_VALUE_FILE_REF IS NOT NULL"
-                                    + " AND (PARAMETER_CODE = ?)", epsg))
-                    {
-                        while (r.next()) {
-                            String element = getOptionalString(r, 1);
-                            if (element != null && !element.isEmpty()) {
-                                type = String.class;
-                                break;
-                            }
-                        }
-                    }
-                    /*
-                     * Search for units.   We typically have many different units but all of the same dimension
-                     * (for example metres, kilometres, feet, etc.). In such case, the units Set will have only
-                     * one element and that element will be the most frequently used unit.  But some parameters
-                     * accept units of different dimensions. For example, the "Coordinate 1 of evaluation point"
-                     * (EPSG:8617) parameter value may be in metres or in degrees.   In such case the units Set
-                     * will have two elements.
-                     */
-                    units = new LinkedHashSet<>();
-                    try (ResultSet r = executeQueryForCodes(
-                            "Parameter Unit",
-                            "SELECT UOM_CODE"
-                                    + " FROM \"Coordinate_Operation Parameter Value\""
-                                    + " WHERE (PARAMETER_CODE = ?)"
-                                    + " GROUP BY UOM_CODE"
-                                    + " ORDER BY COUNT(UOM_CODE) DESC", epsg))
-                    {
-next:                   while (r.next()) {
-                            final String c = getOptionalString(r, 1);
-                            if (c != null) {
-                                final Unit<?> candidate = owner.createUnit(c);
-                                for (final Unit<?> e : units) {
-                                    if (candidate.isCompatible(e)) {
-                                        continue next;
-                                    }
-                                }
-                                units.add(candidate);
-                            }
-                        }
-                    }
-                }
-                /*
-                 * Determines if the inverse operation can be performed by reversing the parameter sign.
-                 * The EPSG dataset uses "Yes" or "No" value, but SIS scripts use boolean type. We have
-                 * to accept both. Note that if we do not recognize the string as a boolean value, then
-                 * we need a SQLException, not a null value.  If the value is wrongly null, this method
-                 * will succeed anyway and EPSGDataAccess will finish its work without apparent problem,
-                 * but Apache SIS will fail later when it will try to compute the inverse operation, for
-                 * example in a call to CRS.findOperation(…). The exception thrown at such later time is
-                 * much more difficult to relate to the root cause than if we throw the exception here.
-                 */
-                InternationalString isReversible = null;
-                try (ResultSet r = executeQueryForCodes(
-                        "Parameter Sign",
-                        "SELECT DISTINCT PARAM_SIGN_REVERSAL"
-                                + " FROM \"Coordinate_Operation Parameter Usage\""
-                                + " WHERE (PARAMETER_CODE = ?)", epsg))
-                {
-                    if (r.next()) {
-                        Boolean b;
-                        if (translator.useBoolean()) {
-                            b = r.getBoolean(1);
-                            if (r.wasNull()) b = null;
-                        } else {
-                            b = SQLUtilities.parseBoolean(r.getString(1));  // May throw SQLException - see above comment.
-                        }
-                        if (b != null) {
-                            isReversible = b ? SignReversalComment.OPPOSITE : SignReversalComment.SAME;
-                        }
-                    }
-                }
-                /*
-                 * Now creates the parameter descriptor.
-                 */
-                final NumberRange<?> valueDomain;
-                switch (units.size()) {
-                    case 0:  valueDomain = null; break;
-                    default: valueDomain = new EPSGParameterDomain(units); break;
-                    case 1:  valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
-                                                                   Double.POSITIVE_INFINITY, false,
-                                                                   CollectionsExt.first(units)); break;
-                }
-                /*
-                 * Map of properties should be populated only after we extracted all
-                 * information needed from the `ResultSet`, because it may be closed.
-                 */
+                getParameterUnit(epsg, options, null);
+                getParameterType(epsg, options);
+                getSignReversal (epsg, options);
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
-                        TableInfo.PARAMETER, epsg, name, null, null, null, isReversible, deprecated);
-                properties.put(ImmutableIdentifier.DESCRIPTION_KEY, description);
-                final var descriptor = new DefaultParameterDescriptor<>(properties, 1, 1, type, valueDomain, null, null);
-                returnValue = ensureSingleton(descriptor, returnValue, code);
+                        TableInfo.PARAMETER, epsg, name, description, null, null, null, deprecated);
+                returnValue = createParameterDescriptor(epsg, properties, options);
                 if (result.isClosed()) break;   // See createProperties(…) for explanation.
             }
         } catch (SQLException exception) {
@@ -3012,92 +3124,228 @@ next:                   while (r.next()) {
             currentSingletonQuery = previousSingletonQuery;
         }
         if (returnValue == null) {
-             throw noSuchAuthorityCode(OperationMethod.class, code);
+            throw noSuchAuthorityCode(OperationMethod.class, code);
         }
         return returnValue;
     }
 
     /**
-     * Sets the values of all parameters in the given group.
+     * Creates a parameter descriptor from the given properties.
+     * The given maps shall be modifiable, as this method will modify them.
      *
-     * @param  method      the EPSG code for the operation method.
-     * @param  operation   the EPSG code for the operation (conversion or transformation).
-     * @param  parameters  the parameter values to fill.
+     * @param  code      value allocated by EPSG.
+     * @param  metadata  the properties fetched from the database or from another descriptor.
+     * @param  options   the value type, unit of measurement and sign reversal.
+     * @return the parameter descriptor for the given code, properties and options.
+     */
+    private ParameterDescriptor<?> createParameterDescriptor(final Integer code,
+            final Map<String, Object> metadata, final Map<String, String> options)
+            throws SQLException, FactoryException
+    {
+        final Class<?> type;
+        NumberRange<?> valueDomain = null;
+        if (EPSG_CODE_PARAMETERS.contains(code)) {
+            // If the parameter is an EPSG code, the type is integer and there is no unit.
+            type = Integer.class;
+        } else {
+            if (URI_TYPE.equalsIgnoreCase(options.remove(PARAMETER_TYPE_OPTION))) {
+                type = String.class;
+            } else {
+                type = Double.class;
+            }
+            final String uom_code = options.remove(UOM_CODE_OPTION);
+            if (uom_code != null) {
+                valueDomain = MeasurementRange.create(
+                        Double.NEGATIVE_INFINITY, false,
+                        Double.POSITIVE_INFINITY, false,
+                        owner.createUnit(uom_code));
+            }
+        }
+        /*
+         * Determine if the inverse operation can be performed by reversing the parameter sign.
+         * The `SignReversalComment` is used as a sentinel value in other Apache SIS packages,
+         * so this information needs to be accurate. For that reason, if we fail to parse the
+         * Boolean value, it is better to throw an exception now rather than later.
+         */
+        metadata.put(IdentifiedObject.REMARKS_KEY, SignReversalComment.of(
+                SQLUtilities.parseBoolean(options.remove(SIGN_REVERSAL_OPTION))));
+        return new DefaultParameterDescriptor<>(metadata, 1, 1, type, valueDomain, null, null);
+    }
+
+    /**
+     * Temporary storage for parameter values before they are set in the parameter group.
+     *
+     * <h2>Purpose</h2>
+     * The {@link ParameterDescriptor} and {@link ParameterValue} instances are created together,
+     * because the parameter descriptors for the same operation method may vary slightly depending
+     * on which coordinate operation use that method. But we cannot set the {@link ParameterValue}s
+     * before all descriptors have been created and put in a {@link ParameterValueGroup}.
+     * Hence, we temporarily store the values in this object until the group is created.
+     */
+    private static final class Parameter {
+        /**
+         * The descriptor of the parameter.
+         */
+        final ParameterDescriptor<?> descriptor;
+
+        /**
+         * Value of the {@code PARAM_VALUE_FILE_REF} column, or {@code null} if none.
+         * It may be a file in the {@code "$SIS_DATA/DatumChanges"} directory.
+         * Should be relative and <em>not</em> encoded for valid <abbr>URI</abbr> syntax.
+         * The encoding will be applied by invoking the {@link URI} multi-argument constructor.
+         */
+        final String reference;
+
+        /**
+         * Value of the {@code PARAMETER_VALUE} column.
+         * Ignored if {@code PARAM_VALUE_FILE_REF} is non-null.
+         */
+        final double value;
+
+        /**
+         * Value of the {@code UOM_CODE} column, or {@code null} if none.
+         */
+        final Unit<?> unit;
+
+        /**
+         * Creates a new value for the given descriptor.
+         * Callers shall set at least one of the non-final fields after construction.
+         */
+        Parameter(final ParameterDescriptor<?> descriptor, final String reference, final double value, final Unit<?> unit) {
+            this.descriptor = descriptor;
+            this.reference  = reference;
+            this.value      = value;
+            this.unit       = unit;
+        }
+
+        /**
+         * Returns an operation method with the same metadata than the given method,
+         * but with the descriptors of the parameters in the given list.
+         * Those parameter descriptors should be the same as the parameters of the given method.
+         * But sometime, the parameters differ in units of measurement or in sign reversal flag.
+         *
+         * @param  generic  a generic operation method for no operation in particular.
+         * @return the given operation method potentially fitted to a particular operation.
+         */
+        static OperationMethod recreateIfChanged(OperationMethod generic, final List<Parameter> values) {
+            final List<GeneralParameterDescriptor> existing = generic.getParameters().descriptors();
+            final var descriptors = new ParameterDescriptor<?>[values.size()];
+            boolean changed = false;
+            for (int i=0; i<descriptors.length; i++) {
+                ParameterDescriptor<?> descriptor = values.get(i).descriptor;
+                final GeneralParameterDescriptor other = existing.get(i);
+                if (descriptor.equals(other)) {
+                    descriptor = (ParameterDescriptor<?>) other;    // Share existing instances.
+                } else {
+                    changed = true;
+                }
+                descriptors[i] = descriptor;
+            }
+            if (changed) {
+                // Rebuild the operation with slightly different parameter descriptors.
+                generic = new DefaultOperationMethod(
+                        IdentifiedObjects.getProperties(generic),
+                        new DefaultParameterDescriptorGroup(
+                                IdentifiedObjects.getProperties(generic.getParameters()),
+                                1, 1, descriptors));
+            }
+            return generic;
+        }
+
+        /**
+         * Sets the value in the given group of parameters.
+         *
+         * @param  target  where to set the value.
+         */
+        final void setValue(final ParameterValueGroup target) throws URISyntaxException {
+            final ParameterValue<?> param = target.parameter(name());
+            if (reference != null) {
+                param.setValue(new URI(null, reference, null));
+                return;
+            }
+            if (unit != null) {
+                if (!Units.UNITY.equals(unit) || param.getUnit() != null) {
+                    param.setValue(value, unit);
+                    return;
+                }
+            }
+            param.setValue(value);
+        }
+
+        /**
+         * Returns the parameter name.
+         */
+        final String name() {
+            return descriptor.getName().getCode();
+        }
+
+        /**
+         * Returns a string representation for debugging purposes.
+         */
+        @Override
+        public String toString() {
+            final var s = new StringBuilder(name()).append(" = ");
+            if (reference != null) {
+                s.append(reference);
+            } else {
+                s.append(value);
+                if (unit != null) {
+                    s.append(' ').append(unit);
+                }
+            }
+            return s.toString();
+        }
+    }
+
+    /**
+     * Creates the parameters descriptors and their values for all parameters of the given operation.
+     * The descriptors are created in same time than their values because some descriptor metadata,
+     * such as units of measurement and aliases, may differ for different operations.
+     *
+     * @param  operation  the EPSG code for the operation (conversion or transformation).
+     * @param  method     the EPSG code for the method used by the specified operation.
+     * @return the parameter values with their descriptors.
      * @throws SQLException if a SQL statement failed.
      */
-    private void fillParameterValues(final Integer method, final Integer operation, final ParameterValueGroup parameters)
+    private List<Parameter> createParameterValues(final Integer operation, final int method)
             throws FactoryException, SQLException
     {
+        final var parameters = new ArrayList<Parameter>();
         try (ResultSet result = executeQueryForCodes(
                 "Coordinate_Operation Parameter Value",
-                "SELECT"+ /* column 1 */ " CP.PARAMETER_NAME,"
+                "SELECT"+ /* column 1 */ " CV.PARAMETER_CODE,"
                         + /* column 2 */ " CV.PARAMETER_VALUE,"
                         + /* column 3 */ " CV.PARAM_VALUE_FILE_REF,"
-                        + /* column 4 */ " CV.UOM_CODE"
-                        + " FROM ("      + "\"Coordinate_Operation Parameter Value\"" + " AS CV"
-                        + " INNER JOIN " + "\"Coordinate_Operation Parameter\""       + " AS CP" + " ON (CV.PARAMETER_CODE = CP.PARAMETER_CODE))"
-                        + " INNER JOIN " + "\"Coordinate_Operation Parameter Usage\"" + " AS CU" + " ON (CP.PARAMETER_CODE = CU.PARAMETER_CODE)"
+                        + /* column 4 */ " CV.UOM_CODE,"
+                        + /* column 5 */ " CU.PARAM_SIGN_REVERSAL"
+                        + " FROM "       + "\"Coordinate_Operation Parameter Value\"" + " AS CV"
+                        + " INNER JOIN " + "\"Coordinate_Operation Parameter Usage\"" + " AS CU"
+                        +   " ON (CV.PARAMETER_CODE"  + " = CU.PARAMETER_CODE)"
                         +  " AND (CV.COORD_OP_METHOD_CODE = CU.COORD_OP_METHOD_CODE)"
                         + " WHERE CV.COORD_OP_METHOD_CODE = ?"
                         +   " AND CV.COORD_OP_CODE = ?"
                         + " ORDER BY CU.SORT_ORDER", method, operation))
         {
             while (result.next()) {
-                final String name = getString(operation, result, 1);
-                final ParameterValue<?> param;
-                try {
-                    param = parameters.parameter(name);
-                } catch (ParameterNotFoundException exception) {
-                    /*
-                     * Wrap the unchecked ParameterNotFoundException into the checked NoSuchIdentifierException,
-                     * which is a FactoryException subclass.  Note that in principle, NoSuchIdentifierException is for
-                     * MathTransforms rather than parameters. However, we are close in spirit here since we are setting
-                     * up MathTransform's parameters. Using NoSuchIdentifierException allows CoordinateOperationSet to
-                     * know that the failure is probably caused by a MathTransform not yet supported in Apache SIS
-                     * (or only partially supported) rather than some more serious failure in the database side.
-                     * Callers can use this information in order to determine if they should try the next coordinate
-                     * operation or propagate the exception.
-                     */
-                    throw (NoSuchIdentifierException) new NoSuchIdentifierException(error().getString(
-                            Errors.Keys.CanNotSetParameterValue_1, name), name).initCause(exception);
+                final Integer descriptor    = getInteger(operation, result, 1);
+                final double  value         = getOptionalDouble(result, 2);
+                final String  reference     = Double.isNaN(value) ? getString(operation, result, 3) : null;
+                final String  uom_code      = getOptionalString(result, 4);
+                final Unit<?> unit          = (uom_code != null) ? owner.createUnit(uom_code) : null;
+                final Boolean reversibility = getOptionalBoolean(result, 5);
+                final var     options       = new LinkedHashMap<String, String>(8);    // The cache needs stable order.
+                if (reference != null) {
+                    options.put(PARAMETER_TYPE_OPTION, URI_TYPE);
                 }
-                final double value = getOptionalDouble(result, 2);
-                Unit<?> unit = null;
-                String reference;
-                if (Double.isNaN(value)) {
-                    /*
-                     * If no numeric value was provided in the database, then the values should be in
-                     * an external file. It may be a file in the "$SIS_DATA/DatumChanges" directory.
-                     * The reference file should be relative and _not_ encoded for valid URI syntax.
-                     * The encoding will be applied by invoking an `URI` multi-argument constructor.
-                     * Note that we must use a multi-arguments constructor, not URI(String), because
-                     * the latter assumes an encoded string (which is not the case in EPSG database).
-                     */
-                    reference = getString(operation, result, 3);
-                } else {
-                    reference = null;
-                    final String unitCode = getOptionalString(result, 4);
-                    if (unitCode != null) {
-                        unit = owner.createUnit(unitCode);
-                        if (Units.UNITY.equals(unit) && param.getUnit() == null) {
-                            unit = null;
-                        }
-                    }
+                getParameterUnit(descriptor, options, unit);
+                if (reversibility != null) {
+                    options.put(SIGN_REVERSAL_OPTION, reversibility.toString());
                 }
-                try {
-                    if (reference != null) {
-                        param.setValue(new URI(null, reference, null));     // See above comment.
-                    } else if (unit != null) {
-                        param.setValue(value, unit);
-                    } else {
-                        param.setValue(value);
-                    }
-                } catch (RuntimeException | URISyntaxException exception) {
-                    // Catch InvalidParameterValueException, ArithmeticException and others.
-                    throw new FactoryDataException(error().getString(Errors.Keys.CanNotSetParameterValue_1, name), exception);
-                }
+                final String codeWithOptions = codeWithOptions(descriptor.toString(), options);
+                parameters.add(new Parameter(owner.createParameterDescriptor(codeWithOptions), reference, value, unit));
             }
         }
+        return parameters;
     }
 
     /**
@@ -3154,14 +3402,17 @@ next:                   while (r.next()) {
                 /*
                  * Map of properties should be populated only after we extracted all
                  * information needed from the `ResultSet`, because it may be closed.
+                 * Note: we do not store the formula at this time because the text is
+                 * very verbose and rarely used.
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties(
                         TableInfo.METHOD, epsg, name, null, null, null, remarks, deprecated);
-                /*
-                 * Note: we do not store the formula at this time, because the text is very verbose and rarely used.
-                 */
+
+                final Object identifier = properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
                 final var params = new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors);
+                properties.putAll(IdentifiedObjects.getProperties(params));     // For sharing existing instances.
+                properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
                 final var method = new DefaultOperationMethod(properties, params);
                 returnValue = ensureSingleton(method, returnValue, code);
                 if (result.isClosed()) break;   // See createProperties(…) for explanation.
@@ -3172,7 +3423,7 @@ next:                   while (r.next()) {
             currentSingletonQuery = previousSingletonQuery;
         }
         if (returnValue == null) {
-             throw noSuchAuthorityCode(OperationMethod.class, code);
+            throw noSuchAuthorityCode(OperationMethod.class, code);
         }
         return returnValue;
     }
@@ -3270,9 +3521,16 @@ next:                   while (r.next()) {
                 final ParameterValueGroup parameterValues;
                 final boolean isDeferred = Semaphores.query(Semaphores.METADATA_ONLY);
                 if (methodCode != null && !isDeferred) {
-                    operationMethod = owner.createOperationMethod(methodCode.toString());
+                    final OperationMethod generic = owner.createOperationMethod(methodCode.toString());
+                    final List<Parameter> values = createParameterValues(epsg, methodCode);
+                    operationMethod = Parameter.recreateIfChanged(generic, values);
                     parameterValues = operationMethod.getParameters().createValue();
-                    fillParameterValues(methodCode, epsg, parameterValues);
+                    for (final Parameter element : values) try {
+                        element.setValue(parameterValues);
+                    } catch (RuntimeException | URISyntaxException exception) {
+                        String message = error().getString(Errors.Keys.CanNotSetParameterValue_1, element.name());
+                        throw new FactoryDataException(message, exception);
+                    }
                 } else {
                     operationMethod = null;
                     parameterValues = null;
@@ -3368,7 +3626,7 @@ next:                   while (r.next()) {
             currentSingletonQuery = previousSingletonQuery;
         }
         if (returnValue == null) {
-             throw noSuchAuthorityCode(CoordinateOperation.class, code);
+            throw noSuchAuthorityCode(CoordinateOperation.class, code);
         }
         return returnValue;
     }

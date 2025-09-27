@@ -22,69 +22,67 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
- * Tests the {@link MatrixParametersAlphaNum} class using the {@link TensorParameters#ALPHANUM} constant.
- * This class inherits all the tests from {@link TensorParametersTest}, but applies them on a different instance.
+ * Tests the {@link MatrixParameters} class using the {@link MatrixParameters#ALPHANUM} constant.
+ * This class inherits all the tests from {@link MatrixParametersTest},
+ * but applies them on a different instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class MatrixParametersAlphaNumTest extends MatrixParametersTest {
     /**
-     * The expected parameter identifiers for the matrix elements, or 0 if none.
-     * Note that the EPSG database contains A3 and B3 parameters, but they are
-     * for polynomial transformation, not affine transformation.
+     * The expected parameter names according the alphanumeric convention for the matrix elements.
+     *
+     * @see MatrixParametersTest#NAMES
      */
-    private static final short[][] IDENTIFIERS = {
-        {8623, 8624, 8625, 0},
-        {8639, 8640, 8641, 0},
-        {   0,    0,    0, 0},
-        {   0,    0,    0, 0}
+    private static final String[][] NAMES = {
+        {"A0", "A1", "A2", "A3"},
+        {"B0", "B1", "B2", "B3"},
+        {"C0", "C1", "C2", "C3"},
+        {"D0", "D1", "D2", "D3"}
     };
 
     /**
      * Creates a new test case for {@link MatrixParameters}.
      */
     public MatrixParametersAlphaNumTest() {
-        param       = TensorParameters.ALPHANUM;
-        names       = ALPHANUM_NAMES;
-        aliases     = ELEMENT_NAMES;
-        identifiers = IDENTIFIERS;
+        param = MatrixParameters.ALPHANUM;
+        aliases = names;
+        names = NAMES;
     }
 
     /**
-     * Tests {@link MatrixParameters#indicesToAlias(int[])}.
-     */
-    @Test
-    @Override
-    public void testIndicesToAlias() {
-        assertEquals("A0", MatrixParameters.indicesToAlias(new int[] {0, 0}));
-        assertEquals("A1", MatrixParameters.indicesToAlias(new int[] {0, 1}));
-        assertEquals("A2", MatrixParameters.indicesToAlias(new int[] {0, 2}));
-        assertEquals("B0", MatrixParameters.indicesToAlias(new int[] {1, 0}));
-        assertEquals("B1", MatrixParameters.indicesToAlias(new int[] {1, 1}));
-        assertEquals("B2", MatrixParameters.indicesToAlias(new int[] {1, 2}));
-    }
-
-    /**
-     * Tests {@link MatrixParameters#aliasToIndices(String)}.
-     */
-    @Test
-    @Override
-    public void testAliasToIndices() {
-        assertArrayEquals(new int[] {0, 0}, MatrixParameters.aliasToIndices("A0"));
-        assertArrayEquals(new int[] {0, 1}, MatrixParameters.aliasToIndices("A1"));
-        assertArrayEquals(new int[] {0, 2}, MatrixParameters.aliasToIndices("A2"));
-        assertArrayEquals(new int[] {1, 0}, MatrixParameters.aliasToIndices("B0"));
-        assertArrayEquals(new int[] {1, 1}, MatrixParameters.aliasToIndices("B1"));
-        assertArrayEquals(new int[] {1, 2}, MatrixParameters.aliasToIndices("B2"));
-    }
-
-    /**
-     * Tests {@link MatrixParametersAlphaNum#indicesToName(int[])}.
+     * Tests {@link MatrixParameters#indicesToName(int[])}.
      */
     @Test
     @Override
     public void testIndicesToName() {
-        assertEquals("E8", param.indicesToName(new int[] {4, 8}));
-        assertEquals("H2", param.indicesToName(new int[] {7, 2}));
+        assertEquals("K0", param.indicesToName(new int[] {10, 0}));
+        assertEquals("A6", param.indicesToName(new int[] { 0, 6}));
+        assertEquals("G4", param.indicesToName(new int[] { 6, 4}));
+        assertNull(param.indicesToName(new int[] {27, 2}));
+        assertNull(param.indicesToName(new int[] {2, 10}));
+    }
+
+    /**
+     * Tests {@link MatrixParameters#nameToIndices(String)}.
+     */
+    @Test
+    @Override
+    public void testNameToIndices() {
+        assertArrayEquals(new int[] {10, 0}, param.nameToIndices("K0"));
+        assertArrayEquals(new int[] { 0, 6}, param.nameToIndices("A6"));
+        assertArrayEquals(new int[] { 6, 4}, param.nameToIndices("G4"));
+        assertArrayEquals(new int[] { 1, 2}, param.nameToIndices("elt_1_2"));
+        assertNull(param.nameToIndices("2B"));
+        super.testNameToIndices();  // Test aliases.
+    }
+
+    /**
+     * Tests {@link MatrixParameters#getElementDescriptor(int[])} with a value outside the cache capacity.
+     */
+    @Test
+    @Override
+    public void testGetElementDescriptorOutsideCache() {
+        verifyDescriptor("G7", 0.0, param.getElementDescriptor(6, 7));
     }
 }

@@ -433,16 +433,18 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     }
 
     /**
-     * Returns the unit of measurement for the
-     * {@linkplain #getMinimumValue() minimum},
-     * {@linkplain #getMaximumValue() maximum} and
-     * {@linkplain #getDefaultValue() default} values.
-     * This attribute apply only if the values is of numeric type (usually an instance of {@link Double}).
+     * Returns the unit of measurement for the minimum, maximum and default values.
+     * If units of measurement are not applicable to values of type {@code <T>},
+     * or if the units are unknown, then this method returns {@code null}.
      *
      * <p>This is a convenience method for
      * <code>{@linkplain #getValueDomain()}.{@linkplain MeasurementRange#unit() unit()}</code>.</p>
      *
-     * @return the unit for numeric value, or {@code null} if it doesn't apply to the value type.
+     * @return the unit of minimum, maximum and default values, or {@code null} if not applicable.
+     *
+     * @see #getMinimumValue()
+     * @see #getMaximumValue()
+     * @see #getDefaultValue()
      */
     @Override
     public Unit<?> getUnit() {
