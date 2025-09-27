@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.Optional;
 import java.util.Collections;
@@ -57,6 +58,9 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.factory.CommonAuthorityFactory;
+import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
+import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.apache.sis.util.internal.shared.URLs;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
@@ -166,7 +170,11 @@ public final class CoordinateReferenceSystems extends HTMLGenerator {
         super("CoordinateReferenceSystems.html",
               "Coordinate Reference Systems recognized by Apache SIS™",
               "crs-report.css");
-        factory = CRS.getAuthorityFactory(null);
+
+        final var ogc   = new CommonAuthorityFactory();
+        final var epsg  = new EPSGFactory(Map.of("showDeprecated", Boolean.TRUE));
+        final var asSet = Set.of(epsg);
+        factory = new MultiAuthoritiesFactory(List.of(ogc, epsg), asSet, asSet, asSet);
         final GeographicCRS anyCRS = factory.createGeographicCRS("EPSG:4326");
         versionEPSG = IdentifiedObjects.getIdentifier(anyCRS, Citations.EPSG).getVersion();
     }
