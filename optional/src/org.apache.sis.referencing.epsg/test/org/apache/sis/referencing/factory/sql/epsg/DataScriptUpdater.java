@@ -96,6 +96,9 @@ public final class DataScriptUpdater {
             formatter.addAccentedCharacters("Réseau Géodésique des Terres Australes et Antarctiques Françaises");
             formatter.addAccentedCharacters("Réseau National Belge");
             formatter.addAccentedCharacters("Posiciones Geodésicas Argentinas");
+            /*
+             * Generate the script for EPSG data.
+             */
             formatter.run(Path.of(arguments[0]), Path.of(arguments[1]));
             formatter.printSpellingChangeCount(System.out);
         }

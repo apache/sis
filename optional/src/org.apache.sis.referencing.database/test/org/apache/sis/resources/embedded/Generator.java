@@ -66,8 +66,8 @@ final class Generator extends ScriptProvider {
 
     /**
      * Provides a connection to the "SpatialMetadata" database, or {@code null} if the database already exists.
-     * The connection <abbr>URL</abbr> references the <code>SIS_DATA/Databases/{@value EmbeddedResources#EMBEDDED_DATABASE}</code>
-     * directory in the Maven {@code target/classes} directory.
+     * The connection <abbr>URL</abbr> references the following directory in the compilation output directory:
+     * <code>{@value EmbeddedResources#DIRECTORY}/Databases/{@value Initializer#DATABASE}</code>
      */
     private final EmbeddedDataSource dataSource;
 
@@ -93,7 +93,7 @@ final class Generator extends ScriptProvider {
         target = Files.createDirectory(target.resolve(Path.of("Databases")));
         dataSource = new EmbeddedDataSource();
         dataSource.setDataSourceName(Initializer.DATABASE);
-        dataSource.setDatabaseName(target.resolve(EmbeddedResources.EMBEDDED_DATABASE).toString());
+        dataSource.setDatabaseName(target.resolve(Initializer.DATABASE).toString());
         dataSource.setCreateDatabase("create");
         sourceEPSG = directoryOf(ScriptProvider.class);
     }

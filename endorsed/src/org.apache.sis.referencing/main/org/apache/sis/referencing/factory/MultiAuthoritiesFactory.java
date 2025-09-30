@@ -1837,7 +1837,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         final Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
             if (getSearchDomain() != Domain.EXHAUSTIVE_VALID_DATASET) {
                 for (AuthorityFactoryIdentifier.Type type : AuthorityFactoryIdentifier.Type.values()) {
-                    if (type.api.isInstance(object)) {
+                    if (type.isFactoryOf(object)) {
                         final var result = new LinkedHashSet<IdentifiedObject>();
                         createFromIdentifiers(type, object, object.getIdentifiers(), result);
                         if (result.isEmpty()) {

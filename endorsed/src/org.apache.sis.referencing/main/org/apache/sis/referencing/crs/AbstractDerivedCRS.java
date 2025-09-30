@@ -230,10 +230,15 @@ abstract class AbstractDerivedCRS extends AbstractCRS implements DerivedCRS {
             if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                 return true;
             } else try {
-                return Utilities.deepEquals(
-                        strict ? conversionFromBase : getConversionFromBase(),
-                        strict ? ((AbstractDerivedCRS) object).conversionFromBase
-                               :  ((DerivedCRS) object).getConversionFromBase(), mode);
+                final Conversion op1, op2;
+                if (strict) {
+                    op1 = conversionFromBase;
+                    op2 = ((AbstractDerivedCRS) object).conversionFromBase;
+                } else {
+                    op1 = getConversionFromBase();
+                    op2 = ((DerivedCRS) object).getConversionFromBase();
+                }
+                return Utilities.deepEquals(op1, op2, mode);
             } finally {
                 Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
             }

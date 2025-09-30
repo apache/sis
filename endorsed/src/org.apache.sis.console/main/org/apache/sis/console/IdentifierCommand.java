@@ -19,7 +19,6 @@ package org.apache.sis.console;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.ResourceBundle;
@@ -179,8 +178,8 @@ final class IdentifierCommand extends FormattedOutputCommand {
             }
         }
         /*
-         * The CRS provided by the user contains identifier, but the 'lookupURN' operation above failed to
-         * find it. The most likely cause is that the user-provided CRS does not use the same axis order.
+         * The CRS provided by the user contains identifier, but the `lookupURN(…)` operation above failed
+         * to find it. The most likely cause is that the user-provided CRS does not use the same axis order.
          */
         State state;
         try {
@@ -221,7 +220,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
             }
         }
         width += 4;
-        final Set<State> states = EnumSet.noneOf(State.class);
+        final var states = EnumSet.noneOf(State.class);
         for (final Row row : rows) {
             if (row != null) {
                 states.add(row.state);

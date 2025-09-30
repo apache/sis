@@ -137,7 +137,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                     case HSQL: path = Path.of(path.toString() + ".data"); break;
                     // More cases may be added in the future.
                 }
-                create = !Files.exists(path);
+                create = Files.notExists(path);
             } else if (home != null) {
                 /*
                  * SIS_DATA not defined, but we may be able to fallback on "derby.system.home" property.
