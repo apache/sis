@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Map;
 import javax.sql.DataSource;
+import java.util.Map;
 import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -36,6 +36,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.apache.sis.test.TestUtilities;
 
 

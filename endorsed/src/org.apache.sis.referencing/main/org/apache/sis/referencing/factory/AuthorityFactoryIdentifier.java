@@ -23,13 +23,13 @@ import java.util.logging.LogRecord;
 import javax.measure.Unit;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.AuthorityFactory;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
@@ -42,7 +42,9 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.internal.shared.NameMeaning;
 import org.apache.sis.referencing.internal.Resources;
-import org.opengis.referencing.IdentifiedObject;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**

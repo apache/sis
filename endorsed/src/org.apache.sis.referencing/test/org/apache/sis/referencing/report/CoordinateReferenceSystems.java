@@ -22,7 +22,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Optional;
 import java.util.Collections;
 import java.io.IOException;
 import org.opengis.metadata.Identifier;
@@ -34,7 +33,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CompoundCRS;
-import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
@@ -42,8 +40,6 @@ import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
@@ -62,6 +58,12 @@ import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.apache.sis.util.internal.shared.URLs;
 import org.apache.sis.util.logging.Logging;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
