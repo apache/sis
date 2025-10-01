@@ -42,10 +42,10 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
