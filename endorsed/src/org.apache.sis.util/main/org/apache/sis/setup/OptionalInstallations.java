@@ -57,16 +57,22 @@ import static org.apache.sis.util.internal.shared.Constants.EPSG;
  */
 public abstract class OptionalInstallations extends InstallationResources implements Localized {
     /**
-     * Where to download the EPSG scripts after user has approved the terms of use.
+     * The Maven repository from where to download artifacts.
+     * This repository can be overridden by setting the {@code "org.apache.sis.epsg.downloadURL"} property.
      */
-    private static final String EPSG_DOWNLOAD_URL =
-            "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.5/sis-epsg-1.5.jar";
+    private static final String REPOSITORY = "https://repo1.maven.org/maven2";
+
+    /**
+     * Path to the <abbr>EPSG</abbr> scripts relative to the selected repository.
+     * This is where to download the database after user has approved the terms of use.
+     */
+    private static final String EPSG_DOWNLOAD_PATH = "/org/apache/sis/non-free/sis-epsg/1.5/sis-epsg-1.5.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in megabytes.
      * This is for information purpose only.
      */
-    private static final int DATABASE_SIZE = 26;
+    private static final int DATABASE_SIZE = 24;
 
     /**
      * The MIME type to use for fetching license texts.
@@ -183,10 +189,12 @@ public abstract class OptionalInstallations extends InstallationResources implem
      * except as a workaround if a hard-coded URL is no longer accessible.
      */
     private String getDownloadURL(final String authority) {
+        final String base;
         switch (authority) {
-            case EPSG: return System.getProperty("org.apache.sis.epsg.downloadURL", EPSG_DOWNLOAD_URL);
+            case EPSG: base = System.getProperty("org.apache.sis.epsg.downloadURL", REPOSITORY); break;
             default: throw unsupported(authority);      // More authorities may be added in the future.
         }
+        return base + EPSG_DOWNLOAD_PATH;
     }
 
     /**

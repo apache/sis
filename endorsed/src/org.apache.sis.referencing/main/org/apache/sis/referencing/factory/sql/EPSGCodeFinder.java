@@ -791,7 +791,11 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          */
         @Override
         public String toString() {
-            return Strings.toString(getClass(), "object", getName(object), "source", source, "domain", domain, "size", codes.size());
+            return Strings.toString(getClass(),
+                    "object", getName(object),
+                    "source", source,
+                    "domain", domain,
+                    "size", codes.size());
         }
     }
 }

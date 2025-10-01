@@ -43,12 +43,12 @@ import org.apache.sis.util.resources.Errors;
  */
 public class EmbeddedResources extends InstallationResources {
     /**
-     * The name of the database embedded in the JAR file.
+     * The root directory of data embedded in the <abbr>JAR</abbr> file.
      * It must be an invalid package name, because otherwise the Java Platform Module System (JPMS) enforces
      * encapsulation in the same way as non-exported packages, which makes the database inaccessible to Derby.
      * This naming trick is part of <abbr>JPMS</abbr> specification, so it should be reliable.
      */
-    static final String EMBEDDED_DATABASE = "spatial-metadata";
+    static final String DIRECTORY = "SIS-DATA";
 
     /**
      * Creates a new provider for connections to the embedded database.
@@ -132,7 +132,7 @@ public class EmbeddedResources extends InstallationResources {
         verifyAuthority(authority);
         final var ds = new EmbeddedDataSource();
         ds.setDataSourceName(Initializer.DATABASE);
-        ds.setDatabaseName("classpath:SIS_DATA/Databases/" + EMBEDDED_DATABASE);
+        ds.setDatabaseName("classpath:" + DIRECTORY + "/Databases/" + Initializer.DATABASE);
         return ds;
     }
 

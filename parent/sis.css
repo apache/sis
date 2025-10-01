@@ -139,7 +139,6 @@ div.note {
   margin-right:  40px;
   margin-top:     9px;
   margin-bottom:  9px;
-  text-align: justify;
 }
 
 div.note:before {
@@ -197,7 +196,6 @@ div.block ul.verbose > li,
 div.block ol.verbose > li {
   margin-top:    9px;
   margin-bottom: 9px;
-  text-align: justify;
 }
 
 /*
@@ -255,8 +253,4 @@ td > pre.code-sample {
  */
 span.deprecated {
   text-decoration: line-through;
-}
-
-:not(td) > div.block {
-  text-align: justify;
 }

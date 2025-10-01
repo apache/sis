@@ -51,14 +51,12 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.factory.CommonAuthorityFactory;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.apache.sis.util.internal.shared.URLs;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
 
 // Specific to the main branch:
@@ -192,9 +190,7 @@ public final class CoordinateReferenceSystems extends HTMLGenerator {
             try {
                 row.setValues(factory, factory.createCoordinateReferenceSystem(code));
             } catch (FactoryException exception) {
-                if (row.setValues(factory, exception, code)) {
-                    continue;
-                }
+                row.setValues(factory, exception, code);
             }
             rows.add(row);
             if (!row.hasError)       numSupportedCRS++;
@@ -431,12 +427,8 @@ public final class CoordinateReferenceSystems extends HTMLGenerator {
          * @param  factory  the factory which created the <abbr>CRS</abbr>.
          * @param  cause    the reason why the <abbr>CRS</abbr> cannot be constructed.
          * @param  code     the authority code without <abbr>HTML</abbr> escapes.
-         * @return whether to ignore this row.
          */
-        final boolean setValues(final CRSAuthorityFactory factory, final FactoryException cause, final String code) {
-            if (code.startsWith(Constants.PROJ4 + DefaultNameSpace.DEFAULT_SEPARATOR)) {
-                return true;
-            }
+        final void setValues(final CRSAuthorityFactory factory, final FactoryException cause, final String code) {
             String message = cause.getMessage();
             if (message == null) {
                 message = cause.toString();
@@ -462,7 +454,6 @@ public final class CoordinateReferenceSystems extends HTMLGenerator {
                 }
                 setSection(null);
             }
-            return false;
         }
 
         /**

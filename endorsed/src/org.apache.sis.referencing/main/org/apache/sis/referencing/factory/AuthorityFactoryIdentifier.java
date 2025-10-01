@@ -20,11 +20,20 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import javax.measure.Unit;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.AuthorityFactory;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
@@ -32,6 +41,10 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.internal.shared.NameMeaning;
 import org.apache.sis.referencing.internal.Resources;
+import org.opengis.referencing.IdentifiedObject;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 
 /**
@@ -56,22 +69,22 @@ final class AuthorityFactoryIdentifier {
         /**
          * Factory needed is {@link CRSAuthorityFactory}.
         */
-        CRS(CRSAuthorityFactory.class),
+        CRS(CRSAuthorityFactory.class, CoordinateReferenceSystem.class),
 
         /**
          * Factory needed is {@link CSAuthorityFactory}.
          */
-        CS(CSAuthorityFactory.class),
+        CS(CSAuthorityFactory.class, CoordinateSystem.class, CoordinateSystemAxis.class, Unit.class),
 
         /**
          * Factory needed is {@link DatumAuthorityFactory}.
          */
-        DATUM(DatumAuthorityFactory.class),
+        DATUM(DatumAuthorityFactory.class, Datum.class, DefaultDatumEnsemble.class, Ellipsoid.class, PrimeMeridian.class),
 
         /**
          * Factory needed is {@link CoordinateOperationAuthorityFactory}.
          */
-        OPERATION(CoordinateOperationAuthorityFactory.class),
+        OPERATION(CoordinateOperationAuthorityFactory.class, CoordinateOperation.class, OperationMethod.class),
 
         /**
          * Factory needed is the Apache-SIS specific {@link GeodeticAuthorityFactory}.
@@ -89,12 +102,18 @@ final class AuthorityFactoryIdentifier {
         final Class<? extends AuthorityFactory> api;
 
         /**
+         * Types of objects created by the factory.
+         */
+        private final Class<?>[] objects;
+
+        /**
          * Creates a new enumeration value.
          *
          * @param  base  the interface of the authority factory.
          */
-        private Type(final Class<? extends AuthorityFactory> api) {
+        private Type(final Class<? extends AuthorityFactory> api, final Class<?>... objects) {
             this.api = api;
+            this.objects = objects;
         }
 
         /**
@@ -102,6 +121,16 @@ final class AuthorityFactoryIdentifier {
          */
         final boolean isGeneric() {
             return ordinal() >= GEODETIC.ordinal();
+        }
+
+        /**
+         * Returns whether the given object may have been created by a factory of this type.
+         *
+         * @param  object  the object to test.
+         * @return whether the given object may have been created by a factory of this type.
+         */
+        final boolean isFactoryOf(final IdentifiedObject object) {
+            return Classes.isAssignableToAny(object.getClass(), objects);
         }
     }
 

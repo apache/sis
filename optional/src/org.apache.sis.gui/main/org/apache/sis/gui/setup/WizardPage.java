@@ -28,13 +28,13 @@ enum WizardPage {
      * Plain text saying what this wizard will do.
      */
     INTRODUCTION("Introduction",
-            "<html><h1>Welcome to Apache SIS™</h1>"
+            "<html><h1 style=\"font-size:1.2em;\">Welcome to Apache SIS™</h1>"
             + "<p>"
             + "This wizard will configure Apache Spatial Information System (SIS) "
             + "JavaFX application on your computer. "
             + "This configuration needs to be done only once. "
             + "Click <u>Next</u> to continue, or <u>Cancel</u> to exit setup."
-            + "</p><p style=\"padding-top:20px; font-size:10px; color:#909090;\">"
+            + "</p><br><p style=\"font-size:0.9em; color:#909090;\">"
             + "Apache SIS is licensed under the Apache License, version 2.0."
             + "</p></html>"),
 

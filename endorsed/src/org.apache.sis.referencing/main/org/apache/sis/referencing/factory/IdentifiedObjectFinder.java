@@ -501,7 +501,7 @@ public class IdentifiedObjectFinder {
         public IdentifiedObject apply(final String code) {
             final boolean finer = Semaphores.queryAndSet(Semaphores.FINER_OBJECT_CREATION_LOGS);
             try {
-                IdentifiedObject candidate = (IdentifiedObject) proxy.createFromAPI(factory, code);
+                final var candidate = (IdentifiedObject) proxy.createFromAPI(factory, code);
                 if (match(candidate, object, mode, proxy) && existing.add(candidate)) {
                     if (!hasMatches) {
                         hasMatches = true;

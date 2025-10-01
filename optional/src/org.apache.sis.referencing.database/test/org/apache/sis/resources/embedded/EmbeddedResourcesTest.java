@@ -111,7 +111,7 @@ public final strictfp class EmbeddedResourcesTest {
         final DataSource ds = Initializer.getDataSource();
         assertNotNull(ds, "Cannot find the data source.");
         try (Connection c = ds.getConnection()) {
-            assertEquals("jdbc:derby:classpath:SIS_DATA/Databases/" + EmbeddedResources.EMBEDDED_DATABASE, c.getMetaData().getURL(), "URL");
+            assertEquals("jdbc:derby:classpath:" + EmbeddedResources.DIRECTORY + "/Databases/" + Initializer.DATABASE, c.getMetaData().getURL(), "URL");
             try (Statement s = c.createStatement()) {
                 try (ResultSet r = s.executeQuery("SELECT COORD_REF_SYS_NAME FROM EPSG.\"Coordinate Reference System\" WHERE COORD_REF_SYS_CODE = 4326")) {
                     assertTrue(r.next(), "ResultSet.next()");

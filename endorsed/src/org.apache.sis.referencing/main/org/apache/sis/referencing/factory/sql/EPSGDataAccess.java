@@ -842,7 +842,18 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
                 }
                 Integer resolved = null;
                 for (Integer value : result) {
-                    resolved = ensureSingleton(value, resolved, code);
+                    if (resolved == null) {
+                        resolved = value;
+                    } else if (!resolved.equals(value)) {
+                        /*
+                         * Cannot use `ensureSingleton(…)` because we really need the exception type to be
+                         * `NoSuchAuthorityCodeException`, as there are callers expecting that specific type
+                         * in their `catch` statements. It can be understood as "no unambiguous identifier".
+                         */
+                        throw new NoSuchAuthorityCodeException(
+                                error().getString(Errors.Keys.DuplicatedIdentifier_1, code),
+                                Constants.EPSG, code);
+                    }
                 }
                 if (resolved != null) {
                     primaryKeys[i] = resolved;
@@ -859,8 +870,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
             } catch (NumberFormatException e) {
                 throw (NoSuchAuthorityCodeException) new NoSuchAuthorityCodeException(
                         error().getString(Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, code),
-                        Constants.EPSG,
-                        code).initCause(e);
+                        Constants.EPSG, code).initCause(e);
             }
         }
         return primaryKeys;
