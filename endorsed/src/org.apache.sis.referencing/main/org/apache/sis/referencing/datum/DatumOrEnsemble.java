@@ -40,7 +40,6 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.metadata.quality.PositionalAccuracy;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
@@ -67,7 +66,7 @@ import org.opengis.referencing.datum.RealizationMethod;
  * @version 1.5
  * @since   1.5
  */
-public final class DatumOrEnsemble extends Static {
+public final class DatumOrEnsemble {
     /**
      * The {@value} keyword which sometime appear at the end of a datum ensemble name.
      */

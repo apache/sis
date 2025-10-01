@@ -26,7 +26,6 @@ import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.feature.internal.Resources;
@@ -53,7 +52,7 @@ import org.opengis.feature.PropertyType;
  * @version 1.5
  * @since   0.5
  */
-public final class Features extends Static {
+public final class Features {
     /**
      * Do not allow instantiation of this class.
      */

@@ -22,7 +22,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.metadata.spatial.PixelOrientation;
 import static org.opengis.metadata.spatial.PixelOrientation.*;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -70,7 +69,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  *
  * @since 1.0
  */
-public final class PixelTranslation extends Static implements Serializable {
+public final class PixelTranslation implements Serializable {
     /**
      * For cross-version compatibility.
      */

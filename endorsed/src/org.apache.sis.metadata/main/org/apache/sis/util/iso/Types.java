@@ -35,7 +35,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.util.ResourceInternationalString;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -104,7 +103,7 @@ import org.opengis.util.ControlledVocabulary;
  * @version 1.5
  * @since   0.3
  */
-public final class Types extends Static {
+public final class Types {
     /**
      * The separator character between class name and attribute name in resource files.
      */

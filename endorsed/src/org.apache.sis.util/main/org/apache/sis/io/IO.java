@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.io.StringWriter;
 import java.io.CharArrayWriter;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -33,7 +32,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @version 0.3
  * @since   0.3
  */
-public final class IO extends Static {
+public final class IO {
     /**
      * Do not allow instantiation of this class.
      */

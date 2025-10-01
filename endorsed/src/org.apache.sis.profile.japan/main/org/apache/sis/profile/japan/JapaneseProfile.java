@@ -16,8 +16,6 @@
  */
 package org.apache.sis.profile.japan;
 
-import org.apache.sis.util.Static;
-
 
 /**
  * Provides implementations of Japanese extensions.
@@ -33,7 +31,7 @@ import org.apache.sis.util.Static;
  * @version 1.0
  * @since   1.0
  */
-public final class JapaneseProfile extends Static {
+public final class JapaneseProfile {
     /**
      * Do not allow instantiation of this class.
      */

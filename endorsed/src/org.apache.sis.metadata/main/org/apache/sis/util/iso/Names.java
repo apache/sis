@@ -26,7 +26,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.UnknownNameException;
@@ -84,7 +83,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @since 0.5
  */
-public final class Names extends Static {
+public final class Names {
     /**
      * Sequence numbers, created when first needed.
      *

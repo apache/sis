@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import java.util.logging.Handler;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -36,7 +35,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Loggers extends Static {
+public final class Loggers {
     /**
      * The root logger.
      */

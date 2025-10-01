@@ -66,7 +66,6 @@ import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -99,7 +98,7 @@ import org.opengis.coordinate.MismatchedCoordinateMetadataException;
  *
  * @since 0.3
  */
-public final class Extents extends Static {
+public final class Extents {
     /**
      * The bounding box computed by this class.
      */

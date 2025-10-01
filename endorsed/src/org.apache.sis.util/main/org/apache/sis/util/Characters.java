@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 1.2
  * @since   0.3
  */
-public final class Characters extends Static {
+public final class Characters {
     /**
      * Hyphen character ('\u2010', Unicode {@code 2010}).
      * This code tells to {@link org.apache.sis.io.LineAppender}

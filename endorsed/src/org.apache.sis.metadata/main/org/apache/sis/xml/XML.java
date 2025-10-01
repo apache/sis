@@ -44,7 +44,6 @@ import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
@@ -91,7 +90,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 1.5
  * @since   0.3
  */
-public final class XML extends Static {
+public final class XML {
     /**
      * Specifies the locale to use for marshalling
      * {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList}

@@ -25,7 +25,6 @@ import javax.measure.quantity.*;
 import javax.measure.quantity.Angle;                // Because of name collision with Angle in this SIS package.
 import org.opengis.geometry.DirectPosition;         // For javadoc
 import org.opengis.referencing.cs.AxisDirection;    // For javadoc
-import org.apache.sis.util.Static;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Constants;
@@ -80,7 +79,7 @@ import static org.apache.sis.util.internal.shared.Constants.MILLIS_PER_TROPICAL_
  * @version 1.5
  * @since   0.3
  */
-public final class Units extends Static {
+public final class Units {
     /**
      * Unit of measurement defined as 10<sup>-9</sup> metres (1 nm). This unit is often used in
      * {@linkplain org.apache.sis.metadata.iso.content.DefaultBand#getBoundUnits() wavelength measurements}.

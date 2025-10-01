@@ -60,7 +60,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Static;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.MathFunctions;
 
@@ -110,7 +109,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @since 0.3
  */
-public final class Envelopes extends Static {
+public final class Envelopes {
     /**
      * The logger for geometry operations.
      */

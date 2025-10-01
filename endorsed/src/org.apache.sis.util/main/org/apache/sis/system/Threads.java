@@ -16,7 +16,6 @@
  */
 package org.apache.sis.system;
 
-import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -32,7 +31,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Threads extends Static {
+public final class Threads {
     /**
      * The parent of every threads declared in this class. This parent will be declared as close
      * as possible to the root of all thread groups (i.e. not as an application thread subgroup).

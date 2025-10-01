@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.Collection;
 import java.util.function.Predicate;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.image.DataStoreFilter;
@@ -42,7 +41,7 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
  *
  * @since 0.4
  */
-public final class DataStores extends Static {
+public final class DataStores {
     /**
      * Do not allow instantiation of this class.
      */

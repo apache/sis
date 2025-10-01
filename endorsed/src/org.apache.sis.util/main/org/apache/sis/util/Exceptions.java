@@ -37,7 +37,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @version 1.3
  * @since   0.3
  */
-public final class Exceptions extends Static {
+public final class Exceptions {
     /**
      * Do not allow instantiation of this class.
      */

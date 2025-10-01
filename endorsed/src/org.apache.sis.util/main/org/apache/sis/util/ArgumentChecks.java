@@ -86,7 +86,7 @@ import org.opengis.coverage.grid.GridEnvelope;
  * @version 1.6
  * @since   0.3
  */
-public final class ArgumentChecks extends Static {
+public final class ArgumentChecks {
     /**
      * Forbid object creation.
      */

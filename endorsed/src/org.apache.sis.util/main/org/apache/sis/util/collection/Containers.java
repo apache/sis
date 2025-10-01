@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Objects;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.resources.Errors;
@@ -38,7 +37,7 @@ import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
  * @version 1.0
  * @since   0.3
  */
-public final class Containers extends Static {
+public final class Containers {
     /**
      * Do not allow instantiation of this class.
      */

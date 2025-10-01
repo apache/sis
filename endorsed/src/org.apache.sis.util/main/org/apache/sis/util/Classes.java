@@ -58,7 +58,7 @@ import org.apache.sis.pending.jdk.JDK19;
  * @version 1.5
  * @since   0.3
  */
-public final class Classes extends Static {
+public final class Classes {
     /**
      * An empty array of classes.
      */
