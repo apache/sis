@@ -34,10 +34,10 @@ import org.apache.sis.system.Reflect;
  *
  * <h2>Examples</h2>
  * <ul>
- * <li>The NADCON grid files provide <i>datum shifts</i> data for North America.
- *     Since those files are in the public domain, they could be bundled in Apache SIS.
+ * <li>The <abbr>NADCON</abbr> grid files provide <i>datum shifts</i> data for North America.
+ *     Since those files are in the public domain, they could be bundled in Apache <abbr>SIS</abbr>.
  *     But the weight of those files (about 2.4 Mb) is unnecessary for users who do not live in North America.</li>
- * <li>On the other hand, the <a href="https://epsg.org/">EPSG geodetic dataset</a> is important for most users.
+ * <li>On the other hand, the <a href="https://epsg.org/"><abbr>EPSG</abbr> geodetic dataset</a> is important for most users.
  *     Codes like {@code "EPSG:4326"} became a <i>de-facto</i> standard in various places like <cite>Web Map Services</cite>,
  *     images encoded in GeoTIFF format, <i>etc</i>. But the <a href="https://epsg.org/terms-of-use.html">EPSG terms of use</a>
  *     are more restrictive than the Apache license and require that we inform the users about those conditions.</li>

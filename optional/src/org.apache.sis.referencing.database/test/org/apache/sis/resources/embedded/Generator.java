@@ -35,7 +35,6 @@ import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.internal.shared.Initializer;
 import org.apache.sis.metadata.sql.internal.shared.LocalDataSource;
-import org.apache.sis.system.DataDirectory;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.apache.sis.referencing.factory.sql.epsg.ScriptProvider;
 
@@ -60,12 +59,13 @@ final class Generator extends ScriptProvider {
     private final Path classesDirectory;
 
     /**
-     * Directory where to search for <abbr>EPSG</abbr> data.
+     * Directory where to search for <abbr>EPSG</abbr> installation script,
+     * or {@code null} if the database already exists.
      */
     private final Path sourceEPSG;
 
     /**
-     * Provides a connection to the "SpatialMetadata" database, or {@code null} if the database already exists.
+     * Provides a connection to the "SpatialMetadata" database.
      * The connection <abbr>URL</abbr> references the following directory in the compilation output directory:
      * <code>{@value EmbeddedResources#DIRECTORY}/Databases/{@value Initializer#DATABASE}</code>
      */
@@ -75,27 +75,24 @@ final class Generator extends ScriptProvider {
      * Creates a new database generator.
      */
     Generator() throws URISyntaxException, IOException {
+        dataSource = new EmbeddedDataSource();
+        dataSource.setDataSourceName(Initializer.DATABASE);
         classesDirectory = directoryOf(EmbeddedResources.class);
         Path target = classesDirectory;
         do target = target.getParent();     // Move to the root directory of classes.
         while (!target.getFileName().toString().startsWith("org.apache.sis."));
-        target = target.resolve("META-INF").resolve(DataDirectory.ENV);
+        target = target.resolve(EmbeddedResources.DIRECTORY);
         if (Files.isDirectory(target)) {
-            dataSource = null;
+            target = target.resolve("Databases");
             sourceEPSG = null;
-            return;
+        } else {
+            // We don't use `Files.createDirectories(…)` for safety against creation of undesirable directories.
+            target = Files.createDirectory(target);
+            target = Files.createDirectory(target.resolve("Databases"));
+            sourceEPSG = directoryOf(ScriptProvider.class);
+            dataSource.setCreateDatabase("create");
         }
-        /*
-         * Creates sub-directory step by step instead of invoking Files.createDirectories(…)
-         * for making sure that we do not create undesirable directories.
-         */
-        target = Files.createDirectory(target);
-        target = Files.createDirectory(target.resolve(Path.of("Databases")));
-        dataSource = new EmbeddedDataSource();
-        dataSource.setDataSourceName(Initializer.DATABASE);
         dataSource.setDatabaseName(target.resolve(Initializer.DATABASE).toString());
-        dataSource.setCreateDatabase("create");
-        sourceEPSG = directoryOf(ScriptProvider.class);
     }
 
     /**
@@ -106,6 +103,16 @@ final class Generator extends ScriptProvider {
     }
 
     /**
+     * Registers the data source created by this generator as the source of embedded data.
+     * This is needed because the database is available on the module path rather than inside a <abbr>JAR</abbr>
+     * file during test executions, so the {@code classpath:SIS-DATA/Databases/SpatialMetadata} <abbr>URL</abbr>
+     * will not work.
+     */
+    final void registerAsDefaultDataSource() {
+        EmbeddedResources.dataSource = dataSource;
+    }
+
+    /**
      * Generates the embedded resources in the {@code target/classes} directory if it does not already exists.
      * See class Javadoc for more information.
      *
@@ -113,7 +120,7 @@ final class Generator extends ScriptProvider {
      *         executing <abbr>SQL</abbr> scripts, copying data or any other operation.
      */
     final void createIfAbsent() throws Exception {
-        if (dataSource != null) {
+        if (sourceEPSG != null) {
             copyLicenseFiles();
             createMetadata();
             createEPSG();
