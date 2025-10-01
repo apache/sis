@@ -17,8 +17,6 @@
 
 /**
  * A set of helper classes for the SIS implementation, shared by different modules.
- * <dfn>Privy</dfn> means <q>something that is known or understood by only a select
- * few individuals</q>.
  *
  * <STRONG>Do not use!</STRONG>
  *

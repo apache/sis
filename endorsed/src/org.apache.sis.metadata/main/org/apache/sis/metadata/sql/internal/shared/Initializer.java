@@ -62,6 +62,10 @@ import static org.apache.sis.util.internal.shared.MetadataServices.EMBEDDED;
  *
  * All other methods are related to getting the {@code DataSource} instance, through JNDI or otherwise.
  *
+ * <h2>Note for maintainers about synchronization</h2>
+ * Some operations are synchronized on {@code Initializer} not only in this class, but also in other modules.
+ * If the synchronization lock is changed, search {@code synchronized (Initializer.class)} in the whole project.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public abstract class Initializer {
