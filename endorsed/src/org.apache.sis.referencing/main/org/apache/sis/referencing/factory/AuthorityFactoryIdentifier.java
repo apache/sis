@@ -23,6 +23,7 @@ import java.util.logging.LogRecord;
 import javax.measure.Unit;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.AuthorityFactory;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CSAuthorityFactory;
@@ -41,7 +42,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.internal.shared.NameMeaning;
 import org.apache.sis.referencing.internal.Resources;
-import org.opengis.referencing.IdentifiedObject;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
