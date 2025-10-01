@@ -38,7 +38,7 @@ public final class FXFinder {
     /**
      * Minimal version of JavaFX required by Apache SIS.
      */
-    static final int JAVAFX_VERSION = 13;
+    static final int JAVAFX_VERSION = 20;
 
     /**
      * The URL where to download JavaFX.
@@ -382,7 +382,7 @@ public final class FXFinder {
          * We remember the position where we found `command` in order to insert replacement at
          * the same line.
          */
-        final ArrayList<String> content = new ArrayList<>();
+        final var content = new ArrayList<String>();
         int insertAt = -1;
         for (String line : Files.readAllLines(setenv)) {
             line = line.trim();
@@ -400,7 +400,7 @@ public final class FXFinder {
          * It will be either an absolute path, or a path relative to
          * the SIS installation directory.
          */
-        final StringBuilder value = new StringBuilder(100).append(command).append('=');
+        final var value = new StringBuilder(100).append(command).append('=');
         if (useRelativePath) {
             final File relative = relativeToBase(validated);
             if (relative != null) {

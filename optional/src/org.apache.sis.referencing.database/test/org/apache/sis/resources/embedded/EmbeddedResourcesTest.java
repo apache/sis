@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.metadata.sql.internal.shared.Initializer;
 import org.apache.sis.system.DataDirectory;
@@ -36,9 +37,6 @@ import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestUtilities;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -114,7 +112,7 @@ public final strictfp class EmbeddedResourcesTest {
         final DataSource ds = Initializer.getDataSource();
         assertNotNull(ds, "Cannot find the data source.");
         try (Connection c = ds.getConnection()) {
-            assertEquals("jdbc:derby:classpath:SIS_DATA/Databases/" + EmbeddedResources.EMBEDDED_DATABASE, c.getMetaData().getURL(), "URL");
+            assertEquals("jdbc:derby:classpath:" + EmbeddedResources.DIRECTORY + "/Databases/" + Initializer.DATABASE, c.getMetaData().getURL(), "URL");
             try (Statement s = c.createStatement()) {
                 try (ResultSet r = s.executeQuery("SELECT COORD_REF_SYS_NAME FROM EPSG.\"Coordinate Reference System\" WHERE COORD_REF_SYS_CODE = 4326")) {
                     assertTrue(r.next(), "ResultSet.next()");

@@ -89,9 +89,16 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
     }
 
     /**
-     * The window width, in pixels.
+     * Scale factor to apply on all sizes expressed in pixels.
+     * This is a value greater than 1 on screens with a high resolution.
      */
-    private static final int WIDTH = 700;
+    private final float scaleFactoryForHiDPI;
+
+    /**
+     * The window width, in pixels.
+     * Needs to be multiplied by {@link #scaleFactoryForHiDPI} after that value become known.
+     */
+    private static final int WIDTH = 700, HEIGHT = 500;
 
     /**
      * Label of button to show in the wizard, also used as action identifier.
@@ -232,19 +239,20 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
         this.javafxFinder = javafxFinder;
         wizard = new JFrame("Apache SIS setup");
         final Container content = wizard.getContentPane();
+        scaleFactoryForHiDPI = content.getFont().getSize() / 14f;
         content.setLayout(new BorderLayout());
         /*
          * Back, Next, Cancel button.
          */
         {   // For keeping variables in a local scope.
             final Box buttons = Box.createHorizontalBox();
-            buttons.setBorder(new EmptyBorder(9, 12, 9, 15));       // Top, left, bottom, right.
-            backButton   = createButton(buttons, BACK); buttons.add(Box.createHorizontalStrut(10));
-            nextButton   = createButton(buttons, NEXT); buttons.add(Box.createHorizontalStrut(30));
+            buttons.setBorder(newEmptyBorder(9, 12, 9, 15));        // Top, left, bottom, right.
+            backButton   = createButton(buttons, BACK); buttons.add(Box.createHorizontalStrut(scaledSize(10)));
+            nextButton   = createButton(buttons, NEXT); buttons.add(Box.createHorizontalStrut(scaledSize(30)));
             cancelButton = createButton(buttons, CANCEL);
             backButton.setEnabled(false);
 
-            final JPanel bottom = new JPanel(new BorderLayout());
+            final var bottom = new JPanel(new BorderLayout());
             bottom.add(new JSeparator(), BorderLayout.NORTH);
             bottom.add(buttons, java.awt.BorderLayout.EAST);
             content.add(bottom, BorderLayout.SOUTH);
@@ -261,7 +269,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
         final WizardPage[] pages = WizardPage.values();
         {
             titles = new JLabel[pages.length];
-            final EmptyBorder padding = new EmptyBorder(3, 0, 3, 0);
+            final var padding = newEmptyBorder(3, 0, 3, 0);
             final Box summary = Box.createVerticalBox();
             for (int i=0; i<pages.length; i++) {
                 final String title = (i == 0 ? SELECTED_TITLE_BULLET : TITLE_BULLET) + pages[i].title;
@@ -270,11 +278,11 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
                 label.setBorder(padding);
                 summary.add(titles[i] = label);
             }
-            final JPanel pane = new JPanel();
+            final var pane = new JPanel();
             pane.setBackground(new Color(169, 204, 227));
-            pane.setBorder(new EmptyBorder(40, 15, 9, 24));         // Top, left, bottom, right.
+            pane.setBorder(newEmptyBorder(40, 15, 9, 24));          // Top, left, bottom, right.
             pane.add(summary);
-            content.add(pane,  BorderLayout.WEST);
+            content.add(pane, BorderLayout.WEST);
         }
         /*
          * The main content where text is shown, together with download button, directory chooser, etc.
@@ -282,7 +290,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
          * a description text formatted in HTML.
          */
         {
-            final Font font = new Font(Font.SERIF, Font.PLAIN, 14);
+            final var font = new Font(Font.SERIF, Font.PLAIN, scaledSize(14));
             javafxPath = new JLabel();
             javafxPath.setBorder(JAVAFX_PATH_BORDER);
             javafxPathError = new JLabel();
@@ -290,7 +298,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
             javafxPathError.setFont(font);
             inflateProgress = new JProgressBar();
             cardPanel = new JPanel(new CardLayout());
-            cardPanel.setBorder(new EmptyBorder(30, 30, 9, 30));    // Top, left, bottom, right.
+            cardPanel.setBorder(newEmptyBorder(30, 30, 9, 30));     // Top, left, bottom, right.
             cardPanel.setBackground(Color.WHITE);
             for (final WizardPage page : pages) {
                 cardPanel.add(createPage(page, font), page.name());
@@ -299,14 +307,42 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
             currentPage = pages[0];
             content.add(cardPanel, BorderLayout.CENTER);
         }
-        wizard.setSize(WIDTH, 500);                 // Must be before `setLocationRelativeTo(…)`.
-        wizard.setResizable(false);
+        wizard.setSize(scaledSize(WIDTH), scaledSize(HEIGHT));      // Must be before `setLocationRelativeTo(…)`.
         wizard.setLocationRelativeTo(null);
         wizard.addWindowListener(new WindowAdapter() {
             @Override public void windowClosing(WindowEvent event) {
                 javafxFinder.cancel();
             }
         });
+    }
+
+    /**
+     * Returns the given size scaled for HiDPI screens.
+     */
+    private int scaledSize(final int size) {
+        return (int) (scaleFactoryForHiDPI * size);
+    }
+
+    /**
+     * Creates an empty border scaled for HiDPI screens.
+     */
+    @SuppressWarnings("lossy-conversions")
+    private EmptyBorder newEmptyBorder(int top, int left, int bottom, int right) {
+        top    *= scaleFactoryForHiDPI;
+        left   *= scaleFactoryForHiDPI;
+        bottom *= scaleFactoryForHiDPI;
+        right  *= scaleFactoryForHiDPI;
+        return new EmptyBorder(top, left, bottom, right);
+    }
+
+    /**
+     * Creates a dimension scaled for HiDPI screens.
+     */
+    @SuppressWarnings("lossy-conversions")
+    private Dimension newDimension(int width, int height) {
+        width  *= scaleFactoryForHiDPI;
+        height *= scaleFactoryForHiDPI;
+        return new Dimension(width, height);
     }
 
     /**
@@ -319,45 +355,45 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
      */
     private Box createPage(final WizardPage page, final Font font) {
         final Box content = Box.createVerticalBox();
-        final JLabel text = new JLabel(page.text, JLabel.LEFT);
+        final var text = new JLabel(page.text, JLabel.LEFT);
         text.setFont(font);
         content.add(text);
-        content.add(Box.createVerticalStrut(30));
+        content.add(Box.createVerticalStrut(scaledSize(30)));
         switch (page) {
             case DOWNLOAD_JAVAFX: {
                 final JButton button = createButton(content, JAVAFX_HOME);
                 button.setToolTipText(FXFinder.JAVAFX_HOME);
                 button.setEnabled(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
-                final JLabel instruction = new JLabel(WizardPage.downloadSteps());
-                instruction.setFont(font.deriveFont(12f));
+                final var instruction = new JLabel(WizardPage.downloadSteps());
+                instruction.setFont(font.deriveFont(scaledSize(12)));
                 content.add(instruction);
                 break;
             }
             case JAVAFX_LOCATION: {
-                javafxPath.setMinimumSize(new Dimension(  100, 30));
-                javafxPath.setMaximumSize(new Dimension(WIDTH, 30));
+                javafxPath.setMinimumSize(newDimension(  100, 30));
+                javafxPath.setMaximumSize(newDimension(WIDTH, 30));
                 content.add(javafxPath);
-                content.add(Box.createVerticalStrut(12));
+                content.add(Box.createVerticalStrut(scaledSize(12)));
                 createButton(content, BROWSE);
-                content.add(Box.createVerticalStrut(24));
+                content.add(Box.createVerticalStrut(scaledSize(24)));
                 content.add(javafxPathError);
                 content.setDropTarget(new DropTarget(content, this));
                 break;
             }
             case DECOMPRESS: {
-                inflateProgress.setMinimumSize(new Dimension(  100, 21));
-                inflateProgress.setMaximumSize(new Dimension(WIDTH, 21));
+                inflateProgress.setMinimumSize(newDimension(  100, 21));
+                inflateProgress.setMaximumSize(newDimension(WIDTH, 21));
                 content.add(inflateProgress);
                 break;
             }
             case COMPLETED: {
                 finalMessage = text;
-                final Border vb = new EmptyBorder(0, 15, 9, 0);
-                final Font   fn = new Font(Font.MONOSPACED, Font.BOLD,  13);
-                final Font   fv = new Font(Font.SANS_SERIF, Font.PLAIN, 13);
+                final var vb = newEmptyBorder(0, 15, 9, 0);
+                final var fn = new Font(Font.MONOSPACED, Font.BOLD,  scaledSize(13));
+                final var fv = new Font(Font.SANS_SERIF, Font.PLAIN, scaledSize(13));
                 for (final String[] variable : javafxFinder.getEnvironmentVariables()) {
-                    final JLabel name  = new JLabel(variable[0] + ':');
-                    final JLabel value = new JLabel(variable[1]);
+                    final var name  = new JLabel(variable[0] + ':');
+                    final var value = new JLabel(variable[1]);
                     name .setForeground(Color.DARK_GRAY);
                     value.setForeground(Color.DARK_GRAY);
                     name .setFont(fn);
@@ -505,7 +541,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
      * Returns a non-null message for given exception with HTML characters escaped.
      */
     private static String getHtmlMessage(final String header, final Exception e) {
-        final StringBuilder buffer = new StringBuilder(100).append("<html>").append(header)
+        final var buffer = new StringBuilder(100).append("<html>").append(header)
                     .append("<br><b>").append(e.getClass().getSimpleName()).append("</b>");
         String message = e.getLocalizedMessage();
         if (message != null) {
@@ -545,6 +581,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
             selectButton.setEnabled(false);
             fd.addPropertyChangeListener(this);
         }
+        fd.setPreferredSize(newDimension(WIDTH + 100, HEIGHT + 100));
         if (fd.showOpenDialog(wizard) == JFileChooser.APPROVE_OPTION) {
             setJavafxPath(fd.getSelectedFile());
         }
@@ -564,7 +601,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
         for (int i=0; i<n; i++) {
             final Component child = c.getComponent(i);
             if (child instanceof JButton) {
-                final JButton button = (JButton) child;
+                final var button = (JButton) child;
                 if (SELECT.equals(button.getText())) {
                     return button;
                 }
@@ -746,7 +783,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
             JOptionPane.showMessageDialog(null, diagnostic, "Configuration error", JOptionPane.ERROR_MESSAGE);
             return false;
         } else {
-            final Wizard wizard = new Wizard(javafxFinder);
+            final var wizard = new Wizard(javafxFinder);
             wizard.wizard.setVisible(true);
             return true;
         }
