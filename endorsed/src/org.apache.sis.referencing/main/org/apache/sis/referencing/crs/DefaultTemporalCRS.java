@@ -71,7 +71,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
@@ -161,17 +161,6 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
         super(properties, TemporalDatum.class, datum, ensemble, cs);
         checkDimension(1, 1, cs);
         initializeConverter();
-    }
-
-    /**
-     * @deprecated A {@code DatumEnsemble} argument has been added.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultTemporalCRS(final Map<String,?> properties,
-                              final TemporalDatum datum,
-                              final TimeCS cs)
-    {
-        this(properties, datum, null, cs);
     }
 
     /**

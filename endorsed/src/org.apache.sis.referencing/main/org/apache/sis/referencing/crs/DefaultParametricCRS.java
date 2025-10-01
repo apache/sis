@@ -51,7 +51,7 @@ import org.apache.sis.referencing.datum.DatumOrEnsemble;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
@@ -123,17 +123,6 @@ public class DefaultParametricCRS extends AbstractSingleCRS<ParametricDatum> imp
     {
         super(properties, ParametricDatum.class, datum, ensemble, cs);
         checkDimension(1, 1, cs);
-    }
-
-    /**
-     * @deprecated A {@code DatumEnsemble} argument has been added.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultParametricCRS(final Map<String,?> properties,
-                                final ParametricDatum datum,
-                                final ParametricCS cs)
-    {
-        this(properties, datum, null, cs);
     }
 
     /**

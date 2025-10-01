@@ -52,7 +52,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
@@ -124,17 +124,6 @@ public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> impleme
     {
         super(properties, VerticalDatum.class, datum, ensemble, cs);
         checkDimension(1, 1, cs);
-    }
-
-    /**
-     * @deprecated A {@code DatumEnsemble} argument has been added.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultVerticalCRS(final Map<String,?> properties,
-                              final VerticalDatum datum,
-                              final VerticalCS cs)
-    {
-        this(properties, datum, null, cs);
     }
 
     /**

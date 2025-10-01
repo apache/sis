@@ -99,8 +99,8 @@
  *   </li>
  *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent}
  *     <ul>
- *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds(java.util.Date, java.util.Date)
- *       setBounds(Date, Date)}
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds(java.time.temporal.Temporal, java.time.temporal.Temporal)
+ *       setBounds(Temporal, Temporal)}
  *       for setting the temporal element from the start time and end time.</li>
  *
  *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds(org.opengis.geometry.Envelope)
@@ -136,7 +136,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 @XmlSchema(location="https://schemas.isotc211.org/19115/-3/gex/1.0/gex.xsd",

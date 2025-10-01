@@ -93,7 +93,7 @@ import org.opengis.coordinate.MismatchedCoordinateMetadataException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.geometry.Envelopes
  *
@@ -522,23 +522,6 @@ public final class Extents extends Static {
     public static Optional<Range<Instant>> getTimeRange(final Extent extent, final ZoneId zone) {
     }
      */
-
-    /**
-     * Returns a date in the {@linkplain Extent#getTemporalElements() temporal elements} of the given extent.
-     *
-     * @param  extent    the extent from which to get an instant, or {@code null}.
-     * @param  location  0 for the start time, 1 for the end time, 0.5 for the average time, or the
-     *                   coefficient (usually in the [0 … 1] range) for interpolating an instant.
-     * @return an instant interpolated at the given location, or {@code null} if none.
-     *
-     * @since 0.4
-     *
-     * @deprecated Replaced by {@link #getInstant(Extent, ZoneId, double)} in order to transition to {@code java.time} API.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public static Date getDate(final Extent extent, final double location) {
-        return TemporalDate.toDate(getInstant(extent, null, location).orElse(null));
-    }
 
     /**
      * Returns an instant in the {@linkplain Extent#getTemporalElements() temporal elements} of the given extent,

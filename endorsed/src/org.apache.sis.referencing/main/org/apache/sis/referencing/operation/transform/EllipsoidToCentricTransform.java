@@ -100,7 +100,7 @@ import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetw
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.7
  */
 public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
@@ -298,25 +298,6 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Creates a transform from angles in radians on an ellipsoid having a semi-major axis length of 1.
-     *
-     * @param semiMajor   the semi-major axis length.
-     * @param semiMinor   the semi-minor axis length.
-     * @param unit        the unit of measurement for the semi-axes and the ellipsoidal height.
-     * @param withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
-     *                    (i.e. are 3-D), or {@code false} if they are only 2-D.
-     * @param csType      whether the target coordinate system shall be Cartesian or spherical.
-     *
-     * @deprecated Replaced by {@link #EllipsoidToCentricTransform(Ellipsoid, boolean, TargetType)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public EllipsoidToCentricTransform(final double semiMajor, final double semiMinor,
-            final Unit<Length> unit, final boolean withHeight, final TargetType csType)
-    {
-        this(DefaultEllipsoid.createEllipsoid(Map.of(Ellipsoid.NAME_KEY, "source"), semiMajor, semiMinor, unit), withHeight, csType);
-    }
-
-    /**
-     * Creates a transform from angles in radians on an ellipsoid having a semi-major axis length of 1.
      * While a full ellipsoid is specified to this constructor, only the ratio of axis lengths is used.
      * {@code EllipsoidToCentricTransform} instances expect input coordinate tuples as below:
      *
@@ -418,30 +399,6 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             denormalize.convertAfter(i, a, null);
         }
         inverse = new Inverse();
-    }
-
-    /**
-     * Creates a transform from geographic to geocentric coordinates.
-     *
-     * @param  factory     the factory to use for creating and concatenating the affine transforms.
-     * @param  semiMajor   the semi-major axis length.
-     * @param  semiMinor   the semi-minor axis length.
-     * @param  unit        the unit of measurement for the semi-axes and the ellipsoidal height.
-     * @param  withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
-     *                     (i.e. are 3-D), or {@code false} if they are only 2-D.
-     * @param  csType      whether the target coordinate system shall be Cartesian or spherical.
-     * @return the conversion from geographic to geocentric coordinates.
-     * @throws FactoryException if an error occurred while creating a transform.
-     *
-     * @deprecated Replaced by {@link #createGeodeticConversion(MathTransformFactory, Ellipsoid, boolean, TargetType)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
-            final double semiMajor, final double semiMinor, final Unit<Length> unit,
-            final boolean withHeight, final TargetType csType) throws FactoryException
-    {
-        var source = DefaultEllipsoid.createEllipsoid(Map.of(Ellipsoid.NAME_KEY, "source"), semiMajor, semiMinor, unit);
-        return createGeodeticConversion(factory, source, withHeight, csType);
     }
 
     /**

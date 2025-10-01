@@ -83,7 +83,7 @@ import org.opengis.coverage.grid.GridEnvelope;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 public final class ArgumentChecks extends Static {
@@ -334,53 +334,6 @@ public final class ArgumentChecks extends Static {
                 }
                 throw new IllegalArgumentException(Errors.format(key, args));
             }
-        }
-    }
-
-    /**
-     * Ensures that the given index is equal or greater than zero and lower than the given
-     * upper value. This method is designed for methods that expect an index value as the only
-     * argument. For this reason, this method does not take the argument name.
-     *
-     * @param  upper  the maximal index value, exclusive.
-     * @param  index  the index to check.
-     * @throws IndexOutOfBoundsException if the given index is negative or not lower than the given upper value.
-     *
-     * @see #ensurePositive(String, int)
-     *
-     * @deprecated As of Java 9, replaced by {@link Objects#checkIndex(int, int)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public static void ensureValidIndex(final int upper, final int index) throws IndexOutOfBoundsException {
-        if (index < 0 || index >= upper) {
-            throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
-        }
-    }
-
-    /**
-     * Ensures that the given index range is valid for a sequence of the given length.
-     * This method is designed for methods that expect an index range as their only arguments.
-     * For this reason, this method does not take argument names.
-     *
-     * <p>This method verifies only the {@code lower} and {@code upper} argument values.
-     * It does not <strong>not</strong> verify the validity of the {@code length} argument,
-     * because this information is assumed to be provided by the implementation rather than
-     * the user.</p>
-     *
-     * @param  length  the length of the sequence (array, {@link CharSequence}, <i>etc.</i>).
-     * @param  lower   the user-specified lower index, inclusive.
-     * @param  upper   the user-specified upper index, exclusive.
-     * @throws IndexOutOfBoundsException if the given [{@code lower} … {@code upper}]
-     *         range is out of the sequence index range.
-     *
-     * @see #ensureCountBetween(String, boolean, int, int, int)
-     *
-     * @deprecated As of Java 9, replaced by {@link Objects#checkFromToIndex(int, int, int)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public static void ensureValidIndexRange(final int length, final int lower, final int upper) throws IndexOutOfBoundsException {
-        if (lower < 0 || upper < lower || upper > length) {
-            throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IllegalRange_2, lower, upper));
         }
     }
 

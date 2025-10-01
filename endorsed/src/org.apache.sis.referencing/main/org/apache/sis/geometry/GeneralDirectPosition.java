@@ -51,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * on the value of the containing object's {@code CoordinateReferenceSystem}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see DirectPosition1D
  * @see DirectPosition2D
@@ -232,16 +232,6 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
             ensureDimensionMatches("coordinates", this.coordinates.length, coordinates);
             System.arraycopy(coordinates, 0, this.coordinates, 0, coordinates.length);
         }
-    }
-
-    /**
-     * Sets the coordinate values along all dimensions.
-     *
-     * @deprecated Renamed {@link #setCoordinates(double...)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public void setCoordinate(final double... coordinates) throws MismatchedDimensionException {
-        setCoordinates(coordinates);
     }
 
     /**
