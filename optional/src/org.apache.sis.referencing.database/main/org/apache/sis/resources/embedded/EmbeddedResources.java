@@ -51,6 +51,12 @@ public class EmbeddedResources extends InstallationResources {
     static final String DIRECTORY = "SIS-DATA";
 
     /**
+     * The data source, created when first needed.
+     * Also set to a different value during tests.
+     */
+    static DataSource dataSource;
+
+    /**
      * Creates a new provider for connections to the embedded database.
      */
     public EmbeddedResources() {
@@ -130,10 +136,15 @@ public class EmbeddedResources extends InstallationResources {
     @Override
     public DataSource getResource(String authority, int index) {
         verifyAuthority(authority);
-        final var ds = new EmbeddedDataSource();
-        ds.setDataSourceName(Initializer.DATABASE);
-        ds.setDatabaseName("classpath:" + DIRECTORY + "/Databases/" + Initializer.DATABASE);
-        return ds;
+        synchronized (Initializer.class) {
+            if (dataSource == null) {
+                final var ds = new EmbeddedDataSource();
+                ds.setDataSourceName(Initializer.DATABASE);
+                ds.setDatabaseName("classpath:" + DIRECTORY + "/Databases/" + Initializer.DATABASE);
+                dataSource = ds;
+            }
+            return dataSource;
+        }
     }
 
     /**

@@ -23,12 +23,10 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 import java.util.Map;
 import java.util.ServiceLoader;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.metadata.sql.internal.shared.Initializer;
 import org.apache.sis.system.DataDirectory;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
 // Test dependencies
@@ -55,7 +53,21 @@ public final strictfp class EmbeddedResourcesTest {
      * @throws Exception if an error occurred while creating the database.
      */
     public EmbeddedResourcesTest() throws Exception {
-        new Generator().createIfAbsent();
+        // TODO: use @BeforeAll annotation instead. It doesn't seem to work with current Gradle build.
+        createDatabaseIfAbsent();
+    }
+
+    /**
+     * Creates the database if not already done.
+     *
+     * @throws Exception if an error occurred while creating the database.
+     */
+    private static void createDatabaseIfAbsent() throws Exception {
+        final var generator = new Generator();
+        synchronized (Initializer.class) {
+            generator.registerAsDefaultDataSource();  // Done first because `….metadata.sql` will want its data source.
+            generator.createIfAbsent();
+        }
     }
 
     /**
@@ -123,31 +135,15 @@ public final strictfp class EmbeddedResourcesTest {
                 }
             }
         }
-        try (EPSGFactory factory = new EPSGFactory(Map.of("dataSource", Initializer.getDataSource()))) {
+        try (EPSGFactory factory = new EPSGFactory(Map.of("dataSource", ds))) {
             verifyEPSG_6676(factory.createCoordinateReferenceSystem("EPSG:6676"));
         }
     }
 
     /**
-     * Tests the use of the embedded database. This test asks for a CRS for which no hard-coded fallback exists
-     * in {@link org.apache.sis.referencing.CommonCRS}. Consequently, this test should fail if we do not have a
-     * connection to a complete <abbr>EPSG</abbr> database.
-     *
-     * @throws FactoryException if an error occurred while creating the <abbr>CRS</abbr>.
-     *
-     * @todo The test is currently not executed because {@code SIS_DATA} is set by the build script.
-     *       We need a way to ignore it.
-     */
-    @Test
-    public void testCrsforCode() throws FactoryException {
-        assumeContainsEPSG();
-        final String dir = DataDirectory.getenv();
-        assumeTrue((dir == null) || dir.isEmpty(), "The SIS_DATA environment variable must be unset for enabling this test.");
-        verifyEPSG_6676(CRS.forCode("EPSG:6676"));
-    }
-
-    /**
-     * Verifies the <abbr>CRS</abbr> created from code EPSG:6676
+     * Verifies the <abbr>CRS</abbr> created from code EPSG:6676. This is a <abbr>CRS</abbr>
+     * for which no hard-coded fallback exists in {@link org.apache.sis.referencing.CommonCRS}.
+     * Consequently, this verification fails if we do not have a connection to a complete <abbr>EPSG</abbr> database.
      */
     private static void verifyEPSG_6676(final CoordinateReferenceSystem crs) {
         String area = TestUtilities.getSingleton(crs.getDomains()).getDomainOfValidity().getDescription().toString();
