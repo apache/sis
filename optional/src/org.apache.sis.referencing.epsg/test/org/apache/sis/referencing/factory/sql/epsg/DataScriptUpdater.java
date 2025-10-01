@@ -74,29 +74,6 @@ public final class DataScriptUpdater {
                     "Version 8.8 full release of Dataset.",
                     "Version 8.9 full release of Dataset.");
             /*
-             * Add missing accents on some letters of texts in non-English languages.
-             */
-            formatter.addAccentedCharacters("Ancienne Triangulation Française");
-            formatter.addAccentedCharacters("Nouvelle Triangulation Française");
-            formatter.addAccentedCharacters("Nivellement Général de la Corse");
-            formatter.addAccentedCharacters("Nivellement Général de la France");
-            formatter.addAccentedCharacters("Nivellement Général de Nouvelle Calédonie");
-            formatter.addAccentedCharacters("Nivellement Général de Polynésie Française");
-            formatter.addAccentedCharacters("Nivellement Général Guyanais");
-            formatter.addAccentedCharacters("Réseau de Référence des Antilles Françaises");
-            formatter.addAccentedCharacters("Réseau Géodesique Français");
-            formatter.addAccentedCharacters("Réseau Géodésique de la Polynésie Française");
-            formatter.addAccentedCharacters("Réseau Géodésique de la RDC");
-            formatter.addAccentedCharacters("Réseau Géodésique de la Réunion");
-            formatter.addAccentedCharacters("Réseau Géodésique de Mayotte");
-            formatter.addAccentedCharacters("Réseau Géodésique de Nouvelle Calédonie");
-            formatter.addAccentedCharacters("Réseau Géodésique de Saint Pierre et Miquelon");
-            formatter.addAccentedCharacters("Réseau Géodésique de Wallis et Futuna");
-            formatter.addAccentedCharacters("Réseau Géodésique des Antilles Françaises");
-            formatter.addAccentedCharacters("Réseau Géodésique des Terres Australes et Antarctiques Françaises");
-            formatter.addAccentedCharacters("Réseau National Belge");
-            formatter.addAccentedCharacters("Posiciones Geodésicas Argentinas");
-            /*
              * Generate the script for EPSG data.
              */
             formatter.run(Path.of(arguments[0]), Path.of(arguments[1]));
