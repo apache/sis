@@ -40,7 +40,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -249,12 +248,7 @@ public abstract class MapProjection extends AbstractProvider {
      * @throws ClassCastException if the unit of measurement of an axis length parameter is not linear.
      */
     public static Ellipsoid getEllipsoid(final Parameters values, final Context context) {
-        if (context instanceof DefaultMathTransformFactory.Context) {
-            // TODO: move getSourceEllipsoid() in `Context` interface with `Optional` return value.
-            Ellipsoid c = ((DefaultMathTransformFactory.Context) context).getSourceEllipsoid();
-            if (c != null) return c;
-        }
-        return getEllipsoid("source", values, SEMI_MAJOR, SEMI_MINOR);
+        return context.getSourceEllipsoid().orElseGet(() -> getEllipsoid("source", values, SEMI_MAJOR, SEMI_MINOR));
     }
 
     /**

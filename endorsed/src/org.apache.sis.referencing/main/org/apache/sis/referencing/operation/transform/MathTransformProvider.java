@@ -17,12 +17,14 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -159,7 +161,7 @@ public interface MathTransformProvider {
      * and concatenating the affine steps.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.5
+     * @version 1.6
      * @since   1.5
      */
     public interface Context {
@@ -232,6 +234,28 @@ public interface MathTransformProvider {
          */
         default Class<? extends CoordinateSystem> getTargetCSType() {
             return CoordinateSystem.class;
+        }
+
+        /**
+         * Returns the ellipsoid which is used together with the source coordinate system.
+         *
+         * @return the ellipsoid which is used together with the source coordinate system, or empty if none.
+         *
+         * @since 1.6
+         */
+        default Optional<Ellipsoid> getSourceEllipsoid() {
+            return Optional.empty();
+        }
+
+        /**
+         * Returns the ellipsoid which is used together with the target coordinate system.
+         *
+         * @return the ellipsoid which is used together with the target coordinate system, or empty if none.
+         *
+         * @since 1.6
+         */
+        default Optional<Ellipsoid> getTargetEllipsoid() {
+            return Optional.empty();
         }
 
         /**

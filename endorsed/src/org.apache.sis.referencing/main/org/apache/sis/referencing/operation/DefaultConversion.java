@@ -69,8 +69,8 @@ import org.opengis.referencing.crs.DerivedCRS;
  * derived or projected CRS themselves. This class provides a {@linkplain #DefaultConversion(Map, OperationMethod,
  * MathTransform, ParameterValueGroup) constructor} for such defining conversions.
  *
- * <p>After the source and target CRS become known, we can invoke the {@link #specialize specialize(…)} method for
- * {@linkplain DefaultMathTransformFactory#createParameterizedTransform creating a math transform from the parameters}
+ * <p>After the source and target CRS become known, we can invoke the {@link #specialize specialize(…)} method
+ * for {@linkplain DefaultMathTransformFactory#builder creating a math transform from the parameters}
  * and assign the source and target CRS to it.</p>
  *
  * <h2>Immutability and thread safety</h2>
@@ -196,8 +196,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param method      the operation method.
      * @param transform   transform from positions in the source CRS to positions in the target CRS, or {@code null}.
      * @param parameters  the {@code transform} parameter values, or {@code null}.
-     *
-     * @see DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, MathTransformProvider.Context)
      */
     @SuppressWarnings("this-escape")    // False positive.
     public DefaultConversion(final Map<String,?>       properties,
