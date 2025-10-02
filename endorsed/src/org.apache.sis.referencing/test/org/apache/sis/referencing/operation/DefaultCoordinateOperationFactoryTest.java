@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation;
 import java.util.List;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
-import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -43,7 +42,6 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
-import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 
@@ -337,16 +335,5 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
         verifyTransform(CoordinateOperationFinderTest.expectedAGD66(true),
                         CoordinateOperationFinderTest.expectedAGD66(false));
         validate();
-    }
-
-    /**
-     * Verifies that requesting an unknown method throws {@link NoSuchIdentifierException}.
-     *
-     * @throws FactoryException if an unexpected error occurred.
-     */
-    @Test
-    public void testUnknownMethod() throws FactoryException {
-        var e = assertThrows(NoSuchIdentifierException.class, () -> factory.getOperationMethod("I do not exist"));
-        assertMessageContains(e, "I do not exist");
     }
 }

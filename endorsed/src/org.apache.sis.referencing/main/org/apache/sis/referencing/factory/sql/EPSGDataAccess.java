@@ -3539,7 +3539,8 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                                     + " FROM \"Coordinate_Operation Path\""
                                     + " WHERE (CONCAT_OPERATION_CODE = ?)"
                                     + " ORDER BY OP_PATH_STEP", epsg).toArray(CoordinateOperation[]::new);
-                    constructor = (factory, metadata) -> factory.createConcatenatedOperation(metadata, operations);
+                    constructor = (factory, metadata) ->
+                            factory.createConcatenatedOperation(metadata, sourceCRS, targetCRS, operations);
                 } else {
                     /*
                      * At this stage, the parameters are ready for use. Create the math transform and wrap it in the

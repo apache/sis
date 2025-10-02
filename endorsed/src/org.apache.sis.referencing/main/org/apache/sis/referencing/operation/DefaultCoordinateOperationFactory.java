@@ -64,9 +64,6 @@ import org.apache.sis.util.resources.Errors;
  * <ul>
  *   <li>By fetching or building explicitly each components of the operation:
  *     <ul>
- *       <li>The {@link DefaultOperationMethod operation method}, which can be
- *         {@linkplain #getOperationMethod fetched from a set of predefined methods} or
- *         {@linkplain #createOperationMethod built explicitly}.</li>
  *       <li>A single {@linkplain #createDefiningConversion defining conversion}.</li>
  *       <li>A {@linkplain #createConcatenatedOperation concatenation} of other operations.</li>
  *     </ul>
@@ -247,30 +244,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the operation method of the given name. The given argument shall be either a method
-     * {@linkplain DefaultOperationMethod#getName() name} (e.g. <q>Transverse Mercator</q>)
-     * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
-     * The search is case-insensitive and comparisons against method names can be
-     * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.
-     *
-     * <p>If more than one method match the given name, then the first (according iteration order)
-     * non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated} matching method is returned.
-     * If all matching methods are deprecated, the first one is returned.</p>
-     *
-     * @param  name  the name of the operation method to fetch.
-     * @return the operation method of the given name.
-     * @throws FactoryException if the requested operation method cannot be fetched.
-     *
-     * @see DefaultMathTransformFactory#getOperationMethod(String)
-     *
-     * @deprecated Use {@link DefaultMathTransformFactory} instead.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public OperationMethod getOperationMethod(String name) throws FactoryException {
-        return CoordinateOperations.findMethod(mtFactory, name);
-    }
-
-    /**
      * Creates an operation method from a set of properties and a descriptor group.
      * The source and target dimensions may be {@code null} if the method can work
      * with any number of dimensions (e.g. <i>Affine Transform</i>).
@@ -324,17 +297,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
         return pool.unique(method);
-    }
-
-    /**
-     * @deprecated The dimensions attributes have been removed in ISO 19111:2019 revision.
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public OperationMethod createOperationMethod(final Map<String,?> properties,
-            final Integer sourceDimensions, final Integer targetDimensions,
-            ParameterDescriptorGroup parameters) throws FactoryException
-    {
-        return createOperationMethod(properties, parameters);
     }
 
     /**
@@ -561,26 +523,6 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
 
     /**
      * Creates an ordered sequence of two or more single coordinate operations.
-     *
-     * @deprecated Replaced by {@linkplain #createConcatenatedOperation(Map, CoordinateReferenceSystem,
-     * CoordinateReferenceSystem, CoordinateOperation...) a method with explicit CRS arguments} because
-     * of potential <abbr>CRS</abbr> swapping.
-     *
-     * @param  properties  the properties to be given to the identified object.
-     * @param  operations  the sequence of operations. Shall contain at least two operations.
-     * @return the concatenated operation created from the given arguments.
-     * @throws FactoryException if the object creation failed.
-     */
-    @Override
-    @Deprecated(since="1.5", forRemoval=true)
-    public CoordinateOperation createConcatenatedOperation(final Map<String,?> properties,
-            final CoordinateOperation... operations) throws FactoryException
-    {
-        return createConcatenatedOperation(properties, null, null, operations);
-    }
-
-    /**
-     * Creates an ordered sequence of two or more single coordinate operations.
      * The sequence of operations is constrained by the requirement that the source coordinate reference system
      * of step (<var>n</var>+1) must be the same as the target coordinate reference system of step (<var>n</var>).
      * The source coordinate reference system of the first step and the target coordinate reference system of the
@@ -623,6 +565,7 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
      *
      * @since 1.5
      */
+    @Override
     public CoordinateOperation createConcatenatedOperation(
             final Map<String,?> properties,
             final CoordinateReferenceSystem sourceCRS,

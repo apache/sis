@@ -1138,7 +1138,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                     op.getParameterValues(),
                     typeOf(op));
         } else {
-            main = factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
+            main = factory.createConcatenatedOperation(
+                    defaultName(sourceCRS, targetCRS),
+                    sourceCRS, targetCRS, step1, step2);
         }
         /*
          * Sometimes we get a concatenated operation made of an operation followed by its inverse.
@@ -1181,7 +1183,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (canHide(step1.getName())) return concatenate(concatenate(step1, step2), step3);
         if (canHide(step3.getName())) return concatenate(step1, concatenate(step2, step3));
         final Map<String,?> properties = defaultName(step1.getSourceCRS(), step3.getTargetCRS());
-        return factory.createConcatenatedOperation(properties, step1, step2, step3);
+        return factory.createConcatenatedOperation(properties, null, null, step1, step2, step3);
     }
 
     /**

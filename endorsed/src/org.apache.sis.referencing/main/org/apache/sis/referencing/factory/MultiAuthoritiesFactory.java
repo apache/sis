@@ -1601,11 +1601,14 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                      * yet support swapping roles of source and target CRS if an implied-reverse coordinate
                      * operation is included.
                      */
-                    final CoordinateOperation[] ops = (CoordinateOperation[]) components;
-                    String name = IdentifiedObjects.getIdentifierOrName(ops[0]) + " ⟶ "
-                                + IdentifiedObjects.getIdentifierOrName(ops[ops.length - 1]);
+                    final CoordinateOperation[] steps = (CoordinateOperation[]) components;
+                    String name = IdentifiedObjects.getIdentifierOrName(steps[0]) + " ⟶ "
+                                + IdentifiedObjects.getIdentifierOrName(steps[steps.length - 1]);
                     combined = DefaultCoordinateOperationFactory.provider()
-                            .createConcatenatedOperation(Map.of(CoordinateOperation.NAME_KEY, name), ops);
+                            .createConcatenatedOperation(
+                                    Map.of(CoordinateOperation.NAME_KEY, name),
+                                    null, null,     // Infer source and target CRS from the first and last steps.
+                                    steps);
                 }
                 break;
             }

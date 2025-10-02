@@ -797,7 +797,7 @@ class CoordinateOperationRegistry {
             if (transform != null) {
                 properties.put(DefaultConcatenatedOperation.TRANSFORM_KEY, transform.inverse());
             }
-            inverse = factory.createConcatenatedOperation(properties, inverted);
+            inverse = factory.createConcatenatedOperation(properties, null, null, inverted);
             AbstractCoordinateOperation.setCachedInverse(operation, inverse);
         }
         return inverse;
@@ -944,7 +944,7 @@ class CoordinateOperationRegistry {
                     final CoordinateOperation last  = steps[n];
                     steps[0] = transform(sourceCRS, prepend, first, null, first.getTargetCRS(), mtFactory);
                     steps[n] = transform(last.getSourceCRS(), null, last, append, targetCRS,    mtFactory);
-                    return factory.createConcatenatedOperation(derivedFrom(operation), steps);
+                    return factory.createConcatenatedOperation(derivedFrom(operation), null, null, steps);
                 }
             }
         }
@@ -1087,8 +1087,10 @@ class CoordinateOperationRegistry {
         switch (operations.size()) {
             case 0:  return null;
             case 1:  return operations.get(0);
-            default: return factory.createConcatenatedOperation(derivedFrom(operation),
-                                        operations.toArray(CoordinateOperation[]::new));
+            default: return factory.createConcatenatedOperation(
+                    derivedFrom(operation),
+                    null, null,     // Take source and target CRS from the first and last steps.
+                    operations.toArray(CoordinateOperation[]::new));
         }
     }
 
