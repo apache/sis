@@ -50,9 +50,9 @@ import org.apache.sis.util.internal.shared.Constants;
 /**
  * A date format used for parsing dates in the {@code "yyyy-MM-dd'T'HH:mm:ss.SSSX"} pattern, but in which
  * the time is optional. For this class, "Standard" is interpreted as "close to ISO 19162 requirements",
- * which is not necessarily identical to other ISO standards.
+ * which is not necessarily identical to other <abbr>ISO</abbr> standards.
  *
- * <p>The main usage for this class is Well Known Text (WKT) parsing and formatting.
+ * <p>The main usage for this class is Well Known Text (<abbr>WKT</abbr>) parsing and formatting.
  * ISO 19162 uses ISO 8601:2004 for the dates. Any precision is allowed: the date could have only the year,
  * or only the year and month, <i>etc</i>. The clock part is optional and also have optional fields: can be
  * only hours, or only hours and minutes, <i>etc</i>. ISO 19162 said that the timezone is restricted to UTC
@@ -227,14 +227,14 @@ replace:    if (Character.isWhitespace(c)) {
     private final DateTimeFormatter formatWithoutZone;
 
     /**
-     * Creates a new format for a default locale in the UTC timezone.
+     * Creates a new format for a default locale in the <abbr>UTC</abbr> timezone.
      */
     public LenientDateFormat() {
         formatWithoutZone = format = FORMAT;
     }
 
     /**
-     * Creates a new format for the given locale in the UTC timezone.
+     * Creates a new format for the given locale in the <abbr>UTC</abbr> timezone.
      *
      * @param locale  the locale of the format to create.
      */

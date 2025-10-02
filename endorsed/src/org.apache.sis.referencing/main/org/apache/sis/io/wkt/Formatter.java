@@ -1246,12 +1246,11 @@ public class Formatter implements Localized {
     /**
      * Appends a date.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
+     * This method exists for compatibility with legacy date objects, but {@link #append(Temporal)} should
+     * be preferred in newer code.
      *
      * @param  date  the date to append to the WKT, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #append(Temporal)}.
      */
-    @Deprecated(since="1.5", forRemoval=true)
     public void append(final Date date) {
         if (date != null) {
             appendSeparator();
@@ -1261,7 +1260,7 @@ public class Formatter implements Localized {
 
     /**
      * Appends a Boolean value.
-     * The {@linkplain Symbols#getSeparator() element separator} will be written before the boolean if needed.
+     * The {@linkplain Symbols#getSeparator() element separator} will be written before the Boolean if needed.
      *
      * @param  value  the Boolean to append to the WKT.
      */

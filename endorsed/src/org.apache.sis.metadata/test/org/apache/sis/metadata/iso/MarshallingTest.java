@@ -229,7 +229,8 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                                    new DefaultResponsibility(Role.POINT_OF_CONTACT, null, individual2)));
         }
         // Date info (date stamp in legacy ISO 19115:2003 model)
-        final var dateInfo = Set.of(new DefaultCitationDate(new Date(1260961229580L), DateType.CREATION));
+        final var dateInfo = Set.of(new DefaultCitationDate(
+                Instant.ofEpochMilli(1260961229580L), DateType.CREATION));
         md.setDateInfo(dateInfo);
         {
             // Metadata standard
@@ -435,7 +436,8 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              */
             var maintenanceInfo = new DefaultMaintenanceInformation();
             maintenanceInfo.setMaintenanceAndUpdateFrequency(MaintenanceFrequency.NOT_PLANNED);
-            maintenanceInfo.getMaintenanceDates().add(new DefaultCitationDate(new Date(32503676400000L), DateType.REVISION));
+            maintenanceInfo.getMaintenanceDates().add(new DefaultCitationDate(
+                    Instant.ofEpochMilli(32503676400000L), DateType.REVISION));
             final var maintenanceScope = new DefaultScope();
             maintenanceScope.setLevel(ScopeCode.MODEL);
             {
