@@ -31,7 +31,6 @@ import java.nio.charset.Charset;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.Metadata;               // For javadoc
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.internal.shared.CollectionsExt;
@@ -421,7 +420,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     protected final <E> List<E> writeList(Collection<? extends E> source, List<E> target, Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        return (List<E>) write(source, target, elementType, List.class);
+        return (List<E>) write(source, target, elementType, false);
     }
 
     /**
@@ -449,7 +448,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     protected final <E> Set<E> writeSet(Collection<? extends E> source, Set<E> target, Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        return (Set<E>) write(source, target, elementType, Set.class);
+        return (Set<E>) write(source, target, elementType, true);
     }
 
     /**
@@ -461,16 +460,14 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
-     *       depending on the value returned by {@link #collectionType(Class)}.</li>
+     *       depending on {@code elementType}}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
      * <h4>Choosing a collection type</h4>
      * Implementations shall invoke {@link #writeList writeList} or {@link #writeSet writeSet} methods
      * instead of this method when the collection type is enforced by ISO specification.
-     * When the type is not enforced by the specification, some freedom are allowed at
-     * implementer choice. The default implementation invokes {@link #collectionType(Class)}
-     * in order to get a hint about whether a {@link List} or a {@link Set} should be used.
+     * When the type is not enforced by the specification, some freedom are allowed at implementer choice.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
      * @param  source       the source collection, or {@code null}.
@@ -483,18 +480,18 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     protected final <E> Collection<E> writeCollection(Collection<? extends E> source, Collection<E> target, Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        return write(source, target, elementType, null);
+        return write(source, target, elementType, useSet(elementType));
     }
 
     /**
      * Writes the content of the {@code source} collection into the {@code target} list or set,
      * creating it if needed.
      *
-     * @param  collectionType  {@code Set.class}, {@code List.class} or null for automatic choice.
+     * @param  useSet  {@code true} for creating a {@code Set}, or {@code false} for a {@code List}.
      */
     @SuppressWarnings("unchecked")
     private <E> Collection<E> write(final Collection<? extends E> source, Collection<E> target,
-            final Class<E> elementType, Class<?> collectionType) throws UnmodifiableMetadataException
+            final Class<E> elementType, final boolean useSet) throws UnmodifiableMetadataException
     {
         /*
          * It is not worth to copy the content if the current and the new instance are the
@@ -508,7 +505,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                  * transitionTo(State.FINAL) is under progress. The source collection is already
                  * an unmodifiable instance created by StateChanger.
                  */
-                assert (collectionType != null) || collectionType(elementType).isInstance(source) : elementType;
                 return (Collection<E>) source;
             }
             checkWritePermission(valueIfDefined(target));
@@ -522,20 +518,15 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                 if (target != null && state != COMPLETABLE) {
                     target.clear();
                 } else {
-                    if (collectionType == null) {
-                        collectionType = collectionType(elementType);
-                    }
-                    if (collectionType == Set.class) {
+                    if (useSet) {
                         target = createSet(elementType, source);
-                    } else if (collectionType == List.class) {
-                        target = createList(elementType, source);
                     } else {
-                        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedType_1, collectionType));
+                        target = createList(elementType, source);
                     }
                 }
                 target.addAll(source);
                 if (state == COMPLETABLE) {
-                    if (collectionType == Set.class) {
+                    if (useSet) {
                         target = CollectionsExt.unmodifiableOrCopy((Set<E>) target);
                     } else {
                         target = CollectionsExt.unmodifiableOrCopy((List<E>) target);
@@ -776,8 +767,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet nonNullSet(…)}
      * instead of this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at implementer choice.
-     * The default implementation invokes {@link #collectionType(Class)} in order to get a hint about whether
-     * a {@link List} or a {@link Set} should be used.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
      * @param  current      the existing collection, or {@code null} if the collection has not yet been created.
@@ -786,28 +775,24 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     protected final <E> Collection<E> nonNullCollection(final Collection<E> current, final Class<E> elementType) {
         if (current != null) {
-            assert collectionType(elementType).isInstance(current);
             return current.isEmpty() && emptyCollectionAsNull() ? null : current;
         }
         if (emptyCollectionAsNull()) {
             return null;
         }
         final boolean isModifiable = (state < FREEZING);
-        final Class<?> collectionType = collectionType(elementType);
-        if (collectionType == Set.class) {
+        if (useSet(elementType)) {
             if (isModifiable) {
                 return createSet(elementType, current);         // `current` given as a matter of principle even if null.
             } else {
                 return Collections.emptySet();
             }
-        } else if (collectionType == List.class) {
+        } else {
             if (isModifiable) {
                 return createList(elementType, current);        // `current` given as a matter of principle even if null.
             } else {
                 return Collections.emptyList();
             }
-        } else {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedType_1, collectionType));
         }
     }
 
@@ -910,32 +895,5 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                 ||        String.class ==               elementType
                 ||        Locale.class ==               elementType
                 ||      Currency.class ==               elementType;
-    }
-
-    /**
-     * Returns the type of collection to use for the given type. The current implementation can
-     * return only two values: <code>{@linkplain Set}.class</code> if the property should not
-     * accept duplicated values, or <code>{@linkplain List}.class</code> otherwise.
-     * Future SIS versions may accept other types.
-     *
-     * <p>The default implementation returns <code>{@linkplain Set}.class</code> if the element
-     * type is assignable to {@link CodeList}, {@link Enum}, {@link String}, {@link Charset},
-     * {@link Locale} or {@link Currency}, and <code>{@linkplain List}.class</code> otherwise.
-     * Subclasses can override this method for choosing different kind of collections.
-     * As a general rule, implementations should return the {@link Set} type
-     * only when the set elements are immutable.
-     * This is needed for {@linkplain Object#hashCode() hash code} stability.</p>
-     *
-     * @param  <E>          the type of elements in the collection to be created.
-     * @param  elementType  the type of elements in the collection to be created.
-     * @return {@code List.class} or {@code Set.class} depending on whether the
-     *         property shall accept duplicated values or not.
-     *
-     * @deprecated This method will be removed because it can cause {@code this} to escape at construction time.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    @SuppressWarnings({"rawtypes","unchecked"})
-    protected <E> Class<? extends Collection<E>> collectionType(final Class<E> elementType) {
-        return (Class) (useSet(elementType) ? Set.class : List.class);
     }
 }
