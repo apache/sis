@@ -28,6 +28,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
+import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -53,8 +54,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCylindricalCS Cylindrical},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultLinearCS Linear}.
  *   {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS Polar},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical} or
- *   {@linkplain org.apache.sis.referencing.cs.DefaultUserDefinedCS User Defined}.
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical}.
  * </p>
  *
  * <h2>Immutability and thread safety</h2>
@@ -140,17 +140,6 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
                                  final CoordinateSystem cs)
     {
         super(properties, EngineeringDatum.class, datum, ensemble, cs);
-    }
-
-    /**
-     * @deprecated A {@code DatumEnsemble} argument has been added.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultEngineeringCRS(final Map<String,?> properties,
-                                 final EngineeringDatum datum,
-                                 final CoordinateSystem cs)
-    {
-        this(properties, datum, null, cs);
     }
 
     /**

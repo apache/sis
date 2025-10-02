@@ -26,8 +26,7 @@
  *  {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum vertical},
  *  {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum temporal}),
  * or to platforms (mobile or not)
- * ({@linkplain org.apache.sis.referencing.datum.DefaultEngineeringDatum engineering},
- *  {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum image}).
+ * ({@linkplain org.apache.sis.referencing.datum.DefaultEngineeringDatum engineering}).
  * Some of those SIS subclasses provide additional methods that are not part of OGC/ISO specifications:</p>
  * <ul>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()}</li>
@@ -71,7 +70,7 @@
     @XmlJavaTypeAdapter(CD_PrimeMeridian.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class),
-    @XmlJavaTypeAdapter(DateAdapter.class),
+    @XmlJavaTypeAdapter(DateAdapter.class)
 })
 package org.apache.sis.referencing.datum;
 

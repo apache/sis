@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.datum;
+package org.apache.sis.referencing.legacy;
 
 import java.util.Map;
 import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.referencing.internal.shared.NilReferencingObject;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.util.ComparisonMode;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
-
-// Specific to the geoapi-4.0 branch:
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import org.apache.sis.io.wkt.ElementKind;
 
 
 /**
@@ -47,18 +47,10 @@ import org.apache.sis.io.wkt.ElementKind;
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.
  *
- * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
- *             It is replaced by {@code EngineeringDatum}.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
  *
- * @see org.apache.sis.referencing.crs.DefaultImageCRS
- * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageDatum(String)
- *
- * @since 0.4
+ * @see DefaultImageCRS
  */
-@Deprecated(since="1.5", forRemoval=true)   // Actually to be moved to an internal package for GML and WKT purposes.
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")
 public final class DefaultImageDatum extends AbstractDatum {
@@ -122,8 +114,6 @@ public final class DefaultImageDatum extends AbstractDatum {
      *
      * @param  properties   the properties to be given to the identified object.
      * @param  pixelInCell  the way the image grid is associated with the image data attributes.
-     *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageDatum(Map, PixelInCell)
      */
     public DefaultImageDatum(final Map<String,?> properties, final String pixelInCell) {
         super(properties);
@@ -221,6 +211,7 @@ public final class DefaultImageDatum extends AbstractDatum {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultImageDatum() {
+        super(Map.of(NAME_KEY, NilReferencingObject.UNNAMED));
     }
 
     /**

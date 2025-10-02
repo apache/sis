@@ -17,7 +17,7 @@
 package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import org.apache.sis.referencing.cs.DefaultUserDefinedCS;
+import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
 import org.apache.sis.xml.bind.gco.PropertyType;
 
 

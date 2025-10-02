@@ -14,22 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.crs;
+package org.apache.sis.referencing.legacy;
 
 import java.util.Map;
+import java.util.Objects;
+import java.lang.reflect.Field;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.crs.SingleCRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
-import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.internal.shared.NilReferencingObject;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
-
-// Specific to the geoapi-4.0 branch:
-import org.apache.sis.referencing.datum.DefaultImageDatum;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -38,7 +43,7 @@ import org.apache.sis.referencing.datum.DefaultImageDatum;
  * user community exists for images with its own terms of reference.
  *
  * <p><b>Used with datum type:</b>
- *   {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum Image}.<br>
+ *   {@linkplain DefaultImageDatum Image}.<br>
  * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine}.
@@ -49,29 +54,29 @@ import org.apache.sis.referencing.datum.DefaultImageDatum;
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
- * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
- *             It is replaced by {@code EngineeringCRS}.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
- *
- * @see org.apache.sis.referencing.datum.DefaultImageDatum
- * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageCRS(String)
- *
- * @since 0.4
  */
-@Deprecated(since="1.5", forRemoval=true)   // Actually to be moved to an internal package for GML and WKT purposes.
 @XmlType(name = "ImageCRSType", propOrder = {
     "cartesianCS",
     "affineCS",
     "datum"
 })
 @XmlRootElement(name = "ImageCRS")
-public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> {
+public final class DefaultImageCRS extends AbstractCRS implements SingleCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 7222610270977351462L;
+
+    /**
+     * The datum, or {@code null} if the <abbr>CRS</abbr> is associated only to a datum ensemble.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is non-final only for construction convenience and for unmarshalling.</p>
+     *
+     * @see #getDatum()
+     */
+    private DefaultImageDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -116,15 +121,18 @@ public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> 
                            final DefaultImageDatum datum,
                            final AffineCS cs)
     {
-        super(properties, DefaultImageDatum.class, datum, null, cs);
+        super(properties, cs);
+        this.datum = Objects.requireNonNull(datum);
     }
 
     /**
-     * Creates a new CRS derived from the specified one, but with different axis order or unit.
-     * This is for implementing the {@link #createSameType(AbstractCS)} method only.
+     * Returns the GeoAPI interface implemented by this class.
+     *
+     * @return the coordinate reference system interface implemented by this class.
      */
-    private DefaultImageCRS(final DefaultImageCRS original, final AbstractCS cs) {
-        super(original, null, cs);
+    @Override
+    public Class<? extends SingleCRS> getInterface() {
+        return SingleCRS.class;
     }
 
     /**
@@ -132,10 +140,9 @@ public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> 
      *
      * @return the datum.
      */
-    @Override
     @XmlElement(name = "imageDatum", required = true)
     public DefaultImageDatum getDatum() {
-        return super.getDatum();
+        return datum;
     }
 
     /**
@@ -146,27 +153,6 @@ public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> 
     @Override
     public AffineCS getCoordinateSystem() {
         return (AffineCS) super.getCoordinateSystem();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public DefaultImageCRS forConvention(final AxesConvention convention) {
-        return (DefaultImageCRS) super.forConvention(convention);
-    }
-
-    /**
-     * Returns a coordinate reference system of the same type as this CRS but with different axes.
-     *
-     * @param  cs  the coordinate system with new axes.
-     * @return new CRS of the same type and datum than this CRS, but with the given axes.
-     */
-    @Override
-    final AbstractCRS createSameType(final AbstractCS cs) {
-        return new DefaultImageCRS(this, cs);
     }
 
     /**
@@ -185,6 +171,34 @@ public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> 
             formatter.setInvalidWKT(this, null);
         }
         return WKTKeywords.ImageCRS;
+    }
+
+    /**
+     * Compares this coordinate reference system with the specified object for equality.
+     *
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    whether to perform a strict or lenient comparison.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object, ComparisonMode mode) {
+        if (super.equals(object, mode)) {
+            if (mode == ComparisonMode.STRICT) {
+                final var that = (DefaultImageCRS) object;
+                return Objects.equals(datum, that.datum);
+            }
+            final var that = (SingleCRS) object;
+            return Utilities.deepEquals(getDatum(), that.getDatum(), mode);
+        }
+        return false;
+    }
+
+    /**
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
+     */
+    @Override
+    protected long computeHashCode() {
+        return super.computeHashCode() + Objects.hashCode(datum);
     }
 
 
@@ -209,6 +223,7 @@ public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> 
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultImageCRS() {
+        super(Map.of(NAME_KEY, NilReferencingObject.UNNAMED), CommonCRS.Engineering.DISPLAY.crs().getCoordinateSystem());
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
          * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
@@ -223,7 +238,11 @@ public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> 
      * @see #getDatum()
      */
     private void setDatum(final DefaultImageDatum value) {
-        setDatum("imageDatum", value);
+        if (datum == null) {
+            datum = value;
+        } else {
+            ImplementationHelper.propertyAlreadySet(getClass(), "setDatum", "imageDatum");
+        }
     }
 
     /**
@@ -249,14 +268,34 @@ public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> 
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */
-    @XmlElement(name = "cartesianCS") private CartesianCS getCartesianCS() {return getCoordinateSystem(CartesianCS.class);}
-    @XmlElement(name = "affineCS")    private AffineCS    getAffineCS()    {return getCoordinateSystem(AffineCS.class);}
+    @XmlElement(name = "cartesianCS")
+    private CartesianCS getCartesianCS() {
+        final AffineCS cs = getCoordinateSystem();
+        return (cs instanceof CartesianCS) ? (CartesianCS) cs : null;
+    }
+
+    @XmlElement(name = "affineCS")
+    private AffineCS getAffineCS() {
+        final AffineCS cs = getCoordinateSystem();
+        return (cs instanceof CartesianCS) ? null : cs;
+    }
 
     /**
      * Used by JAXB only (invoked by reflection).
      *
      * @see #getCartesianCS()
      */
-    private void setCartesianCS(final CartesianCS cs) {setCoordinateSystem("cartesianCS", cs);}
-    private void setAffineCS   (final AffineCS    cs) {setCoordinateSystem("affineCS",    cs);}
+    private void setCartesianCS(final CartesianCS cs) {
+        setAffineCS(cs);
+    }
+
+    private void setAffineCS(final AffineCS cs) {
+        try {
+            Field coordinateSystem = AbstractCRS.class.getDeclaredField("coordinateSystem");
+            coordinateSystem.setAccessible(true);
+            coordinateSystem.set(this, cs);
+        } catch (ReflectiveOperationException e) {
+            throw new BackingStoreException(e);
+        }
+    }
 }

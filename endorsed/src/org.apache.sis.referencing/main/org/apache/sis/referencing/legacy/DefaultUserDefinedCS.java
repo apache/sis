@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.cs;
+package org.apache.sis.referencing.legacy;
 
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.internal.shared.NilReferencingObject;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 
 
@@ -42,12 +44,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
- * @since   0.4
- *
- * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
  */
-@Deprecated(since="1.5", forRemoval=true)   // Actually to be moved to an internal package for GML and WKT purposes.
 @XmlType(name = "UserDefinedCSType")
 @XmlRootElement(name = "UserDefinedCS")
 public final class DefaultUserDefinedCS extends AbstractCS {
@@ -90,8 +87,6 @@ public final class DefaultUserDefinedCS extends AbstractCS {
      * @param  properties  the properties to be given to the identified object.
      * @param  axis0       the first axis.
      * @param  axis1       the second axis.
-     *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultUserDefinedCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,
@@ -109,8 +104,6 @@ public final class DefaultUserDefinedCS extends AbstractCS {
      * @param  axis0       the first axis.
      * @param  axis1       the second axis.
      * @param  axis2       the third axis.
-     *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultUserDefinedCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,
@@ -118,37 +111,6 @@ public final class DefaultUserDefinedCS extends AbstractCS {
                                 final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
-    }
-
-    /**
-     * Creates a new CS derived from the specified one, but with different axis order or unit.
-     *
-     * @see #createForAxes(String, CoordinateSystemAxis[])
-     */
-    private DefaultUserDefinedCS(DefaultUserDefinedCS original, String name, CoordinateSystemAxis[] axes) {
-        super(original, name, axes);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public DefaultUserDefinedCS forConvention(final AxesConvention convention) {
-        return (DefaultUserDefinedCS) super.forConvention(convention);
-    }
-
-    /**
-     * Returns a coordinate system with different axes.
-     */
-    @Override
-    final AbstractCS createForAxes(final String name, final CoordinateSystemAxis[] axes) {
-        switch (axes.length) {
-            case 2: // Fall through
-            case 3: return new DefaultUserDefinedCS(this, name, axes);
-            default: throw unexpectedDimension(axes, 2, 3);
-        }
     }
 
 
@@ -173,5 +135,6 @@ public final class DefaultUserDefinedCS extends AbstractCS {
      * which will assign values to the fields using reflection.
      */
     private DefaultUserDefinedCS() {
+        super(Map.of(NAME_KEY, NilReferencingObject.UNNAMED));
     }
 }

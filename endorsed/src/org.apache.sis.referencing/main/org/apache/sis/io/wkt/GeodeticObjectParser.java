@@ -91,8 +91,8 @@ import org.opengis.referencing.ObjectDomain;
 import org.opengis.coordinate.CoordinateMetadata;
 
 // Specific to the geoapi-4.0 branch:
-import org.apache.sis.referencing.crs.DefaultImageCRS;
-import org.apache.sis.referencing.datum.DefaultImageDatum;
+import org.apache.sis.referencing.legacy.DefaultImageCRS;
+import org.apache.sis.referencing.legacy.DefaultImageDatum;
 
 
 /**
@@ -1768,7 +1768,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageDatum"} element.
      * @throws ParseException if the {@code "ImageDatum"} element cannot be parsed.
      */
-    @SuppressWarnings("removal")
     private DefaultImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageDatum, WKTKeywords.IDatum);
         if (element == null) {
@@ -1870,7 +1869,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageCRS"} element as an {@link ImageCRS} object.
      * @throws ParseException if the {@code "ImageCRS"} element cannot be parsed.
      */
-    @SuppressWarnings("removal")
     private DefaultImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageCRS);
         if (element == null) {

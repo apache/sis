@@ -44,6 +44,7 @@ import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;

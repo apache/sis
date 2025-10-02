@@ -98,7 +98,6 @@
      */
     @XmlJavaTypeAdapter(CD_GeodeticDatum.class),
     @XmlJavaTypeAdapter(CD_EngineeringDatum.class),
-    @XmlJavaTypeAdapter(CD_ImageDatum.class),
     @XmlJavaTypeAdapter(CD_ParametricDatum.class),
     @XmlJavaTypeAdapter(CD_TemporalDatum.class),
     @XmlJavaTypeAdapter(CD_VerticalDatum.class),

@@ -36,6 +36,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
+import org.apache.sis.referencing.legacy.DefaultImageCRS;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -97,7 +98,8 @@ import org.opengis.coordinate.MismatchedDimensionException;
 @XmlRootElement(name = "AbstractCRS")
 @XmlSeeAlso({
     AbstractSingleCRS.class,
-    DefaultCompoundCRS.class
+    DefaultCompoundCRS.class,
+    DefaultImageCRS.class
 })
 public class AbstractCRS extends AbstractReferenceSystem implements CoordinateReferenceSystem {
     /**

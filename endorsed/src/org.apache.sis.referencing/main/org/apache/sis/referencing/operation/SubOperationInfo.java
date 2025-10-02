@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Specific to the geoapi-4.0 branch:
-import org.apache.sis.referencing.crs.DefaultImageCRS;
+import org.apache.sis.referencing.legacy.DefaultImageCRS;
 
 
 /**
