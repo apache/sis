@@ -414,7 +414,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         final var cit = new DefaultCitation();
         cit.setTitle(new SimpleInternationalString("A lost island"));
         cit.setEdition(new SimpleInternationalString("First edition"));
-        cit.setEditionDate(new Date(1523311200000L));
+        cit.setEditionDate(Instant.ofEpochMilli(1523311200000L));
         cit.setCollectiveTitle(new SimpleInternationalString("Popular legends"));
         cit.setAlternateTitles(List.of(new SimpleInternationalString("Island lost again"),
                                        new Anchor(new URI("http://map-example.com"), "Map example")));

@@ -111,7 +111,7 @@ import org.opengis.referencing.ObjectDomain;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.4
  */
 public class Formatter implements Localized {
@@ -1244,21 +1244,6 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a date.
-     * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
-     * This method exists for compatibility with legacy date objects, but {@link #append(Temporal)} should
-     * be preferred in newer code.
-     *
-     * @param  date  the date to append to the WKT, or {@code null} if none.
-     */
-    public void append(final Date date) {
-        if (date != null) {
-            appendSeparator();
-            dateFormat.format(date, buffer, dummy);
-        }
-    }
-
-    /**
      * Appends a Boolean value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the Boolean if needed.
      *
@@ -1633,10 +1618,11 @@ public class Formatter implements Localized {
             }
         } else if (value instanceof ControlledVocabulary) {
             append((ControlledVocabulary) value);
-        } else if (value instanceof Date) {
-            append((Date) value);
         } else if (value instanceof Temporal) {
             append((Temporal) value);
+        } else if (value instanceof Date) {
+            appendSeparator();
+            dateFormat.format((Date) value, buffer, dummy);
         } else if (value instanceof Boolean) {
             append((Boolean) value);
         } else if (value instanceof CharSequence) {

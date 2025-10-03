@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
-import java.util.Date;
 import java.util.Collection;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
@@ -36,7 +35,6 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
-import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
@@ -369,18 +367,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     public void setEditionDate(final Temporal newValue) {
         checkWritePermission(editionDate);
         editionDate = newValue;
-    }
-
-    /**
-     * Sets the date of the edition.
-     *
-     * @param  newValue  the new edition date, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #setEditionDate(Temporal)}.
-     */
-    @Deprecated(since="1.5")
-    public void setEditionDate(final Date newValue) {
-        setEditionDate(TemporalDate.toTemporal(newValue));
     }
 
     /**

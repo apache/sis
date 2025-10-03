@@ -16,14 +16,12 @@
  */
 package org.apache.sis.metadata.iso.acquisition;
 
-import java.util.Date;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.acquisition.RequestedDate;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.temporal.TemporalDate;
 
 
 /**
@@ -147,18 +145,6 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     }
 
     /**
-     * Sets the preferred date and time of collection.
-     *
-     * @param  newValue  the new requested date of collection value.
-     *
-     * @deprecated Replaced by {@link #setRequestedDateOfCollection(Temporal)}.
-     */
-    @Deprecated(since="1.5")
-    public void setRequestedDateOfCollection(final Date newValue) {
-        setRequestedDateOfCollection(TemporalDate.toTemporal(newValue));
-    }
-
-    /**
      * Returns the latest date and time collection must be completed.
      *
      * @return latest date and time, or {@code null}.
@@ -183,17 +169,5 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     public void setLatestAcceptableDate(final Temporal newValue) {
         checkWritePermission(latestAcceptableDate);
         latestAcceptableDate = newValue;
-    }
-
-    /**
-     * Sets the latest date and time collection must be completed.
-     *
-     * @param  newValue  the new latest acceptable data value.
-     *
-     * @deprecated Replaced by {@link #setLatestAcceptableDate(Temporal)}.
-     */
-    @Deprecated(since="1.5")
-    public void setLatestAcceptableDate(final Date newValue) {
-        setLatestAcceptableDate(TemporalDate.toTemporal(newValue));
     }
 }

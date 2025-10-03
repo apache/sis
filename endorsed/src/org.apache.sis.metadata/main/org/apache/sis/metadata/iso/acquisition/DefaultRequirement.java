@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.acquisition;
 
-import java.util.Date;
 import java.util.Collection;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
@@ -29,7 +28,6 @@ import org.opengis.metadata.acquisition.RequestedDate;
 import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;
@@ -330,18 +328,6 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     public void setExpiryDate(final Temporal newValue) {
         checkWritePermission(expiryDate);
         expiryDate = newValue;
-    }
-
-    /**
-     * Sets the date and time after which collection is no longer valid.
-     *
-     * @param  newValue  the new expiry date.
-     *
-     * @deprecated Replaced by {@link #setExpiryDate(Temporal)}.
-     */
-    @Deprecated(since="1.5")
-    public void setExpiryDate(final Date newValue) {
-        setExpiryDate(TemporalDate.toTemporal(newValue));
     }
 
     /**
