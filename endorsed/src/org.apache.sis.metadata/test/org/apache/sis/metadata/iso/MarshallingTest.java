@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.MissingResourceException;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
@@ -56,7 +55,6 @@ import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
-import org.apache.sis.util.iso.DefaultRecordSchema;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.XML;
@@ -70,6 +68,7 @@ import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
+import org.apache.sis.util.iso.DefaultRecordSchemaTest;
 
 
 /**
@@ -81,6 +80,7 @@ import org.apache.sis.metadata.xml.TestUsingFile;
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-400">SIS-400</a>
  */
+@SuppressWarnings("exports")
 public final class MarshallingTest extends TestUsingFile implements Filter {
     /**
      * The marshaller used to handle marshalling the created DefaultMetadata object.
@@ -549,12 +549,12 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             {
                 coverageDescription = new DefaultCoverageDescription();
                 // Attribute description
-                final var schema = new DefaultRecordSchema(null, null, "IslandFeatures");
-                final var members = new LinkedHashMap<CharSequence,Class<?>>();
-                members.put("city",      String.class);
-                members.put("latitude",  Double.class);
-                members.put("longitude", Double.class);
-                final RecordType recordType = schema.createRecordType("SettledArea", members);
+                final RecordType recordType = DefaultRecordSchemaTest.createRecordType(
+                        "IslandFeatures",
+                        "SettledArea",
+                        Map.of("city",      String.class,
+                               "latitude",  Double.class,
+                               "longitude", Double.class));
                 coverageDescription.setAttributeDescription(recordType);
                 {
                     /*

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**
@@ -37,13 +38,14 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @Execution(ExecutionMode.CONCURRENT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class DefaultRecordTest extends TestCase {
     /**
      * The record schema for the record types to create.
      */
-    private final SerializableRecordSchema schema;
+    private final DefaultRecordSchema schema;
 
     /**
      * The record type to be shared by all tests.
@@ -59,7 +61,7 @@ public final class DefaultRecordTest extends TestCase {
         assertNull(members.put("latitude",   Double.class));
         assertNull(members.put("longitude",  Double.class));
         assertNull(members.put("population", Integer.class));
-        schema     = new SerializableRecordSchema("MySchema");
+        schema     = new DefaultRecordSchema("MySchema");
         recordType = schema.createRecordType("MyRecordType", members);
     }
 
@@ -156,7 +158,7 @@ public final class DefaultRecordTest extends TestCase {
     public void testSerialization() {
         final var record = new DefaultRecord(recordType);
         record.setAll("Machu Picchu", -13.1639, -72.5468, null);
-        assertNotSame(record, schema.testSerialization(record));
+        assertNotSame(record, assertSerializedEquals(record));
     }
 
     /**
@@ -168,7 +170,7 @@ public final class DefaultRecordTest extends TestCase {
         final var members = new LinkedHashMap<CharSequence,Class<?>>(8);
         assertNull(members.put("latitude",  Double.class));
         assertNull(members.put("longitude", Double.class));
-        final var record = new DefaultRecord(schema.createRecordType("MyRecordType", members));
+        final var record = new DefaultRecord(schema.createRecordType("AnotherRecordType", members));
         /*
          * As a side effect of the fact that DefaultRecord uses an array of primitive type,
          * initial values should be zero instead of null. We use this trick as a way to
@@ -181,11 +183,10 @@ public final class DefaultRecordTest extends TestCase {
          */
         setAllAndCompare(record, -13.1639, -72.5468);
         assertMultilinesEquals(
-                "Record[“MyRecordType”] {\n" +
+                "Record[“AnotherRecordType”] {\n" +
                 "    latitude  : -13.1639\n" +
                 "    longitude : -72.5468\n" +
                 "}\n",
                 record.toString());
-        assertNotSame(record, schema.testSerialization(record));
     }
 }

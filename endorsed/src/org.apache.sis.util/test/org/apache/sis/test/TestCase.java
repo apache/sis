@@ -49,6 +49,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("UseOfSystemOutOrSystemErr")
 @ExtendWith(FailureDetailsReporter.class)
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 public abstract class TestCase {

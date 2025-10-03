@@ -26,17 +26,20 @@ import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.QuantitativeResult;
-import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultRecord;
+import org.apache.sis.util.iso.DefaultRecordType;
+import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.metadata.internal.Resources;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.iso.DefaultRecordSchemaTest;
 
 
 /**
@@ -45,6 +48,7 @@ import org.apache.sis.test.TestCase;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultQuantitativeResultTest extends TestCase {
     /**
      * Creates a new test case.
@@ -62,7 +66,7 @@ public final class DefaultQuantitativeResultTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testIsEmpty() {
-        final DefaultQuantitativeResult r = new DefaultQuantitativeResult();
+        final var r = new DefaultQuantitativeResult();
         assertTrue(r.isEmpty());
         r.setErrorStatistic(new SimpleInternationalString("a description"));
         assertFalse(r.isEmpty());
@@ -86,28 +90,29 @@ public final class DefaultQuantitativeResultTest extends TestCase {
          * The `RecordType` constructor invoked at unmarshalling time sets the name
          * to the hard-coded "Multiline record" string. We need to use the same name.
          */
-        final RecordType recordType = RecordSchemaSIS.INSTANCE.createRecordType(
-                RecordSchemaSIS.MULTILINE.toInternationalString(),
+        final RecordType recordType = DefaultRecordSchemaTest.createRecordType(
+                Constants.SIS,
+                Resources.formatInternational(Resources.Keys.MultilineRecord),
                 Map.of("Result of quality measurement", String.class));
         /*
          * The `Record` constructor invoked at unmarshalling time sets the type
          * to the hard-coded "Single text" value. We need to use the same type.
          */
-        final RecordType singleText = RecordSchemaSIS.STRING;
-        final DefaultRecord  record = new DefaultRecord(singleText);
+        final RecordType singleText = DefaultRecordType.SINGLE_STRING;
+        final var record = new DefaultRecord(singleText);
         record.set(TestUtilities.getSingleton(singleText.getMembers()), "The quality is okay");
         /*
          * Record type and record value are set independently in two properties.
          * In current implementation, `record.type` is not equal to `recordType`.
          */
-        assertNotEquals(recordType, record.getRecordType());        // Actually a limitation, not an intended behavior.
-        final DefaultQuantitativeResult result = new DefaultQuantitativeResult();
+        // assertEquals(recordType, record.getRecordType());    // Limitation of current implementation.
+        final var result = new DefaultQuantitativeResult();
         result.setValues(List.of(record));
         result.setValueType(recordType);
         /*
          * Opportunistically test the redirection implemented in deprecated methods.
          */
-        final DefaultQuantitativeAttributeAccuracy element = new DefaultQuantitativeAttributeAccuracy();
+        final var element = new DefaultQuantitativeAttributeAccuracy();
         element.setNamesOfMeasure(Set.of(new SimpleInternationalString("Some quality flag")));
         element.setResults(Set.of(result));
         return element;
