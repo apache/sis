@@ -73,7 +73,7 @@ import org.opengis.referencing.IdentifiedObject;    // For javadoc
  *
  * @since 0.3
  */
-public final class CharSequences extends Static {
+public final class CharSequences {
     /**
      * An array of zero-length. This constant play a role equivalents to
      * {@link java.util.Collections#EMPTY_LIST}.

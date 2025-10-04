@@ -37,7 +37,6 @@ import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.ElevationAngle;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
@@ -59,7 +58,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * @version 1.5
  * @since   0.4
  */
-public final class CoordinateSystems extends Static {
+public final class CoordinateSystems {
     /**
      * Do not allow instantiation of this class.
      */

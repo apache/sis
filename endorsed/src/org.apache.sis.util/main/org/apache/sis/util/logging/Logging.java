@@ -22,7 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.system.Modules;
@@ -46,7 +45,7 @@ import org.apache.sis.system.SystemListener;
  * @version 1.5
  * @since   0.3
  */
-public final class Logging extends Static {
+public final class Logging {
     /**
      * The threshold at which {@link #unexpectedException(Logger, String, String, Throwable, Level)} shall
      * set the throwable in the {@link LogRecord}. For any record to be logged at a lower {@link Level},

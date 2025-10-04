@@ -136,7 +136,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
@@ -167,54 +167,6 @@ public class ImageProcessor implements Cloneable {
      * @see #setImageLayout(ImageLayout)
      */
     private ImageLayout layout;
-
-    /**
-     * Whether {@code ImageProcessor} can produce an image of different size compared to requested size.
-     * An image may be resized if the requested size cannot be subdivided into tiles of reasonable size.
-     * For example if the image width is a prime number, there is no way to divide the image horizontally with
-     * an integer number of tiles. The only way to get an integer number of tiles is to change the image size.
-     *
-     * <p>The image resizing policy may be used by any operation that involve a {@linkplain #resample resampling}.
-     * If a resizing is applied, the new size will be written in the {@code bounds} argument (a {@link Rectangle}).</p>
-     *
-     * @see #getImageResizingPolicy()
-     * @see #setImageResizingPolicy(Resizing)
-     *
-     * @deprecated Replaced by {@link ImageLayout}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public enum Resizing {
-        /**
-         * Image size is unmodified, the requested value is used unconditionally.
-         * It may result in big tiles (potentially a single tile for the whole image)
-         * if the image size is not divisible by a tile size.
-         *
-         * @deprecated Replaced by {@link ImageLayout#DEFAULT}.
-         */
-        @Deprecated
-        NONE(ImageLayout.DEFAULT),
-
-        /**
-         * Image size can be increased. {@code ImageProcessor} will try to increase
-         * by the smallest number of pixels allowing the image to be subdivided in tiles.
-         *
-         * @deprecated Replaced by {@code ImageLayout.DEFAULT.allowImageBoundsAdjustments(true)}.
-         */
-        @Deprecated
-        EXPAND(ImageLayout.DEFAULT.allowImageBoundsAdjustments(true));
-
-        /**
-         * The layout corresponding to the enumeration value.
-         */
-        public final ImageLayout layout;
-
-        /**
-         * Creates a new enumeration value for the given size policy.
-         */
-        private Resizing(final ImageLayout layout) {
-            this.layout = layout;
-        }
-    }
 
     /**
      * Interpolation to use during resample operations.
@@ -415,31 +367,6 @@ public class ImageProcessor implements Cloneable {
      */
     public synchronized void setColorizer(final Colorizer colorizer) {
         this.colorizer = colorizer;
-    }
-
-    /**
-     * Returns whether {@code ImageProcessor} can produce an image of different size compared to requested size.
-     * If this processor can use a different size, the enumeration value specifies what kind of changes may be applied.
-     *
-     * @return the image resizing policy.
-     *
-     * @deprecated Replaced by {@link #getImageLayout()}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public synchronized Resizing getImageResizingPolicy() {
-        return layout.isImageBoundsAdjustmentAllowed ? Resizing.EXPAND : Resizing.NONE;
-    }
-
-    /**
-     * Sets whether {@code ImageProcessor} can produce an image of different size compared to requested size.
-     *
-     * @param  policy   the new image resizing policy.
-     *
-     * @deprecated Replaced by {@link #setImageLayout(ImageLayout)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public synchronized void setImageResizingPolicy(final Resizing policy) {
-        layout = policy.layout;
     }
 
     /**

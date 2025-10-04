@@ -27,7 +27,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
@@ -85,7 +84,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -842,41 +841,6 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
-     * If an optimization is possible, a new math transform is created to perform the combined transformation.
-     * The {@code applyOtherFirst} value determines the transformation order as bellow:
-     *
-     * <ul>
-     *   <li>If {@code applyOtherFirst} is {@code true}, then transforming a point
-     *       <var>p</var> by the combined transform is equivalent to first transforming
-     *       <var>p</var> by {@code other} and then transforming the result by {@code this}.</li>
-     *   <li>If {@code applyOtherFirst} is {@code false}, then transforming a point
-     *       <var>p</var> by the combined transform is equivalent to first transforming
-     *       <var>p</var> by {@code this} and then transforming the result by {@code other}.</li>
-     * </ul>
-     *
-     * If no optimization is available for the combined transform, then this method returns {@code null}.
-     *
-     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
-     *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
-     * @param  other            the other math transform to (pre-)concatenate with this transform.
-     * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return the math transforms combined in an optimized way, or {@code null} if no such optimization is available.
-     * @throws FactoryException if an error occurred while combining the transforms.
-     *
-     * @since 0.8
-     *
-     * @deprecated Replaced by {@link #tryConcatenate(TransformJoiner)}.
-     *             See <a href="https://issues.apache.org/jira/browse/SIS-595">SIS-595</a>.
-     */
-    @Deprecated(forRemoval=true, since="1.5")
-    protected MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
-            throws FactoryException
-    {
-        return null;
-    }
-
-    /**
      * Concatenates in an optimized way this math transform with its neighbor, if possible.
      * If an optimization is possible, a new {@link MathTransform} is created to perform a calculation
      * equivalent to the {@linkplain MathTransforms#getSteps(MathTransform) sequence of transform steps}.
@@ -898,19 +862,6 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @since 1.5
      */
     protected void tryConcatenate(final TransformJoiner context) throws FactoryException {
-        // TODO: make this method empty after the deprecated method has been removed.
-        if (context.replacement == null) {
-            boolean applyOtherFirst = false;
-            do {
-                final MathTransform other = context.getTransform(applyOtherFirst ? -1 : +1).orElse(null);
-                if (other != null) {
-                    context.replacement = tryConcatenate(applyOtherFirst, other, context.factory);
-                    if (context.replacement != null) {
-                        break;
-                    }
-                }
-            } while ((applyOtherFirst = !applyOtherFirst) == true);
-        }
     }
 
     /**

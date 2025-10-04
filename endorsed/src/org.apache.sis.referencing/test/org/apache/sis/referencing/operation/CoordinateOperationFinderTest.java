@@ -42,6 +42,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -1042,8 +1043,8 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
 
         final GeographicCRS WGS84     = CommonCRS.WGS84.normalizedGeographic();
         final CompoundCRS   sourceCRS = compound("Test3D", WGS84, CommonCRS.Temporal.UNIX.crs());
-        final DerivedCRS    targetCRS = DefaultDerivedCRS.create(properties,
-                WGS84, null, factory.getOperationMethod("Affine"),
+        final DerivedCRS    targetCRS = DefaultDerivedCRS.create(properties, WGS84, null,
+                CoordinateOperations.findMethod(factory.getMathTransformFactory(), "Affine"),
                 MathTransforms.linear(Matrices.create(3, 3, new double[] {
                     12,  0, 480,
                     0, -12, 790,

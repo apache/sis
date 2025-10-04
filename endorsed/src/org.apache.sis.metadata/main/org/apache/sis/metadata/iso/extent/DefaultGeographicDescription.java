@@ -19,13 +19,10 @@ package org.apache.sis.metadata.iso.extent;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -57,7 +54,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 @XmlType(name = "EX_GeographicDescription_Type")
@@ -113,42 +110,6 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
         super(true);
         if (authority != null || code != null) {
             geographicIdentifier = new DefaultIdentifier(authority, code);
-        }
-    }
-
-    /**
-     * Creates an inclusive geographic description initialized to the given natural language description.
-     * This constructor sets the {@linkplain #getInclusion() inclusion} property to {@code true} and the
-     * {@linkplain DefaultIdentifier#getCode() identifier code} to one of the following choices:
-     *
-     * <ul>
-     *   <li>the given {@code description} string if it is a valid
-     *       {@linkplain CharSequences#isUnicodeIdentifier(CharSequence) Unicode identifier},</li>
-     *   <li>otherwise an {@linkplain CharSequences#camelCaseToAcronym(CharSequence) acronym}
-     *       of the given {@code description}.</li>
-     * </ul>
-     *
-     * @param description  the natural language description of the meaning of the code value, or {@code null} if none.
-     *
-     * @since 0.6
-     *
-     * @deprecated This constructor applies too arbitrary rules.
-     */
-    @Deprecated(since = "1.5", forRemoval = true)
-    public DefaultGeographicDescription(final CharSequence description) {
-        super(true);
-        if (description != null) {
-            final var id = new DefaultIdentifier();
-            if (CharSequences.isUnicodeIdentifier(description)) {
-                id.setCode(description.toString());
-                if (description instanceof InternationalString) {
-                    id.setDescription((InternationalString) description);
-                }
-            } else {
-                id.setCode(CharSequences.camelCaseToAcronym(description).toString());
-                id.setDescription(Types.toInternationalString(description));
-            }
-            geographicIdentifier = id;
         }
     }
 

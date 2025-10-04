@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
-import java.util.Date;
 import java.util.Optional;
 import java.time.Instant;
 import java.time.temporal.Temporal;
@@ -51,7 +50,7 @@ import org.opengis.temporal.Period;
  * <ul>
  *   <li>{@link #getBeginning()} for fetching the start time from the temporal primitive.</li>
  *   <li>{@link #getEnding()} for fetching the end time from the temporal primitive.</li>
- *   <li>{@link #setBounds(Date, Date)} for setting the extent from the given start and end time.</li>
+ *   <li>{@link #setBounds(Temporal, Temporal)} for setting the extent from the given start and end time.</li>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
  * </ul>
  *
@@ -67,7 +66,7 @@ import org.opengis.temporal.Period;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 @XmlType(name = "EX_TemporalExtent_Type")
@@ -212,47 +211,6 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      */
     public Optional<Temporal> getEnding() {
         return Optional.ofNullable(getBound(extent, false));
-    }
-
-    /**
-     * The start date and time for the content of the dataset.
-     * This method tries to infer it from the {@linkplain #getExtent() extent}.
-     *
-     * @return the start time, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #getBeginning()} in order to transition to {@code java.time} API.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public Date getStartTime() {
-        return TemporalDate.toDate(getBeginning().orElse(null));
-    }
-
-    /**
-     * Returns the end date and time for the content of the dataset.
-     * This method tries to infer it from the {@linkplain #getExtent() extent}.
-     *
-     * @return the end time, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #getEnding()} in order to transition to {@code java.time} API.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public Date getEndTime() {
-        return TemporalDate.toDate(getEnding().orElse(null));
-    }
-
-    /**
-     * Sets the temporal extent to the specified values. This convenience method creates a temporal
-     * primitive for the given dates, then invokes {@link #setExtent(TemporalPrimitive)}.
-     *
-     * @param  startTime  the start date and time for the content of the dataset, or {@code null} if none.
-     * @param  endTime    the end date and time for the content of the dataset, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #setBounds(Temporal, Temporal)} in order to transition to {@code java.time} API.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public void setBounds(final Date startTime, final Date endTime) {
-        setBounds((startTime == null) ? null : startTime.toInstant(),
-                    (endTime == null) ? null : endTime.toInstant());
     }
 
     /**

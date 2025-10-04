@@ -104,7 +104,7 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoid(String)
@@ -398,19 +398,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     public double getGeocentricRadius(final double φ) {
         return Formulas.geocentricRadius(this, Math.toRadians(φ));
-    }
-
-    /**
-     * @deprecated Renamed {@link #getGeocentricRadius(double)}.
-     *
-     * @param  φ  latitude in degrees, from -90° to +90° inclusive.
-     * @return geocentric radius at the given latitude.
-     *
-     * @since 1.3
-     */
-    @Deprecated(since="1.4", forRemoval=true)
-    public double getRadius(final double φ) {
-        return getGeocentricRadius(φ);
     }
 
     /**

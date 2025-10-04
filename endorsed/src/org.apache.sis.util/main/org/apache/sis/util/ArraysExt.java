@@ -74,7 +74,7 @@ import java.lang.reflect.Array;
  * @since 0.3
  */
 @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Array constants in this class are immutable empty arrays.
-public final class ArraysExt extends Static {
+public final class ArraysExt {
     /**
      * An empty array of {@code double} primitive type.
      * Such arrays are immutable and can be safely shared.

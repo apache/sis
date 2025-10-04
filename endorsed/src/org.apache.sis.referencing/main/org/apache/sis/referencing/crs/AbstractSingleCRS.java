@@ -54,8 +54,7 @@ import org.opengis.metadata.Identifier;
     DefaultVerticalCRS.class,
     DefaultTemporalCRS.class,
     DefaultParametricCRS.class,
-    DefaultEngineeringCRS.class,
-    DefaultImageCRS.class
+    DefaultEngineeringCRS.class
 })
 class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCRS {
     /**

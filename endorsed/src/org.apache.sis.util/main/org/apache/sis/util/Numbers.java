@@ -48,7 +48,7 @@ import org.apache.sis.util.internal.shared.CollectionsExt;
     "UnnecessaryBoxing",
     "ResultOfObjectAllocationIgnored"
 })
-public final class Numbers extends Static {
+public final class Numbers {
     /**
      * Constant of value {@value} used in {@code switch} statements or as index in arrays.
      * This enumeration provides the following guarantees (some Apache SIS codes rely on them):

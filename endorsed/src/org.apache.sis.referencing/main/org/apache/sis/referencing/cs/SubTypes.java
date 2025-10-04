@@ -32,6 +32,7 @@ import org.apache.sis.referencing.internal.shared.AxisDirections;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.cs.UserDefinedCS;
+import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
 
 
 /**

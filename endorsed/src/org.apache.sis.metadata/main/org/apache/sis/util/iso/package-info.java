@@ -28,13 +28,6 @@
  *       <li>{@link org.apache.sis.util.iso.DefaultScopedName} for a composite of a <i>head</i> name and a <i>tail</i> name.</li>
  *     </ul>
  *   </li>
- *   <li>Implementations of {@link org.opengis.util.Record} and related classes (derived from ISO 19103):
- *     <ul>
- *       <li>{@link org.apache.sis.util.iso.DefaultRecord}       for a list of logically related elements as (<var>name</var>, <var>value</var>) pairs.</li>
- *       <li>{@link org.apache.sis.util.iso.DefaultRecordType}   for definition of the type of a {@code Record}.</li>
- *       <li>{@link org.apache.sis.util.iso.DefaultRecordSchema} for a collection of {@code RecordType}s in a given namespace.</li>
- *     </ul>
- *   </li>
  *   <li>Static utility methods:
  *     <ul>
  *       <li>{@link org.apache.sis.util.iso.Types} for working with UML identifiers and description of GeoAPI types.</li>
@@ -99,7 +92,7 @@
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {

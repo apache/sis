@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.time.Instant;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.legacy.DefaultImageDatum;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
@@ -157,7 +158,7 @@ public final class HardCodedDatum {
     /**
      * Image with {@link PixelInCell#CELL_CENTER}.
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings("exports")
     public static final DefaultImageDatum IMAGE = new DefaultImageDatum(
             properties("Image", null, null),
             PixelInCell.CELL_CENTER);

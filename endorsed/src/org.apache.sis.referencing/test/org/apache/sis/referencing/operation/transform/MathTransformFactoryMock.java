@@ -52,8 +52,6 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
     /**
      * Parameters used during the last creation of a math transform.
      * Stored for allowing callers to verify the parameters if needed.
-     *
-     * @see #createParameterizedTransform(ParameterValueGroup)
      */
     public ParameterValueGroup lastParameters;
 

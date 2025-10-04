@@ -274,7 +274,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      */
     public static String getSeparator(final NameSpace ns, final boolean head) {
         if (ns instanceof DefaultNameSpace) {
-            final DefaultNameSpace ds = (DefaultNameSpace) ns;
+            final var ds = (DefaultNameSpace) ns;
             return head ? ds.headSeparator : ds.separator;
         }
         return DEFAULT_SEPARATOR_STRING;
@@ -333,7 +333,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 return path;
             }
             depth = depth(this);
-            final DefaultLocalName[] names = new DefaultLocalName[depth];
+            final var names = new DefaultLocalName[depth];
             DefaultNameSpace scan = this;
             for (int i=depth; --i>=0;) {
                 names[i] = new DefaultLocalName(scan.parent, scan.name);
@@ -536,7 +536,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     @Override
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final DefaultNameSpace that = (DefaultNameSpace) object;
+            final var that = (DefaultNameSpace) object;
             return equalsIgnoreParent(that) && Objects.equals(this.parent, that.parent);
         }
         return false;

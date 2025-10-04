@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -35,9 +36,10 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultRecordTypeTest extends TestCase {
     /** Value of {@link DefaultRecordType#getContainer()}. */
-    private final SerializableRecordSchema container;
+    private final DefaultRecordSchema container;
 
     /** Value of {@link DefaultRecordType#getTypeName()}.   */ private DefaultTypeName   recordTypeName;
     /** Value of {@link DefaultRecordType#getMembers()}.    */ private DefaultMemberName fieldName;
@@ -55,14 +57,14 @@ public final class DefaultRecordTypeTest extends TestCase {
         fieldNamespace  = new DefaultNameSpace (recordNamespace, "MyRecordType", ":", ":");
         fieldTypeName   = new DefaultTypeName  (new DefaultNameSpace(null, "gco", ":", ":"), "Integer");
         fieldName       = new DefaultMemberName(fieldNamespace, "aMember", fieldTypeName);
-        container       = new SerializableRecordSchema("MyNameSpace");
+        container       = new DefaultRecordSchema("MyNameSpace");
         assertEquals("MyNameSpace:MyRecordType:aMember", fieldName.toFullyQualifiedName().toString());
     }
 
     /**
      * Creates a new record type from the current values of private fields.
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings("deprecation")
     private DefaultRecordType create() throws IllegalArgumentException {
         final Type fieldType = new SimpleAttributeType<>(fieldTypeName, Integer.class);
         return new DefaultRecordType(recordTypeName, container, Map.of(fieldName, fieldType));
@@ -130,6 +132,6 @@ public final class DefaultRecordTypeTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        container.testSerialization(create());
+        assertSerializedEquals(create());
     }
 }

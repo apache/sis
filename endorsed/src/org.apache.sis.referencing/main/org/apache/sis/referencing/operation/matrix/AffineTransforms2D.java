@@ -32,7 +32,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.referencing.internal.shared.IntervalRectangle;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -44,7 +43,7 @@ import org.apache.sis.util.Static;
  * @version 1.1
  * @since   0.4
  */
-public final class AffineTransforms2D extends Static {
+public final class AffineTransforms2D {
     /**
      * Do not allows instantiation of this class.
      */

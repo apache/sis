@@ -1702,22 +1702,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Creates a new subsampled grid extent (32-bits version).
-     * See {@link #subsample(long...)} for details.
-     *
-     * @param  periods  the subsampling factors for each dimension of this grid extent.
-     * @return the subsampled extent, or {@code this} if subsampling results in the same extent.
-     * @throws IllegalArgumentException if a period is not greater than zero.
-     *
-     * @deprecated Use the version with {@code long} integers instead of {@code int}.
-     * Small overviews of large images require large subsampling factors.
-     */
-    @Deprecated(since="1.5")
-    public GridExtent subsample(final int[] periods) {
-        return subsample(ArraysExt.copyAsLongs(periods));
-    }
-
-    /**
      * Creates a new grid extent upsampled by the given number of cells along each grid dimensions.
      * This method multiplies the {@linkplain #getLow(int) low coordinates}
      * and the {@linkplain #getSize(int) size} by the given periods.
@@ -1753,24 +1737,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         }
         return Arrays.equals(coordinates, sub.coordinates) ? this : sub;
-    }
-
-    /**
-     * Creates a new upsampled grid extent (32-bits version).
-     * See {@link #upsample(long...)} for details.
-     *
-     * @param  periods  the upsampling factors for each dimension of this grid extent.
-     * @return the upsampled extent, or {@code this} if upsampling results in the same extent.
-     * @throws IllegalArgumentException if a period is not greater than zero.
-     * @throws ArithmeticException if the upsampled extent overflows the {@code long} capacity.
-     * @since 1.3
-     *
-     * @deprecated Use the version with {@code long} integers instead of {@code int}.
-     * Small overviews of large images require large subsampling factors.
-     */
-    @Deprecated(since="1.5")
-    public GridExtent upsample(final int[] periods) {
-        return upsample(ArraysExt.copyAsLongs(periods));
     }
 
     /**

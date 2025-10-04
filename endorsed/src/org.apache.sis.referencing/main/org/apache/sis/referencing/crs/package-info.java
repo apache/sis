@@ -73,7 +73,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.4
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/coordinateReferenceSystems.xsd",
@@ -98,7 +98,6 @@
      */
     @XmlJavaTypeAdapter(CD_GeodeticDatum.class),
     @XmlJavaTypeAdapter(CD_EngineeringDatum.class),
-    @XmlJavaTypeAdapter(CD_ImageDatum.class),
     @XmlJavaTypeAdapter(CD_ParametricDatum.class),
     @XmlJavaTypeAdapter(CD_TemporalDatum.class),
     @XmlJavaTypeAdapter(CD_VerticalDatum.class),

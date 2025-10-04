@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.crs;
+package org.apache.sis.referencing.legacy;
 
 import java.util.Map;
 import jakarta.xml.bind.JAXBException;
@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.cs.DefaultAffineCS;
-import org.apache.sis.referencing.datum.DefaultImageDatum;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.xml.Namespaces;
 
@@ -38,6 +37,8 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.referencing.legacy.DefaultImageCRS;
+import org.apache.sis.referencing.legacy.DefaultImageDatum;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
@@ -48,7 +49,6 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("removal")
 public final class DefaultImageCRSTest extends TestCase {
     /**
      * Creates a new test case.

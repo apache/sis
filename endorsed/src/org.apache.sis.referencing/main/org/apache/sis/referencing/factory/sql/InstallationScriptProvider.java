@@ -61,28 +61,6 @@ import org.apache.sis.util.internal.shared.Constants;
  */
 public abstract class InstallationScriptProvider extends InstallationResources {
     /**
-     * A sentinel value for the content of the script to execute before the SQL scripts provided by the authority.
-     * This is an Apache <abbr>SIS</abbr> build-in script for replacing the {@code VARCHAR} type of some columns
-     * by enumeration types, in order to constraint the values to the codes recognized by {@link EPSGDataAccess}.
-     * Those enumerations are not mandatory for allowing {@link EPSGFactory} to work, but improve data integrity.
-     *
-     * @deprecated Ignored since the upgrade to version 10+ of <abbr>EPSG</abbr> because too dependent of the database schema.
-     */
-    @Deprecated(since = "1.5", forRemoval = true)
-    protected static final String PREPARE = "Prepare";
-
-    /**
-     * A sentinel value for the content of the script to execute after the SQL scripts provided by the authority.
-     * This is an Apache <abbr>SIS</abbr> build-in script for creating indexes or performing other manipulations
-     * that help <abbr>SIS</abbr> to use the dataset. Those indexes are not mandatory for allowing
-     * {@link EPSGFactory} to work, but improve performances.
-     *
-     * @deprecated Ignored since the upgrade to version 10+ of <abbr>EPSG</abbr> because too dependent of the database schema.
-     */
-    @Deprecated(since = "1.5", forRemoval = true)
-    protected static final String FINISH = "Finish";
-
-    /**
      * The authorities to be returned by {@link #getAuthorities()}.
      */
     private final Set<String> authorities;

@@ -34,7 +34,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @version 1.5
  * @since   0.3
  */
-public final class Utilities extends Static {
+public final class Utilities {
     /**
      * Do not allow object creation.
      */

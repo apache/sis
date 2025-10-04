@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import javax.xml.XMLConstants;
-import org.apache.sis.util.Static;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_NAMESPACE;
 
@@ -92,7 +91,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_N
  * @version 1.4
  * @since   0.3
  */
-public final class Namespaces extends Static {
+public final class Namespaces {
     /**
      * Do not allow instantiation of this class.
      */

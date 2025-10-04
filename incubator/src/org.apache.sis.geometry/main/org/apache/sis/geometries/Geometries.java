@@ -161,7 +161,7 @@ public final class Geometries {
                 final CoordinateSystemAxis axis = new DefaultCoordinateSystemAxis(Collections.singletonMap("name", name + i + "Axis"),
                         name, AxisDirection.UNSPECIFIED, Units.UNITY);
                 final CoordinateSystem cs = new DefaultLinearCS(Collections.singletonMap("name", name + i + "CS"), axis);
-                DefaultEngineeringCRS crs = new DefaultEngineeringCRS(Collections.singletonMap("name", name), datum, cs);
+                DefaultEngineeringCRS crs = new DefaultEngineeringCRS(Collections.singletonMap("name", name), datum, null, cs);
                 crss.add(crs);
             }
             return CRS.compound(crss.toArray(new CoordinateReferenceSystem[crss.size()]));
@@ -214,7 +214,7 @@ public final class Geometries {
                     name("Cartesian2d"),
                     axis1, axis2);
 
-        return new DefaultEngineeringCRS(name("Cartesian2d"), DATUM, cs);
+        return new DefaultEngineeringCRS(name("Cartesian2d"), DATUM, null, cs);
     }
 
     public static CoordinateReferenceSystem createCartesianCRS3D(CoordinateSystemAxis axis1, CoordinateSystemAxis axis2, CoordinateSystemAxis axis3) {
@@ -222,7 +222,7 @@ public final class Geometries {
                     name("Cartesian3d"),
                     axis1, axis2, axis3);
 
-        return new DefaultEngineeringCRS(name("Cartesian3d"), DATUM, cs);
+        return new DefaultEngineeringCRS(name("Cartesian3d"), DATUM, null, cs);
     }
 
     /**

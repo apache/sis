@@ -1767,7 +1767,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageDatum"} element.
      * @throws ParseException if the {@code "ImageDatum"} element cannot be parsed.
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings("deprecation")
     private ImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageDatum, WKTKeywords.IDatum);
         if (element == null) {
@@ -1875,7 +1875,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageCRS"} element as an {@link ImageCRS} object.
      * @throws ParseException if the {@code "ImageCRS"} element cannot be parsed.
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings("deprecation")
     private ImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageCRS);
         if (element == null) {

@@ -36,7 +36,6 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -75,7 +74,7 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @since 0.4
  */
-public final class IdentifiedObjects extends Static {
+public final class IdentifiedObjects {
     /**
      * Do not allows instantiation of this class.
      */

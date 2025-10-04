@@ -46,7 +46,7 @@ import static org.apache.sis.util.resources.IndexedResourceBundle.LOGGER;
  * @version 1.5
  * @since   0.3
  */
-public final class Locales extends Static {
+public final class Locales {
     /**
      * A read-only map for canonicalizing the locales. Filled on class
      * initialization in order to avoid the need for synchronization.

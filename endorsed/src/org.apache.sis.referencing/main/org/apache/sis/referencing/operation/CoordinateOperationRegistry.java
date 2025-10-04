@@ -1097,8 +1097,9 @@ class CoordinateOperationRegistry {
         switch (operations.size()) {
             case 0:  return null;
             case 1:  return operations.get(0);
-            default: return factory.createConcatenatedOperation(derivedFrom(operation),
-                                        operations.toArray(CoordinateOperation[]::new));
+            default: return factory.createConcatenatedOperation(
+                    derivedFrom(operation),
+                    operations.toArray(CoordinateOperation[]::new));
         }
     }
 

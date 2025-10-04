@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.opengis.util.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
@@ -37,6 +39,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.metadata.simple.SimpleAttributeType;
 import org.apache.sis.converter.SurjectiveConverter;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.Strings;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -44,79 +47,72 @@ import org.opengis.feature.AttributeType;
 
 
 /**
- * A collection of record types in a given namespace.
- * This class works also as a factory for creating {@code RecordType} and {@code Record} instances.
- * The factory methods are:
+ * A factory for creating {@code RecordType} instances.
  *
- * <ul>
- *   <li>{@link #createRecordType(CharSequence, Map)}</li>
- * </ul>
- *
- * Subclasses can modify the characteristics of the records to be created
- * by overriding the following methods:
- *
- * <ul>
- *   <li>{@link DefaultNameFactory#toTypeName(Class)} if the factory given to the constructor.</li>
- * </ul>
+ * <div class="warning"><b>Possible future change:</b>
+ * This class is derived from ISO 19103:2005. The record attributes and methods have been modified
+ * in ISO 19103:2015, then all classes related to records have been fully removed in ISO 19103:2024.
+ * The implication for Apache <abbr>SIS</abbr> has not yet been determined.
+ * In the meantime, this class should be considered as merely a factory of {@link DefaultRecordType} instances.</div>
  *
  * <h2>Thread safety</h2>
  * The same {@code DefaultRecordSchema} instance can be safely used by many threads without synchronization
  * on the part of the caller if the {@link NameFactory} given to the constructor is also thread-safe.
  * Subclasses should make sure that any overridden methods remain safe to call from multiple threads.
  *
- * <h2>Limitations</h2>
- * This class is currently not serializable because {@code RecordSchema} contain an arbitrary number of record
- * types in its {@linkplain #getDescription() description} map. Since each {@code RecordType} has a reference
- * to its schema, serializing a single {@code RecordType} could imply serializing all of them.
- * In order to reduce the risk of unexpected behavior, serialization is currently left to subclasses.
- * For example, a subclass may define a {@code Object readResolve()} method (as documented in the
- * {@link java.io.Serializable} interface) returning a system-wide static constant for their schema.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see DefaultRecordType
  * @see DefaultRecord
  *
  * @since 0.5
- *
- * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of the ISO 19103 standard.
  */
-@Deprecated(since = "1.5", forRemoval = true)
-public class DefaultRecordSchema implements RecordSchema {
+@SuppressWarnings("deprecation")
+public final class DefaultRecordSchema implements RecordSchema, Serializable {
     /**
-     * The factory to use for creating names.
-     * This is the factory given at construction time.
+     * For cross-version compatibility.
      */
-    protected final NameFactory nameFactory;
+    private static final long serialVersionUID = -4381124182735566127L;
 
     /**
-     * The helper class to use for mapping Java classes to {@code TypeName} instances, or {@code null} if not needed.
-     * This helper class is needed only if {@link #nameFactory} is not an instance of {@link DefaultNameFactory}.
+     * The schema used for creating records in <abbr>SIS</abbr> namespace.
      */
-    private final TypeNames typeFactory;
+    static final DefaultRecordSchema SIS = new DefaultRecordSchema(Constants.SIS);
+
+    /**
+     * On serialization, returns a singleton instance if possible.
+     *
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException if the serialized object defines an unknown data type.
+     */
+    final Object readResolve() throws ObjectStreamException {
+        final String schemaName = getSchemaName().toString();
+        return Constants.SIS.equals(schemaName) ? SIS : new DefaultRecordSchema(schemaName);
+    }
 
     /**
      * The namespace of {@link RecordType} to be created by this class.
      * This is also (indirectly) the {@linkplain #getSchemaName() schema name}.
      */
+    @SuppressWarnings("serial")     // SIS implementations are serializable.
     private final NameSpace namespace;
 
     /**
      * The record types in the namespace of this schema.
      */
-    private final Map<TypeName,RecordType> description;
+    private final transient Map<TypeName, DefaultRecordType> description;
 
     /**
      * The pool of attribute types created so far.
      */
-    private final ConcurrentMap<Class<?>,Type> attributeTypes;
+    private final transient ConcurrentMap<Class<?>, Type> attributeTypes;
 
     /**
      * The converter to use for converting Java {@link Class} to ISO 19103 {@link Type}.
      * This converter delegates its work to the {@link #toAttributeType(Class)} method.
      */
-    private final ObjectConverter<Class<?>,Type> toTypes = new SurjectiveConverter<Class<?>, Type>() {
+    private final transient ObjectConverter<Class<?>,Type> toTypes = new SurjectiveConverter<Class<?>, Type>() {
         @SuppressWarnings("unchecked")
         @Override public Class<Class<?>> getSourceClass() {return (Class) Class.class;}
         @Override public Class<Type>     getTargetClass() {return Type.class;}
@@ -126,18 +122,13 @@ public class DefaultRecordSchema implements RecordSchema {
     /**
      * Creates a new schema of the given name.
      *
-     * @param nameFactory  the factory to use for creating names, or {@code null} for the default factory.
-     * @param parent       the parent namespace, or {@code null} if none.
-     * @param schemaName   the name of the new schema.
+     * @param schemaName  the name of the new schema.
+     *
+     * @since 1.6
      */
-    public DefaultRecordSchema(NameFactory nameFactory, final NameSpace parent, final CharSequence schemaName) {
-        ArgumentChecks.ensureNonNull("schemaName", schemaName);
-        if (nameFactory == null) {
-            nameFactory = DefaultNameFactory.provider();
-        }
-        this.nameFactory    = nameFactory;
-        this.typeFactory    = (nameFactory instanceof DefaultNameFactory) ? null : new TypeNames(nameFactory);
-        this.namespace      = nameFactory.createNameSpace(nameFactory.createLocalName(parent, schemaName), null);
+    public DefaultRecordSchema(final CharSequence schemaName) {
+        final DefaultNameFactory nameFactory = DefaultNameFactory.provider();
+        this.namespace      = nameFactory.createNameSpace(nameFactory.createLocalName(null, schemaName), null);
         this.description    = new WeakValueHashMap<>(TypeName.class);
         this.attributeTypes = new ConcurrentHashMap<>();
     }
@@ -161,6 +152,7 @@ public class DefaultRecordSchema implements RecordSchema {
      * @since 1.3
      */
     public TypeName createRecordTypeName(final CharSequence typeName) {
+        final DefaultNameFactory nameFactory = DefaultNameFactory.provider();
         return nameFactory.createTypeName(namespace, Objects.requireNonNull(typeName), null);
     }
 
@@ -173,16 +165,17 @@ public class DefaultRecordSchema implements RecordSchema {
      * @return a record type of the given name and fields.
      * @throws IllegalArgumentException if a record already exists for the given name but with different fields.
      */
-    public RecordType createRecordType(final CharSequence typeName, final Map<CharSequence,Class<?>> fields)
+    public DefaultRecordType createRecordType(final CharSequence typeName, final Map<CharSequence,Class<?>> fields)
             throws IllegalArgumentException
     {
         ArgumentChecks.ensureNonNull("fields", fields);
         final TypeName name = createRecordTypeName(typeName);
         final Map<CharSequence,Type> fieldTypes = ObjectConverters.derivedValues(fields, CharSequence.class, toTypes);
-        RecordType record;
+        DefaultRecordType record;
         synchronized (description) {
-            record = description.get(typeName);
+            record = description.get(name);
             if (record == null) {
+                final DefaultNameFactory nameFactory = DefaultNameFactory.provider();
                 record = new DefaultRecordType(name, this, fieldTypes, nameFactory);
                 description.put(name, record);
                 return record;
@@ -227,13 +220,8 @@ public class DefaultRecordSchema implements RecordSchema {
             if (valueClass == Void.TYPE) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "valueClass", "void"));
             }
-            final TypeName name;
-            if (nameFactory instanceof DefaultNameFactory) {
-                name = ((DefaultNameFactory) nameFactory).toTypeName(valueClass);
-            } else {
-                name = typeFactory.toTypeName(nameFactory, valueClass);
-            }
-            type = new SimpleAttributeType<>(name, valueClass);
+            final DefaultNameFactory nameFactory = DefaultNameFactory.provider();
+            type = new SimpleAttributeType<>(nameFactory.toTypeName(valueClass), valueClass);
             final Type old = attributeTypes.putIfAbsent(valueClass, type);
             if (old != null) {      // May happen if the type has been computed concurrently.
                 return old;
@@ -265,7 +253,35 @@ public class DefaultRecordSchema implements RecordSchema {
     }
 
     /**
+     * Compares the given object with this schema for equality.
+     *
+     * @param  other  the object to compare with this schema.
+     * @return {@code true} if both objects are equal.
+     * @hidden
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof DefaultRecordSchema) {
+            final var that = (DefaultRecordSchema) other;
+            return namespace.equals(that.namespace);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this {@code RecordType}.
+     *
+     * @hidden
+     */
+    @Override
+    public int hashCode() {
+        return namespace.hashCode() ^ (int) serialVersionUID;
+    }
+
+    /**
      * Returns a string representation of this schema for debugging purpose only.
+     *
+     * @hidden
      */
     @Override
     public String toString() {

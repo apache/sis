@@ -143,7 +143,7 @@ import org.opengis.metadata.MetadataScope;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.storage.Resource#getMetadata()
  *
@@ -346,23 +346,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Creates an initially empty metadata.
      */
     public DefaultMetadata() {
-    }
-
-    /**
-     * Creates a meta data initialized to the specified values.
-     *
-     * @param contact             party responsible for the metadata information.
-     * @param dateStamp           date that the metadata was created.
-     * @param identificationInfo  basic information about the resource to which the metadata applies.
-     *
-     * @deprecated Replaced by {@link #DefaultMetadata(ResponsibleParty, Temporal, Identification)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultMetadata(final ResponsibleParty contact,
-                           final Date           dateStamp,
-                           final Identification identificationInfo)
-    {
-        this(contact, TemporalDate.toTemporal(dateStamp), identificationInfo);
     }
 
     /**

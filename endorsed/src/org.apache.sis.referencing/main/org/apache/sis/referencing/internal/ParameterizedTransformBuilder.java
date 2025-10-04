@@ -19,6 +19,7 @@ package org.apache.sis.referencing.internal;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -289,6 +290,14 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
     }
 
     /**
+     * Returns the ellipsoid which is used together with the source coordinate system.
+     */
+    @Override
+    public Optional<Ellipsoid> getSourceEllipsoid() {
+        return Optional.ofNullable(sourceEllipsoid);
+    }
+
+    /**
      * Returns the desired number of target dimensions of the transform to create.
      * This value is inferred from the target coordinate system if present.
      */
@@ -306,6 +315,14 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
     @Override
     public final Class<? extends CoordinateSystem> getTargetCSType() {
         return (targetCS != null) ? targetCS.getClass() : CoordinateSystem.class;
+    }
+
+    /**
+     * Returns the ellipsoid which is used together with the target coordinate system.
+     */
+    @Override
+    public Optional<Ellipsoid> getTargetEllipsoid() {
+        return Optional.ofNullable(targetEllipsoid);
     }
 
     /**

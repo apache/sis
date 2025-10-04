@@ -64,6 +64,11 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.xml.XML;
 
+// Specific the the main and geoapi-3.1 branches:
+import org.apache.sis.referencing.legacy.DefaultImageCRS;
+import org.apache.sis.referencing.legacy.DefaultImageDatum;
+import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
+
 
 /**
  * Creates Coordinate Reference System (CRS) implementations, with their Coordinate System (CS) and Datum components.
@@ -384,7 +389,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final DefaultGeocentricCRS crs;
         try {
-            crs = new DefaultGeocentricCRS(complete(properties), datum, cs);
+            crs = new DefaultGeocentricCRS(complete(properties), datum, null, cs);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }
@@ -497,7 +502,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final DefaultGeocentricCRS crs;
         try {
-            crs = new DefaultGeocentricCRS(complete(properties), datum, cs);
+            crs = new DefaultGeocentricCRS(complete(properties), datum, null, cs);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }

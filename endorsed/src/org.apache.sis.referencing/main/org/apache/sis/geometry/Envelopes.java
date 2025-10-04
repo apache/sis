@@ -60,7 +60,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Static;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.MathFunctions;
 
@@ -103,14 +102,14 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
  *
  * @since 0.3
  */
-public final class Envelopes extends Static {
+public final class Envelopes {
     /**
      * The logger for geometry operations.
      */
@@ -1037,26 +1036,6 @@ poles:  for (int i=0; i<dimension; i++) {
             results.put(null, transformed);
         }
         return results;
-    }
-
-    /**
-     * Transforms potentially many times an envelope using the given math transform.
-     * If the given envelope is {@code null}, then this method returns an empty array.
-     *
-     * @param  transform  the transform to use.
-     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
-     * @return the transformed envelopes, or an empty array if {@code envelope} was null.
-     * @throws TransformException if a transform failed.
-     *
-     * @since 1.3
-     *
-     * @deprecated Replaced by {@link #transformWithWraparound(MathTransform, Envelope)}.
-     */
-    @Deprecated(since = "1.5", forRemoval = true)
-    public static GeneralEnvelope[] wraparound(final MathTransform transform, final Envelope envelope)
-            throws TransformException
-    {
-        return transformWithWraparound(transform, envelope).values().toArray(GeneralEnvelope[]::new);
     }
 
     /**
