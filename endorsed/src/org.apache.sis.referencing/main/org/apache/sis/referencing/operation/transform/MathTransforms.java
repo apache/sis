@@ -40,7 +40,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.internal.shared.DoubleDouble;
 
 // Specific to the main branch:
@@ -68,7 +67,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @since 0.5
  */
-public final class MathTransforms extends Static {
+public final class MathTransforms {
     /**
      * Do not allow instantiation of this class.
      */

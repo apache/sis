@@ -34,13 +34,13 @@ import org.apache.sis.util.resources.Errors;
  * the <i>Basic Multilingual Plane</i> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see CharSequences
  *
  * @since 0.3
  */
-public final class StringBuilders extends Static {
+public final class StringBuilders {
     /**
      * Letters in the range 00C0 (192) to 00FF (255) inclusive with their accent removed, when possible.
      * This string partially duplicates the work done by {@link Normalizer} with additional replacements.
@@ -178,33 +178,6 @@ public final class StringBuilders extends Static {
         final int length = toSearch.length();
         for (int i=buffer.lastIndexOf(toSearch); i>=0; i=buffer.lastIndexOf(toSearch, i)) {
             buffer.delete(i, i + length);
-        }
-    }
-
-    /**
-     * Appends the given character <var>n</var> times.
-     * This method does nothing if the given {@code count} is zero.
-     *
-     * @param  buffer  the buffer where to append the character.
-     * @param  c       the character to repeat.
-     * @param  count   number of times to repeat the given character.
-     * @throws NullPointerException if the given buffer is null.
-     * @throws IllegalArgumentException if the given count is negative.
-     *
-     * @since 1.0
-     *
-     * @deprecated Replaced by {@link StringBuilder#repeat(int, int)} since Java 21.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public static void repeat(final StringBuilder buffer, final char c, final int count) {
-        switch (count) {
-            case 0:  break;
-            case 1:  buffer.append(c); break;
-            default: {
-                ArgumentChecks.ensurePositive("count", count);
-                buffer.append(c == ' ' ? CharSequences.spaces(count) : new Repeat(c, count));
-                break;
-            }
         }
     }
 

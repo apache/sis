@@ -459,22 +459,6 @@ public class GridDerivation {
     }
 
     /**
-     * Specifies the maximum subsampling values (32-bits version).
-     * See {@link #maximumSubsampling(long...)} for details.
-     *
-     * @param  subsampling  maximal subsampling values (inclusive).
-     * @return {@code this} for method call chaining.
-     * @since 1.1
-     *
-     * @deprecated Use the version with {@code long} integers instead of {@code int}.
-     * Small overviews of large images require large subsampling factors.
-     */
-    @Deprecated(since="1.5")
-    public GridDerivation maximumSubsampling(final int[] subsampling) {
-        return maximumSubsampling(ArraysExt.copyAsLongs(subsampling));
-    }
-
-    /**
      * Adapts the base grid for the geographic area and resolution of the given grid geometry.
      * By default, the new grid geometry will cover the intersection of the {@linkplain #base}
      * grid geometry and the spatiotemporal region given by {@code areaOfInterest} envelope.
@@ -1012,24 +996,6 @@ public class GridDerivation {
             }
         }
         return subsample(subsampling);
-    }
-
-    /**
-     * Requests a grid geometry over a sub-region (32-bits version).
-     * See {@link #subgrid(GridExtent, long...)} for details.
-     *
-     * @param  areaOfInterest  the desired grid extent in unit of base grid cell, or {@code null}.
-     * @param  subsampling     the subsampling to apply on each grid dimension, or {@code null} if none.
-     * @return {@code this} for method call chaining.
-     *
-     * @since 1.1
-     *
-     * @deprecated Use the version with {@code long} integers instead of {@code int}.
-     * Small overviews of large images require large subsampling factors.
-     */
-    @Deprecated(since="1.5")
-    public GridDerivation subgrid(GridExtent areaOfInterest, int[] subsampling) {
-        return subgrid(areaOfInterest, ArraysExt.copyAsLongs(subsampling));
     }
 
     /**

@@ -37,12 +37,14 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
+import org.opengis.util.InternationalString;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.converter.SurjectiveConverter;
-import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
+import org.apache.sis.metadata.internal.Resources;
 
 
 /**
@@ -56,6 +58,12 @@ import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
  * The set of fields in a {@code RecordType} can be though as equivalent to the set of fields in a class.
  * </div>
  *
+ * <div class="warning"><b>Possible future change:</b>
+ * This class is derived from ISO 19103:2005. The record attributes and methods have been modified
+ * in ISO 19103:2015, then all classes related to records have been fully removed in ISO 19103:2024.
+ * The implication for Apache <abbr>SIS</abbr> has not yet been determined.
+ * This class may be replaced by a simple {@code FeatureType}.</div>
+ *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe if the {@link TypeName}, the {@link RecordSchema}
  * and all ({@link MemberName}, {@link Type}) entries in the map given to the constructor are also immutable.
@@ -64,11 +72,9 @@ import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
  *
  * <h2>Serialization</h2>
  * This class is serializable if all elements given to the constructor are also serializable.
- * Note in particular that {@link DefaultRecordSchema} is currently <strong>not</strong> serializable,
- * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see DefaultRecord
  * @see DefaultMemberName
@@ -81,6 +87,45 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1534515712654429099L;
+
+    /**
+     * The type name for a record having an unknown number of fields.
+     * This is used at {@code <gco:RecordType>} unmarshalling time,
+     * where the type is not well defined, by assuming one field per line.
+     */
+    private static final TypeName MULTILINE = DefaultRecordSchema.SIS.createRecordTypeName(
+            Resources.formatInternational(Resources.Keys.MultilineRecord));
+
+    /**
+     * A type of record instances for holding a single {@link String} value.
+     *
+     * @since 1.6
+     */
+    public static final DefaultRecordType SINGLE_STRING;
+
+    /**
+     * A type of record instances for holding a single {@link Double} value.
+     *
+     * @since 1.6
+     */
+    public static final DefaultRecordType SINGLE_REAL;
+    static {
+        final InternationalString field = Vocabulary.formatInternational(Vocabulary.Keys.Value);
+        SINGLE_STRING = singleton(Resources.Keys.SingleText,   field, String.class);
+        SINGLE_REAL   = singleton(Resources.Keys.SingleNumber, field, Double.class);
+    }
+
+    /**
+     * Creates a new record type of the given name with a single field of the given name.
+     *
+     * @param  typeName    the record type name as a {@link Resources.Keys} code.
+     * @param  fieldName   the name of the singleton record field.
+     * @param  valueClass  the expected value type for the singleton field.
+     * @return a record type of the given name and field.
+     */
+    private static DefaultRecordType singleton(final short typeName, final InternationalString fieldName, final Class<?> valueClass) {
+        return DefaultRecordSchema.SIS.createRecordType(Resources.formatInternational(typeName), Map.of(fieldName, valueClass));
+    }
 
     /**
      * The name that identifies this record type.
@@ -144,14 +189,9 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * @param fields     the name and type of the fields to be included in this record type.
      *
      * @see DefaultRecordSchema#createRecordType(CharSequence, Map)
-     *
-     * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of the ISO 19103 standard.
      */
-    @SuppressWarnings("this-escape")
-    @Deprecated(since = "1.5", forRemoval = true)
-    public DefaultRecordType(final TypeName typeName, final RecordSchema container,
-            final Map<? extends MemberName, ? extends Type> fields)
-    {
+    @SuppressWarnings({"deprecation", "this-escape"})
+    DefaultRecordType(final TypeName typeName, final RecordSchema container, final Map<? extends MemberName, ? extends Type> fields) {
         this.typeName   = Objects.requireNonNull(typeName);
         this.container  = container;
         this.fieldTypes = computeTransientFields(fields);
@@ -191,7 +231,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @deprecated To be removed after {@link DefaultRecordSchema} has been removed.
      */
-    @Deprecated(since = "1.5", forRemoval = true)
+    @Deprecated(since = "1.5")
     DefaultRecordType(final TypeName typeName, final RecordSchema container,
             final Map<? extends CharSequence, ? extends Type> fields, final DefaultNameFactory nameFactory)
     {
@@ -224,7 +264,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         final int size = in.readInt();
         final Map<MemberName,Type> fields = JDK19.newLinkedHashMap(size);
         for (int i=0; i<size; i++) {
-            final MemberName member = (MemberName) in.readObject();
+            final var member = (MemberName) in.readObject();
             final Type type = (Type) in.readObject();
             if (fields.put(member, type) != null) {
                 throw new InvalidObjectException(Errors.format(Errors.Keys.DuplicatedElement_1, member));
@@ -287,13 +327,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     }
 
     /**
-     * Returns the name that identifies this record type. If this {@code RecordType} is contained in a
-     * {@linkplain DefaultRecordSchema record schema}, then the record type name shall be valid in the
-     * {@linkplain DefaultNameSpace name space} of the record schema:
-     *
-     * {@snippet lang="java" :
-     *     NameSpace namespace = getContainer().getSchemaName().scope()
-     *     }
+     * Returns the name that identifies this record type.
      *
      * <div class="note"><b>Comparison with Java reflection:</b>
      * If we think about this {@code RecordType} as equivalent to a {@code Class} instance,
@@ -436,7 +470,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
             return true;
         }
         if (other != null && other.getClass() == getClass()) {
-            final DefaultRecordType that = (DefaultRecordType) other;
+            final var that = (DefaultRecordType) other;
             return Objects.equals(typeName,   that.typeName)   &&
                    Objects.equals(container,  that.container)  &&
                    Arrays .equals(fieldTypes, that.fieldTypes) &&
@@ -475,8 +509,8 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      */
     @SuppressWarnings("unused")
     private DefaultRecordType() {
-        typeName  = RecordSchemaSIS.MULTILINE;
-        container = RecordSchemaSIS.STRING.container;
+        typeName  = MULTILINE;
+        container = DefaultRecordSchema.SIS;
     }
 
     /**
@@ -484,6 +518,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * one field per line, but it may change in any future version for adapting to common practice.
      */
     @XmlValue
+    @SuppressWarnings("unused")
     private String getValue() {
         switch (size()) {
             case 0:  return null;
@@ -506,9 +541,10 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */
+    @SuppressWarnings("unused")
     private void setValue(final String value) {
         if (value != null) {
-            final Map<MemberName,Type> fields = new LinkedHashMap<>();
+            final var fields = new LinkedHashMap<MemberName, Type>();
             for (CharSequence element : CharSequences.splitOnEOL(value)) {
                 final int s = ((String) element).indexOf(':');
                 if (s >= 0) {
@@ -516,7 +552,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
                     // TODO: the part after ":" is the description. For now, we have no room for storing it.
                 }
                 final MemberName m = Names.createMemberName(typeName, element, String.class);
-                fields.put(m, RecordSchemaSIS.INSTANCE.toAttributeType(String.class));
+                fields.put(m, DefaultRecordSchema.SIS.toAttributeType(String.class));
             }
             fieldTypes = computeTransientFields(fields);
         }

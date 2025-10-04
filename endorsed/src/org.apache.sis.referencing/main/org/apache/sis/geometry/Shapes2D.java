@@ -40,7 +40,6 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -54,7 +53,7 @@ import org.apache.sis.util.Static;
  * @version 1.3
  * @since   0.8
  */
-public final class Shapes2D extends Static {
+public final class Shapes2D {
     /**
      * Do not allow instantiation of this class.
      */

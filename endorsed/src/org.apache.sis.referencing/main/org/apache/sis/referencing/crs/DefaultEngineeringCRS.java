@@ -53,8 +53,7 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCylindricalCS Cylindrical},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultLinearCS Linear}.
  *   {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS Polar},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical} or
- *   {@linkplain org.apache.sis.referencing.cs.DefaultUserDefinedCS User Defined}.
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical}.
  * </p>
  *
  * <h2>Immutability and thread safety</h2>
@@ -140,17 +139,6 @@ public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> i
                                  final CoordinateSystem cs)
     {
         super(properties, EngineeringDatum.class, datum, ensemble, cs);
-    }
-
-    /**
-     * @deprecated A {@code DefaultDatumEnsemble} argument has been added.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultEngineeringCRS(final Map<String,?> properties,
-                                 final EngineeringDatum datum,
-                                 final CoordinateSystem cs)
-    {
-        this(properties, datum, null, cs);
     }
 
     /**

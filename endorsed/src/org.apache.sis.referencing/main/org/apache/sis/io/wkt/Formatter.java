@@ -112,7 +112,7 @@ import org.apache.sis.referencing.datum.AbstractDatum;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.4
  */
 public class Formatter implements Localized {
@@ -1248,24 +1248,8 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a date.
-     * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
-     *
-     * @param  date  the date to append to the WKT, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #append(Temporal)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public void append(final Date date) {
-        if (date != null) {
-            appendSeparator();
-            dateFormat.format(date, buffer, dummy);
-        }
-    }
-
-    /**
      * Appends a Boolean value.
-     * The {@linkplain Symbols#getSeparator() element separator} will be written before the boolean if needed.
+     * The {@linkplain Symbols#getSeparator() element separator} will be written before the Boolean if needed.
      *
      * @param  value  the Boolean to append to the WKT.
      */
@@ -1636,12 +1620,16 @@ public class Formatter implements Localized {
             } else {
                 append(number.doubleValue());
             }
-        }
-        else if (value instanceof CodeList<?>) append((CodeList<?>) value);
-        else if (value instanceof Date)        append((Date)        value);
-        else if (value instanceof Temporal)    append((Temporal)    value);
-        else if (value instanceof Boolean)     append((Boolean)     value);
-        else if (value instanceof CharSequence) {
+        } else if (value instanceof CodeList<?>) {
+            append((CodeList<?>) value);
+        } else if (value instanceof Temporal) {
+            append((Temporal) value);
+        } else if (value instanceof Date) {
+            appendSeparator();
+            dateFormat.format((Date) value, buffer, dummy);
+        } else if (value instanceof Boolean) {
+            append((Boolean) value);
+        } else if (value instanceof CharSequence) {
             append((value instanceof InternationalString) ?
                     ((InternationalString) value).toString(locale) : value.toString(), null);
         } else if (value.getClass().isArray()) {

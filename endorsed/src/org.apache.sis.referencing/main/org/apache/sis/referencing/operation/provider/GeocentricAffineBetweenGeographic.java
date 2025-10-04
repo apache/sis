@@ -27,7 +27,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -187,12 +186,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      * @throws ClassCastException if the unit of measurement of an axis length parameter is not linear.
      */
     public static Ellipsoid getSourceEllipsoid(final Parameters values, final Context context) {
-        if (context instanceof DefaultMathTransformFactory.Context) {
-            // TODO: move getSourceEllipsoid() in `Context` interface with `Optional` return value.
-            Ellipsoid c = ((DefaultMathTransformFactory.Context) context).getSourceEllipsoid();
-            if (c != null) return c;
-        }
-        return getEllipsoid("source", values, SRC_SEMI_MAJOR, SRC_SEMI_MINOR);
+        return context.getSourceEllipsoid().orElseGet(() -> getEllipsoid("source", values, SRC_SEMI_MAJOR, SRC_SEMI_MINOR));
     }
 
     /**
@@ -207,12 +201,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      * @throws ClassCastException if the unit of measurement of an axis length parameter is not linear.
      */
     public static Ellipsoid getTargetEllipsoid(final Parameters values, final Context context) {
-        if (context instanceof DefaultMathTransformFactory.Context) {
-            // TODO: move getTargetEllipsoid() in `Context` interface with `Optional` return value.
-            Ellipsoid c = ((DefaultMathTransformFactory.Context) context).getTargetEllipsoid();
-            if (c != null) return c;
-        }
-        return getEllipsoid("target", values, TGT_SEMI_MAJOR, TGT_SEMI_MINOR);
+        return context.getTargetEllipsoid().orElseGet(() -> getEllipsoid("target", values, TGT_SEMI_MAJOR, TGT_SEMI_MINOR));
     }
 
     /**

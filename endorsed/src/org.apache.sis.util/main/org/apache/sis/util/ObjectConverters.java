@@ -65,7 +65,7 @@ import org.apache.sis.converter.SystemRegistry;
  *
  * @since 0.3
  */
-public final class ObjectConverters extends Static {
+public final class ObjectConverters {
     /**
      * Do not allow instantiation of this class.
      */

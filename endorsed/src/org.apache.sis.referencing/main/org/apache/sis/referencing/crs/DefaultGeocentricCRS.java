@@ -77,7 +77,7 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
  *
@@ -168,28 +168,6 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     {
         super(properties, datum, ensemble, cs);
         checkDimension(2, 3, cs);
-    }
-
-    /**
-     * @deprecated A {@code DefaultDatumEnsemble} argument has been added.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultGeocentricCRS(final Map<String,?> properties,
-                                final GeodeticDatum datum,
-                                final CartesianCS cs)
-    {
-        this(properties, datum, null, cs);
-    }
-
-    /**
-     * @deprecated A {@code DefaultDatumEnsemble} argument has been added.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultGeocentricCRS(final Map<String,?> properties,
-                                final GeodeticDatum datum,
-                                final SphericalCS cs)
-    {
-        this(properties, datum, null, cs);
     }
 
     /**

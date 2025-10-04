@@ -217,4 +217,5 @@ module org.apache.sis.referencing {
     opens org.apache.sis.referencing.crs       to jakarta.xml.bind, org.glassfish.jaxb.core, org.glassfish.jaxb.runtime;
     opens org.apache.sis.referencing.datum     to jakarta.xml.bind, org.glassfish.jaxb.core, org.glassfish.jaxb.runtime;
     opens org.apache.sis.referencing.operation to jakarta.xml.bind, org.glassfish.jaxb.core, org.glassfish.jaxb.runtime;
+    opens org.apache.sis.referencing.legacy    to jakarta.xml.bind, org.glassfish.jaxb.core, org.glassfish.jaxb.runtime;
 }

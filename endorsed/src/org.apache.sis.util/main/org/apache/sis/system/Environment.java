@@ -20,7 +20,6 @@ import java.io.Console;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.OutputStreamWriter;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.pending.jdk.JDK17;
 
@@ -30,7 +29,7 @@ import org.apache.sis.pending.jdk.JDK17;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Environment extends Static {
+public final class Environment {
     /**
      * Whether the use of the console writer should be avoided.
      *

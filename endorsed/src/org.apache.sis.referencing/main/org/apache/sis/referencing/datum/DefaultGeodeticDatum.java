@@ -117,7 +117,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * <b>Example:</b> the following code gets a <cite>World Geodetic System 1984</cite> datum:
  *
  * {@snippet lang="java" :
- *     GeodeticDatum datum = CommonCRS.WGS84.datum();
+ *     GeodeticDatum datum = CommonCRS.WGS84.datum(true);
  *     }
  *
  * <h2>Immutability and thread safety</h2>

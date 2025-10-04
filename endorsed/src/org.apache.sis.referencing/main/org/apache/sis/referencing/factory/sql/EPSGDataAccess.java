@@ -1545,7 +1545,6 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
      * @see #createCoordinateSystem(String)
      */
     @Override
-    @SuppressWarnings("removal")
     public synchronized IdentifiedObject createObject(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
@@ -3568,7 +3567,14 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                                     + " FROM \"Coordinate_Operation Path\""
                                     + " WHERE (CONCAT_OPERATION_CODE = ?)"
                                     + " ORDER BY OP_PATH_STEP", epsg).toArray(CoordinateOperation[]::new);
-                    constructor = (factory, metadata) -> factory.createConcatenatedOperation(metadata, operations);
+                    constructor = (factory, metadata) -> {
+                        if (factory instanceof DefaultCoordinateOperationFactory) {
+                            return ((DefaultCoordinateOperationFactory) factory)
+                                    .createConcatenatedOperation(metadata, sourceCRS, targetCRS, operations);
+                        } else {
+                            return factory.createConcatenatedOperation(metadata, operations);
+                        }
+                    };
                 } else {
                     /*
                      * At this stage, the parameters are ready for use. Create the math transform and wrap it in the

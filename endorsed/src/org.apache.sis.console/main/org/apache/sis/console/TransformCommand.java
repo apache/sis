@@ -337,7 +337,9 @@ final class TransformCommand extends FormattedOutputCommand {
             if (steps.size() > 1) {
                 var factory = DefaultCoordinateOperationFactory.provider();
                 var properties = IdentifiedObjects.getProperties(operation, CoordinateOperation.IDENTIFIERS_KEY);
-                operation = factory.createConcatenatedOperation(properties, steps.toArray(CoordinateOperation[]::new));
+                operation = factory.createConcatenatedOperation(
+                        properties,
+                        steps.toArray(CoordinateOperation[]::new));
             }
         }
         /*

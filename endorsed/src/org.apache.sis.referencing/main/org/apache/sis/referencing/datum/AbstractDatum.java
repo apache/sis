@@ -37,6 +37,7 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.legacy.DefaultImageDatum;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
@@ -251,10 +252,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         }
         anchorEpoch = Containers.property(properties, ANCHOR_EPOCH_KEY, Temporal.class);
         if (anchorEpoch == null) {
-            Date date = Containers.property(properties, REALIZATION_EPOCH_KEY, Date.class);
-            if (date != null) {
-                anchorEpoch = date.toInstant();
-            }
+            anchorEpoch = TemporalDate.toTemporal(
+                    Containers.property(properties, REALIZATION_EPOCH_KEY, Date.class));
         }
         publicationDate = Containers.property(properties, PUBLICATION_DATE_KEY, Temporal.class);
         conventionalRS  = Containers.property(properties, CONVENTIONAL_RS_KEY, IdentifiedObject.class);

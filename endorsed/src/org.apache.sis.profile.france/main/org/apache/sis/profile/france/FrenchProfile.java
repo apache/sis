@@ -18,7 +18,6 @@ package org.apache.sis.profile.france;
 
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.xml.bind.fra.*;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -28,7 +27,7 @@ import org.apache.sis.util.Static;
  * @version 0.4
  * @since   0.4
  */
-public final class FrenchProfile extends Static {
+public final class FrenchProfile {
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "fra"}.

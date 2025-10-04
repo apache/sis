@@ -65,6 +65,9 @@ import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.xml.XML;
 
 // Specific to the main branch:
+import org.apache.sis.referencing.legacy.DefaultImageCRS;
+import org.apache.sis.referencing.legacy.DefaultImageDatum;
+import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 
@@ -389,7 +392,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final DefaultGeocentricCRS crs;
         try {
-            crs = new DefaultGeocentricCRS(complete(properties), datum, cs);
+            crs = new DefaultGeocentricCRS(complete(properties), datum, null, cs);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }
@@ -505,7 +508,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final DefaultGeocentricCRS crs;
         try {
-            crs = new DefaultGeocentricCRS(complete(properties), datum, cs);
+            crs = new DefaultGeocentricCRS(complete(properties), datum, null, cs);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }

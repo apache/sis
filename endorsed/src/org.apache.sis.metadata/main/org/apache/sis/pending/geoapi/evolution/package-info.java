@@ -29,7 +29,5 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.5
  */
 package org.apache.sis.pending.geoapi.evolution;

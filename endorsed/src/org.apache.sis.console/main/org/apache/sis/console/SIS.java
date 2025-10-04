@@ -18,7 +18,6 @@ package org.apache.sis.console;
 
 import java.util.EnumMap;
 import java.io.PrintWriter;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Printable;
 import org.apache.sis.util.CharSequences;
@@ -42,7 +41,7 @@ import org.apache.sis.system.Environment;
  * @version 1.5
  * @since   1.5
  */
-public final class SIS extends Static {
+public final class SIS {
     /*
      * Usages of `Console#writer()` within JShell seems incompatible with JShell own writer.
      * Problems observed with Java 21 on Linux when printing non-ASCII characters.

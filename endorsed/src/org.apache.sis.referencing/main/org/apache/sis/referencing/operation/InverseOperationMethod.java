@@ -84,7 +84,9 @@ final class InverseOperationMethod extends DefaultOperationMethod {
             return ((InverseOperationMethod) method).inverse;
         }
         if (!(method instanceof AbstractProvider)) try {
-            method = factorySIS.getOperationMethod(method.getName().getCode());
+            method = CoordinateOperations.findMethod(
+                    factorySIS.getMathTransformFactory(),
+                    method.getName().getCode());
         } catch (NoSuchIdentifierException e) {
             CoordinateOperationRegistry.recoverableException("inverse", e);
         }

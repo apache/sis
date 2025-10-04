@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Arrays;
@@ -36,7 +37,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
@@ -52,6 +52,7 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("deprecation")
 public final class DefaultMetadataTest extends TestCase {
     /**
      * Creates a new test case.
@@ -80,11 +81,15 @@ public final class DefaultMetadataTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultMetadata#getFileIdentifier()} and {@link DefaultMetadata#setFileIdentifier(String)}
-     * legacy methods. Those methods should delegate to newer methods.
+     * Tests legacy methods related to file identifiers.
+     * The following methods should delegate to newer methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultMetadata#getFileIdentifier()}</li>
+     *   <li>{@link DefaultMetadata#setFileIdentifier(String)}</li>
+     * </ul>
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testFileIdentifier() {
         final var metadata = new DefaultMetadata();
         assertNull(metadata.getFileIdentifier());
@@ -94,12 +99,16 @@ public final class DefaultMetadataTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultMetadata#getLanguage()}, {@link DefaultMetadata#setLanguage(Locale)}
-     * and {@link DefaultMetadata#getLocales()} legacy methods.
-     * Those methods should delegate to newer methods.
+     * Tests legacy methods related to locales.
+     * The following methods should delegate to newer methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultMetadata#getLanguage()}</li>
+     *   <li>{@link DefaultMetadata#setLanguage(Locale)}</li>
+     *   <li>{@link DefaultMetadata#getLocales()}</li>
+     * </ul>
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testLocales() {
         final var metadata = new DefaultMetadata();
         assertNull(metadata.getLanguage());
@@ -132,10 +141,15 @@ public final class DefaultMetadataTest extends TestCase {
     }
 
     /**
-     * Compares the {@link DefaultMetadata#getLanguages()}, {@link DefaultMetadata#getLanguage()} and
-     * {@link DefaultMetadata#getLocales()} values against the expected array.
+     * Tests methods related to languages.
+     * The following methods should delegate to newer methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultMetadata#getLocalesAndCharsets()}</li>
+     *   <li>{@link DefaultMetadata#getLanguage()}</li>
+     *   <li>{@link DefaultMetadata#getLocales()}</li>
+     * </ul>
      */
-    @SuppressWarnings("deprecation")
     private static void assertLanguagesEquals(final DefaultMetadata metadata, final Locale... expected) {
         assertArrayEquals(expected,    metadata.getLocalesAndCharsets().keySet().toArray());
         assertEquals     (expected[0], metadata.getLanguage());
@@ -143,11 +157,15 @@ public final class DefaultMetadataTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultMetadata#getParentIdentifier()} and {@link DefaultMetadata#setParentIdentifier(String)}
-     * methods.
+     * Tests legacy methods related to metadata identifiers.
+     * The following methods should delegate to newer methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultMetadata#getParentIdentifier()}</li>
+     *   <li>{@link DefaultMetadata#setParentIdentifier(String)}</li>
+     * </ul>
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testParentIdentifier() {
         final var metadata = new DefaultMetadata();
         assertNull(metadata.getParentIdentifier());
@@ -161,12 +179,17 @@ public final class DefaultMetadataTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultMetadata#getHierarchyLevels()}, {@link DefaultMetadata#getHierarchyLevelNames()},
-     * {@link DefaultMetadata#setHierarchyLevels(Collection)} and {@link DefaultMetadata#setHierarchyLevelNames(Collection)}
-     * methods.
+     * Tests legacy methods related to metadata hierarchy levels.
+     * The following methods should delegate to newer methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultMetadata#getHierarchyLevels()}</li>
+     *   <li>{@link DefaultMetadata#getHierarchyLevelNames()}</li>
+     *   <li>{@link DefaultMetadata#setHierarchyLevels(Collection)}</li>
+     *   <li>{@link DefaultMetadata#setHierarchyLevelNames(Collection)}</li>
+     * </ul>
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testHierarchyLevels() {
         final var names    = new String[] {"Bridges", "Golden Gate Bridge"};
         final var levels   = new ScopeCode[] {ScopeCode.FEATURE_TYPE, ScopeCode.FEATURE};
@@ -217,7 +240,13 @@ public final class DefaultMetadataTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultMetadata#getDateStamp()} and {@link DefaultMetadata#setDateStamp(Date)} methods.
+     * Tests legacy methods related to date stamps.
+     * The following methods should delegate to newer methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultMetadata#getDateStamp()}</li>
+     *   <li>{@link DefaultMetadata#setDateStamp(Date)}</li>
+     * </ul>
      */
     @Test
     @SuppressWarnings("deprecation")
@@ -227,30 +256,35 @@ public final class DefaultMetadataTest extends TestCase {
         /*
          * Verifies that the deprecated method get its value from the CitationDate objects.
          */
-        Date creation = date("2014-10-07 00:00:00");
+        Instant creation = Instant.parse("2014-10-07T00:00:00Z");
         final var dates = new DefaultCitationDate[] {
-                new DefaultCitationDate(date("2014-10-09 00:00:00"), DateType.valueOf("LAST_UPDATE")),
+                new DefaultCitationDate(Instant.parse("2014-10-09T00:00:00Z"), DateType.valueOf("LAST_UPDATE")),
                 new DefaultCitationDate(creation, DateType.CREATION)
         };
         metadata.setDateInfo(Arrays.asList(dates));
-        assertEquals(creation, metadata.getDateStamp());
+        assertEquals(creation, metadata.getDateStamp().toInstant());
         /*
          * Invoking the deprecated setters shall modify the CitationDate object
          * associated to DateType.CREATION.
          */
-        creation = date("2014-10-06 00:00:00");
-        metadata.setDateStamp(creation);
-        assertEquals(creation, dates[1].getDate());
+        creation = Instant.parse("2014-10-06T00:00:00Z");
+        metadata.setDateStamp(Date.from(creation));
+        assertEquals(creation, dates[1].getDate().toInstant());
         assertArrayEquals(dates, metadata.getDateInfo().toArray());
     }
 
     /**
-     * Tests {@link DefaultMetadata#getMetadataStandardName()}, {@link DefaultMetadata#getMetadataStandardVersion()},
-     * {@link DefaultMetadata#setMetadataStandardName(String)} and {@link DefaultMetadata#setMetadataStandardVersion(String)}
-     * methods.
+     * Tests legacy methods related to metadata version.
+     * The following methods should delegate to newer methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultMetadata#getMetadataStandardName()}</li>
+     *   <li>{@link DefaultMetadata#getMetadataStandardVersion()}</li>
+     *   <li>{@link DefaultMetadata#setMetadataStandardName(String)}</li>
+     *   <li>{@link DefaultMetadata#setMetadataStandardVersion(String)}</li>
+     * </ul>
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testMetadataStandard() {
         final var metadata = new DefaultMetadata();
         assertNull(metadata.getMetadataStandardName());
@@ -268,12 +302,16 @@ public final class DefaultMetadataTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultMetadata#getDataSetUri()}.
+     * Tests legacy methods related to <abbr>URI</abbr>.
+     * The following methods should delegate to newer methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultMetadata#getDataSetUri()}</li>
+     * </ul>
      *
      * @throws URISyntaxException if the URI used in this test is malformed.
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testDataSetUri() throws URISyntaxException {
         final var metadata = new DefaultMetadata();
         metadata.setDataSetUri("file:/tmp/myfile.txt");

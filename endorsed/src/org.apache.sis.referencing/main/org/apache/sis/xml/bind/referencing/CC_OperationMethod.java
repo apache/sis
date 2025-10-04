@@ -32,9 +32,9 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.MapProjection;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
@@ -170,7 +170,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
     public static ParameterDescriptorGroup group(final Identifier name, final GeneralParameterDescriptor[] descriptors) {
         OperationMethod method;
         try {
-            method = DefaultCoordinateOperationFactory.provider().getOperationMethod(name.getCode());
+            method = DefaultMathTransformFactory.provider().getOperationMethod(name.getCode());
         } catch (FactoryException e) {
             // Use DefaultOperationMethod as the source class because it is the first public class in callers.
             Context.warningOccured(Context.current(), DefaultOperationMethod.class, "setDescriptors", e, true);

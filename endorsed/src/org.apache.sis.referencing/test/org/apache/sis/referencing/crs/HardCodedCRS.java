@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import static org.opengis.referencing.IdentifiedObject.*;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.legacy.DefaultImageCRS;
 import org.apache.sis.metadata.iso.extent.Extents;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
@@ -325,7 +326,7 @@ public final class HardCodedCRS {
      * <p>The {@code pixelInCell} attribute of the associated {@code ImageDatum}
      * is set to {@link PixelInCell#CELL_CENTER}.</p>
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings("exports")
     public static final DefaultImageCRS IMAGE = new DefaultImageCRS(
             getProperties(HardCodedDatum.IMAGE), HardCodedDatum.IMAGE, HardCodedCS.GRID);
 

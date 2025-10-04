@@ -90,7 +90,6 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.OptionalCandidate;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.internal.shared.Constants;
@@ -157,7 +156,7 @@ import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumE
  * @version 1.5
  * @since   0.3
  */
-public final class CRS extends Static {
+public final class CRS {
     /**
      * The logger for referencing operations.
      */

@@ -44,11 +44,12 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.metadata.simple.SimpleMetadata;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.util.iso.Types;
+import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -366,7 +367,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<CitationDate> getDates() {
         if (time != null) {
-            return Collections.singletonList(new DefaultCitationDate(time, DateType.CREATION));
+            return Collections.singletonList(new DefaultCitationDate(TemporalDate.toTemporal(time), DateType.CREATION));
         }
         return Collections.emptyList();
     }

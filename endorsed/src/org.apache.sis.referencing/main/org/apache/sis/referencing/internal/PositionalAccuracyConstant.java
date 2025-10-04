@@ -40,9 +40,9 @@ import org.apache.sis.metadata.iso.quality.DefaultEvaluationMethod;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
 import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
-import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.iso.DefaultRecordType;
 import org.apache.sis.util.iso.DefaultRecord;
 import org.apache.sis.system.Configuration;
 
@@ -175,7 +175,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
             results.add(result);
         }
         if (accuracy != null) {
-            final RecordType type = RecordSchemaSIS.REAL;
+            final RecordType type = DefaultRecordType.SINGLE_REAL;
             final var record = new DefaultRecord(type);
             record.setAll(accuracy);
 

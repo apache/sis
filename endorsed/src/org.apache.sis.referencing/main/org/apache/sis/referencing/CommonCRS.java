@@ -148,7 +148,7 @@ import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumE
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  *
@@ -832,16 +832,6 @@ public enum CommonCRS {
                                               cs);
         }
         return cachedSpherical;
-    }
-
-    /**
-     * Returns the datum or datum ensemble associated to this geodetic object.
-     *
-     * @deprecated Replaced by {@link #datum(boolean)} for specifying whether to include datum ensembles.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public GeodeticDatum datum() {
-        return datum(true);
     }
 
     /**

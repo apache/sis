@@ -31,8 +31,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
  */
 public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCodeListAdapter<ValueType>>
         extends XmlAdapter<ValueType,CodeList<?>>
@@ -89,7 +87,7 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
         if (adapter == null) {
             return null;
         }
-        return Types.forCodeName(UnsupportedCodeList.class, adapter.identifier.toString(), true);
+        return Types.forCodeName(UnsupportedCodeList.class, adapter.identifier.toString(), UnsupportedCodeList::valueOf);
     }
 
     /**

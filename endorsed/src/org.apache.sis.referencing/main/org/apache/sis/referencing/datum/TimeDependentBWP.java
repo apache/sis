@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Date;
 import java.util.Objects;
 import java.time.Duration;
 import java.time.temporal.Temporal;
@@ -60,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.4
  */
 @SuppressWarnings("CloneableImplementsClone")                   // Fields in this class do not need cloning.
@@ -129,16 +128,6 @@ public class TimeDependentBWP extends BursaWolfParameters {
     public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Temporal timeReference) {
         super(targetDatum, domainOfValidity);
         this.timeReference = Objects.requireNonNull(timeReference);
-    }
-
-    /**
-     * Creates a new instance for the given target datum, domain of validity and time reference.
-     *
-     * @deprecated Replaced by {@link #TimeDependentBWP(GeodeticDatum, Extent, Temporal)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Date timeReference) {
-        this(targetDatum, domainOfValidity, timeReference.toInstant());
     }
 
     /**

@@ -34,7 +34,6 @@ import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.doubleToRawLongBits;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -77,7 +76,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  *
  * @since 0.3
  */
-public final class MathFunctions extends Static {
+public final class MathFunctions {
     /**
      * The square root of 2, which is approximated by {@value}.
      *

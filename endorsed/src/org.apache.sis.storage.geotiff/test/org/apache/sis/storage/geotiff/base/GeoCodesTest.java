@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -63,7 +63,7 @@ public final class GeoCodesTest extends TestCase {
      * Returns the parameters for the operation method of the given name.
      */
     private static ParameterDescriptorGroup parameters(final String method) throws FactoryException {
-        return DefaultCoordinateOperationFactory.provider().getOperationMethod(method).getParameters();
+        return DefaultMathTransformFactory.provider().getOperationMethod(method).getParameters();
     }
 
     /**

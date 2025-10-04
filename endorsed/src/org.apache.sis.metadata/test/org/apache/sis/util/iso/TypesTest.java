@@ -17,11 +17,10 @@
 package org.apache.sis.util.iso;
 
 import java.util.Map;
-import java.util.List;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Locale;
+import java.util.function.Function;
 import java.lang.annotation.ElementType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Address;
@@ -40,7 +39,6 @@ import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
 import org.opengis.referencing.datum.PixelInCell;
-import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 
 /**
@@ -130,7 +128,7 @@ public final class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Types#forCodeName(Class, String, boolean)} method.
+     * Tests the {@link Types#forCodeName(Class, String, Function)} method.
      */
     @Test
     public void testForCodeName() {
@@ -226,17 +224,5 @@ public final class TypesTest extends TestCase {
         assertEquals("Download",       title.toString(Locale.ROOT));
         assertEquals("Download",       title.toString(Locale.ENGLISH));
         assertEquals("Téléchargement", title.toString(Locale.FRENCH));
-    }
-
-    /**
-     * Tests the {@link Types#getCodeValues(Class)} method.
-     */
-    @Test
-    @SuppressWarnings("removal")
-    public void testGetCodeValues() {
-        final OnLineFunction[] actual = Types.getCodeValues(OnLineFunction.class);
-        assertTrue(Arrays.asList(actual).containsAll(List.of(
-                OnLineFunction.INFORMATION, OnLineFunction.SEARCH, OnLineFunction.ORDER,
-                OnLineFunction.DOWNLOAD, OnLineFunction.OFFLINE_ACCESS)));
     }
 }

@@ -1157,7 +1157,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                     op.getParameterValues(),
                     typeOf(op));
         } else {
-            main = factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
+            main = factorySIS.createConcatenatedOperation(
+                    defaultName(sourceCRS, targetCRS),
+                    sourceCRS, targetCRS, step1, step2);
         }
         /*
          * Sometimes we get a concatenated operation made of an operation followed by its inverse.

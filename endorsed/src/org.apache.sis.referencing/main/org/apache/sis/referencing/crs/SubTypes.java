@@ -33,6 +33,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.ImageCRS;
+import org.apache.sis.referencing.legacy.DefaultImageCRS;
 
 
 /**

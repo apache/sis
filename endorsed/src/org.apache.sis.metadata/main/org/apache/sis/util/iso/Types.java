@@ -28,14 +28,12 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.function.Function;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.util.ResourceInternationalString;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -69,7 +67,7 @@ import java.io.InputStream;
  *     <li>{@link #getDescription(CodeList)} for a more verbose description</li>
  *   </ul></li>
  *   <li>Methods for fetching an instance from a name (converse of above {@code get} methods):<ul>
- *     <li>{@link #forCodeName(Class, String, boolean)}</li>
+ *     <li>{@link #forCodeName(Class, String, Function)}</li>
  *     <li>{@link #forEnumName(Class, String)}</li>
  *   </ul></li>
  * </ul>
@@ -103,7 +101,7 @@ import java.io.InputStream;
  * @version 1.5
  * @since   0.3
  */
-public final class Types extends Static {
+public final class Types {
     /**
      * The separator character between class name and attribute name in resource files.
      */
@@ -215,7 +213,7 @@ public final class Types extends Static {
      * @see #getCodeLabel(CodeList)
      * @see #getCodeTitle(CodeList)
      * @see #getDescription(CodeList)
-     * @see #forCodeName(Class, String, boolean)
+     * @see #forCodeName(Class, String, Function)
      */
     public static String getCodeName(final CodeList<?> code) {
         if (code == null) {
@@ -473,25 +471,6 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns all known values for the given type of code list.
-     * Note that the size of the returned array may growth between different invocations of this method,
-     * since users can add their own codes to an existing list.
-     *
-     * @param  <T>       the compile-time type given as the {@code codeType} parameter.
-     * @param  codeType  the type of code list.
-     * @return the list of values for the given code list, or an empty array if none.
-     *
-     * @see Class#getEnumConstants()
-     *
-     * @deprecated This method depends on reflection, which is restricted in the context of Java Module System.
-     *             Instead, {@code T.values()} static methods should be invoked directly as much as possible.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public static <T extends CodeList<?>> T[] getCodeValues(final Class<T> codeType) {
-        return CodeLists.values(codeType);
-    }
-
-    /**
      * Returns the Java type (usually a GeoAPI interface) for the given ISO name, or {@code null} if none.
      * The identifier argument shall be the value documented in the {@link UML#identifier()} annotation on
      * the Java type.
@@ -657,30 +636,6 @@ public final class Types extends Static {
             code = constructor.apply(name);
         }
         return code;
-    }
-
-    /**
-     * Returns the code of the given type that matches the given name, or optionally returns a new one.
-     * If no match is found, then a new code is created only if the {@code canCreate} argument is {@code true}.
-     * Otherwise this method returns {@code null}.
-     *
-     * @param  <T>        the compile-time type given as the {@code codeType} parameter.
-     * @param  codeType   the type of code list.
-     * @param  name       the name of the code to obtain, or {@code null}.
-     * @param  canCreate  {@code true} if this method is allowed to create new code.
-     * @return a code matching the given name, or {@code null} if the name is null
-     *         or if no matching code is found and {@code canCreate} is {@code false}.
-     *
-     * @deprecated This method depends on reflection, which is restricted in the context of Java Module System.
-     *             Replaced by {@link #forCodeName(Class, String, Function)}.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public static <T extends CodeList<T>> T forCodeName(final Class<T> codeType, String name, final boolean canCreate) {
-        if (canCreate) {
-            return CodeLists.getOrCreate(codeType, name);
-        } else {
-            return forCodeName(codeType, name, null);
-        }
     }
 
     /**

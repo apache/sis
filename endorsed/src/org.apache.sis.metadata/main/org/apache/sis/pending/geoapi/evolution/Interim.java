@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import static java.util.logging.Logger.getLogger;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
 
@@ -29,10 +28,8 @@ import org.apache.sis.system.Modules;
  * Temporary methods used until a new major GeoAPI release provides the missing functionalities.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- * @since   0.8
  */
-public final class Interim extends Static {
+public final class Interim {
     /**
      * Do not allow instantiation of this class.
      */

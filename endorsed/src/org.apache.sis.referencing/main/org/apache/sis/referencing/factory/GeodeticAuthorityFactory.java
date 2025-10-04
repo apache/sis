@@ -823,7 +823,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see org.apache.sis.referencing.datum.DefaultImageDatum
+     * @see org.apache.sis.referencing.legacy.DefaultImageDatum
      *
      * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
      *             It is replaced by {@code EngineeringDatum}.

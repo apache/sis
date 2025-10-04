@@ -19,18 +19,9 @@
  * Map projection implementations.
  * This package should usually not be used directly. The best way to get a projection is to use the
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory coordinate operation factory}
- * with the source and target CRS. That factory can bundle the projections defined in this package, together with any
- * affine transform required for handling unit conversions and axis swapping, in a single (potentially concatenated)
- * operation.
- *
- * <p>Users wanting to build their transforms directly should also avoid instantiating objects directly from this
- * package and use a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory math
- * transform factory} instead.
- * The {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
- * createParameterizedTransform(…)} method of that factory is subjects to the same rules as this package,
- * namely input coordinates must be (<var>longitude</var>, <var>latitude</var>) in decimal degrees
- * and output coordinates must be (<var>easting</var>, <var>northing</var>) in metres.
- * More on this convention is explained below.</p>
+ * with the source and target <abbr>CRS</abbr>. That factory can bundle the projections defined in this package,
+ * together with any affine transform required for handling unit conversions and axis swapping,
+ * in a single (potentially concatenated) operation.
  *
  * <p>Users wanting to know more about the available projections and their parameters should look at the
  * <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">list of coordinate operation methods</a>.

@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Static;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,7 +39,7 @@ import org.opengis.test.Assert;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class GeoapiAssert extends Static {
+public final class GeoapiAssert {
     /**
      * A flag for code that are pending next GeoAPI release before to be enabled.
      * This flag is always set to {@code false}, except occasionally just before

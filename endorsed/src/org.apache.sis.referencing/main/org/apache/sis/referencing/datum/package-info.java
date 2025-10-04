@@ -26,8 +26,7 @@
  *  {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum vertical},
  *  {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum temporal}),
  * or to platforms (mobile or not)
- * ({@linkplain org.apache.sis.referencing.datum.DefaultEngineeringDatum engineering},
- *  {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum image}).
+ * ({@linkplain org.apache.sis.referencing.datum.DefaultEngineeringDatum engineering}).
  * Some of those SIS subclasses provide additional methods that are not part of OGC/ISO specifications:</p>
  * <ul>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()}</li>
@@ -53,7 +52,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.4
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/datums.xsd",
@@ -70,10 +69,9 @@
     @XmlJavaTypeAdapter(CD_Ellipsoid.class),
     @XmlJavaTypeAdapter(CD_PrimeMeridian.class),
     @XmlJavaTypeAdapter(CD_VerticalDatumType.class),
-    @XmlJavaTypeAdapter(CD_PixelInCell.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class),
-    @XmlJavaTypeAdapter(DateAdapter.class),
+    @XmlJavaTypeAdapter(DateAdapter.class)
 })
 package org.apache.sis.referencing.datum;
 

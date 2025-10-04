@@ -33,7 +33,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.AbstractMapEntry;
-import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
 
 
 /**
@@ -43,24 +42,24 @@ import org.apache.sis.metadata.internal.shared.RecordSchemaSIS;
  * Since all fields are expected to be assigned a value, the initial values on {@code DefaultRecord}
  * instantiation are unspecified. Some may be null, or some may be zero.
  *
+ * <div class="warning"><b>Possible future change:</b>
+ * This class is derived from ISO 19103:2005. The record attributes and methods have been modified
+ * in ISO 19103:2015, then all classes related to records have been fully removed in ISO 19103:2024.
+ * The implication for Apache <abbr>SIS</abbr> has not yet been determined.
+ * This class may be replaced by a simple {@code Feature}.</div>
+ *
  * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code DefaultRecord} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
- *   <li><b>Serialization:</b> this class is serializable if the associated {@code RecordType} and all
- *        values are also serializable. Note in particular that {@link DefaultRecordSchema} is currently
- *        <strong>not</strong> serializable, so users wanting serialization may need to define their own
- *        schema implementation.</li>
+ *   <li><b>Serialization:</b> this class is serializable only if the associated {@code RecordType}
+ *        and all values are also serializable.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
- *
- * @see DefaultRecordType
- * @see DefaultRecordSchema
- *
- * @since 0.5
+ * @version 1.6
+ * @since   0.5
  */
 public class DefaultRecord implements Record, Serializable {
     /**
@@ -428,14 +427,16 @@ public class DefaultRecord implements Record, Serializable {
      * Constructs an initially empty record expecting exactly one value as a string.
      * See {@link #setValue(String)} for a description of the supported XML content.
      */
+    @SuppressWarnings("unused")
     private DefaultRecord() {
-        definition = RecordSchemaSIS.STRING;
+        definition = DefaultRecordType.SINGLE_STRING;
     }
 
     /**
      * Returns the record value as a string.
      */
     @XmlValue
+    @SuppressWarnings("unused")
     private String getValue() {
         if (values != null) {
             switch (Array.getLength(values)) {
@@ -463,6 +464,7 @@ public class DefaultRecord implements Record, Serializable {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */
+    @SuppressWarnings("unused")
     private void setValue(String value) {
         value = Strings.trimOrNull(value);
         if (value != null) {

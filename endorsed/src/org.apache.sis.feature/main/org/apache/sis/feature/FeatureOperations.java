@@ -23,7 +23,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
@@ -103,7 +102,7 @@ import org.apache.sis.filter.Expression;
  * @version 1.5
  * @since   0.7
  */
-public final class FeatureOperations extends Static {
+public final class FeatureOperations {
     /**
      * The pool of operations or operation dependencies created so far, for sharing exiting instances.
      */

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.math;
 
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -53,7 +52,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  *
  * @since 0.4
  */
-public final class DecimalFunctions extends Static {
+public final class DecimalFunctions {
     /**
      * The greatest power of 10 such as {@code Math.pow(10, EXPONENT_FOR_ZERO) == 0}.
      * This is the exponent in {@code parseDouble("1E-324")} &lt; {@link Double#MIN_VALUE},

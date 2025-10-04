@@ -68,9 +68,6 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * <ul>
  *   <li>By fetching or building explicitly each components of the operation:
  *     <ul>
- *       <li>The {@link DefaultOperationMethod operation method}, which can be
- *         {@linkplain #getOperationMethod fetched from a set of predefined methods} or
- *         {@linkplain #createOperationMethod built explicitly}.</li>
  *       <li>A single {@linkplain #createDefiningConversion defining conversion}.</li>
  *       <li>A {@linkplain #createConcatenatedOperation concatenation} of other operations.</li>
  *     </ul>
@@ -248,30 +245,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      */
     public final MathTransformFactory getMathTransformFactory() {
         return mtFactory;
-    }
-
-    /**
-     * Returns the operation method of the given name. The given argument shall be either a method
-     * {@linkplain DefaultOperationMethod#getName() name} (e.g. <q>Transverse Mercator</q>)
-     * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
-     * The search is case-insensitive and comparisons against method names can be
-     * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.
-     *
-     * <p>If more than one method match the given name, then the first (according iteration order)
-     * non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated} matching method is returned.
-     * If all matching methods are deprecated, the first one is returned.</p>
-     *
-     * @param  name  the name of the operation method to fetch.
-     * @return the operation method of the given name.
-     * @throws FactoryException if the requested operation method cannot be fetched.
-     *
-     * @see DefaultMathTransformFactory#getOperationMethod(String)
-     *
-     * @deprecated Use {@link DefaultMathTransformFactory} instead.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public OperationMethod getOperationMethod(String name) throws FactoryException {
-        return CoordinateOperations.findMethod(mtFactory, name);
     }
 
     /**
@@ -578,7 +551,7 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
      * @throws FactoryException if the object creation failed.
      */
     @Override
-    @Deprecated(since="1.5", forRemoval=true)
+    @Deprecated(since="1.5")
     public CoordinateOperation createConcatenatedOperation(final Map<String,?> properties,
             final CoordinateOperation... operations) throws FactoryException
     {

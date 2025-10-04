@@ -26,7 +26,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.text.ParseException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -104,7 +103,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @since 0.3
  */
-public final class TreeTables extends Static {
+public final class TreeTables {
     /**
      * Do not allow instantiation of this class.
      */

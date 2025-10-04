@@ -30,6 +30,7 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.opengis.util.InternationalString;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
@@ -305,8 +306,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             }
         }
         if (newValue != null) {
-            @SuppressWarnings("removal")
-            final var date = new DefaultCitationDate(newValue, NEXT_UPDATE);
+            final var date = new DefaultCitationDate(TemporalDate.toTemporal(newValue), NEXT_UPDATE);
             if (dates != null) {
                 dates.add(date);
             } else {

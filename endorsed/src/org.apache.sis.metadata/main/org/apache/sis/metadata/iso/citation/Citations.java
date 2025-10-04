@@ -26,7 +26,6 @@ import java.util.Optional;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
@@ -81,7 +80,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @version 1.5
  * @since   0.3
  */
-public final class Citations extends Static {
+public final class Citations {
     /**
      * The <cite>Geographic Information — Metadata</cite> standards defined by ISO 19115.
      * This list contains two standards published by the

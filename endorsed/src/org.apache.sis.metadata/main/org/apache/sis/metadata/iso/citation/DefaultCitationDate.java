@@ -98,21 +98,6 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     }
 
     /**
-     * Constructs a citation date initialized to the given date.
-     *
-     * @param date      the reference date for the cited resource.
-     * @param dateType  the event used for reference date.
-     *
-     * @deprecated Replaced by {@link #DefaultCitationDate(Temporal, DateType)}
-     * in order to transition to {@code java.time} API.
-     */
-    @Deprecated(since="1.5", forRemoval=true)
-    public DefaultCitationDate(final Date date, final DateType dateType) {
-        this.date = TemporalDate.toTemporal(date);
-        this.dateType = dateType;
-    }
-
-    /**
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.

@@ -34,6 +34,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultRecordSchemaTest extends TestCase {
     /**
      * Creates a new test case.
@@ -42,22 +43,34 @@ public final class DefaultRecordSchemaTest extends TestCase {
     }
 
     /**
+     * Creates a record type in a temporary schema.
+     *
+     * @param  schemaName  name of the schema.
+     * @param  recordName  name of the record.
+     * @param  fields      record fields.
+     * @return the record in a temporary schema.
+     */
+    public static RecordType createRecordType(CharSequence schemaName, CharSequence recordName, Map<CharSequence, Class<?>> fields) {
+        final var schema = new DefaultRecordSchema(schemaName);
+        return schema.createRecordType(recordName, fields);
+    }
+
+    /**
      * Tests {@link DefaultRecordSchema#createRecordType(CharSequence, Map)}.
      */
     @Test
-    @SuppressWarnings("removal")
+    @SuppressWarnings("deprecation")
     public void testCreateRecordType() {
-        final var schema = new DefaultRecordSchema(null, null, "MySchema");
+        // Do not use `Map.of(…)` because we need to preserve order.
         final var fields = new LinkedHashMap<CharSequence,Class<?>>(8);
         assertNull(fields.put("city",       String.class));
         assertNull(fields.put("latitude",   Double.class));
         assertNull(fields.put("longitude",  Double.class));
         assertNull(fields.put("population", Integer.class));
-        final RecordType recordType = schema.createRecordType("MyRecordType", fields);
+        final RecordType recordType = createRecordType("MySchema", "MyRecordType", fields);
         /*
          * Inspect properties.
          */
-        assertSame(schema, recordType.getContainer());
         assertEquals(Names.createTypeName("MySchema", ":", "MyRecordType"), recordType.getTypeName());
         int count = 0;
         for (final Map.Entry<MemberName,Type> entry : recordType.getMemberTypes().entrySet()) {

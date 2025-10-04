@@ -539,7 +539,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      *
      * Columns can be given to the {@link FeatureQuery#setProjection(NamedExpression[])} method.
      *
-     * @version 1.5
+     * @version 1.6
      * @since   1.1
      */
     public static final class NamedExpression implements Serializable {
@@ -551,34 +551,23 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
         /**
          * The literal, value reference or more complex expression to be retrieved by a {@code Query}.
          * Never {@code null}.
-         *
-         * @deprecated Replaced by {@link #expression()} in preparation for making {@code NamedExpression} a record.
          */
-        @Deprecated(since = "1.5")
         @SuppressWarnings("serial")
-        public final Expression<? super AbstractFeature, ?> expression;
+        private final Expression<? super AbstractFeature, ?> expression;
 
         /**
          * The name to assign to the expression result, or {@code null} if unspecified.
-         *
-         * @deprecated Replaced by {@link #alias()} in preparation for making {@code NamedExpression} a record.
          */
-        @Deprecated(since = "1.5")
         @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
-        public final GenericName alias;
+        private final GenericName alias;
 
         /**
          * Whether the expression result should be stored or evaluated every times that it is requested.
          * A stored value will exist as a feature {@link AbstractAttribute}, while a virtual value will exist as
          * a feature {@link AbstractOperation}. The latter are commonly called "computed fields" and are equivalent
          * to SQL {@code GENERATED ALWAYS} keyword for columns.
-         *
-         * @deprecated Replaced by {@link #type()} in preparation for making {@code NamedExpression} a record.
-         *
-         * @since 1.4
          */
-        @Deprecated(since = "1.5")
-        public final ProjectionType type;
+        private final ProjectionType type;
 
         /**
          * Creates a new stored column with the given expression and no name.

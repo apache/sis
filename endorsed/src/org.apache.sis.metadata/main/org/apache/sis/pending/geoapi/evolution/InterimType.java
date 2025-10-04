@@ -27,8 +27,6 @@ import java.lang.reflect.Method;
  * Identifies an interim class to use until an official GeoAPI class or interface is released.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
  *
  * @see Interim#getReturnType(Method)
  */

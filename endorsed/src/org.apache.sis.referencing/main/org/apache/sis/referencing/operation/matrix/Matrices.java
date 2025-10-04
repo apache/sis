@@ -24,7 +24,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;                         // For javadoc
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
@@ -81,7 +80,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @since 0.4
  */
-public final class Matrices extends Static {
+public final class Matrices {
     /**
      * Number of spaces to put between columns formatted by {@link #toString(Matrix)}.
      */

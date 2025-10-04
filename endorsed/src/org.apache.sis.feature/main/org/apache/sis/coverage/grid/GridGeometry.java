@@ -1588,23 +1588,6 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Creates a new upsampled grid geometry (32-bits version).
-     * See {@link #upsample(long...)} for details.
-     *
-     * @param  periods  the upsampling factors for each dimension of this grid geometry.
-     * @return the upsampled grid geometry, or {@code this} is upsampling results in the same extent.
-     * @throws IllegalArgumentException if a period is not greater than zero.
-     * @since 1.3
-     *
-     * @deprecated Use the version with {@code long} integers instead of {@code int}.
-     * Small overviews of large images require large subsampling factors.
-     */
-    @Deprecated(since="1.5")
-    public GridGeometry upsample(final int[] periods) {
-        return upsample(ArraysExt.copyAsLongs(periods));
-    }
-
-    /**
      * Translates grid coordinates by the given number of cells without changing "real world" coordinates.
      * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
      * i.e. both low and high grid coordinates are displaced by the same number of cells.
