@@ -45,6 +45,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MatricesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -118,7 +119,7 @@ public final class MatricesTest extends TestCase {
            -1, 0, 0, 0,
             0, 0, 0, 1
         });
-        assertMatrixEquals(expected, matrix, STRICT, "(N,E,U) → (W,U,S)");
+        assertMatrixEquals(expected, matrix, "(N,E,U) → (W,U,S)");
     }
 
     /**
@@ -143,7 +144,7 @@ public final class MatricesTest extends TestCase {
             1, 0, 0, 0,
             0, 0, 0, 1
         });
-        assertMatrixEquals(expected, matrix, STRICT, "(N,E,U) → (D,N)");
+        assertMatrixEquals(expected, matrix, "(N,E,U) → (D,N)");
     }
 
     /**
@@ -168,7 +169,7 @@ public final class MatricesTest extends TestCase {
             0, 0,-1, 0,
             0, 0, 0, 1
         });
-        assertMatrixEquals(expected, matrix, STRICT, "(N,E,U) → (D,D)");
+        assertMatrixEquals(expected, matrix, "(N,E,U) → (D,D)");
     }
 
     /**
@@ -294,7 +295,7 @@ public final class MatricesTest extends TestCase {
             2.5,  0,    75,
             0,    0,     1
         });
-        assertMatrixEquals(expected, matrix, STRICT, "(N,E) → (E,N)");
+        assertMatrixEquals(expected, matrix, "(N,E) → (E,N)");
         /*
          * Test dropping a dimension.
          */
@@ -311,7 +312,7 @@ public final class MatricesTest extends TestCase {
             2.5,  0,   0,  75,
             0,    0,   0,   1
         });
-        assertMatrixEquals(expected, matrix, STRICT, "(N,E,U) → (E,N)");
+        assertMatrixEquals(expected, matrix, "(N,E,U) → (E,N)");
     }
 
     /**
@@ -400,7 +401,7 @@ public final class MatricesTest extends TestCase {
             3, 4, 8,
             4, 3, -1
         });
-        assertMatrixEquals(expected, Matrices.resizeAffine(matrix, 3, 3), STRICT, "To square matrix");
+        assertMatrixEquals(expected, Matrices.resizeAffine(matrix, 3, 3), "To square matrix");
     }
 
     /**

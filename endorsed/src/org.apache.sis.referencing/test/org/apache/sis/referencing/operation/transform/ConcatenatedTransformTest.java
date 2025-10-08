@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.Map;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -32,10 +31,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.TestCase.STRICT;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.test.Assertions;
+import org.apache.sis.referencing.Assertions;
 
 
 /**
@@ -44,6 +40,7 @@ import org.opengis.test.Assertions;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ConcatenatedTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -224,11 +221,12 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
          * Dropping a dimension is not a problem.
          */
         final MathTransform c = MathTransforms.concatenate(tr1, tr2.inverse());
-        Assertions.assertMatrixEquals(Matrices.create(3, 4, new double[] {
-                    4, 0, 0, 0,     // scale = 8/2
-                    0, 2, 0, 0,     // scale = 6/3
-                    0, 0, 0, 1
-                }), MathTransforms.getMatrix(c), STRICT, "Forward");
+        Assertions.assertMatrixEquals(
+                Matrices.create(3, 4, new double[] {
+                        4, 0, 0, 0,     // scale = 8/2
+                        0, 2, 0, 0,     // scale = 6/3
+                        0, 0, 0, 1}),
+                c, "Forward");
         /*
          * Following test is the interesting part. By inverting the transform, we ask for a conversion
          * from 2D points to 3D points. Without contextual information we would not know which value to
@@ -236,12 +234,13 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
          * this concatenation was built from a transform which was putting value 5 in third dimension,
          * we can complete the matrix as below with value 10 in third dimension.
          */
-        Assertions.assertMatrixEquals(Matrices.create(4, 3, new double[] {
-                    0.25, 0,    0,
-                    0,    0.5,  0,
-                    0,    0,   10,   // Having value 10 instead of NaN is the main purpose of this test.
-                    0,    0,    1
-                }), MathTransforms.getMatrix(c.inverse()), STRICT, "Inverse");
+        Assertions.assertMatrixEquals(
+                Matrices.create(4, 3, new double[] {
+                        0.25, 0,    0,
+                        0,    0.5,  0,
+                        0,    0,   10,   // Having value 10 instead of NaN is the main purpose of this test.
+                        0,    0,    1}),
+                c.inverse(), "Inverse");
     }
 
     /**
@@ -258,7 +257,6 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
         final MathTransform tr1 = MathTransforms.linear(new Matrix2(4.9E-324, -5387, 0, 1));
         final MathTransform tr2 = MathTransforms.linear(new Matrix2(-1, 0, 0, 1));
         final MathTransform c   = MathTransforms.concatenate(tr1, tr2);
-        final Matrix m          = ((LinearTransform) c).getMatrix();
-        Assertions.assertMatrixEquals(new Matrix2(-4.9E-324, 5387, 0, 1), m, STRICT, "Concatenate");
+        Assertions.assertMatrixEquals(new Matrix2(-4.9E-324, 5387, 0, 1), c, "Concatenate");
     }
 }

@@ -91,8 +91,8 @@ public final class MaskedImageTest extends TestCase {
     public void noErrorOnEmptyMasks() {
         final BufferedImage source = monoTile();
         final RenderedImage masked = new MaskedImage(source, new Polygon(), true, new Number[] {127});
-        assertSampleValuesEqual(source, masked, STRICT, null);
-        assertSame(source.getRaster(), masked.getTile(0,0));    // Optimization applied by MaskedImage.
+        assertSampleValuesEqual(source, masked, 0, null);
+        assertSame(source.getRaster(), masked.getTile(0, 0));   // Optimization applied by MaskedImage.
     }
 
     /**
@@ -205,7 +205,7 @@ public final class MaskedImageTest extends TestCase {
                 3, 3, 3, 3, 2, 2, 2, 2,
                 3, 3, 3, 3, 2, 2, 2, 2
         });
-        assertSampleValuesEqual(expected, masked, STRICT, null);
+        assertSampleValuesEqual(expected, masked, 0, null);
     }
 
     /**
@@ -224,7 +224,7 @@ public final class MaskedImageTest extends TestCase {
                 4, 4, 4, 4, 4, 4, 4, 4,
                 4, 4, 4, 4, 4, 4, 4, 4
         });
-        assertSampleValuesEqual(expected, masked, STRICT, null);
+        assertSampleValuesEqual(expected, masked, 0, null);
     }
 
     /**
@@ -243,7 +243,7 @@ public final class MaskedImageTest extends TestCase {
                 3, 3, 3, 3, 2, 2, 2, 2,
                 3, 3, 3, 3, 2, 2, 2, 2
         });
-        assertSampleValuesEqual(expected, masked, STRICT, null);
+        assertSampleValuesEqual(expected, masked, 0, null);
     }
 
     /**
@@ -262,7 +262,7 @@ public final class MaskedImageTest extends TestCase {
                 4, 4, 4, 4, 4, 4, 4, 4,
                 4, 4, 4, 4, 4, 4, 4, 4
         });
-        assertSampleValuesEqual(expected, masked, STRICT, null);
+        assertSampleValuesEqual(expected, masked, 0, null);
     }
 
     /**

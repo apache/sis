@@ -57,6 +57,7 @@ import static org.opengis.test.Assertions.assertSampleValuesEqual;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public class GridCoverage2DTest extends TestCase {
     /**
      * Width and height of the grid tested in this class.
@@ -292,7 +293,7 @@ public class GridCoverage2DTest extends TestCase {
         assertEquals(2,         result.getMinY());
         assertEquals(GRID_SIZE, result.getWidth());
         assertEquals(GRID_SIZE, result.getHeight());
-        assertSampleValuesEqual(coverage.render(null), result, STRICT, null);
+        assertSampleValuesEqual(coverage.render(null), result, 0, null);
     }
 
     /**

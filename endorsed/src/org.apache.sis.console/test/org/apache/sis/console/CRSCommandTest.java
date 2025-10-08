@@ -21,7 +21,6 @@ import org.apache.sis.util.CharSequences;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import org.apache.sis.test.TestCase;
 
 
@@ -73,7 +72,7 @@ public final class CRSCommandTest extends TestCase {
      * defines the datum in the old way.
      */
     private static void assumeEPSG(final String wkt) {
-        assumeFalse(wkt.contains("Datum[\"World Geodetic System 1984\""), "Requires EPSG geodetic database.");
+        assumeConnectionToEPSG(!wkt.contains("Datum[\"World Geodetic System 1984\""));
     }
 
     /**

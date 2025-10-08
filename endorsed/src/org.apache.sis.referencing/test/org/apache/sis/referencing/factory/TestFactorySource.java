@@ -28,6 +28,7 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
+import static org.apache.sis.test.TestCase.assumeConnectionToEPSG;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertBetween;
@@ -101,9 +102,9 @@ public final class TestFactorySource {
      * @throws FactoryException if an error occurred while fetching the factory.
      */
     public static synchronized EPSGFactory getSharedFactory() throws FactoryException {
-        assumeFalse(isUnavailable, "No connection to EPSG dataset.");
+        assumeConnectionToEPSG(!isUnavailable);
         final CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory(Constants.EPSG);
-        assumeTrue(crsFactory instanceof EPSGFactory, "No connection to EPSG dataset.");
+        assumeConnectionToEPSG(crsFactory instanceof EPSGFactory);
         try {
             assertNotNull(crsFactory.createGeographicCRS("4326"));
         } catch (UnavailableFactoryException e) {
@@ -163,7 +164,7 @@ public final class TestFactorySource {
      * @return the factory (never null if this method returns).
      */
     public EPSGFactory factory() {
-        assumeTrue(factory != null, "No connection to EPSG dataset.");
+        assumeConnectionToEPSG(factory != null);
         return factory;
     }
 
@@ -172,6 +173,7 @@ public final class TestFactorySource {
      *
      * @throws FactoryException if an error occurred while closing the connections.
      */
+    @SuppressWarnings("ConvertToTryWithResources")
     public void close() throws FactoryException {
         if (factory != null) {
             final int n = ((ConcurrentAuthorityFactory) factory).countAvailableDataAccess();

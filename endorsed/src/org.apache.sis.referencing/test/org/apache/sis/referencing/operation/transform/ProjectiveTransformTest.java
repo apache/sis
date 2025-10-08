@@ -38,11 +38,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
+import org.apache.sis.referencing.Assertions;
 import org.apache.sis.test.FailureDetailsReporter;
-import static org.apache.sis.test.TestCase.STRICT;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.test.Assertions;
 import org.opengis.test.referencing.AffineTransformTest;
 
 
@@ -54,6 +53,7 @@ import org.opengis.test.referencing.AffineTransformTest;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @ExtendWith(FailureDetailsReporter.class)
 public class ProjectiveTransformTest extends AffineTransformTest {
     /**
@@ -169,8 +169,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
     public void testOptimizeConstant() throws FactoryException, TransformException {
         matrix = new Matrix2(0, 10, 0, 1);
         transform = mtFactory.createAffineTransform(matrix);
-        Assertions.assertMatrixEquals(matrix, assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT,
-                                      "Transform shall use the given matrix unmodified.");
+        Assertions.assertMatrixEquals(matrix, transform, "Transform shall use the given matrix unmodified.");
         verifyConsistency(1, 2, 3,   -3, -2, -1);
     }
 

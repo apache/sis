@@ -47,6 +47,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public class GeneralEnvelopeTest extends EPSGDependentTestCase {
     /**
      * Tolerance threshold for floating point comparisons.
@@ -152,14 +153,14 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         ei.intersect(e2);
         assertFalse(e1.isEmpty(), "isEmpty");
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
-        assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
+        assertTrue(ei.equals(ri, 0, false), "Using GeneralEnvelope.");
 
         // Interchanges arguments.
         ei.setEnvelope(e2);
         ei.intersect(e1);
         assertFalse(e1.isEmpty(), "isEmpty");
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
-        assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
+        assertTrue(ei.equals(ri, 0, false), "Using GeneralEnvelope.");
     }
 
     /**
@@ -187,7 +188,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         ei.add(e2);
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
         if (!inf) {
-            assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
+            assertTrue(ei.equals(ri, 0, false), "Using GeneralEnvelope.");
         }
 
         // Interchanges arguments.
@@ -199,7 +200,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
             assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
         }
         if (!inf) {
-            assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
+            assertTrue(ei.equals(ri, 0, false), "Using GeneralEnvelope.");
         }
     }
 
@@ -219,7 +220,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         final GeneralEnvelope ec = new GeneralEnvelope(e);
         ec.add(p);
         assertEnvelopeEquals(ec, xmin, ymin, xmax, ymax);
-        assertTrue(ec.equals(r, STRICT, false), "Using GeneralEnvelope.");
+        assertTrue(ec.equals(r, 0, false), "Using GeneralEnvelope.");
     }
 
     /**

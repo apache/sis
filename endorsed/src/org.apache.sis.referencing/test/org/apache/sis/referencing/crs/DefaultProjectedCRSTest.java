@@ -55,6 +55,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
@@ -511,8 +512,9 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
          * Test marshalling and compare with the original file. The comparison ignores the <gml:name> nodes because the
          * marshalled CRS contains many operation method and parameter aliases which were not in the original XML file.
          */
-        assertMarshalEqualsFile(openTestFile(), crs, null, STRICT, new String[] {"gml:name"},
-                new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});
+        final String[] ignoredNodes = {"gml:name"};
+        final String[] ignoredAttributes = {"xmlns:*", "xsi:schemaLocation", "gml:id"};
+        assertMarshalEqualsFile(openTestFile(), crs, null, 0, ignoredNodes, ignoredAttributes);
         loggings.assertNoUnexpectedLog();
     }
 

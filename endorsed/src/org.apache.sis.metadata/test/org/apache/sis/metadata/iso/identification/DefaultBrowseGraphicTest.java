@@ -44,6 +44,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class DefaultBrowseGraphicTest extends TestCase {
     /**
      * {@code false} if testing ISO 19115-3 document, or {@code true} if testing ISO 19139:2007 document.

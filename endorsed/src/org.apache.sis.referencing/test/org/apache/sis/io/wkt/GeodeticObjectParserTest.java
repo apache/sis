@@ -66,6 +66,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
     /**
      * The parser to use for the test.
@@ -1051,7 +1052,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         assertEquals(-1, matrix.getElement(1,1), "North-South direction should be reverted.");
         assertEquals( 0, matrix.getElement(0,2), "No easting expected.");
         assertEquals( 0, matrix.getElement(1,2), "No northing expected.");
-        assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix, STRICT);
+        assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix);
         /*
          * Test "Transverse Mercator South Orientated". In this projection, the "False Northing" parameter
          * is actually a "False Southing". It may sound surprising, but "South Orientated" projections are

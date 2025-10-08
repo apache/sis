@@ -29,7 +29,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.FailureDetailsReporter;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
-import static org.apache.sis.test.TestCase.STRICT;
 
 
 /**
@@ -37,6 +36,7 @@ import static org.apache.sis.test.TestCase.STRICT;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @ExtendWith(FailureDetailsReporter.class)
 public final class LocalizationGridBuilderTest extends TransformTestCase {
     /**
@@ -134,7 +134,7 @@ public final class LocalizationGridBuilderTest extends TransformTestCase {
          * Verifies the grid size by checking the source envelope.
          * Minimum and maximum values are inclusive.
          */
-        assertEnvelopeEquals(new Envelope2D(null, 0, 0, 1, 2), builder.getSourceEnvelope(false), STRICT);
+        assertEnvelopeEquals(new Envelope2D(null, 0, 0, 1, 2), builder.getSourceEnvelope(false));
         /*
          * Verify a few random positions.
          */

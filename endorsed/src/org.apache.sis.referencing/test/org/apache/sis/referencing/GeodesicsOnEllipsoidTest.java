@@ -42,6 +42,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
     /**
      * The {@link GeodesicsOnEllipsoid} instance to be tested.
@@ -97,7 +98,7 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
             @Override void store(final String name, final double value) {
                 super.store(name, value);
                 if (verifyConsistency) {
-                    assertValueEquals(name, 0, value, STRICT, false);
+                    assertValueEquals(name, 0, value, 0, false);
                 } else {
                     double[] values = localVariables.putIfAbsent(name, new double[] {value});
                     if (values != null) {

@@ -51,6 +51,7 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  *
  * @param <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
  */
+@SuppressWarnings("exports")
 public abstract class TransformTestCase<G> extends EPSGDependentTestCase {
     /**
      * Creates an envelope or rectangle for the given CRS and coordinate values.
@@ -276,6 +277,6 @@ public abstract class TransformTestCase<G> extends EPSGDependentTestCase {
         final G rectangle = createFromExtremums(sourceCRS, -178, -70, 165, 80);
         final G expected  = createFromExtremums(targetCRS,  182, -70, 165, 80);
         final G actual    = transform(CRS.findOperation(sourceCRS, targetCRS, null), rectangle);
-        assertGeometryEquals(expected, actual, STRICT, STRICT);
+        assertGeometryEquals(expected, actual, 0, 0);
     }
 }

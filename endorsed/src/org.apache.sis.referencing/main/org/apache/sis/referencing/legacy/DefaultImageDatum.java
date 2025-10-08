@@ -210,6 +210,7 @@ public final class DefaultImageDatum extends AbstractDatum {
      * <strong>This is not a valid object.</strong> This constructor is strictly
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
+    @SuppressWarnings("unused")
     private DefaultImageDatum() {
         super(Map.of(NAME_KEY, NilReferencingObject.UNNAMED));
     }
@@ -219,6 +220,7 @@ public final class DefaultImageDatum extends AbstractDatum {
      *
      * @see #getPixelInCell()
      */
+    @SuppressWarnings("unused")
     private void setPixelInCell(final String value) {
         if (pixelInCell == null) {
             pixelInCell = value;

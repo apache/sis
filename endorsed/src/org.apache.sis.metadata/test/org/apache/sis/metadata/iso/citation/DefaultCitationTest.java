@@ -64,6 +64,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class DefaultCitationTest extends TestUsingFile {
     /**
      * Creates a new test case.

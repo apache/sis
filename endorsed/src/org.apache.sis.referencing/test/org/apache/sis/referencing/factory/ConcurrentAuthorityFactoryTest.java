@@ -37,6 +37,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ConcurrentAuthorityFactoryTest extends TestCase {
     /**
      * The timeout used for this test, in nanoseconds.
@@ -190,6 +191,7 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
      * @param  waitTime  the time to wait, in nanoseconds.
      * @return {@code true} if all pending factories have been disposed.
      */
+    @SuppressWarnings("SleepWhileInLoop")
     private static boolean sleepUntilAfterTimeout(final long waitTime, final ConcurrentAuthorityFactory<?> factory)
             throws InterruptedException
     {

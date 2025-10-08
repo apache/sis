@@ -21,17 +21,14 @@ import java.text.ParseException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 import org.apache.sis.test.TestCase;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -39,6 +36,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MathTransformParserTest extends TestCase {
     /**
      * The parser to use for the test.
@@ -99,7 +97,7 @@ public final class MathTransformParserTest extends TestCase {
                     + "PARAMETER[\"num_col\",2],"
                     + "PARAMETER[\"elt_0_1\",7]]");
 
-        assertMatrixEquals(new Matrix2(1, 7, 0, 1), MathTransforms.getMatrix(tr), STRICT, "Affine");
+        assertMatrixEquals(new Matrix2(1, 7, 0, 1), tr, "Affine");
         /*
          * Larger matrix, mix quote and bracket styles and insert spaces.
          */
@@ -112,8 +110,7 @@ public final class MathTransformParserTest extends TestCase {
 
         assertMatrixEquals(new Matrix3(1, 1, 2,
                                        0, 1, 3,
-                                       0, 0, 1),
-                MathTransforms.getMatrix(tr), STRICT, "Affine");
+                                       0, 0, 1), tr, "Affine");
     }
 
     /**
@@ -138,8 +135,7 @@ public final class MathTransformParserTest extends TestCase {
 
         assertMatrixEquals(new Matrix3(0.5,  0,     -2.50,
                                        0,    0.25,  -0.75,
-                                       0,    0,      1),
-                MathTransforms.getMatrix(tr), STRICT, "Affine");
+                                       0,    0,      1), tr, "Affine");
     }
 
     /**
@@ -168,7 +164,6 @@ public final class MathTransformParserTest extends TestCase {
 
         assertMatrixEquals(new Matrix3(2,  0,  -5,
                                        0,  4,  -3,
-                                       0,  0,   1),
-                MathTransforms.getMatrix(tr), STRICT, "Affine");
+                                       0,  0,   1), tr, "Affine");
     }
 }

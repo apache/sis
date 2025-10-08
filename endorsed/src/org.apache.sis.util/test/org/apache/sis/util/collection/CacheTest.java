@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import static java.lang.StrictMath.*;
 import org.apache.sis.math.Statistics;
@@ -45,6 +44,7 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CacheTest extends TestCaseWithGC {
     /**
      * Creates a new test case.
@@ -209,8 +209,8 @@ public final class CacheTest extends TestCaseWithGC {
     @Tag(Benchmark.TAG)
     public void stress() throws InterruptedException {
         final int count = 5000;
-        final Cache<Integer,IntObject> cache = new Cache<>();
-        final AtomicReference<Throwable> failures = new AtomicReference<>();
+        final var cache = new Cache<Integer, IntObject>();
+        final var failures = new AtomicReference<Throwable>();
         final class WriterThread extends Thread {
             /**
              * Incremented every time a value has been added. This is not the number of time the
@@ -251,7 +251,7 @@ public final class CacheTest extends TestCaseWithGC {
                 }
             }
         }
-        final WriterThread[] threads = new WriterThread[50];
+        final var threads = new WriterThread[50];
         Arrays.setAll(threads, WriterThread::new);
         Arrays.stream(threads).forEach(Thread::start);
         for (WriterThread thread : threads) {
@@ -270,12 +270,10 @@ public final class CacheTest extends TestCaseWithGC {
          * random so we cannot check it in a test suite.  However if the test is
          * properly tuned, most values should be non-zero.
          */
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final PrintWriter out = CacheTest.out;
-        TestUtilities.printSeparator("CacheTest.stress() - testing concurrent accesses");
-        out.print("There is "); out.print(threads.length); out.print(" threads, each of them"
-                + " fetching or creating "); out.print(count); out.println(" values.");
-        out.println("Number of times a new value has been created, for each thread:");
+        out.printSeparator("CacheTest.stress() - testing concurrent accesses");
+        out.format("There is %d threads, each of them fetching or creating %d values.%n"
+                + "Number of times a new value has been created, for each thread:%n",
+                threads.length, count);
         for (int i=0; i<threads.length;) {
             final String n = String.valueOf(threads[i++].addCount);
             out.print(CharSequences.spaces(6 - n.length()));

@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Iterator;
 import java.util.Random;
-import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -45,7 +44,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
-import org.apache.sis.util.internal.shared.X364;
 import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 // Test dependencies
@@ -62,11 +60,6 @@ import org.opengis.metadata.extent.GeographicExtent;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class TestUtilities {
-    /**
-     * Width of the separator to print to {@link TestCase#out}, in number of characters.
-     */
-    private static final int SEPARATOR_WIDTH = 80;
-
     /**
      * Date parser and formatter using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
      * and UTC time zone.
@@ -100,52 +93,6 @@ public final class TestUtilities {
      * Do not allow instantiation of this class.
      */
     private TestUtilities() {
-    }
-
-    /**
-     * Prints and clear the current content of {@link TestCase#out}, regardless of whether
-     * {@link TestCase#VERBOSE} is {@code true} or {@code false}. This method should rarely
-     * be needed.
-     */
-    public static void forceFlushOutput() {
-        TestCase.flushOutput();
-    }
-
-    /**
-     * If verbose output are enabled, prints the given title to {@link TestCase#out} in a box.
-     * This method is invoked for writing a clear visual separator between the verbose output
-     * of different test cases. This method does nothing if verbose output is not enabled,
-     * because only the output of failed tests should be printed in such case.
-     *
-     * @param  title  the title to write.
-     */
-    public static void printSeparator(final String title) {
-        if (TestCase.VERBOSE) {
-            final PrintWriter out = TestCase.out;
-            final boolean isAnsiSupported = X364.isAnsiSupported();
-            if (isAnsiSupported) {
-                out.print(X364.FOREGROUND_CYAN.sequence());
-            }
-            out.print('╒');
-            for (int i=0; i<SEPARATOR_WIDTH-2; i++) {
-                out.print('═');
-            }
-            out.println('╕');
-            out.print("│ ");
-            out.print(title);
-            for (int i=title.codePointCount(0, title.length()); i<SEPARATOR_WIDTH-3; i++) {
-                out.print(' ');
-            }
-            out.println('│');
-            out.print('└');
-            for (int i=0; i<SEPARATOR_WIDTH-2; i++) {
-                out.print('─');
-            }
-            out.println('┘');
-            if (isAnsiSupported) {
-                out.print(X364.FOREGROUND_DEFAULT.sequence());
-            }
-        }
     }
 
     /**

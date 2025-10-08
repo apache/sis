@@ -46,7 +46,7 @@ import org.apache.sis.test.TestUtilities;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public final strictfp class EmbeddedResourcesTest {
+public final class EmbeddedResourcesTest {
     /**
      * Creates a new test case.
      *

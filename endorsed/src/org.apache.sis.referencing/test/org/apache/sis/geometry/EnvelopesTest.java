@@ -58,6 +58,7 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
     /**
      * Creates a new test case.
@@ -233,14 +234,14 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
         envelope.setCoordinateReferenceSystem(CRS.compound(
                 HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE), HardCodedCRS.TIME));
         final GeneralEnvelope expected = createFromExtremums(targetCRS, -0.5, -90, -5.5, 90);
-        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
+        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS));
         /*
          * When the envelope to transform span the full longitude range,
          * target envelope should unconditionally be [-180 … +180]°.
          */
         envelope.setRange(0, -0.5, 359.5);
         expected.setRange(0, -180, 180);
-        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
+        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS));
     }
 
     /**

@@ -38,7 +38,6 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.metadata.sql.internal.shared.Reflection;
 
 // Test dependencies
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -62,6 +61,7 @@ import org.apache.sis.metadata.sql.TestDatabase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class EPSGInstallerTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
@@ -94,9 +94,8 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
-    @Tag(TAG_SLOW)
     public void testCreationOnDerby() throws Exception {
-        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
+        assumeExtensiveTestsEnabled();
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.create("EPSGInstaller")) {
             createAndTest(db.source, scripts);
@@ -132,9 +131,8 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
-    @Tag(TAG_SLOW)
     public void testCreationOnH2() throws Exception {
-        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
+        assumeExtensiveTestsEnabled();
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.createOnH2("EPSGInstaller")) {
             createAndTest(db.source, scripts);

@@ -31,7 +31,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.measure.Units;
@@ -50,10 +49,10 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.TestUtilities.getScope;
 import static org.apache.sis.test.TestUtilities.getDomainOfValidity;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertIdentifierEquals;
-import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -61,6 +60,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
@@ -255,11 +255,12 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         assertEquals("Geodetic survey.", getScope(targetCRS), "targetCRS.scope");
         assertEquals("4275", getSingleton(targetCRS.getIdentifiers()).getCode(), "targetCRS.identifier");
 
-        final var tr = assertInstanceOf(LinearTransform.class, c.getMathTransform());
-        assertMatrixEquals(new Matrix3(1, 0, 0,
-                                       0, 1, 2.33722917,
-                                       0, 0, 1),
-                tr.getMatrix(), STRICT, "mathTransform.matrix");
+        assertMatrixEquals(
+                new Matrix3(1, 0, 0,
+                            0, 1, 2.33722917,
+                            0, 0, 1),
+                c.getMathTransform(),
+                "mathTransform.matrix");
         /*
          * Validate object, then discard warnings caused by duplicated identifiers.
          * Those duplications are intentional, see comment in `Transformation.xml`.

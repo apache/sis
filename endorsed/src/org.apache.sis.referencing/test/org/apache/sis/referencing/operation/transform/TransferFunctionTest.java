@@ -26,10 +26,8 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 import org.apache.sis.test.TestCase;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -37,6 +35,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TransferFunctionTest extends TestCase {
     /**
      * Creates a new test case.
@@ -61,9 +60,7 @@ public final class TransferFunctionTest extends TestCase {
         f.setOffset(-2);
         assertEquals("y = 0.15⋅x − 2", f.toString());
         final MathTransform1D transform = f.getTransform();
-        assertMatrixEquals(new Matrix2(0.15, -2, 0, 1),
-                assertInstanceOf(LinearTransform.class, transform).getMatrix(),
-                STRICT, "transform.matrix");
+        assertMatrixEquals(new Matrix2(0.15, -2, 0, 1), transform, "transform.matrix");
         /*
          * Get back the coefficients.
          */
@@ -160,9 +157,7 @@ public final class TransferFunctionTest extends TestCase {
         f.setScale(0.15);
         f.setOffset(-2);
         MathTransform transform = f.createTransform(factory);
-        assertMatrixEquals(new Matrix2(0.15, -2, 0, 1),
-                assertInstanceOf(LinearTransform.class, transform).getMatrix(),
-                STRICT, "transform.matrix");
+        assertMatrixEquals(new Matrix2(0.15, -2, 0, 1), transform, "transform.matrix");
         /*
          * Logarithmic case.
          */

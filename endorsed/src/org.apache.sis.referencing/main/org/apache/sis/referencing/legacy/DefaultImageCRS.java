@@ -140,6 +140,7 @@ public final class DefaultImageCRS extends AbstractCRS implements SingleCRS {
      *
      * @return the datum.
      */
+    @Override
     @XmlElement(name = "imageDatum", required = true)
     public DefaultImageDatum getDatum() {
         return datum;
@@ -222,6 +223,7 @@ public final class DefaultImageCRS extends AbstractCRS implements SingleCRS {
      * <strong>This is not a valid object.</strong> This constructor is strictly
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
+    @SuppressWarnings("unused")
     private DefaultImageCRS() {
         super(Map.of(NAME_KEY, NilReferencingObject.UNNAMED), CommonCRS.Engineering.DISPLAY.crs().getCoordinateSystem());
         /*
@@ -237,6 +239,7 @@ public final class DefaultImageCRS extends AbstractCRS implements SingleCRS {
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("unused")
     private void setDatum(final DefaultImageDatum value) {
         if (datum == null) {
             datum = value;
@@ -268,12 +271,14 @@ public final class DefaultImageCRS extends AbstractCRS implements SingleCRS {
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */
+    @SuppressWarnings("unused")
     @XmlElement(name = "cartesianCS")
     private CartesianCS getCartesianCS() {
         final AffineCS cs = getCoordinateSystem();
         return (cs instanceof CartesianCS) ? (CartesianCS) cs : null;
     }
 
+    @SuppressWarnings("unused")
     @XmlElement(name = "affineCS")
     private AffineCS getAffineCS() {
         final AffineCS cs = getCoordinateSystem();
@@ -285,6 +290,7 @@ public final class DefaultImageCRS extends AbstractCRS implements SingleCRS {
      *
      * @see #getCartesianCS()
      */
+    @SuppressWarnings("unused")
     private void setCartesianCS(final CartesianCS cs) {
         setAffineCS(cs);
     }

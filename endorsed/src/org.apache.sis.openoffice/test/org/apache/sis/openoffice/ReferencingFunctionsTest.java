@@ -24,7 +24,6 @@ import org.apache.sis.referencing.internal.shared.Formulas;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import org.apache.sis.test.TestCase;
 
 
@@ -33,6 +32,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class ReferencingFunctionsTest extends TestCase {
     /**
@@ -108,7 +108,7 @@ public final class ReferencingFunctionsTest extends TestCase {
     @Test
     public void testGetGeographicArea() {
         final double[][] bbox = instance.getGeographicArea("EPSG:32620");     // UTM zone 20
-        assumeFalse(bbox.length == 0);            // Empty if EPSG dataset is not installed.
+        assumeConnectionToEPSG(bbox.length != 0);   // Empty if EPSG dataset is not installed.
         assertEquals(2, bbox.length);
         assertArrayEquals(new double[] {84, -66}, bbox[0]);
         assertArrayEquals(new double[] { 0, -60}, bbox[1]);
@@ -151,8 +151,7 @@ public final class ReferencingFunctionsTest extends TestCase {
             new double[] {27, -12},
             new double[] {32,  23}
         };
-        TransformerTest.assertPointsEqual(result,
-                instance.transformPoints("EPSG:4979", "EPSG:4326", points), STRICT);
+        TransformerTest.assertPointsEqual(result, instance.transformPoints("EPSG:4979", "EPSG:4326", points));
     }
 
     /**
@@ -170,8 +169,7 @@ public final class ReferencingFunctionsTest extends TestCase {
             new double[] {27, -12},
             new double[] {34,  23}
         };
-        TransformerTest.assertPointsEqual(result,
-                instance.transformEnvelope("EPSG:4979", "EPSG:4326", points), STRICT);
+        TransformerTest.assertPointsEqual(result, instance.transformEnvelope("EPSG:4979", "EPSG:4326", points));
     }
 
     /**

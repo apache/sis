@@ -49,6 +49,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class StandardDefinitionsTest extends EPSGDependentTestCase {
     /**
      * Creates a new test case.
@@ -204,7 +205,7 @@ public final class StandardDefinitionsTest extends EPSGDependentTestCase {
     private static void compare(final Ellipsoid expected, final Ellipsoid actual) {
         assertEquals(expected.getSemiMajorAxis(),     actual.getSemiMajorAxis());
         assertEquals(expected.getSemiMinorAxis(),     actual.getSemiMinorAxis());
-        assertEquals(expected.getInverseFlattening(), actual.getInverseFlattening(), expected.isIvfDefinitive() ? STRICT : 1E-11);
+        assertEquals(expected.getInverseFlattening(), actual.getInverseFlattening(), expected.isIvfDefinitive() ? 0 : 1E-11);
         assertEquals(expected.isIvfDefinitive(),      actual.isIvfDefinitive());
         assertEquals(expected.isSphere(),             actual.isSphere());
     }

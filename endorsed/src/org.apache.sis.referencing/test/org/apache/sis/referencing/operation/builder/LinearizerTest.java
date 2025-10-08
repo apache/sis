@@ -38,6 +38,7 @@ import org.opengis.test.Assertions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LinearizerTest extends TestCase {
     /**
      * Creates a new test case.

@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final strictfp class ScriptProviderTest {
+public final class ScriptProviderTest {
     /**
      * Creates a new test case.
      */

@@ -63,6 +63,7 @@ import org.apache.sis.test.TestCase;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MolodenskyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.

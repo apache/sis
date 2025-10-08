@@ -40,7 +40,6 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.abort;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -259,7 +258,7 @@ public final class ProvidersTest extends TestCase {
      */
     @Test
     public void compareWithEPSG() throws ReflectiveOperationException, FactoryException {
-        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
+        assumeExtensiveTestsEnabled();
         final EPSGFactory factory;
         try {
             factory = (EPSGFactory) CRS.getAuthorityFactory(Constants.EPSG);
