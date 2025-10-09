@@ -36,8 +36,8 @@ import static org.apache.sis.referencing.internal.shared.Formulas.LINEAR_TOLERAN
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 
@@ -52,7 +52,7 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  * @param <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
  */
 @SuppressWarnings("exports")
-public abstract class TransformTestCase<G> extends EPSGDependentTestCase {
+public abstract class TransformTestCase<G> extends TestCase {
     /**
      * Creates an envelope or rectangle for the given CRS and coordinate values.
      */

@@ -25,7 +25,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 
 
@@ -76,7 +75,7 @@ public final class TransformerTest extends TestCase {
             new double[] {32,  23}
         };
         final var tr = new Transformer(caller, CommonCRS.WGS84.geographic(), "EPSG:4326", points);
-        assumeTrue(tr.hasAreaOfInterest());     // False if there is no EPSG geodetic dataset installed.
+        assumeConnectionToEPSG(tr.hasAreaOfInterest());
         final GeographicBoundingBox bbox = tr.getAreaOfInterest();
         assertEquals( 23, bbox.getEastBoundLongitude());
         assertEquals(-12, bbox.getWestBoundLongitude());
@@ -106,7 +105,7 @@ public final class TransformerTest extends TestCase {
             new double[] {32,  23}
         };
         final var tr = new Transformer(caller, CommonCRS.WGS84.geographic3D(), "EPSG:4326", points);
-        assumeTrue(tr.hasAreaOfInterest());     // False if there is no EPSG geodetic dataset installed.
+        assumeConnectionToEPSG(tr.hasAreaOfInterest());
         final GeographicBoundingBox bbox = tr.getAreaOfInterest();
         assertEquals( 23, bbox.getEastBoundLongitude());
         assertEquals(-12, bbox.getWestBoundLongitude());

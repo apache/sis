@@ -29,8 +29,8 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -44,7 +44,8 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  *
  * @see org.apache.sis.measure.AngleFormatTest
  */
-public final class CoordinateFormatTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public final class CoordinateFormatTest extends TestCase {
     /**
      * Creates a new test case.
      */

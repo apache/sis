@@ -42,6 +42,7 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.test.TestCase;
 
 
 /**
@@ -50,7 +51,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")
-public final class StandardDefinitionsTest extends EPSGDependentTestCase {
+public final class StandardDefinitionsTest extends TestCase {
     /**
      * Creates a new test case.
      */

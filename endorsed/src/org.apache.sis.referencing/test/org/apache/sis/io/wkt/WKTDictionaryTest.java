@@ -41,8 +41,8 @@ import org.apache.sis.util.collection.BackingStoreException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
@@ -56,7 +56,8 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class WKTDictionaryTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public final class WKTDictionaryTest extends TestCase {
     /**
      * Creates a new test case.
      */
@@ -71,7 +72,7 @@ public final class WKTDictionaryTest extends EPSGDependentTestCase {
      */
     @Test
     public void testAddDefinitions() throws FactoryException {
-        final WKTDictionary factory = new WKTDictionary(null);
+        final var factory = new WKTDictionary(null);
         factory.addDefinitions(List.of(
                 "GeodCRS[\"Anguilla 1957\",\n" +
                 " Datum[\"Anguilla 1957\",\n" +

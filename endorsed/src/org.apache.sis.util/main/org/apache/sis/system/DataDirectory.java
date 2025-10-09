@@ -142,7 +142,7 @@ public enum DataDirectory {
      *
      * @see System#getenv(String)
      */
-    public static String getenv() throws SecurityException {
+    public static String getenv() {
         return System.getenv(ENV);
     }
 

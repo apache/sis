@@ -26,7 +26,6 @@ import org.apache.sis.system.Loggers;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +33,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.referencing.WKTParserTest;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.FailureDetailsReporter;
-import org.apache.sis.referencing.EPSGDependentTestCase;
+import org.apache.sis.test.TestCase;
 
 
 /**
@@ -43,8 +42,18 @@ import org.apache.sis.referencing.EPSGDependentTestCase;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 @ExtendWith(FailureDetailsReporter.class)
 public final class CRSParserTest extends WKTParserTest {
+    /**
+     * Forces the check of whether the EPSG database exists before to start any test.
+     * This is done for avoiding race conditions logging the same message many times.
+     */
+    static {
+        // Will do nothing, the intend is only to force class initialization.
+        TestCase.out.flush();
+    }
+
     /**
      * A JUnit extension for listening to log events.
      */
@@ -67,17 +76,8 @@ public final class CRSParserTest extends WKTParserTest {
     }
 
     /**
-     * Forces the check of whether of EPSG database exists before to start any tests.
-     * This is done for avoiding race conditions logging the same message many times.
-     */
-    @BeforeAll
-    public static void forceCheckForEPSG() {
-        EPSGDependentTestCase.forceCheckForEPSG();
-    }
-
-    /**
-     * Pre-process the WKT string before parsing. This method may replace curly quotation marks
-     * ({@code “} and {@code ”}) by straight quotation marks ({@code "}).
+     * Pre-processes the <abbr>WKT</abbr> string before parsing. This method may replace
+     * curly quotation marks ({@code “} and {@code ”}) by straight quotation marks ({@code "}).
      * The Apache SIS parser should understand both forms transparently.
      *
      * @param  wkt  the Well-Known Text to pre-process.

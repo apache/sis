@@ -29,6 +29,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CRSCommandTest extends TestCase {
     /**
      * The Well Known Text for EPSG:4326 as a regular expression.
@@ -67,12 +68,24 @@ public final class CRSCommandTest extends TestCase {
     }
 
     /**
-     * Interrupts the test if the <abbr>EPSG</abbr> database does not seem present.
-     * We recognize this situation by the fact that the {@code CommonCRS} fallback
-     * defines the datum in the old way.
+     * Tests with the given code. This method formats the output, but check for a match
+     * only if the <abbr>EPSG</abbr> database is present. We recognize this situation by
+     * the fact that the {@code CommonCRS} fallback defines the datum in the old way.
+     *
+     * @param  code  the code to test.
+     * @throws Exception if an error occurred while creating the command.
      */
-    private static void assumeEPSG(final String wkt) {
-        assumeConnectionToEPSG(!wkt.contains("Datum[\"World Geodetic System 1984\""));
+    private void test(final String code) throws Exception {
+        var test = new CRSCommand(0, new String[] {CommandRunner.TEST, code});
+        test.run();
+        String wkt = test.outputBuffer.toString();
+        if (wkt.contains("Datum[\"World Geodetic System 1984\"")) {
+            if (REQUIRE_EPSG_DATABASE) {
+                fail("EPSG database is absent or too old.");
+            }
+        } else {
+            assertTrue(wkt.matches(WGS84), wkt);
+        }
     }
 
     /**
@@ -82,11 +95,7 @@ public final class CRSCommandTest extends TestCase {
      */
     @Test
     public void testCode() throws Exception {
-        var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "EPSG:4326"});
-        test.run();
-        String wkt = test.outputBuffer.toString();
-        assumeEPSG(wkt);
-        assertTrue(wkt.matches(WGS84), wkt);
+        test("EPSG:4326");
     }
 
     /**
@@ -96,11 +105,7 @@ public final class CRSCommandTest extends TestCase {
      */
     @Test
     public void testURN() throws Exception {
-        var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "urn:ogc:def:crs:epsg::4326"});
-        test.run();
-        String wkt = test.outputBuffer.toString();
-        assumeEPSG(wkt);
-        assertTrue(wkt.matches(WGS84), wkt);
+        test("urn:ogc:def:crs:epsg::4326");
     }
 
     /**
@@ -110,10 +115,6 @@ public final class CRSCommandTest extends TestCase {
      */
     @Test
     public void testHTTP() throws Exception {
-        var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "http://www.opengis.net/gml/srs/epsg.xml#4326"});
-        test.run();
-        String wkt = test.outputBuffer.toString();
-        assumeEPSG(wkt);
-        assertTrue(wkt.matches(WGS84), wkt);
+        test("http://www.opengis.net/gml/srs/epsg.xml#4326");
     }
 }

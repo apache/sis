@@ -45,6 +45,7 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class EmbeddedResourcesTest {
     /**

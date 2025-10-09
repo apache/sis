@@ -18,11 +18,11 @@ package org.apache.sis.geometry;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 
 
 /**
@@ -32,7 +32,8 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class ImmutableEnvelopeTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public final class ImmutableEnvelopeTest extends TestCase {
     /**
      * Creates a new test case.
      */
@@ -46,7 +47,7 @@ public final class ImmutableEnvelopeTest extends EPSGDependentTestCase {
     public void testSerialization() {
         final var e1 = new ImmutableEnvelope(
                 new double[] {-20, -10},
-                new double[] { 20,  10}, WGS84);
+                new double[] { 20,  10}, HardCodedCRS.WGS84);
         final ImmutableEnvelope e2 = assertSerializedEquals(e1);
         assertNotSame(e1, e2);
         validate(e2);

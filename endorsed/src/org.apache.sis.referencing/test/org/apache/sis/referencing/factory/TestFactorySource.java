@@ -76,7 +76,7 @@ public final class TestFactorySource {
     private static final boolean TEST_ON_POSTGRESQL = false;
     static {
         if (TEST_ON_POSTGRESQL) {
-            final PGSimpleDataSource ds = new PGSimpleDataSource();
+            final var ds = new PGSimpleDataSource();
             // Server default to "localhost".
             ds.setDatabaseName(Initializer.DATABASE);
             Initializer.setDefault(() -> ds);

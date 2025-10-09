@@ -16,16 +16,12 @@
  */
 package org.apache.sis.storage.netcdf;
 
-import java.util.Optional;
-import java.nio.file.Path;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.abort;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.storage.test.CoverageReadConsistency;
 
@@ -39,6 +35,7 @@ import org.apache.sis.storage.test.CoverageReadConsistency;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class SelfConsistencyTest extends CoverageReadConsistency<NetcdfStore> {
     /**
      * Opens the test file to be used for all tests.
@@ -46,21 +43,7 @@ public final class SelfConsistencyTest extends CoverageReadConsistency<NetcdfSto
      * @throws DataStoreException if an error occurred while opening the file.
      */
     public SelfConsistencyTest() throws DataStoreException {
-        super(openFile());
-    }
-
-    /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    @Workaround(library="JDK", version="1.7")
-    private static NetcdfStore openFile() throws DataStoreException {
-        final Optional<Path> path = OptionalTestData.NETCDF.path();
-        if (path.isPresent()) {
-            return new NetcdfStore(null, new StorageConnector(path.get()));
-        }
-        abort("Test file not found.");
-        return null;
+        super(new NetcdfStore(null, new StorageConnector(OptionalTestData.NETCDF.path())));
     }
 
     /**

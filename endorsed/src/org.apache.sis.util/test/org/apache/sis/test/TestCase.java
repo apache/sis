@@ -17,6 +17,10 @@
 package org.apache.sis.test;
 
 import java.util.Set;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import org.apache.sis.system.DataDirectory;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.MonolineFormatter;
 
 // Test dependencies
@@ -57,6 +61,22 @@ public abstract class TestCase {
         f.setHeader(null);
         f.setTimeFormat(null);
         f.setSourceFormat("class.method");
+    }
+
+    /**
+     * Performs an arbitrary operation which will force Apache SIS to check whether the EPSG database exists.
+     * This is done before any test is started in order to avoid race conditions causing the same message to
+     * be logged many times when tests are run in parallel. Note that those race conditions do not break the
+     * tests (results are still correct). It only pollutes the logs, and may cause random test failures when
+     * the test verifies the logs.
+     */
+    static {
+        try {
+            Class.forName("org.apache.sis.referencing.CommonCRS").getMethod("defaultGeographic").invoke(null);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // It does not prevent the tests to work, but this is abnormal.
+            Logging.severeException(null, TestCase.class, "<clinit>", e);
+        }
     }
 
     /**
@@ -162,5 +182,28 @@ public abstract class TestCase {
         } else {
             assumeTrue(available, "No connection to EPSG geodetic dataset.");
         }
+    }
+
+    /**
+     * Assumes that the {@code SIS_DATA} environment variable is defined, that the directory
+     * exists and contains the given file. If this condition fails, then the test is skipped.
+     *
+     * <p>This is used for tests that require data not distributed with <abbr>SIS</abbr>.
+     * Examples of data not distributed with <abbr>SIS</abbr> are datum shift grids.
+     * If desired, those grids need to be downloaded by the user and stored in the directory
+     * identified by the {@code SIS_DATA} environment variable.</p>
+     *
+     * @param  type  the directory where to search for the given file.
+     * @param  file  the file or directory that needs to exist.
+     * @return the path to the given file or directory.
+     */
+    protected static Path assumeDataExists(final DataDirectory type, final String file) {
+        assumeTrue(DataDirectory.getenv() != null, DataDirectory.ENV + " environment variable not set.");
+        Path path = type.getDirectory();
+        assumeTrue(path != null, () -> '$' + DataDirectory.ENV + '/' + type + " directory not found.");
+        path = path.resolve(file);
+        assumeTrue(Files.exists(path), "File not found.");
+        assumeTrue(Files.isReadable(path), "File or directory not readable.");
+        return path;
     }
 }

@@ -17,10 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.List;
-import java.util.Optional;
-import java.nio.file.Path;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.IllegalNameException;
@@ -29,7 +26,6 @@ import org.apache.sis.storage.StorageConnector;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.abort;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.storage.test.CoverageReadConsistency;
@@ -45,6 +41,7 @@ import org.apache.sis.storage.test.CoverageReadConsistency;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class SelfConsistencyTest extends CoverageReadConsistency<GeoTiffStore> {
     /**
      * Opens the test file to be used for all tests.
@@ -52,21 +49,7 @@ public final class SelfConsistencyTest extends CoverageReadConsistency<GeoTiffSt
      * @throws DataStoreException if an error occurred while opening the file.
      */
     public SelfConsistencyTest() throws DataStoreException {
-        super(openFile());
-    }
-
-    /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    @Workaround(library="JDK", version="1.7")
-    private static GeoTiffStore openFile() throws DataStoreException {
-        final Optional<Path> path = OptionalTestData.GEOTIFF.path();
-        if (path.isPresent()) {
-            return new GeoTiffStore(null, new StorageConnector(path.get()));
-        }
-        abort("Test file not found.");
-        return null;
+        super(new GeoTiffStore(null, new StorageConnector(OptionalTestData.GEOTIFF.path())));
     }
 
     /**

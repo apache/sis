@@ -42,7 +42,6 @@ import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -184,12 +183,10 @@ public final class NTv2Test extends DatumShiftTestCase {
      */
     @Test
     public void testMultiGrids() throws Exception {
-        assumeExtensiveTestsEnabled();
-        assumeTrue(DataDirectory.getenv() != null);
+        assumeDataExists(DataDirectory.DATUM_CHANGES, MULTIGRID_TEST_FILE);
         final Parameters pg = Parameters.castOrWrap(new NTv2().getParameters().createValue());
         pg.getOrCreate(NTv2.FILE).setValue(new URI(MULTIGRID_TEST_FILE));
         final GridFile file = new GridFile(pg, NTv2.FILE);
-        assumeTrue(Files.exists(file.path().orElseThrow()));
 
         final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf(GridGroup.class, grid, "Should contain many grids.");
