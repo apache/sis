@@ -38,7 +38,7 @@ import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -154,7 +154,7 @@ public final class LanguageCodeTest extends TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(LANGUAGE_CODE);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(Locale.JAPANESE, assertSingleton(metadata.getLocalesAndCharsets().keySet()));
     }
 
     /**
@@ -176,7 +176,7 @@ public final class LanguageCodeTest extends TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(LANGUAGE_CODE_WITHOUT_ATTRIBUTE);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(Locale.JAPANESE, assertSingleton(metadata.getLocalesAndCharsets().keySet()));
         pool.recycle(unmarshaller);
     }
 
@@ -218,7 +218,7 @@ public final class LanguageCodeTest extends TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(CHARACTER_STRING);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(Locale.JAPANESE, assertSingleton(metadata.getLocalesAndCharsets().keySet()));
         pool.recycle(unmarshaller);
     }
 }

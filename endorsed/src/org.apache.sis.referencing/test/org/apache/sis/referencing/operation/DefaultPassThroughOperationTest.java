@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.List;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -27,11 +28,9 @@ import org.opengis.referencing.operation.Transformation;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertIdentifierEquals;
 
 
@@ -40,6 +39,7 @@ import static org.opengis.test.Assertions.assertIdentifierEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultPassThroughOperationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -69,15 +69,13 @@ public final class DefaultPassThroughOperationTest extends TestCase {
         final CoordinateReferenceSystem sourceCRS = toTest.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = toTest.getTargetCRS();
         final CoordinateOperation       operation = toTest.getOperation();
-        assertIdentifierEquals("test", "test", null, "passthrough", getSingleton(toTest   .getIdentifiers()),           "identifier");
-        assertIdentifierEquals("test", "test", null, "source",      getSingleton(sourceCRS.getIdentifiers()), "sourceCRS.identifier");
-        assertIdentifierEquals("test", "test", null, "target",      getSingleton(targetCRS.getIdentifiers()), "targetCRS.identifier");
-        assertIdentifierEquals("test", "test", null, "rotation",    getSingleton(operation.getIdentifiers()), "operation.identifier");
-        assertInstanceOf(   CompoundCRS.class, sourceCRS);
-        assertInstanceOf(   CompoundCRS.class, targetCRS);
+        verifyIdentifier("passthrough", toTest,    "toTest");
+        verifyIdentifier("source",      sourceCRS, "sourceCRS");
+        verifyIdentifier("target",      targetCRS, "targetCRS");
+        verifyIdentifier("rotation",    operation, "operation");
         assertInstanceOf(Transformation.class, operation);
-        final List<CoordinateReferenceSystem> srcComponents = ((CompoundCRS) sourceCRS).getComponents();
-        final List<CoordinateReferenceSystem> tgtComponents = ((CompoundCRS) targetCRS).getComponents();
+        final List<CoordinateReferenceSystem> srcComponents = assertInstanceOf(CompoundCRS.class, sourceCRS).getComponents();
+        final List<CoordinateReferenceSystem> tgtComponents = assertInstanceOf(CompoundCRS.class, targetCRS).getComponents();
         assertEquals(2, srcComponents.size());
         assertEquals(2, tgtComponents.size());
         assertSame  (operation.getSourceCRS(), srcComponents.get(0));
@@ -87,5 +85,12 @@ public final class DefaultPassThroughOperationTest extends TestCase {
          * Test marshalling and compare with the original file.
          */
         assertMarshalEqualsFile(openTestFile(), toTest, "xmlns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Verifies an identifier in the "test" namespace.
+     */
+    private static void verifyIdentifier(final String code, final IdentifiedObject object, final String label) {
+        assertIdentifierEquals("test", "test", null, code, assertSingleton(object.getIdentifiers()), label);
     }
 }

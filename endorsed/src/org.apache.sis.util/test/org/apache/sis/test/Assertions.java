@@ -18,6 +18,7 @@ package org.apache.sis.test;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
@@ -31,6 +32,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
@@ -38,10 +49,11 @@ import org.apache.sis.util.Classes;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
- * Assertion methods used by the SIS project in addition of the JUnit and GeoAPI assertions.
+ * Assertion methods used by the <abbr>SIS</abbr> project in addition of the JUnit and GeoAPI assertions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
@@ -51,6 +63,168 @@ public final class Assertions {
      * Do not allow instantiation of this class.
      */
     private Assertions() {
+    }
+
+    /**
+     * Returns the single element from the given array. If the given array is null or
+     * does not contains exactly one element, then an {@link AssertionError} is thrown.
+     *
+     * @param  <E>    the type of array elements.
+     * @param  array  the array from which to get the singleton.
+     * @return the singleton element from the array.
+     */
+    public static <E> E assertSingleton(final E[] array) {
+        assertNotNull(array, "Null array.");
+        assertEquals(1, array.length, "Not a singleton array.");
+        return array[0];
+    }
+
+    /**
+     * Returns the single element from the given collection. If the given collection is null
+     * or does not contains exactly one element, then an {@link AssertionError} is thrown.
+     *
+     * @param  <E>         the type of collection elements.
+     * @param  collection  the collection from which to get the singleton.
+     * @return the singleton element from the collection.
+     */
+    public static <E> E assertSingleton(final Iterable<? extends E> collection) {
+        assertNotNull(collection, "Null collection.");
+        final Iterator<? extends E> it = collection.iterator();
+        assertTrue(it.hasNext(), "The collection is empty.");
+        final E element = it.next();
+        assertFalse(it.hasNext(), "The collection has more than one element.");
+        return element;
+    }
+
+    /**
+     * Asserts that the given metadata contains exactly one citation, and returns that citation.
+     *
+     * @param  metadata  the metadata from which to get the citation.
+     * @return the singleton citation of the given metadata.
+     */
+    public static Citation assertSingletonCitation(final Metadata metadata) {
+        Citation citation = assertSingleton(metadata.getIdentificationInfo()).getCitation();
+        assertNotNull(citation, "citation");
+        return citation;
+    }
+
+    /**
+     * Asserts that the given metadata contains exactly one feature catalog, and returns its description.
+     *
+     * @param  metadata  the metadata from which to get the catalog description.
+     * @return the singleton catalog description of the given metadata.
+     */
+    public static FeatureCatalogueDescription assertSingletonFeature(final Metadata metadata) {
+        return assertInstanceOf(FeatureCatalogueDescription.class, assertSingleton(metadata.getContentInfo()));
+    }
+
+    /**
+     * Asserts that the given metadata contains exactly one <abbr>CRS</abbr>,
+     * and returns the identifier of that <abbr>CRS</abbr>.
+     *
+     * @param  metadata  the metadata from which to get the <abbr>CRS</abbr>.
+     * @return the authority code of the singleton <abbr>CRS</abbr> of the given metadata.
+     */
+    public static Identifier assertSingletonReferenceSystem(final Metadata metadata) {
+        return assertSingleton(metadata.getReferenceSystemInfo()).getName();
+    }
+
+    /**
+     * Asserts that the given metadata contains exactly one extent, and returns that extent.
+     *
+     * @param  metadata  the metadata from which to get the extent.
+     * @return the singleton extent of the given metadata.
+     */
+    public static Extent assertSingletonExtent(final Metadata metadata) {
+        return assertSingleton(assertSingleton(metadata.getIdentificationInfo()).getExtents());
+    }
+
+    /**
+     * Asserts that the given metadata contains exactly one bounding box, and returns that bounding box.
+     * Vertical and temporal components are ignored.
+     *
+     * @param  metadata  the metadata from which to get the geographic bounding box.
+     * @return the singleton geographic bounding box.
+     */
+    public static GeographicBoundingBox assertSingletonBBox(final Metadata metadata) {
+        return assertSingletonBBox(assertSingletonExtent(metadata));
+    }
+
+    /**
+     * Asserts that the given identification information contains exactly one bounding box,
+     * and returns that bounding box. Vertical and temporal components are ignored.
+     *
+     * @param  identification  the identification information from which to get the geographic bounding box.
+     * @return the singleton geographic bounding box.
+     */
+    public static GeographicBoundingBox assertSingletonBBox(final Identification identification) {
+        return assertSingletonBBox(assertSingleton(identification.getExtents()));
+    }
+
+    /**
+     * Asserts that the given extent contains exactly one bounding box, and returns that bounding box.
+     * Vertical and temporal components are ignored.
+     *
+     * @param  extent  the extent from which to get the bounding box.
+     * @return the singleton geographic bounding box.
+     */
+    public static GeographicBoundingBox assertSingletonBBox(final Extent extent) {
+        return assertInstanceOf(GeographicBoundingBox.class, assertSingleton(extent.getGeographicElements()));
+    }
+
+    /**
+     * Asserts that the given identification information contains exactly one resource format,
+     * and returns that format.
+     *
+     * @param  identification  the identification information from which to get the resource format.
+     * @return the singleton resource format of the given metadata.
+     */
+    public static String assertSingletonResourceFormat(final Identification identification) {
+        return assertSingleton(identification.getResourceFormats()).getFormatSpecificationCitation().getTitle().toString();
+    }
+
+    /**
+     * Asserts that the given citation declares exactly one responsible party, and returns its name in English.
+     *
+     * @param  citation  the citation from which to get the responsible party.
+     * @return name of the responsible party in English.
+     */
+    public static String assertSingletonResponsibleParty(final Citation citation) {
+        return assertSingleton(assertSingleton(citation.getCitedResponsibleParties()).getParties()).getName().toString(Locale.US);
+    }
+
+    /**
+     * Asserts that the given object contains exactly one identifier, then returns the code of that identifier.
+     *
+     * @param  object  the object for which to get the authority code.
+     * @return the single authority code of the given object.
+     */
+    public static String assertSingletonAuthorityCode(final IdentifiedObject object) {
+        return assertSingleton(object.getIdentifiers()).getCode();
+    }
+
+    /**
+     * Asserts that the given object contains exactly one scope, then returns that scope in English.
+     *
+     * @param  object  the object for which to get the scope.
+     * @return the single scope of the given object.
+     */
+    public static String assertSingletonScope(final IdentifiedObject object) {
+        InternationalString scope = assertSingleton(object.getDomains()).getScope();
+        assertNotNull(scope, "Missing scope.");
+        return scope.toString(Locale.ENGLISH);
+    }
+
+    /**
+     * Asserts that the given object as exactly one domain of validity, and returns that domain as a bounding box.
+     *
+     * @param  object  the object for which to get the domain of validity.
+     * @return the single domain of validity of the given object.
+     */
+    public static GeographicBoundingBox assertSingletonDomainOfValidity(final IdentifiedObject object) {
+        ObjectDomain domain = assertSingleton(object.getDomains());
+        GeographicExtent extent = assertSingleton(domain.getDomainOfValidity().getGeographicElements());
+        return assertInstanceOf(GeographicBoundingBox.class, extent);
     }
 
     /**

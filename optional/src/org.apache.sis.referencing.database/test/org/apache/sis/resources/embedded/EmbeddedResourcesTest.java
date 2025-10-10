@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -147,7 +147,7 @@ public final class EmbeddedResourcesTest {
      * Consequently, this verification fails if we do not have a connection to a complete <abbr>EPSG</abbr> database.
      */
     private static void verifyEPSG_6676(final CoordinateReferenceSystem crs) {
-        String area = TestUtilities.getSingleton(crs.getDomains()).getDomainOfValidity().getDescription().toString();
+        String area = assertSingleton(crs.getDomains()).getDomainOfValidity().getDescription().toString();
         assertTrue(area.contains("Japan"), area);
     }
 }

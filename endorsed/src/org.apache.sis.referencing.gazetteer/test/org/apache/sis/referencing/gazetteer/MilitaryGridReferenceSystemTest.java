@@ -44,6 +44,7 @@ import static org.apache.sis.measure.Units.ARC_MINUTE;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 
@@ -57,6 +58,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Creates a new test case.
@@ -73,17 +75,17 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
         assertEquals("Mapping",      rs.getTheme().toString(Locale.ENGLISH));
         assertEquals("Cartographie", rs.getTheme().toString(Locale.FRENCH));
 
-        final LocationType gzd = TestUtilities.getSingleton(rs.getLocationTypes());
+        final LocationType gzd = assertSingleton(rs.getLocationTypes());
         assertEquals("Grid zone designator", gzd.getName().toString(Locale.ENGLISH));
         assertEquals(0, gzd.getParents().size());
 
-        final LocationType sid = TestUtilities.getSingleton(gzd.getChildren());
+        final LocationType sid = assertSingleton(gzd.getChildren());
         assertEquals("100 km square identifier", sid.getName().toString(Locale.ENGLISH));
-        assertSame(gzd, TestUtilities.getSingleton(sid.getParents()));
+        assertSame(gzd, assertSingleton(sid.getParents()));
 
-        final LocationType gc = TestUtilities.getSingleton(sid.getChildren());
+        final LocationType gc = assertSingleton(sid.getChildren());
         assertEquals("Grid coordinate", gc.getName().toString(Locale.ENGLISH));
-        assertSame(sid, TestUtilities.getSingleton(gc.getParents()));
+        assertSame(sid, assertSingleton(gc.getParents()));
     }
 
     /**

@@ -49,7 +49,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -174,8 +174,8 @@ public final class DefaultCitationTest extends TestUsingFile {
         assertNotSame(original, clone);
         assertSame(original.getISBN(),  clone.getISBN());
         assertSame(original.getTitle(), clone.getTitle());
-        assertSame(getSingleton(original.getAlternateTitles()),
-                   getSingleton(clone.getAlternateTitles()));
+        assertSame(assertSingleton(original.getAlternateTitles()),
+                   assertSingleton(clone.getAlternateTitles()));
 
         assertCopy(original.getIdentifiers(),             clone.getIdentifiers());
         assertCopy(original.getCitedResponsibleParties(), clone.getCitedResponsibleParties());
@@ -185,8 +185,8 @@ public final class DefaultCitationTest extends TestUsingFile {
          * in a special way by DefaultCitation (they are instances of SpecializedIdentifier), but
          * the should nevertheless be cloned.
          */
-        final Identifier ide = getSingleton(original.getIdentifiers());
-        final Identifier ida = getSingleton(   clone.getIdentifiers());
+        final Identifier ide = assertSingleton(original.getIdentifiers());
+        final Identifier ida = assertSingleton(   clone.getIdentifiers());
         assertNotSame(ide, ida);
         assertSame(ide.getCode(),      ida.getCode());
         assertSame(ide.getAuthority(), ida.getAuthority());
@@ -197,8 +197,8 @@ public final class DefaultCitationTest extends TestUsingFile {
         final Responsibility ra = CollectionsExt.first(clone   .getCitedResponsibleParties());
         assertNotSame(re, ra);
         assertSame(re.getRole(), ra.getRole());
-        assertSame(getSingleton(re.getParties()).getName(),
-                   getSingleton(ra.getParties()).getName());
+        assertSame(assertSingleton(re.getParties()).getName(),
+                   assertSingleton(ra.getParties()).getName());
     }
 
     /**
@@ -301,16 +301,16 @@ public final class DefaultCitationTest extends TestUsingFile {
     public static void verifyUnmarshalledCitation(final Citation c) {
         assertTitleEquals("Fight against poverty", c, "citation");
 
-        final CitationDate date = getSingleton(c.getDates());
+        final CitationDate date = assertSingleton(c.getDates());
         assertEquals(date.getReferenceDate(), OffsetDateTime.of(2015, 10, 17, 2, 0, 0, 0, ZoneOffset.ofHours(2)));
         assertEquals(DateType.ADOPTED, date.getDateType());
-        assertEquals(PresentationForm.PHYSICAL_OBJECT, getSingleton(c.getPresentationForms()));
+        assertEquals(PresentationForm.PHYSICAL_OBJECT, assertSingleton(c.getPresentationForms()));
 
         final Iterator<? extends Responsibility> it = c.getCitedResponsibleParties().iterator();
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
         assertEquals("Send carrier pigeon.", String.valueOf(contact.getContactInstructions()));
 
-        final OnlineResource resource = getSingleton(contact.getOnlineResources());
+        final OnlineResource resource = assertSingleton(contact.getOnlineResources());
         assertEquals("IP over Avian Carriers", String.valueOf(resource.getName()));
         assertEquals("High delay, low throughput, and low altitude service.", String.valueOf(resource.getDescription()));
         assertEquals("https://tools.ietf.org/html/rfc1149", String.valueOf(resource.getLinkage()));
@@ -326,8 +326,8 @@ public final class DefaultCitationTest extends TestUsingFile {
      */
     private static Contact assertResponsibilityEquals(final Role role, final String name, final Responsibility actual) {
         assertEquals(role, actual.getRole());
-        final Party p = getSingleton(actual.getParties());
+        final Party p = assertSingleton(actual.getParties());
         assertEquals(name, String.valueOf(p.getName()));
-        return getSingleton(p.getContactInfo());
+        return assertSingleton(p.getContactInfo());
     }
 }

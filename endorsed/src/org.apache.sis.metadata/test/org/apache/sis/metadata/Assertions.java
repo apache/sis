@@ -31,7 +31,7 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.DocumentComparator;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Responsibility;
@@ -77,8 +77,8 @@ public final class Assertions {
      */
     public static void assertPartyNameEquals(final String expected, final Citation citation, final String message) {
         assertNotNull(citation, message);
-        final Responsibility r = getSingleton(citation.getCitedResponsibleParties());
-        final InternationalString name = getSingleton(r.getParties()).getName();
+        final Responsibility r = assertSingleton(citation.getCitedResponsibleParties());
+        final InternationalString name = assertSingleton(r.getParties()).getName();
         assertNotNull(name, message);
         assertEquals(expected, name.toString(Locale.US), message);
     }
@@ -92,7 +92,7 @@ public final class Assertions {
      * @param  catalog  the content info to validate.
      */
     public static void assertContentInfoEquals(final String name, final Integer count, final FeatureCatalogueDescription catalog) {
-        final FeatureTypeInfo info = getSingleton(catalog.getFeatureTypeInfo());
+        final FeatureTypeInfo info = assertSingleton(catalog.getFeatureTypeInfo());
         assertEquals(name, String.valueOf(info.getFeatureTypeName()), "metadata.contentInfo.featureType");
         assertEquals(count, info.getFeatureInstanceCount(), "metadata.contentInfo.featureInstanceCount");
     }
@@ -110,7 +110,7 @@ public final class Assertions {
         final Scope scope = source.getScope();
         assertNotNull(scope, "metadata.lineage.source.scope");
         assertEquals(ScopeCode.FEATURE_TYPE, scope.getLevel(), "metadata.lineage.source.scope.level");
-        final var actual = getSingleton(scope.getLevelDescription()).getFeatures().toArray(CharSequence[]::new);
+        final var actual = assertSingleton(scope.getLevelDescription()).getFeatures().toArray(CharSequence[]::new);
         for (int i=0; i<actual.length; i++) {
             actual[i] = actual[i].toString();
         }

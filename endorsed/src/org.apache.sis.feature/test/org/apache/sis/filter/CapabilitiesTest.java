@@ -26,8 +26,8 @@ import org.opengis.filter.capability.AvailableFunction;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 
 
 /**
@@ -36,6 +36,7 @@ import org.apache.sis.test.TestUtilities;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CapabilitiesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -51,7 +52,7 @@ public final class CapabilitiesTest extends TestCase {
         final var capabilities = DefaultFilterFactory.forFeatures().getCapabilities();
         assertTrue(capabilities.getConformance().implementsResourceld());
         final IdCapabilities idc = capabilities.getIdCapabilities().get();
-        final LocalName id = TestUtilities.getSingleton(idc.getResourceIdentifiers());
+        final LocalName id = assertSingleton(idc.getResourceIdentifiers());
         assertEquals("identifier", id.toString());
     }
 

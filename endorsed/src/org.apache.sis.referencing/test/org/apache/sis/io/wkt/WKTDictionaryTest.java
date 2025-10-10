@@ -42,8 +42,8 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -382,7 +382,7 @@ public final class WKTDictionaryTest extends TestCase {
          * for checking precedence.
          */
         GeographicCRS crs = factory.createGeographicCRS("2C");
-        Identifier id = TestUtilities.getSingleton(crs.getIdentifiers());
+        Identifier id = assertSingleton(crs.getIdentifiers());
         assertEquals("TEST", id.getCodeSpace());
         assertEquals("21",   id.getCode());
         assertSame(crs, factory.createGeographicCRS("2C"));                         // Test caching.
@@ -391,7 +391,7 @@ public final class WKTDictionaryTest extends TestCase {
          * by `WKTFormat.Parser.complete(…)`.
          */
         crs = factory.createGeographicCRS("2N");
-        id = TestUtilities.getSingleton(crs.getIdentifiers());
+        id = assertSingleton(crs.getIdentifiers());
         assertEquals("aNS", id.getCodeSpace());
         assertEquals("2N",  id.getCode());
         assertSame(crs, factory.createGeographicCRS("2N"));                         // Test caching.

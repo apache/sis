@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -69,7 +69,7 @@ public final class DataIdentificationTest extends TestCase {
 
         final DataIdentification id = unmarshal(DataIdentification.class, xml);
         assertTitleEquals("Main documentation.", id.getCitation(), "citation");
-        assertTitleEquals("Related documentation.", getSingleton(id.getRelatedCitations()), "relatedCitations");
+        assertTitleEquals("Related documentation.", assertSingleton(id.getRelatedCitations()), "relatedCitations");
 
         final String actual = marshal(id, VERSION_2007);
         assertXmlEquals(xml, actual, "xmlns:*");

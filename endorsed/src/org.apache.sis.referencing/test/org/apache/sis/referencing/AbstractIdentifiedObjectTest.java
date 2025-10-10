@@ -34,7 +34,7 @@ import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 
 // Specific to the geoapi-4.0 branch:
@@ -88,8 +88,8 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
         assertEquals("GRS 1980",           name.getCode(), "name");
         assertEquals("EPSG",               name.getCodeSpace(), "codespace");
         assertEquals("8.3",                name.getVersion(), "version");
-        assertEquals("International 1979", getSingleton(object.getAlias()).toString(), "aliases");
-        assertEquals(name,                 getSingleton(object.getNames()), "names");
+        assertEquals("International 1979", assertSingleton(object.getAlias()).toString(), "aliases");
+        assertEquals(name,                 assertSingleton(object.getNames()), "names");
         assertEquals(identifiers,          object.getIdentifiers(), "identifiers");
         assertEquals(gmlID,                object.getID(), "ID");
         assertRemarksEquals("Adopted by IUGG 1979 Canberra", object, Locale.ENGLISH);

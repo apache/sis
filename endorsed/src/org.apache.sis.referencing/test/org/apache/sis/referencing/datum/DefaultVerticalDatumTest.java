@@ -33,7 +33,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getScope;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
@@ -100,7 +100,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
          * The actual texts in the EPSG database are more descriptive.
          */
         assertRemarksEquals("Approximates geoid.",      datum, null);
-        assertEquals("Hydrography.",                    getScope(datum));
+        assertEquals("Hydrography.",                    assertSingletonScope(datum));
         assertEquals("Averaged over a 19-year period.", datum.getAnchorDefinition().get().toString());
         /*
          * Test marshalling and compare with the original file.
@@ -133,7 +133,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
          * Below is all we have.
          */
         assertRemarksEquals("Approximates geoid.", datum, null);
-        assertEquals("Hydrography.", getScope(datum));
+        assertEquals("Hydrography.", assertSingletonScope(datum));
         /*
          * Test marshalling. We cannot yet compare with the original XML file
          * because of all the information lost. This may be fixed in a future

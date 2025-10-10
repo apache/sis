@@ -31,7 +31,7 @@ import org.apache.sis.xml.bind.fra.DirectReferenceSystem;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-4.0 branch:
 import org.apache.sis.metadata.iso.DefaultIdentifier;
@@ -42,6 +42,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class FrenchProfileTest extends TestCase {
     /**
      * Creates a new test case.
@@ -61,19 +62,19 @@ public final class FrenchProfileTest extends TestCase {
         fra = (Constraints) FrenchProfile.toAFNOR(std);
         assertNotSame(std, fra);
         assertSame   (fra, FrenchProfile.toAFNOR(fra));
-        assertEquals ("Some constraints.", getSingleton(fra.getUseLimitations()).toString());
+        assertEquals ("Some constraints.", assertSingleton(fra.getUseLimitations()).toString());
 
         std = new DefaultLegalConstraints("Some legal constraints.");
         fra = (LegalConstraints) FrenchProfile.toAFNOR(std);
         assertNotSame(std, fra);
         assertSame   (fra, FrenchProfile.toAFNOR(fra));
-        assertEquals ("Some legal constraints.", getSingleton(fra.getUseLimitations()).toString());
+        assertEquals ("Some legal constraints.", assertSingleton(fra.getUseLimitations()).toString());
 
         std = new DefaultSecurityConstraints("Some security constraints.");
         fra = (SecurityConstraints) FrenchProfile.toAFNOR(std);
         assertNotSame(std, fra);
         assertSame   (fra, FrenchProfile.toAFNOR(fra));
-        assertEquals ("Some security constraints.", getSingleton(fra.getUseLimitations()).toString());
+        assertEquals ("Some security constraints.", assertSingleton(fra.getUseLimitations()).toString());
     }
 
     /**

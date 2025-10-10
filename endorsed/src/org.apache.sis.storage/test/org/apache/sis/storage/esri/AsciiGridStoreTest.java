@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
@@ -33,9 +32,12 @@ import org.apache.sis.storage.ProbeResult;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonBBox;
+import static org.apache.sis.test.Assertions.assertSingletonReferenceSystem;
+import static org.apache.sis.test.Assertions.assertSingletonResourceFormat;
+import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.identification.Identification;
@@ -94,16 +96,14 @@ public final class AsciiGridStoreTest extends TestCase {
              * Format information is hard-coded in "SpatialMetadata" database. Complete string should
              * be "ESRI ArcInfo ASCII Grid format" but it depends on the presence of Derby dependency.
              */
-            final Identification id = getSingleton(metadata.getIdentificationInfo());
-            final String format = getSingleton(id.getResourceFormats()).getFormatSpecificationCitation().getTitle().toString();
+            final Identification id = assertSingleton(metadata.getIdentificationInfo());
+            final String format = assertSingletonResourceFormat(id);
             assertTrue(format.contains("ASCII Grid"), format);
             /*
              * This information should have been read from the PRJ file.
              */
-            assertEquals("WGS 84 / World Mercator",
-                    getSingleton(metadata.getReferenceSystemInfo()).getName().getCode());
-            final GeographicBoundingBox bbox = (GeographicBoundingBox)
-                    getSingleton(getSingleton(id.getExtents()).getGeographicElements());
+            assertEquals("WGS 84 / World Mercator", assertSingletonReferenceSystem(metadata).getCode());
+            final var bbox = assertSingletonBBox(id);
             assertEquals(-84, bbox.getSouthBoundLatitude(), 1);
             assertEquals(+85, bbox.getNorthBoundLatitude(), 1);
             /*
@@ -121,7 +121,7 @@ public final class AsciiGridStoreTest extends TestCase {
     @Test
     public void testRead() throws DataStoreException {
         try (AsciiGridStore store = new AsciiGridStore(null, testData(), true)) {
-            final List<Category> categories = getSingleton(store.getSampleDimensions()).getCategories();
+            final List<Category> categories = assertSingleton(store.getSampleDimensions()).getCategories();
             assertEquals(2, categories.size());
             assertEquals(   -2, categories.get(0).getSampleRange().getMinDouble(), 1);
             assertEquals(   30, categories.get(0).getSampleRange().getMaxDouble(), 1);

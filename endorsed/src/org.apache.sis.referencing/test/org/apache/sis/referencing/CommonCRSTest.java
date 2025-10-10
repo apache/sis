@@ -48,7 +48,7 @@ import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import static org.apache.sis.test.TestUtilities.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.RealizationMethod;
@@ -326,8 +326,8 @@ public final class CommonCRSTest extends TestCase {
                 () -> CommonCRS.Temporal.forIdentifier("ModifiedJulianDate", true),
                 "Unexpected because not in OGC namespace.");
         assertMessageContains(exception, "ModifiedJulianDate", "OGC");
-        assertEquals("OGC:TruncatedJulianDate", getSingleton(CommonCRS.Temporal.TRUNCATED_JULIAN.crs().getIdentifiers()).toString());
-        assertEquals("SIS:ModifiedJulianDate",  getSingleton(CommonCRS.Temporal. MODIFIED_JULIAN.crs().getIdentifiers()).toString());
+        assertEquals("OGC:TruncatedJulianDate", assertSingleton(CommonCRS.Temporal.TRUNCATED_JULIAN.crs().getIdentifiers()).toString());
+        assertEquals("SIS:ModifiedJulianDate",  assertSingleton(CommonCRS.Temporal. MODIFIED_JULIAN.crs().getIdentifiers()).toString());
     }
 
     /**

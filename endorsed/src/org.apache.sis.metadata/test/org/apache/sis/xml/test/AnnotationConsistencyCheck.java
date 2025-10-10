@@ -43,8 +43,8 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
 // Test dependencies
 import org.opentest4j.AssertionFailedError;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCaseWithLogs;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.annotation.Classifier;
@@ -341,7 +341,7 @@ public abstract class AnnotationConsistencyCheck extends TestCaseWithLogs {
             case ISO_19108:   return LegacyNamespaces.GMD;
             case ISO_19157: {
                 // Case for a method. By contrast, above `identifier.startsWith(…)` checks were for types.
-                final UML parent = TestUtilities.getSingleton(impl.getInterfaces()).getAnnotation(UML.class);
+                final UML parent = assertSingleton(impl.getInterfaces()).getAnnotation(UML.class);
                 return parent.identifier().startsWith("DQM_") ? Namespaces.DQM : Namespaces.MDQ;
             }
             default: throw new IllegalArgumentException(uml.toString());
@@ -913,7 +913,7 @@ public abstract class AnnotationConsistencyCheck extends TestCaseWithLogs {
                 assertEquals(getter.getDeclaringClass(), setter.getDeclaringClass(),
                         "The setter method must be declared in the same class as the " +
                         "getter method - not in a parent class, to avoid issues with JAXB.");
-                assertEquals(getter.getReturnType(), TestUtilities.getSingleton(setter.getParameterTypes()),
+                assertEquals(getter.getReturnType(), assertSingleton(setter.getParameterTypes()),
                         "The setter parameter type shall be the same as the getter return type.");
                 element = getter.getAnnotation(XmlElement.class);
                 assertEquals((element == null),

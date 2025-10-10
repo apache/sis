@@ -23,8 +23,8 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -32,6 +32,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class PropertySingletonTest extends TestCase {
     /**
      * The instance to test.
@@ -85,10 +86,10 @@ public final class PropertySingletonTest extends TestCase {
         assertFalse (    singleton.isEmpty());
         assertEquals( 0, singleton.indexOf(a1));
         assertSame  (a1, singleton.get(0));
-        assertSame  (a1, getSingleton(singleton));
+        assertSame  (a1, assertSingleton(singleton));
         assertSame  (a1, singleton.set(0, a2));
         assertSame  (a2, singleton.get(0));
-        assertSame  (a2, getSingleton(singleton));
+        assertSame  (a2, assertSingleton(singleton));
         assertArrayEquals(new Object[] {a2}, singleton.toArray());
         assertSame  (a2, singleton.remove(0));
         assertEquals( 0, singleton.size());

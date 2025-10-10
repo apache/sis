@@ -32,7 +32,7 @@ import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -40,6 +40,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultEllipsoidalCSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -142,9 +143,9 @@ public final class DefaultEllipsoidalCSTest extends TestCase {
         assertRemarksEquals("Used in two-dimensional GeographicCRS.", cs, null);
         assertAxisEquals("Geodetic latitude",  "φ", AxisDirection.NORTH, -90,  +90, Units.DEGREE, RangeMeaning.EXACT, φ);
         assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, Units.DEGREE, RangeMeaning.WRAPAROUND, λ);
-        assertEpsgIdentifierEquals("6422", getSingleton(cs.getIdentifiers()));
-        assertEpsgIdentifierEquals("106",  getSingleton(φ.getIdentifiers()));
-        assertEpsgIdentifierEquals("107",  getSingleton(λ.getIdentifiers()));
+        assertEpsgIdentifierEquals("6422", assertSingleton(cs.getIdentifiers()));
+        assertEpsgIdentifierEquals("106",  assertSingleton(φ.getIdentifiers()));
+        assertEpsgIdentifierEquals("107",  assertSingleton(λ.getIdentifiers()));
         /*
          * Marshal and compare with the original file.
          */

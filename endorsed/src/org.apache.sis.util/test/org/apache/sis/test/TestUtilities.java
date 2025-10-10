@@ -19,7 +19,6 @@ package org.apache.sis.test;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.Iterator;
 import java.util.Random;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,9 +34,6 @@ import java.text.Format;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import org.opengis.util.InternationalString;
-import org.opengis.referencing.IdentifiedObject;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -48,10 +44,6 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.ObjectDomain;
-import org.opengis.metadata.extent.GeographicExtent;
 
 
 /**
@@ -260,62 +252,6 @@ public final class TestUtilities {
             }
         }
         return lines;
-    }
-
-    /**
-     * Returns the single element from the given array. If the given array is null or
-     * does not contains exactly one element, then an {@link AssertionError} is thrown.
-     *
-     * @param  <E>    the type of array elements.
-     * @param  array  the array from which to get the singleton.
-     * @return the singleton element from the array.
-     */
-    public static <E> E getSingleton(final E[] array) {
-        assertNotNull(array, "Null array.");
-        assertEquals(1, array.length, "Not a singleton array.");
-        return array[0];
-    }
-
-    /**
-     * Returns the single element from the given collection. If the given collection is null
-     * or does not contains exactly one element, then an {@link AssertionError} is thrown.
-     *
-     * @param  <E>         the type of collection elements.
-     * @param  collection  the collection from which to get the singleton.
-     * @return the singleton element from the collection.
-     */
-    public static <E> E getSingleton(final Iterable<? extends E> collection) {
-        assertNotNull(collection, "Null collection.");
-        final Iterator<? extends E> it = collection.iterator();
-        assertTrue(it.hasNext(), "The collection is empty.");
-        final E element = it.next();
-        assertFalse(it.hasNext(), "The collection has more than one element.");
-        return element;
-    }
-
-    /**
-     * Returns the scope of the given object. Exactly one scope shall exist.
-     *
-     * @param  object  the object for which to get the scope.
-     * @return the single scope of the given object.
-     */
-    public static String getScope(final IdentifiedObject object) {
-        InternationalString scope = getSingleton(object.getDomains()).getScope();
-        assertNotNull(scope, "Missing scope.");
-        return scope.toString();
-    }
-
-    /**
-     * Returns the domain of validity of the given object. Exactly one domain shall exist,
-     * and that domain shall be a geographic bounding box.
-     *
-     * @param  object  the object for which to get the domain of validity.
-     * @return the single domain of validity of the given object.
-     */
-    public static GeographicBoundingBox getDomainOfValidity(final IdentifiedObject object) {
-        ObjectDomain domain = getSingleton(object.getDomains());
-        GeographicExtent extent = getSingleton(domain.getDomainOfValidity().getGeographicElements());
-        return assertInstanceOf(GeographicBoundingBox.class, extent);
     }
 
     /**

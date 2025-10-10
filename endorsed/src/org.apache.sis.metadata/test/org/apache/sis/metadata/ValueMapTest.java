@@ -33,7 +33,7 @@ import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-4.0 branch:
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
@@ -48,6 +48,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  *
  * @see MetadataStandardTest#testValueMap()
  */
+@SuppressWarnings("exports")
 public final class ValueMapTest extends TestCase {
     /**
      * The citation instance created by {@link #createCitation()}.
@@ -114,7 +115,7 @@ public final class ValueMapTest extends TestCase {
          */
         final Object identifiers = map.get("identifiers");
         assertInstanceOf(Collection.class, identifiers);
-        final Object identifier = getSingleton((Collection<?>) identifiers);
+        final Object identifier = assertSingleton((Collection<?>) identifiers);
         assertEquals("9782505004509", assertInstanceOf(Identifier.class, identifier).getCode());
     }
 
@@ -269,7 +270,7 @@ public final class ValueMapTest extends TestCase {
          *   └─Presentation Forms………………… document hardcopy
          */
         assertNull(map.put("presentationForm", DOCUMENT_HARDCOPY));
-        assertEquals(DOCUMENT_HARDCOPY, getSingleton(citation.getPresentationForms()));
+        assertEquals(DOCUMENT_HARDCOPY, assertSingleton(citation.getPresentationForms()));
         assertArrayEquals(new SimpleEntry<?,?>[] {
             new SimpleEntry<>("title", title),
             new SimpleEntry<>("citedResponsibleParties", List.of(author)),

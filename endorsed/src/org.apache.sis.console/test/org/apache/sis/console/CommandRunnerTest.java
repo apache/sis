@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -36,6 +36,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CommandRunnerTest extends TestCase {
     /**
      * Creates a new test case.
@@ -74,7 +75,7 @@ public final class CommandRunnerTest extends TestCase {
     @Test
     public void testLocale() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--locale", "ja");
-        assertEquals(Option.LOCALE, getSingleton(c.options.keySet()));
+        assertEquals(Option.LOCALE, assertSingleton(c.options.keySet()));
         assertSame(Locale.JAPANESE, c.locale, "locale");
         assertTrue(c.files.isEmpty(), "files.isEmpty()");
     }
@@ -87,7 +88,7 @@ public final class CommandRunnerTest extends TestCase {
     @Test
     public void testTimeZone() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--timezone", "Asia/Tokyo");
-        assertEquals(Option.TIMEZONE, getSingleton(c.options.keySet()));
+        assertEquals(Option.TIMEZONE, assertSingleton(c.options.keySet()));
         assertEquals(TimeZone.getTimeZone("Asia/Tokyo"), c.getTimeZone(), "timezone");
         assertEquals(TimeUnit.HOURS.toMillis(9), c.getTimeZone().getRawOffset(), "rawoffset");
         assertTrue(c.files.isEmpty(), "files.isEmpty()");
@@ -101,7 +102,7 @@ public final class CommandRunnerTest extends TestCase {
     @Test
     public void testEncoding() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--encoding", "UTF-16");
-        assertEquals(Option.ENCODING, getSingleton(c.options.keySet()));
+        assertEquals(Option.ENCODING, assertSingleton(c.options.keySet()));
         assertEquals(StandardCharsets.UTF_16, c.encoding, "encoding");
         assertTrue(c.files.isEmpty(), "files.isEmpty()");
     }
@@ -132,7 +133,7 @@ public final class CommandRunnerTest extends TestCase {
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testMissingOptionValue() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief"); // Should not comply.
-        assertEquals(Option.BRIEF, getSingleton(c.options.keySet()));
+        assertEquals(Option.BRIEF, assertSingleton(c.options.keySet()));
         var exception = assertThrows(InvalidOptionException.class,
                 () -> new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief", "--locale"));
         assertMessageContains(exception, "locale");

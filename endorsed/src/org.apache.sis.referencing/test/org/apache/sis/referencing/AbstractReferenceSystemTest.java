@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.VerticalCRSMock;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
@@ -71,7 +71,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
         final var reference = new AbstractReferenceSystem(properties);
         Validators.validate(reference);
 
-        final InternationalString scope = getSingleton(reference.getDomains()).getScope();
+        final InternationalString scope = assertSingleton(reference.getDomains()).getScope();
 
         assertEquals("This is a name",         reference.getName().getCode());
         assertEquals("This is a scope",        scope.toString(Locale.ROOT));

@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Set;
 import java.util.List;
-import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -35,10 +34,11 @@ import static org.apache.sis.metadata.iso.citation.Citations.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonResponsibleParty;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import org.apache.sis.test.TestCase;
 
 
 /**
@@ -46,6 +46,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CitationsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -220,18 +221,11 @@ public final class CitationsTest extends TestCase {
      */
     @Test
     public void testGetCitedResponsibleParty() {
-        assertEquals("Open Geospatial Consortium",                       getCitedResponsibleParty(OGC));
-        assertEquals("International Organization for Standardization",   getCitedResponsibleParty(ISO_19115.get(0)));
-        assertEquals("International Organization for Standardization",   getCitedResponsibleParty(ISO_19115.get(1)));
-        assertEquals("International Association of Oil & Gas producers", getCitedResponsibleParty(EPSG));
-        assertEquals("International Association of Oil & Gas producers", getCitedResponsibleParty(IOGP));
-    }
-
-    /**
-     * Returns the responsible party for the given constant.
-     */
-    private static String getCitedResponsibleParty(final Citation citation) {
-        return getSingleton(getSingleton(citation.getCitedResponsibleParties()).getParties()).getName().toString(Locale.US);
+        assertEquals("Open Geospatial Consortium",                       assertSingletonResponsibleParty(OGC));
+        assertEquals("International Organization for Standardization",   assertSingletonResponsibleParty(ISO_19115.get(0)));
+        assertEquals("International Organization for Standardization",   assertSingletonResponsibleParty(ISO_19115.get(1)));
+        assertEquals("International Association of Oil & Gas producers", assertSingletonResponsibleParty(EPSG));
+        assertEquals("International Association of Oil & Gas producers", assertSingletonResponsibleParty(IOGP));
     }
 
     /**
@@ -243,7 +237,7 @@ public final class CitationsTest extends TestCase {
      */
     @Test
     public void testEPSG() {
-        final Identifier identifier = getSingleton(EPSG.getIdentifiers());
+        final Identifier identifier = assertSingleton(EPSG.getIdentifiers());
         assertEquals("EPSG", toCodeSpace(EPSG));
         assertEquals("IOGP", identifier.getCodeSpace());
         assertEquals("EPSG", identifier.getCode());

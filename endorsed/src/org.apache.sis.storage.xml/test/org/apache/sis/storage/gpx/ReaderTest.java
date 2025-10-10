@@ -24,7 +24,6 @@ import java.time.Instant;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
-import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.StorageConnector;
@@ -34,9 +33,9 @@ import org.apache.sis.storage.gps.Fix;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertSingletonFeature;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.FeatureTypeInfo;
@@ -192,7 +191,7 @@ public final class ReaderTest extends TestCase {
          * Verifies the list of feature types declared in the given metadata. Those features
          * are not listed in GPX files; they are rather hard-coded in Types.metadata constant.
          */
-        final var content = assertInstanceOf(FeatureCatalogueDescription.class, getSingleton(md.getContentInfo()));
+        final var content = assertSingletonFeature(md);
         assertTrue(content.isIncludedWithDataset());
         final Iterator<? extends FeatureTypeInfo> it = content.getFeatureTypeInfo().iterator();
         assertStringEquals("Route",    it.next().getFeatureTypeName().tip());

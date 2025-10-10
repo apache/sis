@@ -37,7 +37,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonBBox;
+import static org.apache.sis.test.Assertions.assertSingletonExtent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -108,8 +109,8 @@ public final class StoreTest extends TestCase {
         try (Store store = open(true)) {
             metadata = store.getMetadata();
         }
-        final Extent extent = getSingleton(getSingleton(metadata.getIdentificationInfo()).getExtents());
-        final GeographicBoundingBox bbox = (GeographicBoundingBox) getSingleton(extent.getGeographicElements());
+        final Extent extent = assertSingletonExtent(metadata);
+        final GeographicBoundingBox bbox = assertSingletonBBox(extent);
         assertEquals(50.23, bbox.getWestBoundLongitude());
         assertEquals(50.31, bbox.getEastBoundLongitude());
         assertEquals( 9.23, bbox.getSouthBoundLatitude());

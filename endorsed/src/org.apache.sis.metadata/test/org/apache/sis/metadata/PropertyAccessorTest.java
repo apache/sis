@@ -60,7 +60,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.GeographicCRSMock;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -86,7 +86,7 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("OverlyStrongTypeCast")
+@SuppressWarnings({"exports", "OverlyStrongTypeCast"})
 public final class PropertyAccessorTest extends TestCase {
     /**
      * Creates a new test case.
@@ -291,7 +291,7 @@ public final class PropertyAccessorTest extends TestCase {
         // Collection of InternationalStrings
         final Object alternateTitles = accessor.get(accessor.indexOf("alternateTitles", true), instance);
         assertInstanceOf(Collection.class, alternateTitles);
-        assertEquals("ISO 19111", getSingleton((Collection<?>) alternateTitles).toString());
+        assertEquals("ISO 19111", assertSingleton((Collection<?>) alternateTitles).toString());
 
         // Collection of Identifiers
         final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), instance);
@@ -381,7 +381,7 @@ public final class PropertyAccessorTest extends TestCase {
          */
         final Collection<AttributeGroup> groups = instance.getAttributeGroups();
         assertSame(groups, accessor.get(indexOfReplacement, instance));
-        assertEquals(CoverageContentType.IMAGE, getSingleton(getSingleton(groups).getContentTypes()));
+        assertEquals(CoverageContentType.IMAGE, assertSingleton(assertSingleton(groups).getContentTypes()));
         /*
          * While we can read/write the value through two properties,
          * only one should be visible.
@@ -503,7 +503,7 @@ public final class PropertyAccessorTest extends TestCase {
         // Insert the second value. Old collection shall contain the first value.
         oldValue = accessor.set(index, instance, conversion ? text2 : title2, RETURN_PREVIOUS);
         assertInstanceOf(Collection.class, oldValue);
-        oldValue = getSingleton((Collection<?>) oldValue);
+        oldValue = assertSingleton((Collection<?>) oldValue);
         assertSame(text1, oldValue.toString());
         if (!conversion) {
             assertSame(title1, oldValue, "InternationalString should have been stored as-is.");
@@ -622,7 +622,7 @@ public final class PropertyAccessorTest extends TestCase {
      */
     static String getSingletonCode(final Object identifiers) {
         assertInstanceOf(Collection.class, identifiers);
-        Object identifier = getSingleton((Collection<?>) identifiers);
+        Object identifier = assertSingleton((Collection<?>) identifiers);
         return assertInstanceOf(Identifier.class, identifier).getCode();
     }
 }

@@ -38,9 +38,9 @@ import org.apache.sis.storage.sql.feature.TableReference;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.metadata.sql.TestDatabase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -364,7 +364,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         final Object[] values;
         try (Stream<Feature> features = subset.features(false)) {
             values = features.map(f -> {
-                final PropertyType p = TestUtilities.getSingleton(f.getType().getProperties(true));
+                final PropertyType p = assertSingleton(f.getType().getProperties(true));
                 assertEquals(desiredProperty, p.getName().toString(), "Feature has wrong property.");
                 return f.getPropertyValue(desiredProperty);
             }).toArray();
@@ -544,7 +544,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
             /*
              * Verify the feature type.
              */
-            final PropertyType property = TestUtilities.getSingleton(frenchParks.getType().getProperties(true));
+            final PropertyType property = assertSingleton(frenchParks.getType().getProperties(true));
             assertEquals("native_name", property.getName().toString());
             assertEquals(String.class, ((AttributeType<?>) property).getValueClass());
             /*
@@ -572,7 +572,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         {
             final FeatureSet parks = store.findResource("MyQuery");
             final FeatureType type = parks.getType();
-            final var property = (AttributeType<?>) TestUtilities.getSingleton(type.getProperties(true));
+            final AttributeType<?> property = assertInstanceOf(AttributeType.class, assertSingleton(type.getProperties(true)));
             assertEquals("title", property.getName().toString(), "Property name should be label defined in query");
             assertEquals(String.class, property.getValueClass(), "Attribute should be a string");
             assertEquals(0, property.getMinimumOccurs(), "Column should be nullable.");

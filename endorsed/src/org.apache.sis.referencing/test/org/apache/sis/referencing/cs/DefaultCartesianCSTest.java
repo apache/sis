@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
@@ -43,6 +43,7 @@ import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultCartesianCSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -219,9 +220,9 @@ public final class DefaultCartesianCSTest extends TestCase {
         final CoordinateSystemAxis N = cs.getAxis(1);
         assertEquals("Easting, northing (E,N)", cs.getName().getCode());
         assertRemarksEquals("Used in ProjectedCRS.", cs, null);
-        assertEpsgIdentifierEquals("4400", getSingleton(cs.getIdentifiers()));
-        assertEpsgIdentifierEquals("1",    getSingleton(E.getIdentifiers()));
-        assertEpsgIdentifierEquals("2",    getSingleton(N.getIdentifiers()));
+        assertEpsgIdentifierEquals("4400", assertSingleton(cs.getIdentifiers()));
+        assertEpsgIdentifierEquals("1",    assertSingleton(E.getIdentifiers()));
+        assertEpsgIdentifierEquals("2",    assertSingleton(N.getIdentifiers()));
         assertAxisEquals("Easting",  "E", AxisDirection.EAST,  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null, E);
         assertAxisEquals("Northing", "N", AxisDirection.NORTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null, N);
         /*

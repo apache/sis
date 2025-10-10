@@ -36,8 +36,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonBBox;
+import static org.apache.sis.test.Assertions.assertSingletonReferenceSystem;
+import static org.apache.sis.test.Assertions.assertSingletonResourceFormat;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.identification.Identification;
@@ -100,11 +103,11 @@ public final class WorldFileStoreTest extends TestCase {
              */
             assertEquals("gradient", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
-            final Identification id = getSingleton(metadata.getIdentificationInfo());
-            final String format = getSingleton(id.getResourceFormats()).getFormatSpecificationCitation().getTitle().toString();
+            final Identification id = assertSingleton(metadata.getIdentificationInfo());
+            final String format = assertSingletonResourceFormat(id);
             assertTrue(format.contains("PNG"), format);
-            assertEquals("WGS 84", getSingleton(metadata.getReferenceSystemInfo()).getName().getCode());
-            final var bbox = (GeographicBoundingBox) getSingleton(getSingleton(id.getExtents()).getGeographicElements());
+            assertEquals("WGS 84", assertSingletonReferenceSystem(metadata).getCode());
+            final GeographicBoundingBox bbox = assertSingletonBBox(id);
             assertEquals( -90, bbox.getSouthBoundLatitude());
             assertEquals( +90, bbox.getNorthBoundLatitude());
             assertEquals(-180, bbox.getWestBoundLongitude());
@@ -130,7 +133,7 @@ public final class WorldFileStoreTest extends TestCase {
         final var provider = new WorldFileStoreProvider(false);
         try (WorldFileStore source = provider.open(testData())) {
             assertFalse(source instanceof WritableStore);
-            final GridCoverageResource resource = getSingleton(source.components());
+            final GridCoverageResource resource = assertSingleton(source.components());
             assertEquals("gradient:1", resource.getIdentifier().get().toString());
             /*
              * Above `resource` is the content of "gradient.png" file.

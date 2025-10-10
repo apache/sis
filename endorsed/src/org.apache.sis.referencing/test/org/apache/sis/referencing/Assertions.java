@@ -54,8 +54,8 @@ import org.apache.sis.util.internal.shared.Constants;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -140,7 +140,7 @@ public final class Assertions {
     public static void assertEpsgNameAndIdentifierEqual(final String name, final int identifier, final IdentifiedObject object) {
         assertNotNull(object, name);
         assertEpsgIdentifierEquals(name, object.getName());
-        assertEpsgIdentifierEquals(String.valueOf(identifier), TestUtilities.getSingleton(object.getIdentifiers()));
+        assertEpsgIdentifierEquals(String.valueOf(identifier), assertSingleton(object.getIdentifiers()));
     }
 
     /**
@@ -155,7 +155,7 @@ public final class Assertions {
         if (expected == null) {
             assertTrue(aliases.isEmpty(), "aliases.isEmpty()");
         } else {
-            assertEquals(expected, TestUtilities.getSingleton(aliases).tip().toString(), "alias");
+            assertEquals(expected, assertSingleton(aliases).tip().toString(), "alias");
         }
     }
 
@@ -214,7 +214,7 @@ public final class Assertions {
             if (!(candidate instanceof ParameterValue<?>)) {
                 throw new UnsupportedOperationException("Not yet implemented.");
             }
-            final ParameterValue<?> value = (ParameterValue<?>) candidate;
+            final ParameterValue<?> value = assertInstanceOf(ParameterValue.class, candidate);
             final ParameterDescriptor<?> descriptor = value.getDescriptor();
             final String   name       = descriptor.getName().getCode();
             final Unit<?>  unit       = descriptor.getUnit();

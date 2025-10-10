@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import static org.apache.sis.test.TestUtilities.getScope;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
@@ -499,7 +499,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 27572, crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, crs.getBaseCRS());
-        assertEquals("Large and medium scale topographic mapping and engineering survey.", getScope(crs));
+        assertEquals("Large and medium scale topographic mapping and engineering survey.", assertSingletonScope(crs));
         assertAxisDirectionsEqual(crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 

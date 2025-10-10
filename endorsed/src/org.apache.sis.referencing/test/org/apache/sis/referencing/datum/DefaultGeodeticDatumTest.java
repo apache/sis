@@ -41,8 +41,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getScope;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -107,7 +107,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     private static void validate(final DefaultGeodeticDatum datum) {
         Validators.validate(datum);
-        InternationalString scope = getSingleton(datum.getDomains()).getScope();
+        InternationalString scope = assertSingleton(datum.getDomains()).getScope();
         assertEquals("This is a name",        datum.getName().getCode());
         assertEquals("This is a scope",       scope.toString(Locale.ROOT));
         assertEquals("Valide pour tel usage", scope.toString(Locale.FRENCH));
@@ -305,7 +305,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
          * The actual texts in the EPSG database are more descriptive.
          */
         assertRemarksEquals("No distinction between the original and subsequent WGS 84 frames.", datum, null);
-        assertEquals("Satellite navigation.", getScope(datum));
+        assertEquals("Satellite navigation.", assertSingletonScope(datum));
         assertEquals("Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
                      datum.getAnchorDefinition().orElseThrow().toString());
         assertEquals(LocalDate.of(1984, 1, 1), datum.getAnchorEpoch().orElseThrow());

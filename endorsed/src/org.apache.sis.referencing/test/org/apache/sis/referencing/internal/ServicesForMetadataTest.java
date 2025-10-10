@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -156,7 +156,7 @@ public final class ServicesForMetadataTest extends TestCase {
     public void testSetSpatialTemporalBounds() throws TransformException {
         final var extent = new DefaultSpatialTemporalExtent();
         extent.setBounds(createEnvelope(HardCodedCRS.GEOID_3D));
-        verifySpatialExtent((GeographicBoundingBox) getSingleton(extent.getSpatialExtent()));
+        verifySpatialExtent(assertInstanceOf(GeographicBoundingBox.class, assertSingleton(extent.getSpatialExtent())));
         verifyVerticalExtent(CommonCRS.Vertical.MEAN_SEA_LEVEL, extent.getVerticalExtent());
     }
 

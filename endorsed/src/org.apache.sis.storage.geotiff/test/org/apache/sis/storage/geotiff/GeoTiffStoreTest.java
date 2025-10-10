@@ -37,9 +37,9 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -89,7 +89,7 @@ public final class GeoTiffStoreTest extends TestCase {
              * and that the result has the expected number of dimensions, axis order and scale factors.
              */
             try (DataStore store = DataStores.open(new StorageConnector(file), "GeoTIFF")) {
-                GridCoverageResource r = TestUtilities.getSingleton(assertInstanceOf(GeoTiffStore.class, store).components());
+                GridCoverageResource r = assertSingleton(assertInstanceOf(GeoTiffStore.class, store).components());
                 GridGeometry gg = r.getGridGeometry();
                 assertEquals(3, gg.getDimension());
                 assertAxisDirectionsEqual(gg.getCoordinateReferenceSystem().getCoordinateSystem(),

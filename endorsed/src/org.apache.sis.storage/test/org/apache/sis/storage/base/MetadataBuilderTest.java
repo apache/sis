@@ -29,10 +29,10 @@ import org.apache.sis.feature.DefaultFeatureType;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertPartyNameEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.FeatureCatalogueDescription;
@@ -92,7 +92,7 @@ public final class MetadataBuilderTest extends TestCase {
         final Citation ref = copyright(builder);
         assertTitleEquals(notice, ref, "reference.title");
         assertPartyNameEquals("John Smith", ref, "reference.citedResponsibleParty");
-        assertEquals(Year.of(1992), getSingleton(ref.getDates()).getReferenceDate());
+        assertEquals(Year.of(1992), assertSingleton(ref.getDates()).getReferenceDate());
     }
 
     /**
@@ -100,10 +100,10 @@ public final class MetadataBuilderTest extends TestCase {
      * This method verifies that the constraint is a copyright.
      */
     private static Citation copyright(final MetadataBuilder builder) {
-        final var id = getSingleton(builder.build().getIdentificationInfo());
-        final var constraints = assertInstanceOf(LegalConstraints.class, getSingleton(id.getResourceConstraints()));
-        assertEquals(Restriction.COPYRIGHT, getSingleton(constraints.getUseConstraints()));
-        return getSingleton(constraints.getReferences());
+        final var id = assertSingleton(builder.build().getIdentificationInfo());
+        final var constraints = assertInstanceOf(LegalConstraints.class, assertSingleton(id.getResourceConstraints()));
+        assertEquals(Restriction.COPYRIGHT, assertSingleton(constraints.getUseConstraints()));
+        return assertSingleton(constraints.getReferences());
     }
 
     /**
@@ -115,7 +115,7 @@ public final class MetadataBuilderTest extends TestCase {
         builder.parseLegalNotice(Locale.ENGLISH, "Copyright (C), John Smith, 1997. All rights reserved.");
         builder.parseLegalNotice(Locale.FRENCH,  "Copyright (C), John Smith, 1997. Tous droits réservés.");
         final Citation ref = copyright(builder);
-        assertEquals(Year.of(1997), getSingleton(ref.getDates()).getReferenceDate());
+        assertEquals(Year.of(1997), assertSingleton(ref.getDates()).getReferenceDate());
         assertPartyNameEquals("John Smith", ref, "reference.citedResponsibleParty");
         final var title = ref.getTitle();
         assertEquals("Copyright (C), John Smith, 1997. All rights reserved.",  title.toString(Locale.ENGLISH));
@@ -153,9 +153,9 @@ public final class MetadataBuilderTest extends TestCase {
         if (valueToInsert == 0) {
             assertTrue(metadata.getContentInfo().isEmpty());
         } else {
-            final ContentInformation content = getSingleton(metadata.getContentInfo());
+            final ContentInformation content = assertSingleton(metadata.getContentInfo());
             final var catalog = assertInstanceOf(FeatureCatalogueDescription.class, content);
-            final FeatureTypeInfo info = getSingleton(catalog.getFeatureTypeInfo());
+            final FeatureTypeInfo info = assertSingleton(catalog.getFeatureTypeInfo());
             assertEquals(expected, info.getFeatureInstanceCount(), errorMessage);
         }
     }

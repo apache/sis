@@ -58,7 +58,9 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonAuthorityCode;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 
 
 /**
@@ -138,7 +140,7 @@ public final class GeodeticObjectParserTest extends TestCase {
         final String message = object.getClass().getSimpleName();
         assertEquals(name, object.getName().getCode(), message);
         if (epsg != 0) {
-            assertEquals(String.valueOf(epsg), getSingleton(object.getIdentifiers()).getCode(), message);
+            assertEquals(String.valueOf(epsg), assertSingletonAuthorityCode(object), message);
         } else {
             assertTrue(object.getIdentifiers().isEmpty(), message);
         }
@@ -785,9 +787,8 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
         validateParisFranceII(crs, 27572, false);
-        assertEquals("Large and medium scale topographic mapping and engineering survey.",
-                     getSingleton(crs.getDomains()).getScope().toString());
-        assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
+        assertEquals("Large and medium scale topographic mapping and engineering survey.", assertSingletonScope(crs));
+        assertNull(assertSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
     }
 
     /**
@@ -822,9 +823,8 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         final ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
         validateParisFranceII(crs, 27572, false);
-        assertEquals("Large and medium scale topographic mapping and engineering survey.",
-                     getSingleton(crs.getDomains()).getScope().toString());
-        assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
+        assertEquals("Large and medium scale topographic mapping and engineering survey.", assertSingletonScope(crs));
+        assertNull(assertSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
     }
 
     /**
@@ -1006,7 +1006,7 @@ public final class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("Rikets hojdsystem 2000", 0, crs.getDatum());
         Temporal epoch = assertInstanceOf(DynamicReferenceFrame.class, crs.getDatum()).getFrameReferenceEpoch();
         assertEquals(Year.of(2000), epoch);
-        assertEquals("Geodesy, engineering survey.", getSingleton(crs.getDomains()).getScope().toString());
+        assertEquals("Geodesy, engineering survey.", assertSingletonScope(crs));
         assertEquals("Replaces RH70 (CRS code 5718) from 2005.", crs.getRemarks().orElseThrow().toString());
     }
 

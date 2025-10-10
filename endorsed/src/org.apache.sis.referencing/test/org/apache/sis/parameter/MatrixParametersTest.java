@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
@@ -41,6 +42,7 @@ import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public class MatrixParametersTest extends TestCase {
     /**
      * The expected parameter names according the <abbr>WKT</abbr> 1 convention for the matrix elements.
@@ -113,7 +115,7 @@ public class MatrixParametersTest extends TestCase {
         if (identifiers != null) {
             final short expected = identifiers[row][column];
             if (expected != 0) {
-                assertEpsgIdentifierEquals(String.valueOf(expected), TestUtilities.getSingleton(actual.getIdentifiers()));
+                assertEpsgIdentifierEquals(String.valueOf(expected), assertSingleton(actual.getIdentifiers()));
                 return;
             }
         }
