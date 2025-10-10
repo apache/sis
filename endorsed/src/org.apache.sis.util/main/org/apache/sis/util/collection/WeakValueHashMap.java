@@ -171,7 +171,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         @Override
         public boolean equals(final Object other) {
             if (other instanceof Map.Entry<?,?>) {
-                final Map.Entry<?,?> that = (Map.Entry<?,?>) other;
+                final var that = (Map.Entry<?,?>) other;
                 return comparator.test(key, that.getKey()) && Objects.equals(get(), that.getValue());
             }
             return false;
@@ -373,6 +373,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     private synchronized <R> R get(final Object key, final Function<Entry,R> getter, final R defaultValue) {
         assert isValid();
         if (key != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Entry[] table = this.table;
             final int index = (hashFunction.applyAsInt(key) & HASH_MASK) % table.length;
             for (Entry e = table[index]; e != null; e = (Entry) e.next) {
@@ -495,8 +496,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         /*
          * If `value` is already contained in this WeakValueHashMap, we need to clear it.
          */
-        V oldValue = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Entry[] table = this.table;
+        V oldValue = null;
         final int hash = hashFunction.applyAsInt(key) & HASH_MASK;
         int index = hash % table.length;
         for (Entry e = table[index]; e != null; e = (Entry) e.next) {

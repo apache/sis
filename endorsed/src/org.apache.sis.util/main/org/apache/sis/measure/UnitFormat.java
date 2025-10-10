@@ -91,8 +91,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     /**
      * The authorities to accept, or {@code null} for disabling authority parsing.
      * Codes may be URLs such as {@code "http://www.opengis.net/def/uom/UCUM/0/d"}
-     * or URNs such as {@code "EPSG:9001"}. The order of authority names matter,
-     * because the index is used for identifying the authority.
+     * or URNs such as {@code "EPSG:9001"}.
      */
     @Configuration
     private static final String[] AUTHORITIES = {Constants.EPSG, Constants.UCUM};
@@ -559,7 +558,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * "metres" and "meters" because they are repeated in units such as "kilometers".
          */
         uom = uom.replace('_', ' ').toLowerCase(locale);
-        uom = removePlural(CharSequences.toASCII(uom));
+        uom = removePlural(CharSequences.toASCII(uom).toString());
         /*
          * Returns the unit with application of the power if it is part of the name.
          * For example, this method interprets "meter2" as "meter" raised to power 2.
@@ -602,13 +601,13 @@ appPow: if (unit == null) {
      * The result may not be grammatically correct English, but those strings will not be visible to users.
      * This is similar to making a string in lower cases before comparison in order to be case-insensitive.
      */
-    private static String removePlural(CharSequence uom) {
-        uom = CharSequences.replace(uom,  DEGREES,  "degree");
-        uom = CharSequences.replace(uom, "radians", "radian");
-        uom = CharSequences.replace(uom, "seconds", "second");
-        uom = CharSequences.replace(uom, "meters",  "meter");
-        uom = CharSequences.replace(uom, "metres",  "metre");
-        return uom.toString();
+    private static String removePlural(String uom) {
+        uom = uom.replace (DEGREES,  "degree");
+        uom = uom.replace("radians", "radian");
+        uom = uom.replace("seconds", "second");
+        uom = uom.replace("meters",  "meter");
+        uom = uom.replace("metres",  "metre");
+        return uom;
     }
 
     /**
@@ -1132,13 +1131,14 @@ appPow: if (unit == null) {
         int end   = symbols.length();
         int start = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), end);
         if (AUTHORITIES != null) {
-            final Map.Entry<Integer, String> entry = DefinitionURI.codeOf("uom", AUTHORITIES, symbols);
+            final Map.Entry<String, String> entry = DefinitionURI.codeOf("uom", AUTHORITIES, symbols);
             if (entry != null) {
                 Unit<?> unit = null;
                 NumberFormatException failure = null;
                 final String code = entry.getValue();
-                switch (entry.getKey()) {
-                    case 0: {                   // EPSG
+                final String authority = entry.getKey();
+                switch (authority) {
+                    case Constants.EPSG: {
                         try {
                             unit = Units.valueOfEPSG(Integer.parseInt(code));
                         } catch (NumberFormatException e) {
@@ -1146,7 +1146,7 @@ appPow: if (unit == null) {
                         }
                         break;
                     }
-                    case 1: {                   // UCUM
+                    case Constants.UCUM: {
                         unit = parse(code);
                         break;
                     }
@@ -1156,10 +1156,9 @@ appPow: if (unit == null) {
                     finish(position);
                     return unit;
                 }
-                throw (MeasurementParseException) new MeasurementParseException(
-                        Errors.format(Errors.Keys.UnknownUnit_1,
-                        Constants.EPSG + Constants.DEFAULT_SEPARATOR + code), symbols,
-                        start + Math.max(0, symbols.toString().lastIndexOf(code))).initCause(failure);
+                String message = Errors.format(Errors.Keys.UnknownUnit_1, authority + Constants.DEFAULT_SEPARATOR + code);
+                int errorOffset = start + Math.max(0, symbols.toString().lastIndexOf(code));
+                throw (MeasurementParseException) new MeasurementParseException(message, symbols, errorOffset).initCause(failure);
             }
         }
         /*

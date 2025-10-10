@@ -33,6 +33,7 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class WeakValueHashMapTest extends TestCaseWithGC {
     /**
      * The size of the test sets to be created.
@@ -70,7 +71,7 @@ public final class WeakValueHashMapTest extends TestCaseWithGC {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             weakMap.clear();
-            final HashMap<Integer,IntObject> strongMap = new HashMap<>();
+            final var strongMap = new HashMap<Integer, IntObject>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final Integer   key   = random.nextInt(SAMPLE_SIZE);
                 final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));
@@ -111,7 +112,7 @@ public final class WeakValueHashMapTest extends TestCaseWithGC {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             weakMap.clear();
-            final HashMap<Integer,IntObject> strongMap = new HashMap<>();
+            final var strongMap = new HashMap<Integer, IntObject>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final Integer   key   = random.nextInt(SAMPLE_SIZE);
                 final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));     // Really need new instances.
@@ -174,7 +175,7 @@ public final class WeakValueHashMapTest extends TestCaseWithGC {
      */
     @Test
     public void testWithArrayKeys() {
-        final WeakValueHashMap<int[],IntObject> weakMap = new WeakValueHashMap<>(int[].class);
+        final var weakMap = new WeakValueHashMap<int[], IntObject>(int[].class);
         final int[] k1 = new int[] {2, 5, 3};
         final int[] k2 = new int[] {2, 5, 4};
         final IntObject v1 = new IntObject(1);
@@ -194,7 +195,7 @@ public final class WeakValueHashMapTest extends TestCaseWithGC {
      */
     @Test
     public void testIdentityComparisons() {
-        final WeakValueHashMap<IntObject,IntObject> weakMap = new WeakValueHashMap<>(IntObject.class, true);
+        final var weakMap = new WeakValueHashMap<IntObject, IntObject>(IntObject.class, true);
         final IntObject k1 = new IntObject(10);
         final IntObject k2 = new IntObject(20);
         final IntObject k3 = new IntObject(10);         // Really want a new instance.
@@ -215,8 +216,8 @@ public final class WeakValueHashMapTest extends TestCaseWithGC {
      */
     @Test
     public void testOptionalMethods() {
-        final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<>(Integer.class);
-        final HashMap<Integer,Integer> reference = new HashMap<>();
+        final var weakMap = new WeakValueHashMap<Integer,Integer>(Integer.class);
+        final var reference = new HashMap<Integer, Integer>();
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<100; i++) {
             final Integer key   = random.nextInt(10);

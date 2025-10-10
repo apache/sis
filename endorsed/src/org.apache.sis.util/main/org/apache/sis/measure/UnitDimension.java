@@ -34,7 +34,7 @@ import org.apache.sis.util.internal.shared.CollectionsExt;
 
 /**
  * Dimension (length, mass, time, <i>etc.</i>) of a unit of measurement.
- * Only two kind of dimensions are defined in Apache SIS:
+ * Only two kinds of dimensions are defined in Apache SIS:
  *
  * <ul>
  *   <li>Base dimensions are the 7 base dimensions specified by the SI system.</li>
@@ -90,6 +90,7 @@ final class UnitDimension implements Dimension, Serializable {
      *
      * @param  symbol  the symbol of this base dimension (not to be confused with unit symbol).
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Safe because this class is final.
     UnitDimension(final char symbol) {
         this.symbol = symbol;
         components  = Map.of(this, new Fraction(1,1).unique());
@@ -137,7 +138,7 @@ final class UnitDimension implements Dimension, Serializable {
             if (!Units.initialized) {
                 UnitRegistry.init(components, dim);
             } else {
-                final UnitDimension c = (UnitDimension) UnitRegistry.putIfAbsent(components, dim);
+                final var c = (UnitDimension) UnitRegistry.putIfAbsent(components, dim);
                 if (c != null) {
                     return c;       // UnitDimension created concurrently in another thread.
                 }
@@ -154,7 +155,7 @@ final class UnitDimension implements Dimension, Serializable {
             return NONE;
         }
         if (Units.initialized) {        // Force Units class initialization.
-            final UnitDimension dim = (UnitDimension) UnitRegistry.putIfAbsent(components, this);
+            final var dim = (UnitDimension) UnitRegistry.putIfAbsent(components, this);
             if (dim != null) {
                 return dim;
             }
@@ -432,7 +433,7 @@ final class UnitDimension implements Dimension, Serializable {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(8);
+        final var buffer = new StringBuilder(8);
         try {
             UnitFormat.formatComponents(components, UnitFormat.Style.SYMBOL, buffer);
         } catch (IOException e) {

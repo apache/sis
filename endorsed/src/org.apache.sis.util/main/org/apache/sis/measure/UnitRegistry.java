@@ -140,10 +140,10 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
 
     /**
      * Compares the given keys, taking dimension order in account.
-     * Shall be consistent with {@link #hashCode(Object)}.
+     * Shall be consistent with {@link #hashCodeOrdered(Object)}.
      *
-     * @param  key     a key of one of the types defined in {@link #HARD_CODED}.
-     * @param  object  an object to compare with the key. Never null.
+     * @param  key    a key of one of the types defined in {@link #HARD_CODED}.
+     * @param  other  an object to compare with the key. Never null.
      * @return whether the given object are equal.
      */
     private static boolean equalsOrdered(final Object key, final Object other) {
@@ -344,7 +344,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     @Override
     public Set<Unit<?>> getUnits(final Dimension dimension) {
         ArgumentChecks.ensureNonNull("dimension", dimension);
-        final Set<Unit<?>> filtered = new HashSet<>();
+        final var filtered = new HashSet<Unit<?>>();
         for (final Unit<?> unit : getUnits()) {
             if (dimension.equals(unit.getDimension())) {
                 filtered.add(unit);

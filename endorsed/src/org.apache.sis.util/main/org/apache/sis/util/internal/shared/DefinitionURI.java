@@ -523,17 +523,16 @@ public final class DefinitionURI {
      * @param  type         the expected object type (e.g. {@code "crs"}) in lower cases. See class javadoc for a list of types.
      * @param  authorities  the expected authorities, typically {@code "EPSG"}. See class javadoc for a list of authorities.
      * @param  uri          the URI to parse.
-     * @return the code part of the given URI together with the authority index, or {@code null} if the codespace
+     * @return the code part of the given URI together with the authority as key, or {@code null} if the codespace
      *         does not match any given type and authority, the code is empty, or the code is followed by parameters.
      */
-    public static Map.Entry<Integer,String> codeOf(final String type, final String[] authorities, final CharSequence uri) {
+    public static Map.Entry<String, String> codeOf(final String type, final String[] authorities, final CharSequence uri) {
         final int length = uri.length();
         int s = indexOf(uri, SEPARATOR, 0, length);
         if (s >= 0) {
             int from = skipLeadingWhitespaces(uri, 0, s);                   // Start of authority part.
             final int span = skipTrailingWhitespaces(uri, from, s) - from;
-            for (int i=0; i < authorities.length; i++) {
-                final String authority = authorities[i];
+            for (final String authority : authorities) {
                 if (span == authority.length() && CharSequences.regionMatches(uri, from, authority, true)) {
                     from = skipLeadingWhitespaces(uri, s+1, length);        // Start of code part.
                     if (from >= length) {
@@ -556,19 +555,18 @@ public final class DefinitionURI {
                         }
                     }
                     final String code = uri.subSequence(from, skipTrailingWhitespaces(uri, from, length)).toString();
-                    return new SimpleEntry<>(i, code);
+                    return new SimpleEntry<>(authority, code);
                 }
             }
             final DefinitionURI def = parse(uri.toString());
             if (def != null && def.parameters == null && type.equalsIgnoreCase(def.type)) {
-                for (int i=0; i < authorities.length; i++) {
-                    final String authority = authorities[i];
+                for (final String authority : authorities) {
                     if (authority.equalsIgnoreCase(def.authority)) {
                         String code = def.code;
                         if (code == null) {
                             code = def.version;     // May happen with for example "EPSG:4326" instead of "EPSG::4326".
                         }
-                        return new SimpleEntry<>(i, code);
+                        return new SimpleEntry<>(authority, code);
                     }
                 }
             }

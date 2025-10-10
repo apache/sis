@@ -20,8 +20,9 @@ import javax.measure.Quantity;
 
 
 /**
- * The rate of change of a scale factor, in unity per second. This unit is specific to the EPSG database.
- * It has the same units as frequency, but it still not the same thing.
+ * The rate of change of a scale factor, in unity per second.
+ * It has the same units as frequency, but not the same interpretation.
+ * This unit is used by the <abbr>EPSG</abbr> geodetic dataset.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

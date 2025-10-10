@@ -31,6 +31,7 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class WeakHashSetTest extends TestCaseWithGC {
     /**
      * The size of the test sets to be created.
@@ -57,10 +58,10 @@ public final class WeakHashSetTest extends TestCaseWithGC {
     public void testStrongReferences() {
         final var random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakHashSet<IntObject> weakSet = new WeakHashSet<>(IntObject.class);
-            final HashSet<IntObject> strongSet = new HashSet<>();
+            final var weakSet = new WeakHashSet<IntObject>(IntObject.class);
+            final var strongSet = new HashSet<IntObject>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));
+                final var value = new IntObject(random.nextInt(SAMPLE_SIZE));
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
@@ -99,8 +100,8 @@ public final class WeakHashSetTest extends TestCaseWithGC {
     public void testWeakReferences() throws InterruptedException {
         final var random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakHashSet<IntObject> weakSet = new WeakHashSet<>(IntObject.class);
-            final HashSet<IntObject> strongSet = new HashSet<>();
+            final var weakSet = new WeakHashSet<IntObject>(IntObject.class);
+            final var strongSet = new HashSet<IntObject>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));     // Really need new instances.
                 if (random.nextBoolean()) {
@@ -168,7 +169,7 @@ public final class WeakHashSetTest extends TestCaseWithGC {
      */
     @Test
     public void testWithArrayElements() {
-        final WeakHashSet<int[]> weakSet = new WeakHashSet<>(int[].class);
+        final var weakSet = new WeakHashSet<int[]>(int[].class);
         final int[] array = new int[] {2, 5, 3};
         assertTrue (weakSet.add(array));
         assertFalse(weakSet.add(array));

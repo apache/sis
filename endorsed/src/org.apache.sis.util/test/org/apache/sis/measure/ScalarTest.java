@@ -36,6 +36,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ScalarTest extends TestCase {
     /**
      * Creates a new test case.
