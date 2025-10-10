@@ -607,12 +607,10 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertFalse(verticalDatum.containsAll(datum), "Vertical datum should be a subset of datum.");  // Iteration should stop at the first mismatch.
         assertTrue (datum.containsAll(verticalDatum), "Vertical datum should be a subset of datum.");  // Iteration should over a small set (vertical datum).
 
-        if (RUN_EXTENSIVE_TESTS) {
-            assertTrue(geodeticDatum.size() >= 445,         "size() consistency check.");
-            assertTrue(datum.size() > geodeticDatum.size(), "Geodetic reference frame should be a subset of datum.");
-            assertTrue(datum.size() > verticalDatum.size(), "Vertical datum should be a subset of datum.");
-            assertTrue(datum.containsAll(geodeticDatum),    "Geodetic reference frame should be a subset of datum.");
-        }
+        assertTrue(geodeticDatum.size() >= 445,         "size() consistency check.");
+        assertTrue(datum.size() > geodeticDatum.size(), "Geodetic reference frame should be a subset of datum.");
+        assertTrue(datum.size() > verticalDatum.size(), "Vertical datum should be a subset of datum.");
+        assertTrue(datum.containsAll(geodeticDatum),    "Geodetic reference frame should be a subset of datum.");
 
         /*
          * COORDINATE REFERENCE SYSTEMS - There is thousands of CRS, so we avoid all tests that may require
@@ -622,34 +620,31 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertFalse (crs.isEmpty(),        "CRSs not found.");
         assertTrue  (crs.contains("4326"), "Shall contain WGS84.");
         assertTrue  (crs.contains("3395"), "Shall contain World Mercator.");
-        if (RUN_EXTENSIVE_TESTS) {
-            assertTrue  (crs.size() >= 4175);      // Cause a scanning of the full table.
-            assertEquals(crs.size(), crs.size());
-        }
+
+        assertTrue  (crs.size() >= 4175);      // Cause a scanning of the full table.
+        assertEquals(crs.size(), crs.size());
 
         final Set<String> geographicCRS = factory.getAuthorityCodes(GeographicCRS.class);
         assertFalse(geographicCRS.isEmpty(),        "GeographicCRSs not found.");
         assertTrue (geographicCRS.contains("4326"), "Shall contain WGS84.");
         assertFalse(geographicCRS.contains("4978"), "Shall not contain geocentric CRS.");
         assertFalse(geographicCRS.contains("3395"), "Shall not contain projected CRS.");
-        if (RUN_EXTENSIVE_TESTS) {
-            assertTrue (geographicCRS.size() >= 468,       "size() consistency check.");
-            assertTrue (geographicCRS.size() < crs.size(), "Geographic CRS should be a subset of CRS.");
-            assertFalse(geographicCRS.containsAll(crs),    "Geographic CRS should be a subset of CRS.");
-            assertTrue (crs.containsAll(geographicCRS),    "Geographic CRS should be a subset of CRS.");
-        }
+
+        assertTrue (geographicCRS.size() >= 468,       "size() consistency check.");
+        assertTrue (geographicCRS.size() < crs.size(), "Geographic CRS should be a subset of CRS.");
+        assertFalse(geographicCRS.containsAll(crs),    "Geographic CRS should be a subset of CRS.");
+        assertTrue (crs.containsAll(geographicCRS),    "Geographic CRS should be a subset of CRS.");
 
         final Set<String> projectedCRS = factory.getAuthorityCodes(ProjectedCRS.class);
         assertFalse(projectedCRS.isEmpty(),        "ProjectedCRSs not found.");
         assertFalse(projectedCRS.contains("4326"), "Shall not contain geographic CRS.");
         assertTrue (projectedCRS.contains("3395"), "Shall contain World Mercator.");
-        if (RUN_EXTENSIVE_TESTS) {
-            assertTrue (projectedCRS.size() >= 3441,      "size() consistency check.");
-            assertTrue (projectedCRS.size() < crs.size(), "Projected CRS should be a subset of CRS.");
-            assertFalse(projectedCRS.containsAll(crs),    "Projected CRS should be a subset of CRS.");
-            assertTrue (crs.containsAll(projectedCRS),    "Projected CRS should be a subset of CRS.");
-            assertTrue (Collections.disjoint(geographicCRS, projectedCRS), "Projected CRS cannot be Geographic CRS.");
-        }
+
+        assertTrue (projectedCRS.size() >= 3441,      "size() consistency check.");
+        assertTrue (projectedCRS.size() < crs.size(), "Projected CRS should be a subset of CRS.");
+        assertFalse(projectedCRS.containsAll(crs),    "Projected CRS should be a subset of CRS.");
+        assertTrue (crs.containsAll(projectedCRS),    "Projected CRS should be a subset of CRS.");
+        assertTrue (Collections.disjoint(geographicCRS, projectedCRS), "Projected CRS cannot be Geographic CRS.");
 
         /*
          * COORDINATE OPERATIONS - There is thousands of operations, so we avoid all tests that may require
@@ -676,13 +671,11 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertTrue (conversions    .contains("16001"), "Shall contain “UTM zone 1N”");
         assertFalse(transformations.contains("16001"), "Shall not contain “UTM zone 1N”");
 
-        if (RUN_EXTENSIVE_TESTS) {
-            assertTrue (conversions    .size() < operations .size(), "Conversions shall be a subset of operations.");
-            assertTrue (transformations.size() < operations .size(), "Transformations shall be a subset of operations.");
-            assertTrue (operations .containsAll(conversions),        "Conversion shall be a subset of operations.");
-            assertTrue (operations .containsAll(transformations),    "Transformations shall be a subset of operations.");
-            assertTrue (Collections.disjoint(conversions, transformations), "Conversions cannot be transformations.");
-        }
+        assertTrue (conversions    .size() < operations .size(), "Conversions shall be a subset of operations.");
+        assertTrue (transformations.size() < operations .size(), "Transformations shall be a subset of operations.");
+        assertTrue (operations .containsAll(conversions),        "Conversion shall be a subset of operations.");
+        assertTrue (operations .containsAll(transformations),    "Transformations shall be a subset of operations.");
+        assertTrue (Collections.disjoint(conversions, transformations), "Conversions cannot be transformations.");
 
         // We are cheating here since we are breaking generic type check.
         // However, in the particular case of our EPSG factory, it works.

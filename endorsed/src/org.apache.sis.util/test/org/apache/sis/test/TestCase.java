@@ -85,7 +85,7 @@ public abstract class TestCase {
      *
      * @see #assumeExtensiveTestsEnabled()
      */
-    public static final boolean RUN_EXTENSIVE_TESTS;
+    private static final boolean RUN_EXTENSIVE_TESTS;
 
     /**
      * Whether the tests shall use the <abbr>EPSG</abbr> geodetic dataset.
@@ -93,7 +93,7 @@ public abstract class TestCase {
      *
      * @see #assumeConnectionToEPSG(boolean)
      */
-    public static final boolean REQUIRE_EPSG_DATABASE;
+    protected static final boolean REQUIRE_EPSG_DATABASE;
 
     /**
      * Whether the tests can use the PostgreSQL database on the local host.
@@ -105,7 +105,7 @@ public abstract class TestCase {
      * Whether the tests is allowed to popup a widget.
      * Only a few tests provide visualization widget.
      */
-    public static final boolean SHOW_WIDGET;
+    protected static final boolean SHOW_WIDGET;
 
     /**
      * Whether the tests should print debugging information.

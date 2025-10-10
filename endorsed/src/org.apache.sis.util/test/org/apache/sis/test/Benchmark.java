@@ -40,8 +40,6 @@ public @interface Benchmark {
     /**
      * The value to use in {@link org.junit.jupiter.api.Tag} annotations
      * for tests that are also benchmarks.
-     *
-     * @see TestCase#RUN_EXTENSIVE_TESTS
      */
     String TAG = "Benchmark";
 }

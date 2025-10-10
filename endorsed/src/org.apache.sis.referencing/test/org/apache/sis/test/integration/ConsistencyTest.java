@@ -114,7 +114,8 @@ public final class ConsistencyTest extends TestCase {
     }
 
     /**
-     * Verifies the WKT consistency of all CRS instances.
+     * Verifies the <abbr>WKT</abbr> consistency of all <abbr>CRS</abbr> instances.
+     * This check is slow and executed only if extensive tests are enabled.
      *
      * @throws FactoryException if an error other than "unsupported operation method" occurred.
      */

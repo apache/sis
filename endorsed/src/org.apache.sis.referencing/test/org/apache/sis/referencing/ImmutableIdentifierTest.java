@@ -49,6 +49,7 @@ import static org.opengis.metadata.Identifier.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ImmutableIdentifierTest extends TestCase {
     /**
      * Creates a new test case.

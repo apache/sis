@@ -39,7 +39,6 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.temporal.TemporalDate;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -91,7 +90,7 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
         assertEquals("20090901",               metadata.getMetadataIdentifier().getCode());
         assertEquals(Locale.ENGLISH,           getSingleton(metadata.getLocalesAndCharsets().keySet()));
         assertEquals(StandardCharsets.UTF_8,   getSingleton(metadata.getLocalesAndCharsets().values()));
-        assertEquals(LocalDate.of(2014, 1, 4), TemporalDate.toTemporal(getSingleton(metadata.getDateInfo()).getDate()));
+        assertEquals(LocalDate.of(2014, 1, 4), getSingleton(metadata.getDateInfo()).getReferenceDate());
         /*
          * <gmd:contact>
          *   <gmd:CI_ResponsibleParty>

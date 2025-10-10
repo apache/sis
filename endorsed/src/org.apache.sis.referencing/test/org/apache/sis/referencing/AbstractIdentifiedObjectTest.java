@@ -46,6 +46,7 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class AbstractIdentifiedObjectTest extends TestCase {
     /**
      * Creates a new test case.

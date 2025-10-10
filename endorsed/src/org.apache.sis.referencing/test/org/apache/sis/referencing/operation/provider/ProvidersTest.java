@@ -39,7 +39,6 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.abort;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -258,12 +257,11 @@ public final class ProvidersTest extends TestCase {
      */
     @Test
     public void compareWithEPSG() throws ReflectiveOperationException, FactoryException {
-        assumeExtensiveTestsEnabled();
         final EPSGFactory factory;
         try {
             factory = (EPSGFactory) CRS.getAuthorityFactory(Constants.EPSG);
         } catch (ClassCastException e) {
-            abort("This test requires the EPSG geodetic dataset.");
+            assumeConnectionToEPSG(false);
             throw e;
         }
         final var methodAliases   = new HashMap<AbstractProvider, String[]>(256);
