@@ -25,7 +25,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 
 
@@ -34,6 +33,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class TransformerTest extends TestCase {
     /**
@@ -52,11 +52,11 @@ public final class TransformerTest extends TestCase {
     /**
      * Asserts that the transformation result is equal to the expected result.
      */
-    static void assertPointsEqual(final double[][] expected, final double[][] actual, final double tolerance) {
+    static void assertPointsEqual(final double[][] expected, final double[][] actual) {
         assertNotSame(expected, actual);
         assertEquals(expected.length, actual.length);
         for (int i=0; i<expected.length; i++) {
-            assertArrayEquals(expected[i], actual[i], tolerance);
+            assertArrayEquals(expected[i], actual[i], 0);
         }
     }
 
@@ -74,14 +74,14 @@ public final class TransformerTest extends TestCase {
             new double[] {27, -12},
             new double[] {32,  23}
         };
-        final Transformer tr = new Transformer(caller, CommonCRS.WGS84.geographic(), "EPSG:4326", points);
-        assumeTrue(tr.hasAreaOfInterest());     // False if there is no EPSG geodetic dataset installed.
+        final var tr = new Transformer(caller, CommonCRS.WGS84.geographic(), "EPSG:4326", points);
+        assumeConnectionToEPSG(tr.hasAreaOfInterest());
         final GeographicBoundingBox bbox = tr.getAreaOfInterest();
         assertEquals( 23, bbox.getEastBoundLongitude());
         assertEquals(-12, bbox.getWestBoundLongitude());
         assertEquals( 34, bbox.getNorthBoundLatitude());
         assertEquals( 27, bbox.getSouthBoundLatitude());
-        assertPointsEqual(points, tr.transform(points), STRICT);
+        assertPointsEqual(points, tr.transform(points));
     }
 
     /**
@@ -104,13 +104,13 @@ public final class TransformerTest extends TestCase {
             new double[] {27, -12},
             new double[] {32,  23}
         };
-        final Transformer tr = new Transformer(caller, CommonCRS.WGS84.geographic3D(), "EPSG:4326", points);
-        assumeTrue(tr.hasAreaOfInterest());     // False if there is no EPSG geodetic dataset installed.
+        final var tr = new Transformer(caller, CommonCRS.WGS84.geographic3D(), "EPSG:4326", points);
+        assumeConnectionToEPSG(tr.hasAreaOfInterest());
         final GeographicBoundingBox bbox = tr.getAreaOfInterest();
         assertEquals( 23, bbox.getEastBoundLongitude());
         assertEquals(-12, bbox.getWestBoundLongitude());
         assertEquals( 34, bbox.getNorthBoundLatitude());
         assertEquals( 27, bbox.getSouthBoundLatitude());
-        assertPointsEqual(result, tr.transform(points), STRICT);
+        assertPointsEqual(result, tr.transform(points));
     }
 }

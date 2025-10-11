@@ -56,6 +56,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public class GridCoverage2DTest extends TestCase {
     /**
      * Width and height of the grid tested in this class.

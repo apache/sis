@@ -41,6 +41,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class NamedIdentifierTest extends TestCase {
     /**
      * Creates a new test case.
@@ -54,7 +55,7 @@ public final class NamedIdentifierTest extends TestCase {
      */
     @Test
     public void testCreateFromCode() {
-        final NamedIdentifier identifier = new NamedIdentifier(Citations.EPSG, "EPSG", "4326", "8.3", null);
+        final var identifier = new NamedIdentifier(Citations.EPSG, "EPSG", "4326", "8.3", null);
         Validators.validate((ReferenceIdentifier) identifier);
         Validators.validate((GenericName) identifier);
 
@@ -80,7 +81,7 @@ public final class NamedIdentifierTest extends TestCase {
     public void testCreateFromName() {
         final NameFactory factory = DefaultNameFactory.provider();
         final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "IOGP"), null);
-        final NamedIdentifier identifier = new NamedIdentifier(factory.createGenericName(scope, "EPSG", "4326"));
+        final var identifier = new NamedIdentifier(factory.createGenericName(scope, "EPSG", "4326"));
         Validators.validate((ReferenceIdentifier) identifier);
         Validators.validate((GenericName) identifier);
 

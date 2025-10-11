@@ -28,9 +28,9 @@ import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the main branch:
@@ -46,6 +46,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Michael Hausegger
  */
+@SuppressWarnings("exports")
 public final class FeatureTypeBuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -295,11 +296,11 @@ public final class FeatureTypeBuilderTest extends TestCase {
     public void testCreateFromTemplate() {
         final var builder = new FeatureTypeBuilder(DefaultFeatureTypeTest.capital());
         assertEquals("Capital", builder.getName().toString());
-        assertEquals("City",    TestUtilities.getSingleton(builder.getSuperTypes()).getName().toString());
+        assertEquals("City",    assertSingleton(builder.getSuperTypes()).getName().toString());
         assertFalse (           builder.isAbstract());
 
         // The list of properties does not include super-type properties.
-        final var a0 = attributeTypeBuilder(TestUtilities.getSingleton(builder.properties()));
+        final var a0 = attributeTypeBuilder(assertSingleton(builder.properties()));
         assertEquals("parliament",  a0.getName().toString());
         assertEquals(String.class,  a0.getValueClass());
         assertTrue  (               a0.roles().isEmpty());
@@ -334,8 +335,8 @@ public final class FeatureTypeBuilderTest extends TestCase {
         assertEquals(Geometry.class, a2.getValueClass());
 
         assertTrue  (a1.roles().isEmpty());
-        assertEquals(AttributeRole.IDENTIFIER_COMPONENT, TestUtilities.getSingleton(a0.roles()));
-        assertEquals(AttributeRole.DEFAULT_GEOMETRY,     TestUtilities.getSingleton(a2.roles()));
+        assertEquals(AttributeRole.IDENTIFIER_COMPONENT, assertSingleton(a0.roles()));
+        assertEquals(AttributeRole.DEFAULT_GEOMETRY,     assertSingleton(a2.roles()));
     }
 
     /**

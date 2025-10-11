@@ -23,7 +23,6 @@ import static java.lang.Double.NaN;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
@@ -42,6 +41,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Number of rows and columns, initialized by {@link #prepareNewMatrixSize(Random)}.
@@ -108,19 +108,23 @@ public final class NonSquareMatrixTest extends MatrixTestCase {
             0, 0, 1
         });
         MatrixSIS inverse = m.inverse();
-        assertMatrixEquals(new NonSquareMatrix(3, 5, new Number[] {
-                    0.5, 0,   0,    0,   0,
-                    0,   0,   0.25, 0,   0,
-                    0,   0,   0,    0,   1}),
-                inverse, STRICT, "Inverse of non-square matrix.");
+        assertMatrixEquals(
+                new NonSquareMatrix(3, 5, new Number[] {
+                        0.5, 0,   0,    0,   0,
+                        0,   0,   0.25, 0,   0,
+                        0,   0,   0,    0,   1}),
+                inverse,
+                "Inverse of non-square matrix.");
 
-        assertMatrixEquals(new NonSquareMatrix(5, 3, new Number[] {
-                    2, 0, 0,
-                    0, 0, NaN,
-                    0, 4, 0,
-                    0, 0, NaN,
-                    0, 0, 1}),
-                inverse.inverse(), STRICT, "Back to original.");
+        assertMatrixEquals(
+                new NonSquareMatrix(5, 3, new Number[] {
+                        2, 0, 0,
+                        0, 0, NaN,
+                        0, 4, 0,
+                        0, 0, NaN,
+                        0, 0, 1}),
+                inverse.inverse(),
+                "Back to original.");
         /*
          * Change the [0 0 3] row into [1 0 3]. The NonSquareMarix class should no longer omit that row.
          * As a consequence, the matrix cannot be inverted anymore.
@@ -208,16 +212,16 @@ public final class NonSquareMatrixTest extends MatrixTestCase {
 
     /**
      * Prints the statistics about the differences between JAMA and SIS matrix elements.
-     * Those statistics will be visible only if {@link #VERBOSE} is {@code true}.
+     * Those statistics will be visible only if {@link #verbose()} returns {@code true}.
      */
     @AfterAll
     public static void printStatistics() {
         if (statistics != null) {
-            TestUtilities.printSeparator("Overall statistics on agreement of matrix arithmetic");
+            out.printSeparator("Overall statistics on agreement of matrix arithmetic");
             synchronized (statistics) {
                 out.println(statistics);
             }
-            TestUtilities.forceFlushOutput();
+            out.flushUnconditionally();
         }
     }
 }

@@ -72,7 +72,7 @@ final class LogRecordCollector extends Handler implements Runnable {
      * message and left the encoding unchanged.</p>
      */
     static {
-        final String encoding = System.getProperty(TestConfiguration.OUTPUT_ENCODING_KEY);
+        final String encoding = System.getProperty(Printer.ENCODING_KEY);
         if (encoding != null) {
             for (Logger logger : LOGGERS) try {
                 while (logger != null) {

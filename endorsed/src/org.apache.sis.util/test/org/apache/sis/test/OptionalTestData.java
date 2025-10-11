@@ -16,7 +16,6 @@
  */
 package org.apache.sis.test;
 
-import java.util.Optional;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +25,6 @@ import java.nio.file.Path;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 
 /**
@@ -121,18 +119,13 @@ public enum OptionalTestData {
 
     /**
      * Returns the path to the test file if {@code $SIS_DATA} is defined an the file exists.
+     * If the file does not exist, throws {@link org.junit.AssumptionViolatedException} as
+     * by {@link org.junit.jupiter.api.Assumptions} methods.
      *
-     * @return path to the test file, or an empty optional if none.
+     * @return path to the test file.
      */
-    public Optional<Path> path() {
-        Path path = DataDirectory.TESTS.getDirectory();
-        if (path != null) {
-            path = path.resolve(filename);
-            if (Files.isRegularFile(path)) {
-                return Optional.of(path);
-            }
-        }
-        return Optional.empty();
+    public Path path() {
+        return TestCase.assumeDataExists(DataDirectory.TESTS, filename);
     }
 
     /**
@@ -144,9 +137,7 @@ public enum OptionalTestData {
      * @throws IOException if an error occurred while opening the test file.
      */
     private InputStream open() throws IOException {
-        final Optional<Path> path = path();
-        assumeTrue(path.isPresent(), () -> "File “$SIS_DATA/Tests/" + filename + "” has not been found.");
-        return Files.newInputStream(path.get());
+        return Files.newInputStream(path());
     }
 
     /**

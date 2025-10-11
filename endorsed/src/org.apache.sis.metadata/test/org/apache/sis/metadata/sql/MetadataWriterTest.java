@@ -29,9 +29,9 @@ import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 // Specific to the main branch:
@@ -43,6 +43,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MetadataWriterTest extends TestCase {
     /**
      * The data source providing connections to the database.
@@ -120,7 +121,7 @@ public final class MetadataWriterTest extends TestCase {
         assertEquals("EPSG",      source.search(HardCodedCitations.EPSG));
         assertEquals("SIS",       source.search(HardCodedCitations.SIS));
         assertNull  (             source.search(HardCodedCitations.ISO_19111));
-        assertEquals("EPSG",      source.search(TestUtilities.getSingleton(
+        assertEquals("EPSG",      source.search(assertSingleton(
                 HardCodedCitations.EPSG.getCitedResponsibleParties())));
     }
 
@@ -148,11 +149,11 @@ public final class MetadataWriterTest extends TestCase {
     private void read() throws MetadataStoreException {
         final Citation c = source.lookup(Citation.class, "EPSG");
         assertEquals("EPSG Geodetic Parameter Dataset", c.getTitle().toString());
-        assertEquals(PresentationForm.TABLE_DIGITAL, TestUtilities.getSingleton(c.getPresentationForms()));
+        assertEquals(PresentationForm.TABLE_DIGITAL, assertSingleton(c.getPresentationForms()));
         /*
          * Ask for dependencies that are known to exist.
          */
-        final ResponsibleParty responsible = TestUtilities.getSingleton(c.getCitedResponsibleParties());
+        final ResponsibleParty responsible = assertSingleton(c.getCitedResponsibleParties());
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, responsible.getRole());
 
         assertEquals("International Association of Oil & Gas Producers", responsible.getOrganisationName().toString());
@@ -200,6 +201,6 @@ public final class MetadataWriterTest extends TestCase {
         assertEquals("01.02.03.04", source.add(tel));
 
         final Telephone check = source.lookup(Telephone.class, "01.02.03.04");
-        assertEquals("01.02.03.04", TestUtilities.getSingleton(check.getVoices()));
+        assertEquals("01.02.03.04", assertSingleton(check.getVoices()));
     }
 }

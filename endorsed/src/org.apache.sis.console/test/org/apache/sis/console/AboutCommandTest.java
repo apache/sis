@@ -23,7 +23,7 @@ import org.apache.sis.util.CharSequences;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -31,6 +31,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class AboutCommandTest extends TestCase {
     /**
      * Creates a new test case.
@@ -76,7 +77,7 @@ public final class AboutCommandTest extends TestCase {
     public void testBrief() throws Exception {
         var test = new AboutCommand(0, new String[] {CommandRunner.TEST, "--brief"});
         test.run();
-        String result = getSingleton(CharSequences.splitOnEOL(test.outputBuffer.toString().trim())).toString();
+        String result = assertSingleton(CharSequences.splitOnEOL(test.outputBuffer.toString().trim())).toString();
         assertTrue(result.contains(Version.SIS.toString()), result);
     }
 

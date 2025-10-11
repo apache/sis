@@ -63,11 +63,13 @@ public final class LongitudeRotationTest extends TestCase {
          * future version. See org.apache.sis.referencing.operation package javadoc.
          */
         var linear = assertInstanceOf(LinearTransform.class, mt, "Shall be an affine transform.");
-        assertMatrixEquals(new Matrix3(1, 0, 2.33722917,
-                                       0, 1, 0,
-                                       0, 0, 1),
+        assertMatrixEquals(
+                new Matrix3(1, 0, 2.33722917,
+                            0, 1, 0,
+                            0, 0, 1),
                 linear.getMatrix(),
-                1E-16, "Expected a longitude rotation");
+                1E-16,  // Tolerance
+                "Longitude offset");
     }
 
     /**

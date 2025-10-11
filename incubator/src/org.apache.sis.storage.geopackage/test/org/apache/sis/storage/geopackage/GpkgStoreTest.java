@@ -57,6 +57,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  *
  * @author Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 @Execution(ExecutionMode.SAME_THREAD)
 public final class GpkgStoreTest {
     /**

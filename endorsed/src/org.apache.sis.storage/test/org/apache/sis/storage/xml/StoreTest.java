@@ -29,8 +29,8 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the main branch:
 import org.opengis.metadata.identification.CharacterSet;
@@ -102,7 +102,7 @@ public final class StoreTest extends TestCase {
             metadata = store.getMetadata();
             assertSame(metadata, store.getMetadata(), "Expected cached value.");
         }
-        final ResponsibleParty resp     = getSingleton(metadata.getContacts());
+        final ResponsibleParty resp     = assertSingleton(metadata.getContacts());
         final Contact          contact  = resp.getContactInfo();
         final OnlineResource   resource = contact.getOnlineResource();
 

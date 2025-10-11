@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -44,6 +44,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @see org.apache.sis.metadata.internal.shared.MergerTest
  */
+@SuppressWarnings("exports")
 public final class MetadataCopierTest extends TestCase {
     /**
      * Creates a new test case.
@@ -60,8 +61,8 @@ public final class MetadataCopierTest extends TestCase {
         final DefaultCitation original = HardCodedCitations.EPSG;
         final var copy = (DefaultCitation) copier.copy(original);
         assertNotSame(original, copy);
-        assertNotSame(getSingleton(original.getCitedResponsibleParties()),
-                      getSingleton(copy.getCitedResponsibleParties()));
+        assertNotSame(assertSingleton(original.getCitedResponsibleParties()),
+                      assertSingleton(copy.getCitedResponsibleParties()));
         assertEquals(original, copy);
     }
 
@@ -74,8 +75,8 @@ public final class MetadataCopierTest extends TestCase {
         final DefaultCitation original = HardCodedCitations.EPSG;
         final Citation copy = copier.copy(Citation.class, original);
         assertNotSame(original, copy);
-        assertNotSame(getSingleton(original.getCitedResponsibleParties()),
-                      getSingleton(copy.getCitedResponsibleParties()));
+        assertNotSame(assertSingleton(original.getCitedResponsibleParties()),
+                      assertSingleton(copy.getCitedResponsibleParties()));
         assertEquals(original, copy);
     }
 

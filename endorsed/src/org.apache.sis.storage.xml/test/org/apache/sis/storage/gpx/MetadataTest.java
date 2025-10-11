@@ -17,6 +17,8 @@
 package org.apache.sis.storage.gpx;
 
 import java.util.List;
+import java.util.Date;
+import java.time.Instant;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -24,7 +26,6 @@ import java.net.URISyntaxException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.date;
 
 // Specific to the main branch:
 import org.junit.jupiter.api.Disabled;
@@ -105,7 +106,7 @@ public final class MetadataTest extends TestCase {
         metadata.copyright   = copyright;
         metadata.keywords    = List.of("sample", "metadata");
         metadata.bounds      = bounds;
-        metadata.time        = date("2010-03-01 00:00:00");
+        metadata.time        = Date.from(Instant.parse("2010-03-01T00:00:00Z"));
         metadata.links       = List.of(new Link(new URI("http://first-address.org")),
                                        new Link(new URI("http://second-address.org")),
                                        new Link(new URI("http://third-address.org")));

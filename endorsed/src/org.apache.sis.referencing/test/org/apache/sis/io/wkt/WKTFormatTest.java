@@ -33,8 +33,8 @@ import org.apache.sis.parameter.Parameterized;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -46,7 +46,8 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class WKTFormatTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public final class WKTFormatTest extends TestCase {
     /**
      * The instance to use for the test, or {@code null} if none.
      */
@@ -76,7 +77,7 @@ public final class WKTFormatTest extends EPSGDependentTestCase {
     @Test
     public void testParse() throws ParseException {
         format = new WKTFormat();
-        final VerticalCRS crs = (VerticalCRS) format.parseObject(
+        final var crs = (VerticalCRS) format.parseObject(
                 "VERT_CS[“Gravity-related height”,\n" +
                 "  VERT_DATUM[“Mean Sea Level”, 2005],\n" +
                 "  UNIT[“metre”, 1],\n" +

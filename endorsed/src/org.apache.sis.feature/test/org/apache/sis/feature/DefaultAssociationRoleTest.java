@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -35,6 +35,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultAssociationRoleTest extends TestCase {
     /**
      * Creates a new test case.
@@ -130,7 +131,7 @@ public final class DefaultAssociationRoleTest extends TestCase {
          * that 'DefaultFeatureType.equals(Object)' does not fall in an infinite loop.
          */
         final DefaultFeatureType copy = createType(twinTown.getName(),
-                getSingleton(twinTown.getSuperTypes()), association);
+                assertSingleton(twinTown.getSuperTypes()), association);
 
         assertTrue(copy.equals(twinTown));
         assertTrue(twinTown.equals(copy));
@@ -171,9 +172,9 @@ public final class DefaultAssociationRoleTest extends TestCase {
          * to change as they are not the instances to be replaced by the name resolutions, but we
          * verify them as a paranoiac check.
          */
-        assertSame(toB, getSingleton(typeA.getProperties(false)));
-        assertSame(toC, getSingleton(typeB.getProperties(false)));
-        assertSame(toD, getSingleton(typeC.getProperties(false)));
+        assertSame(toB, assertSingleton(typeA.getProperties(false)));
+        assertSame(toC, assertSingleton(typeB.getProperties(false)));
+        assertSame(toD, assertSingleton(typeC.getProperties(false)));
         assertSame(toAr, typeD.getProperty("toA"));
         assertSame(toBr, typeD.getProperty("toB"));
         assertSame(toCr, typeD.getProperty("toC"));

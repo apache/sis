@@ -34,8 +34,8 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -46,6 +46,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ParametersTest extends TestCase {
     /**
      * Creates a new test case.
@@ -164,8 +165,8 @@ public final class ParametersTest extends TestCase {
          * The actual test.
          */
         Parameters.copy(source, target);
-        assertSame(sourceSubgroup, TestUtilities.getSingleton(source.groups(subgroupName)));
-        assertSame(targetSubgroup, TestUtilities.getSingleton(target.groups(subgroupName)));
+        assertSame(sourceSubgroup, assertSingleton(source.groups(subgroupName)));
+        assertSame(targetSubgroup, assertSingleton(target.groups(subgroupName)));
         assertEquals("A value from the source", target.parameter("A parent parameter").getValue());
         assertEquals(10, targetSubgroup.parameter("Mandatory 1").intValue());
         assertEquals(20, targetSubgroup.parameter("Mandatory 2").intValue());

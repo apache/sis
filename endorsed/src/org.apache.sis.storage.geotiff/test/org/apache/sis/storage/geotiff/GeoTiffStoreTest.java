@@ -37,12 +37,12 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 
@@ -51,6 +51,7 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class GeoTiffStoreTest extends TestCase {
     /**
      * Creates a new test case.
@@ -88,17 +89,17 @@ public final class GeoTiffStoreTest extends TestCase {
              * and that the result has the expected number of dimensions, axis order and scale factors.
              */
             try (DataStore store = DataStores.open(new StorageConnector(file), "GeoTIFF")) {
-                GridCoverageResource r = TestUtilities.getSingleton(assertInstanceOf(GeoTiffStore.class, store).components());
+                GridCoverageResource r = assertSingleton(assertInstanceOf(GeoTiffStore.class, store).components());
                 GridGeometry gg = r.getGridGeometry();
                 assertEquals(3, gg.getDimension());
                 assertAxisDirectionsEqual(gg.getCoordinateReferenceSystem().getCoordinateSystem(),
                         AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.DOWN);
 
-                assertMatrixEquals(new Matrix4(0, -0.25, 0, 0,
-                                               0.25,  0, 0, 0,
-                                               0,     0, 1, 3,
-                                               0,     0, 0, 1),
-                        MathTransforms.getMatrix(gg.getGridToCRS(PixelInCell.CELL_CORNER)), 0, "gridToCRS");
+                assertGridToCornerEquals(
+                        new Matrix4(0, -0.25, 0, 0,
+                                    0.25,  0, 0, 0,
+                                    0,     0, 1, 3,
+                                    0,     0, 0, 1), gg);
 
                 RenderedImage image = r.read(null).render(null);
                 assertEquals(width,  image.getWidth(),  "width");

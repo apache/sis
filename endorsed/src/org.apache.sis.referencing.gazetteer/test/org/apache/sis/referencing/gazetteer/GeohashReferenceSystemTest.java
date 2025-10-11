@@ -30,7 +30,7 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
 
 
@@ -40,6 +40,7 @@ import org.apache.sis.test.TestCase;
  * @author  Ross Laidlaw
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class GeohashReferenceSystemTest extends TestCase {
     /**
      * Tolerance factor for floating point comparison.
@@ -267,7 +268,7 @@ public final class GeohashReferenceSystemTest extends TestCase {
         assertEquals("Mapping",      rs.getTheme().toString(Locale.ENGLISH));
         assertEquals("Cartographie", rs.getTheme().toString(Locale.FRENCH));
 
-        final AbstractLocationType type = TestUtilities.getSingleton(rs.getLocationTypes());
+        final AbstractLocationType type = assertSingleton(rs.getLocationTypes());
         assertEquals("Geohash", type.getName().toString(Locale.ENGLISH));
         assertEquals(0, type.getParents().size());
         assertEquals(0, type.getChildren().size());

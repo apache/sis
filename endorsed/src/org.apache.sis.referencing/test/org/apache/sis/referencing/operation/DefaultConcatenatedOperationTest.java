@@ -20,6 +20,7 @@ import java.util.Map;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -36,8 +37,8 @@ import org.opengis.test.Validators;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
@@ -48,6 +49,7 @@ import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultConcatenatedOperationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -200,11 +202,11 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
 
-        assertIdentifierEquals("test", "test", null, "concatenated", getSingleton(op       .getIdentifiers()),           "identifier");
-        assertIdentifierEquals("test", "test", null, "source",       getSingleton(sourceCRS.getIdentifiers()), "sourceCRS.identifier");
-        assertIdentifierEquals("test", "test", null, "target",       getSingleton(targetCRS.getIdentifiers()), "targetCRS.identifier");
-        assertIdentifierEquals("test", "test", null, "step-1",       getSingleton(step1    .getIdentifiers()),     "step1.identifier");
-        assertIdentifierEquals("test", "test", null, "step-2",       getSingleton(step2    .getIdentifiers()),     "step2.identifier");
+        verifyIdentifier("concatenated", op,        "op");
+        verifyIdentifier("source",       sourceCRS, "sourceCRS");
+        verifyIdentifier("target",       targetCRS, "targetCRS");
+        verifyIdentifier("step-1",       step1,     "step1");
+        verifyIdentifier("step-2",       step2,     "step2");
         assertInstanceOf(GeodeticCRS.class, sourceCRS);
         assertInstanceOf(GeodeticCRS.class, targetCRS);
         assertSame(step1.getSourceCRS(), sourceCRS);
@@ -214,5 +216,12 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
          * Test marshalling and compare with the original file.
          */
         assertMarshalEqualsFile(openTestFile(), op, "xmlns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Verifies an identifier in the "test" namespace.
+     */
+    private static void verifyIdentifier(final String code, final IdentifiedObject object, final String label) {
+        assertIdentifierEquals("test", "test", null, code, assertSingleton(object.getIdentifiers()), label);
     }
 }

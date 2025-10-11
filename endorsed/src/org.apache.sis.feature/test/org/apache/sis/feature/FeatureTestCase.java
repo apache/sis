@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
 
 
@@ -42,6 +42,7 @@ import org.apache.sis.test.TestCase;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
  */
+@SuppressWarnings("exports")
 public abstract class FeatureTestCase extends TestCase {
     /**
      * The feature being tested.
@@ -106,7 +107,7 @@ public abstract class FeatureTestCase extends TestCase {
             assertSame(value, property.getValue(), name);
             final Collection<?> values = property.getValues();
             if (value != null) {
-                assertSame(value, TestUtilities.getSingleton(values), name);
+                assertSame(value, assertSingleton(values), name);
             } else {
                 assertTrue(values.isEmpty(), name);
             }
@@ -307,7 +308,7 @@ public abstract class FeatureTestCase extends TestCase {
                 final String identifier = report.getMeasureIdentification().toString();
                 if (identifier.equals("city")) {
                     numOccurrences++;
-                    final Result result = TestUtilities.getSingleton(report.getResults());
+                    final Result result = assertSingleton(report.getResults());
                     assertInstanceOf(QuantitativeResult.class, result);
 
                     @SuppressWarnings("deprecation")

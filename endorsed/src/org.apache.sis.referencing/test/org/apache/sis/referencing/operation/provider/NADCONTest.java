@@ -153,10 +153,12 @@ public final class NADCONTest extends DatumShiftTestCase {
         assertEquals(xmax, envelope.getMaximum(0), "xmax");
         assertEquals(ymin, envelope.getMinimum(1), "ymin");
         assertEquals(ymax, envelope.getMaximum(1), "ymax");
-        assertMatrixEquals(new Matrix3(cellSize,  0,  xmin,
-                                       0,  cellSize,  ymin,
-                                       0,         0,    1),
-                grid.getCoordinateToGrid().inverse().getMatrix(), STRICT, "coordinateToGrid");
+        assertMatrixEquals(
+                new Matrix3(cellSize,  0,  xmin,
+                            0,  cellSize,  ymin,
+                            0,         0,    1),
+                grid.getCoordinateToGrid().inverse().getMatrix(),
+                "coordinateToGrid");
         /*
          * Test the Meades Ranch station. If we were using the complete Conus files, we would obtain
          * after conversion the grid indices listed on the left side. But since we are using a sub-set
@@ -226,17 +228,17 @@ public final class NADCONTest extends DatumShiftTestCase {
     {
         Envelope envelope = new Envelope2D(null, gridX, gridY, nx - 1, ny - 1);
         envelope = Envelopes.transform(grid.getCoordinateToGrid().inverse(), envelope);
-        try (BufferedWriter out = Files.newBufferedWriter(file)) {
-            out.write("NADCON EXTRACTED REGION\n");
-            out.write(String.format(Locale.US, "%4d %3d %3d %11.5f %11.5f %11.5f %11.5f %11.5f\n", nx, ny, 1,
+        try (BufferedWriter f = Files.newBufferedWriter(file)) {
+            f.write("NADCON EXTRACTED REGION\n");
+            f.write(String.format(Locale.US, "%4d %3d %3d %11.5f %11.5f %11.5f %11.5f %11.5f\n", nx, ny, 1,
                     envelope.getMinimum(0), envelope.getSpan(0) / (nx - 1),
                     envelope.getMinimum(1), envelope.getSpan(1) / (ny - 1),
                     0.0));
             for (int y=0; y<ny; y++) {
                 for (int x=0; x<nx; x++) {
-                    out.write(String.format(Locale.US, " %11.6f", grid.getCellValue(dim, gridX + x, gridY + y)));
+                    f.write(String.format(Locale.US, " %11.6f", grid.getCellValue(dim, gridX + x, gridY + y)));
                 }
-                out.write('\n');
+                f.write('\n');
             }
         }
     }

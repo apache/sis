@@ -27,7 +27,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -36,6 +36,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultTreeTableTest extends TestCase {
     /**
      * Creates a new test case.
@@ -87,19 +88,19 @@ public final class DefaultTreeTableTest extends TestCase {
          * to the root list of children.
          */
         final DefaultTreeTable.Node node1 = root.newChild();
-        assertSame(table.columnIndices, node1.columnIndices, "Internal table sharing:");
-        assertTrue(node1.getChildren().isEmpty(),            "Initial children list:");
-        assertSame(root, node1.getParent(),                  "Specified parent:");
-        assertSame(node1, getSingleton(root.getChildren()),  "Children list after add:");
+        assertSame(table.columnIndices, node1.columnIndices,    "Internal table sharing:");
+        assertTrue(node1.getChildren().isEmpty(),               "Initial children list:");
+        assertSame(root, node1.getParent(),                     "Specified parent:");
+        assertSame(node1, assertSingleton(root.getChildren()),  "Children list after add:");
         /*
          * Create a child of the previous child.
          */
         final DefaultTreeTable.Node node2 = new DefaultTreeTable.Node(node1, 0);
-        assertSame(table.columnIndices, node2.columnIndices, "Internal table sharing:");
-        assertTrue(node2.getChildren().isEmpty(),            "Initial children list:");
-        assertSame(node1, node2.getParent(),                 "Specified parent:");
-        assertSame(node2, getSingleton(node1.getChildren()), "Children list after add:");
-        assertSame(node1, getSingleton(root.getChildren()),  "Independent children list:");
+        assertSame(table.columnIndices, node2.columnIndices,    "Internal table sharing:");
+        assertTrue(node2.getChildren().isEmpty(),               "Initial children list:");
+        assertSame(node1, node2.getParent(),                    "Specified parent:");
+        assertSame(node2, assertSingleton(node1.getChildren()), "Children list after add:");
+        assertSame(node1, assertSingleton(root.getChildren()),  "Independent children list:");
         /*
          * For chaining with next tests.
          */
@@ -119,8 +120,8 @@ public final class DefaultTreeTableTest extends TestCase {
     @TestStep
     public static void testNodeDisplacement(final TreeTable.Node root) {
         final Collection<TreeTable.Node> rootChildren, nodeChildren;
-        final TreeTable.Node node1 = getSingleton(rootChildren = root .getChildren());
-        final TreeTable.Node node2 = getSingleton(nodeChildren = node1.getChildren());
+        final TreeTable.Node node1 = assertSingleton(rootChildren = root .getChildren());
+        final TreeTable.Node node2 = assertSingleton(nodeChildren = node1.getChildren());
         var e = assertThrows(IllegalArgumentException.class, () -> rootChildren.add(node2),
                 "Should not be allowed to add a child before we removed it from its previous parent.");
         assertMessageContains(e, "Node-0");

@@ -20,7 +20,6 @@ package org.apache.sis.metadata;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.toTreeStructure;
 
 
 /**
@@ -28,6 +27,7 @@ import static org.apache.sis.test.TestUtilities.toTreeStructure;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class AbstractMetadataTest extends TestCase {
     /**
      * Creates a new test case.
@@ -89,6 +89,6 @@ public final class AbstractMetadataTest extends TestCase {
             "              ├─",             // Description
             "              └─",             // Instrument
             "                    (",        // Omitted cycle
-            ""}, toTreeStructure(text));
+            ""}, TreeTableViewTest.toTreeStructure(text));
     }
 }

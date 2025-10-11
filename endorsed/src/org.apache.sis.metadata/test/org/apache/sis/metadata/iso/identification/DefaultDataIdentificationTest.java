@@ -36,9 +36,8 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
-import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
+import static org.apache.sis.metadata.TreeTableViewTest.assertMetadataTreeEquals;
 
 
 /**
@@ -46,6 +45,7 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultDataIdentificationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -126,7 +126,7 @@ public final class DefaultDataIdentificationTest extends TestCase {
      */
     @Test
     public void testToString() {
-        assertMultilinesEquals(
+        assertMetadataTreeEquals(
                 "Data identification\n" +
                 "  ├─Citation………………………………………………………… Sea Surface Temperature Analysis Model\n" +
                 "  │   ├─Date………………………………………………………… 2005 Sep 22\n" +
@@ -151,7 +151,7 @@ public final class DefaultDataIdentificationTest extends TestCase {
                 "  │   └─Character set………………………………… US-ASCII\n" +
                 "  └─Locale (2 of 2)……………………………………… fr\n" +
                 "      └─Character set………………………………… ISO-8859-1\n",
-            TestUtilities.formatMetadata(create().asTreeTable()));
+            create().asTreeTable());
     }
 
     /**

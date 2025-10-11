@@ -36,8 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 // Specific to the main branch:
@@ -49,6 +48,7 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ImmutableIdentifierTest extends TestCase {
     /**
      * Creates a new test case.

@@ -26,9 +26,8 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**
@@ -37,6 +36,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultLineageTest extends TestCase {
     /**
      * Creates a new test case.
@@ -64,7 +64,7 @@ public final class DefaultLineageTest extends TestCase {
      * Verifies the unmarshalling result.
      */
     private static void verify(final DefaultLineage lineage) {
-        final Source source = TestUtilities.getSingleton(lineage.getSources());
+        final Source source = assertSingleton(lineage.getSources());
         assertEquals("Description of source data level.", String.valueOf(source.getDescription()));
     }
 

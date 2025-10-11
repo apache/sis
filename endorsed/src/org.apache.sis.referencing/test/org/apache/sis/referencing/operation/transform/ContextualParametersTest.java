@@ -42,6 +42,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ContextualParametersTest extends TestCase {
     /**
      * Creates a new test case.
@@ -112,19 +113,19 @@ public final class ContextualParametersTest extends TestCase {
         final Matrix product     = MathTransforms.getMatrix(p.completeTransform(
                 DefaultMathTransformFactoryTest.factory(), MathTransforms.identity(2)));
 
-        assertMatrixEquals(new Matrix3(PI/180,  0,       toRadians(-12),
-                                       0,       PI/180,  0,
-                                       0,       0,       1),
-                normalize, 1E-16, "normalize");
+        assertMatrixEquals(
+                new Matrix3(PI/180,  0,       toRadians(-12),
+                            0,       PI/180,  0,
+                            0,       0,       1), normalize, 1E-16, "normalize");
 
-        assertMatrixEquals(new Matrix3(180/PI,  0,       18,
-                                       0,       180/PI,  0,
-                                       0,       0,       1),
-                denormalize, STRICT, "denormalize");
+        assertMatrixEquals(
+                new Matrix3(180/PI,  0,       18,
+                            0,       180/PI,  0,
+                            0,       0,       1), denormalize, "denormalize");
 
-        assertMatrixEquals(new Matrix3(1, 0, 6,
-                                       0, 1, 0,
-                                       0, 0, 1),
-                product, STRICT, "product");
+        assertMatrixEquals(
+                new Matrix3(1, 0, 6,
+                            0, 1, 0,
+                            0, 0, 1), product, "product");
     }
 }

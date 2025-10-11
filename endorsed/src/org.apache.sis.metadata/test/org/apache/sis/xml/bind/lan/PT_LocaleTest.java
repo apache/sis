@@ -73,13 +73,13 @@ public final class PT_LocaleTest extends TestUsingFile {
     private void marshalAndCompare(final Format format, final String... ignoredNodes)
             throws JAXBException
     {
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         final Map<Locale,Charset> lc = metadata.getLocalesAndCharsets();
         for (final Locale locale : locales) {
             lc.put(locale, null);
         }
-        assertMarshalEqualsFile(openTestFile(format), metadata, format.schemaVersion, STRICT, ignoredNodes,
-                new String[] {"xmlns:*", "xsi:*"});
+        final String[] ignoredAttributes = {"xmlns:*", "xsi:*"};
+        assertMarshalEqualsFile(openTestFile(format), metadata, format.schemaVersion, 0, ignoredNodes, ignoredAttributes);
     }
 
     /**

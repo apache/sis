@@ -33,9 +33,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-// Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
+import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 
 
 /**
@@ -43,6 +41,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DimensionAppenderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -76,7 +75,7 @@ public final class DimensionAppenderTest extends TestCase {
      */
     private static void assertGridGeometryEquals(final GridCoverage actual, final Matrix gridToCRS, final long... gridIndices) {
         final GridGeometry gg = actual.getGridGeometry();
-        assertMatrixEquals(gridToCRS, MathTransforms.getMatrix(gg.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT, "gridToCRS");
+        assertGridToCornerEquals(gridToCRS, gg);
         assertArrayEquals(gridIndices, gg.getExtent().getLow().getCoordinateValues());
     }
 

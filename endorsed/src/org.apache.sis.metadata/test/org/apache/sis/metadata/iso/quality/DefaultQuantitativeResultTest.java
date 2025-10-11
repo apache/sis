@@ -37,7 +37,7 @@ import org.apache.sis.metadata.internal.Resources;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.DefaultRecordSchemaTest;
 
@@ -100,7 +100,7 @@ public final class DefaultQuantitativeResultTest extends TestCase {
          */
         final RecordType singleText = DefaultRecordType.SINGLE_STRING;
         final var record = new DefaultRecord(singleText);
-        record.set(TestUtilities.getSingleton(singleText.getMembers()), "The quality is okay");
+        record.set(assertSingleton(singleText.getMembers()), "The quality is okay");
         /*
          * Record type and record value are set independently in two properties.
          * In current implementation, `record.type` is not equal to `recordType`.
@@ -149,8 +149,8 @@ public final class DefaultQuantitativeResultTest extends TestCase {
          * Before to compare the two `Element`, compare some individual components.
          * The intent is to identify which metadata is not equal in case of test failure.
          */
-        final QuantitativeResult   uResult = (QuantitativeResult) TestUtilities.getSingleton(unmarshalled.getResults());
-        final QuantitativeResult   pResult = (QuantitativeResult) TestUtilities.getSingleton(programmatic.getResults());
+        final QuantitativeResult   uResult = assertInstanceOf(QuantitativeResult.class, assertSingleton(unmarshalled.getResults()));
+        final QuantitativeResult   pResult = assertInstanceOf(QuantitativeResult.class, assertSingleton(programmatic.getResults()));
         final RecordType           uType   = uResult.getValueType();
         final RecordType           pType   = pResult.getValueType();
         final Map<MemberName,Type> uFields = uType.getMemberTypes();

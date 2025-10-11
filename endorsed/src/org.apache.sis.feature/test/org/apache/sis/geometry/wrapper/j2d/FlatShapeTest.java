@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry.wrapper.j2d;
 
+import java.awt.Shape;
 import java.awt.geom.Path2D;
 import org.opengis.referencing.operation.TransformException;
 
@@ -32,11 +33,19 @@ import static org.apache.sis.feature.Assertions.assertPathEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class FlatShapeTest extends TestCase {
     /**
      * Creates a new test case.
      */
     public FlatShapeTest() {
+    }
+
+    /**
+     * Asserts that the path of the actual shape has the same segments as the expected shape.
+     */
+    private static void assertShapeEqual(final Shape expected, final Shape actual) {
+        assertPathEquals(expected.getPathIterator(null), actual.getPathIterator(null), 0);
     }
 
     /**
@@ -67,7 +76,7 @@ public final class FlatShapeTest extends TestCase {
 
         final Path2D.Double r = new Path2D.Double(Path2D.WIND_NON_ZERO);
         createReferenceShape(r, coordinates, closed);
-        assertPathEquals(r.getPathIterator(null), p.getPathIterator(null), STRICT);
+        assertShapeEqual(r, p);
     }
 
     /**
@@ -107,7 +116,7 @@ public final class FlatShapeTest extends TestCase {
             createReferenceShape(r, coordinates[i], false);
         }
         final MultiPolylines p = new MultiPolylines(polylines);
-        assertPathEquals(r.getPathIterator(null), p.getPathIterator(null), STRICT);
+        assertShapeEqual(r, p);
     }
 
     /**
@@ -130,6 +139,6 @@ public final class FlatShapeTest extends TestCase {
         createReferenceShape(r, new double[]{4,5, 6,3, 8,5, 3,8, 7,5, 9,3, -2,5}, true);
         createReferenceShape(r, new double[]{3,5, 6,1, -2,7}, false);
         createReferenceShape(r, new double[]{3,8, 10,4, 6,4}, true);
-        assertPathEquals(r.getPathIterator(null), b.build().getPathIterator(null), STRICT);
+        assertShapeEqual(r, b.build());
     }
 }

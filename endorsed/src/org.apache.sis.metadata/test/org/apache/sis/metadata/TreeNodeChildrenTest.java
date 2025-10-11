@@ -34,6 +34,7 @@ import org.apache.sis.util.collection.TreeTable;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -53,6 +54,7 @@ import java.util.Date;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TreeNodeChildrenTest extends TestCase {
     /**
      * Creates a new test case.
@@ -229,7 +231,7 @@ public final class TreeNodeChildrenTest extends TestCase {
          *
          * We need to perform the tests on the "Date" node, not on the "DefaultCitation" node.
          */
-        final TreeTable.Node node = TestUtilities.getSingleton(create(citation, ValueExistencePolicy.COMPACT));
+        final TreeTable.Node node = assertSingleton(create(citation, ValueExistencePolicy.COMPACT));
         assertEquals(15340, ((LocalDate) node.getValue(TableColumn.VALUE)).toEpochDay());
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
         final String[] expected = {

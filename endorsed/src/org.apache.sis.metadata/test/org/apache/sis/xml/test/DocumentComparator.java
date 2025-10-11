@@ -74,13 +74,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  *
- * @see TestCase
- * @see org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])
+ * @see TestCase#assertXmlEquals(Object, Object, String[])
  */
 public class DocumentComparator {
     /**
      * Commonly used prefixes for namespaces. Used as shorthands for calls to
-     * {@link org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])}.
+     * {@link TestCase#assertXmlEquals(Object, Object, String[])}.
      *
      * @see #substitutePrefix(String)
      */
@@ -152,7 +151,7 @@ public class DocumentComparator {
      *   "http://www.w3.org/2001/XMLSchema-instance:schemaLocation",
      *   "http://www.w3.org/2001/XMLSchema-instance:type"</pre>
      *
-     * Note that for convenience, the {@link org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])}
+     * Note that for convenience, the {@link TestCase#assertXmlEquals(Object, Object, String[])}
      * method automatically replaces some widely used prefixes by their full URL.
      */
     public final Set<String> ignoredAttributes;

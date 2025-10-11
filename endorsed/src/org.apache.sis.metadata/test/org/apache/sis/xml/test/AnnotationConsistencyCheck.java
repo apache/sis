@@ -43,8 +43,8 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
 // Test dependencies
 import org.opentest4j.AssertionFailedError;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCaseWithLogs;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -930,7 +930,7 @@ public abstract class AnnotationConsistencyCheck extends TestCaseWithLogs {
                 assertEquals(getter.getDeclaringClass(), setter.getDeclaringClass(),
                         "The setter method must be declared in the same class as the " +
                         "getter method - not in a parent class, to avoid issues with JAXB.");
-                assertEquals(getter.getReturnType(), TestUtilities.getSingleton(setter.getParameterTypes()),
+                assertEquals(getter.getReturnType(), assertSingleton(setter.getParameterTypes()),
                         "The setter parameter type shall be the same as the getter return type.");
                 element = getter.getAnnotation(XmlElement.class);
                 assertEquals((element == null),

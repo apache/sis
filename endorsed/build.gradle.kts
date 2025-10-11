@@ -149,6 +149,7 @@ fun addExportForTests(args : MutableList<String>) {
 
     addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.test",
                     "org.apache.sis.referencing," +
+                    "org.apache.sis.storage.xml," +
                     "org.apache.sis.profile.france")
 
     addExport(args, "org.apache.sis.storage",           "org.apache.sis.storage.test",

@@ -52,13 +52,15 @@ import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonAuthorityCode;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.temporal.TemporalDate;
@@ -75,7 +77,8 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public final class GeodeticObjectParserTest extends TestCase {
     /**
      * The parser to use for the test.
      */
@@ -146,7 +149,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         final String message = object.getClass().getSimpleName();
         assertEquals(name, object.getName().getCode(), message);
         if (epsg != 0) {
-            assertEquals(String.valueOf(epsg), getSingleton(object.getIdentifiers()).getCode(), message);
+            assertEquals(String.valueOf(epsg), assertSingletonAuthorityCode(object), message);
         } else {
             assertTrue(object.getIdentifiers().isEmpty(), message);
         }
@@ -793,9 +796,8 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
 
         final var crs = parse(DefaultProjectedCRS.class, wkt);
         validateParisFranceII(crs, 27572, false);
-        assertEquals("Large and medium scale topographic mapping and engineering survey.",
-                     getSingleton(crs.getDomains()).getScope().toString());
-        assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
+        assertEquals("Large and medium scale topographic mapping and engineering survey.", assertSingletonScope(crs));
+        assertNull(assertSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
     }
 
     /**
@@ -830,9 +832,8 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
 
         final var crs = parse(DefaultProjectedCRS.class, wkt);
         validateParisFranceII(crs, 27572, false);
-        assertEquals("Large and medium scale topographic mapping and engineering survey.",
-                     getSingleton(crs.getDomains()).getScope().toString());
-        assertNull(getSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
+        assertEquals("Large and medium scale topographic mapping and engineering survey.", assertSingletonScope(crs));
+        assertNull(assertSingleton(crs.getIdentifiers()).getVersion(), "Identifier shall not have a version.");
     }
 
     /**
@@ -1014,7 +1015,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         assertNameAndIdentifierEqual("Rikets hojdsystem 2000", 0, crs.getDatum());
         Temporal epoch = assertInstanceOf(DefaultVerticalDatum.Dynamic.class, crs.getDatum()).getFrameReferenceEpoch();
         assertEquals(Year.of(2000), epoch);
-        assertEquals("Geodesy, engineering survey.", getSingleton(crs.getDomains()).getScope().toString());
+        assertEquals("Geodesy, engineering survey.", assertSingletonScope(crs));
         assertEquals("Replaces RH70 (CRS code 5718) from 2005.", crs.getRemarks().toString());
     }
 
@@ -1060,7 +1061,7 @@ public final class GeodeticObjectParserTest extends EPSGDependentTestCase {
         assertEquals(-1, matrix.getElement(1,1), "North-South direction should be reverted.");
         assertEquals( 0, matrix.getElement(0,2), "No easting expected.");
         assertEquals( 0, matrix.getElement(1,2), "No northing expected.");
-        assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix, STRICT);
+        assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix);
         /*
          * Test "Transverse Mercator South Orientated". In this projection, the "False Northing" parameter
          * is actually a "False Southing". It may sound surprising, but "South Orientated" projections are

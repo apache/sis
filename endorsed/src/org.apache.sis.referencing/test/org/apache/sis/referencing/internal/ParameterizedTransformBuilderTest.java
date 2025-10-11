@@ -29,9 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-
-// Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 
 
 /**
@@ -71,12 +69,12 @@ public final class ParameterizedTransformBuilderTest extends TestCase {
         context.setSourceAxes(HardCodedCS.GEODETIC_3D, null);
         context.setTargetAxes(HardCodedCS.GEODETIC_2D, null);
         mt = context.swapAndScaleAxes(MathTransforms.identity(2));
-        var expected = Matrices.create(3, 4, new double[] {
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 0, 1
-        });
-        assertMatrixEquals(expected, MathTransforms.getMatrix(mt), STRICT, "3D → 2D");
+        assertMatrixEquals(
+                Matrices.create(3, 4, new double[] {
+                        1, 0, 0, 0,
+                        0, 1, 0, 0,
+                        0, 0, 0, 1}),
+                mt, "3D → 2D");
         /*
          * Transform from 2D to 3D. Coordinate values in the height dimension are unknown (NaN).
          * This case happen when the third dimension is handled as a "pass through" dimension.
@@ -84,25 +82,25 @@ public final class ParameterizedTransformBuilderTest extends TestCase {
         context.setSourceAxes(HardCodedCS.GEODETIC_2D, null);
         context.setTargetAxes(HardCodedCS.GEODETIC_3D, null);
         mt = context.swapAndScaleAxes(MathTransforms.identity(2));
-        expected = Matrices.create(4, 3, new double[] {
-            1, 0, 0,
-            0, 1, 0,
-            0, 0, Double.NaN,
-            0, 0, 1
-        });
-        assertMatrixEquals(expected, MathTransforms.getMatrix(mt), STRICT, "2D → 3D");
+        assertMatrixEquals(
+                Matrices.create(4, 3, new double[] {
+                        1, 0, 0,
+                        0, 1, 0,
+                        0, 0, Double.NaN,
+                        0, 0, 1}),
+                mt, "2D → 3D");
         /*
          * Same transform from 2D to 3D, but this time with the height consumed by the parameterized operation.
          * This is differentiated from the previous case by the fact that the parameterized operation is three-dimensional.
          */
         mt = context.swapAndScaleAxes(MathTransforms.identity(3));
-        expected = Matrices.create(4, 3, new double[] {
-            1, 0, 0,
-            0, 1, 0,
-            0, 0, 0,
-            0, 0, 1
-        });
-        assertMatrixEquals(expected, MathTransforms.getMatrix(mt), STRICT, "2D → 3D");
+        assertMatrixEquals(
+                Matrices.create(4, 3, new double[] {
+                        1, 0, 0,
+                        0, 1, 0,
+                        0, 0, 0,
+                        0, 0, 1}),
+                mt, "2D → 3D");
         /*
          * Test error message when adding a dimension that is not ellipsoidal height.
          */

@@ -33,9 +33,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-
-// Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
+import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 
 
 /**
@@ -43,6 +41,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DimensionalityReductionTest extends TestCase {
     /**
      * Creates a new test case.
@@ -113,8 +112,7 @@ public final class DimensionalityReductionTest extends TestCase {
      * @return the CRS of the given grid geometry.
      */
     private static CoordinateReferenceSystem verifyGridToCRS(final GridGeometry test, final Matrix expected) {
-        Matrix actual = MathTransforms.getMatrix(test.getGridToCRS(PixelInCell.CELL_CORNER));
-        assertMatrixEquals(expected, actual, STRICT, "gridToCRS");
+        assertGridToCornerEquals(expected, test);
         return test.getCoordinateReferenceSystem();
     }
 
@@ -173,8 +171,7 @@ public final class DimensionalityReductionTest extends TestCase {
     @Test
     public void testSelect() {
         var reduction = DimensionalityReduction.select2D(linearGrid());
-        var gridToCRS = reduction.getReducedGridGeometry().getGridToCRS(PixelInCell.CELL_CORNER);
-        assertMatrixEquals(withHorizontal(), MathTransforms.getMatrix(gridToCRS), STRICT, "gridToCRS");
+        assertGridToCornerEquals(withHorizontal(), reduction.getReducedGridGeometry());
         assertSame(HardCodedCRS.WGS84, reduction.getReducedGridGeometry().getCoordinateReferenceSystem());
 
         GridGeometry test = reduction.reverse(createGridGeometry(

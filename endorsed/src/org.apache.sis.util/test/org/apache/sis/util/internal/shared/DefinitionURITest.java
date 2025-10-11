@@ -201,11 +201,11 @@ public final class DefinitionURITest extends TestCase {
      * with a single authority.
      */
     private static String codeOf(final String type, final String authority, final CharSequence uri) {
-        Map.Entry<Integer,String> entry = DefinitionURI.codeOf(type, new String[] {authority}, uri);
+        Map.Entry<String, String> entry = DefinitionURI.codeOf(type, new String[] {authority}, uri);
         if (entry == null) {
             return null;
         }
-        assertEquals(0, entry.getKey());
+        assertEquals(authority, entry.getKey());
         return entry.getValue();
     }
 

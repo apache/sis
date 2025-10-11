@@ -57,6 +57,8 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
      * Returns {@code true} if {@link #convert(double)} returns given values unchanged.
      * The default implementation returns {@code false} for convenience of non-linear conversions.
      * Subclasses should override if their conversions may be identity.
+     *
+     * @return whether this converter performs no operation.
      */
     @Override
     public boolean isIdentity() {
@@ -65,12 +67,16 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
 
     /**
      * Indicates if this converter is linear in JSR-385 sense (not the usual mathematical sense).
-     * The default implementation returns {@code false} for convenience of non-linear conversions.
-     * Subclasses should override if their conversions may be identity.
+     * This is {@code true} if this converter contains a scale <em>but no offset</em>.
+     *
+     * @return whether this converter contains an offset.
+     *
+     * @deprecated This method is badly named, but we can't change since it is defined by JSR-385.
      */
     @Override
+    @Deprecated
     public boolean isLinear() {
-        return false;
+        return isIdentity();
     }
 
     /**
@@ -85,6 +91,9 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
      * Performs a unit conversion on the given number. The default implementation delegates to the version working
      * on {@code double} primitive type, so it may not provide the accuracy normally required by this method contract.
      * Linear conversions should override this method.
+     *
+     * @param  value  the value to convert.
+     * @return the converted value.
      */
     @Override
     public Number convert(final Number value) {
@@ -93,9 +102,10 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
 
     /**
      * Returns the derivative of the conversion function at the given value, or {@code NaN} if unknown.
+     * The given argument is ignored (can be {@link Double#NaN}) if the conversion is linear.
      *
      * @param  value  the point at which to compute the derivative.
-     *                Ignored (can be {@link Double#NaN}) if the conversion is linear.
+     * @return the derivative at the value.
      */
     public abstract double derivative(double value);
 

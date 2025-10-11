@@ -32,6 +32,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LinearConverterTest extends TestCase {
     /**
      * Creates a new test case.
@@ -91,6 +92,7 @@ public final class LinearConverterTest extends TestCase {
      * {@link LinearConverter#coefficients()} methods.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testIsIdentityAndLinear() {
         AbstractConverter c = IdentityConverter.INSTANCE;
         assertTrue(c.isIdentity());

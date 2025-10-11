@@ -23,8 +23,8 @@ import javafx.scene.paint.Color;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 
 
 /**
@@ -60,14 +60,14 @@ public final class GUIUtilitiesTest extends TestCase {
          *      └─6
          */
         {
-            TreeItem<Integer> item = TestUtilities.getSingleton(root.getChildren());
+            TreeItem<Integer> item = assertSingleton(root.getChildren());
             assertEquals(Integer.valueOf(5), item.getValue());
 
             List<TreeItem<Integer>> list = item.getChildren();
             assertEquals(2, list.size());
             assertEquals(Integer.valueOf(1), list.get(0).getValue());
             assertEquals(Integer.valueOf(2), list.get(1).getValue());
-            assertEquals(Integer.valueOf(7), TestUtilities.getSingleton(list.get(0).getChildren()).getValue());
+            assertEquals(Integer.valueOf(7), assertSingleton(list.get(0).getChildren()).getValue());
 
             list = list.get(1).getChildren();
             assertEquals(2, list.size());
@@ -84,10 +84,10 @@ public final class GUIUtilitiesTest extends TestCase {
          *      └─6
          */
         {
-            TreeItem<Integer> item = TestUtilities.getSingleton(root.getChildren());
+            TreeItem<Integer> item = assertSingleton(root.getChildren());
             assertEquals(Integer.valueOf(5), item.getValue());
 
-            item = TestUtilities.getSingleton(item.getChildren());
+            item = assertSingleton(item.getChildren());
             assertEquals(Integer.valueOf(2), item.getValue());
 
             List<TreeItem<Integer>> list = item.getChildren();
@@ -103,13 +103,13 @@ public final class GUIUtilitiesTest extends TestCase {
          *      └─6
          */
         {
-            TreeItem<Integer> item = TestUtilities.getSingleton(root.getChildren());
+            TreeItem<Integer> item = assertSingleton(root.getChildren());
             assertEquals(Integer.valueOf(5), item.getValue());
 
-            item = TestUtilities.getSingleton(item.getChildren());
+            item = assertSingleton(item.getChildren());
             assertEquals(Integer.valueOf(2), item.getValue());
 
-            item = TestUtilities.getSingleton(item.getChildren());
+            item = assertSingleton(item.getChildren());
             assertEquals(Integer.valueOf(6), item.getValue());
         }
         GUIUtilities.removePathSorted(root, 5, 2, 6);

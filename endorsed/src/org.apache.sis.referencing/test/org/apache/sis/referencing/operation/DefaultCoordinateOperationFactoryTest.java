@@ -57,6 +57,7 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @Execution(ExecutionMode.SAME_THREAD)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
@@ -193,8 +194,8 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
      * prime meridian. This is the same test as {@link #testProjectionAndLongitudeRotation()},
      * with extra dimension which should be just dropped.
      *
-     * <p>This tests requires the EPSG database, because it requires the coordinate operation
-     * path which is defined there.</p>
+     * <p>Accurate test requires the EPSG database, because it requires the coordinate operation
+     * path which is defined there. If the database is absent, the test will be more approximate.</p>
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.
@@ -217,15 +218,16 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
                 "      TimeUnit[“day”, 86400]]]");
 
         final CoordinateReferenceSystem targetCRS = parse("$Mercator");
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS, CONTEXT);
-        assertSame      (sourceCRS, operation.getSourceCRS());
-        assertSame      (targetCRS, operation.getTargetCRS());
-        assertInstanceOf(ConcatenatedOperation.class, operation);
+        final ConcatenatedOperation operation = assertInstanceOf(
+                ConcatenatedOperation.class,
+                factory.createOperation(sourceCRS, targetCRS, CONTEXT));
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
         /*
          * The accuracy of the coordinate operation depends on whether a path has been found with the help
          * of the EPSG database. See testProjectionAndLongitudeRotation() for more information.
          */
-        final boolean isUsingEpsgFactory = verifyParametersNTF(((ConcatenatedOperation) operation).getOperations(), 2);
+        final boolean isUsingEpsgFactory = verifyParametersNTF(operation.getOperations(), 2);
         assertEquals(isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
                      CRS.getLinearAccuracy(operation));
 

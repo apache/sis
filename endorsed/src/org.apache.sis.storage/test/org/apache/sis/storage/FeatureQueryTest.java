@@ -31,9 +31,9 @@ import org.apache.sis.util.iso.Names;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the main branch:
@@ -142,7 +142,7 @@ public final class FeatureQueryTest extends TestCase {
     private AbstractFeature executeAndGetFirst() throws DataStoreException {
         query.setLimit(1);
         final FeatureSet subset = query.execute(featureSet);
-        return TestUtilities.getSingleton(subset.features(false).collect(Collectors.toList()));
+        return assertSingleton(subset.features(false).collect(Collectors.toList()));
     }
 
     /**
@@ -277,7 +277,7 @@ public final class FeatureQueryTest extends TestCase {
         query.setProjection("value2");
         assertXPathsEqual("value2");
         final AbstractFeature instance = executeAndGetFirst();
-        final AbstractIdentifiedType p = TestUtilities.getSingleton(instance.getType().getProperties(true));
+        final AbstractIdentifiedType p = assertSingleton(instance.getType().getProperties(true));
         assertEquals("value2", p.getName().toString());
     }
 
@@ -303,7 +303,7 @@ public final class FeatureQueryTest extends TestCase {
         assertEquals("Unnamed #2", properties.next().getName().toString());
         assertFalse(properties.hasNext());
 
-        final AbstractFeature instance = TestUtilities.getSingleton(subset.features(false).collect(Collectors.toList()));
+        final AbstractFeature instance = assertSingleton(subset.features(false).collect(Collectors.toList()));
         assertSame(type, instance.getType());
     }
 

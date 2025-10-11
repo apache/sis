@@ -23,9 +23,9 @@ import org.apache.sis.referencing.GeodeticObjectVerifier;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getScope;
 
 
 /**
@@ -35,6 +35,7 @@ import static org.apache.sis.test.TestUtilities.getScope;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultGeodeticCRSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -66,7 +67,7 @@ public final class DefaultGeodeticCRSTest extends TestCase {
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
          */
-        assertEquals("Horizontal component of 3D system.", getScope(crs));
+        assertEquals("Horizontal component of 3D system.", assertSingletonScope(crs));
         /*
          * Marshal and compare with the original file.
          */

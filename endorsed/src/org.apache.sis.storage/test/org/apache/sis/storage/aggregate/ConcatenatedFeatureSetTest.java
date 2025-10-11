@@ -19,7 +19,6 @@ package org.apache.sis.storage.aggregate;
 import java.util.List;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.lineage.Lineage;
-import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
@@ -30,9 +29,10 @@ import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertContentInfoEquals;
-import static org.apache.sis.metadata.Assertions.assertFeatureSourceEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonFeature;
+import static org.apache.sis.test.Assertions.assertContentInfoEquals;
+import static org.apache.sis.test.Assertions.assertFeatureSourceEquals;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
@@ -45,6 +45,7 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  *
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ConcatenatedFeatureSetTest extends TestCase {
     /**
      * Creates a new test case.
@@ -59,7 +60,7 @@ public final class ConcatenatedFeatureSetTest extends TestCase {
      */
     @Test
     public void testSameType() throws DataStoreException {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        final var builder = new FeatureTypeBuilder();
         builder.setName("City");
         builder.addAttribute(String.class).setName("name");
         builder.addAttribute(Integer.class).setName("population");
@@ -74,9 +75,9 @@ public final class ConcatenatedFeatureSetTest extends TestCase {
 
         final Metadata md = cfs.getMetadata();
         assertNotNull(md);
-        assertContentInfoEquals("City", 3, (FeatureCatalogueDescription) getSingleton(md.getContentInfo()));
-        final Lineage lineage = getSingleton(((DefaultMetadata) md).getResourceLineages());
-        assertFeatureSourceEquals("City", new String[] {"City"}, getSingleton(lineage.getSources()));
+        assertContentInfoEquals("City", 3, assertSingletonFeature(md));
+        final Lineage lineage = assertSingleton(assertInstanceOf(DefaultMetadata.class, md).getResourceLineages());
+        assertFeatureSourceEquals("City", new String[] {"City"}, assertSingleton(lineage.getSources()));
     }
 
     /**

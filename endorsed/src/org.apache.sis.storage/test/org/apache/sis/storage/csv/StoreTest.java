@@ -36,15 +36,14 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonBBox;
+import static org.apache.sis.test.Assertions.assertSingletonExtent;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 
 
 /**
@@ -83,7 +82,7 @@ public final class StoreTest extends TestCase {
      * Returns the instant for the given time at the day of the test.
      */
     private static Instant instant(final String time) {
-        return date("2012-01-17 " + time).toInstant();
+        return Instant.parse("2012-01-17T" + time + 'Z');
     }
 
     /**
@@ -109,8 +108,8 @@ public final class StoreTest extends TestCase {
         try (Store store = open(true)) {
             metadata = store.getMetadata();
         }
-        final Extent extent = getSingleton(((AbstractIdentification) getSingleton(metadata.getIdentificationInfo())).getExtents());
-        final GeographicBoundingBox bbox = (GeographicBoundingBox) getSingleton(extent.getGeographicElements());
+        final Extent extent = assertSingletonExtent(metadata);
+        final GeographicBoundingBox bbox = assertSingletonBBox(extent);
         assertEquals(50.23, bbox.getWestBoundLongitude());
         assertEquals(50.31, bbox.getEastBoundLongitude());
         assertEquals( 9.23, bbox.getSouthBoundLatitude());

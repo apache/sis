@@ -49,8 +49,8 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
-import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 
 // Specific to the main branch:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -63,6 +63,7 @@ import org.opengis.util.CodeList;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class DefaultCitationTest extends TestUsingFile {
     /**
      * Creates a new test case.
@@ -178,8 +179,8 @@ public final class DefaultCitationTest extends TestUsingFile {
         assertNotSame(original, clone);
         assertSame(original.getISBN(),  clone.getISBN());
         assertSame(original.getTitle(), clone.getTitle());
-        assertSame(getSingleton(original.getAlternateTitles()),
-                   getSingleton(clone.getAlternateTitles()));
+        assertSame(assertSingleton(original.getAlternateTitles()),
+                   assertSingleton(clone.getAlternateTitles()));
 
         assertCopy(original.getIdentifiers(),             clone.getIdentifiers());
         assertCopy(original.getCitedResponsibleParties(), clone.getCitedResponsibleParties());
@@ -189,8 +190,8 @@ public final class DefaultCitationTest extends TestUsingFile {
          * in a special way by DefaultCitation (they are instances of SpecializedIdentifier), but
          * the should nevertheless be cloned.
          */
-        final Identifier ide = getSingleton(original.getIdentifiers());
-        final Identifier ida = getSingleton(   clone.getIdentifiers());
+        final Identifier ide = assertSingleton(original.getIdentifiers());
+        final Identifier ida = assertSingleton(   clone.getIdentifiers());
         assertNotSame(ide, ida);
         assertSame(ide.getCode(),      ida.getCode());
         assertSame(ide.getAuthority(), ida.getAuthority());
@@ -306,10 +307,10 @@ public final class DefaultCitationTest extends TestUsingFile {
     public static void verifyUnmarshalledCitation(final Citation c) {
         assertTitleEquals("Fight against poverty", c, "citation");
 
-        final var date = (DefaultCitationDate) getSingleton(c.getDates());
+        final var date = assertInstanceOf(DefaultCitationDate.class, assertSingleton(c.getDates()));
         assertEquals(date.getReferenceDate(), OffsetDateTime.of(2015, 10, 17, 2, 0, 0, 0, ZoneOffset.ofHours(2)));
         assertEqualsIgnoreCase(DateType.valueOf("adopted"), date.getDateType());
-        assertEqualsIgnoreCase(PresentationForm.valueOf("physicalObject"), getSingleton(c.getPresentationForms()));
+        assertEqualsIgnoreCase(PresentationForm.valueOf("physicalObject"), assertSingleton(c.getPresentationForms()));
 
         final Iterator<? extends ResponsibleParty> it = c.getCitedResponsibleParties().iterator();
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
@@ -331,9 +332,9 @@ public final class DefaultCitationTest extends TestUsingFile {
      */
     private static Contact assertResponsibilityEquals(final Role role, final String name, final ResponsibleParty actual) {
         assertEqualsIgnoreCase(role, actual.getRole());
-        final AbstractParty p = getSingleton(((DefaultResponsibleParty) actual).getParties());
+        final AbstractParty p = assertSingleton(assertInstanceOf(DefaultResponsibleParty.class, actual).getParties());
         assertEquals(name, String.valueOf(p.getName()));
-        return getSingleton(p.getContactInfo());
+        return assertSingleton(p.getContactInfo());
     }
 
     /**

@@ -31,7 +31,6 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_N
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -44,6 +43,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class CharSequenceSubstitutionTest extends TestCase {
     /**
      * Creates a new test case.

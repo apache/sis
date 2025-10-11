@@ -41,9 +41,9 @@ import org.apache.sis.util.collection.BackingStoreException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.referencing.EPSGDependentTestCase;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the main branch:
@@ -56,7 +56,8 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class WKTDictionaryTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public final class WKTDictionaryTest extends TestCase {
     /**
      * Creates a new test case.
      */
@@ -71,7 +72,7 @@ public final class WKTDictionaryTest extends EPSGDependentTestCase {
      */
     @Test
     public void testAddDefinitions() throws FactoryException {
-        final WKTDictionary factory = new WKTDictionary(null);
+        final var factory = new WKTDictionary(null);
         factory.addDefinitions(List.of(
                 "GeodCRS[\"Anguilla 1957\",\n" +
                 " Datum[\"Anguilla 1957\",\n" +
@@ -381,7 +382,7 @@ public final class WKTDictionaryTest extends EPSGDependentTestCase {
          * for checking precedence.
          */
         GeographicCRS crs = factory.createGeographicCRS("2C");
-        ReferenceIdentifier id = TestUtilities.getSingleton(crs.getIdentifiers());
+        ReferenceIdentifier id = assertSingleton(crs.getIdentifiers());
         assertEquals("TEST", id.getCodeSpace());
         assertEquals("21",   id.getCode());
         assertSame(crs, factory.createGeographicCRS("2C"));                         // Test caching.
@@ -390,7 +391,7 @@ public final class WKTDictionaryTest extends EPSGDependentTestCase {
          * by `WKTFormat.Parser.complete(…)`.
          */
         crs = factory.createGeographicCRS("2N");
-        id = TestUtilities.getSingleton(crs.getIdentifiers());
+        id = assertSingleton(crs.getIdentifiers());
         assertEquals("aNS", id.getCodeSpace());
         assertEquals("2N",  id.getCode());
         assertSame(crs, factory.createGeographicCRS("2N"));                         // Test caching.

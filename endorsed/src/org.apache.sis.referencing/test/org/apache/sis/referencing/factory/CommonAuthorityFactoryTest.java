@@ -50,8 +50,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonAuthorityCode;
 import static org.apache.sis.referencing.Assertions.assertWktEqualsRegex;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
@@ -62,6 +63,7 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CommonAuthorityFactoryTest extends TestCase {
     /**
      * The factory to test.
@@ -123,7 +125,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
     public void verifyTemporalCodes() throws FactoryException {
         final Set<String> expected = new HashSet<>();
         for (final CommonCRS.Temporal e : CommonCRS.Temporal.values()) {
-            assertTrue(expected.add(IdentifiedObjects.toString(getSingleton(e.crs().getIdentifiers()))));
+            assertTrue(expected.add(IdentifiedObjects.toString(assertSingleton(e.crs().getIdentifiers()))));
         }
         assertFalse(expected.isEmpty());
         try {
@@ -255,7 +257,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
          * (actually is "Subset of EPSG") if the CRS was built from the fallback factory.
          */
         assertEquals("WGS 84 / UTM zone 10N", crs.getName().getCode());
-        assertEquals("32610", getSingleton(crs.getIdentifiers()).getCode());
+        assertEquals("32610", assertSingletonAuthorityCode(crs));
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(TransverseMercator.NAME, crs.getConversionFromBase().getMethod().getName().getCode());
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);

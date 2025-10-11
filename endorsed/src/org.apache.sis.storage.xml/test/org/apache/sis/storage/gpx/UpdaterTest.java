@@ -36,7 +36,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.xml.test.TestCase.assertXmlEquals;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;

@@ -38,6 +38,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LinearizerTest extends TestCase {
     /**
      * Creates a new test case.

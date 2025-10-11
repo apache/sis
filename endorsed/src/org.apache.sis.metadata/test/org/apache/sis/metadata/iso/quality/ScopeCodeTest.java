@@ -23,7 +23,6 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the main branch:
 import org.opengis.metadata.quality.Scope;
@@ -37,6 +36,7 @@ import org.opengis.metadata.quality.Scope;
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-508">SIS-508 on issue tracker</a>
  */
+@SuppressWarnings("exports")
 public final class ScopeCodeTest extends TestCase {
     /**
      * The XML fragment used for testing.

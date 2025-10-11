@@ -42,8 +42,9 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public final strictfp class EmbeddedResourcesTest {
+public final class EmbeddedResourcesTest {
     /**
      * Creates a new test case.
      *

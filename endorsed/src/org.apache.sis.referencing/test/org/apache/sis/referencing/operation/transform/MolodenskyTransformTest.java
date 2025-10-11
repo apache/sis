@@ -53,6 +53,7 @@ import static org.apache.sis.referencing.internal.shared.CoordinateOperations.bu
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MolodenskyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.

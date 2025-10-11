@@ -48,10 +48,10 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 
 // Specific to the main branch:
 import static org.apache.sis.referencing.internal.shared.CoordinateOperations.builder;
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**
@@ -60,6 +60,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Creates a new test case.
@@ -191,7 +192,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
                     + "PARAMETER[\"num_col\",2],"
                     + "PARAMETER[\"elt_0_1\",7]]");
 
-        assertMatrixEquals(new Matrix2(1, 7, 0, 1), MathTransforms.getMatrix(tr), STRICT, "Affine");
+        assertMatrixEquals(new Matrix2(1, 7, 0, 1), tr, "Affine");
     }
 
     /**

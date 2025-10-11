@@ -33,6 +33,7 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.AnnotationConsistencyCheck;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -50,6 +51,7 @@ import org.apache.sis.xml.test.AnnotationConsistencyCheck;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public abstract class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
     /**
      * The standard implemented by the metadata objects to test.
@@ -284,7 +286,7 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
                                 + " for this type, consequently the collection should still empty.");
                         value = null;
                     } else {
-                        value = TestUtilities.getSingleton((Collection<?>) value);
+                        value = assertSingleton((Collection<?>) value);
                     }
                 }
                 assertEquals(normalizeType(newValue), normalizeType(value),

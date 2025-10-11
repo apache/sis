@@ -65,7 +65,7 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.storage.sql.feature.GeometryGetterTest;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.metadata.sql.TestDatabase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -118,7 +118,7 @@ public final class PostgresTest extends TestCase {
      * @param  metadata  the metadata to verify.
      */
     private static void validate(final Metadata metadata) {
-        final Identification identification = TestUtilities.getSingleton(metadata.getIdentificationInfo());
+        final Identification identification = assertSingleton(metadata.getIdentificationInfo());
         var defId = assertInstanceOf(AbstractIdentification.class, identification);
         assertTrue(defId.getSpatialRepresentationTypes().containsAll(
                 Arrays.asList(SpatialRepresentationType.TEXT_TABLE,

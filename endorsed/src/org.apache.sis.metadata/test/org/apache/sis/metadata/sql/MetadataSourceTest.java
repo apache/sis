@@ -18,7 +18,6 @@ package org.apache.sis.metadata.sql;
 
 import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
@@ -40,6 +39,7 @@ import org.apache.sis.test.TestStep;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MetadataSourceTest extends TestCase {
     /**
      * Creates a new test case.

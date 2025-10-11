@@ -52,6 +52,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public abstract class MatrixTestCase extends TestCase {
     /**
      * {@code true} for reusing the same sequences of random numbers in every execution of test cases, or
@@ -83,7 +84,7 @@ public abstract class MatrixTestCase extends TestCase {
      * @see SolverTest#TOLERANCE
      * @see NonSquareMatrixTest#printStatistics()
      */
-    protected static final double TOLERANCE = DoubleDouble.DISABLED ? STRICT : 1E-11;
+    protected static final double TOLERANCE = DoubleDouble.DISABLED ? 0 : 1E-11;
 
     /**
      * Number of random matrices to try in arithmetic operation tests.
@@ -204,7 +205,7 @@ public abstract class MatrixTestCase extends TestCase {
                 final double a = actual.getElement(j,i);
                 assertEquals(e, a, tolerance, name);
                 assertEquals(e, actual.getNumber(j,i).doubleValue(), tolerance, name);
-                if (tolerance != STRICT && statistics != null) {
+                if (tolerance != 0 && statistics != null) {
                     synchronized (statistics) {
                         statistics.accept(abs(e - a));
                     }
@@ -283,7 +284,7 @@ public abstract class MatrixTestCase extends TestCase {
          * The JAMA constructor uses column-major array (FORTRAN convention), while SIS uses
          * row-major array. So we have to transpose the JAMA matrix after construction.
          */
-        assertEqualsJAMA(new Matrix(elements, numCol).transpose(), matrix, STRICT);
+        assertEqualsJAMA(new Matrix(elements, numCol).transpose(), matrix, 0);
         assertArrayEquals(elements, matrix.getElements(), "getElements");
     }
 
@@ -304,14 +305,14 @@ public abstract class MatrixTestCase extends TestCase {
         /*
          * End of initialization - now perform the actual test.
          */
-        assertEqualsJAMA(reference, matrix, STRICT);
+        assertEqualsJAMA(reference, matrix, 0);
         for (int k=0; k<NUMBER_OF_REPETITIONS; k++) {
             final int    j = random.nextInt(numRow);
             final int    i = random.nextInt(numCol);
             final double e = random.nextDouble() * 100;
             reference.set(j, i, e);
             matrix.setElement(j, i, e);
-            assertEqualsJAMA(reference, matrix, STRICT);
+            assertEqualsJAMA(reference, matrix, 0);
         }
     }
 
@@ -395,7 +396,7 @@ public abstract class MatrixTestCase extends TestCase {
          * array. In other words, the JAMA matrix is already transposed from the SIS point of view.
          */
         matrix.transpose();
-        assertEqualsJAMA(new Matrix(elements, numCol), matrix, STRICT);
+        assertEqualsJAMA(new Matrix(elements, numCol), matrix, 0);
     }
 
     /**

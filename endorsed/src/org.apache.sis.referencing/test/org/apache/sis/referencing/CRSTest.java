@@ -39,7 +39,6 @@ import org.apache.sis.util.Utilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -55,21 +54,13 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CRSTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public CRSTest() {
         super(Loggers.CRS_FACTORY);
-    }
-
-    /**
-     * Forces the check of whether of EPSG database exists before to start any tests.
-     * This is done for avoiding race conditions logging the same message many times.
-     */
-    @BeforeAll
-    public static void forceCheckForEPSG() {
-        EPSGDependentTestCase.forceCheckForEPSG();
     }
 
     /**

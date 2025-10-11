@@ -1655,6 +1655,7 @@ public final class Units {
      * Unit<Power> dBW = Units.logarithm(Units.WATT).divide(10);
      * }
      *
+     * @param  <Q>   the quantity measured by the unit.
      * @param  unit  the unit from which to convert.
      * @return an unit which is the logarithm in base 10 of the given unit.
      *
@@ -1677,7 +1678,7 @@ public final class Units {
      * must be multiplied by 1000 in order to give the equivalent measurement in the "standard" units
      * (here {@link #METRE}).
      *
-     * @param  <Q>   the quantity measured by the unit, or {@code null}.
+     * @param  <Q>   the quantity measured by the unit.
      * @param  unit  the unit for which we want the multiplication factor to standard unit, or {@code null}.
      * @return the factor by which to multiply a measurement in the given unit in order to get an equivalent
      *         measurement in the standard unit, or NaN if the conversion cannot be expressed by a scale factor.

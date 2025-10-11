@@ -39,6 +39,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class EllipsoidToRadiusTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.

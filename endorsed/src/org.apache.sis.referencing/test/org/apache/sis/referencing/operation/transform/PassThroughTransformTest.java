@@ -45,6 +45,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class PassThroughTransformTest extends MathTransformTestCase {
     /**
      * The random number generator to be used in this test.

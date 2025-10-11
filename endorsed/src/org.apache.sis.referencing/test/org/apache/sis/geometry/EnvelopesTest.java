@@ -42,10 +42,8 @@ import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
@@ -58,20 +56,12 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
     /**
      * Creates a new test case.
      */
     public EnvelopesTest() {
-    }
-
-    /**
-     * Forces the check of whether of EPSG database exists before to start any tests.
-     * This is done for avoiding race conditions logging the same message many times.
-     */
-    @BeforeAll
-    public static void forceCheckForEPSG() {
-        EPSGDependentTestCase.forceCheckForEPSG();
     }
 
     /**
@@ -233,14 +223,14 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
         envelope.setCoordinateReferenceSystem(CRS.compound(
                 HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE), HardCodedCRS.TIME));
         final GeneralEnvelope expected = createFromExtremums(targetCRS, -0.5, -90, -5.5, 90);
-        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
+        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS));
         /*
          * When the envelope to transform span the full longitude range,
          * target envelope should unconditionally be [-180 … +180]°.
          */
         envelope.setRange(0, -0.5, 359.5);
         expected.setRange(0, -180, 180);
-        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
+        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS));
     }
 
     /**

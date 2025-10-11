@@ -41,11 +41,8 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.TestCase.TAG_SLOW;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
@@ -140,10 +137,12 @@ public final class NTv2Test extends DatumShiftTestCase {
         assertEquals(xmax, envelope.getMaximum(0), "xmax");
         assertEquals(ymin, envelope.getMinimum(1), "ymin");
         assertEquals(ymax, envelope.getMaximum(1), "ymax");
-        assertMatrixEquals(new Matrix3(-cellSize,  0,  xmax,
-                                       0,  +cellSize,  ymin,
-                                       0,          0,    1),
-                grid.getCoordinateToGrid().inverse().getMatrix(), STRICT, "coordinateToGrid");
+        assertMatrixEquals(
+                new Matrix3(-cellSize,  0,  xmax,
+                            0,  +cellSize,  ymin,
+                            0,          0,    1),
+                grid.getCoordinateToGrid().inverse().getMatrix(),
+                "coordinateToGrid");
         /*
          * Test the same point as FranceGeocentricInterpolationTest, which is itself derived from the
          * NTG_88 guidance note.  If we were using the official NTF_R93.gsb file, we would obtain after
@@ -177,20 +176,16 @@ public final class NTv2Test extends DatumShiftTestCase {
 
     /**
      * Tests using a file containing many grids. This tests depends on the {@value #MULTIGRID_TEST_FILE}
-     * to be present in the {@code $SIS_DATA/DatumChanges} directory. This test is executed only if the
-     * {@link #RUN_EXTENSIVE_TESTS} flag is set.
+     * to be present in the {@code $SIS_DATA/DatumChanges} directory.
      *
      * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    @Tag(TAG_SLOW)
     public void testMultiGrids() throws Exception {
-        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
-        assumeTrue(DataDirectory.getenv() != null);
+        assumeDataExists(DataDirectory.DATUM_CHANGES, MULTIGRID_TEST_FILE);
         final Parameters pg = Parameters.castOrWrap(new NTv2().getParameters().createValue());
         pg.getOrCreate(NTv2.FILE).setValue(new URI(MULTIGRID_TEST_FILE));
         final GridFile file = new GridFile(pg, NTv2.FILE);
-        assumeTrue(Files.exists(file.path().orElseThrow()));
 
         final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf(GridGroup.class, grid, "Should contain many grids.");

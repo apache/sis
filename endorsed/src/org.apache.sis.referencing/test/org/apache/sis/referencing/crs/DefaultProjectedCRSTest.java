@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import static org.apache.sis.test.TestUtilities.getScope;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
@@ -55,6 +55,7 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
@@ -498,7 +499,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 27572, crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, crs.getBaseCRS());
-        assertEquals("Large and medium scale topographic mapping and engineering survey.", getScope(crs));
+        assertEquals("Large and medium scale topographic mapping and engineering survey.", assertSingletonScope(crs));
         assertAxisDirectionsEqual(crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 
@@ -511,8 +512,9 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
          * Test marshalling and compare with the original file. The comparison ignores the <gml:name> nodes because the
          * marshalled CRS contains many operation method and parameter aliases which were not in the original XML file.
          */
-        assertMarshalEqualsFile(openTestFile(), crs, null, STRICT, new String[] {"gml:name"},
-                new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});
+        final String[] ignoredNodes = {"gml:name"};
+        final String[] ignoredAttributes = {"xmlns:*", "xsi:schemaLocation", "gml:id"};
+        assertMarshalEqualsFile(openTestFile(), crs, null, 0, ignoredNodes, ignoredAttributes);
         loggings.assertNoUnexpectedLog();
     }
 

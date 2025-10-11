@@ -217,6 +217,19 @@ public final class GeoapiAssert {
     }
 
     /**
+     * Asserts that the given matrix is equal to the expected one, with a tolerance of zero.
+     * Positive zeros are considered equal to negative zeros, and any NaN value is considered equal
+     * to all other NaN values.
+     *
+     * @param expected  the expected matrix, which may be {@code null}.
+     * @param actual    the matrix to compare, or {@code null}.
+     * @param label     header of the exception message in case of failure, or {@code null} if none.
+     */
+    public static void assertMatrixEquals(final Matrix expected, final Matrix actual, final String label) {
+        assertMatrixEquals(expected, actual, 0, label);
+    }
+
+    /**
      * Asserts that the given matrix is equal to the expected one, up to the given tolerance value.
      *
      * @param expected   the expected matrix, which may be {@code null}.

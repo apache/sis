@@ -37,6 +37,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class UnitDimensionTest extends TestCase {
     /**
      * The dimension declared by the base {@link Units} constant.

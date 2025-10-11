@@ -38,14 +38,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
+import org.apache.sis.referencing.Assertions;
 import org.apache.sis.test.FailureDetailsReporter;
-import static org.apache.sis.test.TestCase.STRICT;
 
 // Specific to the main branch:
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.junit.jupiter.api.Disabled;
 import org.opengis.test.referencing.TransformTestCase;
-import org.apache.sis.test.GeoapiAssert;
 
 
 /**
@@ -56,7 +55,7 @@ import org.apache.sis.test.GeoapiAssert;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("doclint:missing")
+@SuppressWarnings("exports")
 @ExtendWith(FailureDetailsReporter.class)
 public class ProjectiveTransformTest extends TransformTestCase {
     /**
@@ -242,8 +241,7 @@ public class ProjectiveTransformTest extends TransformTestCase {
     public void testOptimizeConstant() throws FactoryException, TransformException {
         matrix = new Matrix2(0, 10, 0, 1);
         transform = mtFactory.createAffineTransform(matrix);
-        GeoapiAssert.assertMatrixEquals(matrix, assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT,
-                                      "Transform shall use the given matrix unmodified.");
+        Assertions.assertMatrixEquals(matrix, transform, "Transform shall use the given matrix unmodified.");
     }
 
     /**

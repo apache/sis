@@ -33,6 +33,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class SexagesimalConverterTest extends TestCase {
     /**
      * Tolerance value for the comparisons of floating point numbers.

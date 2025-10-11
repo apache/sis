@@ -24,7 +24,7 @@ import static org.apache.sis.setup.OptionKey.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -33,6 +33,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class OptionKeyTest extends TestCase {
     /**
      * A custom subclass of {@link OptionKey} for testing the ability to create custom option.
@@ -71,11 +72,11 @@ public final class OptionKeyTest extends TestCase {
     @Test
     public void testSetAndGet() {
         final Map<OptionKey<?>,Object> options = URL_ENCODING.setValueInto(null, "UTF-8");
-        assertEquals("UTF-8", getSingleton(options.values()));
+        assertEquals("UTF-8", assertSingleton(options.values()));
         assertEquals("UTF-8", URL_ENCODING.getValueFrom(options));
 
         assertSame(options, URL_ENCODING.setValueInto(options, "ISO-8859-1"));
-        assertEquals("ISO-8859-1", getSingleton(options.values()));
+        assertEquals("ISO-8859-1", assertSingleton(options.values()));
         assertEquals("ISO-8859-1", URL_ENCODING.getValueFrom(options));
     }
 

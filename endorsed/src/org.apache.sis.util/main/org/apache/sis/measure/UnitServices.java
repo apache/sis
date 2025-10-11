@@ -243,7 +243,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      */
     @Override
     public Set<String> getAvailableFormatNames(final FormatType type) {
-        final Set<String> names = new HashSet<>(4);
+        final var names = new HashSet<String>(4);
         for (final Enum<?> e : org.apache.sis.measure.UnitFormat.Style.values()) {
             names.add(e.name());
         }
@@ -269,7 +269,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
     }
 
     /**
-     * Return a factory for the given {@code Quantity} type. In the particular case of Apache SIS implementation,
+     * Returns a factory for the given {@code Quantity} type. In the particular case of Apache SIS implementation,
      * {@link Quantities#create(double, Unit)} provides a more direct way to instantiate quantities.
      *
      * @param  <Q>   compile-time value of the {@code type} argument.

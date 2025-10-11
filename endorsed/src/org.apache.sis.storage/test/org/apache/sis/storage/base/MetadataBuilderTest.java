@@ -29,10 +29,10 @@ import org.apache.sis.feature.DefaultFeatureType;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertPartyNameEquals;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
-import static org.apache.sis.metadata.Assertions.assertPartyNameEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the main branch:
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -89,14 +89,15 @@ public final class MetadataBuilderTest extends TestCase {
     private static void verifyCopyrightParsing(final String notice) {
         final var builder = new MetadataBuilder();
         builder.parseLegalNotice(null, notice);
-        final var constraints = assertInstanceOf(DefaultLegalConstraints.class, getSingleton(getSingleton(
-                builder.build().getIdentificationInfo()).getResourceConstraints()));
+        final var constraints = assertInstanceOf(
+                DefaultLegalConstraints.class,
+                assertSingleton(assertSingleton(builder.build().getIdentificationInfo()).getResourceConstraints()));
 
-        assertEquals(Restriction.COPYRIGHT, getSingleton(constraints.getUseConstraints()));
-        final Citation ref = getSingleton(constraints.getReferences());
+        assertEquals(Restriction.COPYRIGHT, assertSingleton(constraints.getUseConstraints()));
+        final Citation ref = assertSingleton(constraints.getReferences());
         assertTitleEquals(notice, ref, "reference.title");
         assertPartyNameEquals("John Smith", ref, "reference.citedResponsibleParty");
-        assertEquals(Year.of(1992), ((DefaultCitationDate) getSingleton(ref.getDates())).getReferenceDate());
+        assertEquals(Year.of(1992), assertInstanceOf(DefaultCitationDate.class, assertSingleton(ref.getDates())).getReferenceDate());
     }
 
     /**
@@ -104,10 +105,10 @@ public final class MetadataBuilderTest extends TestCase {
      * This method verifies that the constraint is a copyright.
      */
     private static Citation copyright(final MetadataBuilder builder) {
-        final var id = getSingleton(builder.build().getIdentificationInfo());
-        final var constraints = assertInstanceOf(DefaultLegalConstraints.class, getSingleton(id.getResourceConstraints()));
-        assertEquals(Restriction.COPYRIGHT, getSingleton(constraints.getUseConstraints()));
-        return getSingleton(constraints.getReferences());
+        final var id = assertSingleton(builder.build().getIdentificationInfo());
+        final var constraints = assertInstanceOf(DefaultLegalConstraints.class, assertSingleton(id.getResourceConstraints()));
+        assertEquals(Restriction.COPYRIGHT, assertSingleton(constraints.getUseConstraints()));
+        return assertSingleton(constraints.getReferences());
     }
 
     /**
@@ -119,7 +120,7 @@ public final class MetadataBuilderTest extends TestCase {
         builder.parseLegalNotice(Locale.ENGLISH, "Copyright (C), John Smith, 1997. All rights reserved.");
         builder.parseLegalNotice(Locale.FRENCH,  "Copyright (C), John Smith, 1997. Tous droits réservés.");
         final Citation ref = copyright(builder);
-        assertEquals(Year.of(1997), ((DefaultCitationDate) getSingleton(ref.getDates())).getReferenceDate());
+        assertEquals(Year.of(1997), assertInstanceOf(DefaultCitationDate.class, assertSingleton(ref.getDates())).getReferenceDate());
         assertPartyNameEquals("John Smith", ref, "reference.citedResponsibleParty");
         final var title = ref.getTitle();
         assertEquals("Copyright (C), John Smith, 1997. All rights reserved.",  title.toString(Locale.ENGLISH));
@@ -157,9 +158,9 @@ public final class MetadataBuilderTest extends TestCase {
         if (valueToInsert == 0) {
             assertTrue(metadata.getContentInfo().isEmpty());
         } else {
-            final ContentInformation content = getSingleton(metadata.getContentInfo());
+            final ContentInformation content = assertSingleton(metadata.getContentInfo());
             final var catalog = assertInstanceOf(DefaultFeatureCatalogueDescription.class, content);
-            final DefaultFeatureTypeInfo info = getSingleton(catalog.getFeatureTypeInfo());
+            final DefaultFeatureTypeInfo info = assertSingleton(catalog.getFeatureTypeInfo());
             assertEquals(expected, info.getFeatureInstanceCount(), errorMessage);
         }
     }

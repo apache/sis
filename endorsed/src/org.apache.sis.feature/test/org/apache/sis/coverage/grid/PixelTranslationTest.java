@@ -26,10 +26,8 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 import org.apache.sis.test.TestCase;
-
-// Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**
@@ -37,6 +35,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class PixelTranslationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -72,8 +71,7 @@ public final class PixelTranslationTest extends TestCase {
         assertMatrixEquals(new Matrix4(1, 0, 0, -0.5,
                                        0, 1, 0, -0.5,
                                        0, 0, 1, -0.5,
-                                       0, 0, 0,  1),
-                MathTransforms.getMatrix(gridToCRS), STRICT, "center → corner");
+                                       0, 0, 0,  1), gridToCRS, "center → corner");
         /*
          * Just for making clear what we explained in javadoc comment: the real world (0,0,0) coordinates was in the center
          * of cell (0,0,0). After we switched to "cell corner" convention, that center is (½,½,½) in grid coordinates but
@@ -93,15 +91,13 @@ public final class PixelTranslationTest extends TestCase {
         MathTransform gridToCRS = centerToCorner2D();
         assertMatrixEquals(new Matrix3(1, 0, -0.5,
                                        0, 1, -0.5,
-                                       0, 0,  1),
-                MathTransforms.getMatrix(gridToCRS), STRICT, "center → corner");
+                                       0, 0,  1), gridToCRS, "center → corner");
 
         gridToCRS = PixelTranslation.translate(MathTransforms.identity(3), PixelOrientation.LOWER_LEFT, PixelOrientation.CENTER, 1, 2);
         assertMatrixEquals(new Matrix4(1, 0, 0,  0.0,
                                        0, 1, 0, +0.5,
                                        0, 0, 1, -0.5,
-                                       0, 0, 0,  1),
-                MathTransforms.getMatrix(gridToCRS), STRICT, "corner → center");
+                                       0, 0, 0,  1), gridToCRS, "corner → center");
     }
 
     /**

@@ -37,8 +37,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 
 
 /**
@@ -52,7 +52,7 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"exports", "deprecation"})
 public final class DefaultMetadataTest extends TestCase {
     /**
      * Creates a new test case.
@@ -296,7 +296,7 @@ public final class DefaultMetadataTest extends TestCase {
         metadata.setMetadataStandardVersion(version);
         assertEquals(name,    metadata.getMetadataStandardName());
         assertEquals(version, metadata.getMetadataStandardVersion());
-        final Citation standard = getSingleton(metadata.getMetadataStandards());
+        final Citation standard = assertSingleton(metadata.getMetadataStandards());
         assertTitleEquals(name, standard, "standard");
         assertEquals(version, standard.getEdition().toString());
     }

@@ -100,14 +100,14 @@ public final class Matrix4Test extends MatrixTestCase {
                 0,    1.5,    0,   -537.0,
                 0,    0,    NaN,  39251.5,
                 0,    0,      0,      1);
-        assertMatrixEquals(expected, m2.multiply(m1), STRICT, "Multiplication with NaN");
+        assertMatrixEquals(expected, m2.multiply(m1), "Multiplication with NaN");
 
         expected = new Matrix4(
                 2.0,  0,      0,  -179.5,
                 0,    1.5,    0,   -89.5,
                 0,    0,    NaN,     NaN,
                 0,    0,      0,     1);
-        assertMatrixEquals(expected, m1.multiply(m2), STRICT, "Multiplication with NaN");
+        assertMatrixEquals(expected, m1.multiply(m2), "Multiplication with NaN");
     }
 
     /**

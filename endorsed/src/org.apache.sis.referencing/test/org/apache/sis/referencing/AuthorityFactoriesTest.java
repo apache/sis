@@ -35,7 +35,6 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -48,21 +47,13 @@ import static org.apache.sis.test.Assertions.assertNotDeepEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class AuthorityFactoriesTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public AuthorityFactoriesTest() {
         super(Loggers.CRS_FACTORY);
-    }
-
-    /**
-     * Forces the check of whether of EPSG database exists before to start any tests.
-     * This is done for avoiding race conditions logging the same message many times.
-     */
-    @BeforeAll
-    public static void forceCheckForEPSG() {
-        EPSGDependentTestCase.forceCheckForEPSG();
     }
 
     /**

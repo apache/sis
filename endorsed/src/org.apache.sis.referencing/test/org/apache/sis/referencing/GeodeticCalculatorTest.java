@@ -67,6 +67,7 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * This base class tests calculator using spherical formulas.
  * Subclass executes the same test but using ellipsoidal formulas.
  */
+@SuppressWarnings("exports")
 public class GeodeticCalculatorTest extends TestCase {
     /**
      * Creates a new test case.

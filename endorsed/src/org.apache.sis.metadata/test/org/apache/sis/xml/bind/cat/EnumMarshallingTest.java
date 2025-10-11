@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**

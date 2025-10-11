@@ -20,10 +20,14 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.image.PixelIterator;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.PixelInCell;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 
 // Specific to the main branch:
 import java.awt.geom.PathIterator;
@@ -31,8 +35,7 @@ import org.apache.sis.image.SequenceType;
 
 
 /**
- * Assertion methods used by the {@code org.apache.sis.feature} module in addition of the ones inherited
- * from other modules and libraries.
+ * Assertion methods used by the {@code org.apache.sis.feature} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -41,6 +44,26 @@ public final class Assertions {
      * Do not allow instantiation of this class.
      */
     private Assertions() {
+    }
+
+    /**
+     * Verifies the matrix of the transform of the grid geometry to pixel corner.
+     *
+     * @param expected  the expected matrix.
+     * @param actual    the grid geometry from which to get the actual matrix.
+     */
+    public static void assertGridToCornerEquals(final Matrix expected, final GridGeometry actual) {
+        assertMatrixEquals(expected, actual.getGridToCRS(PixelInCell.CELL_CORNER), "gridToCRS");
+    }
+
+    /**
+     * Verifies the matrix of the transform of the grid geometry to pixel center.
+     *
+     * @param expected  the expected matrix.
+     * @param actual    the grid geometry from which to get the actual matrix.
+     */
+    public static void assertGridToCenterEquals(final Matrix expected, final GridGeometry actual) {
+        assertMatrixEquals(expected, actual.getGridToCRS(PixelInCell.CELL_CENTER), "gridToCRS");
     }
 
     /**

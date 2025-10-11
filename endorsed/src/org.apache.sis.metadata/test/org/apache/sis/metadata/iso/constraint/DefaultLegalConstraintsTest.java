@@ -27,8 +27,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_N
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -37,6 +36,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class DefaultLegalConstraintsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -66,7 +66,7 @@ public final class DefaultLegalConstraintsTest extends TestCase {
         /*
          * Verify metadata property.
          */
-        assertEquals(Restriction.INTELLECTUAL_PROPERTY_RIGHTS, getSingleton(c.getAccessConstraints()));
+        assertEquals(Restriction.INTELLECTUAL_PROPERTY_RIGHTS, assertSingleton(c.getAccessConstraints()));
         assertTrue(c.getUseConstraints().isEmpty());
     }
 
@@ -92,7 +92,7 @@ public final class DefaultLegalConstraintsTest extends TestCase {
         c.setUseConstraints(Set.of(Restriction.LICENSE));
         assertXmlEquals(xml, marshal(c), "xmlns:*");
         DefaultLegalConstraints actual = unmarshal(DefaultLegalConstraints.class, xml);
-        assertSame(Restriction.LICENSE, getSingleton(actual.getUseConstraints()));
+        assertSame(Restriction.LICENSE, assertSingleton(actual.getUseConstraints()));
         assertEquals(c, actual);
         /*
          * Above code tested ISO 19115-3 (un)marshalling. Code below test legacy ISO 19139:2007 (un)marshalling.
@@ -109,7 +109,7 @@ public final class DefaultLegalConstraintsTest extends TestCase {
 
         assertXmlEquals(xml, marshal(c, VERSION_2007), "xmlns:*");
         actual = unmarshal(DefaultLegalConstraints.class, xml);
-        assertSame(Restriction.LICENSE, getSingleton(actual.getUseConstraints()));
+        assertSame(Restriction.LICENSE, assertSingleton(actual.getUseConstraints()));
         assertEquals(c, actual);
     }
 }

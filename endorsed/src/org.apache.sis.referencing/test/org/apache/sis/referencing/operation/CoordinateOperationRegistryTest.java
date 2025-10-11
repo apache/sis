@@ -40,11 +40,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
+import static org.apache.sis.test.TestCase.assumeConnectionToEPSG;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -69,6 +69,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @Execution(ExecutionMode.SAME_THREAD)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class CoordinateOperationRegistryTest extends MathTransformTestCase {
@@ -101,7 +102,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      */
     public CoordinateOperationRegistryTest() throws ParseException, FactoryException {
         crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory, "EPSG factory required.");
+        assumeConnectionToEPSG(crsFactory instanceof CoordinateOperationAuthorityFactory);
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat();
         parser.addFragment("NTF",

@@ -30,6 +30,8 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.VerticalCS;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.ElevationAngle;
@@ -51,6 +53,7 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CoordinateSystemsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -214,8 +217,8 @@ public final class CoordinateSystemsTest extends TestCase {
                 0, 0, 1});
         assertTrue(swapAndScaleAxes(λφ, λφ).isIdentity());
         assertTrue(swapAndScaleAxes(φλ, φλ).isIdentity());
-        assertMatrixEquals(expected, swapAndScaleAxes(λφ, φλ), STRICT, "(λ,φ) → (φ,λ)");
-        assertMatrixEquals(expected, swapAndScaleAxes(φλ, λφ), STRICT, "(φ,λ) → (λ,φ)");
+        assertMatrixEquals(expected, swapAndScaleAxes(λφ, φλ), "(λ,φ) → (φ,λ)");
+        assertMatrixEquals(expected, swapAndScaleAxes(φλ, λφ), "(φ,λ) → (λ,φ)");
     }
 
     /**
@@ -241,8 +244,8 @@ public final class CoordinateSystemsTest extends TestCase {
                 0, 0, 0, 1});
         assertTrue(swapAndScaleAxes(λφh, λφh).isIdentity());
         assertTrue(swapAndScaleAxes(φλh, φλh).isIdentity());
-        assertMatrixEquals(expected, swapAndScaleAxes(λφh, φλh), STRICT, "(λ,φ,h) → (φ,λ,h)");
-        assertMatrixEquals(expected, swapAndScaleAxes(φλh, λφh), STRICT, "(φ,λ,h) → (λ,φ,h)");
+        assertMatrixEquals(expected, swapAndScaleAxes(λφh, φλh), "(λ,φ,h) → (φ,λ,h)");
+        assertMatrixEquals(expected, swapAndScaleAxes(φλh, λφh), "(φ,λ,h) → (λ,φ,h)");
     }
 
     /**
@@ -263,19 +266,22 @@ public final class CoordinateSystemsTest extends TestCase {
                 HardCodedAxes.DEPTH);
         assertTrue(swapAndScaleAxes(hxy, hxy).isIdentity());
         assertTrue(swapAndScaleAxes(yxh, yxh).isIdentity());
-        assertMatrixEquals(Matrices.create(4, 4, new double[] {
-                    0,    0,   -1,    0,
-                    0,    1,    0,    0,
-                   -0.01, 0,    0,    0,
-                    0,    0,    0,    1
-                }), swapAndScaleAxes(hxy, yxh), STRICT, "(h,x,y) → (y,x,h)");
+        assertMatrixEquals(
+                new Matrix4(0,    0,   -1,    0,
+                            0,    1,    0,    0,
+                           -0.01, 0,    0,    0,
+                            0,    0,    0,    1),
+                swapAndScaleAxes(hxy, yxh),
+                "(h,x,y) → (y,x,h)");
 
-        assertMatrixEquals(Matrices.create(4, 4, new double[] {
-                    0,    0, -100,    0,
-                    0,    1,    0,    0,
-                   -1,    0,    0,    0,
-                    0,    0,    0,    1
-                }), swapAndScaleAxes(yxh, hxy), STRICT, "(y,x,h) → (h,x,y)");
+        assertMatrixEquals(
+                new Matrix4(
+                        0,    0, -100,    0,
+                        0,    1,    0,    0,
+                       -1,    0,    0,    0,
+                        0,    0,    0,    1),
+                swapAndScaleAxes(yxh, hxy),
+                "(y,x,h) → (h,x,y)");
     }
 
     /**
@@ -290,18 +296,19 @@ public final class CoordinateSystemsTest extends TestCase {
                 new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.EASTING),  "x", AxisDirection.EAST,  Units.MILLIMETRE));
 
         Matrix matrix = swapAndScaleAxes(HardCodedCS.CARTESIAN_2D, cs);
-        assertMatrixEquals(Matrices.create(3, 3, new double[] {
-                    0,  -100,    0,
-                    1000,  0,    0,
-                    0,     0,    1
-                }), matrix, STRICT, "(x,y) → (y,x)");
+        assertMatrixEquals(
+                new Matrix3(0,  -100,    0,
+                            1000,  0,    0,
+                            0,     0,    1),
+                matrix, "(x,y) → (y,x)");
 
         matrix = swapAndScaleAxes(HardCodedCS.CARTESIAN_3D, cs);
-        assertMatrixEquals(Matrices.create(3, 4, new double[] {
-                    0,  -100,   0,   0,
-                    1000,  0,   0,   0,
-                    0,     0,   0,   1
-                }), matrix, STRICT, "(x,y,z) → (y,x)");
+        assertMatrixEquals(
+                Matrices.create(3, 4, new double[] {
+                        0,  -100,   0,   0,
+                        1000,  0,   0,   0,
+                        0,     0,   0,   1}),
+                matrix, "(x,y,z) → (y,x)");
     }
 
     /**

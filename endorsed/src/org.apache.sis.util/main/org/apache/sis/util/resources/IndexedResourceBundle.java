@@ -550,8 +550,8 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @throws MissingResourceException if no object for the given key can be found.
      *
      * @see #getString(String)
-     * @see #getString(short,Object,Object)
-     * @see #getString(short,Object,Object,Object)
+     * @see #getString(short, Object, Object)
+     * @see #getString(short, Object, Object, Object)
      * @see MessageFormat
      */
     public final String getString(final short key, final Object arg0) throws MissingResourceException {

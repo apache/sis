@@ -40,7 +40,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -58,6 +58,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MetadataStandardTest extends TestCase {
     /**
      * The standard being tested.
@@ -231,8 +232,8 @@ public final class MetadataStandardTest extends TestCase {
         final DefaultAcquisitionInformation p2 = createCyclicMetadata();
         assertTrue(p1.equals(p2));
 
-        final var platform   = (DefaultPlatform)   getSingleton(p2.getPlatforms());
-        final var instrument = (DefaultInstrument) getSingleton(platform.getInstruments());
+        final var platform   = assertInstanceOf(DefaultPlatform.class,   assertSingleton(p2.getPlatforms()));
+        final var instrument = assertInstanceOf(DefaultInstrument.class, assertSingleton(platform.getInstruments()));
         instrument.setType(new SimpleInternationalString("Another instrument type."));
         assertNotEquals(p1, p2);
     }

@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.xml.test.TestCase.assertXmlEquals;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
@@ -48,6 +48,7 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class WriterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
@@ -126,9 +127,9 @@ public final class WriterTest extends TestCase {
             store.setVersion(data.schemaVersion);
             store.write(metadata, null);
         }
-        assertXmlEquals(data.openStream(TestData.METADATA), toString(), STRICT,
-                        new String[] {Tags.NAMESPACE_V11 + ":extensions"},
-                        new String[] {"xmlns:xsi", "xsi:schemaLocation", "xsi:type"});
+        final String[] ignoredNodes = {Tags.NAMESPACE_V11 + ":extensions"};
+        final String[] ignoredAttributes = {"xmlns:xsi", "xsi:schemaLocation", "xsi:type"};
+        assertXmlEquals(data.openStream(TestData.METADATA), toString(), 0, ignoredNodes, ignoredAttributes);
     }
 
     /**

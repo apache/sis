@@ -26,7 +26,6 @@ import org.apache.sis.referencing.operation.provider.NTv2Test;
 import org.apache.sis.referencing.operation.provider.NADCONTest;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.Assumptions.assumeDataExists;
 
 
 /**
@@ -51,7 +50,7 @@ public final class DatumShiftTest extends TestCase {
      */
     @Test
     public void testRGF93() throws Exception {
-        final URI file = assumeDataExists(DataDirectory.DATUM_CHANGES, "ntf_r93.gsb");
+        final URI file = assumeDataExists(DataDirectory.DATUM_CHANGES, "ntf_r93.gsb").toUri();
         NTv2Test.testRGF93(new GridFile(file));
     }
 
@@ -63,8 +62,8 @@ public final class DatumShiftTest extends TestCase {
      */
     @Test
     public void testNADCON() throws Exception {
-        final URI latitudeShifts  = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.las");
-        final URI longitudeShifts = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.los");
+        final URI latitudeShifts  = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.las").toUri();
+        final URI longitudeShifts = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.los").toUri();
         NADCONTest.testNADCON(new GridFile(latitudeShifts), new GridFile(longitudeShifts));
     }
 }
