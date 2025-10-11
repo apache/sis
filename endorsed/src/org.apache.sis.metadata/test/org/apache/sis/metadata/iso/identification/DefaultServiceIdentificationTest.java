@@ -29,7 +29,7 @@ import org.apache.sis.xml.NilReason;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

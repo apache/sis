@@ -44,7 +44,6 @@ import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSingletonScope;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 

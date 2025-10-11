@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-4.0 branch:

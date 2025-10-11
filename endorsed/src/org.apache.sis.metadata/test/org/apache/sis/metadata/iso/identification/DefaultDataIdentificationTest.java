@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 
 
 /**

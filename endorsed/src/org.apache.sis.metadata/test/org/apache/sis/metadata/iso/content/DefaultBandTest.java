@@ -24,7 +24,6 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ISO_N
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.content.PolarisationOrientation;
@@ -35,6 +34,7 @@ import org.opengis.metadata.content.PolarisationOrientation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultBandTest extends TestCase {
     /**
      * The XML fragment used for testing.

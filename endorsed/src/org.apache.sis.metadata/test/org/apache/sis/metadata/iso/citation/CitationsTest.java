@@ -36,8 +36,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.Assertions.assertSingleton;
-import static org.apache.sis.test.Assertions.assertSingletonResponsibleParty;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertPartyNameEquals;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 import org.apache.sis.test.TestCase;
 
 
@@ -221,11 +221,11 @@ public final class CitationsTest extends TestCase {
      */
     @Test
     public void testGetCitedResponsibleParty() {
-        assertEquals("Open Geospatial Consortium",                       assertSingletonResponsibleParty(OGC));
-        assertEquals("International Organization for Standardization",   assertSingletonResponsibleParty(ISO_19115.get(0)));
-        assertEquals("International Organization for Standardization",   assertSingletonResponsibleParty(ISO_19115.get(1)));
-        assertEquals("International Association of Oil & Gas producers", assertSingletonResponsibleParty(EPSG));
-        assertEquals("International Association of Oil & Gas producers", assertSingletonResponsibleParty(IOGP));
+        assertPartyNameEquals("Open Geospatial Consortium",                       OGC, "OGC");
+        assertPartyNameEquals("International Organization for Standardization",   ISO_19115.get(0), "ISO_19115");
+        assertPartyNameEquals("International Organization for Standardization",   ISO_19115.get(1), "ISO_19115");
+        assertPartyNameEquals("International Association of Oil & Gas producers", EPSG, "EPSG");
+        assertPartyNameEquals("International Association of Oil & Gas producers", IOGP, "IOGP");
     }
 
     /**

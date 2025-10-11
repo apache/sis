@@ -49,7 +49,6 @@ import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSingletonAuthorityCode;
 import static org.apache.sis.test.Assertions.assertSingletonScope;
 import static org.apache.sis.test.Assertions.assertSingletonDomainOfValidity;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

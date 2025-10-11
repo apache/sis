@@ -61,7 +61,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.GeographicCRSMock;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.Assertions.assertSingleton;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.AttributeGroup;

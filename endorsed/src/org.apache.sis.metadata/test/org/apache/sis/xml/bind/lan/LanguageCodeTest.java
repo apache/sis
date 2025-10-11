@@ -35,7 +35,6 @@ import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.mock.MetadataMock;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.apache.sis.test.Assertions.assertSingleton;

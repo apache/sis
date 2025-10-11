@@ -29,9 +29,9 @@ import org.apache.sis.feature.DefaultFeatureType;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
-import static org.apache.sis.metadata.Assertions.assertPartyNameEquals;
 import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertPartyNameEquals;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

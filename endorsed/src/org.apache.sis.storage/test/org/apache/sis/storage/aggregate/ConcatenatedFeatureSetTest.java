@@ -31,8 +31,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSingletonFeature;
-import static org.apache.sis.metadata.Assertions.assertContentInfoEquals;
-import static org.apache.sis.metadata.Assertions.assertFeatureSourceEquals;
+import static org.apache.sis.test.Assertions.assertContentInfoEquals;
+import static org.apache.sis.test.Assertions.assertFeatureSourceEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;

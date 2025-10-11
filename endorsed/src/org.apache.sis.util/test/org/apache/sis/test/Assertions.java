@@ -40,6 +40,8 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.maintenance.Scope;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Utilities;
@@ -50,6 +52,11 @@ import org.apache.sis.util.Classes;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.referencing.ObjectDomain;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.content.FeatureTypeInfo;
+import org.opengis.metadata.lineage.Source;
 
 
 /**
@@ -184,16 +191,6 @@ public final class Assertions {
     }
 
     /**
-     * Asserts that the given citation declares exactly one responsible party, and returns its name in English.
-     *
-     * @param  citation  the citation from which to get the responsible party.
-     * @return name of the responsible party in English.
-     */
-    public static String assertSingletonResponsibleParty(final Citation citation) {
-        return assertSingleton(assertSingleton(citation.getCitedResponsibleParties()).getParties()).getName().toString(Locale.US);
-    }
-
-    /**
      * Asserts that the given object contains exactly one identifier, then returns the code of that identifier.
      *
      * @param  object  the object for which to get the authority code.
@@ -212,7 +209,7 @@ public final class Assertions {
     public static String assertSingletonScope(final IdentifiedObject object) {
         InternationalString scope = assertSingleton(object.getDomains()).getScope();
         assertNotNull(scope, "Missing scope.");
-        return scope.toString(Locale.ENGLISH);
+        return scope.toString(Locale.US);
     }
 
     /**
@@ -225,6 +222,70 @@ public final class Assertions {
         ObjectDomain domain = assertSingleton(object.getDomains());
         GeographicExtent extent = assertSingleton(domain.getDomainOfValidity().getGeographicElements());
         return assertInstanceOf(GeographicBoundingBox.class, extent);
+    }
+
+    /**
+     * Asserts that the English title of the given citation is equal to the expected string.
+     *
+     * @param expected  the expected English title.
+     * @param citation  the citation to test.
+     * @param message   the message to report in case of test failure.
+     */
+    public static void assertTitleEquals(final String expected, final Citation citation, final String message) {
+        assertNotNull(citation, message);
+        InternationalString title = citation.getTitle();
+        assertNotNull(title, message);
+        assertEquals(expected, title.toString(Locale.US), message);
+    }
+
+    /**
+     * Asserts that the given citation has only one responsible party,
+     * and its English name is equal to the expected string.
+     *
+     * @param expected  the expected English responsibly party name.
+     * @param citation  the citation to test.
+     * @param message   the message to report in case of test failure.
+     */
+    public static void assertPartyNameEquals(final String expected, final Citation citation, final String message) {
+        assertNotNull(citation, message);
+        Responsibility r = assertSingleton(citation.getCitedResponsibleParties());
+        InternationalString name = assertSingleton(r.getParties()).getName();
+        assertNotNull(name, message);
+        assertEquals(expected, name.toString(Locale.US), message);
+    }
+
+    /**
+     * Verifies that the given {@code ContentInfo} describes the given feature.
+     * This method expects that the given catalog contains exactly one feature info.
+     *
+     * @param  name     expected feature type name (possibly null).
+     * @param  count    expected feature instance count (possibly null).
+     * @param  catalog  the content info to validate.
+     */
+    public static void assertContentInfoEquals(final String name, final Integer count, final FeatureCatalogueDescription catalog) {
+        final FeatureTypeInfo info = assertSingleton(catalog.getFeatureTypeInfo());
+        assertEquals(name, String.valueOf(info.getFeatureTypeName()), "metadata.contentInfo.featureType");
+        assertEquals(count, info.getFeatureInstanceCount(), "metadata.contentInfo.featureInstanceCount");
+    }
+
+    /**
+     * Verifies that the source contains the given feature type. This method expects that the given source contains
+     * exactly one scope description and that the hierarchical level is {@link ScopeCode#FEATURE_TYPE}.
+     *
+     * @param  name      expected source identifier.
+     * @param  features  expected names of feature type.
+     * @param  source    the source to validate.
+     */
+    public static void assertFeatureSourceEquals(final String name, final String[] features, final Source source) {
+        assertEquals(name, String.valueOf(source.getSourceCitation().getTitle()), "metadata.lineage.source.sourceCitation.title");
+        final Scope scope = source.getScope();
+        assertNotNull(scope, "metadata.lineage.source.scope");
+        assertEquals(ScopeCode.FEATURE_TYPE, scope.getLevel(), "metadata.lineage.source.scope.level");
+        final var actual = assertSingleton(scope.getLevelDescription()).getFeatures().toArray(CharSequence[]::new);
+        for (int i=0; i<actual.length; i++) {
+            actual[i] = actual[i].toString();
+        }
+        assertArrayEquals(features, actual, "metadata.lineage.source.scope.levelDescription.feature");
     }
 
     /**
