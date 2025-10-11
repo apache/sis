@@ -35,16 +35,18 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MonolineFormatterTest extends TestCase {
     /**
      * The formatter to be tested.
      */
-    private final MonolineFormatter formatter = new MonolineFormatter(null);
+    private final MonolineFormatter formatter;
 
     /**
      * Creates a new test case.
      */
     public MonolineFormatterTest() {
+        formatter = new MonolineFormatter(null);
     }
 
     /**
@@ -91,7 +93,7 @@ public final class MonolineFormatterTest extends TestCase {
     @Test
     @ResourceLock(Resources.LOCALE)
     public void testMultilines() {
-        final LogRecord record = new LogRecord(Level.INFO, "First line\n  Indented line\nLast line\n");
+        final var record = new LogRecord(Level.INFO, "First line\n  Indented line\nLast line\n");
         final String formatted = formatter.format(record);
         assertMultilinesEquals(localize(Level.INFO,
                 "INFO\t First line\n" +
@@ -105,8 +107,8 @@ public final class MonolineFormatterTest extends TestCase {
     @Test
     @ResourceLock(Resources.LOCALE)
     public void testException() {
-        final LogRecord record = new LogRecord(Level.WARNING, "An exception occured.");
-        final Exception exception = new Exception();
+        final var record = new LogRecord(Level.WARNING, "An exception occured.");
+        final var exception = new Exception();
         exception.setStackTrace(new StackTraceElement[] {
             new StackTraceElement("org.apache.sis.NonExistent", "foo",  "NonExistent.java", 10),
             new StackTraceElement("org.junit.WhoKnows",         "main", "WhoKnows.java",    20)

@@ -75,6 +75,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ResampledGridCoverageTest extends TestCase {
     /**
      * The random number generator used for generating some grid coverage values.
@@ -315,7 +316,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridCoverage target   = processor.resample(source, targetGG);
         assertInstanceOf(TranslatedGridCoverage.class, target, "Expected fast path.");
         assertSame(targetGG, target.getGridGeometry());
-        assertEnvelopeEquals(sourceGG.getEnvelope(), targetGG.getEnvelope(), 0);
+        assertEnvelopeEquals(sourceGG.getEnvelope(), targetGG.getEnvelope());
         /*
          * The envelope is BOX(20 15, 80 77). Evaluate a single point inside that envelope.
          * The result for identical "real world" coordinates should be the same for both coverages.

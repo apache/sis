@@ -203,12 +203,6 @@ public class MonolineFormatter extends Formatter {
     private SortedMap<Level,X364> colors;
 
     /**
-     * {@code true} if the faint X.364 code is supported.
-     * On MacOS, faint colors produce bad output.
-     */
-    private final boolean faintSupported;
-
-    /**
      * Numerical values of levels for which to apply colors in increasing order.
      * Computed from {@link #colors} when first needed or when the color map changes.
      */
@@ -351,7 +345,6 @@ public class MonolineFormatter extends Formatter {
         if (handler instanceof ConsoleHandler && X364.isAnsiSupported()) {
             resetLevelColors();
         }
-        faintSupported = System.getProperty("os.name", "").contains("Mac OS");
         /*
          * Creates the buffer and the printer. We will expand the tabulations with 4 characters.
          * This apply to the stack trace formatted by Throwable.printStackTrace(PrintWriter);
@@ -689,7 +682,6 @@ loop:   for (int i=0; ; i++) {
      */
     @Override
     public String format(final LogRecord record) {
-        boolean faint = false;                      // Whether to use faint text for level < INFO.
         String emphasisStart = "";                  // ANSI escape sequence for bold text if we use it.
         String emphasisEnd   = "";                  // ANSI escape sequence for stopping bold text if we use it.
         final Level level = record.getLevel();
@@ -698,7 +690,6 @@ loop:   for (int i=0; ; i++) {
             if (colored && level.intValue() >= LEVEL_THRESHOLD.intValue()) {
                 emphasisStart = X364.BOLD.sequence();
                 emphasisEnd   = X364.NORMAL.sequence();
-                faint         = faintSupported;
             }
             buffer.setLength(header.length());
             /*
@@ -773,7 +764,7 @@ loop:   for (int i=0; ; i++) {
                 }
                 writer.setLineSeparator(bodyLineSeparator);
             }
-            if (faint) {
+            if (colored) {
                 buffer.append(X364.FAINT.sequence());
             }
             final Throwable exception = record.getThrown();
@@ -826,7 +817,7 @@ loop:   for (int i=0; ; i++) {
                 buffer.setLength(length);
                 length -= lastMargin;
             } while (length > 0 && length <= bodyLineSeparator.length());
-            if (faint) {
+            if (colored) {
                 buffer.append(X364.NORMAL.sequence());
             }
             /*
