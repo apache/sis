@@ -18,9 +18,9 @@ package org.apache.sis.geometry;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 

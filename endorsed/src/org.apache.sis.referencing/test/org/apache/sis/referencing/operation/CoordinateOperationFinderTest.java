@@ -59,6 +59,7 @@ import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
 import static org.apache.sis.referencing.internal.shared.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.referencing.internal.shared.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.internal.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 
 // Test dependencies
 import org.junit.jupiter.api.BeforeEach;
@@ -79,7 +80,6 @@ import org.opengis.test.Assertions;
 
 // Specific to the geoapi-4.0 branch:
 import java.time.temporal.ChronoField;
-import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 
 
 /**

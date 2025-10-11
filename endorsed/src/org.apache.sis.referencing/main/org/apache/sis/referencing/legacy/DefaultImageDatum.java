@@ -21,8 +21,6 @@ import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.referencing.datum.AbstractDatum;
@@ -30,11 +28,15 @@ import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.NilReferencingObject;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.util.ComparisonMode;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
+
+// Specific to the geoapi-4.0 branch:
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import org.apache.sis.io.wkt.ElementKind;
 
 
 /**

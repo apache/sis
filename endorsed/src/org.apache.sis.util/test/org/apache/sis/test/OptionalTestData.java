@@ -24,8 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.sis.system.DataDirectory;
 
-// Test dependencies
-
 
 /**
  * All optional test data used by Apache SIS. Those data are not present on the source code repository.

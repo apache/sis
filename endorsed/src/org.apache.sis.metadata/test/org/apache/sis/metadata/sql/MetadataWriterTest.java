@@ -29,8 +29,8 @@ import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.Assertions.assertSingleton;
 import org.junit.jupiter.api.parallel.ResourceLock;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 

@@ -28,13 +28,13 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
-import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;
+import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
 
 
 /**

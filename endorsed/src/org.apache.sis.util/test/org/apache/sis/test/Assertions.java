@@ -35,13 +35,12 @@ import java.io.ByteArrayOutputStream;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.lineage.Source;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Utilities;
@@ -51,12 +50,13 @@ import org.apache.sis.util.Classes;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.referencing.ObjectDomain;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.content.FeatureTypeInfo;
-import org.opengis.metadata.lineage.Source;
+import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.maintenance.Scope;
+import org.opengis.referencing.ObjectDomain;
 
 
 /**

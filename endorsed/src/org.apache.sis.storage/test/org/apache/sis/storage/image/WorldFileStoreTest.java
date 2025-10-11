@@ -39,11 +39,11 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSingletonBBox;
 import static org.apache.sis.test.Assertions.assertSingletonReferenceSystem;
-import static org.apache.sis.test.Assertions.assertSingletonResourceFormat;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.identification.Identification;
+import static org.apache.sis.test.Assertions.assertSingletonResourceFormat;
 
 
 /**
