@@ -29,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
-import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;

@@ -52,15 +52,15 @@ import static org.apache.sis.util.internal.shared.Constants.SECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-import static org.apache.sis.referencing.Assertions.assertAxisEquals;
-import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
 import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSingletonAuthorityCode;
 import static org.apache.sis.test.Assertions.assertSingletonScope;
+import static org.apache.sis.referencing.Assertions.assertAxisEquals;
+import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.temporal.TemporalDate;

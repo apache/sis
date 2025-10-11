@@ -23,8 +23,8 @@ import org.apache.sis.referencing.GeodeticObjectVerifier;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.Assertions.assertSingletonScope;
 import org.opengis.test.Validators;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 import org.apache.sis.xml.test.TestCase;
 
 

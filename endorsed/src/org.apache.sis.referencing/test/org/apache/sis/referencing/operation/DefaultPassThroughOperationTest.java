@@ -28,8 +28,8 @@ import org.opengis.referencing.operation.Transformation;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.Assertions.assertSingleton;
 import org.opengis.test.Validators;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.xml.test.TestCase;
 
 // Specific to the main branch:

@@ -52,10 +52,10 @@ import org.apache.sis.util.Classes;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:
+import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.metadata.identification.DataIdentification;
 
 
 /**

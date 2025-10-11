@@ -36,8 +36,8 @@ import static org.apache.sis.referencing.internal.shared.Formulas.LINEAR_TOLERAN
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 

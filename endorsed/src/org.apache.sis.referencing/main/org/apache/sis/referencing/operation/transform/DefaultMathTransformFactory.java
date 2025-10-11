@@ -25,9 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.lang.reflect.Constructor;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -49,7 +47,9 @@ import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.system.Reflect;
 
 // Specific to the main and geoapi-3.1 branches:
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.resources.Errors;
 

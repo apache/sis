@@ -24,8 +24,8 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.referencing.Assertions;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.Assertions;
 
 
 /**

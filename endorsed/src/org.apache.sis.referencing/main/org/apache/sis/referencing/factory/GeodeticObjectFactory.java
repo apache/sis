@@ -64,10 +64,12 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.xml.XML;
 
-// Specific to the main branch:
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.referencing.legacy.DefaultImageCRS;
 import org.apache.sis.referencing.legacy.DefaultImageDatum;
 import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
+
+// Specific to the main branch:
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 

@@ -16,13 +16,15 @@
  */
 package org.apache.sis.metadata.iso.acquisition;
 
-import java.util.Date;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.acquisition.RequestedDate;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+// Specific to the main and geoapi-3.1 branches:
+import java.util.Date;
 import org.apache.sis.temporal.TemporalDate;
 
 

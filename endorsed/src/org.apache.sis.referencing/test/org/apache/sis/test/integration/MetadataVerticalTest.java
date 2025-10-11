@@ -39,7 +39,6 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.temporal.TemporalDate;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -52,6 +51,7 @@ import org.apache.sis.xml.test.TestCase;
 // Specific to the main branch:
 import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.apache.sis.temporal.TemporalDate;
 import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
 
 
