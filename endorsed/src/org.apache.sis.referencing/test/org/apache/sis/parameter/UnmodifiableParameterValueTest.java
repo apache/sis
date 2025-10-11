@@ -17,6 +17,7 @@
 package org.apache.sis.parameter;
 
 import java.util.Date;
+import java.time.Instant;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.util.ComparisonMode;
 
@@ -25,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
@@ -33,6 +33,7 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class UnmodifiableParameterValueTest extends TestCase {
     /**
      * Creates a new test case.
@@ -91,7 +92,7 @@ public final class UnmodifiableParameterValueTest extends TestCase {
     public void testGetValue() {
         final ParameterValue<Date> modifiable = DefaultParameterDescriptorTest
                 .createSimpleOptional("Time reference", Date.class).createValue();
-        modifiable.setValue(date("1994-01-01 00:00:00"));
+        modifiable.setValue(Date.from(Instant.parse("1994-01-01T00:00:00Z")));
         /*
          * Create and validate an unmodifiable parameter,
          * then verify that the values are not the same.

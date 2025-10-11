@@ -27,7 +27,7 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -35,6 +35,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class NilReasonMapTest extends TestCase {
     /**
      * Creates a new test case.
@@ -70,8 +71,8 @@ public final class NilReasonMapTest extends TestCase {
         assertNull (map.put        ("editionDate", NilReason.TEMPLATE));
         assertFalse(map.isEmpty());
         assertEquals(1, map.size());
-        assertEquals("editionDate",      getSingleton(map.keySet()));
-        assertEquals(NilReason.TEMPLATE, getSingleton(map.values()));
+        assertEquals("editionDate",      assertSingleton(map.keySet()));
+        assertEquals(NilReason.TEMPLATE, assertSingleton(map.values()));
         assertEquals(NilReason.TEMPLATE, map.put("editionDate", null));
         /*
          * Set the title to nil value instead of edition date.
@@ -82,8 +83,8 @@ public final class NilReasonMapTest extends TestCase {
         assertTrue  (map.containsKey("title"));
         assertEquals(NilReason.MISSING, map.get("title"));
         assertEquals(1, map.size());
-        assertEquals("title",           getSingleton(map.keySet()));
-        assertEquals(NilReason.MISSING, getSingleton(map.values()));
+        assertEquals("title",           assertSingleton(map.keySet()));
+        assertEquals(NilReason.MISSING, assertSingleton(map.values()));
         assertInstanceOf(NilObject.class, citation.getTitle());
         /*
          * Even if we clear the citation title, because that property is mandatory,
@@ -93,7 +94,7 @@ public final class NilReasonMapTest extends TestCase {
         assertNull  (citation.getTitle());
         assertTrue  (map.containsKey("title"));
         assertEquals(1, map.size());
-        assertEquals("title", getSingleton(map.keySet()));
-        assertNull  (         getSingleton(map.values()));
+        assertEquals("title", assertSingleton(map.keySet()));
+        assertNull  (         assertSingleton(map.values()));
     }
 }

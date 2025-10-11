@@ -49,7 +49,7 @@ public final class Reflect implements Consumer<StackWalker.StackFrame> {
      * @throws SecurityException if this method is not allowed to get the current thread
      *         context class loader or one of its parent.
      */
-    public static ClassLoader getContextClassLoader() throws SecurityException {
+    public static ClassLoader getContextClassLoader() {
         final Reflect walker = new Reflect();
         return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) -> {
             stream.forEach(walker);

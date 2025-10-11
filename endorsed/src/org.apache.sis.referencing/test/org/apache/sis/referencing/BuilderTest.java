@@ -41,6 +41,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -72,7 +73,7 @@ public final class BuilderTest extends TestCase {
          * Setting the same codespace should have no effect, while attempt to
          * set a new codespace after we added a name shall not be allowed.
          */
-        final SimpleCitation IOGP = new SimpleCitation("IOGP");
+        final var IOGP = new SimpleCitation("IOGP");
         builder.setCodeSpace(Citations.EPSG, "EPSG");
         var exception = assertThrows(IllegalStateException.class, () -> builder.setCodeSpace(IOGP, "EPSG"));
         assertMessageContains(exception, Identifier.AUTHORITY_KEY);

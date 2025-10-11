@@ -32,7 +32,6 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.TestCase.STRICT;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -44,6 +43,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MathTransformsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -99,8 +99,8 @@ public final class MathTransformsTest extends TestCase {
         final Matrix4 swap  = new Matrix4();                    // Swaps two dimensions.
         final List<MathTransform> steps = MathTransforms.getSteps(createConcatenateAndPassThrough(scale, swap));
         assertEquals(3, steps.size());
-        assertMatrixEquals(scale, MathTransforms.getMatrix(steps.get(0)), STRICT, "Step 1");
-        assertMatrixEquals(swap,  MathTransforms.getMatrix(steps.get(2)), STRICT, "Step 3");
+        assertMatrixEquals(scale, MathTransforms.getMatrix(steps.get(0)), "Step 1");
+        assertMatrixEquals(swap,  MathTransforms.getMatrix(steps.get(2)), "Step 3");
         assertInstanceOf(PassThroughTransform.class, steps.get(1));
     }
 
@@ -112,27 +112,29 @@ public final class MathTransformsTest extends TestCase {
     @Test
     public void testCompound() {
         final MathTransform t1 = MathTransforms.linear(new Matrix2(
-            3, -1,                                                          // Random numbers (no real meaning)
-            0,  1));
+                3, -1,                                                          // Random numbers (no real meaning)
+                0,  1));
         final MathTransform t2 = MathTransforms.linear(new Matrix4(
-            0,  8,  0,  9,
-            5,  0,  0, -7,
-            0,  0,  2,  0,
-            0,  0,  0,  1));
+                0,  8,  0,  9,
+                5,  0,  0, -7,
+                0,  0,  2,  0,
+                0,  0,  0,  1));
         final MathTransform t3 = MathTransforms.linear(new Matrix3(
-            0, -5, -3,
-            7,  0, -9,
-            0,  0,  1));
+                0, -5, -3,
+                7,  0, -9,
+                0,  0,  1));
         final MathTransform r = MathTransforms.compound(t1, t2, t3);
-        assertMatrixEquals(Matrices.create(7, 7, new double[] {
-            3,  0,  0,  0,  0,  0, -1,
-            0,  0,  8,  0,  0,  0,  9,
-            0,  5,  0,  0,  0,  0, -7,
-            0,  0,  0,  2,  0,  0,  0,
-            0,  0,  0,  0,  0, -5, -3,
-            0,  0,  0,  0,  7,  0, -9,
-            0,  0,  0,  0,  0,  0,  1
-        }), MathTransforms.getMatrix(r), STRICT, "compound");
+        assertMatrixEquals(
+                Matrices.create(7, 7, new double[] {
+                        3,  0,  0,  0,  0,  0, -1,
+                        0,  0,  8,  0,  0,  0,  9,
+                        0,  5,  0,  0,  0,  0, -7,
+                        0,  0,  0,  2,  0,  0,  0,
+                        0,  0,  0,  0,  0, -5, -3,
+                        0,  0,  0,  0,  7,  0, -9,
+                        0,  0,  0,  0,  0,  0,  1}),
+                MathTransforms.getMatrix(r),
+                "compound");
     }
 
     /**
@@ -154,10 +156,10 @@ public final class MathTransformsTest extends TestCase {
     @Test
     public void testGetMatrix() throws TransformException {
         MathTransform tr = MathTransforms.concatenate(nonLinear3D(), MathTransforms.linear(new Matrix4(
-            5,  0,  0,  9,
-            0,  1,  0,  0,      // Non-linear transform will be concatenated at this dimension.
-            0,  0,  2, -7,
-            0,  0,  0,  1)));
+                5,  0,  0,  9,
+                0,  1,  0,  0,      // Non-linear transform will be concatenated at this dimension.
+                0,  0,  2, -7,
+                0,  0,  0,  1)));
 
         // In the following position, only 1.5 matter because only dimension 1 is non-linear.
         final DirectPosition pos = new GeneralDirectPosition(3, 1.5, 6);
@@ -167,7 +169,7 @@ public final class MathTransformsTest extends TestCase {
                 0,  8,  0, -2,      // Non-linear transform shall be the only one with different coefficients.
                 0,  0,  2, -7,
                 0,  0,  0,  1);
-        assertMatrixEquals(result, affine, STRICT, "Affine approximation");
+        assertMatrixEquals(result, affine, "Affine approximation");
         /*
          * Transformation using above approximation shall produce the same result as the original
          * transform if we do the comparison at the position where the approximation has been computed.
@@ -190,10 +192,10 @@ public final class MathTransformsTest extends TestCase {
          * are ignored since we use a linear transform for this test.
          */
         final Matrix expected = Matrices.create(3, 4, new double[] {
-            -4, 5, 7, 2,
-             3, 4, 2, 9,
-             0, 0, 0, 1,
-        });
+                -4, 5, 7, 2,
+                 3, 4, 2, 9,
+                 0, 0, 0, 1});
+
         final DirectPosition tangentPoint = new GeneralDirectPosition(3, 8, 7);
         MathTransform transform = MathTransforms.linear(expected);
         assertSame(transform, MathTransforms.tangent(transform, tangentPoint));
@@ -204,7 +206,7 @@ public final class MathTransformsTest extends TestCase {
         transform = new MathTransformWrapper(transform);
         final LinearTransform result = MathTransforms.tangent(transform, tangentPoint);
         assertNotSame(transform, result);
-        assertMatrixEquals(expected, result.getMatrix(), STRICT, "tangent");
+        assertMatrixEquals(expected, result.getMatrix(), "tangent");
     }
 
     /**
@@ -216,10 +218,10 @@ public final class MathTransformsTest extends TestCase {
     public void testTangent() throws TransformException {
         final DirectPosition pos = new GeneralDirectPosition(3, 1.5, 6);
         MathTransform tr = MathTransforms.linear(new Matrix4(
-            0,  5,  0,  9,
-            1,  0,  0,  0,      // Non-linear transform will be concatenated at this dimension.
-            0,  0, 12, -3,
-            0,  0,  0,  1));
+                0,  5,  0,  9,
+                1,  0,  0,  0,      // Non-linear transform will be concatenated at this dimension.
+                0,  0, 12, -3,
+                0,  0,  0,  1));
 
         LinearTransform linear = MathTransforms.tangent(tr, pos);
         assertSame(tr, linear, "Linear transform shall be returned unchanged.");

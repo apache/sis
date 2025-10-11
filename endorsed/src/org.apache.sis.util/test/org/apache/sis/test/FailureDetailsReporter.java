@@ -47,7 +47,7 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
     @Override
     public final void beforeEach(final ExtensionContext description) {
         if (!TestCase.VERBOSE) {
-            TestCase.clearBuffer();
+            TestCase.out.clearBuffer();
         }
         LogRecordCollector.INSTANCE.setCurrentTest(description);
     }
@@ -82,7 +82,7 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
         }
         TestUtilities.randomSeed.remove();
         if (flush) {
-            TestCase.flushOutput();
+            TestCase.out.flushUnconditionally();
         }
     }
 }

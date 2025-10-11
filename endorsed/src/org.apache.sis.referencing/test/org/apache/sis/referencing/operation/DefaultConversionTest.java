@@ -49,9 +49,7 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.parameter.DefaultParameterDescriptorTest;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assertions.assertMatrixEquals;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 
 
 /**
@@ -59,6 +57,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultConversionTest extends TestCase {
     /**
      * The rotation from a CRS using the Paris prime meridian to a CRS using the Greenwich prime meridian,
@@ -193,8 +192,7 @@ public final class DefaultConversionTest extends TestCase {
             expected.m00 = expected.m11 = 0;
             expected.m01 = expected.m10 = 1;
         }
-        assertMatrixEquals(expected, MathTransforms.getMatrix(op.getMathTransform()), STRICT,
-                           "Longitude rotation of a two-dimensional CRS");
+        assertMatrixEquals(expected, op.getMathTransform(), "Longitude rotation of a two-dimensional CRS");
     }
 
     /**
@@ -262,11 +260,12 @@ public final class DefaultConversionTest extends TestCase {
         DefaultConversion op = createLongitudeRotation(
                 createParisCRS(true,  HardCodedCS.GEODETIC_3D, false),
                 createParisCRS(false, HardCodedCS.GEODETIC_3D, true), null);
-        assertMatrixEquals(new Matrix4(1, 0, 0, OFFSET,
-                                       0, 1, 0, 0,
-                                       0, 0, 1, 0,
-                                       0, 0, 0, 1),
-                MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+        assertMatrixEquals(
+                new Matrix4(1, 0, 0, OFFSET,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1),
+                op.getMathTransform(),
                 "Longitude rotation of a three-dimensional CRS");
         /*
          * When asking for a "specialization" with the same properties,
@@ -277,11 +276,12 @@ public final class DefaultConversionTest extends TestCase {
          * Reducing the number of dimensions to 2 and swapping (latitude, longitude) axes.
          */
         Conversion c = op.specialize(op.getSourceCRS(), changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ), null);
-        assertMatrixEquals(Matrices.create(3, 4, new double[] {
-                    0, 1, 0, 0,
-                    1, 0, 0, OFFSET,
-                    0, 0, 0, 1
-                }), MathTransforms.getMatrix(c.getMathTransform()), STRICT,
+        assertMatrixEquals(
+                Matrices.create(3, 4, new double[] {
+                        0, 1, 0, 0,
+                        1, 0, 0, OFFSET,
+                        0, 0, 0, 1}),
+                c.getMathTransform(),
                 "Longitude rotation of a two-dimensional CRS");
     }
 
@@ -304,11 +304,12 @@ public final class DefaultConversionTest extends TestCase {
     public void testWithInterpolationCRS() throws FactoryException {
         DefaultConversion op = createLongitudeRotation(HardCodedCRS.NTF_NORMALIZED_AXES,
                 createParisCRS(false, HardCodedCS.GEODETIC_2D, true), HardCodedCRS.TIME);
-        assertMatrixEquals(new Matrix4(1, 0, 0, 0,
-                                       0, 1, 0, OFFSET,
-                                       0, 0, 1, 0,
-                                       0, 0, 0, 1),
-                MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+        assertMatrixEquals(
+                new Matrix4(1, 0, 0, 0,
+                            0, 1, 0, OFFSET,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1),
+                op.getMathTransform(),
                 "Longitude rotation of a time-varying CRS");
 
         Conversion c = op.specialize(
@@ -316,11 +317,12 @@ public final class DefaultConversionTest extends TestCase {
                 changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ),   // Swap axis order.
                 null);
 
-        assertMatrixEquals(new Matrix4(1, 0, 0, 0,
-                                       0, 0, 1, 0,
-                                       0, 1, 0, OFFSET,
-                                       0, 0, 0, 1),
-                MathTransforms.getMatrix(c.getMathTransform()), STRICT,
+        assertMatrixEquals(
+                new Matrix4(1, 0, 0, 0,
+                            0, 0, 1, 0,
+                            0, 1, 0, OFFSET,
+                            0, 0, 0, 1),
+                c.getMathTransform(),
                 "Longitude rotation of a time-varying CRS");
     }
 

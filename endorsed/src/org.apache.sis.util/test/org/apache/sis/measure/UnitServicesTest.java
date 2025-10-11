@@ -35,6 +35,7 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class UnitServicesTest extends TestCase {
     /**
      * Creates a new test case.

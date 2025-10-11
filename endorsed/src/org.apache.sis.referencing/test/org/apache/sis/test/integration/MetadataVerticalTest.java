@@ -39,14 +39,15 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.temporal.TemporalDate;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonBBox;
+import static org.apache.sis.test.Assertions.assertSingletonReferenceSystem;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getScope;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.nio.charset.StandardCharsets;
@@ -89,9 +90,9 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
     public void testMetadataWithVerticalCRS() throws JAXBException {
         final Metadata metadata = unmarshalFile(Metadata.class, openTestFile());
         assertEquals("20090901",               metadata.getMetadataIdentifier().getCode());
-        assertEquals(Locale.ENGLISH,           getSingleton(metadata.getLocalesAndCharsets().keySet()));
-        assertEquals(StandardCharsets.UTF_8,   getSingleton(metadata.getLocalesAndCharsets().values()));
-        assertEquals(LocalDate.of(2014, 1, 4), TemporalDate.toTemporal(getSingleton(metadata.getDateInfo()).getDate()));
+        assertEquals(Locale.ENGLISH,           assertSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(StandardCharsets.UTF_8,   assertSingleton(metadata.getLocalesAndCharsets().values()));
+        assertEquals(LocalDate.of(2014, 1, 4), assertSingleton(metadata.getDateInfo()).getReferenceDate());
         /*
          * <gmd:contact>
          *   <gmd:CI_ResponsibleParty>
@@ -99,10 +100,10 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
          *   </gmd:CI_ResponsibleParty>
          * </gmd:contact>
          */
-        final Responsibility contact        = getSingleton(metadata   .getContacts());
-        final Party          party          = getSingleton(contact    .getParties());
-        final Contact        contactInfo    = getSingleton(party      .getContactInfo());
-        final OnlineResource onlineResource = getSingleton(contactInfo.getOnlineResources());
+        final Responsibility contact        = assertSingleton(metadata   .getContacts());
+        final Party          party          = assertSingleton(contact    .getParties());
+        final Contact        contactInfo    = assertSingleton(party      .getContactInfo());
+        final OnlineResource onlineResource = assertSingleton(contactInfo.getOnlineResources());
         assertInstanceOf(Organisation.class, party);
         assertNotNull(onlineResource);
         assertEquals("Apache SIS", party.getName().toString());
@@ -116,9 +117,10 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
          *   </gmd:MD_VectorSpatialRepresentation>
          * </gmd:spatialRepresentationInfo>
          */
-        final SpatialRepresentation spatial = getSingleton(metadata.getSpatialRepresentationInfo());
-        assertEquals(GeometricObjectType.POINT, getSingleton(
-                assertInstanceOf(VectorSpatialRepresentation.class, spatial).getGeometricObjects()).getGeometricObjectType());
+        final SpatialRepresentation spatial = assertSingleton(metadata.getSpatialRepresentationInfo());
+        assertEquals(
+                GeometricObjectType.POINT,
+                assertSingleton(assertInstanceOf(VectorSpatialRepresentation.class, spatial).getGeometricObjects()).getGeometricObjectType());
         /*
          * <gmd:referenceSystemInfo>
          *   <gmd:MD_ReferenceSystem>
@@ -126,20 +128,20 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
          *   </gmd:MD_ReferenceSystem>
          * </gmd:referenceSystemInfo>
          */
-        assertIdentifierEquals(null, "EPSG", null, "World Geodetic System 84",
-                getSingleton(metadata.getReferenceSystemInfo()).getName(),
-                "referenceSystemInfo");
+        assertIdentifierEquals(null, "EPSG", null, "World Geodetic System 84", assertSingletonReferenceSystem(metadata), "referenceSystemInfo");
         /*
          * <gmd:identificationInfo>
          *   <gmd:MD_DataIdentification>
          *     …
          */
-        final var identification = (DataIdentification) getSingleton(metadata.getIdentificationInfo());
+        final DataIdentification identification = assertInstanceOf(
+                DataIdentification.class,
+                assertSingleton(metadata.getIdentificationInfo()));
         final Citation citation = identification.getCitation();
         assertInstanceOf(NilObject.class, citation);
         assertEquals(NilReason.MISSING, ((NilObject) citation).getNilReason());
         assertEquals("SIS test", identification.getAbstract().toString());
-        assertEquals(Locale.ENGLISH, getSingleton(identification.getLocalesAndCharsets().keySet()));
+        assertEquals(Locale.ENGLISH, assertSingleton(identification.getLocalesAndCharsets().keySet()));
         /*
          * <gmd:geographicElement>
          *   <gmd:EX_GeographicBoundingBox>
@@ -147,8 +149,7 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
          *   </gmd:EX_GeographicBoundingBox>
          * </gmd:geographicElement>
          */
-        final Extent extent = getSingleton(identification.getExtents());
-        final var bbox = (GeographicBoundingBox) getSingleton(extent.getGeographicElements());
+        final GeographicBoundingBox bbox = assertSingletonBBox(identification);
         assertEquals(Boolean.TRUE, bbox.getInclusion());
         assertEquals( 4.55, bbox.getWestBoundLongitude());
         assertEquals( 4.55, bbox.getEastBoundLongitude());
@@ -161,15 +162,16 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
          *   </gmd:EX_VerticalExtent>
          * </gmd:verticalElement>
          */
-        final VerticalExtent ve = getSingleton(extent.getVerticalElements());
+        final Extent extent = assertSingleton(identification.getExtents());
+        final VerticalExtent ve = assertSingleton(extent.getVerticalElements());
         assertEquals(  0.1, ve.getMinimumValue());
         assertEquals(10000, ve.getMaximumValue());
         final VerticalCRS crs = ve.getVerticalCRS();
         verifyIdentifiers("test1", crs);
-        assertEquals("World", getScope(crs));
+        assertEquals("World", assertSingletonScope(crs));
         final VerticalDatum datum = crs.getDatum();
         verifyIdentifiers("test2", datum);
-        assertEquals("World", getScope(datum));
+        assertEquals("World", assertSingletonScope(datum));
         final VerticalCS cs = crs.getCoordinateSystem();
         verifyIdentifiers("test3", cs);
         final CoordinateSystemAxis axis = cs.getAxis(0);
@@ -195,7 +197,7 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
      */
     private static void verifyIdentifiers(final String code, final IdentifiedObject object) {
         assertIdentifierEquals("Apache Spatial Information System", "SIS",
-                null, code, getSingleton(object.getIdentifiers()), "identifier");
+                null, code, assertSingleton(object.getIdentifiers()), "identifier");
         assertIdentifierEquals(null, null, null, "Depth", object.getName(), "name");
     }
 }

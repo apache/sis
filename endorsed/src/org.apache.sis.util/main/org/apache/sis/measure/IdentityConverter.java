@@ -52,7 +52,7 @@ final class IdentityConverter extends AbstractConverter implements LenientCompar
     private IdentityConverter() {
     }
 
-    /** Straight forward implementation. */
+    @Deprecated
     @Override public boolean       isLinear()                   {return true;}
     @Override public boolean       isIdentity()                 {return true;}
     @Override public UnitConverter inverse()                    {return this;}

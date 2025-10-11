@@ -44,10 +44,11 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import static org.apache.sis.test.TestUtilities.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.temporal.TemporalDate;
@@ -63,7 +64,8 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class CommonCRSTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public final class CommonCRSTest extends TestCase {
     /**
      * Creates a new test case.
      */
@@ -264,7 +266,7 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
          * We need to use `java.text.DateFormat` rather than `Instant.parse(String)` because
          * they have different policy regarding the calendar for dates before October 15, 1582.
          * The `java.time` classes use the proleptic Gregorian calendar while `java.text` uses
-         * the prolectic Julian calendar. The latter is what we need for this test.
+         * the proleptic Julian calendar. The latter is what we need for this test.
          */
         final var dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CANADA);
         dateFormat.setTimeZone(TimeZone.getTimeZone(UTC));
@@ -327,8 +329,8 @@ public final class CommonCRSTest extends EPSGDependentTestCase {
                 () -> CommonCRS.Temporal.forIdentifier("ModifiedJulianDate", true),
                 "Unexpected because not in OGC namespace.");
         assertMessageContains(exception, "ModifiedJulianDate", "OGC");
-        assertEquals("OGC:TruncatedJulianDate", getSingleton(CommonCRS.Temporal.TRUNCATED_JULIAN.crs().getIdentifiers()).toString());
-        assertEquals("SIS:ModifiedJulianDate",  getSingleton(CommonCRS.Temporal. MODIFIED_JULIAN.crs().getIdentifiers()).toString());
+        assertEquals("OGC:TruncatedJulianDate", assertSingleton(CommonCRS.Temporal.TRUNCATED_JULIAN.crs().getIdentifiers()).toString());
+        assertEquals("SIS:ModifiedJulianDate",  assertSingleton(CommonCRS.Temporal. MODIFIED_JULIAN.crs().getIdentifiers()).toString());
     }
 
     /**

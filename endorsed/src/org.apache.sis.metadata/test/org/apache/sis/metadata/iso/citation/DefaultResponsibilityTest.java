@@ -24,7 +24,6 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**
@@ -33,6 +32,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class DefaultResponsibilityTest extends TestCase {
     /**
      * Creates a new test case.

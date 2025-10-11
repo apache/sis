@@ -25,8 +25,7 @@ import org.opengis.metadata.citation.Citation;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
 
 
 /**
@@ -34,6 +33,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class NilReasonMarshallingTest extends TestCase {
     /**
      * Creates a new test case.

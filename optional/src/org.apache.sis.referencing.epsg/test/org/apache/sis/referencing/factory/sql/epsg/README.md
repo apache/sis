@@ -137,7 +137,7 @@ Then the whole Apache SIS project should be [tested extensively](https://sis.apa
 preferably with a PostgreSQL server ready to accept local connections to `SpatialMetadataTest` database:
 
 ```bash
-EXPORT SIS_TEST_OPTIONS=extensive,postgresql
+EXPORT SIS_TEST_OPTIONS=epsg,extensive,postgresql
 gradle test
 ```
 

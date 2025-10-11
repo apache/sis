@@ -26,10 +26,7 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.TestCase.STRICT;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.test.Assertions;
+import org.apache.sis.referencing.Assertions;
 
 
 /**
@@ -37,6 +34,7 @@ import org.opengis.test.Assertions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TranslationTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -55,7 +53,7 @@ public final class TranslationTransformTest extends MathTransformTestCase {
         final TranslationTransform tr = new TranslationTransform(matrix.getNumRow(), elements);
         assertEquals(dimensions, tr.getSourceDimensions());
         assertEquals(dimensions, tr.getTargetDimensions());
-        Assertions.assertMatrixEquals(matrix, tr.getMatrix(), STRICT, "matrix");
+        Assertions.assertMatrixEquals(matrix, tr, "matrix");
         assertArrayEquals(elements, getElementAsNumbers(tr));
         transform = tr;
         validate();
@@ -96,7 +94,7 @@ public final class TranslationTransformTest extends MathTransformTestCase {
         final TranslationTransform tr = new TranslationTransform(4, elements);
         assertEquals(3, tr.getSourceDimensions());
         assertEquals(3, tr.getTargetDimensions());
-        Assertions.assertMatrixEquals(matrix, tr.getMatrix(), STRICT, "matrix");
+        Assertions.assertMatrixEquals(matrix, tr, "matrix");
 
         replaceZeroByNull(elements, O);
         assertArrayEquals(elements, tr.getElementAsNumbers(false));

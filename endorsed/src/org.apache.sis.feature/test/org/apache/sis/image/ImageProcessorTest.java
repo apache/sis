@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.image.processing.isoline.IsolinesTest;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -38,6 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ImageProcessorTest extends TestCase {
     /**
      * The processor to test.
@@ -104,9 +105,9 @@ public final class ImageProcessorTest extends TestCase {
         boolean parallel = false;
         do {
             processor.setExecutionMode(parallel ? ImageProcessor.Mode.SEQUENTIAL : ImageProcessor.Mode.PARALLEL);
-            final Map<Double,Shape> r = getSingleton(processor.isolines(image, new double[][] {{0.5}}, null));
-            assertEquals(0.5, getSingleton(r.keySet()));
-            IsolinesTest.verifyIsolineFromMultiCells(getSingleton(r.values()));
+            final Map<Double,Shape> r = assertSingleton(processor.isolines(image, new double[][] {{0.5}}, null));
+            assertEquals(0.5, assertSingleton(r.keySet()));
+            IsolinesTest.verifyIsolineFromMultiCells(assertSingleton(r.values()));
         } while ((parallel = !parallel) == true);
     }
 }

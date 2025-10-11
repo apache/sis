@@ -29,10 +29,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.test.TestUtilities.getScope;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.temporal.TemporalDate;
@@ -48,6 +48,7 @@ import static org.opengis.test.Assertions.assertIdentifierEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultTemporalDatumTest extends TestCase {
     /**
      * Creates a new test case.
@@ -130,10 +131,10 @@ public final class DefaultTemporalDatumTest extends TestCase {
     public void testUnmarshalling() throws JAXBException {
         final DefaultTemporalDatum datum = unmarshalFile(DefaultTemporalDatum.class, openTestFile());
         assertIdentifierEquals("Apache Spatial Information System", "SIS", null, "MJ",
-                               getSingleton(datum.getIdentifiers()), "identifier");
+                               assertSingleton(datum.getIdentifiers()), "identifier");
         assertEquals("Modified Julian", datum.getName().getCode());
         assertRemarksEquals("Time measured as days since November 17, 1858 at 00:00 UTC.", datum, null);
-        assertEquals("History.", getScope(datum));
+        assertEquals("History.", assertSingletonScope(datum));
         assertEquals(ORIGIN, TemporalDate.toTemporal(datum.getOrigin()));
     }
 }

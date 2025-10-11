@@ -28,7 +28,7 @@ import org.apache.sis.storage.DataStoreException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -80,7 +80,7 @@ public final class StoreTest extends TestCase {
             metadata = store.getMetadata();
             assertSame(metadata, store.getMetadata(), "Expected cached value.");
         }
-        validate((GeographicCRS) TestUtilities.getSingleton(metadata.getReferenceSystemInfo()));
+        validate(assertInstanceOf(GeographicCRS.class, assertSingleton(metadata.getReferenceSystemInfo())));
     }
 
     /**
@@ -93,13 +93,13 @@ public final class StoreTest extends TestCase {
     @Test
     public void testFromInputStream() throws DataStoreException {
         final Metadata metadata;
-        final StoreProvider p = new StoreProvider();
-        final StorageConnector c = new StorageConnector(new ByteArrayInputStream(StoreTest.WKT.getBytes(StandardCharsets.US_ASCII)));
+        final var p = new StoreProvider();
+        final var c = new StorageConnector(new ByteArrayInputStream(StoreTest.WKT.getBytes(StandardCharsets.US_ASCII)));
         assertTrue(p.probeContent(c).isSupported());
         try (Store store = new Store(null, c)) {
             metadata = store.getMetadata();
             assertSame(metadata, store.getMetadata(), "Expected cached value.");
         }
-        validate((GeographicCRS) TestUtilities.getSingleton(metadata.getReferenceSystemInfo()));
+        validate(assertInstanceOf(GeographicCRS.class, assertSingleton(metadata.getReferenceSystemInfo())));
     }
 }

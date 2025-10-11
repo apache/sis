@@ -33,7 +33,7 @@ import static org.apache.sis.xml.IdentifierSpace.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -41,6 +41,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ModifiableIdentifierMapTest extends TestCase {
     /**
      * The HREF string to replace by {@link XLink#toString()}.
@@ -242,7 +243,7 @@ public final class ModifiableIdentifierMapTest extends TestCase {
         // Check the XLink object
         final XLink link = map.getSpecialized(XLINK);
         assertEquals("myHREF", String.valueOf(link.getHRef()), "Added href shall be stored as XLink attribute.");
-        assertEquals(link.toString(), getSingleton(identifiers).getCode(), "Identifier list shall contain the XLink.");
+        assertEquals(link.toString(), assertSingleton(identifiers).getCode(), "Identifier list shall contain the XLink.");
 
         // Modify the XLink object directly
         link.setHRef(URI.create("myNewHREF"));

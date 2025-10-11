@@ -30,8 +30,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * <h2>Unicode support</h2>
  * Every methods defined in this class work on <i>code points</i> instead of characters
- * when appropriate. Consequently, those methods should behave correctly with characters outside
- * the <i>Basic Multilingual Plane</i> (BMP).
+ * when appropriate. Consequently, those methods should behave correctly with characters
+ * outside the <i>Basic Multilingual Plane</i> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.6

@@ -42,6 +42,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
  *
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class GridCoverageBuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -189,7 +190,7 @@ public final class GridCoverageBuilderTest extends TestCase {
         {
             final GridCoverage coverage = builder.build();
             final GridGeometry gg = coverage.getGridGeometry();
-            assertTrue(domain.equals(gg.getEnvelope(), STRICT, false));
+            assertTrue(domain.equals(gg.getEnvelope(), 0, false));
             MathTransform gridToCRS = gg.getGridToCRS(PixelInCell.CELL_CENTER);
             assertEquals(new AffineTransform2D(10, 0, 0, 10, -175, -85), gridToCRS);
         }
@@ -202,7 +203,7 @@ public final class GridCoverageBuilderTest extends TestCase {
             assertSame(builder, builder.flipGridAxis(1));
             final GridCoverage coverage = builder.build();
             final GridGeometry gg = coverage.getGridGeometry();
-            assertTrue(domain.equals(gg.getEnvelope(), STRICT, false));
+            assertTrue(domain.equals(gg.getEnvelope(), 0, false));
             MathTransform gridToCRS = gg.getGridToCRS(PixelInCell.CELL_CENTER);
             assertEquals(new AffineTransform2D(10, 0, 0, -10, -175, 85), gridToCRS);
         }

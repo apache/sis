@@ -40,6 +40,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BursaWolfParametersTest extends TestCase {
     /**
      * The conversion factor from arc-seconds to radians.
@@ -117,7 +118,7 @@ public final class BursaWolfParametersTest extends TestCase {
                    0,         0,         0,  1);
 
         final MatrixSIS matrix = MatrixSIS.castOrCopy(p.getPositionVectorTransformation(null));
-        assertMatrixEquals(expected, matrix, p.isTranslation() ? STRICT : 1E-14, "getPositionVectorTransformation");
+        assertMatrixEquals(expected, matrix, p.isTranslation() ? 0 : 1E-14, "getPositionVectorTransformation");
         return matrix;
     }
 
@@ -168,11 +169,13 @@ public final class BursaWolfParametersTest extends TestCase {
          * Tests the optimized path for translation-only parameters.
          * Matrices having only translation terms are much easier to predict.
          */
-        assertMatrixEquals(new Matrix4(1, 0, 0, -168,
-                                       0, 1, 0,  -60,
-                                       0, 0, 1,  320,
-                                       0, 0, 0,    1),
-                getPositionVectorTransformation(createNTF_to_WGS84()), STRICT, "Translation only");
+        assertMatrixEquals(
+                new Matrix4(1, 0, 0, -168,
+                            0, 1, 0,  -60,
+                            0, 0, 1,  320,
+                            0, 0, 0,    1),
+                getPositionVectorTransformation(createNTF_to_WGS84()),
+                "Translation only");
     }
 
     /**

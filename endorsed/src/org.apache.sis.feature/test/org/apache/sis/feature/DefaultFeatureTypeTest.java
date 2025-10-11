@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.PropertyType;
@@ -40,6 +40,7 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultFeatureTypeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -389,7 +390,7 @@ public final class DefaultFeatureTypeTest extends TestCase {
         final DefaultFeatureType capital = capital();
         assertUnmodifiable(capital);
         assertEquals("Capital", capital.getName().toString());
-        assertEquals(city, getSingleton(capital.getSuperTypes()));
+        assertEquals(city, assertSingleton(capital.getSuperTypes()));
         assertFalse (   capital.isAbstract());
         assertFalse (   capital.isSparse());
         assertTrue  (   capital.isSimple());

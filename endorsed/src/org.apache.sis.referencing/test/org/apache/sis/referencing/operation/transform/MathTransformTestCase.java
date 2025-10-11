@@ -81,6 +81,7 @@ import org.opengis.test.referencing.TransformTestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @ExtendWith(FailureDetailsReporter.class)
 public abstract class MathTransformTestCase extends TransformTestCase {
     /**

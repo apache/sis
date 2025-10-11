@@ -315,7 +315,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridCoverage target   = processor.resample(source, targetGG);
         assertInstanceOf(TranslatedGridCoverage.class, target, "Expected fast path.");
         assertSame(targetGG, target.getGridGeometry());
-        assertEnvelopeEquals(sourceGG.getEnvelope(), targetGG.getEnvelope(), STRICT);
+        assertEnvelopeEquals(sourceGG.getEnvelope(), targetGG.getEnvelope(), 0);
         /*
          * The envelope is BOX(20 15, 80 77). Evaluate a single point inside that envelope.
          * The result for identical "real world" coordinates should be the same for both coverages.
@@ -405,7 +405,7 @@ public final class ResampledGridCoverageTest extends TestCase {
                 new AxisDirection[] {AxisDirection.FUTURE, AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP},
                 "Expected (t,λ,φ,H) axes.");
 
-        assertSampleValuesEqual(source.render(null), result.render(null), STRICT, null);
+        assertSampleValuesEqual(source.render(null), result.render(null), 0, null);
     }
 
     /**
@@ -545,7 +545,7 @@ public final class ResampledGridCoverageTest extends TestCase {
          * Target image should be 6×6 pixels, like source image.
          */
         final GridCoverage result = resample(source, targetGeom);
-        assertSampleValuesEqual(source.render(null), result.render(null), STRICT, null);
+        assertSampleValuesEqual(source.render(null), result.render(null), 0, null);
     }
 
     /**
@@ -561,7 +561,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridGeometry target4D = createGridGeometryND(HardCodedCRS.WGS84_4D, 0, 1, 2, 3, false);
         final GridCoverage result   = resample(source3D, target4D);
         assertEquals(target4D, result.getGridGeometry());
-        assertSampleValuesEqual(source3D.render(null), result.render(null), STRICT, null);
+        assertSampleValuesEqual(source3D.render(null), result.render(null), 0, null);
     }
 
     /**
@@ -575,7 +575,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridCoverage source4D = createCoverageND(true);
         final GridCoverage result   = resample(source4D, target3D);
         assertEquals(target3D, result.getGridGeometry());
-        assertSampleValuesEqual(source4D.render(null), result.render(null), STRICT, null);
+        assertSampleValuesEqual(source4D.render(null), result.render(null), 0, null);
     }
 
     /**

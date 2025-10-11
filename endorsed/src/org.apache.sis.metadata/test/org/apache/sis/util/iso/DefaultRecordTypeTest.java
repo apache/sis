@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -84,9 +84,9 @@ public final class DefaultRecordTypeTest extends TestCase {
         // Public properties
         assertSame(container,      type.getContainer());
         assertSame(recordTypeName, type.getTypeName());
-        assertSame(fieldName,      getSingleton(type.getMembers()));
-        assertSame(fieldName,      getSingleton(type.getFieldTypes().keySet()));
-        assertSame(fieldTypeName,  getSingleton(type.getFieldTypes().values()).getTypeName());
+        assertSame(fieldName,      assertSingleton(type.getMembers()));
+        assertSame(fieldName,      assertSingleton(type.getFieldTypes().keySet()));
+        assertSame(fieldTypeName,  assertSingleton(type.getFieldTypes().values()).getTypeName());
         assertSame(fieldTypeName,  type.locate(fieldName));
         assertNull(                type.locate(new DefaultMemberName(null, "otherMember", fieldTypeName)));
     }

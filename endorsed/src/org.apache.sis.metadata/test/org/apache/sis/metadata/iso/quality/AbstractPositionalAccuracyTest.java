@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -38,6 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class AbstractPositionalAccuracyTest extends TestUsingFile {
     /**
      * Creates a new test case.
@@ -86,7 +87,7 @@ public final class AbstractPositionalAccuracyTest extends TestUsingFile {
     @SuppressWarnings("deprecation")
     private void roundtrip(final Format format) throws JAXBException {
         final AbstractElement metadata = unmarshalFile(AbstractElement.class, openTestFile(format));
-        final InternationalString nameOfMeasure = getSingleton(metadata.getNamesOfMeasure());
+        final InternationalString nameOfMeasure = assertSingleton(metadata.getNamesOfMeasure());
         /*
          * Programmatic verification of the text group.
          */
@@ -97,7 +98,7 @@ public final class AbstractPositionalAccuracyTest extends TestUsingFile {
          * Opportunist test. While it was not the purpose of this test, the above metadata
          * needs to contain a "result" element in order to pass XML validation test.
          */
-        final Result result = getSingleton(metadata.getResults());
+        final Result result = assertSingleton(metadata.getResults());
         assertInstanceOf(DefaultConformanceResult.class, result, "Wrong value for <gmd:result>");
         assertEquals(Boolean.TRUE, ((ConformanceResult) result).pass(), "result.pass");
         /*

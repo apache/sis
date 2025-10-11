@@ -30,6 +30,7 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class EnvelopeReducerTest extends TestCase {
     /**
      * The envelopes on which to perform an operation.
@@ -73,7 +74,7 @@ public final class EnvelopeReducerTest extends TestCase {
     public void testUnion() throws TransformException {
         final GeneralEnvelope expected = createFromExtremums(true, 44, -5, 60, 16);
         final GeneralEnvelope actual = Envelopes.union(sources);
-        assertEnvelopeEquals(expected, actual, STRICT);
+        assertEnvelopeEquals(expected, actual);
     }
 
     /**
@@ -85,6 +86,6 @@ public final class EnvelopeReducerTest extends TestCase {
     public void testIntersect() throws TransformException {
         final GeneralEnvelope expected = createFromExtremums(true, 50, 3, 52, 12);
         final GeneralEnvelope actual = Envelopes.intersect(sources);
-        assertEnvelopeEquals(expected, actual, STRICT);
+        assertEnvelopeEquals(expected, actual);
     }
 }

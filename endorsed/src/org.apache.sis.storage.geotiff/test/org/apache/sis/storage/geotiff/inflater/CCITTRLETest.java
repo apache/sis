@@ -26,7 +26,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
 
 
@@ -488,7 +488,7 @@ public final class CCITTRLETest extends TestCase {
          */
         final List<String> unused = new ArrayList<>(2);
         root.printUnusedWords(new StringBuilder(), unused);
-        assertEquals("00000000", TestUtilities.getSingleton(unused));
+        assertEquals("00000000", assertSingleton(unused));
     }
 
     /**

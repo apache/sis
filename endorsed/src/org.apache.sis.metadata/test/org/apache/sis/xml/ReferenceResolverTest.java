@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -34,6 +34,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ReferenceResolverTest extends TestUsingFile {
     /**
      * Creates a new test case.
@@ -56,11 +57,11 @@ public final class ReferenceResolverTest extends TestUsingFile {
         /*
          * The fragment should reference the exact same object as the one in the citation.
          */
-        final var parent  = getSingleton(citation.getCitedResponsibleParties().iterator().next().getParties());
-        final var reusing = getSingleton(getSingleton(data.getPointOfContacts()).getParties());
+        final var parent  = assertSingleton(citation.getCitedResponsibleParties().iterator().next().getParties());
+        final var reusing = assertSingleton(assertSingleton(data.getPointOfContacts()).getParties());
         assertEquals("Little John", reusing.getName().toString());
-        assertSame(getSingleton(parent .getContactInfo()),
-                   getSingleton(reusing.getContactInfo()));
+        assertSame(assertSingleton(parent .getContactInfo()),
+                   assertSingleton(reusing.getContactInfo()));
 
     }
 }

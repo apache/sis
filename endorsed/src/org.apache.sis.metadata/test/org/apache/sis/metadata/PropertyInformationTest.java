@@ -35,8 +35,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.metadata.Assertions.assertTitleEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertTitleEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.Obligation;
@@ -47,6 +47,7 @@ import org.opengis.metadata.Obligation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class PropertyInformationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -76,7 +77,7 @@ public final class PropertyInformationTest extends TestCase {
     private static void assertParentIsCitation(final ExtendedElementInformation information) {
         assertInstanceOf(Identifier.class, information);    // Specific to SIS implementation.
         assertTitleEquals("ISO 19115", ((Identifier) information).getAuthority(), "authority");
-        assertEquals("CI_Citation", getSingleton(information.getParentEntity()));
+        assertEquals("CI_Citation", assertSingleton(information.getParentEntity()));
     }
 
     /**

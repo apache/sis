@@ -27,12 +27,10 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
-import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -47,7 +45,8 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-public class GeneralEnvelopeTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public class GeneralEnvelopeTest extends TestCase {
     /**
      * Tolerance threshold for floating point comparisons.
      */
@@ -72,8 +71,8 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
      * This method is overridden by {@link SubEnvelopeTest}.
      */
     GeneralEnvelope create(final double xmin, final double ymin, final double xmax, final double ymax) {
-        final GeneralEnvelope envelope = new GeneralEnvelope(2);
-        envelope.setCoordinateReferenceSystem(WGS84);
+        final var envelope = new GeneralEnvelope(2);
+        envelope.setCoordinateReferenceSystem(HardCodedCRS.WGS84);
         envelope.setEnvelope(xmin, ymin, xmax, ymax);
         if (!skipValidation) {
             validate(envelope);
@@ -86,7 +85,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
      * This method is overridden by {@link SubEnvelopeTest}.
      */
     void verifyInvariants(final GeneralEnvelope envelope) {
-        assertSame(WGS84, envelope.getCoordinateReferenceSystem());
+        assertSame(HardCodedCRS.WGS84, envelope.getCoordinateReferenceSystem());
     }
 
     /**
@@ -152,14 +151,14 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         ei.intersect(e2);
         assertFalse(e1.isEmpty(), "isEmpty");
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
-        assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
+        assertTrue(ei.equals(ri, 0, false), "Using GeneralEnvelope.");
 
         // Interchanges arguments.
         ei.setEnvelope(e2);
         ei.intersect(e1);
         assertFalse(e1.isEmpty(), "isEmpty");
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
-        assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
+        assertTrue(ei.equals(ri, 0, false), "Using GeneralEnvelope.");
     }
 
     /**
@@ -187,7 +186,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         ei.add(e2);
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
         if (!inf) {
-            assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
+            assertTrue(ei.equals(ri, 0, false), "Using GeneralEnvelope.");
         }
 
         // Interchanges arguments.
@@ -199,7 +198,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
             assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
         }
         if (!inf) {
-            assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
+            assertTrue(ei.equals(ri, 0, false), "Using GeneralEnvelope.");
         }
     }
 
@@ -219,7 +218,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         final GeneralEnvelope ec = new GeneralEnvelope(e);
         ec.add(p);
         assertEnvelopeEquals(ec, xmin, ymin, xmax, ymax);
-        assertTrue(ec.equals(r, STRICT, false), "Using GeneralEnvelope.");
+        assertTrue(ec.equals(r, 0, false), "Using GeneralEnvelope.");
     }
 
     /**
@@ -593,7 +592,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
          */
         e.setRange(1, -10, -20);
         var ex = assertThrows(IllegalStateException.class,
-                () -> e.setCoordinateReferenceSystem(WGS84),
+                () -> e.setCoordinateReferenceSystem(HardCodedCRS.WGS84),
                 "Invalid range shall not be allowed.");
         assertMessageContains(ex, AxisNames.GEODETIC_LATITUDE);
         /*
@@ -605,7 +604,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         assertEquals(  3, e.getUpper(0));
         assertEquals(-20, e.getUpper(1));
         e.setRange(1, -20, -10);
-        e.setCoordinateReferenceSystem(WGS84);
+        e.setCoordinateReferenceSystem(HardCodedCRS.WGS84);
         assertEnvelopeEquals(e, 2, -20, 3, -10);
         verifyInvariants(e);
     }
@@ -630,7 +629,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
      */
     @Test
     public void testTranslate() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5}, new double[] {8, 7});
+        final var envelope = new GeneralEnvelope(new double[] {4, 5}, new double[] {8, 7});
         envelope.translate(2, -4);
         assertEnvelopeEquals(envelope, 6, 1, 10, 3);
     }
@@ -644,7 +643,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
         envelope.setCoordinateReferenceSystem(HardCodedCRS.GEOID_4D_MIXED_ORDER);
         envelope = envelope.horizontal();
         assertEnvelopeEquals(envelope, 5, -8, 7, -3);
-        assertSame(WGS84_LATITUDE_FIRST, envelope.getCoordinateReferenceSystem());
+        assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST, envelope.getCoordinateReferenceSystem());
     }
 
     /**
@@ -653,7 +652,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
      */
     @Test
     public void testTimeRange() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
         envelope.setRange(0, -20, 25);
         envelope.setRange(1, -30, 12);
         envelope.setRange(2, 58840, 59000.75);
@@ -742,7 +741,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
      */
     @Test
     public void testWktFormatting() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(3);
+        final var envelope = new GeneralEnvelope(3);
         envelope.setRange(0,  6, 10);
         envelope.setRange(1, 16, 20);
         envelope.setRange(2, 23, 50);
@@ -761,7 +760,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
          * Initializes an empty envelope. The new envelope is empty
          * but not null because initialized to 0, not NaN.
          */
-        final GeneralEnvelope e1 = new GeneralEnvelope(4);
+        final var e1 = new GeneralEnvelope(4);
         assertTrue  (e1.isEmpty());
         assertFalse (e1.isAllNaN());
         assertEquals(e1.getLowerCorner(), e1.getUpperCorner());
@@ -779,7 +778,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
          * Creates a new envelope initialized with the same
          * coordinate values. The two envelope shall be equal.
          */
-        final GeneralEnvelope e2 = new GeneralEnvelope(e1);
+        final var e2 = new GeneralEnvelope(e1);
         assertPositionEquals(e1.getLowerCorner(), e2.getLowerCorner());
         assertPositionEquals(e1.getUpperCorner(), e2.getUpperCorner());
         assertTrue   (e1.contains(e2, true ));
@@ -827,7 +826,7 @@ public class GeneralEnvelopeTest extends EPSGDependentTestCase {
      */
     @Test
     public void testClone() {
-        final GeneralEnvelope e1 = new GeneralEnvelope(2);
+        final var e1 = new GeneralEnvelope(2);
         e1.setRange(0, -40, +60);
         e1.setRange(1, -20, +30);
         final GeneralEnvelope e2 = e1.clone();

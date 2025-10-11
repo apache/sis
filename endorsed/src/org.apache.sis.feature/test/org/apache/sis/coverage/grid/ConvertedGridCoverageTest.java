@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 
@@ -43,6 +43,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ConvertedGridCoverageTest extends TestCase {
     /**
      * Creates a new test case.
@@ -124,7 +125,7 @@ public final class ConvertedGridCoverageTest extends TestCase {
         assertValuesEqual(render(target), 0, new double[][] {
                 {90, 130}      // {-1, 3} × 10 + 100
         });
-        final SampleDimension band = getSingleton(target.getSampleDimensions());
+        final SampleDimension band = assertSingleton(target.getSampleDimensions());
         final NumberRange<?> range = band.getSampleRange().get();
         assertEquals(100, range.getMinDouble());
         assertEquals(200, range.getMaxDouble());

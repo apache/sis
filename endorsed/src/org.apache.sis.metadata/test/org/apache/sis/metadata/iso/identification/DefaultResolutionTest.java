@@ -27,7 +27,6 @@ import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**
@@ -36,6 +35,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class DefaultResolutionTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.

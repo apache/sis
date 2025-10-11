@@ -34,7 +34,6 @@ import org.apache.sis.storage.StorageConnector;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCaseWithLogs;
 
 
@@ -60,7 +59,6 @@ public final class StoreTest extends TestCaseWithLogs {
     private static Path testDirectory() throws URISyntaxException {
         final URL sample = StoreTest.class.getResource("test-data/README.txt");
         assertNotNull(sample, "Test data not found");
-        assumeTrue(sample.getProtocol().equals("file"));
         return Path.of(sample.toURI()).getParent();
     }
 

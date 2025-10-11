@@ -40,6 +40,7 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class UnitFormatTest extends TestCase {
     /**
      * Creates a new test case.

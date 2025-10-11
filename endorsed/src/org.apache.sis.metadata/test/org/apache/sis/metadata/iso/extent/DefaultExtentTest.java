@@ -31,7 +31,6 @@ import org.apache.sis.xml.NilObject;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 
@@ -42,6 +41,7 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@SuppressWarnings("exports")
 public final class DefaultExtentTest extends TestUsingFile {
     /**
      * Creates a new test case.
@@ -132,7 +132,7 @@ public final class DefaultExtentTest extends TestUsingFile {
                 OffsetDateTime.parse("2010-01-27T08:26:10-05:00"),
                 OffsetDateTime.parse("2010-08-27T08:26:10-05:00"));
         final var extent = new DefaultExtent(null, bbox, null, temporal);
-        assertMarshalEqualsFile(openTestFile(format), extent, format.schemaVersion, STRICT,
+        assertMarshalEqualsFile(openTestFile(format), extent, format.schemaVersion, 0,
                 new String[] {"gml:description"},                               // Ignored nodes.
                 new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});      // Ignored attributes.
         assertEqualsIgnoreMetadata(extent, unmarshalFile(DefaultExtent.class, openTestFile(format)));

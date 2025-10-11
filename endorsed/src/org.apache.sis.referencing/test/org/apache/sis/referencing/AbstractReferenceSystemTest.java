@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.time.LocalDate;
@@ -34,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.VerticalCRSMock;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
@@ -49,6 +48,7 @@ import static org.opengis.referencing.ObjectDomain.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class AbstractReferenceSystemTest extends TestCase {
     /**
      * Creates a new test case.
@@ -61,7 +61,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
      */
     @Test
     public void testCreateFromMap() {
-        final Map<String,Object> properties = new HashMap<>();
+        final var properties = new HashMap<String,Object>();
         assertNull(properties.put("name",       "This is a name"));
         assertNull(properties.put("scope",      "This is a scope"));
         assertNull(properties.put("scope_fr",   "Valide dans ce domaine"));
@@ -71,7 +71,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
         final var reference = new AbstractReferenceSystem(properties);
         Validators.validate(reference);
 
-        final InternationalString scope = getSingleton(reference.getDomains()).getScope();
+        final InternationalString scope = assertSingleton(reference.getDomains()).getScope();
 
         assertEquals("This is a name",         reference.getName().getCode());
         assertEquals("This is a scope",        scope.toString(Locale.ROOT));
@@ -85,7 +85,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final Map<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         assertNull(properties.put("code",       "4326"));
         assertNull(properties.put("codeSpace",  "EPSG"));
         assertNull(properties.put("scope",      "This is a scope"));
@@ -104,7 +104,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        final Map<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         assertNull(properties.put(NAME_KEY, "My “object”."));
         assertNull(properties.put(SCOPE_KEY, "Large scale topographic mapping and cadastre."));
         assertNull(properties.put(REMARKS_KEY, "注です。"));

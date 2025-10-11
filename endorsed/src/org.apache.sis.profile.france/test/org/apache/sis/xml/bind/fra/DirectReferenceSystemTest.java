@@ -28,8 +28,8 @@ import org.apache.sis.util.ComparisonMode;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.xml.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -71,7 +71,7 @@ public final class DirectReferenceSystemTest extends TestCase {
         final DefaultCitation citation = new DefaultCitation("EPSG Geodetic Parameter Dataset");
         Collection<ResponsibleParty> r = HardCodedCitations.EPSG.getCitedResponsibleParties();
         if (legacy) {
-            r = Set.of(new DefaultResponsibleParty(TestUtilities.getSingleton(r)));
+            r = Set.of(new DefaultResponsibleParty(assertSingleton(r)));
         }
         citation.setCitedResponsibleParties(r);
         final DirectReferenceSystem refSys = new DirectReferenceSystem(new RS_Identifier(citation, "4326"));

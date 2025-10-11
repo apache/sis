@@ -25,8 +25,10 @@ import java.io.ByteArrayOutputStream;
 import org.opengis.annotation.Obligation;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.xml.NilReason;
@@ -34,10 +36,8 @@ import org.apache.sis.xml.NilReason;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-import static org.apache.sis.test.TestUtilities.toTreeStructure;
-import static org.apache.sis.test.TestUtilities.formatMetadata;
+import org.apache.sis.test.TestCase;
 
 
 /**
@@ -46,6 +46,7 @@ import static org.apache.sis.test.TestUtilities.formatMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TreeTableViewTest extends TestCase {
     /**
      * Creates a new test case.
@@ -91,8 +92,70 @@ public final class TreeTableViewTest extends TestCase {
     public void testToString() {
         final TreeTableView metadata = create(ValueExistencePolicy.COMPACT);
         assertFalse(metadata.getColumns().contains(MetadataColumn.NIL_REASON));
-        assertMultilinesEquals(EXPECTED, formatMetadata(metadata));                             // Locale-independent
-        assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString()));     // Locale-dependent.
+        assertMetadataTreeEquals(EXPECTED, metadata);     // Locale-independent
+        final String[] structure = {
+            "",
+            "  ├─",
+            "  ├─",
+            "  ├─",
+            "  ├─",
+            "  │   ├─",
+            "  │   └─",
+            "  ├─",
+            "  │   ├─",
+            "  │   │   └─",
+            "  │   │       └─",
+            "  │   │           └─",
+            "  │   └─",
+            "  ├─",
+            "  ├─",
+            "  └─",
+            ""
+            };
+        assertArrayEquals(structure, toTreeStructure(EXPECTED));    // Test of `toTreeStructure(CharSequence)`.
+        assertArrayEquals(structure, toTreeStructure(metadata.toString()));     // Locale-dependent.
+    }
+
+    /**
+     * Returns the tree structure of the given string representation, without the localized text.
+     * For example, given the following string:
+     *
+     * <pre class="text">
+     *   Citation
+     *     ├─Title…………………………………………………… Some title
+     *     └─Cited responsible party
+     *         └─Individual name……………… Some person of contact</pre>
+     *
+     * this method returns an array containing the following elements:
+     *
+     * <pre class="text">
+     *   "",
+     *   "  ├─",
+     *   "  └─",
+     *   "      └─"</pre>
+     *
+     * This method is used for comparing two trees having string representation in different locales.
+     * In such case, we cannot compare the actual text content. The best we can do is to compare
+     * the tree structure.
+     *
+     * @param  tree  the string representation of a tree.
+     * @return the structure of the given tree, without text.
+     */
+    static CharSequence[] toTreeStructure(final CharSequence tree) {
+        final CharSequence[] lines = CharSequences.split(tree, '\n');
+        for (int i=0; i<lines.length; i++) {
+            final CharSequence line = lines[i];
+            final int length = line.length();
+            for (int j=0; j<length;) {
+                final int c = Character.codePointAt(line, j);
+                if (Character.isLetterOrDigit(c)) {
+                    lines[i] = line.subSequence(0, j);
+                    break;
+                }
+                j += Character.charCount(c);
+            }
+        }
+        return lines;
     }
 
     /**
@@ -112,7 +175,7 @@ public final class TreeTableViewTest extends TestCase {
     public void testNilReasons() {
         final TreeTableView metadata = create(ValueExistencePolicy.NON_NULL);
         assertTrue(metadata.getColumns().contains(MetadataColumn.NIL_REASON));
-        final var citation = (DefaultCitation) metadata.getRoot().getUserObject();
+        final DefaultCitation citation = assertInstanceOf(DefaultCitation.class, metadata.getRoot().getUserObject());
         citation.setTitle(NilReason.TEMPLATE.createNilObject(InternationalString.class));
         verify(metadata.getRoot(), null, NilReason.TEMPLATE);
     }
@@ -195,17 +258,16 @@ public final class TreeTableViewTest extends TestCase {
     @Test
     public void testSerialization() throws Exception {
         final Object original = create(ValueExistencePolicy.COMPACT);
-        final Object deserialized;
-        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        try (ObjectOutputStream out = new ObjectOutputStream(buffer)) {
+        final var buffer = new ByteArrayOutputStream();
+        try (var out = new ObjectOutputStream(buffer)) {
             out.writeObject(original);
         }
         // Now reads the object we just serialized.
-        final byte[] data = buffer.toByteArray();
-        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data))) {
-            deserialized = in.readObject();
+        final TreeTableView deserialized;
+        try (var in = new ObjectInputStream(new ByteArrayInputStream(buffer.toByteArray()))) {
+            deserialized = assertInstanceOf(TreeTableView.class, in.readObject());
         }
-        assertMultilinesEquals(EXPECTED, formatMetadata((TreeTableView) deserialized));
+        assertMetadataTreeEquals(EXPECTED, deserialized);
     }
 
     /**
@@ -216,14 +278,39 @@ public final class TreeTableViewTest extends TestCase {
      */
     @Test
     public void testRemarks() {
-        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(170, -160, -30, 40);
-        final String text = formatMetadata(bbox.asTreeTable());
-        assertMultilinesEquals(
+        final var bbox = new DefaultGeographicBoundingBox(170, -160, -30, 40);
+        assertMetadataTreeEquals(
                 "Geographic bounding box\n" +
                 "  ├─West bound longitude…… 170°E\n" +
                 "  ├─East bound longitude…… 160°W…… Bounding box crosses the antimeridian.\n" +   // See method javadoc.
                 "  ├─South bound latitude…… 30°S\n" +
                 "  ├─North bound latitude…… 40°N\n" +
-                "  └─Extent type code……………… True\n", text);
+                "  └─Extent type code……………… True\n", bbox.asTreeTable());
+    }
+
+    /**
+     * Asserts that the unlocalized string representation of {@code NAME},
+     * {@code VALUE} and {@code REMARKS} columns of the given tree table is equal to the expected string.
+     * The columns used by this methods are the columns included in default string representation of metadata.
+     * Dates and times, if any, will be formatted using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
+     * This method is used mostly as a convenient way to verify the content of an ISO 19115 metadata object.
+     *
+     * @param  expected  the expected unlocalized string representation of the given tree table.
+     * @param  actual    the table for which to verify the string representation.
+     */
+    public static void assertMetadataTreeEquals(final String expected, final TreeTable actual) {
+        final String tree;
+        synchronized (UNLOCALIZED_FORMAT) {
+            tree = UNLOCALIZED_FORMAT.format(actual);
+        }
+        assertMultilinesEquals(expected, tree);
+    }
+
+    /**
+     * The format to use for unlocalized string representations.
+     */
+    private static final TreeTableFormat UNLOCALIZED_FORMAT = new TreeTableFormat(null, null);
+    static {
+        UNLOCALIZED_FORMAT.setColumns(TableColumn.NAME, TableColumn.VALUE, TableColumn.REMARKS);
     }
 }

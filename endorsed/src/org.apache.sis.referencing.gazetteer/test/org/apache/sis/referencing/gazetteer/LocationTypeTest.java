@@ -21,8 +21,8 @@ import org.opengis.metadata.extent.GeographicDescription;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -36,6 +36,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LocationTypeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -158,7 +159,7 @@ public final class LocationTypeTest extends TestCase {
         assertEquals(name,           String.valueOf(type.getName()));
         assertEquals(theme,          String.valueOf(type.getTheme()));
         assertEquals(definition,     String.valueOf(type.getDefinition()));
-        assertEquals(identification, String.valueOf(TestUtilities.getSingleton(type.getIdentifications())));
+        assertEquals(identification, String.valueOf(assertSingleton(type.getIdentifications())));
         assertEquals(owner,          String.valueOf(type.getOwner().getName()));
         assertEquals("UK", ((GeographicDescription) type.getTerritoryOfUse()).getGeographicIdentifier().getCode());
     }

@@ -32,6 +32,7 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DomainDefinitionTest extends TestCase {
     /**
      * Creates a new test case.
@@ -51,6 +52,6 @@ public final class DomainDefinitionTest extends TestCase {
                 new AffineTransform2D(9, 0, 0, 9, 0, 0)); // This one should have no effect.
 
         final Envelope domain = MathTransforms.getDomain(transform).get();
-        assertEnvelopeEquals(new Envelope2D(null, 0, 0, 1/2d, 1/4d), domain, STRICT);
+        assertEnvelopeEquals(new Envelope2D(null, 0, 0, 1/2d, 1/4d), domain);
     }
 }

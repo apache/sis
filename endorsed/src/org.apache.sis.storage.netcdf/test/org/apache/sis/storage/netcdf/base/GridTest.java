@@ -24,7 +24,7 @@ import org.apache.sis.storage.DataStoreException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.TestData;
@@ -73,7 +73,7 @@ public class GridTest extends TestCase {
      * Returns the coordinate system axes for the <abbr>CRS</abbr> decoded from the given file.
      */
     private Axis[] axes(final TestData data) throws IOException, DataStoreException {
-        return getSingleton(filter(selectDataset(data).getGridCandidates())).getAxes(decoder());
+        return assertSingleton(filter(selectDataset(data).getGridCandidates())).getAxes(decoder());
     }
 
     /**
@@ -84,12 +84,12 @@ public class GridTest extends TestCase {
      */
     @Test
     public void testDimensions() throws IOException, DataStoreException {
-        Grid geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridCandidates()));
+        Grid geometry = assertSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridCandidates()));
         assertEquals(2, geometry.getSourceDimensions());
         assertEquals(2, geometry.getAxes(decoder()).length);
 
         final int n = includeRuntimeDimension ? 5 : 4;
-        geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridCandidates()));
+        geometry = assertSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridCandidates()));
         assertEquals(4, geometry.getSourceDimensions());
         assertEquals(n, geometry.getAxes(decoder()).length);
     }

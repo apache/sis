@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.apache.sis.referencing.EPSGDependentTestCase;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.factory.TestFactorySource;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
@@ -39,9 +39,10 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @Execution(ExecutionMode.CONCURRENT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public final class ComparisonWithEPSG extends EPSGDependentTestCase {
+public final class ComparisonWithEPSG extends TestCase {
     /**
      * The source of the EPSG factory.
      */

@@ -1020,7 +1020,7 @@ loop:   for (int i=0; ; i++) {
      * @throws SecurityException if this method does not have the permission to install the formatter.
      */
     @Configuration(writeAccess = Configuration.Access.STATIC)
-    public static MonolineFormatter install() throws SecurityException {
+    public static MonolineFormatter install() {
         return install(Logger.getLogger(""), null);
     }
 
@@ -1065,7 +1065,7 @@ loop:   for (int i=0; ; i++) {
      */
     @Debug
     @Configuration(writeAccess = Configuration.Access.STATIC)
-    public static MonolineFormatter install(final Logger logger, final Level level) throws SecurityException {
+    public static MonolineFormatter install(final Logger logger, final Level level) {
         MonolineFormatter monoline = null;
         for (final Handler handler : logger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {

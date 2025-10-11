@@ -38,10 +38,10 @@ import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
+import static org.apache.sis.test.TestCase.assumeConnectionToEPSG;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
@@ -190,10 +190,9 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
         final double expectedX = -25394.59;
         final double expectedY = 175688.20;
 
-        CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory,
-                   "EPSG authority factory is required for this test.");
-        CoordinateOperationAuthorityFactory asOpFactory = (CoordinateOperationAuthorityFactory) crsFactory;
+        final CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
+        assumeConnectionToEPSG(crsFactory instanceof CoordinateOperationAuthorityFactory);
+        var asOpFactory = (CoordinateOperationAuthorityFactory) crsFactory;
 
         // MGI (Ferro) to WGS 84 (1)
         CoordinateOperation datumOperation = asOpFactory.createCoordinateOperation("3966");
@@ -237,9 +236,8 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
      */
     @Test
     public void testMercatorWraparound() throws FactoryException, TransformException {
-        CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory,
-                   "EPSG authority factory is required for this test.");
+        final CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
+        assumeConnectionToEPSG(crsFactory instanceof CoordinateOperationAuthorityFactory);
 
         CoordinateReferenceSystem sourceCRS = crsFactory.createCoordinateReferenceSystem("3001");
         CoordinateReferenceSystem targetCRS = crsFactory.createCoordinateReferenceSystem("4211");

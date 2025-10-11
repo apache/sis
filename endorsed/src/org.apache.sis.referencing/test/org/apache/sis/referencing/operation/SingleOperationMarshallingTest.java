@@ -31,7 +31,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.measure.Units;
@@ -46,14 +45,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.test.TestUtilities.getScope;
-import static org.apache.sis.test.TestUtilities.getDomainOfValidity;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.test.Assertions.assertSingletonAuthorityCode;
+import static org.apache.sis.test.Assertions.assertSingletonScope;
+import static org.apache.sis.test.Assertions.assertSingletonDomainOfValidity;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertIdentifierEquals;
-import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -61,6 +60,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
@@ -154,11 +154,11 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
     public void testConversionUnmarshalling() throws JAXBException {
         final DefaultConversion c = unmarshalFile(DefaultConversion.class, openTestFile(false));
         assertEquals("World Mercator", c.getName().getCode(), "name");
-        assertEquals("3395", getSingleton(c.getIdentifiers()).getCode(), "identifier");
-        assertEquals("Very small scale mapping.", getScope(c), "scope");
+        assertEquals("3395", assertSingletonAuthorityCode(c), "identifier");
+        assertEquals("Very small scale mapping.", assertSingletonScope(c), "scope");
         assertNull(c.getOperationVersion(), "operationVersion");
 
-        final GeographicBoundingBox e = getDomainOfValidity(c);
+        final GeographicBoundingBox e = assertSingletonDomainOfValidity(c);
         assertEquals(+180, e.getEastBoundLongitude(), "eastBoundLongitude");
         assertEquals(-180, e.getWestBoundLongitude(), "westBoundLongitude");
         assertEquals(  84, e.getNorthBoundLatitude(), "northBoundLatitude");
@@ -219,26 +219,26 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
     public void testTransformationUnmarshalling() throws JAXBException {
         final DefaultTransformation c = unmarshalFile(DefaultTransformation.class, openTestFile(true));
         assertEquals("NTF (Paris) to NTF (1)", c.getName().getCode(), "name");
-        assertEquals("1763", getSingleton(c.getIdentifiers()).getCode(), "identifier");
-        assertEquals("Change of prime meridian.", getScope(c), "scope");
+        assertEquals("1763", assertSingletonAuthorityCode(c), "identifier");
+        assertEquals("Change of prime meridian.", assertSingletonScope(c), "scope");
         assertEquals("IGN-Fra", c.getOperationVersion(), "operationVersion");
 
         final OperationMethod method = c.getMethod();
         assertNotNull(method, "method");
         assertEquals("Longitude rotation", method.getName().getCode(), "method.name");
-        assertEquals("9601", getSingleton(method.getIdentifiers()).getCode(), "method.identifier");
+        assertEquals("9601", assertSingletonAuthorityCode(method), "method.identifier");
         assertEquals("Target_longitude = Source_longitude + longitude_offset.", method.getFormula().getFormula().toString(), "method.formula");
 
-        final var descriptor = (ParameterDescriptor<?>) getSingleton(method.getParameters().descriptors());
+        final var descriptor = assertInstanceOf(ParameterDescriptor.class, assertSingleton(method.getParameters().descriptors()));
         assertEquals("Longitude offset", descriptor.getName().getCode(), "descriptor.name");
-        assertEquals("8602", getSingleton(descriptor.getIdentifiers()).getCode(), "descriptor.identifier");
+        assertEquals("8602", assertSingletonAuthorityCode(descriptor), "descriptor.identifier");
         assertEquals(Double.class, descriptor.getValueClass(), "descriptor.valueClass");
 
         final ParameterValueGroup parameters = c.getParameterValues();
         assertNotNull(parameters, "parameters");
         assertSame(method.getParameters(), parameters.getDescriptor(), "parameters.descriptors");
 
-        final var parameter = (ParameterValue<?>) getSingleton(parameters.values());
+        final var parameter = assertInstanceOf(ParameterValue.class, assertSingleton(parameters.values()));
         assertSame  (descriptor, parameter.getDescriptor(), "parameters.descriptor");
         assertEquals(Units.GRAD, parameter.getUnit(),       "parameters.unit");
         assertEquals(2.5969213,  parameter.getValue(),      "parameters.value");
@@ -246,20 +246,21 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         final CoordinateReferenceSystem sourceCRS = c.getSourceCRS();
         assertInstanceOf(GeodeticCRS.class, sourceCRS, "sourceCRS");
         assertEquals("NTF (Paris)", sourceCRS.getName().getCode(), "sourceCRS.name");
-        assertEquals("Geodetic survey.", getScope(sourceCRS), "sourceCRS.scope");
-        assertEquals("4807", getSingleton(sourceCRS.getIdentifiers()).getCode(), "sourceCRS.identifier");
+        assertEquals("Geodetic survey.", assertSingletonScope(sourceCRS), "sourceCRS.scope");
+        assertEquals("4807", assertSingletonAuthorityCode(sourceCRS), "sourceCRS.identifier");
 
         final CoordinateReferenceSystem targetCRS = c.getTargetCRS();
         assertInstanceOf(GeodeticCRS.class,  targetCRS, "targetCRS");
         assertEquals("NTF", targetCRS.getName().getCode(), "targetCRS.name");
-        assertEquals("Geodetic survey.", getScope(targetCRS), "targetCRS.scope");
-        assertEquals("4275", getSingleton(targetCRS.getIdentifiers()).getCode(), "targetCRS.identifier");
+        assertEquals("Geodetic survey.", assertSingletonScope(targetCRS), "targetCRS.scope");
+        assertEquals("4275", assertSingletonAuthorityCode(targetCRS), "targetCRS.identifier");
 
-        final var tr = assertInstanceOf(LinearTransform.class, c.getMathTransform());
-        assertMatrixEquals(new Matrix3(1, 0, 0,
-                                       0, 1, 2.33722917,
-                                       0, 0, 1),
-                tr.getMatrix(), STRICT, "mathTransform.matrix");
+        assertMatrixEquals(
+                new Matrix3(1, 0, 0,
+                            0, 1, 2.33722917,
+                            0, 0, 1),
+                c.getMathTransform(),
+                "mathTransform.matrix");
         /*
          * Validate object, then discard warnings caused by duplicated identifiers.
          * Those duplications are intentional, see comment in `Transformation.xml`.

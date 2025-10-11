@@ -24,7 +24,6 @@ import java.time.Instant;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
-import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.StorageConnector;
@@ -34,9 +33,8 @@ import org.apache.sis.storage.gps.Fix;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingletonFeature;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.FeatureTypeInfo;
@@ -156,14 +154,14 @@ public final class ReaderTest extends TestCase {
      */
     @SuppressWarnings("fallthrough")
     static void verifyMetadata(final Metadata md, final int numLinks) {
-        assertEquals      ("Sample",                            md.name);
-        assertEquals      ("GPX test file",                     md.description);
-        assertEquals      (date("2010-03-01 00:00:00"),         md.time);
-        assertArrayEquals (new String[] {"sample", "metadata"}, md.keywords.toArray());
-        assertBoundsEquals(-20, 30, 10, 40,                     md.bounds);
-        assertEquals      ("Jean-Pierre",                       md.author.name);
-        assertEquals      ("jean.pierre@test.com",              md.author.email);
-        assertEquals      (numLinks,                            md.links.size());
+        assertEquals      ("Sample",                              md.name);
+        assertEquals      ("GPX test file",                       md.description);
+        assertEquals      (Instant.parse("2010-03-01T00:00:00Z"), md.time.toInstant());
+        assertArrayEquals (new String[] {"sample", "metadata"},   md.keywords.toArray());
+        assertBoundsEquals(-20, 30, 10, 40,                       md.bounds);
+        assertEquals      ("Jean-Pierre",                         md.author.name);
+        assertEquals      ("jean.pierre@test.com",                md.author.email);
+        assertEquals      (numLinks,                              md.links.size());
         switch (numLinks) {
             default: // Fallthrough everywhere.
             case 3:  assertStringEquals("website",                   md.links.get(2).type);
@@ -192,7 +190,7 @@ public final class ReaderTest extends TestCase {
          * Verifies the list of feature types declared in the given metadata. Those features
          * are not listed in GPX files; they are rather hard-coded in Types.metadata constant.
          */
-        final var content = assertInstanceOf(FeatureCatalogueDescription.class, getSingleton(md.getContentInfo()));
+        final var content = assertSingletonFeature(md);
         assertTrue(content.isIncludedWithDataset());
         final Iterator<? extends FeatureTypeInfo> it = content.getFeatureTypeInfo().iterator();
         assertStringEquals("Route",    it.next().getFeatureTypeName().tip());

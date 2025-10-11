@@ -49,17 +49,17 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.internal.shared.Constants;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
- * Assertion methods used by the {@code org.apache.sis.referencing} module in addition of the ones inherited
- * from other modules and libraries.
+ * Assertion methods used by the {@code org.apache.sis.referencing} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -140,7 +140,7 @@ public final class Assertions {
     public static void assertEpsgNameAndIdentifierEqual(final String name, final int identifier, final IdentifiedObject object) {
         assertNotNull(object, name);
         assertEpsgIdentifierEquals(name, object.getName());
-        assertEpsgIdentifierEquals(String.valueOf(identifier), TestUtilities.getSingleton(object.getIdentifiers()));
+        assertEpsgIdentifierEquals(String.valueOf(identifier), assertSingleton(object.getIdentifiers()));
     }
 
     /**
@@ -155,7 +155,7 @@ public final class Assertions {
         if (expected == null) {
             assertTrue(aliases.isEmpty(), "aliases.isEmpty()");
         } else {
-            assertEquals(expected, TestUtilities.getSingleton(aliases).tip().toString(), "alias");
+            assertEquals(expected, assertSingleton(aliases).tip().toString(), "alias");
         }
     }
 
@@ -213,7 +213,7 @@ public final class Assertions {
             if (!(candidate instanceof ParameterValue<?>)) {
                 throw new UnsupportedOperationException("Not yet implemented.");
             }
-            final ParameterValue<?> value = (ParameterValue<?>) candidate;
+            final ParameterValue<?> value = assertInstanceOf(ParameterValue.class, candidate);
             final ParameterDescriptor<?> descriptor = value.getDescriptor();
             final String   name       = descriptor.getName().getCode();
             final Unit<?>  unit       = descriptor.getUnit();
@@ -243,11 +243,8 @@ public final class Assertions {
      * @param affine     if {@code true}, then the last row is expected to contains the value 1
      *                   in the last column, and all other columns set to 0.
      * @param matrix     the matrix to test.
-     * @param tolerance  the tolerance threshold while comparing floating point values.
      */
-    public static void assertDiagonalEquals(final double[] expected, final boolean affine,
-            final Matrix matrix, final double tolerance)
-    {
+    public static void assertDiagonalEquals(final double[] expected, final boolean affine, final Matrix matrix) {
         final int numRows = matrix.getNumRow();
         final int numCols = matrix.getNumCol();
         for (int j=0; j<numRows; j++) {
@@ -261,7 +258,7 @@ public final class Assertions {
                     e = 0;
                 }
                 final int ti=i, tj=j;       // Because lambda requires final values.
-                assertEquals(e, matrix.getElement(j, i), tolerance, () -> "matrix(" + tj + ", " + ti + ")");
+                assertEquals(e, matrix.getElement(j, i), () -> "matrix(" + tj + ", " + ti + ")");
             }
         }
     }
@@ -482,6 +479,17 @@ public final class Assertions {
         if (transform instanceof LinearTransform linear) {
             assertFalse(linear.getMatrix().isIdentity(), "getMatrix().isIdentity()");
         }
+    }
+
+    /**
+     * Asserts that the given transform can be represented by the given matrix.
+     *
+     * @param expected  the expected matrix.
+     * @param actual    the transform from which to get the actual matrix.
+     * @param message   header of the exception message in case of failure, or {@code null} if none.
+     */
+    public static void assertMatrixEquals(final Matrix expected, final MathTransform actual, final String message) {
+        org.opengis.test.Assertions.assertMatrixEquals(expected, MathTransforms.getMatrix(actual), message);
     }
 
     /**

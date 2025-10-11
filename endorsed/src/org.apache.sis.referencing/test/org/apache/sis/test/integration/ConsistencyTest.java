@@ -41,10 +41,8 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.UnformattableObjectException;
 
 // Test dependencies
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 
 
@@ -116,14 +114,14 @@ public final class ConsistencyTest extends TestCase {
     }
 
     /**
-     * Verifies the WKT consistency of all CRS instances.
+     * Verifies the <abbr>WKT</abbr> consistency of all <abbr>CRS</abbr> instances.
+     * This check is slow and executed only if extensive tests are enabled.
      *
      * @throws FactoryException if an error other than "unsupported operation method" occurred.
      */
     @Test
-    @Tag(TAG_SLOW)
     public void testCoordinateReferenceSystems() throws FactoryException {
-        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
+        assumeExtensiveTestsEnabled();
         final var v1  = new WKTFormat();
         final var v1c = new WKTFormat();
         final var v2  = new WKTFormat();

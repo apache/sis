@@ -20,7 +20,6 @@ import java.util.Set;
 import java.net.URI;
 import java.net.URISyntaxException;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.metadata.identification.Identification;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.util.SimpleInternationalString;
@@ -30,8 +29,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -39,6 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class XLinkMarshallingTest extends TestCase {
     /**
      * A XML with a {@code xlink:href} without element definition.
@@ -73,10 +72,11 @@ public final class XLinkMarshallingTest extends TestCase {
      * @param  metadata       the metadata to verify.
      */
     private static void verify(final boolean isNilExpected, final DefaultMetadata metadata) {
-        final Identification identification = getSingleton(metadata.getIdentificationInfo());
+        final IdentifiedObject identification = assertInstanceOf(
+                IdentifiedObject.class,
+                assertSingleton(metadata.getIdentificationInfo()));
         assertEquals(isNilExpected, identification instanceof NilObject, "NilObject");
-        assertInstanceOf(IdentifiedObject.class, identification, "Identification");
-        final XLink xlink = ((IdentifiedObject) identification).getIdentifierMap().getSpecialized(IdentifierSpace.XLINK);
+        final XLink xlink = identification.getIdentifierMap().getSpecialized(IdentifierSpace.XLINK);
         assertEquals(DUMMY_URL, xlink.getHRef().toString(), "xlink:href");
     }
 

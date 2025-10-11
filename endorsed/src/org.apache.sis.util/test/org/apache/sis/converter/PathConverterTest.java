@@ -22,15 +22,14 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import org.apache.sis.math.FunctionProperty;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.api.condition.DisabledOnOs;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.PlatformDependent;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -45,15 +44,6 @@ public final class PathConverterTest extends TestCase {
      * Creates a new test case.
      */
     public PathConverterTest() {
-    }
-
-    /**
-     * Assumes that the platform file system has a Unix-style root.
-     * Windows platform has driver letters instead, like "C:\\",
-     * which are not correctly tested by this class.
-     */
-    private static void assumeUnixRoot() {
-        assumeTrue(ArraysExt.contains(File.listRoots(), new File("/")));
     }
 
     /**
@@ -86,9 +76,8 @@ public final class PathConverterTest extends TestCase {
      * @throws URISyntaxException if this test uses a malformed URI.
      */
     @Test
-    @PlatformDependent
+    @DisabledOnOs(OS.WINDOWS)
     public void testFile_URI() throws URISyntaxException {
-        assumeUnixRoot();
         final ObjectConverter<File,URI> c = PathConverter.FileURI.INSTANCE;
         runInvertibleConversion(c, new File("/home/user/index.txt"), new URI("file:/home/user/index.txt"));
         assertSerializedEquals(c);
@@ -100,9 +89,8 @@ public final class PathConverterTest extends TestCase {
      * @throws MalformedURLException if this test uses a malformed URL.
      */
     @Test
-    @PlatformDependent
+    @DisabledOnOs(OS.WINDOWS)
     public void testFile_URL() throws MalformedURLException {
-        assumeUnixRoot();
         final ObjectConverter<File,URL> c = PathConverter.FileURL.INSTANCE;
         runInvertibleConversion(c, new File("/home/user/index.txt"), URI.create("file:/home/user/index.txt").toURL());
         assertSerializedEquals(c);
@@ -139,9 +127,8 @@ public final class PathConverterTest extends TestCase {
      * @throws URISyntaxException if this test uses a malformed URI.
      */
     @Test
-    @PlatformDependent
+    @DisabledOnOs(OS.WINDOWS)
     public void testURI_File() throws URISyntaxException {
-        assumeUnixRoot();
         final ObjectConverter<URI,File> c = PathConverter.URIFile.INSTANCE;
         runInvertibleConversion(c, new URI("file:/home/user/index.txt"), new File("/home/user/index.txt"));
         assertSerializedEquals(c);
@@ -179,9 +166,8 @@ public final class PathConverterTest extends TestCase {
      * @throws MalformedURLException if this test uses a malformed URL.
      */
     @Test
-    @PlatformDependent
+    @DisabledOnOs(OS.WINDOWS)
     public void testURL_File() throws MalformedURLException {
-        assumeUnixRoot();
         final ObjectConverter<URL,File> c = PathConverter.URLFile.INSTANCE;
         runInvertibleConversion(c, URI.create("file:/home/user/index.txt").toURL(), new File("/home/user/index.txt"));
         assertSerializedEquals(c);

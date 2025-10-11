@@ -39,6 +39,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TimeDependentBWPTest extends TestCase {
     /**
      * Creates a new test case.

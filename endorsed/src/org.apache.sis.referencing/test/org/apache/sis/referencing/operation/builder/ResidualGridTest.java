@@ -35,6 +35,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ResidualGridTest extends TestCase {
     /**
      * The grid to test.
@@ -144,6 +145,6 @@ public final class ResidualGridTest extends TestCase {
     public void testDerivativeInCell() {
         final Matrix expected = new Matrix2(3, 1, -1, 1);
         final Matrix actual = grid.derivativeInCell(0.5, 2.5);
-        assertMatrixEquals(expected, actual, STRICT, "derivativeInCell");
+        assertMatrixEquals(expected, actual, "derivativeInCell");
     }
 }

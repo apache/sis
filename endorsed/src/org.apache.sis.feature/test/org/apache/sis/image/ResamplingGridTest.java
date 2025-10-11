@@ -44,6 +44,7 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ResamplingGridTest extends TestCase {
     /**
      * Creates a new test case.

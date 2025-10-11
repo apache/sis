@@ -23,7 +23,7 @@ import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.ProjectDirectories;
 import org.apache.sis.xml.test.SchemaCompliance;
@@ -46,6 +46,7 @@ public final class SchemaComplianceTest extends TestCase {
 
     /**
      * Verifies compliance with metadata schemas.
+     * This test is skipped if the schema are not available in the {@code SIS_DATA} directory.
      *
      * @throws Exception if an error occurred while checking the schema.
      *
@@ -53,10 +54,9 @@ public final class SchemaComplianceTest extends TestCase {
      */
     @Test
     public void verifyMetadata() throws Exception {
-        Path directory = DataDirectory.SCHEMAS.getDirectory();
-        assumeTrue(directory != null, "Schema directory is not specified.");
-        directory = directory.resolve("iso");
-        assumeTrue(Files.isDirectory(directory.resolve("19115")));
+        final Path directory = assumeDataExists(DataDirectory.SCHEMAS, "iso");
+        final Path subdir = directory.resolve("19115");
+        assertTrue(Files.isDirectory(subdir), () -> "Missing sub-directory: " + subdir);
         /*
          * Locate the root of metadata class directory. In a Maven build:
          * "core/sis-metadata/target/classes/org/apache/sis/metadata/iso"

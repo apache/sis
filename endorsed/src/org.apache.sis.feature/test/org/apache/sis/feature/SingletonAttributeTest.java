@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -36,6 +36,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class SingletonAttributeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -97,16 +98,16 @@ public final class SingletonAttributeTest extends TestCase {
         assertEquals(ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
         assertDomainConsistencyEquals("population",
                 "Missing value for the “population” property.",
-                (DomainConsistency) getSingleton(quality.getReports()));
+                assertInstanceOf(DomainConsistency.class, assertSingleton(quality.getReports())));
         /*
          * Intentionally store a value of the wrong type, and test again.
          */
-        ((AbstractAttribute) attribute).setValue(4.5f);
+        assertInstanceOf(AbstractAttribute.class, attribute).setValue(4.5f);
         quality = attribute.quality();
         assertEquals(ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
         assertDomainConsistencyEquals("population",
                 "Expected an instance of ‘Integer’ for the “population” property, but got an instance of ‘Float’.",
-                (DomainConsistency) getSingleton(quality.getReports()));
+                assertInstanceOf(DomainConsistency.class, assertSingleton(quality.getReports())));
     }
 
     /**
@@ -121,7 +122,7 @@ public final class SingletonAttributeTest extends TestCase {
             final DomainConsistency consistency)
     {
         assertEquals(propertyName, consistency.getMeasureIdentification().getCode());
-        final var result = (ConformanceResult) getSingleton(consistency.getResults());
+        final var result = assertInstanceOf(ConformanceResult.class, assertSingleton(consistency.getResults()));
         assertFalse (result.pass());
         assertEquals(explanation, result.getExplanation().toString(Locale.US));
     }

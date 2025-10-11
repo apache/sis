@@ -46,6 +46,7 @@ import org.opengis.test.ToleranceModifier;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class PassThroughTransformTest extends MathTransformTestCase {
     /**
      * The random number generator to be used in this test.

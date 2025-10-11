@@ -42,6 +42,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class IdentifiedObjectsTest extends TestCase {
     /**
      * Creates a new test case.

@@ -29,8 +29,8 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.nio.charset.StandardCharsets;
@@ -102,14 +102,14 @@ public final class StoreTest extends TestCase {
             metadata = store.getMetadata();
             assertSame(metadata, store.getMetadata(), "Expected cached value.");
         }
-        final Responsibility resp     = getSingleton(metadata.getContacts());
-        final Party          party    = getSingleton(resp.getParties());
-        final Contact        contact  = getSingleton(party.getContactInfo());
-        final OnlineResource resource = getSingleton(contact.getOnlineResources());
+        final Responsibility resp     = assertSingleton(metadata.getContacts());
+        final Party          party    = assertSingleton(resp.getParties());
+        final Contact        contact  = assertSingleton(party.getContactInfo());
+        final OnlineResource resource = assertSingleton(contact.getOnlineResources());
 
         assertInstanceOf(Organisation.class, party, "party");
-        assertEquals(Locale.ENGLISH,              getSingleton(metadata.getLocalesAndCharsets().keySet()));
-        assertEquals(StandardCharsets.UTF_8,      getSingleton(metadata.getLocalesAndCharsets().values()));
+        assertEquals(Locale.ENGLISH,              assertSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(StandardCharsets.UTF_8,      assertSingleton(metadata.getLocalesAndCharsets().values()));
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, resp.getRole());
         assertEquals("Apache SIS",                String.valueOf(party.getName()));
         assertEquals("https://sis.apache.org",    String.valueOf(resource.getLinkage()));

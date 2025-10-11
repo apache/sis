@@ -20,9 +20,9 @@ import org.apache.sis.io.wkt.Formatter;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.referencing.EPSGDependentTestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
@@ -32,7 +32,8 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class GeneralDirectPositionTest extends EPSGDependentTestCase {
+@SuppressWarnings("exports")
+public final class GeneralDirectPositionTest extends TestCase {
     /**
      * Creates a new test case.
      */
@@ -44,7 +45,7 @@ public final class GeneralDirectPositionTest extends EPSGDependentTestCase {
      */
     @Test
     public void testNormalize() {
-        final GeneralDirectPosition position = new GeneralDirectPosition(WGS84);
+        final var position = new GeneralDirectPosition(WGS84);
         position.setCoordinates(300, -100);
         assertTrue(position.normalize());
         assertEquals(-90.0, position.getCoordinate(1));
@@ -57,7 +58,7 @@ public final class GeneralDirectPositionTest extends EPSGDependentTestCase {
      */
     @Test
     public void testFormatWKT() {
-        final GeneralDirectPosition position = new GeneralDirectPosition(6, 10);
+        final var position = new GeneralDirectPosition(6, 10);
         assertEquals("POINT[6 10]", position.toWKT());
         position.setCoordinateReferenceSystem(WGS84);
         assertEquals("POINT[6.00000000 10.00000000]", position.toWKT());        // 1 cm precision on Earth.
@@ -69,7 +70,7 @@ public final class GeneralDirectPositionTest extends EPSGDependentTestCase {
      */
     @Test
     public void testToString() {
-        final GeneralDirectPosition position = new GeneralDirectPosition(6, 10, 2);
+        final var position = new GeneralDirectPosition(6, 10, 2);
         assertEquals("POINT(6 10 2)", position.toString());
         validate(position);
     }

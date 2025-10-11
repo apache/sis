@@ -194,8 +194,11 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      *
      * Note that this definition allows scale factors but does not allow offsets.
      * Consequently, this is a different definition of "linear" than this class and the rest of Apache SIS.
+     *
+     * @deprecated This method is badly named, but we can't change since it is defined by JSR-385.
      */
     @Override
+    @Deprecated
     public boolean isLinear() {
         return offset == 0;
     }

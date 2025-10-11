@@ -46,6 +46,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LinearTransformBuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -470,13 +471,14 @@ public final class LinearTransformBuilderTest extends TestCase {
         builder.addLinearizers(Map.of("x² y³", tr));
         builder.addLinearizers(Map.of("x³ y²", tr), 1, 0);
         builder.addLinearizers(Map.of("identity", MathTransforms.identity(2)));
-        final Matrix m = builder.create(null).getMatrix();
+        final Matrix actual = builder.create(null).getMatrix();
         assertEquals("x³ y²", builder.linearizer().get().getKey());
         assertNotSame(tr, builder.linearizer().get());    // Not same because axes should have been swapped.
         assertArrayEquals(new double[] {1, 1}, builder.correlation(), 1E-15);
-        assertMatrixEquals(new Matrix3(2, 0, 3,
-                                       0, 1, 1,
-                                       0, 0, 1),
-                m, 1E-15, "linear");
+        final Matrix expected = new Matrix3(
+                2, 0, 3,
+                0, 1, 1,
+                0, 0, 1);
+        assertMatrixEquals(expected, actual, 1E-15, "linear");
     }
 }

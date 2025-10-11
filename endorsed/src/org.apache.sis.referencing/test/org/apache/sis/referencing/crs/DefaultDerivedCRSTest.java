@@ -28,7 +28,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -39,11 +38,11 @@ import org.apache.sis.referencing.operation.DefaultConversionTest;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
+import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
-import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -51,6 +50,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultDerivedCRSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -143,10 +143,12 @@ public final class DefaultDerivedCRSTest extends TestCase {
         final Conversion conversion = crs.getConversionFromBase();
         assertSame(crs.getBaseCRS(), conversion.getSourceCRS());
         assertSame(crs,              conversion.getTargetCRS());
-        assertMatrixEquals(new Matrix3(0, 1, 0,
-                                       1, 0, 2.33722917,
-                                       0, 0, 1),
-                MathTransforms.getMatrix(conversion.getMathTransform()), STRICT, "Longitude rotation");
+        assertMatrixEquals(
+                new Matrix3(0, 1, 0,
+                            1, 0, 2.33722917,
+                            0, 0, 1),
+                conversion.getMathTransform(),
+                "Longitude rotation");
     }
 
     /**

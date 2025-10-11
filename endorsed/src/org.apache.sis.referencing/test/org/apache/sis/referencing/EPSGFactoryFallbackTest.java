@@ -56,6 +56,7 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @Isolated("Temporarily modifies the system-wide EPSG factory.")
 public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
     /**

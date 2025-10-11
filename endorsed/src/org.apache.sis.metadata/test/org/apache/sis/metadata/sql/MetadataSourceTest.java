@@ -35,7 +35,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertSingleton;
 
 
 /**
@@ -43,6 +43,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MetadataSourceTest extends TestCase {
     /**
      * Creates a new test case.
@@ -118,7 +119,7 @@ public final class MetadataSourceTest extends TestCase {
     private static void verify(final Format format, final String abbreviation, final String title) {
         final Citation spec = format.getFormatSpecificationCitation();
         assertNotNull(spec, "formatSpecificationCitation");
-        assertEquals(abbreviation, String.valueOf(getSingleton(spec.getAlternateTitles())), "abbreviation");
+        assertEquals(abbreviation, String.valueOf(assertSingleton(spec.getAlternateTitles())), "abbreviation");
         assertEquals(title, String.valueOf(spec.getTitle()), "title");
     }
 
