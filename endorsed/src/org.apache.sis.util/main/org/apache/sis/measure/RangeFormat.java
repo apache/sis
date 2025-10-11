@@ -961,6 +961,7 @@ public class RangeFormat extends Format implements Localized {
                     c = source.codePointAt(index);
                     if (!Character.isWhitespace(c)) break;
                 }
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final String separator = this.separator;
                 if (source.startsWith(separator, index)) {
                     index += separator.length();

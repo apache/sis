@@ -36,7 +36,6 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.Assertions.assertSingletonBBox;
 import static org.apache.sis.test.Assertions.assertSingletonExtent;
 
@@ -83,7 +82,7 @@ public final class StoreTest extends TestCase {
      * Returns the instant for the given time at the day of the test.
      */
     private static Instant instant(final String time) {
-        return date("2012-01-17 " + time).toInstant();
+        return Instant.parse("2012-01-17T" + time + 'Z');
     }
 
     /**

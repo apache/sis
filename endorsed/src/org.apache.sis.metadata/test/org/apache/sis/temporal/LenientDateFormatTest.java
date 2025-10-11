@@ -28,7 +28,6 @@ import java.text.ParseException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
@@ -71,21 +70,28 @@ public final class LenientDateFormatTest extends TestCase {
     @Test
     public void testParse() throws ParseException {
         final long day = 1466985600000L;
-        final LenientDateFormat f = new LenientDateFormat();
+        final var f = new LenientDateFormat();
         assertEquals(day + ((16*60 + 48)*60     )*1000,      f.parse("2016-06-27T16:48Z")      .getTime());
         assertEquals(day + ((16*60 + 48)*60 + 12)*1000,      f.parse("2016-06-27T16:48:12Z")   .getTime());
         assertEquals(day,                                    f.parse("2016-06-27")             .getTime());
         assertEquals(day + (( 3*60 +  2)*60 +  1)*1000 + 90, f.parse("2016-06-27T03:02:01.09Z").getTime());
 
-        assertEquals(date("2009-01-01 05:00:00"), f.parse("2009-01-01T06:00:00+01:00"));
-        assertEquals(date("2005-09-22 04:30:15"), f.parse("2005-09-22T04:30:15Z"));
-        assertEquals(date("2005-09-22 04:30:15"), f.parse("2005-09-22T04:30:15"));
-        assertEquals(date("2005-09-22 04:30:00"), f.parse("2005-09-22T04:30"));
-        assertEquals(date("2005-09-22 04:30:00"), f.parse("2005-09-22 04:30"));
-        assertEquals(date("2005-09-22 04:00:00"), f.parse("2005-09-22T04"));
-        assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-09-22"));
-        assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-9-22"));
-        assertEquals(date("1992-01-01 00:00:00"), f.parse("1992-1-1"));
+        assertDateEquals("2009-01-01T05:00:00Z", f, "2009-01-01T06:00:00+01:00");
+        assertDateEquals("2005-09-22T04:30:15Z", f, "2005-09-22T04:30:15Z");
+        assertDateEquals("2005-09-22T04:30:15Z", f, "2005-09-22T04:30:15");
+        assertDateEquals("2005-09-22T04:30:00Z", f, "2005-09-22T04:30");
+        assertDateEquals("2005-09-22T04:30:00Z", f, "2005-09-22 04:30");
+        assertDateEquals("2005-09-22T04:00:00Z", f, "2005-09-22T04");
+        assertDateEquals("2005-09-22T00:00:00Z", f, "2005-09-22");
+        assertDateEquals("2005-09-22T00:00:00Z", f, "2005-9-22");
+        assertDateEquals("1992-01-01T00:00:00Z", f, "1992-1-1");
+    }
+
+    /**
+     * Asserts that parsing the given date produces the expected result.
+     */
+    private static void assertDateEquals(final String expected, final LenientDateFormat f, final String date) throws ParseException {
+        assertEquals(Instant.parse(expected), f.parse(date).toInstant());
     }
 
     /**

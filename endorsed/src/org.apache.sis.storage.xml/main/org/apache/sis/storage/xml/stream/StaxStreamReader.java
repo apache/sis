@@ -41,6 +41,7 @@ import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -370,8 +371,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws DateTimeParseException if the text cannot be parsed as a date.
      */
     protected final Date getElementAsDate() throws XMLStreamException {
-        final String text = getElementText();
-        return (text == null) ? null : Date.from(LenientDateFormat.parseInstantUTC(text));
+        return TemporalDate.toDate(LenientDateFormat.parseInstantUTC(getElementText()));
     }
 
     /**

@@ -16,9 +16,6 @@
  */
 package org.apache.sis.test;
 
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Random;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,18 +26,7 @@ import java.nio.file.StandardOpenOption;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.text.Format;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.collection.TableColumn;
-import org.apache.sis.util.collection.TreeTableFormat;
-import static org.apache.sis.util.internal.shared.Constants.UTC;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -52,23 +38,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class TestUtilities {
-    /**
-     * Date parser and formatter using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
-     * and UTC time zone.
-     */
-    private static final DateFormat dateFormat;
-    static {
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CANADA);
-        dateFormat.setTimeZone(TimeZone.getTimeZone(UTC));
-        dateFormat.setLenient(false);
-    };
-
-    /**
-     * The {@link TreeTableFormat} to use for unlocalized string representations.
-     * Created when first needed.
-     */
-    private static Format tableFormat;
-
     /**
      * The thread group for every threads created for testing purpose.
      */
@@ -142,120 +111,8 @@ public final class TestUtilities {
     }
 
     /**
-     * Parses the date for the given string using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
-     *
-     * @param  date  the date as a {@link String}.
-     * @return the date as a {@link Date}.
-     *
-     * @todo Remove in favor of {@link java.time.Instant#parse}.
-     */
-    public static Date date(final String date) {
-        ArgumentChecks.ensureNonNull("date", date);
-        final Date t;
-        try {
-            synchronized (dateFormat) {
-                t = dateFormat.parse(date);
-            }
-        } catch (ParseException e) {
-            throw new AssertionError(e);
-        }
-        /*
-         * The milliseconds are not part of the pattern used by this method because they are rarely specified.
-         * If a test needs to specify milliseconds, add them manually here. Note that this naive hack requires
-         * all milliseconds digits to be provided, e.g. ".900" - not ".9".
-         */
-        final int s = date.lastIndexOf('.');
-        if (s >= 0) {
-            final int ms = Integer.parseInt(date.substring(s + 1));
-            t.setTime(t.getTime() + ms);
-        }
-        return t;
-    }
-
-    /**
-     * Formats the given value using the given formatter, and parses the text back to its value.
-     * If the parsed value is not equal to the original one, an {@link AssertionError} is thrown.
-     *
-     * @param  formatter  the formatter to use for formatting and parsing.
-     * @param  value      the value to format.
-     * @return the formatted value.
-     */
-    public static String formatAndParse(final Format formatter, final Object value) {
-        final String text = formatter.format(value);
-        final Object parsed;
-        try {
-            parsed = formatter.parseObject(text);
-        } catch (ParseException e) {
-            throw new AssertionError(e);
-        }
-        assertEquals(value, parsed, "Parsed text not equal to the original value");
-        return text;
-    }
-
-    /**
-     * Returns a unlocalized string representation of {@code NAME}, {@code VALUE} and {@code REMARKS} columns
-     * of the given tree table. They are the columns included in default string representation of metadata.
-     * Dates and times, if any, will be formatted using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
-     * This method is used mostly as a convenient way to verify the content of an ISO 19115 metadata object.
-     *
-     * @param  table  the table for which to get a string representation.
-     * @return a unlocalized string representation of the given tree table.
-     */
-    public static String formatMetadata(final TreeTable table) {
-        synchronized (TestUtilities.class) {
-            if (tableFormat == null) {
-                final TreeTableFormat f = new TreeTableFormat(null, null);
-                f.setColumns(TableColumn.NAME, TableColumn.VALUE, TableColumn.REMARKS);
-                tableFormat = f;
-            }
-            return tableFormat.format(table);
-        }
-    }
-
-    /**
-     * Returns the tree structure of the given string representation, without the localized text.
-     * For example, given the following string:
-     *
-     * <pre class="text">
-     *   Citation
-     *     ├─Title…………………………………………………… Some title
-     *     └─Cited responsible party
-     *         └─Individual name……………… Some person of contact</pre>
-     *
-     * this method returns an array containing the following elements:
-     *
-     * <pre class="text">
-     *   "",
-     *   "  ├─",
-     *   "  └─",
-     *   "      └─"</pre>
-     *
-     * This method is used for comparing two trees having string representation in different locales.
-     * In such case, we cannot compare the actual text content. The best we can do is to compare
-     * the tree structure.
-     *
-     * @param  tree  the string representation of a tree.
-     * @return the structure of the given tree, without text.
-     */
-    public static CharSequence[] toTreeStructure(final CharSequence tree) {
-        final CharSequence[] lines = CharSequences.split(tree, '\n');
-        for (int i=0; i<lines.length; i++) {
-            final CharSequence line = lines[i];
-            final int length = line.length();
-            for (int j=0; j<length;) {
-                final int c = Character.codePointAt(line, j);
-                if (Character.isLetterOrDigit(c)) {
-                    lines[i] = line.subSequence(0, j);
-                    break;
-                }
-                j += Character.charCount(c);
-            }
-        }
-        return lines;
-    }
-
-    /**
      * Returns a copy of the given array with the last coordinate values dropped for each coordinates.
+     * The array can contain many points, with an array length equals to a multiple of {@code sourceDim}.
      *
      * @param  coordinates  the source coordinates from which to drop the last coordinate values.
      * @param  sourceDim    number of dimensions of each point in the {@code coordinates} array.
@@ -270,20 +127,6 @@ public final class TestUtilities {
             System.arraycopy(coordinates, i*sourceDim, reduced, i*targetDim, targetDim);
         }
         return reduced;
-    }
-
-    /**
-     * If the given failure is not null, re-thrown it as an {@link Error} or
-     * {@link RuntimeException}. Otherwise do nothing.
-     *
-     * @param  failure  the exception to re-thrown if non-null.
-     */
-    public static void rethrownIfNotNull(final Throwable failure) {
-        if (failure != null) {
-            if (failure instanceof Error e) throw e;
-            if (failure instanceof RuntimeException e) throw e;
-            throw new UndeclaredThrowableException(failure);
-        }
     }
 
     /**

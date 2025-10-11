@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.*;
 
 
 /**
@@ -35,6 +34,7 @@ import static org.apache.sis.test.TestUtilities.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class AngleFormatTest extends TestCase {
     /**
      * Creates a new test case.
@@ -43,11 +43,31 @@ public final class AngleFormatTest extends TestCase {
     }
 
     /**
+     * Formats the given value using the given formatter, and parses the text back to its value.
+     * If the parsed value is not equal to the original one, an {@link AssertionError} is thrown.
+     *
+     * @param  formatter  the formatter to use for formatting and parsing.
+     * @param  value      the value to format.
+     * @return the formatted value.
+     */
+    private static String formatAndParse(final AngleFormat formatter, final Object value) {
+        final String text = formatter.format(value);
+        final Object parsed;
+        try {
+            parsed = formatter.parseObject(text);
+        } catch (ParseException e) {
+            throw new AssertionError(e);
+        }
+        assertEquals(value, parsed, "Parsed text not equal to the original value");
+        return text;
+    }
+
+    /**
      * Tests a pattern with illegal usage of D, M and S symbols.
      */
     @Test
     public void testIllegalPattern() {
-        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        final var f = new AngleFormat(Locale.CANADA);
         var e = assertThrows(IllegalArgumentException.class, () -> f.applyPattern("DD°SS′MM″"));
         assertMessageContains(e);
     }
@@ -56,7 +76,7 @@ public final class AngleFormatTest extends TestCase {
      * Tests an illegal pattern with illegal symbols for the fraction part.
      */
     public void testIllegalFractionPattern() {
-        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        final var f = new AngleFormat(Locale.CANADA);
         var e = assertThrows(IllegalArgumentException.class, () -> f.applyPattern("DD°MM′SS.m″"));
         assertMessageContains(e);
     }
@@ -66,7 +86,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testIllegalOptionalField() {
-        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        final var f = new AngleFormat(Locale.CANADA);
         var e = assertThrows(IllegalArgumentException.class, () -> f.applyPattern("DD°MM?SS.m″"));
         assertMessageContains(e);
     }
@@ -76,7 +96,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testIllegalOptionalLastField() {
-        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        final var f = new AngleFormat(Locale.CANADA);
         var e = assertThrows(IllegalArgumentException.class, () -> f.applyPattern("DD°MM?"));
         assertMessageContains(e);
     }
@@ -86,7 +106,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testCanadaLocale() {
-        final AngleFormat f = new AngleFormat("DD.ddd°", Locale.CANADA);
+        final var f = new AngleFormat("DD.ddd°", Locale.CANADA);
         assertEquals(3, f.getMinimumFractionDigits());
         assertEquals(3, f.getMaximumFractionDigits());
         assertEquals( "DD.ddd°",  f.toPattern());
@@ -103,7 +123,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testFranceLocale() {
-        final AngleFormat f = new AngleFormat("DD.ddd°", Locale.FRANCE);
+        final var f = new AngleFormat("DD.ddd°", Locale.FRANCE);
         assertEquals(3, f.getMinimumFractionDigits());
         assertEquals(3, f.getMaximumFractionDigits());
         assertEquals( "DD.ddd°",  f.toPattern());
@@ -117,7 +137,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testNoSeparator() {
-        final AngleFormat f = new AngleFormat("DDddd", Locale.CANADA);
+        final var f = new AngleFormat("DDddd", Locale.CANADA);
         assertEquals(3, f.getMinimumFractionDigits());
         assertEquals(3, f.getMaximumFractionDigits());
         assertEquals( "DDddd",  f.toPattern());
@@ -131,7 +151,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testDegreeMinutes() {
-        final AngleFormat f = new AngleFormat("DD°MM.m", Locale.CANADA);
+        final var f = new AngleFormat("DD°MM.m", Locale.CANADA);
         assertEquals(1, f.getMinimumFractionDigits());
         assertEquals(1, f.getMaximumFractionDigits());
         assertEquals( "DD°MM.m", f.toPattern());
@@ -146,7 +166,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testDegreeMinutesSeconds() {
-        final AngleFormat f = new AngleFormat("DD°MM′SS.sss″", Locale.CANADA);
+        final var f = new AngleFormat("DD°MM′SS.sss″", Locale.CANADA);
         assertEquals(3, f.getMinimumFractionDigits());
         assertEquals(3, f.getMaximumFractionDigits());
         assertEquals( "DD°MM′SS.sss″", f.toPattern());
@@ -161,7 +181,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testRounding() {
-        final AngleFormat f = new AngleFormat("DD°MM′SS.sss″", Locale.CANADA);
+        final var f = new AngleFormat("DD°MM′SS.sss″", Locale.CANADA);
         assertEquals( "01°00′00.000″", f.format(new Angle(+(59 + (59.9999 / 60)) / 60)));
         assertEquals("-01°00′00.000″", f.format(new Angle(-(59 + (59.9999 / 60)) / 60)));
         assertEquals("-00°59′59.999″", f.format(new Angle(-(59 + (59.9988 / 60)) / 60)));
@@ -172,7 +192,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testOptionalFields() {
-        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        final var f = new AngleFormat(Locale.CANADA);
         assertEquals("D°?MM′?SS.################″?", f.toPattern());
         assertEquals("12°",          formatAndParse(f, new Angle(12)));
         assertEquals("12°30′",       formatAndParse(f, new Angle(12.5)));
@@ -190,7 +210,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testJavadocExamples() throws ParseException {
-        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        final var f = new AngleFormat(Locale.CANADA);
         testExample(f, "DD°MM′SS.#″",   "48°30′00″", "-12°31′52.5″", 0.000);
         testExample(f, "DD°MM′",        "48°30′",    "-12°32′",      0.003);
         testExample(f, "DD.ddd",        "48.500",    "-12.531",      2.500);
@@ -225,7 +245,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testRoundingMode() {
-        final AngleFormat f = new AngleFormat("DD°MM′SS″", Locale.CANADA);
+        final var f = new AngleFormat("DD°MM′SS″", Locale.CANADA);
         Angle angle = new Angle(12.515625);
         f.setRoundingMode(RoundingMode.DOWN);      assertEquals("12°30′56″", f.format(angle));
         f.setRoundingMode(RoundingMode.UP);        assertEquals("12°30′57″", f.format(angle));
@@ -246,7 +266,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testOptionalFractionDigits() {
-        final AngleFormat f = new AngleFormat("DD°MM′SS.s##″", Locale.CANADA);
+        final var f = new AngleFormat("DD°MM′SS.s##″", Locale.CANADA);
         assertEquals(1, f.getMinimumFractionDigits());
         assertEquals(3, f.getMaximumFractionDigits());
         assertEquals( "DD°MM′SS.s##″", f.toPattern());
@@ -270,7 +290,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testSetMaximumWidth() {
-        final AngleFormat f = new AngleFormat("D°MM′SS.################″", Locale.CANADA);
+        final var f = new AngleFormat("D°MM′SS.################″", Locale.CANADA);
         assertEquals("D°MM′SS.################″", f.toPattern());
 
         f.setMaximumWidth(12);
@@ -318,7 +338,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testSetPrecision() {
-        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        final var f = new AngleFormat(Locale.CANADA);
         f.setPrecision(1,        true); assertEquals("D°",         f.toPattern());
         f.setPrecision(1./10,    true); assertEquals("D.d°",       f.toPattern());
         f.setPrecision(1./60,    true); assertEquals("D°MM′",      f.toPattern());
@@ -338,7 +358,7 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testGetPrecision() {
-        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        final var f = new AngleFormat(Locale.CANADA);
         f.applyPattern("D°");         assertEquals(     1,   f.getPrecision());
         f.applyPattern("D.dd°");      assertEquals(  0.01,   f.getPrecision(),  1E-16);
         f.applyPattern("D°MM′");      assertEquals(1.0/60,   f.getPrecision(),  1E-16);
@@ -350,9 +370,9 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testFieldPosition() {
-        final Latitude latitude = new Latitude(FormattedCharacterIteratorTest.LATITUDE_VALUE);
-        final AngleFormat f = new AngleFormat("DD°MM′SS.s″", Locale.CANADA);
-        final StringBuffer buffer = new StringBuffer();
+        final var latitude = new Latitude(FormattedCharacterIteratorTest.LATITUDE_VALUE);
+        final var f = new AngleFormat("DD°MM′SS.s″", Locale.CANADA);
+        final var buffer = new StringBuffer();
         for (int i=AngleFormat.DEGREES_FIELD; i<=AngleFormat.HEMISPHERE_FIELD; i++) {
             final AngleFormat.Field field;
             final int start, limit;
@@ -363,7 +383,7 @@ public final class AngleFormatTest extends TestCase {
                 case AngleFormat.HEMISPHERE_FIELD: field = AngleFormat.Field.HEMISPHERE; start=11; limit=12; break;
                 default: continue; // Skip the fraction field.
             }
-            final FieldPosition pos = new FieldPosition(field);
+            final var pos = new FieldPosition(field);
             assertEquals(FormattedCharacterIteratorTest.LATITUDE_STRING, f.format(latitude, buffer, pos).toString());
             assertSame  (field, pos.getFieldAttribute());
             assertEquals(start, pos.getBeginIndex());
@@ -377,8 +397,8 @@ public final class AngleFormatTest extends TestCase {
      */
     @Test
     public void testFormatToCharacterIterator() {
-        final Latitude latitude = new Latitude(FormattedCharacterIteratorTest.LATITUDE_VALUE);
-        final AngleFormat f = new AngleFormat("DD°MM′SS.s″", Locale.CANADA);
+        final var latitude = new Latitude(FormattedCharacterIteratorTest.LATITUDE_VALUE);
+        final var f = new AngleFormat("DD°MM′SS.s″", Locale.CANADA);
         final AttributedCharacterIterator it = f.formatToCharacterIterator(latitude);
         assertEquals(FormattedCharacterIteratorTest.LATITUDE_STRING, it.toString());
         FormattedCharacterIteratorTest.testAttributes(it, true);

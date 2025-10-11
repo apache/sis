@@ -25,10 +25,9 @@ import org.apache.sis.measure.Longitude;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.metadata.TreeTableViewTest.assertMetadataTreeEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.Assertions.assertSingleton;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
 
@@ -438,7 +437,7 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
         };
         final var extent = new DefaultExtent(null, bbox, null, null);
         assertSame(bbox, assertSingleton(extent.getGeographicElements()));
-        assertMultilinesEquals(
+        assertMetadataTreeEquals(
                 "Extent\n" +
                 "  └─Geographic element\n" +
                 "      ├─West bound longitude…… 40°W\n" +
@@ -446,6 +445,6 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
                 "      ├─South bound latitude…… 20°S\n" +
                 "      ├─North bound latitude…… 45°N\n" +
                 "      └─Extent type code……………… True\n",
-                TestUtilities.formatMetadata(extent.asTreeTable()));
+                extent.asTreeTable());
     }
 }

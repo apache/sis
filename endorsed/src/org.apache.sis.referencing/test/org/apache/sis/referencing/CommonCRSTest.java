@@ -263,7 +263,7 @@ public final class CommonCRSTest extends TestCase {
          * We need to use `java.text.DateFormat` rather than `Instant.parse(String)` because
          * they have different policy regarding the calendar for dates before October 15, 1582.
          * The `java.time` classes use the proleptic Gregorian calendar while `java.text` uses
-         * the prolectic Julian calendar. The latter is what we need for this test.
+         * the proleptic Julian calendar. The latter is what we need for this test.
          */
         final var dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CANADA);
         dateFormat.setTimeZone(TimeZone.getTimeZone(UTC));

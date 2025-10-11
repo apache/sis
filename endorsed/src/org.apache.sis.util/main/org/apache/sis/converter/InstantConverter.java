@@ -77,6 +77,7 @@ abstract class InstantConverter<T> extends SystemConverter<Instant,T> {
         }
 
         @Override public java.util.Date apply(final Instant source) {
+            // TODO: after merge of `util` with `metadata`: return TemporalDate.toDate(source);
             return (source != null) ? java.util.Date.from(source) : null;
         }
     }

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.atomic.AtomicReference;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import static java.lang.StrictMath.*;
@@ -169,7 +170,7 @@ public final class CacheTest extends TestCaseWithGC {
          */
         handler.putAndUnlock(valueByMainThread);
         thread.join();
-        TestUtilities.rethrownIfNotNull(thread.failure);
+        rethrownIfNotNull(thread.failure);
         /*
          * Checks the map content.
          */
@@ -177,6 +178,20 @@ public final class CacheTest extends TestCaseWithGC {
         assertNull(expected.put( keyByMainThread,  valueByMainThread));
         assertNull(expected.put(keyByOtherThread, valueByOtherThread));
         assertMapEquals(expected, cache);
+    }
+
+    /**
+     * If the given failure is not null, re-thrown it as an {@link Error}
+     * or {@link RuntimeException}. Otherwise, does nothing.
+     *
+     * @param  failure  the exception to re-thrown if non-null.
+     */
+    private static void rethrownIfNotNull(final Throwable failure) {
+        if (failure != null) {
+            if (failure instanceof Error e) throw e;
+            if (failure instanceof RuntimeException e) throw e;
+            throw new UndeclaredThrowableException(failure);
+        }
     }
 
     /**
@@ -257,7 +272,7 @@ public final class CacheTest extends TestCaseWithGC {
         for (WriterThread thread : threads) {
             thread.join();
         }
-        TestUtilities.rethrownIfNotNull(failures.get());
+        rethrownIfNotNull(failures.get());
         /*
          * Verifies the values.
          */
