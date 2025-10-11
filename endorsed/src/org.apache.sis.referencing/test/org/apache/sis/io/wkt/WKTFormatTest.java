@@ -33,8 +33,8 @@ import org.apache.sis.parameter.Parameterized;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;

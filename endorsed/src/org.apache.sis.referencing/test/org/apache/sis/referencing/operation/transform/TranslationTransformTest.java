@@ -26,6 +26,8 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.apache.sis.referencing.Assertions;
 
 

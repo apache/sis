@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
-import java.util.Date;
 import java.util.Collection;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
@@ -36,13 +35,14 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
-import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Specific to the main and geoapi-3.1 branches:
+import java.util.Date;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**

@@ -23,9 +23,9 @@ import org.opengis.geometry.DirectPosition;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.TestCase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
+import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertContains;
 import static org.apache.sis.referencing.Assertions.assertDisjoint;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;

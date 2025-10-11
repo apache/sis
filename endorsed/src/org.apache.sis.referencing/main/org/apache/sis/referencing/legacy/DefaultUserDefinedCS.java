@@ -19,9 +19,9 @@ package org.apache.sis.referencing.legacy;
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.internal.shared.NilReferencingObject;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.cs.UserDefinedCS;

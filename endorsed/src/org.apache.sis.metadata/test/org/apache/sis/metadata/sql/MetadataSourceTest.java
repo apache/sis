@@ -18,7 +18,6 @@ package org.apache.sis.metadata.sql;
 
 import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
@@ -35,6 +34,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Collections;
 import static org.apache.sis.test.Assertions.assertSingleton;
 
 
