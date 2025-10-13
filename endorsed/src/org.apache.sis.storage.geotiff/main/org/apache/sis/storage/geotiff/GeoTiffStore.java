@@ -499,7 +499,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * {@return the object to use for parsing and formatting dates}.
+     * Returns the object to use for parsing and formatting dates.
      */
     final DateFormat getDateFormat() {
         if (dateFormat == null) {

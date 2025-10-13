@@ -264,7 +264,7 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * {@return the modifiers (BigTIFF, COG…) used by this writer}.
+     * Returns the modifiers (BigTIFF, <abbr>COG</abbr>…) used by this writer.
      */
     @Override
     public final Set<FormatModifier> getModifiers() {
@@ -272,7 +272,7 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
-     * {@return the processor to use for reformatting the image before to write it}.
+     * Returns the processor to use for reformatting the image before to write it.
      * The processor is created only when this method is first invoked.
      */
     private ImageProcessor processor() {

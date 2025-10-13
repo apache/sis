@@ -89,10 +89,11 @@ public class ChannelImageOutputStream extends OutputStream implements ImageOutpu
     }
 
     /**
-     * {@return the object to use for reading from the stream}.
+     * Returns the object to use for reading from the stream.
      * The returned object should not be used anymore after {@link #output()}
      * has been invoked, until {@code input()} is invoked again.
      *
+     * @return helper object to use for reading from the stream.
      * @throws IOException if an error occurred while flushing a buffer.
      */
     public final ChannelImageInputStream input() throws IOException {
@@ -104,10 +105,11 @@ public class ChannelImageOutputStream extends OutputStream implements ImageOutpu
     }
 
     /**
-     * {@return the object to use for writing to the stream}.
+     * Returns the object to use for writing to the stream.
      * The returned object should not be used anymore after {@link #input()}
      * has been invoked, until {@code output()} is invoked again.
      *
+     * @return helper object to use for writing to the stream.
      * @throws IOException if an error occurred while flushing a buffer.
      */
     public final ChannelDataOutput output() throws IOException {

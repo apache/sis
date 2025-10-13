@@ -584,7 +584,7 @@ abstract class Pooled {
     }
 
     /**
-     * {@return a string representation of this (un)marshaller for debugging purposes}.
+     * Returns a string representation of this (un)marshaller for debugging purposes.
      */
     @Override
     public String toString() {

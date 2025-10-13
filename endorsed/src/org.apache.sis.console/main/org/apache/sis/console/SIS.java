@@ -196,7 +196,7 @@ public final class SIS {
         }
 
         /**
-         * {@return the command with all options that have been set}.
+         * Returns the command with all options that have been set.
          */
         @Override
         public String toString() {
@@ -214,7 +214,7 @@ public final class SIS {
     }
 
     /**
-     * {@return a string representation of the Apache SIS version}.
+     * Returns a string representation of the Apache SIS version.
      *
      * @see Version#SIS
      */

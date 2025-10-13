@@ -92,7 +92,7 @@ public final class Tags {
     }
 
     /**
-     * {@return the name of the given tag}.
+     * Returns the name of the given tag.
      * This method should be rarely invoked (mostly for formatting error messages).
      */
     public static String name(final short tag) {

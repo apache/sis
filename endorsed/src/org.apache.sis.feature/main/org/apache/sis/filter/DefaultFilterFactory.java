@@ -1106,7 +1106,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         }
 
         /**
-         * {@return the number of functions}.
+         * Returns the number of functions.
          */
         @Override
         public int size() {
@@ -1136,7 +1136,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         }
 
         /**
-         * {@return an iterator over the entries in this map}.
+         * Returns an iterator over the entries in this map.
          */
         @Override
         protected EntryIterator<String, AvailableFunction> entryIterator() {

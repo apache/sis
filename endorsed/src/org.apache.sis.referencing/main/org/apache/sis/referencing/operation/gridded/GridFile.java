@@ -196,7 +196,7 @@ public final class GridFile {
     }
 
     /**
-     * {@return the resolved URI}.
+     * Returns the resolved <abbr>URI</abbr>.
      *
      * @see #parameter
      */
@@ -205,7 +205,7 @@ public final class GridFile {
     }
 
     /**
-     * {@return the resolved URI as a path if possible}.
+     * Returns the resolved <abbr>URI</abbr> as a path if possible.
      * A use case for this method is grids to open as a {@link org.apache.sis.storage.DataStore}.
      */
     public Optional<Path> path() {
@@ -293,7 +293,7 @@ public final class GridFile {
     }
 
     /**
-     * {@return a string representation of this path for debugging purposes}.
+     * Returns a string representation of this path for debugging purposes.
      */
     @Override
     public String toString() {

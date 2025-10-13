@@ -238,7 +238,7 @@ public class SQLStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@return the logger used by SQL stores}.
+     * Returns the logger used by SQL stores.
      */
     @Override
     public Logger getLogger() {

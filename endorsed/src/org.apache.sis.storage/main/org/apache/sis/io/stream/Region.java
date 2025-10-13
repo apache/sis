@@ -231,7 +231,7 @@ public final class Region {
     }
 
     /**
-     * {@return the number of values to skip after having read values in the given dimension}.
+     * Returns the number of values to skip after having read values in the given dimension.
      */
     final long getSkip(final int dimension) {
         return skips[dimension];

@@ -127,8 +127,10 @@ public class ExternalLinkHandler {
     }
 
     /**
-     * {@return the base URI of the link handler}. The returned object may be an instance of
+     * Returns the base URI of the link handler. The returned object may be an instance of
      * {@link String}, {@link File}, {@link URL} or {@link URI}, or it may be {@code null}.
+     *
+     * @return the base <abbr>URI</abbr>, or {@code null}.
      */
     public final Object getBase() {
         return base;
@@ -308,7 +310,7 @@ public class ExternalLinkHandler {
     }
 
     /**
-     * {@return a string representation of this link handler for debugging purposes}.
+     * Returns a string representation of this link handler for debugging purposes.
      */
     @Override
     public String toString() {

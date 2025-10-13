@@ -236,9 +236,11 @@ public final class Command {
     }
 
     /**
-     * {@return the terminal size if known, of {@link Integer#MAX_VALUE} otherwise}.
+     * Returns the terminal size if known, of {@link Integer#MAX_VALUE} otherwise.
      * The returned value may be obsolete, because the {@code COLUMNS} environment
      * variable is not updated when the user resizes the terminal window.
+     *
+     * @return the assumed terminal size.
      */
     private static int terminalSize() {
         final String n = System.getenv("COLUMNS");

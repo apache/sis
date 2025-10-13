@@ -143,7 +143,7 @@ cellsize:           if (!header.containsKey(AsciiGridStore.CELLSIZE)) {
     }
 
     /**
-     * {@return the logger used by ASCII grid stores}.
+     * Returns the logger used by ASCII grid stores.
      */
     @Override
     public Logger getLogger() {

@@ -76,7 +76,7 @@ public final class StoreProvider extends StaxDataStoreProvider {
     private static final StoreProvider INSTANCE = new StoreProvider();
 
     /**
-     * {@return the default provider instance}.
+     * Returns the default provider instance.
      * This method is invoked by Java service loader.
      */
     public static StoreProvider provider() {
@@ -131,7 +131,7 @@ public final class StoreProvider extends StaxDataStoreProvider {
     }
 
     /**
-     * {@return the logger used by GPX stores}.
+     * Returns the logger used by <abbr>GPX</abbr> stores.
      */
     @Override
     public Logger getLogger() {

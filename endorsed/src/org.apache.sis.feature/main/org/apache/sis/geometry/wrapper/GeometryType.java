@@ -262,10 +262,11 @@ public enum GeometryType {
     }
 
     /**
-     * {@return the name of this geometry type as an ISO 19103 object}.
+     * Returns the name of this geometry type as an ISO 19103 object.
      * The namespace is "OGC". The Java type depends on the geometry library.
      *
      * @param  library  the geometry library that determine geometry classes.
+     * @return a name identifying this geometry and its implementation class.
      */
     public final TypeName getTypeName(final Geometries<?> library) {
         TypeName value;

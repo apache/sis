@@ -645,10 +645,12 @@ loop:   for (int i=0; ; i++) {
     }
 
     /**
-     * {@return the provider of the maximal number of columns in the records to format, or {@code null} if none}.
+     * Returns the provider of the maximal number of columns in the records to format, or {@code null} if none.
      * Records longer than this value (in number of Unicode code points) will be separated one two or more lines.
      * The value may be a constant, or it may be a value fetched from the {@code COLUMNS} environment variable.
      * Advanced applications may also try to get this value by executing an OS-specific command.
+     *
+     * @return maximal number of columns in the records to format, or {@code null} if none.
      *
      * @since 1.5
      */

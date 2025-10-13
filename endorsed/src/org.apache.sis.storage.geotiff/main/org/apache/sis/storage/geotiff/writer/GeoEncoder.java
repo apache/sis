@@ -838,7 +838,7 @@ public final class GeoEncoder {
     }
 
     /**
-     * {@return the values to write in the "GeoTIFF keys directory" tag}.
+     * Returns the values to write in the "GeoTIFF keys directory" tag.
      */
     public short[] keyDirectory() {
         if (keyCount == 0) return null;
@@ -847,7 +847,7 @@ public final class GeoEncoder {
     }
 
     /**
-     * {@return the values to write in the "GeoTIFF double-precision parameters" tag}.
+     * Returns the values to write in the "GeoTIFF double-precision parameters" tag.
      */
     public double[] doubleParams() {
         if (doubleCount == 0) return null;
@@ -855,7 +855,7 @@ public final class GeoEncoder {
     }
 
     /**
-     * {@return the values to write in the "GeoTIFF ASCII strings" tag}.
+     * Returns the values to write in the "GeoTIFF ASCII strings" tag.
      */
     public List<String> asciiParams() {
         return JDK15.isEmpty(asciiParams) ? null : List.of(asciiParams.toString());
@@ -944,14 +944,14 @@ public final class GeoEncoder {
     }
 
     /**
-     * {@return the resources for error messages in the current locale}.
+     * Returns the resources for error messages in the current locale.
      */
     private Errors errors() {
         return Errors.forLocale(listeners.getLocale());
     }
 
     /**
-     * {@return the resources in the current locale}.
+     * Returns the resources in the current locale.
      */
     private Resources resources() {
         return Resources.forLocale(listeners.getLocale());

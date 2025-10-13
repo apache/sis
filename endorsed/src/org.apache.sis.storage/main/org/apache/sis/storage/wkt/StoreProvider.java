@@ -192,7 +192,7 @@ public final class StoreProvider extends URIDataStoreProvider {
     }
 
     /**
-     * {@return the logger used by WKT stores}.
+     * Returns the logger used by <abbr>WKT</abbr> stores.
      */
     @Override
     public Logger getLogger() {

@@ -115,7 +115,7 @@ public final class URISource extends StreamSource {
     }
 
     /**
-     * {@return a string representation of this source for debugging purposes}.
+     * Returns a string representation of this source for debugging purposes.
      */
     @Override
     public String toString() {

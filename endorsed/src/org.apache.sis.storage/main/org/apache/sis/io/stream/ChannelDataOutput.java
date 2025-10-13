@@ -121,8 +121,10 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     }
 
     /**
-     * {@return the wrapped channel where data are written}.
+     * Returns the wrapped channel where data are written.
      * This is the {@link #channel} field value.
+     *
+     * @return the channel where data written.
      *
      * @see #channel
      */

@@ -175,7 +175,9 @@ public enum UnitKey {
     }
 
     /**
-     * {@return the default unit of measurement, or {@code null} if none}.
+     * Returns the default unit of measurement, or {@code null} if none.
+     *
+     * @return default unit of measurement (if any) for this key.
      */
     public Unit<?> defaultUnit() {
         if (linear)  return Units.METRE;

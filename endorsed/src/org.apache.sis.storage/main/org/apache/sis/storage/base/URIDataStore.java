@@ -156,7 +156,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     }
 
     /**
-     * {@return the filename without path and without file extension, or null if none}.
+     * Returns the filename without path and without file extension, or {@code null} if none.
      * This method can be used for building metadata like below (note that {@link #getIdentifier()}
      * should not be invoked during metadata construction time, for avoiding recursive method calls):
      *
@@ -167,6 +167,8 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
      * Above snippet should not be applied before this data store did its best effort for providing a title.
      * The use of identifier as a title is a fallback for making valid metadata, because the title is mandatory
      * in ISO 19111 metadata.
+     *
+     * @return filename without path and without file extension, or {@code null}.
      */
     public final String getFilename() {
         if (location == null) {
@@ -280,9 +282,11 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     }
 
     /**
-     * {@return the path to the auxiliary metadata file, or null if none}.
+     * Returns the path to the auxiliary metadata file, or {@code null} if none.
      * This is a path built from the {@link DataOptionKey#METADATA_PATH} value if present.
      * Note that the metadata may be unavailable as a {@link Path} but available as an {@link URI}.
+     *
+     * @return the path to the auxiliary metadata file, or {@code null} if none.
      */
     private Path getMetadataPath() throws IOException {
         Path path = replaceWildcard(metadataPath);
@@ -302,9 +306,11 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     }
 
     /**
-     * {@return the URI to the auxiliary metadata file, or null if none}.
+     * Returns the <abbr>URI</abbr> to the auxiliary metadata file, or {@code null} if none.
      * This is a path built from the {@link DataOptionKey#METADATA_PATH} value if present.
      * Note that the metadata may be unavailable as an {@link URI} but available as a {@link Path}.
+     *
+     * @return the <abbr>URI</abbr> to the auxiliary metadata file, or {@code null} if none.
      */
     private URI getMetadataURI() throws URISyntaxException {
         URI uri = location;
@@ -541,9 +547,10 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     }
 
     /**
-     * {@return the error message for saying that an auxiliary file cannot be read}.
+     * Returns the error message for saying that an auxiliary file cannot be read.
      *
      * @param  extension  file extension (without leading dot) of the auxiliary file, or null for the main file.
+     * @return error message for saying that an auxiliary file cannot be read.
      */
     protected final String cannotReadAuxiliaryFile(final String extension) {
         if (extension == null) {

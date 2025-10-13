@@ -199,7 +199,7 @@ public final class StoreProvider extends URIDataStoreProvider {
     }
 
     /**
-     * {@return the logger used by CSV stores}.
+     * Returns the logger used by <abbr>CSV</abbr> stores.
      */
     @Override
     public Logger getLogger() {

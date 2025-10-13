@@ -457,7 +457,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@return the logger used by netCDF stores}.
+     * Returns the logger used by netCDF stores.
      */
     @Override
     public Logger getLogger() {
