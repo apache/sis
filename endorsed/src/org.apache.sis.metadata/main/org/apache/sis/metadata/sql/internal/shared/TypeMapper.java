@@ -18,10 +18,11 @@ package org.apache.sis.metadata.sql.internal.shared;
 
 import java.util.Date;
 import java.sql.Types;
+import java.sql.JDBCType;
 
 
 /**
- * Maps a few basic Java types to JDBC types.
+ * Maps a few basic Java types to <abbr>JDBC</abbr> types.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -34,15 +35,15 @@ final class TypeMapper {
      * <p>The types declared here matches both the Derby and PostgreSQL mapping.</p>
      */
     private static final TypeMapper[] TYPES = {
-        new TypeMapper(Boolean.class, Types.BOOLEAN,   "BOOLEAN"),
-        new TypeMapper(Date   .class, Types.TIMESTAMP, "TIMESTAMP"),
-        new TypeMapper(Double .class, Types.DOUBLE,    "DOUBLE PRECISION"),
-        new TypeMapper(Float  .class, Types.REAL,      "REAL"),
-        new TypeMapper(Long   .class, Types.BIGINT,    "BIGINT"),
-        new TypeMapper(Integer.class, Types.INTEGER,   "INTEGER"),
-        new TypeMapper(Short  .class, Types.SMALLINT,  "SMALLINT"),
-        new TypeMapper(Byte   .class, Types.TINYINT,   "SMALLINT"),     // Derby does not support TINYINT.
-        new TypeMapper(Number .class, Types.DECIMAL,   "DECIMAL")       // Implemented by BigDecimal.
+        new TypeMapper(Boolean.class, JDBCType.BOOLEAN),
+        new TypeMapper(Date   .class, JDBCType.TIMESTAMP),
+        new TypeMapper(Double .class, JDBCType.DOUBLE),
+        new TypeMapper(Float  .class, JDBCType.REAL),
+        new TypeMapper(Long   .class, JDBCType.BIGINT),
+        new TypeMapper(Integer.class, JDBCType.INTEGER),
+        new TypeMapper(Short  .class, JDBCType.SMALLINT),
+        new TypeMapper(Byte   .class, JDBCType.TINYINT),
+        new TypeMapper(Number .class, JDBCType.DECIMAL)     // Implemented by BigDecimal.
     };
 
     /**
@@ -53,20 +54,14 @@ final class TypeMapper {
     /**
      * A constant from the SQL {@link Types} enumeration.
      */
-    private final int type;
-
-    /**
-     * The SQL keyword for that type.
-     */
-    private final String keyword;
+    private final JDBCType type;
 
     /**
      * For internal use only.
      */
-    private TypeMapper(final Class<?> classe, final int type, final String keyword) {
-        this.classe  = classe;
-        this.type    = type;
-        this.keyword = keyword;
+    private TypeMapper(final Class<?> classe, final JDBCType type) {
+        this.classe = classe;
+        this.type   = type;
     }
 
     /**
@@ -81,23 +76,12 @@ final class TypeMapper {
         if (classe != null) {
             for (final TypeMapper type : TYPES) {
                 if (type.classe.isAssignableFrom(classe)) {
-                    return type.keyword;
+                    switch (type.type) {
+                        case DOUBLE:  return "DOUBLE PRECISION";
+                        case TINYINT: return "SMALLINT";   // Derby does not support TINYINT.
+                        default: return type.type.name();
+                    }
                 }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Return the Java class for the given SQL type, or {@code null} if none.
-     *
-     * @param  type  one of the {@link Types} constants.
-     * @return the Java class, or {@code null} if none.
-     */
-    public static Class<?> toJavaType(final int type) {
-        for (final TypeMapper t : TYPES) {
-            if (t.type == type) {
-                return t.classe;
             }
         }
         return null;

@@ -55,7 +55,6 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.metadata.internal.shared.ReferencingServices;
-import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.shared.Formulas;
@@ -390,7 +389,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              *
              *   SELECT DATUM_CODE FROM "Datum"
              *    WHERE ELLIPSOID_CODE IN (?,…)
-             *      AND (LOWER(DATUM_NAME) LIKE '?%')
+             *      AND (DATUM_NAME LIKE ?)
              */
             source = TableInfo.DATUM;
             if (isInstance(GeodeticDatum.class, object)) {
@@ -428,7 +427,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          * so that buffer shall not contain valuable information yet.
          */
         final var buffer = new StringBuilder(350);     // Temporary buffer for building SQL query.
-        final Set<String> namePatterns;
+        final Set<String> namePatterns;                // Name including aliases.
         final String aliasSQL;
         if (ArraysExt.containsIdentity(filters, Condition.NAME)) {
             namePatterns = new LinkedHashSet<>();
@@ -441,7 +440,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                   .append(dao.translator.toActualTableName(source.table))
                   .append("' AND ");
             // PostgreSQL does not require explicit cast when the value is a literal instead of "?".
-            appendFilterByName(namePatterns, "ALIAS", buffer);
+            appendLikeNames(namePatterns, "ALIAS", buffer);
             aliasSQL = dao.translator.apply(buffer.toString());
             buffer.setLength(0);
         } else {
@@ -454,7 +453,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          *    SELECT <codeColumn> FROM <table>
          *      WHERE CAST(<typeColumn> AS VARCHAR(80)) LIKE 'type%'
          *        AND <filter.column> IN (<filter.values>)
-         *        AND (LOWER(<nameColumn>) LIKE '<name>%')
+         *        AND (<nameColumn> = ?)
          *
          * The query is assembled in the `buffer`. The first WHERE condition specifies the desired type.
          * That condition may be absent. The next conditions specify desired values. It may be EPSG codes
@@ -476,7 +475,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             if (namePatterns != null) {
                 if (isNext) buffer.append(" AND ");
                 isNext = false;
-                appendFilterByName(namePatterns, source.nameColumn, buffer);
+                appendLikeNames(namePatterns, source.nameColumn, buffer);
                 try (ResultSet result = stmt.executeQuery(aliasSQL)) {
                     while (result.next()) {
                         final int code = result.getInt(1);
@@ -535,19 +534,24 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
     }
 
     /**
-     * Returns a SQL pattern for the given datum name. The name is returned in all lower cases for allowing
-     * case-insensitive searches. Punctuations are replaced by any sequence of characters ({@code '%'}) and
-     * non-ASCII letters are replaced by any single character ({@code '_'}). The returned pattern should be
-     * flexible enough for accepting all names considered equal in {@code DefaultGeodeticDatum} comparisons.
-     * In case of doubt, it is okay to return a pattern accepting more names.
+     * Returns a <abbr>SQL</abbr> {@code LIKE} pattern for the given datum name.
+     * Characters other than letters and digits are replaced by the {@code '%'} wildcard.
+     * Note that this rule replaces also the {@code %}, {@code _} and {@code '} characters,
+     * thus avoiding the need to escape them.
+     *
+     * <p>This method does not try to address case-insensitive and accent-insensitive searches.
+     * This method assumes that the column uses a database collation ignoring cases and accents.
+     * This method is used in complement to collation, for adding more flexibility in the punctuations.
+     * In case of doubt, it is okay to return a pattern accepting more names, as the caller will check
+     * if we really have a match (including checks of ellipsoid and prime meridian).</p>
      *
      * @param  name    the datum name for which to return a SQL pattern.
      * @param  buffer  temporary buffer to use for creating the pattern.
-     * @return the SQL pattern for the given name.
+     * @return the <abbr>SQL</abbr> {@code LIKE} pattern for the given datum name.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
      */
-    private String toDatumPattern(final String name, final StringBuilder buffer) {
+    private static String toDatumPattern(final String name, final StringBuilder buffer) {
         int start = 0;
         if (name.startsWith(ESRI_DATUM_PREFIX)) {
             start = ESRI_DATUM_PREFIX.length();
@@ -556,7 +560,22 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
         if (end < 0) end = name.length();
         end = CharSequences.skipTrailingWhitespaces(name, start, end);
         buffer.setLength(0);
-        SQLUtilities.toLikePattern(name, start, end, true, true, dao.translator.wildcardEscape, buffer);
+        while (start < end) {
+            final int c = name.codePointAt(start);
+            if (Character.isLetterOrDigit(c)) {
+                buffer.appendCodePoint(c);
+            } else {
+                final int length = buffer.length();
+                if (length > 0 && buffer.charAt(length - 1) != '%') {
+                    buffer.append('%');
+                }
+            }
+            start += Character.charCount(c);
+        }
+        final int length = buffer.length();
+        if (length == 0 || buffer.charAt(length - 1) != '%') {
+            buffer.append('%');
+        }
         return buffer.toString();
     }
 
@@ -565,7 +584,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      * {@link #toDatumPattern(String, StringBuilder)}. This method append a SQL fragment like below:
      *
      * {@snippet lang="sql" :
-     *     (LOWER(<column>) LIKE '<pattern>' OR …)
+     *     (<column> LIKE '<pattern>' OR …)
      *     }
      *
      * This method assumes that {@code namePatterns} contains at least one element.
@@ -574,11 +593,10 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      * @param  column        column where the search for the names.
      * @param  buffer        buffer where to add the SQL fragment.
      */
-    private static void appendFilterByName(final Set<String> namePatterns, final String column, final StringBuilder buffer) {
+    private static void appendLikeNames(final Set<String> namePatterns, final String column, final StringBuilder buffer) {
         String separator = "(";
         for (final String pattern : namePatterns) {
-            buffer.append(separator).append("LOWER(").append(column)
-                  .append(") LIKE '").append(pattern).append('\'');
+            buffer.append(separator).append(column).append(" LIKE '").append(pattern).append('\'');
             separator = " OR ";
         }
         buffer.append(')');
@@ -623,11 +641,8 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
         /** The object to search. */
         private final IdentifiedObject object;
 
-        /** Workaround for a Derby bug (see {@code filterFalsePositive(…)}). */
+        /** The name of the object to search. */
         private String name;
-
-        /** {@code LIKE} Pattern of the name of the object to search. */
-        private String namePattern;
 
         /** Information about the tables of the object to search. */
         private final TableInfo source;
@@ -697,17 +712,14 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     case 0: {   // Fetch codes from the name.
                         if (domain != Domain.EXHAUSTIVE_VALID_DATASET) {
                             name = getName(object);
-                            if (name != null) {     // Should never be null, but we are paranoiac.
-                                namePattern = dao.toLikePattern(name);
-                                dao.findCodesFromName(source, TableInfo.toCacheKey(object), namePattern, name, addTo);
-                            }
+                            dao.findCodesFromName(source, TableInfo.toCacheKey(object), name, addTo);
                         }
                         break;
                     }
                     case 1: {   // Fetch codes from the aliases.
                         if (domain != Domain.EXHAUSTIVE_VALID_DATASET) {
-                            if (namePattern != null) {
-                                dao.findCodesFromAlias(source, namePattern, name, addTo);
+                            if (name != null) {
+                                dao.findCodesFromAlias(source, name, addTo);
                             }
                         }
                         break;

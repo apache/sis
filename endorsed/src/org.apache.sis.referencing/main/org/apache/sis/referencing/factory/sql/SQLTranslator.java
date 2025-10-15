@@ -314,7 +314,7 @@ public class SQLTranslator implements UnaryOperator<String> {
      */
     @SuppressWarnings("fallthrough")
     final void setup(final DatabaseMetaData md) throws SQLException {
-        String schemaPattern = SQLUtilities.escape(schema, wildcardEscape);
+        String schemaPattern = SQLUtilities.escapeWildcards(schema, wildcardEscape);
         int tableIndex = 0;
         do {
             usePrefixedTableNames  = false;
@@ -323,7 +323,7 @@ public class SQLTranslator implements UnaryOperator<String> {
             switch (tableIndex++) {
                 case 0: {   // Test EPSG standard table name first.
                     usePrefixedTableNames = true;
-                    table = SQLUtilities.escape(TABLE_PREFIX, wildcardEscape);
+                    table = SQLUtilities.escapeWildcards(TABLE_PREFIX, wildcardEscape);
                     // Fallthrough for testing "epsg_coordoperation".
                 }
                 case 2: {
@@ -357,7 +357,7 @@ public class SQLTranslator implements UnaryOperator<String> {
          * naming convention (unquoted or mixed-case, prefixed by "epsg_" or not).
          */
         UnaryOperator<String> toNativeCase = UnaryOperator.identity();
-        schemaPattern  = SQLUtilities.escape(schema, wildcardEscape);
+        schemaPattern  = SQLUtilities.escapeWildcards(schema, wildcardEscape);
         tableRewording = new HashMap<>();
         replacements   = new HashMap<>();
         /*
@@ -461,7 +461,7 @@ check:  for (;;) {
             boolean isTableFound = false;
             brokenTargetCols.addAll(mayRenameColumns.values());
             table = toNativeCase.apply(toActualTableName(table));
-            try (ResultSet result = md.getColumns(catalog, schemaPattern, SQLUtilities.escape(table, wildcardEscape), "%")) {
+            try (ResultSet result = md.getColumns(catalog, schemaPattern, SQLUtilities.escapeWildcards(table, wildcardEscape), "%")) {
                 while (result.next()) {
                     isTableFound = true;          // Assuming that all tables contain at least one column.
                     final String column = result.getString(Reflection.COLUMN_NAME).toUpperCase(Locale.US);

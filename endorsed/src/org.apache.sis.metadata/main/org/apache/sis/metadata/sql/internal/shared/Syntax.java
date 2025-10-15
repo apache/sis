@@ -166,7 +166,7 @@ public class Syntax {
      * @return the given text with wildcard characters escaped.
      */
     public final String escapeWildcards(final String text) {
-        return SQLUtilities.escape(text, wildcardEscape);
+        return SQLUtilities.escapeWildcards(text, wildcardEscape);
     }
 
     /**

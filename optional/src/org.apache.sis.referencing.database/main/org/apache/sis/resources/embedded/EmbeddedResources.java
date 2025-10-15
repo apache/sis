@@ -131,13 +131,18 @@ public class EmbeddedResources extends InstallationResources {
      *
      * @param  authority  shall be {@code "Embedded"}.
      * @param  index      shall be 0.
-     * @return the embedded data source.
+     * @return the embedded data source, or {@code null} if not available.
      */
     @Override
     public DataSource getResource(String authority, int index) {
         verifyAuthority(authority);
         synchronized (Initializer.class) {
-            if (dataSource == null) {
+            /*
+             * Check for `LICENSE.txt` as a way to detect whether the data are available.
+             * It should always be the case when using a released JAR file, but it may not
+             * be the case when using a local build.
+             */
+            if (dataSource == null && EmbeddedResources.class.getResourceAsStream("LICENSE.txt") != null) {
                 final var ds = new EmbeddedDataSource();
                 ds.setDataSourceName(Initializer.DATABASE);
                 ds.setDatabaseName("classpath:" + DIRECTORY + "/Databases/" + Initializer.DATABASE);

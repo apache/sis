@@ -54,3 +54,9 @@ CREATE CAST (VARCHAR AS "CRS Kind")          WITH INOUT AS ASSIGNMENT;
 CREATE CAST (VARCHAR AS "CS Kind")           WITH INOUT AS ASSIGNMENT;
 CREATE CAST (VARCHAR AS "Supersession Type") WITH INOUT AS ASSIGNMENT;
 CREATE CAST (VARCHAR AS "Table Name")        WITH INOUT AS ASSIGNMENT;
+
+--
+-- PostgreSQL: collation using the International Components for Unicode (ICU) library.
+-- https://www.postgresql.org/docs/current/collation.html#ICU-COLLATION-SETTINGS
+--
+CREATE COLLATION "Ignore Accent and Case" (PROVIDER = 'icu', DETERMINISTIC = false, LOCALE = 'en_GB-u-ka-shifted-ks-level1');

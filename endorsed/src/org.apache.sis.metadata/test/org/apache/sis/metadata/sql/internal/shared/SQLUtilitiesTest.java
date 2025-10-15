@@ -35,35 +35,13 @@ public final class SQLUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests {@link SQLUtilities#escape(String, String)}.
+     * Tests {@link SQLUtilities#escapeWildcards(String, String)}.
      */
     @Test
     public void testEscape() {
-        assertEquals("foo",             SQLUtilities.escape("foo",          "\\"));
-        assertEquals("foo\\_biz\\%bar", SQLUtilities.escape("foo_biz%bar",  "\\"));
-        assertEquals("foo\\\\bar",      SQLUtilities.escape("foo\\bar",     "\\"));
-        assertEquals("foo#!#!bar#not",  SQLUtilities.escape("foo#!bar#not", "#!"));
-    }
-
-    /**
-     * Tests {@link SQLUtilities#toLikePattern(String, int, int, boolean, boolean, StringBuilder)}.
-     */
-    @Test
-    public void testToLikePattern() {
-        final var buffer = new StringBuilder(30);
-        assertEquals("WGS84",                       toLikePattern(buffer, "WGS84"));
-        assertEquals("WGS%84",                      toLikePattern(buffer, "WGS 84"));
-        assertEquals("A%text%with%random%symbols%", toLikePattern(buffer, "A text !* with_random:/symbols;+"));
-        assertEquals("*%With%non%letter%start",     toLikePattern(buffer, "*_+%=With non-letter  start"));
-        assertEquals("\\%Special%case",             toLikePattern(buffer, "%Special_case"));
-    }
-
-    /**
-     * Helper method for {@link #testToLikePattern()}.
-     */
-    private static String toLikePattern(final StringBuilder buffer, final String identifier) {
-        buffer.setLength(0);
-        SQLUtilities.toLikePattern(identifier, 0, identifier.length(), false, false, "\\", buffer);
-        return buffer.toString();
+        assertEquals("foo",             SQLUtilities.escapeWildcards("foo",          "\\"));
+        assertEquals("foo\\_biz\\%bar", SQLUtilities.escapeWildcards("foo_biz%bar",  "\\"));
+        assertEquals("foo\\\\bar",      SQLUtilities.escapeWildcards("foo\\bar",     "\\"));
+        assertEquals("foo#!#!bar#not",  SQLUtilities.escapeWildcards("foo#!bar#not", "#!"));
     }
 }

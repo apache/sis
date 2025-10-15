@@ -122,7 +122,18 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
-     * Processes to the creation of the EPSG database using the SQL scripts from the given provider.
+     * Processes to the creation of the <abbr>EPSG</abbr> database using the <abbr>SQL</abbr> scripts
+     * from the given provider. If the given provider is {@code null}, then this method searches for
+     * a <abbr>SQL</abbr> default provider on the module path, in preference order:
+     *
+     * <ol>
+     *   <li>A provider from a publicly supported dependency such as {@code sis-epsg.jar} or {@code sis-embedded.jar}.
+     *       Users have to put one of those dependencies in the module path themselves. This action is interpreted as
+     *       an acceptance of <abbr>EPSG</abbr> terms of use, so no license agreement window will popup.</li>
+     *   <li>A provider offering users to automatically download the data through an interactive application.
+     *       Those providers are defined by {@code org.apache.sis.console} and {@code org.apache.sis.gui} modules.
+     *       Users must accept <abbr>EPSG</abbr> terms of use before the database can be installed.
+     * </ol>
      *
      * @param  scriptProvider  user-provided scripts, or {@code null} for automatic lookup.
      * @param  locale          the locale for information or warning messages, if any.
@@ -134,7 +145,14 @@ final class EPSGInstaller extends ScriptRunner {
     public boolean run(InstallationResources scriptProvider, final Locale locale) throws SQLException, IOException {
         long time = System.nanoTime();
         if (scriptProvider == null) {
-            scriptProvider = lookupProvider(locale);
+            for (final InstallationResources candidate : InstallationResources.load()) {
+                if (candidate.getAuthorities().contains(Constants.EPSG)) {
+                    scriptProvider = candidate;
+                    if (!candidate.getClass().isAnnotationPresent(Fallback.class)) {
+                        break;
+                    }
+                }
+            }
             if (scriptProvider == null) {
                 return false;
             }
@@ -161,41 +179,6 @@ final class EPSGInstaller extends ScriptRunner {
                 numRows,
                 time / (float) Constants.NANOS_PER_SECOND));
         return true;
-    }
-
-    /**
-     * Searches for a SQL script provider on the module path before to fallback on the default provider.
-     * The returned provider will be, in preference order:
-     *
-     * <ol>
-     *   <li>A provider from a publicly supported dependency such as {@code sis-epsg.jar} or {@code sis-embedded.jar}.
-     *       Users have to put one of those dependencies in the module path themselves. This action is interpreted as
-     *       an acceptance of EPSG terms of use, so no license agreement window will popup.</li>
-     *   <li>A provider offering users to automatically download the data. Those providers are defined by
-     *       {@code org.apache.sis.console} and {@code org.apache.sis.gui} modules.
-     *       Users must accept EPSG terms of use before the database can be installed.
-     * </ol>
-     *
-     * @param  locale  the locale for information or warning messages, if any.
-     * @return the SQL preferred script provider, or {@code null} if none.
-     */
-    private static InstallationResources lookupProvider(final Locale locale) throws IOException {
-        InstallationResources fallback = null;
-        for (final InstallationResources provider : InstallationResources.load()) {
-            if (provider.getAuthorities().contains(Constants.EPSG)) {
-                if (!provider.getClass().isAnnotationPresent(Fallback.class)) {
-                    return provider;
-                }
-                fallback = provider;
-            }
-        }
-        /*
-         * If we did not found a provider ready to use such as `sis-epsg.jar` or `sis-embedded.jar`,
-         * we may fallback on a provider offering to download the data (those fallbacks are provided
-         * by `org.apache.sis.console` and `org.apache.sis.gui` modules). Those fallbacks will ask to
-         * the users if they accept the EPSG Terms of Use.
-         */
-        return fallback;
     }
 
     /**
