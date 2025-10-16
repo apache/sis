@@ -52,7 +52,7 @@ public final class Tags {
 
     /**
      * Embedded XML-encoded instance documents prepared using 19139-based schema.
-     * This is an OGC DGIWG extension tag.
+     * This is an <abbr>OGC</abbr> <abbr>DGIWG</abbr> extension tag.
      */
     public static final short GEO_METADATA = (short) 0xC6DD;
 

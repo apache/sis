@@ -19,11 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.Set;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Optional;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.ZoneId;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -120,18 +116,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * which is about formatting error messages. A null value means "unlocalized", which is usually English.
      */
     final Locale dataLocale;
-
-    /**
-     * The timezone for the date and time parsing, or {@code null} for the default.
-     */
-    private final ZoneId timezone;
-
-    /**
-     * The object to use for parsing and formatting dates. Created when first needed.
-     *
-     * @see #getDateFormat()
-     */
-    private transient DateFormat dateFormat;
 
     /**
      * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
@@ -261,7 +245,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
         compression = connector.getOption(Compression.OPTION_KEY);
         dataLocale  = connector.getOption(OptionKey.LOCALE);
-        timezone    = connector.getOption(OptionKey.TIMEZONE);
         location    = connector.getStorageAs(URI.class);
         path        = connector.getStorageAs(Path.class);
         try {
@@ -496,19 +479,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     @Override
     public Optional<FileSet> getFileSet() throws DataStoreException {
         return (path != null) ? Optional.of(new FileSet(path)) : Optional.empty();
-    }
-
-    /**
-     * Returns the object to use for parsing and formatting dates.
-     */
-    final DateFormat getDateFormat() {
-        if (dateFormat == null) {
-            dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US);
-            if (timezone != null) {
-                dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
-            }
-        }
-        return dateFormat;
     }
 
     /**

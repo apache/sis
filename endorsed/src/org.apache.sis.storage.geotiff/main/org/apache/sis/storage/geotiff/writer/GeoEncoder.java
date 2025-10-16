@@ -20,6 +20,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.EnumMap;
 import java.util.logging.Level;
+import java.time.Instant;
+import java.time.Duration;
+import java.time.temporal.Temporal;
+import java.time.format.DateTimeFormatter;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.TAG_GEO_ASCII_PARAMS;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.TAG_GEO_DOUBLE_PARAMS;
 import javax.measure.Unit;
@@ -55,6 +59,7 @@ import org.opengis.parameter.ParameterValue;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.CollectionsExt;
@@ -119,6 +124,14 @@ public final class GeoEncoder {
      * This is the value to store in {@link GeoKeys#Citation}.
      */
     private String citation;
+
+    /**
+     * The temporal coordinate of the image, or {@code null} if none.
+     * This is extracted from the temporal dimension of the grid geometry.
+     *
+     * @see #imageDate()
+     */
+    private Instant imageDate;
 
     /**
      * Whether the map projection is a pseudo-projection. The latter has no GeoTIFF code.
@@ -257,7 +270,7 @@ public final class GeoEncoder {
      * @throws IncompleteGridGeometryException if the grid geometry is incomplete.
      * @throws IncompatibleResourceException if the grid geometry cannot be encoded.
      */
-    public void write(GridGeometry grid, final MetadataFetcher<?> metadata)
+    public void write(GridGeometry grid, final MetadataFetcher metadata)
             throws FactoryException, TransformException, IncommensurableException, IncompatibleResourceException
     {
         grid = grid.shiftGridToZeros();
@@ -265,8 +278,8 @@ public final class GeoEncoder {
         isPoint  = CollectionsExt.first(metadata.cellGeometry) == CellGeometry.POINT;
         final var anchor = isPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER;
         /*
-         * Get the dimension indices of the two-dimensional slice to write. They should be the first dimensions,
-         * but we allow those dimensions to appear elsewhere.
+         * Get the dimension indices of the two-dimensional slice to write.
+         * They should be the first dimensions, but we allow those dimensions to appear elsewhere.
          */
         final int[] dimensions = grid.getExtent().getSubspaceDimensions(BIDIMENSIONAL);
         final GridGeometry horizontal = grid.selectDimensions(dimensions);
@@ -275,6 +288,20 @@ public final class GeoEncoder {
             if (gridToCRS == null) {
                 String message = resources().getString(Resources.Keys.CanNotEncodeNonLinearModel);
                 throw new IncompatibleResourceException(message).addAspect("gridToCRS");
+            }
+            /*
+             * Extract the temporal coordinate. This information is stored for restitution by the
+             * `imageDate()` method. This information, even absent, shall unconditionally replace
+             * the information obtained from metadata for avoiding misinterpretation at read time.
+             */
+            final Instant[] time = grid.getTemporalExtent();
+            if (time.length != 0) {
+                imageDate = time[0];
+                if (isPoint && time.length > 1) {
+                    // TODO: replace by the following when allowed to compile for JDK23:
+                //  imageDate = imageDate.plus(imageDate.until(t[1]).dividedBy(2));
+                    imageDate = imageDate.plus(Duration.between(imageDate, time[1]).dividedBy(2));
+                }
             }
         }
         /*
@@ -859,6 +886,45 @@ public final class GeoEncoder {
      */
     public List<String> asciiParams() {
         return JDK15.isEmpty(asciiParams) ? null : List.of(asciiParams.toString());
+    }
+
+    /**
+     * Formats the given date in the way that it should be encoded in the {@code DATE_TIME} tag.
+     * According the <abbr>TIFF</abbr> specification, this tag contains the image creation date.
+     * But the <abbr>DGIWG</abbr> specification reinterprets that information as the time when
+     * the imagery values were collected, which is a point on the <abbr>CRS</abbr> temporal axis.
+     *
+     * <p>The list given to this method should be the list returned by {@link #imageDate()} when
+     * the image contains spatiotemporal referencing information. But the argument may also be a
+     * list obtained from other source when the image to write has no spatiotemporal coordinates,
+     * in which case we are writing a plain <abbr>TIFF</abbr> image and the date may be obtained
+     * from ISO 19115 metadata.</p>
+     *
+     * @param  imageDate  the date to encode, or {@code null} or empty if none.
+     * @return the first date encoded as a string, or {@code null} if none.
+     */
+    public static List<String> creationDates(final List<Temporal> imageDate) {
+        if (imageDate == null || imageDate.isEmpty()) {
+            return null;
+        }
+        var value = new StringBuilder(DateTimeFormatter.ISO_INSTANT.format(imageDate.get(0)));
+        int s = value.lastIndexOf(".");
+        if (s >= 0) value.setLength(s);
+        StringBuilders.replace(value, "-", ":");
+        StringBuilders.replace(value, "T", " ");
+        StringBuilders.replace(value, "Z", "");
+        return List.of(value.toString());
+    }
+
+    /**
+     * Returns the temporal coordinate of the image, or an empty list if none.
+     * This information shall unconditionally replace the information obtained from metadata, even when
+     * the list is empty, for avoiding misinterpretation of the spatiotemporal location at reading time.
+     *
+     * @return the temporal coordinate of the image as a list of 0 or 1 element.
+     */
+    public List<Temporal> imageDate() {
+        return (imageDate != null) ? List.of(imageDate) : List.of();
     }
 
     /**

@@ -17,7 +17,8 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
-import java.text.ParseException;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.FactoryException;
@@ -65,13 +67,14 @@ import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
- * An Image File Directory (FID) in a TIFF image.
+ * An Image File Directory (FID) in a <abbr>TIFF</abbr> image.
  *
  * <h2>Thread-safety</h2>
  * Public methods should be synchronized because they can be invoked directly by users.
@@ -160,8 +163,6 @@ final class ImageFileDirectory extends DataCube {
      *
      * <p><b>Note:</b>
      * the {@link #imageHeight} attribute is named {@code ImageLength} in TIFF specification.</p>
-     *
-     * @see #getExtent()
      */
     private long imageWidth = -1, imageHeight = -1;
 
@@ -387,6 +388,15 @@ final class ImageFileDirectory extends DataCube {
     private Predictor predictor;
 
     /**
+     * The date/time found in the {@code DATE_TIME} tag, or {@code null} if none.
+     * According the <abbr>TIFF</abbr> specification, this is the image creation date.
+     * But the <abbr>DGIWG</abbr> specification reinterprets that information as the time when
+     * the imagery values were collected, which is a point on the <abbr>CRS</abbr> temporal axis.
+     * However, we will use this information that way only if {@link #referencing} is non-null.
+     */
+    public Instant imageDate;
+
+    /**
      * A helper class for building Coordinate Reference System and complete related metadata.
      * Contains the following information:
      *
@@ -415,7 +425,7 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * The grid geometry created by {@link GridGeometryBuilder#build(Reader, long, long)}.
+     * The grid geometry created by {@link GridGeometryBuilder#build(StoreListeners, long, long, Instant)}.
      * It has 2 or 3 dimensions, depending on whether the CRS declares a vertical axis or not.
      *
      * @see #getGridGeometry()
@@ -524,7 +534,7 @@ final class ImageFileDirectory extends DataCube {
      * @param  count  the number of values to read.
      * @return {@code null} on success, or the unrecognized value otherwise.
      * @throws IOException if an error occurred while reading the stream.
-     * @throws ParseException if the value need to be parsed as date and the parsing failed.
+     * @throws DateTimeParseException if the value need to be parsed as date and the parsing failed.
      * @throws NumberFormatException if the value need to be parsed as number and the parsing failed.
      * @throws ArithmeticException if the value cannot be represented in the expected Java type.
      * @throws IllegalArgumentException if a value which was expected to be a singleton is not.
@@ -1009,13 +1019,25 @@ final class ImageFileDirectory extends DataCube {
             }
             /*
              * Date and time of image creation. The format is: "YYYY:MM:DD HH:MM:SS" with 24-hour clock.
+             * The <abbr>DGIWG</abbr> specification requires that all date/time stamps are expressed in
+             * Coordinated Universal Time (UTC), and that they represent the date/time when the imagery
+             * values were collected.
              *
              * Destination: metadata/identificationInfo/citation/date
+             *        Also: gridGeometry/gridToCRS
              */
             case TAG_DATE_TIME: {
-                for (final String value : type.readAsStrings(input(), count, encoding())) {
-                    metadata.addCitationDate(reader.store.getDateFormat().parse(value).toInstant(),
-                            DateType.CREATION, ImageMetadataBuilder.Scope.RESOURCE);
+                for (String value : type.readAsStrings(input(), count, encoding())) {
+                    // The presence of a letter would be an invalid date according TIFF and DGIWG specifications.
+                    // If present anyway, parse as an ISO date. If failure, warning will be logged by the caller.
+                    if (!CharSequences.isUpperCase(value)) {
+                        final String[] parts = (String[]) CharSequences.split(value, ' ');
+                        if (parts.length == 2) {
+                            value = parts[0].replace(':', '-') + 'T' + parts[1] + 'Z';
+                        }
+                    }
+                    imageDate = LenientDateFormat.parseInstantUTC(value);
+                    metadata.addCitationDate(imageDate, DateType.CREATION, ImageMetadataBuilder.Scope.RESOURCE);
                 }
                 break;
             }
@@ -1450,22 +1472,45 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * If this IFD has no grid geometry information, derives a grid geometry by applying a scale factor
-     * on the grid geometry of another IFD. Information about bands are also copied if compatible.
+     * If this <abbr>IFD</abbr> has no grid geometry, derives this information
+     * by scaling the grid geometry of the specified image at full resolution.
+     * Information about bands are also copied if compatible. The scale factors are returned,
+     * with the scale of the temporal dimension defined to 1 for telling that the time does not change.
+     *
+     * <h4>Conditions</h4>
      * This method should be invoked only when {@link #isReducedResolution()} is {@code true}.
      *
      * @param  fullResolution  the full-resolution image.
-     * @param  scales  <var>size of full resolution image</var> / <var>size of this image</var> for each grid axis.
+     * @return <var>size of full resolution image</var> / <var>size of this image</var> for each grid axis.
      */
-    final void initReducedResolution(final ImageFileDirectory fullResolution, final double[] scales)
-            throws DataStoreException, TransformException
-    {
+    final double[] initReducedResolution(final ImageFileDirectory fullResolution) throws DataStoreException, TransformException {
+        final GridGeometry geometry = fullResolution.getGridGeometry();
+        final GridExtent fullExtent = geometry.getExtent();
+        final int dimension = fullExtent.getDimension();
+        final var axisTypes = new DimensionNameType[dimension];
+        final var scales    = new double[dimension];
+        final var high      = new long[dimension];
+        for (int i=0; i<dimension; i++) {
+            axisTypes[i] = fullExtent.getAxisType(i).orElse(null);
+            final long size;
+            switch (i) {
+                case 0:  size = imageWidth;  break;
+                case 1:  size = imageHeight; break;
+                default: scales[i] = 1; continue;
+            }
+            scales[i] = fullExtent.getSize(i, false) / size;
+            high[i] = size - 1;
+        }
         if (referencing == null) {
-            gridGeometry = new GridGeometry(fullResolution.getGridGeometry(), getExtent(), MathTransforms.scale(scales));
+            gridGeometry = new GridGeometry(
+                    geometry,
+                    new GridExtent(axisTypes, null, high, true),
+                    MathTransforms.scale(scales));
         }
         if (samplesPerPixel == fullResolution.samplesPerPixel) {
             sampleDimensions = fullResolution.getSampleDimensions();
         }
+        return scales;
     }
 
     /**
@@ -1483,7 +1528,6 @@ final class ImageFileDirectory extends DataCube {
      * <h4>Thread-safety</h4>
      * This method must be thread-safe because it can be invoked directly by the user.
      *
-     * @see #getExtent()
      * @see #getTileSize()
      */
     @Override
@@ -1492,28 +1536,18 @@ final class ImageFileDirectory extends DataCube {
             GridGeometry domain = gridGeometry;
             if (domain == null) {
                 if (referencing != null) try {
-                    domain = referencing.build(reader.store.listeners(), imageWidth, imageHeight);
+                    domain = referencing.build(reader.store.listeners(), imageWidth, imageHeight, imageDate);
                 } catch (FactoryException e) {
                     throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
                 } else {
                     // Fallback if the TIFF file has no GeoKeys.
-                    domain = new GridGeometry(getExtent(), null, null);
+                    domain = new GridGeometry(new GridExtent(imageWidth, imageHeight), null, null);
                 }
                 final CoverageModifier.Source source = source();
                 gridGeometry = (source != null) ? reader.store.customizer.customize(source, domain) : domain;
             }
             return domain;
         }
-    }
-
-    /**
-     * Returns the image width and height without building the full grid geometry.
-     *
-     * @see #getTileSize()
-     * @see #getGridGeometry()
-     */
-    final GridExtent getExtent() {
-        return new GridExtent(imageWidth, imageHeight);
     }
 
     /**
@@ -1709,7 +1743,6 @@ final class ImageFileDirectory extends DataCube {
      * Returns the size of tiles. This is also the size of the image sample model.
      * The number of dimensions is always 2 for {@code ImageFileDirectory}.
      *
-     * @see #getExtent()
      * @see #getSampleModel(int[])
      */
     @Override

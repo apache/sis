@@ -37,14 +37,9 @@ import org.apache.sis.measure.Units;
  */
 class TimeEncoding extends SurjectiveConverter<String,Instant> {
     /**
-     * The temporal coordinate reference system to use for {@link #ABSOLUTE} time encoding.
-     */
-    static final CommonCRS.Temporal DEFAULT = CommonCRS.Temporal.TRUNCATED_JULIAN;
-
-    /**
      * Times are formatted as ISO dates.
      */
-    static final TimeEncoding ABSOLUTE = new TimeEncoding(DEFAULT.datum(), Units.DAY) {
+    static final TimeEncoding ABSOLUTE = new TimeEncoding(CommonCRS.defaultTemporal().getDatum(), Units.DAY) {
         @Override public Instant apply(final String time) {
             return LenientDateFormat.parseInstantUTC(time);
         }

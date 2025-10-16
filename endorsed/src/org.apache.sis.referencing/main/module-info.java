@@ -21,7 +21,7 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Maxime Gavens (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 module org.apache.sis.referencing {

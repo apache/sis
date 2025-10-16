@@ -51,14 +51,9 @@ import org.opengis.util.Factory;
  * A container of factories frequently used together.
  * Provides also some utility methods working with factories.
  *
- * This class may be temporary until we choose a dependency injection framework
- * See <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>.
- *
  * <p>This class is not thread safe. Synchronization, if needed, is caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- *
- * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
  */
 public class ReferencingFactoryContainer implements Localized {
     /**

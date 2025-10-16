@@ -370,7 +370,7 @@ search: synchronized (members) {
          * but a future version may use the state of this `CoverageAggregator`, for example making a better
          * effort to align the resources on the same "gridToCRS" transform.
          */
-        final var crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
+        final var crs = DefaultTemporalCRS.castOrCopy(CommonCRS.defaultTemporal());
         double scale  = crs.toValue(span);
         double offset = crs.toValue(lower);
         long   index  = Numerics.roundAndClamp(offset / scale);             // See comment in above method.

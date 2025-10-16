@@ -134,7 +134,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.0
  */
 public class GridGeometry implements LenientComparable, Serializable {
@@ -222,9 +222,10 @@ public class GridGeometry implements LenientComparable, Serializable {
     protected final GridExtent extent;
 
     /**
-     * The geodetic envelope, or {@code null} if unknown. If non-null, this envelope is usually the grid {@link #extent}
-     * {@linkplain #gridToCRS transformed} to real world coordinates. The Coordinate Reference System} (CRS) of this
-     * envelope defines the "real world" CRS of this grid geometry.
+     * The spatiotemporal extent in units of the <abbr>CRS</abbr>, or {@code null} if unknown.
+     * If non-null, this envelope is usually the grid {@link #extent} {@linkplain #gridToCRS transformed}
+     * to real world coordinates, with the lower coordinates inclusive and the upper coordinates exclusive.
+     * The Coordinate Reference System (CRS) of this envelope defines the "real world" CRS of this grid geometry.
      *
      * @see #ENVELOPE
      * @see #getEnvelope()
@@ -683,7 +684,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             this.envelope = null;
         } else {
             this.envelope = target;
-            if (extent != null) {
+            if (extent != null && orientation != GridOrientation.UNKNOWN) {
                 // A non-null `sourceDimensions` implies non-null `orientation`.
                 if (sourceDimensions != null && orientation.canReorderGridAxis) {
                     if (!ArraysExt.isRange(0, sourceDimensions)) {
@@ -1138,8 +1139,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Returns the start time and end time of coordinates of the grid.
      * If the grid has no temporal dimension, then this method returns an empty array.
      * If only the start time or end time is defined, then returns an array of length 1.
-     * Otherwise this method returns an array of length 2 with the start time in the first element
-     * and the end time in the last element.
+     * Otherwise this method returns an array of length 2 with the start time (inclusive)
+     * in the first element and the end time (exclusive) in the last element.
      *
      * @return time range as an array of length 0 (if none), 1 or 2.
      */

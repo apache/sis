@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Deque;
@@ -38,7 +37,6 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.CitationDate;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.DataType;
@@ -55,8 +53,8 @@ import org.apache.sis.storage.geotiff.writer.GeoEncoder;
 import org.apache.sis.storage.geotiff.writer.ReformattedImage;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.UpdatableWrite;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Fraction;
@@ -298,6 +296,7 @@ final class Writer extends IOBase implements Flushable {
      * @throws DataStoreException if the given {@code image} has a property
      *         which is not supported by TIFF specification or by this writer.
      */
+    @SuppressWarnings("UseSpecificCatch")
     public final long append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws IOException, DataStoreException
     {
@@ -395,23 +394,18 @@ final class Writer extends IOBase implements Flushable {
         }
         /*
          * Metadata (optional) and GeoTIFF. They are managed by separated classes.
+         * Note that `TAG_DATE_TIME` has slightly different interpretation depending
+         * on whether we are writing GeoTIFF (`geoKeys != null`) or plain TIFF.
          */
         final double[][] statistics = image.statistics(numBands);
         final  short[][] shortStats = toShorts(statistics, sampleFormat);
-        final MetadataFetcher<String> mf = new MetadataFetcher<>(store.dataLocale) {
-            @Override protected boolean accept(final CitationDate info) {
-                return super.accept(info) || creationDate != null;          // Limit to a singleton.
-            }
-
-            @Override protected String convertDate(final Date date) {
-                return store.getDateFormat().format(date);
-            }
-        };
+        final var mf = new MetadataFetcher(store.dataLocale);
         mf.accept(metadata);
         GeoEncoder geoKeys = null;
         if (grid != null) try {
             geoKeys = new GeoEncoder(store.listeners());
             geoKeys.write(grid, mf);
+            mf.creationDate = geoKeys.imageDate();  // Unconditional, even if the list of empty.
         } catch (IncompleteGridGeometryException | CannotEvaluateException | TransformException e) {
             throw new IncompatibleResourceException(e.getMessage(), e).addAspect("gridGeometry");
         } catch (FactoryException | IncommensurableException | RuntimeException e) {
@@ -460,7 +454,7 @@ final class Writer extends IOBase implements Flushable {
         writeTag((short) TAG_PLANAR_CONFIGURATION,       (short) TIFFTag.TIFF_SHORT, planarConfiguration);
         writeTag((short) TAG_RESOLUTION_UNIT,            (short) TIFFTag.TIFF_SHORT, RESOLUTION_UNIT_NONE);
         writeTag((short) TAG_SOFTWARE,                   /* TIFF_ASCII */            mf.software);
-        writeTag((short) TAG_DATE_TIME,                  /* TIFF_ASCII */            mf.creationDate);
+        writeTag((short) TAG_DATE_TIME,                  /* TIFF_ASCII */            GeoEncoder.creationDates(mf.creationDate));
         writeTag((short) TAG_ARTIST,                     /* TIFF_ASCII */            mf.party);
         writeTag((short) TAG_HOST_COMPUTER,              /* TIFF_ASCII */            mf.procedure);
         if (compression.usePredictor()) {
