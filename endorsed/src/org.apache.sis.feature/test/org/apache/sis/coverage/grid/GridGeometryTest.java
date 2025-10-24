@@ -23,6 +23,7 @@ import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -40,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 import static org.apache.sis.feature.Assertions.assertGridToCenterEquals;
@@ -498,21 +500,71 @@ public final class GridGeometryTest extends TestCase {
                     0,    0,     1)),
                 HardCodedCRS.WGS84);
 
+        // When the CRS is the same, envelope should be the same.
         Envelope envelope = grid.getEnvelope(HardCodedCRS.WGS84);
         assertSame(envelope, grid.getEnvelope());
         assertEnvelopeEquals(new GeneralEnvelope(
                 new double[] {-2, -7.5},
                 new double[] { 1, -3.0}), envelope);
 
+        // Swap axis order.
         envelope = grid.getEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        assertSame(envelope.getCoordinateReferenceSystem(), HardCodedCRS.WGS84_LATITUDE_FIRST);
         assertEnvelopeEquals(new GeneralEnvelope(
                 new double[] {-7.5, -2},
                 new double[] {-3.0,  1}), envelope);
 
+        // Map projection.
         envelope = grid.getEnvelope(HardCodedConversions.mercator());
         assertEnvelopeEquals(new GeneralEnvelope(
                 new double[] {-222638.98, -831717.36},
                 new double[] { 111319.49, -331876.53}), envelope, 0.01);
+    }
+
+    /**
+     * Tests {@link GridGeometry#getEnvelope(CoordinateReferenceSystem)} when an axis is not of the expected type.
+     * The horizontal part of this test is the same as {@link #testGetEnvelope()} for making validation easier.
+     *
+     * @throws TransformException if coordinates cannot be transformed.
+     */
+    @Test
+    public void testGetEnvelopeWithMismatchedDimension() throws TransformException {
+        final var grid = new GridGeometry(
+                new GridExtent(null, null, new long[] {12, 18, 5}, false),
+                PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix4(
+                    0.25, 0,    0, -2,
+                    0,   -0.25, 0, -3,
+                    0,    0,    9, 11,
+                    0,    0,    0,  1)),
+                HardCodedCRS.WGS84_WITH_TIME);
+
+        // When the CRS is the same, envelope should be the same.
+        Envelope envelope = grid.getEnvelope(HardCodedCRS.WGS84_WITH_TIME);
+        assertSame(envelope, grid.getEnvelope());
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {-2, -7.5, 11},
+                new double[] { 1, -3.0, 56}), envelope);
+
+        // Cannot map time to gravity-related height.
+        Throwable e = assertThrows(TransformException.class, () -> grid.getEnvelope(HardCodedCRS.GEOID_3D)).getCause();
+        e = assertInstanceOf(OperationNotFoundException.class, e);
+        assertMessageContains(e, "WGS 84 + time", "WGS 84 + height");
+
+        // Ellipsoidal height is a special case, with default height of 0.
+        envelope = grid.getEnvelope(HardCodedCRS.WGS84_3D);
+        assertSame(envelope.getCoordinateReferenceSystem(), HardCodedCRS.WGS84_3D);
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {-2, -7.5, 0},
+                new double[] { 1, -3.0, 0}), envelope);
+
+        // Same when working on `Envelope` instead of `GridExtent`.
+        final var withOnlyEnvelope = new GridGeometry(grid.getEnvelope());
+        envelope = withOnlyEnvelope.getEnvelope(HardCodedCRS.WGS84_3D);
+        assertSame(envelope.getCoordinateReferenceSystem(), HardCodedCRS.WGS84_3D);
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {-2, -7.5, 0},
+                new double[] { 1, -3.0, 0}), envelope);
     }
 
     /**

@@ -269,7 +269,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     protected DefaultCompoundCRS(final CompoundCRS crs) {
         super(crs);
         if (crs instanceof DefaultCompoundCRS) {
-            final DefaultCompoundCRS that = (DefaultCompoundCRS) crs;
+            final var that = (DefaultCompoundCRS) crs;
             this.components = that.components;
             this.singles    = that.singles;
         } else {
@@ -371,7 +371,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * @see #getSingleComponents()
      */
     private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> elements) {
-        final List<SingleCRS> flattened = new ArrayList<>(elements.size());
+        final var flattened = new ArrayList<SingleCRS>(elements.size());
         final boolean identical = getSingleComponents(elements, flattened);
         singles = UnmodifiableArrayList.wrap(flattened.toArray(SingleCRS[]::new));
         return identical;
@@ -530,7 +530,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             boolean changed = false;
             final boolean reorderCRS = convention.ordinal() >= AxesConvention.DISPLAY_ORIENTED.ordinal();
             final List<? extends CoordinateReferenceSystem> elements = reorderCRS ? singles : components;
-            final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[elements.size()];
+            final var newComponents = new CoordinateReferenceSystem[elements.size()];
             for (int i=0; i<newComponents.length; i++) {
                 CoordinateReferenceSystem component = elements.get(i);
                 AbstractCRS m = castOrCopy(component);
