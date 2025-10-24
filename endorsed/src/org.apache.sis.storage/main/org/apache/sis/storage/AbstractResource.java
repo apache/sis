@@ -18,7 +18,6 @@ package org.apache.sis.storage;
 
 import java.util.Locale;
 import java.util.Optional;
-import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
@@ -31,6 +30,7 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.storage.base.PseudoResource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -43,7 +43,7 @@ import org.apache.sis.xml.NilReason;
  * Subclasses should override the following methods:
  *
  * <ul>
- *   <li>{@link #getIdentifier()} (strongly recommended)</li>
+ *   <li>{@link #getIdentifier()} (recommended)</li>
  *   <li>{@link #getEnvelope()} (recommended)</li>
  *   <li>{@link #createMetadata()} (optional)</li>
  *   <li>{@link #getSynchronizationLock()} (optional)</li>
@@ -54,7 +54,7 @@ import org.apache.sis.xml.NilReason;
  * Synchronization, when needed, uses {@link #getSynchronizationLock()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.2
  */
 public abstract class AbstractResource implements Resource {
@@ -85,7 +85,14 @@ public abstract class AbstractResource implements Resource {
     @SuppressWarnings("this-escape")
     protected AbstractResource(final Resource parent) {
         StoreListeners parentListeners = null;
-        if (parent instanceof AbstractResource) {
+        if (parent instanceof PseudoResource) {     // Internal hack, may change in any future version.
+            final var r = (PseudoResource) parent;
+            parentListeners = r.listeners;
+            if (parentListeners != null && r.childrenAreHidden) {
+                listeners = parentListeners;
+                return;
+            }
+        } else if (parent instanceof AbstractResource) {
             parentListeners = ((AbstractResource) parent).listeners;
         } else if (parent instanceof DataStore) {
             parentListeners = ((DataStore) parent).listeners;
@@ -117,23 +124,6 @@ public abstract class AbstractResource implements Resource {
         } else {
             listeners = new StoreListeners(parentListeners, this);
         }
-    }
-
-    /**
-     * Returns the resource persistent identifier if available.
-     * The default implementation returns an empty value.
-     * Subclasses are strongly encouraged to override if they can provide a value.
-     *
-     * <h4>Relationship with metadata</h4>
-     * The default implementation of {@link #createMetadata()} uses this identifier for initializing
-     * the {@code metadata/identificationInfo/citation/title} property.
-     *
-     * @return a persistent identifier unique within the data store.
-     * @throws DataStoreException if an error occurred while fetching the identifier.
-     */
-    @Override
-    public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.empty();
     }
 
     /**

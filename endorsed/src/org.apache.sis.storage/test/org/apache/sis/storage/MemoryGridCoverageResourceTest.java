@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage;
 
 import java.awt.image.BufferedImage;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -34,11 +34,12 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 
 /**
- * Tests {@link MemoryGridResource}.
+ * Tests {@link MemoryGridCoverageResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class MemoryGridResourceTest extends TestCase {
+@SuppressWarnings("exports")
+public final class MemoryGridCoverageResourceTest extends TestCase {
     /**
      * Arbitrary size for the grid to test.
      */
@@ -57,24 +58,24 @@ public final class MemoryGridResourceTest extends TestCase {
     /**
      * The resource to be tested by each test method.
      */
-    private final MemoryGridResource resource;
+    private final MemoryGridCoverageResource resource;
 
     /**
      * Creates a new test case.
      */
-    public MemoryGridResourceTest() {
+    public MemoryGridCoverageResourceTest() {
         crs = HardCodedCRS.WGS84;
         gridToCRS = new AffineTransform2D(2, 0, 0, 3, 0, 0);
-        final GridGeometry grid = new GridGeometry(new GridExtent(WIDTH, HEIGHT), PixelInCell.CELL_CENTER, gridToCRS, crs);
-        final BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_BINARY);
-        resource = new MemoryGridResource(null, null, new GridCoverage2D(grid, null, image), null);
+        final var grid = new GridGeometry(new GridExtent(WIDTH, HEIGHT), PixelInCell.CELL_CENTER, gridToCRS, crs);
+        final var image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_BINARY);
+        resource = new MemoryGridCoverageResource(null, new GridCoverage2D(grid, null, image), null);
     }
 
     /**
      * Creates an arbitrary grid geometry included inside the {@linkplain #resource} extent.
      */
     private GridGeometry createSubGrid() {
-        final GridExtent extent = new GridExtent(null,
+        final var extent = new GridExtent(null,
                 new long[] {7, 4},
                 new long[] {WIDTH - 9, HEIGHT - 11}, true);
 
@@ -82,7 +83,7 @@ public final class MemoryGridResourceTest extends TestCase {
     }
 
     /**
-     * Tests {@link MemoryGridResource#read(GridGeometry, int...)}.
+     * Tests {@link MemoryGridCoverageResource#read(GridGeometry, int[])}.
      */
     @Test
     public void testRead() {

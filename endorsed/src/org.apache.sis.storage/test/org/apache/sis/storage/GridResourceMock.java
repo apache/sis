@@ -23,6 +23,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.storage.MemoryGridCoverageResource;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,11 +31,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * A resource for one-banded images generated on-the-fly when {@link #read(GridGeometry, int...)} is invoked.
- * This class has some similarities with {@link org.apache.sis.storage.base.MemoryGridResource} except that
- * the {@link GridCoverage} returned by {@link #read read(…)} is guaranteed to wrap an image having exactly the
- * requested size (i.e. the size specified by {@link GridGeometry#getExtent()}).
- * By contrast {@code org.apache.sis.storage.base.MemoryGridResource} may return images larger than requested,
- * which make testing more difficult.
+ * This class has some similarities with {@link MemoryGridCoverageResource} except that the {@link GridCoverage}
+ * returned by the {@link #read read(…)} method is guaranteed to wrap an image having exactly the requested size
+ * (i.e. the size specified by {@link GridGeometry#getExtent()}). By contrast, {@link MemoryGridCoverageResource}
+ * may return images larger than requested, which make testing more difficult.
  *
  * @author  Johann Sorel (Geomatys)
  */
@@ -53,7 +53,7 @@ final class GridResourceMock extends AbstractGridCoverageResource {
      * Creates a resource mock with the given grid geometry.
      */
     GridResourceMock(final GridGeometry gridGeometry) {
-        super(null, false);
+        super(null);
         assertNotNull(gridGeometry);
         this.gridGeometry     = gridGeometry;
         this.sampleDimensions = List.of(new SampleDimension.Builder().setName(0).build());

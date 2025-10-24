@@ -100,7 +100,7 @@ public final class DataStoreMock extends DataStore {
      * @return a dummy child.
      */
     public Resource newChild() {
-        return new AbstractResource(listeners, false) {
+        return new AbstractResource(this) {
         };
     }
 }

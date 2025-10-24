@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -29,7 +28,6 @@ import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -52,7 +50,7 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.base.MemoryFeatureSet;
+import org.apache.sis.storage.MemoryFeatureSet;
 import org.apache.sis.style.se1.FeatureTypeStyle;
 import org.apache.sis.style.se1.Symbology;
 import org.apache.sis.style.se1.StyleFactory;
@@ -60,8 +58,6 @@ import org.apache.sis.style.se1.Symbolizer;
 import org.apache.sis.style.se1.SemanticType;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.storage.event.StoreEvent;
-import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.util.iso.Names;
 
 // Test dependencies
@@ -544,20 +540,9 @@ public class SEPortrayerTest {
             }
 
             @Override
-            public Optional<GenericName> getIdentifier() throws DataStoreException {
-                return Optional.empty();
-            }
-
-            @Override
             public Metadata getMetadata() throws DataStoreException {
                 return null;
             }
-
-            @Override
-            public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {}
-
-            @Override
-            public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {}
         };
 
         final MapLayer aggLayer = new MapLayer();

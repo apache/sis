@@ -28,6 +28,7 @@ import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.PseudoResource;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.util.internal.shared.Strings;
@@ -72,6 +73,15 @@ abstract class AggregatedResource extends AbstractResource {
      * The envelope may still be null if the initialization failed.
      */
     private boolean envelopeIsEvaluated;
+
+    /**
+     * Creates a new concatenated resource as the child of the given resource.
+     *
+     * @param  parent  the parent resource, or {@code null} if none.
+     */
+    AggregatedResource(final PseudoResource parent) {
+        super(parent);
+    }
 
     /**
      * Creates a new concatenated resource.

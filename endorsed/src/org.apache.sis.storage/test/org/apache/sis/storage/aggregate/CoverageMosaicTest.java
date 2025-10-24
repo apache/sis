@@ -52,6 +52,7 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class CoverageMosaicTest extends TestCase {
     /**
@@ -367,10 +368,10 @@ public final class CoverageMosaicTest extends TestCase {
         assertEquals(ranges, coverage.getSampleDimensions());
         GridExtent extent = coverage.getGridGeometry().getExtent();
         /*
-         * At the time of writing this test, the `MemoryGridResource.read(…)` implementation
+         * At the time of writing this test, the `MemoryGridCoverageResource.read(…)` implementation
          * does not apply subsampling. Therefore, the coverage is as `testReadTilesFully()`.
          * If a test failure happens below in a future version, this is not necessarily a bug.
-         * Maybe `MemoryGridResource` has been improved and this test should be adjusted.
+         * Maybe `MemoryGridCoverageResource` has been improved and this test should be adjusted.
          */
         assertEquals(NUM_TILES*TILE_WIDTH,  extent.getSize(0));
         assertEquals(NUM_TILES*TILE_HEIGHT, extent.getSize(1));

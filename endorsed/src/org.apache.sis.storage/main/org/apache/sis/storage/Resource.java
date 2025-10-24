@@ -54,7 +54,7 @@ import org.apache.sis.storage.event.StoreListener;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see Aggregate#components()
  *
@@ -84,7 +84,9 @@ public interface Resource {
      *
      * @since 1.0
      */
-    Optional<GenericName> getIdentifier() throws DataStoreException;
+    default Optional<GenericName> getIdentifier() throws DataStoreException {
+        return Optional.empty();
+    }
 
     /**
      * Returns information about this resource.
@@ -140,7 +142,7 @@ public interface Resource {
      * If the caller wants to modify some metadata elements, it may be necessary to perform a
      * {@linkplain org.apache.sis.metadata.iso.DefaultMetadata#deepCopy(Metadata) deep copy} first.
      *
-     * @return information about this resource. Should not be {@code null}.
+     * @return information about this resource. Should not be {@code null}, but this is not strictly forbidden.
      * @throws DataStoreException if an error occurred while reading the metadata.
      *
      * @see DataStore#getMetadata()
@@ -364,11 +366,16 @@ public interface Resource {
      * This side-effect is applied on the assumption that the registered listener will handle
      * warnings in its own way, for example by showing warnings in a widget.
      *
+     * <h4>Default implementation</h4>
+     * The default implementation does nothing.
+     * This is okay for resources that do not emit any event.
+     *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  listener   listener to notify about events.
      * @param  eventType  type of {@link StoreEvent}s to listen (cannot be {@code null}).
      */
-    <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener);
+    default <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+    }
 
     /**
      * Unregisters a listener previously added to this resource for the given type of events.
@@ -386,9 +393,14 @@ public interface Resource {
      * and if, after this method invocation, there are no remaining listeners for warning events,
      * then this {@code Resource} will send future warnings to the loggers.
      *
+     * <h4>Default implementation</h4>
+     * The default implementation does nothing.
+     * This is okay for resources that do not emit any event.
+     *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  listener   listener to stop notifying about events.
      * @param  eventType  type of {@link StoreEvent}s which were listened (cannot be {@code null}).
      */
-    <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener);
+    default <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
+    }
 }

@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 import java.awt.image.RenderedImage;
-import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
@@ -30,36 +28,41 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.storage.AbstractGridCoverageResource;
-import org.apache.sis.storage.RasterLoadingStrategy;
-import org.apache.sis.storage.event.StoreListeners;
-import static org.apache.sis.storage.base.TiledGridCoverage.BIDIMENSIONAL;
 
 
 /**
- * A {@link org.apache.sis.storage.GridCoverageResource} in memory.
+ * A Grid Coverage Resource stored in memory.
  * This resource wraps an arbitrary {@link GridCoverage} specified at construction time.
- * Metadata can be specified by overriding {@link #createMetadata()}.
+ * Metadata can be specified by overriding the {@link #createMetadata()} method.
+ *
+ * <h2>When to use</h2>
+ * This class is useful for small grid coverages, or for testing purposes,
+ * or when the coverage is in memory anyway (for example, a computation result).
+ * It should generally not be used for large coverages read from files or databases.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @since 1.6
  */
-public class MemoryGridResource extends AbstractGridCoverageResource {
+public class MemoryGridCoverageResource extends AbstractGridCoverageResource {
+    /**
+     * A constant for identifying code that relying on having 2 dimensions.
+     */
+    private static final int BIDIMENSIONAL = 2;
+
     /**
      * The grid coverage specified at construction time.
+     *
+     * @see #getGridCoverage()
      */
-    public final GridCoverage coverage;
+    protected final GridCoverage coverage;
 
     /**
      * The grid coverage processor to use for selecting bands.
      * It may be configured with a colorizer for determining the color models.
      */
-    private final GridCoverageProcessor processor;
-
-    /**
-     * The resource identifier, or {@code null} if none.
-     */
-    private final GenericName identifer;
+    protected final GridCoverageProcessor processor;
 
     /**
      * Whether to defer the calls to {@link GridCoverage#render(GridExtent)}.
@@ -71,26 +74,28 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
     /**
      * Creates a new coverage stored in memory.
      *
-     * @param  parent      listeners of the parent resource, or {@code null} if none.
-     * @param  identifier  resource identifier, or {@code null} if none.
-     * @param  coverage    stored coverage retained as-is (not copied). Cannot be null.
-     * @param  processor   the grid coverage processor for selecting bands, or {@code null} for default.
+     * @param parent     the parent resource, or {@code null} if none.
+     * @param coverage   stored coverage retained as-is (not copied). Cannot be null.
+     * @param processor  the grid coverage processor for selecting bands, or {@code null} for default.
      */
-    public MemoryGridResource(final StoreListeners parent, final GenericName identifier,
-                              final GridCoverage coverage, final GridCoverageProcessor processor)
-    {
-        super(parent, false);
-        this.identifer = identifier;
+    public MemoryGridCoverageResource(final Resource parent, final GridCoverage coverage, final GridCoverageProcessor processor) {
+        super(parent);
         this.coverage  = Objects.requireNonNull(coverage);
         this.processor = (processor != null) ? processor : new GridCoverageProcessor();
     }
 
     /**
-     * Returns the resource identifier specified at construction time, if any.
+     * Returns the grid coverage wrapped by this resource.
+     * The grid coverage returned by this method shall be the same or equivalent
+     * to the coverage that would be returned by a call to {@code read(null)},
+     * and should not be expansive to get.
+     *
+     * @return the grid coverage wrapped by this resource.
+     *
+     * @see #read(GridGeometry, int...)
      */
-    @Override
-    public Optional<GenericName> getIdentifier() {
-        return Optional.ofNullable(identifer);
+    public GridCoverage getGridCoverage() {
+        return coverage;
     }
 
     /**
@@ -132,10 +137,10 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Returns a subset of the wrapped grid coverage. If a non-null grid geometry is specified, then
-     * this method tries to return a grid coverage matching the given grid geometry on a best-effort basis.
-     * In the current implementation, this is either a {@link org.apache.sis.coverage.grid.GridCoverage2D}
-     * or the original grid coverage.
+     * Returns a subset of the wrapped grid coverage. If a null grid geometry and a null or empty range is specified,
+     * then this method shall return the same grid coverage as {@link #getGridCoverage()} or an equivalent coverage.
+     * If a non-null grid geometry is specified, then this method tries to return a grid coverage matching the given
+     * grid geometry on a best-effort basis. It may be the whole coverage.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for the whole domain.
      * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
@@ -228,8 +233,8 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Tests whether this memory grid resource is wrapping the same coverage than the given object.
-     * This method requires also the listeners and processor to be the equal.
+     * Tests whether this memory grid coverage resource is wrapping the same coverage as the given object.
+     * This method checks also that the listeners and the grid coverage processor are equal.
      *
      * @param  obj  the object to compare.
      * @return whether the two objects are memory resources wrapping the same coverage.
@@ -237,9 +242,8 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
     @Override
     public boolean equals(final Object obj) {
         if (obj != null && obj.getClass() == getClass()) {
-            final var other = (MemoryGridResource) obj;
-            return Objects.equals(identifer, other.identifer) &&
-                   coverage.equals(other.coverage)   &&
+            final var other = (MemoryGridCoverageResource) obj;
+            return coverage.equals(other.coverage)   &&
                    processor.equals(other.processor) &&
                    listeners.equals(other.listeners);
         }
@@ -253,10 +257,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
      */
     @Override
     public int hashCode() {
-        return coverage.hashCode()
-                + 17 * Objects.hashCode(identifer)
-                + 31 * processor.hashCode()
-                + 37 * listeners.hashCode();
+        return coverage.hashCode() + 31 * processor.hashCode() + 37 * listeners.hashCode();
     }
 
     /**

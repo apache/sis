@@ -24,7 +24,6 @@ import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
-import org.apache.sis.storage.base.MemoryFeatureSet;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.util.iso.Names;
 
