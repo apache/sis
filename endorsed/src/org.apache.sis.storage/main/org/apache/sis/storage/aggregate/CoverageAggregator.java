@@ -193,7 +193,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * Returns this aggregator as a pseudo-resource, used only for passing the listeners.
      */
     private PseudoResource asPseudoResource() {
-        return new PseudoResource(listeners, false);
+        return new PseudoResource(listeners);
     }
 
     /**

@@ -16,9 +16,10 @@
  */
 package org.apache.sis.storage.base;
 
-import org.apache.sis.storage.Resource;
+import java.util.Locale;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.util.Localized;
 import org.opengis.metadata.Metadata;
 
 
@@ -29,35 +30,24 @@ import org.opengis.metadata.Metadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class PseudoResource implements Resource {
+public final class PseudoResource extends AbstractResource implements Localized {
     /**
-     * The listeners that {@link AbstractResource} should take. May be {@code null}.
+     * Creates a new instance wrapping the given listeners.
+     *
+     * @param  listeners  the listeners that {@link AbstractResource} should take, or {@code null}.
      */
-    public final StoreListeners listeners;
+    public PseudoResource(final StoreListeners listeners) {
+        super(listeners, true);
+    }
 
     /**
-     * Whether the children of this pseudo-resource should be hidden.
-     * If {@code false} (the recommended value), then the children will have their own set of listeners
-     * and each child will be the {@linkplain StoreListeners#getSource() source of their own events}.
-     * It will be possible to add and remove listeners independently from the set of parent listeners.
-     * Conversely if {@code true}, then the {@linkplain #listeners} will be used directly and the
-     * children resource will not appear as the source of any event.
+     * Returns the locale for formatting messages, or {@code null} if unspecified.
      *
-     * <p>In any cases, the listeners of all parents (ultimately the data store that created the resource)
-     * will always be notified, either directly if {@code childrenAreHidden} is {@code true} or indirectly
-     * if {@code childrenAreHidden} is {@code false}.</p>
+     * @return the locale for messages (typically specified by the data store), or {@code null} if unknown.
      */
-    public final boolean childrenAreHidden;
-
-    /**
-     * Creates a new instance wrapping the given resources.
-     *
-     * @param  listeners          the listeners that {@link AbstractResource} should take, or {@code null}.
-     * @param  childrenAreHidden  whether the children of this pseudo-resource should be hidden.
-     */
-    public PseudoResource(final StoreListeners listeners, final boolean childrenAreHidden) {
-        this.listeners = listeners;
-        this.childrenAreHidden = childrenAreHidden;
+    @Override
+    public Locale getLocale() {
+        return listeners.getLocale();
     }
 
     /**
@@ -66,7 +56,7 @@ public final class PseudoResource implements Resource {
      * @return {@code null}.
      */
     @Override
-    public Metadata getMetadata() {
+    protected Metadata createMetadata() {
         return null;
     }
 }

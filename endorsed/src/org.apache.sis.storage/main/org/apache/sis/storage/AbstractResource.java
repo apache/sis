@@ -30,7 +30,6 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.storage.base.PseudoResource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -77,6 +76,8 @@ public abstract class AbstractResource implements Resource {
     /**
      * Creates a new resource, potentially as a child of another resource.
      * The parent resource is typically, but not necessarily, an {@link Aggregate}.
+     * Invoking this constructor is equivalent (except for null checks) to invoking
+     * <code>{@link #AbstractResource(StoreListeners, boolean) AbstractResource}(parent.listeners, false)</code>.
      *
      * @param  parent  the parent resource, or {@code null} if none.
      *
@@ -85,14 +86,7 @@ public abstract class AbstractResource implements Resource {
     @SuppressWarnings("this-escape")
     protected AbstractResource(final Resource parent) {
         StoreListeners parentListeners = null;
-        if (parent instanceof PseudoResource) {     // Internal hack, may change in any future version.
-            final var r = (PseudoResource) parent;
-            parentListeners = r.listeners;
-            if (parentListeners != null && r.childrenAreHidden) {
-                listeners = parentListeners;
-                return;
-            }
-        } else if (parent instanceof AbstractResource) {
+        if (parent instanceof AbstractResource) {
             parentListeners = ((AbstractResource) parent).listeners;
         } else if (parent instanceof DataStore) {
             parentListeners = ((DataStore) parent).listeners;
@@ -101,12 +95,17 @@ public abstract class AbstractResource implements Resource {
     }
 
     /**
-     * Creates a new resource which can send notifications to the given set of listeners.
-     * If {@code hidden} is {@code false} (the recommended value), then this resource will have its own set of
-     * listeners with this resource declared as the {@linkplain StoreListeners#getSource() source of events}.
-     * It will be possible to add and remove listeners independently from the set of parent listeners.
-     * Conversely if {@code hidden} is {@code true}, then the given listeners will be used directly
-     * and this resource will not appear as the source of any event.
+     * Creates a new resource which will send notifications, directly or indirectly, to the given set of listeners.
+     * The {@code hidden} argument specifies whether the new resource should be invisible in the tree of resources.
+     * The caller may want to hide a resource if, for example, it is a decorator that delegates most of its work to
+     * the real resource.
+     *
+     * <p>The {@code hidden} argument works as below:
+     * if {@code true}, then the {@code parentListeners} argument will be assigned directly to the {@link #listeners}
+     * field, unless that argument is {@code null}. Consequently, any event sent by this resources will appear to the
+     * users as if the event was sent by the parent resource. Conversely if {@code false}, then this resource will have
+     * its own set of listeners with this resource declared as the {@linkplain StoreListeners#getSource() source of events}.
+     * In the latter case, listeners can be added or removed independently from the listeners of the parent resource.</p>
      *
      * <p>In any cases, the listeners of all parents (ultimately the data store that created this resource)
      * will always be notified, either directly if {@code hidden} is {@code true}

@@ -32,7 +32,6 @@ import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.base.PseudoResource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
@@ -116,11 +115,11 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
-    private BandAggregateGridResource(final PseudoResource parent,
+    private BandAggregateGridResource(final Resource parent,
                                       final BandAggregateArgument<GridCoverageResource> aggregate,
                                       final GridCoverageProcessor processor)
     {
-        super(parent);
+        super(parent, null);
         this.sources          = aggregate.sources();
         this.gridGeometry     = aggregate.domain(BandAggregateGridResource::domain);
         this.sampleDimensions = List.copyOf(aggregate.ranges());
@@ -158,7 +157,7 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
-    static GridCoverageResource create(final PseudoResource parent,
+    static GridCoverageResource create(final Resource parent,
             GridCoverageResource[] sources, int[][] bandsPerSource,
             final GridCoverageProcessor processor) throws DataStoreException
     {
