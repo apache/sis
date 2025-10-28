@@ -16,12 +16,16 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.function.Consumer;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.WarningAdapter;
+import org.apache.sis.filter.internal.shared.WarningEvent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.FeatureType;
@@ -98,6 +102,29 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      */
     public OptionalLong getFeatureCount() {
         return OptionalLong.empty();
+    }
+
+    /**
+     * Requests a subset of features and/or feature properties from this resource.
+     * The default implementation does the same work as the default method of the {@link FeatureSet} interface,
+     * except that warnings are redirected to the {@linkplain #listeners listeners}.
+     *
+     * @hidden
+     */
+    @Override
+    public FeatureSet subset(final Query query) throws UnsupportedQueryException, DataStoreException {
+        if (Objects.requireNonNull(query) instanceof FeatureQuery) {
+            final ThreadLocal<Consumer<WarningEvent>> context = WarningEvent.LISTENER;
+            final Consumer<WarningEvent> old = context.get();
+            try {
+                context.set(new WarningAdapter(listeners));
+                return ((FeatureQuery) query).execute(this);
+            } finally {
+                context.set(old);
+            }
+        } else {
+            throw new UnsupportedQueryException();
+        }
     }
 
     /**

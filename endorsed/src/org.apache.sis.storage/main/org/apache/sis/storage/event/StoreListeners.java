@@ -885,7 +885,7 @@ public class StoreListeners implements Localized {
      *
      * @since 1.2
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "element-type-mismatch"})
     public synchronized void setUsableEventTypes(final Class<?>... permitted) {
         ArgumentChecks.ensureNonEmpty("permitted", permitted);
         final Set<Class<? extends StoreEvent>> current = permittedEventTypes;

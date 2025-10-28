@@ -233,7 +233,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      */
     @Override
     public FeatureSet subset(final Query query) throws DataStoreException {
-        final FeatureSet[] subsets = new FeatureSet[sources.size()];
+        final var subsets = new FeatureSet[sources.size()];
         boolean modified = false;
         for (int i=0; i<subsets.length; i++) {
             FeatureSet source = sources.get(i);

@@ -76,6 +76,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.shared.FunctionNames;
 import org.apache.sis.filter.internal.shared.ListingPropertyVisitor;
+import org.apache.sis.filter.internal.shared.WarningEvent;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
@@ -127,6 +128,7 @@ import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.geometry.wrapper.*;
+import org.apache.sis.storage.base.WarningAdapter;
 
 
 /**
@@ -578,10 +580,17 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     //run optimizations
                     final Optimization optimization = new Optimization();
                     optimization.setFeatureType(type);
-                    selection = optimization.apply(selection);
-                    final Entry<Envelope, Filter> split = extractBbox(selection);
-                    bbox = split.getKey();
-                    selection = split.getValue();
+                    final ThreadLocal<Consumer<WarningEvent>> context = WarningEvent.LISTENER;
+                    final Consumer<WarningEvent> old = context.get();
+                    try {
+                        context.set(new WarningAdapter(listeners));
+                        selection = optimization.apply(selection);
+                        final Entry<Envelope, Filter> split = extractBbox(selection);
+                        bbox = split.getKey();
+                        selection = split.getValue();
+                    } finally {
+                        context.set(old);
+                    }
                 }
 
                 //extract field names
