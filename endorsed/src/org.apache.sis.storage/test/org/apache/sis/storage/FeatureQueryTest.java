@@ -18,18 +18,28 @@ package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.stream.Collectors;
+import java.awt.geom.Point2D;
+import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.iso.Names;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertSingleton;
@@ -42,6 +52,7 @@ import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
+import org.opengis.feature.Attribute;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
@@ -93,6 +104,34 @@ public final class FeatureQueryTest extends TestCase {
         };
         features[0].setPropertyValue("id", "id-0");
         featureSet = new MemoryFeatureSet(null, type, Arrays.asList(features));
+    }
+
+    /**
+     * Creates a set of features with a geometry object.
+     * The points use (latitude, longitude) coordinates on a diagonal.
+     * The geometry library is specified by the {@link #library} field.
+     *
+     * @param  library  the library to use for creating geometry objects.
+     * @return the points created by this method in no particular order.
+     */
+    private Set<Point2D.Double> createFeaturesWithGeometry(final GeometryLibrary library) {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder(null, library, null).setName("Test");
+        ftb.addAttribute(GeometryType.POINT).setCRS(HardCodedCRS.WGS84_LATITUDE_FIRST).setName("point");
+        final FeatureType type = ftb.build();
+        final var points = new HashSet<Point2D.Double>();
+        final Geometries<?> factory = Geometries.factory(library);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final var features = new Feature[4];
+        for (int i=0; i < features.length; i++) {
+            final var point = new Point2D.Double(-10 - i, 20 + i);
+            assertTrue(points.add(point));
+            final Feature f = type.newInstance();
+            f.setPropertyValue("point", factory.createPoint(point.x, point.y));
+            features[i] = f;
+        };
+        this.features = features;
+        featureSet = new MemoryFeatureSet(null, type, Arrays.asList(features));
+        return points;
     }
 
     /**
@@ -450,5 +489,49 @@ public final class FeatureQueryTest extends TestCase {
 
         var exception = assertThrows(UnsupportedQueryException.class, this::executeAndGetFirst);
         assertMessageContains(exception);
+    }
+
+    /**
+     * Tests {@code ST_Transform} with the <abbr>JTS</abbr> library.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    public void testST_Transform_WithJTS() throws DataStoreException {
+        testST_Transform(GeometryLibrary.JTS);
+    }
+
+    /**
+     * Tests {@code ST_Transform} with the <abbr>ESRI</abbr> library.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Disabled("Pending implementation of GeometryWrapper.transform in ESRI wrappers.")
+    public void testST_Transform_WithESRI() throws DataStoreException {
+        testST_Transform(GeometryLibrary.ESRI);
+    }
+
+    /**
+     * Tests {@code ST_Transform} with the geometry library specified by {@link #library}.
+     *
+     * @param  library  the library to use for creating geometry objects.
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    private void testST_Transform(final GeometryLibrary library) throws DataStoreException {
+        final Set<Point2D.Double> points = createFeaturesWithGeometry(library);
+        final Geometries<?> factory = Geometries.factory(library);
+        final var ff = new DefaultFilterFactory.Features<>(factory.rootClass, Object.class, WraparoundMethod.NONE);
+        final var transform = ff.function("ST_Transform", ff.property("point"), ff.literal(HardCodedCRS.WGS84));
+        query.setProjection(new FeatureQuery.NamedExpression(transform));
+        final FeatureSet subset = query.execute(featureSet);
+        subset.features(false).forEach((f) -> {
+            final var property = (Attribute<?>) f.getProperty("point");
+            final GeometryWrapper point = factory.castOrWrap(property.getValue());
+            assertEquals(HardCodedCRS.WGS84, point.getCoordinateReferenceSystem());
+            final double[] coordinates = point.getPointCoordinates();
+            assertEquals(2, coordinates.length);
+            // Coordinate order should be swapped compared to the points created by `createFeaturesWithGeometry(…)`.
+            assertTrue(points.remove(new Point2D.Double(coordinates[1], coordinates[0])));
+        });
+        assertTrue(points.isEmpty());   // All points should have been found.
     }
 }

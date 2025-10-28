@@ -323,7 +323,7 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
         if (valuesKind != VALUES) {
             return super.getCharacteristicValue(property, characteristic);
         }
-        return Optional.empty();
+        return getDefaultCharacteristicValue(property, characteristic);
     }
 
     /**

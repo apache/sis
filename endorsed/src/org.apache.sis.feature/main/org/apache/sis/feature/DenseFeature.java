@@ -259,7 +259,7 @@ final class DenseFeature extends AbstractFeature implements CloneAccess {
         if (properties instanceof Property[]) {
             return super.getCharacteristicValue(property, characteristic);
         }
-        return Optional.empty();
+        return getDefaultCharacteristicValue(property, characteristic);
     }
 
     /**

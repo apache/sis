@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -556,6 +557,27 @@ public abstract class AbstractFeature implements Feature, Serializable {
             }
         }
         association.setValue((Feature) value);
+    }
+
+    /**
+     * Returns the default characteristic values as specified in the feature type.
+     * This method is invoked when an individual property cannot have characteristic.
+     * It happens with {@link DenseFeature} and {@link SparseFeature} subclasses,
+     * which have optimization for the case where a feature contains only values
+     * without the other information related to properties (such as characteristics).
+     *
+     * @param  property        name of the property for which to get a characteristic.
+     * @param  characteristic  name of the characteristic of the property of the given name.
+     * @return default value of the specified characteristic on the specified property.
+     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property.
+     */
+    final Optional<?> getDefaultCharacteristicValue(final String property, final String characteristic) {
+        final PropertyType p = type.getProperty(property);
+        if (p instanceof AttributeType<?>) {
+            return Optional.ofNullable(((AttributeType<?>) p).characteristics().get(characteristic))
+                    .map(AttributeType::getDefaultValue);
+        }
+        return Optional.empty();
     }
 
     /**
