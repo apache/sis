@@ -101,7 +101,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     /**
      * Factory to use for creating filter objects.
      */
-    private final FilterFactory<Feature,Object,Object> FF;
+    private final FilterFactory<Feature, ?, ?> FF;
 
     /**
      * Creates a new test.

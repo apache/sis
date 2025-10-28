@@ -17,7 +17,6 @@
 package org.apache.sis.storage.aggregate;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.util.stream.Collectors;
@@ -48,6 +47,7 @@ import org.opengis.filter.MatchAction;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class JoinFeatureSetTest extends TestCase {
     /**
      * The set of features to be joined together.
@@ -118,15 +118,13 @@ public final class JoinFeatureSetTest extends TestCase {
      * Creates a new join feature set of the given type using the {@link #featureSet1} and {@link #featureSet2}.
      */
     private FeatureSet create(final JoinFeatureSet.Type type) throws DataStoreException {
-        final FilterFactory<Feature, Object, ?> factory = DefaultFilterFactory.forFeatures();
+        final FilterFactory<Feature, ?, ?> factory = DefaultFilterFactory.forFeatures();
         final BinaryComparisonOperator<Feature> condition = factory.equal(
                 factory.property("att2", String.class),
                 factory.property("att3", String.class),
                 true, MatchAction.ANY);
-        final Map<String,Object> properties = new HashMap<>(4);
-        assertNull(properties.put("name", "JoinSet"));
-        assertNull(properties.put("identifierDelimiter", " "));
-        return new JoinFeatureSet(null, featureSet1, "s1", featureSet2, "s2", type, condition, properties);
+        return new JoinFeatureSet(null, featureSet1, "s1", featureSet2, "s2", type, condition,
+                                  Map.of("name", "JoinSet", "identifierDelimiter", " "));
     }
 
     /**

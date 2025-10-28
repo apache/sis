@@ -385,7 +385,7 @@ public abstract class Node implements Serializable {
      *
      * @param  exception    the exception that occurred.
      * @param  recoverable  {@code true} if the caller has been able to fallback on a default value,
-     *                      or {@code false} if the caller has to return {@code null}.
+     *                      or {@code false} if the caller has to return {@code null} or {@code false}.
      *
      * @todo Consider defining a {@code Context} class providing, among other information, listeners where to report warnings.
      *
@@ -394,7 +394,7 @@ public abstract class Node implements Serializable {
     protected final void warning(final Exception exception, final boolean recoverable) {
         final Consumer<WarningEvent> listener = WarningEvent.LISTENER.get();
         if (listener != null) {
-            listener.accept(new WarningEvent(this, exception));
+            listener.accept(new WarningEvent(this, exception, recoverable));
         } else {
             final String method = (this instanceof Predicate) ? "test" : "apply";
             if (recoverable) {

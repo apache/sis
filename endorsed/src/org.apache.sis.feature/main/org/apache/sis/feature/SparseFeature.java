@@ -225,8 +225,11 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
      * @param  name  the property name.
      * @param  missingPropertyFallback  the value to return if no attribute or association of the given name exists.
      * @return the value for the given property, or {@code null} if none.
+     *
+     * @deprecated Experience suggests that this method encourage bugs in user's code that stay unnoticed.
      */
     @Override
+    @Deprecated(since = "1.5", forRemoval = true)
     public final Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
         ArgumentChecks.ensureNonNull("name", name);
         final Integer index = indices.get(name);

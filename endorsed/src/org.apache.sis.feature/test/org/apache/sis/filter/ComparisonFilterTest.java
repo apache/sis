@@ -39,11 +39,12 @@ import org.apache.sis.filter.internal.shared.FunctionNames;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ComparisonFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory<Feature,Object,?> factory;
+    private final FilterFactory<Feature, ?, ?> factory;
 
     /**
      * Expressions used as constant for the tests.

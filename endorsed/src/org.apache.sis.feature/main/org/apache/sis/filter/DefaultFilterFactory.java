@@ -189,8 +189,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
          *
          * @see #forFeatures()
          */
-        static final FilterFactory<Feature,Object,Object> DEFAULT =
-                new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);
+        static final Features<Object,Object> DEFAULT = new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);
 
         /**
          * Creates a new factory operating on {@link Feature} instances.
@@ -284,6 +283,9 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      */
     @Override
     public <V> Literal<R,V> literal(final V value) {
+        if (value == null) {
+            return LeafExpression.NULL();
+        }
         return new LeafExpression.Literal<>(value);
     }
 

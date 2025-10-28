@@ -51,7 +51,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
     /**
      * The factory to use for creating the filter objects.
      */
-    private final FilterFactory<Feature,Object,Object> FF;
+    private final FilterFactory<Feature, Object, ?> FF;
 
     /**
      * A dummy table for testing purpose.

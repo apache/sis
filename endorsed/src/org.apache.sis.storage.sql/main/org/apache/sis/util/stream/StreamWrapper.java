@@ -36,6 +36,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.DoubleStream;
 import java.util.stream.Collector;
+import org.apache.sis.filter.internal.shared.WarningEvent;
 
 
 /**
@@ -51,7 +52,6 @@ import java.util.stream.Collector;
  *
  * @param  <T>  the type of objects contained in the stream, as specified in {@link Stream} interface.
  *
- *
  * @todo Add the methods that are new in JDK16.
  */
 public abstract class StreamWrapper<T> extends BaseStreamWrapper<T, Stream<T>> implements Stream<T> {
@@ -63,6 +63,12 @@ public abstract class StreamWrapper<T> extends BaseStreamWrapper<T, Stream<T>> i
      * @see #source()
      */
     Stream<T> source;
+
+    /**
+     * An optional listener to notify of warnings that occur during the execution of filters or expressions.
+     * This is always {@code null} by default and must be set explicitly if desired.
+     */
+    public Consumer<WarningEvent> listener;
 
     /**
      * Creates a new wrapper with initially no source.
@@ -124,193 +130,216 @@ public abstract class StreamWrapper<T> extends BaseStreamWrapper<T, Stream<T>> i
         }
     }
 
+    /**
+     * Executes the given action with a redirection of all warnings to the {@linkplain #listener}.
+     *
+     * @todo Replace by {@code ScopedValue.call(…)} when allowed to use JDK25.
+     *
+     * @param  <V>     the return value type of the given action.
+     * @param  action  the action to execute.
+     * @return the return value of the given action.
+     */
+    protected final <V> V execute(final Supplier<V> action) {
+        if (listener == null) {
+            return action.get();
+        }
+        final ThreadLocal<Consumer<WarningEvent>> context = WarningEvent.LISTENER;
+        final Consumer<WarningEvent> old = context.get();
+        try {
+            context.set(listener);
+            return action.get();
+        } finally {
+            context.set(old);
+        }
+    }
+
     /** Returns an equivalent stream that is parallel. */
     @Override public Stream<T> parallel() {
-        return update(source().parallel());
+        return execute(() -> update(source().parallel()));
     }
 
     /** Returns an equivalent stream that is sequential. */
     @Override public Stream<T> sequential() {
-        return update(source().sequential());
+        return execute(() -> update(source().sequential()));
     }
 
     /** Returns an equivalent stream that is unordered. */
     @Override public Stream<T> unordered() {
-        return update(source().unordered());
+        return execute(() -> update(source().unordered()));
     }
 
     /** Returns a stream with elements of this stream that match the given predicate. */
     @Override public Stream<T> filter(Predicate<? super T> predicate) {
-        return update(source().filter(predicate));
+        return execute(() -> update(source().filter(predicate)));
     }
 
     /** Returns a stream with results of applying the given function to the elements of this stream. */
     @Override public <R> Stream<R> map(Function<? super T, ? extends R> mapper) {
-        return delegate().map(mapper);
+        return execute(() -> delegate().map(mapper));
     }
 
     /** Returns a stream with results of applying the given function to the elements of this stream. */
     @Override public IntStream mapToInt(ToIntFunction<? super T> mapper) {
-        return delegate().mapToInt(mapper);
+        return execute(() -> delegate().mapToInt(mapper));
     }
 
     /** Returns a stream with results of applying the given function to the elements of this stream. */
     @Override public LongStream mapToLong(ToLongFunction<? super T> mapper) {
-        return delegate().mapToLong(mapper);
+        return execute(() -> delegate().mapToLong(mapper));
     }
 
     /** Returns a stream with results of applying the given function to the elements of this stream. */
     @Override public DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper) {
-        return delegate().mapToDouble(mapper);
+        return execute(() -> delegate().mapToDouble(mapper));
     }
 
     /** Returns a stream with results of applying the given function to the elements of this stream. */
     @Override public <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper) {
-        return delegate().flatMap(mapper);
+        return execute(() -> delegate().flatMap(mapper));
     }
 
     /** Returns a stream with results of applying the given function to the elements of this stream. */
     @Override public IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper) {
-        return delegate().flatMapToInt(mapper);
+        return execute(() -> delegate().flatMapToInt(mapper));
     }
 
     /** Returns a stream with results of applying the given function to the elements of this stream. */
     @Override public LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper) {
-        return delegate().flatMapToLong(mapper);
+        return execute(() -> delegate().flatMapToLong(mapper));
     }
 
     /** Returns a stream with results of applying the given function to the elements of this stream. */
     @Override public DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper) {
-        return delegate().flatMapToDouble(mapper);
+        return execute(() -> delegate().flatMapToDouble(mapper));
     }
 
     /** Returns a stream with distinct elements of this stream. */
     @Override public Stream<T> distinct() {
-        return update(source().distinct());
+        return execute(() -> update(source().distinct()));
     }
 
     /** Returns a stream with elements of this stream sorted in natural order. */
     @Override public Stream<T> sorted() {
-        return update(source().sorted());
+        return execute(() -> update(source().sorted()));
     }
 
     /** Returns a stream with elements of this stream sorted using the given comparator. */
     @Override public Stream<T> sorted(Comparator<? super T> comparator) {
-        return update(source().sorted(comparator));
+        return execute(() -> update(source().sorted(comparator)));
     }
 
     /** Returns a stream performing the specified action on each element when consumed. */
     @Override public Stream<T> peek(Consumer<? super T> action) {
-        return update(source().peek(action));
+        return execute(() -> update(source().peek(action)));
     }
 
     /** Returns a stream with truncated at the given number of elements. */
     @Override public Stream<T> limit(long maxSize) {
-        return update(source().limit(maxSize));
+        return execute(() -> update(source().limit(maxSize)));
     }
 
     /** Returns a stream discarding the specified number of elements. */
     @Override public Stream<T> skip(long n) {
-        return update(source().skip(n));
+        return execute(() -> update(source().skip(n)));
     }
 
     /** Performs an action for each element of this stream. */
     @Override public void forEach(Consumer<? super T> action) {
-        source().forEach(action);
+        execute(() -> {source().forEach(action); return null;});
     }
 
     /** Performs an action for each element of this stream in encounter order. */
     @Override public void forEachOrdered(Consumer<? super T> action) {
-        source().forEachOrdered(action);
+        execute(() -> {source().forEachOrdered(action); return null;});
     }
 
     /** Performs a reduction on the elements of this stream. */
     @Override public T reduce(T identity, BinaryOperator<T> accumulator) {
-        return source().reduce(identity, accumulator);
+        return execute(() -> source().reduce(identity, accumulator));
     }
 
     /** Performs a reduction on the elements of this stream. */
     @Override public Optional<T> reduce(BinaryOperator<T> accumulator) {
-        return source().reduce(accumulator);
+        return execute(() -> source().reduce(accumulator));
     }
 
     /** Performs a reduction on the elements of this stream. */
     @Override public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner) {
-        return source().reduce(identity, accumulator, combiner);
+        return execute(() -> source().reduce(identity, accumulator, combiner));
     }
 
     /** Performs a mutable reduction on the elements of this stream. */
     @Override public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
-        return source().collect(supplier, accumulator, combiner);
+        return execute(() -> source().collect(supplier, accumulator, combiner));
     }
 
     /** Performs a mutable reduction on the elements of this stream. */
     @Override public <R, A> R collect(Collector<? super T, A, R> collector) {
-        return source().collect(collector);
+        return execute(() -> source().collect(collector));
     }
 
     /** Returns the minimum element of this stream according to the provided comparator. */
     @Override public Optional<T> min(Comparator<? super T> comparator) {
-        return source().min(comparator);
+        return execute(() -> source().min(comparator));
     }
 
     /** Returns the maximum element of this stream according to the provided comparator. */
     @Override public Optional<T> max(Comparator<? super T> comparator) {
-        return source().max(comparator);
+        return execute(() -> source().max(comparator));
     }
 
     /** Returns the number of elements in this stream. */
     @Override public long count() {
-        return source().count();
+        return execute(() -> source().count());
     }
 
     /** Returns whether at least one element of this stream matches the provided predicate. */
     @Override public boolean anyMatch(Predicate<? super T> predicate) {
-        return source().anyMatch(predicate);
+        return execute(() -> source().anyMatch(predicate));
     }
 
     /** Returns whether all elements of this stream match the provided predicate. */
     @Override public boolean allMatch(Predicate<? super T> predicate) {
-        return source().allMatch(predicate);
+        return execute(() -> source().allMatch(predicate));
     }
 
     /** Returns whether none element of this stream match the provided predicate. */
     @Override public boolean noneMatch(Predicate<? super T> predicate) {
-        return source().noneMatch(predicate);
+        return execute(() -> source().noneMatch(predicate));
     }
 
     /** Returns the first element of this stream. */
     @Override public Optional<T> findFirst() {
-        return source().findFirst();
+        return execute(() -> source().findFirst());
     }
 
     /** Returns any element of this stream. */
     @Override public Optional<T> findAny() {
-        return source().findAny();
+        return execute(() -> source().findAny());
     }
 
     /** Returns an iterator for the elements of this stream. */
     @Override public Iterator<T> iterator() {
-        return source().iterator();
+        return execute(() -> source().iterator());
     }
 
     /** Returns a spliterator for the elements of this stream. */
     @Override public Spliterator<T> spliterator() {
-        return source().spliterator();
+        return execute(() -> source().spliterator());
     }
 
     /** Returns all elements in an array. */
     @Override public Object[] toArray() {
-        return source().toArray();
+        return execute(() -> source().toArray());
     }
 
     /** Returns all elements in an array. */
     @Override public <A> A[] toArray(IntFunction<A[]> generator) {
-        return source().toArray(generator);
+        return execute(() -> source().toArray(generator));
     }
 
     /** Returns an equivalent stream with an additional close handler. */
     @Override public Stream<T> onClose(Runnable closeHandler) {
-        return update(source().onClose(closeHandler));
+        return execute(() -> update(source().onClose(closeHandler)));
     }
 }

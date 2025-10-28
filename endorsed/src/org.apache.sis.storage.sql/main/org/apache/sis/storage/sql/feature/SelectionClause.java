@@ -21,9 +21,6 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.function.Consumer;
 import java.sql.Connection;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -33,26 +30,22 @@ import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
-import org.apache.sis.filter.internal.shared.WarningEvent;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.system.Modules;
 import org.apache.sis.util.Workaround;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.util.CodeList;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.ValueReference;
 
 
 /**
- * Builder for the SQL fragment on the right side of the {@code WHERE} keyword.
+ * Builder for the <abbr>SQL</abbr> fragment on the right side of the {@code WHERE} keyword.
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class SelectionClause extends SQLBuilder implements Consumer<WarningEvent> {
+public final class SelectionClause extends SQLBuilder {
     /**
      * Whether the database rejects spatial functions that mix geometries with and without <abbr>CRS</abbr>.
      * We observed that PostGIS 3.4 produces an error not only when the geometry operands have different CRS,
@@ -326,42 +319,6 @@ public final class SelectionClause extends SQLBuilder implements Consumer<Warnin
      */
     final void invalidate() {
         isInvalid = true;
-    }
-
-    /**
-     * Returns the localized resources for warnings and error messages.
-     */
-    private Resources resources() {
-        return Resources.forLocale(table.database.listeners.getLocale());
-    }
-
-    /**
-     * Sets the logger, class and method names of the given record, then logs it.
-     * This method declares {@link FeatureSet#features(boolean)} as the public source of the log.
-     *
-     * @param  record  the record to configure and log.
-     */
-    private void log(final LogRecord record) {
-        record.setSourceClassName(FeatureSet.class.getName());
-        record.setSourceMethodName("features");
-        record.setLoggerName(Modules.SQL);
-        table.database.listeners.warning(record);
-    }
-
-    /**
-     * Invoked when a warning occurred during operations on filters or expressions.
-     *
-     * @param  event  the warning.
-     */
-    @Override
-    public void accept(final WarningEvent event) {
-        final LogRecord record = resources().createLogRecord(
-                Level.WARNING,
-                Resources.Keys.IncompatibleLiteralCRS_2,
-                event.getOperatorType().flatMap(CodeList::identifier).orElse("?"),
-                event.getParameter(ValueReference.class).map(ValueReference<?,?>::getXPath).orElse("?"));
-        record.setThrown(event.exception);
-        log(record);
     }
 
     /**

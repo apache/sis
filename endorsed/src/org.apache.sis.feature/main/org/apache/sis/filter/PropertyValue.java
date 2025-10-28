@@ -33,6 +33,7 @@ import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.PropertyNotFoundException;
+import org.opengis.filter.Expression;
 import org.opengis.filter.ValueReference;
 
 
@@ -205,7 +206,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
      * using or not the database index.
      */
     @Override
-    public abstract PropertyValue<V> optimize(Optimization optimization);
+    public abstract Expression<Feature, V> optimize(Optimization optimization);
 
 
 
@@ -230,23 +231,29 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
          */
         @Override
         public Object apply(final Feature instance) {
-            return (instance != null) ? instance.getValueOrFallback(name, null) : null;
+            if (instance != null) try {
+                return instance.getPropertyValue(name);
+            } catch (PropertyNotFoundException e) {
+                warning(e, false);
+            }
+            return null;
         }
 
         /**
          * If the evaluated property is a link, replaces this expression by a more direct reference
          * to the target property. This optimization is important for allowing {@code SQLStore} to
-         * put the column name in the SQL {@code WHERE} clause. It makes the difference between
-         * using or not the database index.
+         * put the column name in the <abbr>SQL</abbr> {@code WHERE} clause.
+         * It makes the difference between using or not the database index.
          */
         @Override
-        public PropertyValue<Object> optimize(final Optimization optimization) {
+        public Expression<Feature, Object> optimize(final Optimization optimization) {
             final FeatureType type = optimization.getFeatureType();
             if (type != null) try {
                 return Features.getLinkTarget(type.getProperty(name))
                         .map((rename) -> new AsObject(rename, isVirtual)).orElse(this);
             } catch (PropertyNotFoundException e) {
                 warning(e, true);
+                return NULL();
             }
             return this;
         }
@@ -294,8 +301,8 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
         @Override
         public V apply(final Feature instance) {
             if (instance != null) try {
-                return ObjectConverters.convert(instance.getValueOrFallback(name, null), type);
-            } catch (UnconvertibleObjectException e) {
+                return ObjectConverters.convert(instance.getPropertyValue(name), type);
+            } catch (PropertyNotFoundException | UnconvertibleObjectException e) {
                 warning(e, false);
             }
             return null;
@@ -307,7 +314,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
          * then a specialized expression is returned. Otherwise this method returns {@code this}.
          */
         @Override
-        public final PropertyValue<V> optimize(final Optimization optimization) {
+        public final Expression<Feature, V> optimize(final Optimization optimization) {
             final FeatureType featureType = optimization.getFeatureType();
             if (featureType != null) try {
                 /*
@@ -344,6 +351,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
                 }
             } catch (PropertyNotFoundException e) {
                 warning(e, true);
+                return NULL();
             }
             return this;
         }
@@ -437,8 +445,8 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
         @Override
         public V apply(final Feature instance) {
             if (instance != null) try {
-                return converter.apply(source.cast(instance.getValueOrFallback(name, null)));
-            } catch (ClassCastException | UnconvertibleObjectException e) {
+                return converter.apply(source.cast(instance.getPropertyValue(name)));
+            } catch (PropertyNotFoundException | ClassCastException | UnconvertibleObjectException e) {
                 warning(e, false);
             }
             return null;

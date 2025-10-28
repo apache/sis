@@ -36,6 +36,7 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.internal.shared.Strings;
@@ -552,6 +553,13 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         }
 
         /**
+         * Optimizes the expression. This is invoked as the last step before to build the final feature projection.
+         */
+        final void optimize(final Optimization optimizer) {
+            attributeValueGetter = optimizer.apply(attributeValueGetter);
+        }
+
+        /**
          * Sets the coordinate reference system that characterizes the values of this attribute.
          *
          * @param  crs  coordinate reference system associated to attribute values, or {@code null}.
@@ -766,6 +774,9 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         if (source.equals(typeRequested) && source.equals(typeWithDependencies)) {
             return Optional.empty();
         }
+        final var optimizer = new Optimization();
+        optimizer.setFeatureType(source);
+        requested.forEach((item) -> item.optimize(optimizer));
         return Optional.of(new FeatureProjection(typeRequested, typeWithDependencies, requested));
     }
 }

@@ -18,12 +18,13 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
-import org.apache.sis.util.ArgumentChecks;
+import java.util.Objects;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
+import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ResourceId;
 import org.opengis.filter.Filter;
@@ -51,8 +52,7 @@ final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimi
      * Creates a new filter using the given identifier.
      */
     IdentifierFilter(final String identifier) {
-        ArgumentChecks.ensureNonEmpty("identifier", identifier);
-        this.identifier = identifier;
+        this.identifier = Objects.requireNonNull(identifier);
     }
 
     /**
@@ -103,10 +103,12 @@ final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimi
      */
     @Override
     public boolean test(final Feature object) {
-        if (object == null) {
-            return false;
+        if (object != null) try {
+            Object id = object.getPropertyValue(AttributeConvention.IDENTIFIER);
+            if (id != null) return identifier.equals(id.toString());
+        } catch (PropertyNotFoundException e) {
+            warning(e, false);
         }
-        final Object id = object.getValueOrFallback(AttributeConvention.IDENTIFIER, null);
-        return (id != null) && identifier.equals(id.toString());
+        return false;
     }
 }

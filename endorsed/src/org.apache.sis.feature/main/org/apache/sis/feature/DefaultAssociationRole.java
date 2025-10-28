@@ -34,7 +34,6 @@ import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -414,10 +413,8 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      */
     private static String searchTitleProperty(final FeatureType ft) {
         String fallback = null;
-        try {
+        if (ft.hasProperty(AttributeConvention.IDENTIFIER)) {
             return ft.getProperty(AttributeConvention.IDENTIFIER).getName().toString();
-        } catch (PropertyNotFoundException e) {
-            // Ignore.
         }
         for (final PropertyType type : ft.getProperties(true)) {
             if (type instanceof AttributeType<?>) {

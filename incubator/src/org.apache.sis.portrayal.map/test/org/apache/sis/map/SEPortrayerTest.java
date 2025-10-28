@@ -45,6 +45,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.filter.internal.shared.WarningEvent;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
@@ -63,6 +64,8 @@ import org.apache.sis.util.iso.Names;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -83,6 +86,26 @@ public class SEPortrayerTest {
     private final FilterFactory<Feature,Object,Object> filterFactory;
     private final FeatureSet fishes;
     private final FeatureSet boats;
+
+    /**
+     * Shutdown the warnings that occur during the execution of expressions or filters.
+     *
+     * @todo Investigate why we get those warnings.
+     */
+    @BeforeEach
+    public void disableFilterWarnings() {
+        WarningEvent.LISTENER.set((event) -> {});
+    }
+
+    /**
+     * Shutdown the warnings that occur during the execution of expressions or filters.
+     *
+     * @todo Investigate why we get those warnings.
+     */
+    @AfterEach
+    public void resetFilterWarnings() {
+        WarningEvent.LISTENER.remove();
+    }
 
     /**
      * Creates a new test case.

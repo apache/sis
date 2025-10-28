@@ -171,7 +171,7 @@ walk:   if (specifiedType != null) try {
              * Delegate the final property optimization to `accessor` which may not only resolve
              * links but also tune the `ObjectConverter`.
              */
-            final PropertyValue<V> converted;
+            final Expression<Feature, V> converted;
             optimization.setFeatureType(type);
             try {
                 converted = accessor.optimize(optimization);
@@ -179,7 +179,12 @@ walk:   if (specifiedType != null) try {
                 optimization.setFeatureType(specifiedType);
             }
             if (converted != accessor || direct != path) {
-                return new AssociationValue<>(direct, converted);
+                if (converted instanceof PropertyValue<?>) {
+                    return new AssociationValue<>(direct, (PropertyValue<V>) converted);
+                } else {
+                    // If not a `PropertyValue`, then it should be a `Literal`.
+                    return converted;
+                }
             }
         } catch (PropertyNotFoundException e) {
             warning(e, true);

@@ -99,9 +99,9 @@ public class Resources extends IndexedResourceBundle {
         public static final short IllegalQualifiedName_1 = 3;
 
         /**
-         * The literal of function “{0}” is not compatible with the reference system of property “{1}”.
+         * Function “{0}” does not accept the value of property “{1}”.
          */
-        public static final short IncompatibleLiteralCRS_2 = 18;
+        public static final short IncompatibleFunction_2 = 18;
 
         /**
          * Unexpected error while analyzing the database schema.

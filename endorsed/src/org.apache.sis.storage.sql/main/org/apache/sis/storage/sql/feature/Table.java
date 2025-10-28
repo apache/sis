@@ -591,10 +591,9 @@ final class Table extends AbstractFeatureSet {
      *
      * @param  parallel  {@code true} for a parallel stream (if supported), or {@code false} for a sequential stream.
      * @return all features contained in this dataset.
-     * @throws DataStoreException if an error occurred while creating the stream.
      */
     @Override
-    public Stream<Feature> features(final boolean parallel) throws DataStoreException {
+    public Stream<Feature> features(final boolean parallel) {
         return new FeatureStream(this, parallel);
     }
 }

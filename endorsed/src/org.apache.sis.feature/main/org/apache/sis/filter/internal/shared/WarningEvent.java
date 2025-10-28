@@ -53,14 +53,22 @@ public final class WarningEvent {
     public final Exception exception;
 
     /**
+     * {@code true} if the caller has been able to fallback on a default value,
+     * or {@code false} if the caller has to return {@code null} or {@code false}.
+     * If {@code true}, the warning should be logged at a finer level.
+     */
+    public final boolean recoverable;
+
+    /**
      * Creates a new warning.
      *
      * @param  source     the filter or expression that produced this warning.
      * @param  exception  the exception that occurred.
      */
-    public WarningEvent(final Node source, final Exception exception) {
-        this.source    = source;
-        this.exception = exception;
+    public WarningEvent(final Node source, final Exception exception, final boolean recoverable) {
+        this.source      = source;
+        this.exception   = exception;
+        this.recoverable = recoverable;
     }
 
     /**

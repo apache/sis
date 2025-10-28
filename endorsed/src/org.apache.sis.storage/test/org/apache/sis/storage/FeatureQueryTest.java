@@ -273,12 +273,9 @@ public final class FeatureQueryTest extends TestCase {
         final PropertyType pt1 = resultType.getProperty("value1");
         final PropertyType pt2 = resultType.getProperty("renamed1");
         final PropertyType pt3 = resultType.getProperty("computed");
-        assertTrue(pt1 instanceof AttributeType);
-        assertTrue(pt2 instanceof AttributeType);
-        assertTrue(pt3 instanceof AttributeType);
-        assertEquals(Integer.class, ((AttributeType) pt1).getValueClass());
-        assertEquals(Integer.class, ((AttributeType) pt2).getValueClass());
-        assertEquals(String.class,  ((AttributeType) pt3).getValueClass());
+        assertEquals(Integer.class, assertInstanceOf(AttributeType.class, pt1).getValueClass());
+        assertEquals(Integer.class, assertInstanceOf(AttributeType.class, pt2).getValueClass());
+        assertEquals(String.class,  assertInstanceOf(AttributeType.class, pt3).getValueClass());
 
         // Check feature instance.
         assertEquals(3, instance.getPropertyValue("value1"));
@@ -349,14 +346,12 @@ public final class FeatureQueryTest extends TestCase {
         assertEquals(2, resultType.getProperties(true).size());
         final PropertyType pt1 = resultType.getProperty("value1");
         final PropertyType pt2 = resultType.getProperty("unexpected");
-        assertTrue(pt1 instanceof AttributeType<?>);
-        assertTrue(pt2 instanceof AttributeType<?>);
-        assertEquals(Integer.class, ((AttributeType<?>) pt1).getValueClass());
-        assertEquals(Object.class,  ((AttributeType<?>) pt2).getValueClass());
+        assertEquals(Integer.class, assertInstanceOf(AttributeType.class, pt1).getValueClass());
+        assertEquals( Object.class, assertInstanceOf(AttributeType.class, pt2).getValueClass());
 
         // Check feature property values.
-        assertEquals(3,    instance.getPropertyValue("value1"));
-        assertEquals(null, instance.getPropertyValue("unexpected"));
+        assertEquals(3, instance.getPropertyValue("value1"));
+        assertNull(instance.getPropertyValue("unexpected"));
     }
 
     /**
@@ -423,16 +418,11 @@ public final class FeatureQueryTest extends TestCase {
         final PropertyType pt1 = resultType.getProperty("value1");
         final PropertyType pt2 = resultType.getProperty("renamed1");
         final PropertyType pt3 = resultType.getProperty("computed");
-        assertTrue(pt1 instanceof AttributeType<?>);
-        assertTrue(pt2 instanceof Operation);
-        assertTrue(pt3 instanceof Operation);
-        final IdentifiedType result2 = ((Operation) pt2).getResult();
-        final IdentifiedType result3 = ((Operation) pt3).getResult();
-        assertEquals(Integer.class, ((AttributeType<?>) pt1).getValueClass());
-        assertTrue(result2 instanceof AttributeType<?>);
-        assertTrue(result3 instanceof AttributeType<?>);
-        assertEquals(Integer.class, ((AttributeType<?>) result2).getValueClass());
-        assertEquals(String.class,  ((AttributeType<?>) result3).getValueClass());
+        final IdentifiedType result2 = assertInstanceOf(Operation.class, pt2).getResult();
+        final IdentifiedType result3 = assertInstanceOf(Operation.class, pt3).getResult();
+        assertEquals(Integer.class, assertInstanceOf(AttributeType.class, pt1).getValueClass());
+        assertEquals(Integer.class, assertInstanceOf(AttributeType.class, result2).getValueClass());
+        assertEquals( String.class, assertInstanceOf(AttributeType.class, result3).getValueClass());
 
         // Check feature instance.
         assertEquals(3, instance.getPropertyValue("value1"));

@@ -32,7 +32,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.shared.SortByComparator;
-import org.apache.sis.filter.internal.shared.WarningEvent;
 import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Strings;
@@ -136,6 +135,7 @@ final class FeatureStream extends DeferredStream<Feature> {
      */
     FeatureStream(final Table table, final boolean parallel) {
         super(FeatureIterator.CHARACTERISTICS, parallel);
+        listener = table.database.createFilterListener();
         this.table = table;
     }
 
@@ -191,9 +191,8 @@ final class FeatureStream extends DeferredStream<Feature> {
          * if we have a "F₀ AND F₁ AND F₂" chain, it is possible to have some Fₙ as SQL statements and
          * other Fₙ executed in Java code.
          */
-        Stream<Feature> stream = this;
-        try {
-            WarningEvent.LISTENER.set(selection);
+        return execute(() -> {
+            Stream<Feature> stream = this;
             final var optimization = new Optimization();
             optimization.setFeatureType(table.featureType);
             for (final var filter : optimization.applyAndDecompose((Filter<? super Feature>) predicate)) {
@@ -201,14 +200,16 @@ final class FeatureStream extends DeferredStream<Feature> {
                 if (filter == Filter.exclude()) return empty();
                 if (!selection.tryAppend(filterToSQL, filter)) {
                     // Delegate to Java code all filters that we cannot translate to SQL statement.
-                    stream = super.filter(filter);
+                    if (stream == this) {
+                        stream = super.filter(filter);
+                    } else {
+                        stream = stream.filter(filter);
+                    }
                     hasPredicates = true;
                 }
             }
-        } finally {
-            WarningEvent.LISTENER.remove();
-        }
-        return stream;
+            return stream;
+        });
     }
 
     /**
@@ -314,7 +315,9 @@ final class FeatureStream extends DeferredStream<Feature> {
             projection = (FeatureProjection) mapper;
             return (Stream) this;
         }
-        return new PaginedStream<>(super.map(mapper), this);
+        final var stream = new PaginedStream<R>(super.map(mapper), this);
+        stream.listener = listener;
+        return stream;
     }
 
     /**
