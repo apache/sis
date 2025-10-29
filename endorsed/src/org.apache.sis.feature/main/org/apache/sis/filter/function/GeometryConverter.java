@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter.internal;
+package org.apache.sis.filter.function;
 
 import java.util.List;
 import java.util.Collection;
@@ -48,7 +48,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <G>  the geometry implementation type.
  *
- * @see org.apache.sis.filter.ConvertFunction
+ * @see ConvertFunction
  */
 class GeometryConverter<R,G> extends Node implements Optimization.OnExpression<R, GeometryWrapper> {
     /**

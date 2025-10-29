@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.function.Node;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;

@@ -260,7 +260,7 @@ public final class LogicalFilterTest extends TestCase {
 
         final var property = assertInstanceOf(PropertyValue.class, optimized.getParameters().get(0));
         assertEquals(String.class, property.getSourceClass());
-        assertEquals(Number.class, property.getValueClass());
+        assertEquals(Number.class, property.getResultClass());
     }
 
     /**

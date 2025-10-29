@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.filter.function;
 
 import java.util.List;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.filter.internal.Node;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
@@ -40,7 +40,7 @@ import org.opengis.filter.NullOperator;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <V>  the type of value computed by the expression.
  */
-class UnaryFunction<R,V> extends Node {
+public class UnaryFunction<R,V> extends Node {
     /**
      * For cross-version compatibility.
      */
@@ -57,7 +57,7 @@ class UnaryFunction<R,V> extends Node {
     /**
      * Creates a new unary operator.
      */
-    UnaryFunction(final Expression<R, ? extends V> expression) {
+    protected UnaryFunction(final Expression<R, ? extends V> expression) {
         this.expression = Objects.requireNonNull(expression);
     }
 
@@ -106,14 +106,14 @@ class UnaryFunction<R,V> extends Node {
      *
      * @param  <R>  the type of resources used as inputs.
      */
-    static final class IsNull<R> extends UnaryFunction<R,Object>
+    public static final class IsNull<R> extends UnaryFunction<R,Object>
             implements NullOperator<R>, Optimization.OnFilter<R>
     {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 2960285515924533419L;
 
         /** Creates a new operator. */
-        IsNull(final Expression<R,?> expression) {
+        public IsNull(final Expression<R,?> expression) {
             super(expression);
         }
 
@@ -141,7 +141,7 @@ class UnaryFunction<R,V> extends Node {
      *
      * @param  <R>  the type of resources used as inputs.
      */
-    static final class IsNil<R> extends UnaryFunction<R,Object>
+    public static final class IsNil<R> extends UnaryFunction<R,Object>
             implements NilOperator<R>, Optimization.OnFilter<R>
     {
         /** For cross-version compatibility. */
@@ -151,7 +151,7 @@ class UnaryFunction<R,V> extends Node {
         private final String nilReason;
 
         /** Creates a new operator. */
-        IsNil(final Expression<R,?> expression, final String nilReason) {
+        public IsNil(final Expression<R,?> expression, final String nilReason) {
             super(expression);
             this.nilReason = nilReason;
         }

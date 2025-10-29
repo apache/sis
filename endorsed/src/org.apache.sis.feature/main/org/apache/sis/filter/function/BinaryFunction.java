@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.filter.function;
 
 import java.util.List;
 import java.util.Collection;
@@ -24,7 +24,6 @@ import java.math.BigDecimal;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.filter.internal.Node;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
@@ -44,7 +43,7 @@ import org.opengis.filter.Expression;
  * @param  <V1>  the type of value computed by the first expression.
  * @param  <V2>  the type of value computed by the second expression.
  */
-abstract class BinaryFunction<R,V1,V2> extends Node {
+public abstract class BinaryFunction<R,V1,V2> extends Node {
     /**
      * For cross-version compatibility.
      */
@@ -104,7 +103,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      *
      * @return a list of size 2 containing the two expressions.
      */
-    public List<Expression<R,?>> getExpressions() {
+    public final List<Expression<R,?>> getExpressions() {
         return List.of(expression1, expression2);
     }
 

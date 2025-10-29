@@ -19,7 +19,7 @@ package org.apache.sis.filter.internal.shared;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.opengis.util.ScopedName;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.function.Node;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.CodeList;

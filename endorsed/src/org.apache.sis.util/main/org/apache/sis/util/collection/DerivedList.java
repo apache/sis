@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.cloud.aws.s3;
+package org.apache.sis.util.collection;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.AbstractList;
 import java.util.Iterator;
@@ -26,7 +27,7 @@ import java.util.function.Consumer;
 
 /**
  * A list in which values are derived from another list using a given function.
- * The conversion is done the fly every times an element is accessed.
+ * The conversion is done on-the-fly every times that an element is accessed.
  * Consequently, this wrapper should be used only for elements that are cheap to wrap.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -34,15 +35,22 @@ import java.util.function.Consumer;
  * @param  <S>  type of elements in the source list.
  * @param  <E>  type of elements in this list.
  */
-final class DerivedList<S,E> extends AbstractList<E> {
+final class DerivedList<S,E> extends AbstractList<E> implements Serializable {
+    /**
+     * Serial number for inter-operability with different versions.
+     */
+    private static final long serialVersionUID = 5616103170191124327L;
+
     /**
      * The list of source elements.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final List<S> source;
 
     /**
      * The function for deriving an element in this list from an element in the source list.
      */
+    @SuppressWarnings("serial")
     private final Function<S,E> adapter;
 
     /**
@@ -89,8 +97,18 @@ final class DerivedList<S,E> extends AbstractList<E> {
     }
 
     /**
-     * An iterator over the elements in the source list,
-     * converted on-the-fly to elements of type {@code <E>}.
+     * Returns an iterator over the elements in this list.
+     *
+     * @return a new iterator.
+     */
+    @Override
+    public Iterator<E> iterator() {
+        return new Iter<>(source.iterator(), adapter);
+    }
+
+    /**
+     * An iterator over the elements in the source list, converted on-the-fly to elements of type {@code <E>}.
+     * Contrarily to {@link DerivedIterator}, this iterator does not skip null elements.
      */
     private static final class Iter<S,E> implements Iterator<E> {
         /** The iterator over source elements. */

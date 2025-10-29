@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.function.Node;
 import org.apache.sis.math.FunctionProperty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -131,8 +131,8 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         }
 
         /** Returns the type of values computed by this expression. */
-        @Override public Class<?> getValueClass() {
-            return (value != null) ? value.getClass() : Object.class;
+        @Override public Class<? extends V> getResultClass() {
+            return Classes.getClass(value);
         }
 
         /** Expression evaluation, which just returns the constant value. */
@@ -189,7 +189,10 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
          */
         @Override
         public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
-            final Class<?> valueType = getValueClass();
+            Class<?> valueType = getResultClass();
+            if (valueType == null) {
+                valueType = Object.class;
+            }
             AttributeType<?> propertyType;
             synchronized (TYPES) {
                 propertyType = TYPES.get(valueType);

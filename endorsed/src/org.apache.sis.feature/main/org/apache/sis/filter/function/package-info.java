@@ -16,16 +16,9 @@
  */
 
 /**
- * A set of helper classes for the <abbr>SIS</abbr> implementation.
- * also contains classes that may move to the public API someday,
- * but are considered not yet ready.
- *
- * <p><strong>Do not use!</strong></p>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * Base implementation shared by the main {@code filter} package and the <abbr>SQLMM</abbr> extension.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-package org.apache.sis.filter.internal.shared;
+package org.apache.sis.filter.function;

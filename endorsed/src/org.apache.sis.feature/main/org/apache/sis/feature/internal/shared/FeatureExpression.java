@@ -21,7 +21,9 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.function.ConvertFunction;
+import org.apache.sis.filter.function.Node;
+import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -59,19 +61,11 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
     }
 
     /**
-     * Returns the type of values computed by this expression, or {@code Object.class} if unknown.
-     *
-     * <h4>Note on type safety</h4>
-     * The parameterized type should be {@code <? extends V>} because some implementations get this
-     * information by a call to {@code value.getClass()}. But it should also be {@code <? super V>}
-     * for supporting the {@code Object.class} return value. Those contradictory requirements force
-     * us to use {@code <?>}.
+     * Returns the type of values computed by this expression, or {@code null} if unknown.
      *
      * @return the type of values computed by this expression.
      */
-    default Class<?> getValueClass() {
-        return Object.class;
-    }
+    Class<? extends V> getResultClass();
 
     /**
      * Provides the expected type of values produced by this expression when a feature of a given type is evaluated.
@@ -106,6 +100,39 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
      * @throws UnconvertibleObjectException if the property default value cannot be converted to the expected type.
      */
     FeatureProjectionBuilder.Item expectedType(FeatureProjectionBuilder addTo);
+
+    /**
+     * Returns an expression doing the same evaluation as this method, but returning results
+     * as values of the specified type. This method can return {@code this} if this expression
+     * is already guaranteed to provide results of the specified type.
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation returns {@code this} if this expression already provides values
+     * of the specified type, or otherwise returns an expression doing conversions on-the-fly.
+     *
+     * @param  <N>     compile-time value of {@code target} type.
+     * @param  target  desired type of expression results.
+     * @return expression doing the same operation this this expression but with results of the specified type.
+     * @throws ClassCastException if the specified type is not a supported target type.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    default <N> Expression<R,N> toValueType(final Class<N> target) {
+        UnconvertibleObjectException error = null;
+        final Class<? extends V> current = getResultClass();
+        if (current != null) {
+            if (target.isAssignableFrom(current)) {
+                return (Expression<R,N>) this;
+            } else try {
+                return new ConvertFunction<>(this, current, target);
+            } catch (UnconvertibleObjectException e) {
+                error = e;
+            }
+        }
+        var e = new ClassCastException(Errors.format(Errors.Keys.CanNotConvertValue_2, getFunctionName(), target));
+        e.initCause(error);
+        throw e;
+    }
 
     /**
      * Tries to cast or convert the given expression to a {@link FeatureExpression}.

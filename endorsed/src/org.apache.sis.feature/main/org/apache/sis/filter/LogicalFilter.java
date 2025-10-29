@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.function.Node;
 import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
@@ -61,7 +61,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
     LogicalFilter(final Collection<? extends Filter<R>> op) {
         ArgumentChecks.ensureNonEmpty("operands", op);
         operands = op.toArray(Filter[]::new);
-        ArgumentChecks.ensureCountBetween("operands", true, 2, Integer.MAX_VALUE, operands.length);
+        ArgumentChecks.ensureCountBetween("operands", false, 2, Integer.MAX_VALUE, operands.length);
         for (int i=0; i<operands.length; i++) {
             ArgumentChecks.ensureNonNullElement("operands", i, operands[i]);
         }

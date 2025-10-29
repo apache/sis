@@ -99,6 +99,14 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
     }
 
     /**
+     * Returns the type of values computed by this expression.
+     */
+    @Override
+    public Class<? extends V> getResultClass() {
+        return accessor.getResultClass();
+    }
+
+    /**
      * Returns the manner in which values are computed from given resources.
      * This method assumes an initially empty set of properties, then adds the transitive properties.
      * This method does not inherit directly the properties of the {@linkplain #accessor} because it

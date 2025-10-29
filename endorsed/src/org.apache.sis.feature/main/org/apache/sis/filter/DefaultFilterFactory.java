@@ -29,6 +29,7 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.filter.function.UnaryFunction;
 import org.apache.sis.filter.sqlmm.Registry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -1049,9 +1050,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
             if (availableFunctions.isEmpty()) {
                 /*
                  * Load functions when first needed or if the module path changed since last invocation.
-                 * The SQLMM factory is hard-coded because it is considered as a basic service to
-                 * be provided by all DefaultFilterFactory implementations, and for avoiding the
-                 * need to make SQLMM registry class public.
+                 * The SQLMM factory is hard-coded because it depends on the geometry library.
                  */
                 final Registry r = new Registry(library);
                 for (final String fn : r.getNames()) {

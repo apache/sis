@@ -24,6 +24,7 @@ import org.opengis.util.LocalName;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.filter.capability.AvailableFunction;
+import org.apache.sis.pending.jdk.Record;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Names;
@@ -35,7 +36,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 
 
 /**
- * Description of a SQLMM function with its parameters.
+ * Description of a <abbr>SQLMM</abbr> function with its parameters.
  *
  * @todo Argument descriptions are incomplete. They have no good names,
  *       and the types are missing (they are {@code null}) except for geometry types.
@@ -44,7 +45,7 @@ import org.apache.sis.referencing.NamedIdentifier;
  *
  * @see SQLMM#description(Geometries)
  */
-final class FunctionDescription implements AvailableFunction, Serializable {
+final class FunctionDescription extends Record implements AvailableFunction, Serializable {
     /**
      * For cross-version compatibility.
      */

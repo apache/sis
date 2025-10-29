@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.filter.FunctionRegister;
-import org.apache.sis.pending.jdk.JDK16;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -62,7 +62,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public Collection<String> getNames() {
-        return JDK16.toList(Arrays.stream(SQLMM.values()).map(SQLMM::name));
+        return Containers.derivedList(Arrays.asList(SQLMM.values()), SQLMM::name);
     }
 
     /**

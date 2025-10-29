@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.filter.function;
 
 import java.util.Set;
 import java.util.List;
@@ -23,10 +23,11 @@ import org.opengis.util.ScopedName;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.math.FunctionProperty;
-import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -41,9 +42,9 @@ import org.opengis.filter.Expression;
  * @param  <S>  the type of value computed by the wrapped exception. This is the type to convert.
  * @param  <V>  the type of value computed by this expression. This is the type after conversion.
  *
- * @see org.apache.sis.filter.internal.shared.GeometryConverter
+ * @see GeometryConverter
  */
-final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
+public final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
         implements FeatureExpression<R,V>, Optimization.OnExpression<R,V>
 {
     /**
@@ -70,7 +71,10 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      * @param  target      the desired type for the expression result.
      * @throws UnconvertibleObjectException if no converter is found.
      */
-    ConvertFunction(final Expression<R, ? extends S> expression, final Class<S> source, final Class<V> target) {
+    public ConvertFunction(final Expression<R, ? extends S> expression,
+                           final Class<? extends S> source,
+                           final Class<V> target)
+    {
         super(expression);
         converter = ObjectConverters.find(source, target);
     }
@@ -94,8 +98,8 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     public Expression<R,V> recreate(Expression<R,?>[] effective) {
         final Expression<R,?> e = effective[0];
         if (e instanceof FeatureExpression<?,?>) {
-            final Class<? extends V> target = getValueClass();                          // This is <V>.
-            final Class<?> source = ((FeatureExpression<?,?>) e).getValueClass();       // May become <S>.
+            final Class<? extends V> target = getResultClass();                         // This is <V>.
+            final Class<?> source = ((FeatureExpression<?,?>) e).getResultClass();      // May become <S>.
             if (target.isAssignableFrom(source)) {
                 return (Expression<R,V>) e;
             }
@@ -131,7 +135,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      */
     @Override
     protected Collection<?> getChildren() {
-        return List.of(expression, converter.getSourceClass(), converter.getTargetClass());
+        return List.of(expression, converter.getSourceClass(), getResultClass());
     }
 
     /**
@@ -158,7 +162,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      * Returns the type of values computed by this expression.
      */
     @Override
-    public Class<? extends V> getValueClass() {
+    public final Class<? extends V> getResultClass() {
         return converter.getTargetClass();
     }
 
@@ -175,7 +179,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
             return null;
         }
         final FeatureProjectionBuilder.Item item = addTo.addTemplateProperty(fex);
-        item.replaceValueClass((c) -> getValueClass());
+        item.replaceValueClass((c) -> getResultClass());
         return item;
     }
 
@@ -191,7 +195,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     @Override
     @SuppressWarnings("unchecked")
     public <N> Expression<R,N> toValueType(final Class<N> target) {
-        if (target.isAssignableFrom(getValueClass())) {
+        if (target.isAssignableFrom(getResultClass())) {
             return (Expression<R,N>) this;
         }
         final Class<? super S> source = converter.getSourceClass();

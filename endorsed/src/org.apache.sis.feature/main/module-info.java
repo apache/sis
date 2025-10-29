@@ -33,6 +33,9 @@ module org.apache.sis.feature {
 
     uses org.apache.sis.filter.FunctionRegister;
 
+    provides org.apache.sis.filter.FunctionRegister
+        with org.apache.sis.filter.function.math.Registry;
+
     exports org.apache.sis.image;
     exports org.apache.sis.coverage;
     exports org.apache.sis.coverage.grid;

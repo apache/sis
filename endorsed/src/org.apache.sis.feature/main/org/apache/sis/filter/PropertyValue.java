@@ -160,7 +160,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
 
     /**
      * Returns the type of values fetched from {@link Feature} instance.
-     * This is the type before conversion to the {@linkplain #getValueClass() target type}.
+     * This is the type before conversion to the {@linkplain #getResultClass() target type}.
      * The type is always {@link Object} on newly created expression because the type of feature property
      * values is unknown, but may become a specialized type after {@link Optimization} has been applied.
      */
@@ -177,7 +177,8 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
      * @see #expectedType(FeatureProjectionBuilder)
      */
     final FeatureProjectionBuilder.Item defaultType(final FeatureProjectionBuilder addTo) {
-        return addTo.addComputedProperty(addTo.addAttribute(getValueClass()).setMinimumOccurs(0).setName(name), true);
+        // `getResultClass()` should never return null with our subtypes of `PropertyValue`.
+        return addTo.addComputedProperty(addTo.addAttribute(getResultClass()).setMinimumOccurs(0).setName(name), true);
     }
 
     /**
@@ -186,7 +187,8 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
     @Override
     @SuppressWarnings("unchecked")
     public final <N> PropertyValue<N> toValueType(final Class<N> target) {
-        if (target.equals(getValueClass())) {
+        // `getResultClass()` should never return null with our subtypes of `PropertyValue`.
+        if (target == getResultClass()) {
             return (PropertyValue<N>) this;
         }
         final Class<?> source = getSourceClass();
@@ -223,6 +225,14 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
          */
         AsObject(final String name, final boolean isVirtual) {
             super(name, isVirtual);
+        }
+
+        /**
+         * Returns the type of objects retuned by this expression.
+         */
+        @Override
+        public Class<Object> getResultClass() {
+            return Object.class;
         }
 
         /**
@@ -290,7 +300,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
          * Returns the type of values computed by this expression.
          */
         @Override
-        public final Class<V> getValueClass() {
+        public final Class<V> getResultClass() {
             return type;
         }
 

@@ -59,7 +59,7 @@ import org.apache.sis.converter.SystemRegistry;
  *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.6
  *
  * @see ObjectConverter
  *
@@ -93,12 +93,20 @@ public final class ObjectConverters {
      * @return the converter from the specified source class to the target class.
      * @throws UnconvertibleObjectException if no converter is found.
      */
-    public static <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
+    @SuppressWarnings("unchecked")
+    public static <S,T> ObjectConverter<? super S, ? extends T> find(
+            final Class<? extends S> source,
+            final Class<?  super  T> target)
             throws UnconvertibleObjectException
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
-        return SystemRegistry.INSTANCE.find(source, target);
+        /*
+         * The `(Class<S>)` cast is safe because the generic type of the returned converter is `<? super S>`.
+         * Therefore, even if the actual class is a subtype of `S`, the `? super S` declaration stay valid.
+         * A similar argument applies also to the `(Class<T>)` cast.
+         */
+        return SystemRegistry.INSTANCE.find((Class<S>) source, (Class<T>) target);
     }
 
     /**

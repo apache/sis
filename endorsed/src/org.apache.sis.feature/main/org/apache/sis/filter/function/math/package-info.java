@@ -16,9 +16,11 @@
  */
 
 /**
- * Base implementation shared by the main {@code filter} package and the SQLMM extension.
+ * Partial implementation of mathematical operations as filter expressions.
+ * The main public class in this package is {@link Registry},
+ * which is the single entry point for all functions.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-package org.apache.sis.filter.internal;
+package org.apache.sis.filter.function.math;

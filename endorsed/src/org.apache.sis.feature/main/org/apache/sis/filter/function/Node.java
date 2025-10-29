@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter.internal;
+package org.apache.sis.filter.function;
 
 import java.util.Set;
 import java.util.Map;
@@ -97,7 +97,7 @@ public abstract class Node implements Serializable {
      *
      * @see Expression#getFunctionName()
      */
-    protected static <T> AttributeType<T> createType(final Class<T> type, final Object name) {
+    public static <T> AttributeType<T> createType(final Class<T> type, final Object name) {
         // We do not use `Map.of(…)` for better exception message in case of null name.
         return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
                                           type, 1, 1, null, (AttributeType<?>[]) null);
@@ -167,7 +167,7 @@ public abstract class Node implements Serializable {
      * @param  tip  the expression name in SIS namespace.
      * @return an expression name in the SIS namespace.
      */
-    protected static ScopedName createName(final String tip) {
+    public static ScopedName createName(final String tip) {
         return Names.createScopedName(SCOPE, null, tip);
     }
 

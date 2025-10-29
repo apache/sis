@@ -37,6 +37,7 @@ import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Strings;
 
 
@@ -188,7 +189,7 @@ final class ClientFileSystem extends FileSystem {
      */
     @Override
     public Iterable<Path> getRootDirectories() {
-        return new DerivedList<>(client().listBuckets().buckets(), (root) -> new KeyPath(this, root));
+        return Containers.derivedList(client().listBuckets().buckets(), (root) -> new KeyPath(this, root));
     }
 
     /**
@@ -200,7 +201,7 @@ final class ClientFileSystem extends FileSystem {
      */
     @Override
     public Iterable<FileStore> getFileStores() {
-        return new DerivedList<>(client().listBuckets().buckets(), BucketStore::new);
+        return Containers.derivedList(client().listBuckets().buckets(), BucketStore::new);
     }
 
     /**
