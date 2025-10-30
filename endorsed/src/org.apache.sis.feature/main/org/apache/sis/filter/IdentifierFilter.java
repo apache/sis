@@ -20,10 +20,13 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Objects;
 import org.apache.sis.filter.base.Node;
+import org.apache.sis.filter.base.XPathSource;
+import org.apache.sis.feature.Features;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ResourceId;
@@ -31,17 +34,26 @@ import org.opengis.filter.Filter;
 
 
 /**
- * Filter features using a set of predefined identifiers and discarding features
- * whose identifier is not in the set.
+ * Filter features using a set of predefined identifiers.
+ * Features without identifiers are discarded.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimization.OnFilter<Feature> {
+final class IdentifierFilter extends Node
+        implements ResourceId<Feature>, XPathSource, Optimization.OnFilter<Feature>
+{
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1404452049863376235L;
+    private static final long serialVersionUID = 5917022442937908715L;
+
+    /**
+     * Name of the property which contains the identifier.
+     * The initial value is {@value AttributeConvention#IDENTIFIER},
+     * but this name may be replaced by a more direct target if known.
+     */
+    private final String property;
 
     /**
      * The identifier of features to retain.
@@ -49,18 +61,36 @@ final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimi
     private final String identifier;
 
     /**
-     * Creates a new filter using the given identifier.
+     * Creates a new filter for filtering features having the given identifier.
      */
-    IdentifierFilter(final String identifier) {
+    public IdentifierFilter(final String identifier) {
+        this.property   = AttributeConvention.IDENTIFIER;
         this.identifier = Objects.requireNonNull(identifier);
     }
 
     /**
-     * Nothing to optimize here. The {@code Optimization.OnFilter} interface
-     * is implemented for inheriting the AND, OR and NOT methods overriding.
+     * Creates a new filter searching for the same identifier than the original filter,
+     * but looking in a different property.
+     */
+    private IdentifierFilter(final IdentifierFilter original, final String property) {
+        this.property   = property;
+        this.identifier = original.identifier;
+    }
+
+    /**
+     * If the evaluated property is a link, replaces this filter by a more direct reference to the target property.
+     * This optimization helps {@code SQLStore} to put the column name in the <abbr>SQL</abbr> {@code WHERE} clause.
+     * It can make the difference between using or not the database index.
      */
     @Override
     public Filter<Feature> optimize(Optimization optimization) {
+        final FeatureType type = optimization.getFeatureType();
+        if (type != null) try {
+            return Features.getLinkTarget(type.getProperty(property)).map((n) -> new IdentifierFilter(this, n)).orElse(this);
+        } catch (PropertyNotFoundException e) {
+            warning(e, true);
+            return Filter.exclude();
+        }
         return this;
     }
 
@@ -70,6 +100,14 @@ final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimi
     @Override
     public Class<Feature> getResourceClass() {
         return Feature.class;
+    }
+
+    /**
+     * Returns the path to the property which will be used by the {@code test(R)} method.
+     */
+    @Override
+    public String getXPath() {
+        return property;
     }
 
     /**
@@ -94,7 +132,7 @@ final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimi
      */
     @Override
     protected Collection<?> getChildren() {
-        return List.of(identifier);
+        return List.of(property, identifier);
     }
 
     /**
@@ -104,7 +142,7 @@ final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimi
     @Override
     public boolean test(final Feature object) {
         if (object != null) try {
-            Object id = object.getPropertyValue(AttributeConvention.IDENTIFIER);
+            Object id = object.getPropertyValue(property);
             if (id != null) return identifier.equals(id.toString());
         } catch (PropertyNotFoundException e) {
             warning(e, false);

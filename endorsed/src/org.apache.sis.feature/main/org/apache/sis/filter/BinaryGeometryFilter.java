@@ -238,7 +238,7 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
              * If one of the "effective" parameter has been modified, recreate a new filter.
              * If all operands are literal, we can evaluate that filter immediately.
              */
-            Filter<R> filter = this;
+            BinaryGeometryFilter<R> filter = this;
             if ((effective1 != geometry1) || (effective2 != geometry2)) {
                 filter = recreate(effective1, effective2);
             }

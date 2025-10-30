@@ -190,6 +190,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
              */
             verifySimpleQuerySorting(store);
             verifySimpleQueryWithLimit(store);
+            verifyWhereResourceId(store);
             verifySimpleWhere(store);
             verifyWhereOnLink(store);
             verifyLinkInProjection(store);
@@ -387,6 +388,23 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     }
 
     /**
+     * Requests a new set of features filtered by an identifier.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifyWhereResourceId(final SimpleFeatureStore dataset) throws Exception {
+        final FeatureQuery query = new FeatureQuery();
+        query.setSelection(FF.resourceId("FRA"));
+        final Object[] result;
+        final FeatureSet countries = dataset.findResource("Countries");
+        try (Stream<Feature> features = countries.subset(query).features(false)) {
+            result = features.map(f -> f.getPropertyValue("native_name")).toArray();
+        }
+        assertArrayEquals(new String[] {"France"}, result);
+    }
+
+    /**
      * Requests a new set of features filtered by an arbitrary condition,
      * and verifies that we get only the expected values.
      *
@@ -394,26 +412,19 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @throws DataStoreException if an error occurred during query execution.
      */
     private void verifySimpleWhere(final SimpleFeatureStore dataset) throws Exception {
-        /*
-         * Property that we are going to request and expected result.
-         */
-        final String   desiredProperty = "native_name";
-        final String[] expectedValues  = {
-            "Montréal", "Québec"
-        };
-        /*
-         * Build the query and get a new set of features. The values returned by the database can be in any order,
-         * so we use `assertSetEquals(…)` for making the test insensitive to feature order. An alternative would be
-         * to add a `query.setSortBy(…)` call, but we avoid that for making this test only about the `WHERE` clause.
-         */
-        final FeatureSet   cities = dataset.findResource("Cities");
-        final FeatureQuery query  = new FeatureQuery();
+        final FeatureQuery query = new FeatureQuery();
         query.setSelection(FF.equal(FF.property("country"), FF.literal("CAN")));
-        final Object[] names;
+        /*
+         * The values returned by the database can be in any order, so we use `assertSetEquals(…)` for making
+         * the test insensitive to feature order. An alternative would be to add a `query.setSortBy(…)` call,
+         * but we avoid that for making this test only about the `WHERE` clause.
+         */
+        final Object[] result;
+        final FeatureSet cities = dataset.findResource("Cities");
         try (Stream<Feature> features = cities.subset(query).features(false)) {
-            names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
+            result = features.map(f -> f.getPropertyValue("native_name")).toArray();
         }
-        assertSetEquals(Arrays.asList(expectedValues), Arrays.asList(names));
+        assertSetEquals(Arrays.asList("Montréal", "Québec"), Arrays.asList(result));
     }
 
     /**

@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.apache.sis.filter.base.XPathSource;
 import org.apache.sis.filter.visitor.FunctionNames;
 import org.apache.sis.filter.visitor.Visitor;
 
@@ -40,6 +41,7 @@ import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.BetweenComparisonOperator;
+import org.opengis.filter.ResourceId;
 
 
 /**
@@ -80,10 +82,18 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         setFilterHandler(ComparisonOperatorName.PROPERTY_IS_LESS_THAN,                new Comparison(" < "));
         setFilterHandler(ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO,    new Comparison(" <= "));
         setFilterHandler(ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_BETWEEN), (f,sql) -> {
-            final BetweenComparisonOperator<Feature>  filter = (BetweenComparisonOperator<Feature>) f;
+            final var filter = (BetweenComparisonOperator<Feature>) f;
             /* Nothing to append */  if (write(sql, filter.getExpression()))    return;
             sql.append(" BETWEEN "); if (write(sql, filter.getLowerBoundary())) return;
             sql.append(" AND ");         write(sql, filter.getUpperBoundary());
+        });
+        setFilterHandler(FunctionNames.resourceId(), (f,sql) -> {
+            if (f instanceof XPathSource && sql.appendColumnName(((XPathSource) f).getXPath())) {
+                final var filter = (ResourceId<?>) f;
+                sql.append(" = ").appendValue(filter.getIdentifier());
+            } else {
+                sql.invalidate();
+            }
         });
         setNullAndNilHandlers((filter, sql) -> {
             final List<Expression<Feature, ?>> expressions = filter.getExpressions();
@@ -113,8 +123,8 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         setExpressionHandler(FunctionNames.Divide,   new Arithmetic(" / "));
         setExpressionHandler(FunctionNames.Multiply, new Arithmetic(" * "));
         setExpressionHandler(FunctionNames.Literal, (e,sql) -> sql.appendLiteral(((Literal<Feature,?>) e).getValue()));
-        setExpressionHandler(FunctionNames.ValueReference, (e,sql) -> sql.appendColumnName((ValueReference<Feature,?>) e));
-        // Filters created from Filter Encoding XML can specify "PropertyName" instead of "Value reference".
+        setExpressionHandler(FunctionNames.ValueReference, (e,sql) -> sql.appendColumnName(((ValueReference<Feature,?>) e).getXPath()));
+        // Filters created from Filter Encoding XML may specify "PropertyName" instead of "Value reference".
         setExpressionHandler("PropertyName", getExpressionHandler(FunctionNames.ValueReference));
     }
 
@@ -316,7 +326,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
         /** Invoked when a logical filter needs to be converted to SQL clause. */
         @Override public void accept(final Filter<Feature> f, final SelectionClause sql) {
-            final LogicalOperator<Feature> filter = (LogicalOperator<Feature>) f;
+            final var filter = (LogicalOperator<Feature>) f;
             final List<Filter<Feature>> operands = filter.getOperands();
             final int n = operands.size();
             if (unary ? (n != 1) : (n == 0)) {
@@ -354,7 +364,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
         /** Invoked when a comparison needs to be converted to SQL clause. */
         @Override public void accept(final Filter<Feature> f, final SelectionClause sql) {
-            final BinaryComparisonOperator<Feature> filter = (BinaryComparisonOperator<Feature>) f;
+            final var filter = (BinaryComparisonOperator<Feature>) f;
             if (filter.isMatchingCase()) {
                 writeBinaryOperator(sql, filter, operator);
             } else {

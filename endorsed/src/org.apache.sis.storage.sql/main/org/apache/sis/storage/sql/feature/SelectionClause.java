@@ -154,14 +154,17 @@ public final class SelectionClause extends SQLBuilder {
     /**
      * Writes the name of a column, or marks the SQL as invalid if the column is not found.
      *
-     * @param  ref  reference to a property to insert in SQL statement.
+     * @param  column  the column name to insert in <abbr>SQL</abbr> statement.
+     * @return whether the given column name is valid.
      */
-    final void appendColumnName(final ValueReference<Feature,?> ref) {
-        final Column c = table.getColumn(ref.getXPath());
+    final boolean appendColumnName(final String column) {
+        final Column c = table.getColumn(column);
         if (c != null) {
             appendIdentifier(c.name);
+            return true;
         } else {
             invalidate();
+            return false;
         }
     }
 

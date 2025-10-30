@@ -16,11 +16,13 @@
  */
 package org.apache.sis.filter.visitor;
 
+import org.opengis.util.CodeList;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.sqlmm.SQLMM;
 
 
 /**
- * Names of some expressions used in Apache <abbr>SIS</abbr>.
+ * Names of some filters and expressions used in Apache <abbr>SIS</abbr>.
  * This class defines only the names that need to be referenced from at least two different classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -84,5 +86,14 @@ public final class FunctionNames {
      * Do not allow instantiation of this class.
      */
     private FunctionNames() {
+    }
+
+    /**
+     * Workaround for the fact that there is no public constant for the identifier of the {@code ResourceId} filter.
+     *
+     * @return the identifier of the {@code ResourceId} filter.
+     */
+    public static CodeList<?> resourceId() {
+        return DefaultFilterFactory.forFeatures().resourceId("resourceId").getOperatorType();
     }
 }

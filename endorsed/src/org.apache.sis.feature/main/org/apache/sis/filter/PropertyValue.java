@@ -25,6 +25,7 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
 import org.apache.sis.filter.base.XPath;
+import org.apache.sis.filter.base.XPathSource;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -50,7 +51,7 @@ import org.opengis.filter.ValueReference;
  * @see AssociationValue
  */
 abstract class PropertyValue<V> extends LeafExpression<Feature,V>
-        implements ValueReference<Feature,V>, Optimization.OnExpression<Feature,V>
+        implements ValueReference<Feature,V>, XPathSource, Optimization.OnExpression<Feature,V>
 {
     /**
      * For cross-version compatibility.
