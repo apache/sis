@@ -36,7 +36,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 
 
 /**
- * Base class of Java2D, ESRI and JTS implementation tests.
+ * Base class of tests for Java2D, <abbr>ESRI</abbr> and <abbr>JTS</abbr> implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
@@ -180,7 +180,7 @@ public abstract class GeometriesTestCase extends TestCase {
      */
     @Test
     public void testToGeometry2D() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -30,  24);
         envelope.setRange(1, -60, -51);
         final double[] expected = {-30, -60, -30, -51, 24, -51, 24, -60, -30, -60};
@@ -196,7 +196,7 @@ public abstract class GeometriesTestCase extends TestCase {
      */
     @Test
     public void testToGeometryWraparound() {
-        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var e = new GeneralEnvelope(HardCodedCRS.WGS84);
         e.setRange(0, 165, -170);
         e.setRange(1,  32,   33);
         assertToGeometryEquals(e, WraparoundMethod.NONE,              165, 32,  165, 33, -170, 33, -170, 32,  165, 32);
@@ -223,7 +223,7 @@ public abstract class GeometriesTestCase extends TestCase {
      */
     @Test
     public void testToGeometryFrom4D() {
-        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.GEOID_4D_MIXED_ORDER);
+        final var e = new GeneralEnvelope(HardCodedCRS.GEOID_4D_MIXED_ORDER);
         e.setRange(0,  -20,   12);      // Height
         e.setRange(1, 1000, 1007);      // Time
         e.setRange(2,    2,    3);      // Latitude
