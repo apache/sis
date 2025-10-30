@@ -21,8 +21,8 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.filter.function.ConvertFunction;
-import org.apache.sis.filter.function.Node;
+import org.apache.sis.filter.base.ConvertFunction;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

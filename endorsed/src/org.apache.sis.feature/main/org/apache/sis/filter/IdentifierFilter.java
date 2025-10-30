@@ -19,7 +19,7 @@ package org.apache.sis.filter;
 import java.util.List;
 import java.util.Collection;
 import java.util.Objects;
-import org.apache.sis.filter.function.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

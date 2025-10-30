@@ -25,7 +25,7 @@ import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.WarningAdapter;
-import org.apache.sis.filter.internal.shared.WarningEvent;
+import org.apache.sis.filter.base.WarningEvent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.FeatureType;

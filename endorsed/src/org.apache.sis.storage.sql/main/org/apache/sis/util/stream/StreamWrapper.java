@@ -36,7 +36,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.DoubleStream;
 import java.util.stream.Collector;
-import org.apache.sis.filter.internal.shared.WarningEvent;
+import org.apache.sis.filter.base.WarningEvent;
 
 
 /**

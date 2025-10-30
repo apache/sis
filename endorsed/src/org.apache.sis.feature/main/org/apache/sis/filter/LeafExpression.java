@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
-import org.apache.sis.filter.function.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.math.FunctionProperty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

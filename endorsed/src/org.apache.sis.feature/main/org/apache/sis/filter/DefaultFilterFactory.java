@@ -29,7 +29,7 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.filter.function.UnaryFunction;
+import org.apache.sis.filter.base.UnaryFunction;
 import org.apache.sis.filter.sqlmm.Registry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractFactory;

@@ -20,7 +20,7 @@ import java.util.logging.Level;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.filter.internal.shared.WarningEvent;
+import org.apache.sis.filter.base.WarningEvent;
 
 
 /**

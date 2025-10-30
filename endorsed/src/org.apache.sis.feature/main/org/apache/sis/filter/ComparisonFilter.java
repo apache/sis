@@ -36,8 +36,8 @@ import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.filter.function.Node;
-import org.apache.sis.filter.function.BinaryFunction;
+import org.apache.sis.filter.base.Node;
+import org.apache.sis.filter.base.BinaryFunction;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;

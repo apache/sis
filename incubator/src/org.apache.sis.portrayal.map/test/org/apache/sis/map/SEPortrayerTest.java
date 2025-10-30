@@ -45,7 +45,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
-import org.apache.sis.filter.internal.shared.WarningEvent;
+import org.apache.sis.filter.base.WarningEvent;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;

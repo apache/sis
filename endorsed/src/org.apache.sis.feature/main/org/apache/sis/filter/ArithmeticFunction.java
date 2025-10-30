@@ -21,8 +21,8 @@ import java.math.BigInteger;
 import org.opengis.util.ScopedName;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
-import org.apache.sis.filter.function.BinaryFunction;
-import org.apache.sis.filter.internal.shared.FunctionNames;
+import org.apache.sis.filter.base.BinaryFunction;
+import org.apache.sis.filter.visitor.FunctionNames;
 import org.apache.sis.math.Fraction;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

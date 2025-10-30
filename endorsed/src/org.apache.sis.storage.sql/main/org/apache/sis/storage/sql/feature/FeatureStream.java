@@ -31,7 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.filter.internal.shared.SortByComparator;
+import org.apache.sis.storage.base.SortByComparator;
 import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Strings;

@@ -26,7 +26,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
-import org.apache.sis.filter.internal.shared.ListingPropertyVisitor;
+import org.apache.sis.filter.visitor.ListingPropertyVisitor;
 import org.apache.sis.io.TableAppender;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

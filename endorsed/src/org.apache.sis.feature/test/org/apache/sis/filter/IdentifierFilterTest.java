@@ -19,7 +19,7 @@ package org.apache.sis.filter;
 import java.util.function.Consumer;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.filter.internal.shared.WarningEvent;
+import org.apache.sis.filter.base.WarningEvent;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

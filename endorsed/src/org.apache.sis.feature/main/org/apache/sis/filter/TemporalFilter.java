@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import org.apache.sis.filter.function.BinaryFunction;
+import org.apache.sis.filter.base.BinaryFunction;
 import java.time.DateTimeException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;

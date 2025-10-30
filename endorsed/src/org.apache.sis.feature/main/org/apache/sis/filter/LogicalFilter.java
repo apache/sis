@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.filter.function.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 

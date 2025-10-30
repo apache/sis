@@ -27,7 +27,7 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.filter.internal.shared.XPath;
+import org.apache.sis.filter.base.XPath;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

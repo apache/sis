@@ -30,7 +30,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.filter.InvalidXPathException;
-import org.apache.sis.filter.internal.shared.XPath;
+import org.apache.sis.filter.base.XPath;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;

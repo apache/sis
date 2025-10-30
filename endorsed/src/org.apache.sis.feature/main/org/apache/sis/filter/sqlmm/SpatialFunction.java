@@ -21,7 +21,7 @@ import java.util.Collection;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.filter.function.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;

@@ -60,7 +60,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
-import org.apache.sis.filter.internal.shared.XPath;
+import org.apache.sis.filter.base.XPath;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;

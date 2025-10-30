@@ -55,7 +55,7 @@ import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.filter.internal.shared.WarningEvent;
+import org.apache.sis.filter.base.WarningEvent;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.Modules;
