@@ -16,9 +16,13 @@
  */
 package org.apache.sis.filter.visitor;
 
+import java.util.Arrays;
+import java.util.Set;
 import org.opengis.util.CodeList;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.sqlmm.SQLMM;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**
@@ -95,5 +99,15 @@ public final class FunctionNames {
      */
     public static CodeList<?> resourceId() {
         return DefaultFilterFactory.forFeatures().resourceId("resourceId").getOperatorType();
+    }
+
+    /**
+     * Returns the names of all enumeration values, to be interpreted as function names.
+     *
+     * @param  type  type of the enumeration for which to get the names.
+     * @return the names viewed as a collection.
+     */
+    public static Set<String> of(final Class<? extends Enum<?>> type) {
+        return CollectionsExt.viewAsSet(Containers.derivedList(Arrays.asList(type.getEnumConstants()), Enum::name));
     }
 }

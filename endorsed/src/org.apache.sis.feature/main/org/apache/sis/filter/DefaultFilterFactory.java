@@ -16,10 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
-import java.util.ServiceLoader;
 import java.util.Optional;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
@@ -30,20 +27,17 @@ import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.filter.base.UnaryFunction;
-import org.apache.sis.filter.sqlmm.Registry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.shared.LazyCandidate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.util.Iterator;
 import java.time.Instant;
 import org.opengis.filter.*;
 import org.opengis.feature.Feature;
-import org.opengis.filter.capability.AvailableFunction;
 import org.opengis.filter.capability.FilterCapabilities;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.AbstractMap;
 
 
 /**
@@ -53,7 +47,7 @@ import org.apache.sis.util.internal.shared.AbstractMap;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) to use as inputs.
  * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
@@ -86,7 +80,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      *
      * @see #function(String, Expression...)
      */
-    private final Map<String,FunctionRegister> availableFunctions;
+    @LazyCandidate
+    private final Capabilities availableFunctions;
 
     /**
      * Creates a new factory for geometries and temporal objects of the given types.
@@ -126,7 +121,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         }
         this.temporal = temporal;
         this.wraparound = wraparound;
-        availableFunctions = new HashMap<>();
+        availableFunctions = new Capabilities(library);
     }
 
     /**
@@ -172,8 +167,9 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @return description of the abilities of this factory.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public FilterCapabilities getCapabilities() {
-        return new Capabilities(this);              // Cheap to construct, no need to cache.
+        return availableFunctions;
     }
 
     /**
@@ -1037,37 +1033,6 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     }
 
     /**
-     * Returns the provider for the function of the given name.
-     * If the given name is {@code null}, then this method only
-     * ensures that {@link #availableFunctions} is initialized.
-     *
-     * @param  name  name of the function to get, or {@code null} if none.
-     * @return the register for the given function, or {@code null} if none.
-     */
-    private FunctionRegister register(final String name) {
-        final FunctionRegister register;
-        synchronized (availableFunctions) {
-            if (availableFunctions.isEmpty()) {
-                /*
-                 * Load functions when first needed or if the module path changed since last invocation.
-                 * The SQLMM factory is hard-coded because it depends on the geometry library.
-                 */
-                final Registry r = new Registry(library);
-                for (final String fn : r.getNames()) {
-                    availableFunctions.put(fn, r);
-                }
-                for (final FunctionRegister er : ServiceLoader.load(FunctionRegister.class)) {
-                    for (final String fn : er.getNames()) {
-                        availableFunctions.putIfAbsent(fn, er);
-                    }
-                }
-            }
-            register = availableFunctions.get(name);
-        }
-        return register;
-    }
-
-    /**
      * Creates an implementation-specific function.
      * The names of available functions is given by {@link #getCapabilities()}.
      *
@@ -1085,87 +1050,11 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         for (int i=0; i<parameters.length; i++) {
             ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
         }
-        final FunctionRegister register = register(name);
-        if (register == null) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
+        final Expression<R,?> expression = availableFunctions.createFunction(name, parameters);
+        if (expression != null) {
+            return expression;
         }
-        return register.create(name, parameters);
-    }
-
-    /**
-     * Map of all functions supported by this factory, together with their providers.
-     * This is a view over {@link #availableFunctions} which delegates descriptions
-     * to {@link FunctionRegister#describe(String)}. No values is stored in this map.
-     *
-     * @see Capabilities#getFunctions()
-     */
-    final class Functions extends AbstractMap<String, AvailableFunction> {
-        /**
-         * Creates a new map.
-         */
-        Functions() {
-        }
-
-        /**
-         * Returns the number of functions.
-         */
-        @Override
-        public int size() {
-            synchronized (availableFunctions) {
-                register(null);     // Ensure that `availableFunctions` is initialized.
-                return availableFunctions.size();
-            }
-        }
-
-        /**
-         * Returns the description of the function of the given name.
-         * This method delegates to {@link FunctionRegister#describe(String)}.
-         *
-         * @param  key  name of the function to describe.
-         * @return description of the requested function, or {@code null} if none.
-         */
-        @Override
-        public AvailableFunction get(final Object key) {
-            if (key instanceof String) {
-                final String name = (String) key;
-                final FunctionRegister register = register(name);
-                if (register != null) {
-                    return register.describe(name);
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Returns an iterator over the entries in this map.
-         */
-        @Override
-        protected EntryIterator<String, AvailableFunction> entryIterator() {
-            final Iterator<Entry<String, FunctionRegister>> it;
-            synchronized (availableFunctions) {
-                register(null);     // Ensure that `availableFunctions` is initialized.
-                it = availableFunctions.entrySet().iterator();
-            }
-            /*
-             * Following is theoretically not thread-safe, but it is okay in our case
-             * because the `availableFunctions` map is not changed after construction.
-             */
-            return new EntryIterator<>() {
-                private Entry<String, FunctionRegister> entry;
-
-                @Override protected boolean next() {
-                    return (entry = it.hasNext() ? it.next() : null) != null;
-                }
-
-                @Override protected String getKey() {
-                    return entry.getKey();
-                }
-
-                @Override protected AvailableFunction getValue() {
-                    return entry.getValue().describe(getKey());
-                }
-            };
-        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
     }
 
     /**

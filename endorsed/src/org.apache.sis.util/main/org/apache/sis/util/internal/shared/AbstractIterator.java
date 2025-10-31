@@ -33,7 +33,7 @@ import java.util.NoSuchElementException;
 public abstract class AbstractIterator<E> implements Iterator<E> {
     /**
      * The next value to be returned by {@link #next()}, or {@code null} if not yet determined.
-     * This field should be set by a non-null value by {@link #hasNext()}, unless there are no more elements.
+     * This field should be set to a non-null value by {@link #hasNext()}, unless there are no more elements.
      */
     protected E next;
 

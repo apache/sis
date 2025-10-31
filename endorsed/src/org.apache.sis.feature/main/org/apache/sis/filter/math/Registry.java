@@ -16,12 +16,10 @@
  */
 package org.apache.sis.filter.math;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Locale;
+import java.util.Set;
 import org.apache.sis.filter.FunctionRegister;
+import org.apache.sis.filter.visitor.FunctionNames;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -57,34 +55,34 @@ public final class Registry implements FunctionRegister {
      * Returns the names of all functions that this factory can create.
      */
     @Override
-    public Collection<String> getNames() {
-        return Containers.derivedList(Arrays.asList(Function.values()), Function::camelCaseName);
+    public Set<String> getNames() {
+        return FunctionNames.of(Function.class);
     }
 
     /**
      * Describes the parameters of a function.
      *
-     * @param  name  name of the function to describe (not null).
+     * @param  name  case-sensitive name of the function to describe.
      * @return description of the function parameters.
-     * @throws IllegalArgumentException if function name is unknown..
+     * @throws IllegalArgumentException if the given function name is unknown.
      */
     @Override
     public AvailableFunction describe(String name) {
-        return Function.valueOf(name.toUpperCase(Locale.US));
+        return Function.valueOf(name);
     }
 
     /**
      * Creates a new function of the given name with given parameters.
      *
      * @param  <R>         the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
-     * @param  name        name of the function to create (not null).
+     * @param  name        case-sensitive name of the function to create as an expression.
      * @param  parameters  function parameters.
      * @return function for the given name and parameters.
      * @throws IllegalArgumentException if function name is unknown or some parameters are illegal.
      */
     @Override
-    public <R> Expression<R, ?> create(final String name, final Expression<R,?>[] parameters) {
-        final Function function = Function.valueOf(name.toUpperCase(Locale.US));
+    public <R> Expression<R,?> create(final String name, final Expression<R,?>[] parameters) {
+        final Function function = Function.valueOf(name);
         ArgumentChecks.ensureCountBetween("parameters", false,
                                           function.getMinParameterCount(),
                                           function.getMaxParameterCount(),

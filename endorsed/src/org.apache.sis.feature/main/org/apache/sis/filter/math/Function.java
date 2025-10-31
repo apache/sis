@@ -18,7 +18,6 @@ package org.apache.sis.filter.math;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.DoubleBinaryOperator;
 import org.opengis.util.TypeName;
@@ -222,16 +221,9 @@ enum Function implements AvailableFunction {
      */
     final synchronized ScopedName getFunctionName() {
         if (name == null) {
-            name = Node.createName(camelCaseName());
+            name = Node.createName(name());
         }
         return name;
-    }
-
-    /**
-     * Returns the function name in the case to show to users.
-     */
-    final String camelCaseName() {
-        return name().toLowerCase(Locale.US).intern();
     }
 
     /**
@@ -239,7 +231,7 @@ enum Function implements AvailableFunction {
      */
     final synchronized AttributeType<Double> getResultType() {
         if (resultType == null) {
-            resultType = Node.createType(Double.class, camelCaseName());
+            resultType = Node.createType(Double.class, name());
         }
         return resultType;
     }

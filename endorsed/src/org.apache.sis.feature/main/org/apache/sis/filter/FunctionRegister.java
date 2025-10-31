@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Collection;
+import java.util.Set;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -34,7 +34,7 @@ import org.opengis.filter.capability.AvailableFunction;
  * Checks against name collisions may be added in a future version.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.5
  *
  * @see org.opengis.filter.FilterFactory#function(String, Expression...)
@@ -49,27 +49,25 @@ public interface FunctionRegister {
 
     /**
      * Returns the names of all functions that this factory can create.
-     * It is currently implementer responsibility to ensure that there are no name collisions with
-     * functions provided by other factories (this problem may be improved in future SIS release).
      *
      * @return set of supported function names.
      */
-    Collection<String> getNames();
+    Set<String> getNames();
 
     /**
      * Describes the parameters of a function.
      *
-     * @param  name  name of the function to describe (not null).
+     * @param  name  case-sensitive name of the function to describe.
      * @return description of the function parameters.
-     * @throws IllegalArgumentException if function name is unknown..
+     * @throws IllegalArgumentException if the given function name is unknown.
      */
     AvailableFunction describe(String name) throws IllegalArgumentException;
 
     /**
-     * Creates a new function of the given name with given parameters.
+     * Creates a new function of the given name with the given parameters.
      *
      * @param  <R>         the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
-     * @param  name        name of the function to create (not null).
+     * @param  name        case-sensitive name of the function to create as an expression.
      * @param  parameters  function parameters.
      * @return function for the given name and parameters.
      * @throws IllegalArgumentException if function name is unknown or some parameters are illegal.

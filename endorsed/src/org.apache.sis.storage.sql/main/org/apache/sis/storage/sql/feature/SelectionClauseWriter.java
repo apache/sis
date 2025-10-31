@@ -215,7 +215,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
     /**
      * Invoked when an unsupported filter is found. The SQL string is marked as invalid and
-     * may be truncated (later) to the length that it has the last time that it was valid.
+     * may be truncated (later) to the length that it had the last time that it was valid.
      */
     @Override
     protected final void typeNotFound(CodeList<?> type, Filter<Feature> filter, SelectionClause sql) {
@@ -224,7 +224,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
     /**
      * Invoked when an unsupported expression is found. The SQL string is marked as invalid
-     * and may be truncated (later) to the length that it has the last time that it was valid.
+     * and may be truncated (later) to the length that it had the last time that it was valid.
      */
     @Override
     protected final void typeNotFound(String type, Expression<Feature,?> expression, SelectionClause sql) {

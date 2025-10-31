@@ -17,6 +17,7 @@
 package org.apache.sis.util.internal.shared;
 
 import java.util.*;
+import java.util.function.IntFunction;
 import java.lang.reflect.Array;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.InvalidParameterCardinalityException;
@@ -335,6 +336,27 @@ public final class CollectionsExt {
             return EnumSet.noneOf((Class) type);
         }
         return JDK19.newLinkedHashSet(count);
+    }
+
+    /**
+     * Returns the given collection viewed as an unmodifiable set.
+     * It is caller's responsibility to ensure that the collection contains no duplicated values.
+     *
+     * @param  <E>       type of elements in the set.
+     * @param  elements  the elements to view as a set.
+     * @return the given collection viewed as a set.
+     */
+    public static <E> Set<E> viewAsSet(final Collection<E> elements) {
+        return new AbstractSet<E>() {
+            @Override public int         size()                       {return elements.size();}
+            @Override public boolean     isEmpty()                    {return elements.isEmpty();}
+            @Override public boolean     contains(Object o)           {return elements.contains(o);}
+            @Override public boolean     containsAll(Collection<?> c) {return elements.containsAll(c);}
+            @Override public Iterator<E> iterator()                   {return elements.iterator();}
+            @Override public Object[]    toArray()                    {return elements.toArray();}
+            @Override public <T> T[]     toArray(T[] a)               {return elements.toArray(a);}
+            @Override public <T> T[]     toArray(IntFunction<T[]> g)  {return elements.toArray(g);}
+        };
     }
 
     /**
