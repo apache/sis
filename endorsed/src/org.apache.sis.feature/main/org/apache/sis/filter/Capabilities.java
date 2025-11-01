@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Spliterator;
 import java.util.ServiceLoader;
 import java.util.Optional;
 import org.opengis.util.LocalName;
@@ -106,6 +107,11 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
     Capabilities(final Geometries<?> geometries) {
         functionNames = CharSequences.EMPTY_ARRAY;
         providers = new LazySet<FunctionRegister>() {
+            /** Declares that this set excludes null. */
+            @Override protected int characteristics() {
+                return Spliterator.DISTINCT | Spliterator.NONNULL;
+            }
+
             /** Returns the SQLMM functions to check first. */
             @Override protected FunctionRegister[] initialValues() {
                 return new FunctionRegister[] {new Registry(geometries)};

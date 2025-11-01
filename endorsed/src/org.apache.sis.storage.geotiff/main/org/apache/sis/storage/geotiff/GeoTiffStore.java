@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Spliterator;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -65,7 +67,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.ListOfUnknownSize;
+import org.apache.sis.util.collection.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -568,10 +570,15 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         Components() {
         }
 
-        /** Returns the size or -1 if not yet known. */
-        @Override protected int sizeIfKnown() {
+        /** Declares that this list has no duplicated elements and excludes null. */
+        @Override protected int characteristics() {
+            return Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.DISTINCT;
+        }
+
+        /** Returns the size or empty if not yet known. */
+        @Override protected OptionalInt sizeIfKnown() {
             synchronized (GeoTiffStore.this) {
-                return size;
+                return (size >= 0) ? OptionalInt.of(size) : OptionalInt.empty();
             }
         }
 
@@ -595,8 +602,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         }
 
         /** Returns whether the given index is valid. */
-        @Override protected boolean exists(final int index) {
-            return (index >= 0) && getImageFileDirectory(index) != null;
+        @Override protected boolean isValidIndex(final int index) {
+            return (index >= 0) && (size >= 0 ? index < size : getImageFileDirectory(index) != null);
         }
 
         /** Returns element at the given index or throw {@link IndexOutOfBoundsException}. */

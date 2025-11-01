@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.internal.shared;
+package org.apache.sis.util.collection;
 
 import java.util.List;
 import java.util.AbstractSequentialList;
@@ -24,83 +24,103 @@ import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.Objects;
+import java.util.OptionalInt;
+import java.util.function.IntFunction;
+import static org.apache.sis.util.collection.SetOfUnknownSize.DEFAULT_INITIAL_SIZE;
 
 
 /**
- * An alternative to {@code AbstractList} for implementations having a costly {@link #size()} method.
- * This class overrides some methods in a way that avoid or reduce calls to {@link #size()}.
+ * An alternative to {@code AbstractList} for implementations having a costly {@code size()} method.
+ * The size of the set is not known in advance, but may become known after one complete iteration.
+ * This class overrides methods in a way that reduces or eliminates the need to invoke {@link #size()}.
  *
- * <p>Despite extending {@link AbstractSequentialList}, this class expects implementations to override
- * the random access method {@link #get(int)} instead of {@link #listIterator(int)}.</p>
+ * <h4>Note for implementers</h4>
+ * Despite extending {@link AbstractSequentialList}, subclasses are not expected to overwrite the
+ * {@link #listIterator(int)} method. Instead, subclasses should implement the following methods:
+ *
+ * <ul>
+ *   <li>{@link #get(int)}</li>
+ *   <li>{@link #isValidIndex(int)}</li>
+ *   <li>{@link #sizeIfKnown()} — optional but recommended for efficiency</li>
+ *   <li>{@link #characteristics()} — if the implementation disallows null elements.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.6
  *
  * @param <E>  the type of elements in the list.
+ *
+ * @since 1.6
  */
+@SuppressWarnings("EqualsAndHashcode")
 public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
     /**
-     * For subclass constructors.
+     * Creates a new list of initially unknown size.
      */
     protected ListOfUnknownSize() {
     }
 
     /**
-     * Returns {@link #size()} if its value is already known, or a negative value if the size is still unknown.
-     * The size may become known for example if it has been cached by the subclass. In such case,
-     * some {@code ListOfUnknownSize} methods will take a more efficient path.
-     *
-     * @return {@link #size()} if its value is already known, or any negative value if it still costly to compute.
-     */
-    protected int sizeIfKnown() {
-        return -1;
-    }
-
-    /**
-     * Returns the number of elements in this list. The default implementation counts the number of elements
-     * for which {@link #exists(int)} returns {@code true}. Subclasses are encouraged to cache this value if
-     * they know that the underlying storage is immutable.
-     *
-     * @return the number of elements in this list.
-     */
-    @Override
-    public int size() {
-        int size = sizeIfKnown();
-        if (size < 0) {
-            size = 0;
-            while (exists(size)) {
-                if (++size == Integer.MAX_VALUE) {
-                    break;
-                }
-            }
-        }
-        return size;
-    }
-
-    /**
      * Returns {@code true} if this list is empty.
-     * This method avoids to invoke {@link #size()} unless it is cheap.
+     * The implementation of this method avoids to invoke {@link #size()}.
      *
      * @return {@code true} if this list is empty.
      */
     @Override
     public boolean isEmpty() {
-        final int size = sizeIfKnown();
-        return (size == 0) || (size < 0 && !exists(0));
+        return sizeIfKnown().orElseGet(() -> isValidIndex(0) ? 1 : 0) == 0;
     }
 
     /**
-     * Returns {@code true} if an element exists at the given index. If an element at index <var>i</var> exists,
-     * then all elements at index 0 to <var>i</var> - 1 also exist. Those elements do not need to be computed
-     * immediately if their computation is deferred.
+     * Returns the number of elements in this list. The default implementation returns the
+     * {@linkplain #sizeIfKnown() size if known}, or otherwise searches the smallest value
+     * for which {@link #isValidIndex(int)} returns {@code false}.
+     *
+     * @return the number of elements in this list.
+     */
+    @Override
+    public int size() {
+        OptionalInt size;
+        int i = 1;
+        do {
+            size = sizeIfKnown();
+            if (size.isPresent()) {
+                return size.getAsInt();
+            }
+        } while (isValidIndex(i) && (i <<= 1) >= 0);
+        // Following is inefficient, but this fallback should not happen with Apache SIS subclasses.
+        i >>>= 1;
+        while (isValidIndex(++i)) {
+            if (i == Integer.MAX_VALUE) break;
+        }
+        return i;
+    }
+
+    /**
+     * Returns the {@link #size()} value if it is already known, or empty if the size is still unknown.
+     * The default implementation always returns an empty value. Subclasses can overwrite this method
+     * if they have already computed and cached the number of elements. When this information is known,
+     * some {@code ListOfUnknownSize} methods will take a more efficient path.
+     *
+     * @return {@link #size()} if its value is already known, or empty if this value is still costly to compute.
+     */
+    protected OptionalInt sizeIfKnown() {
+        return OptionalInt.empty();
+    }
+
+    /**
+     * Returns {@code true} if the given index is valid for this list. If the index <var>i</var> is valid,
+     * then all indices from 0 to <var>i</var> - 1 inclusive are presumed also valid. Invoking this method
+     * is usually less expansive than testing {@code index < size()} when the size is costly to compute.
      *
      * @param  index  the index where to verify if an element exists.
      * @return {@code true} if an element exists at the given index.
      */
-    protected abstract boolean exists(int index);
+    protected abstract boolean isValidIndex(int index);
 
     /**
      * Returns the element at the specified index.
-     * Invoking this method may trig computation of the element if their computation is deferred.
+     * Invoking this method may trig computation of the element if these computations are deferred.
      *
      * @param  index  position of the element to get in this list.
      * @return the element at the given index.
@@ -111,12 +131,13 @@ public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
 
     /**
      * Removes elements of the given collection from this list.
-     * This method avoids to invoke {@link #size()}.
+     * The implementation of this method avoids to invoke {@link #size()}.
      *
      * @param  c  the collection containing elements to remove.
      * @return {@code true} if at least one element has been removed.
      */
     @Override
+    @SuppressWarnings("element-type-mismatch")
     public boolean removeAll(final Collection<?> c) {
         // See comment in SetOfUnknownSize.removeAll(…).
         boolean modified = false;
@@ -128,7 +149,7 @@ public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
 
     /**
      * Returns a list iterator over the elements in this list.
-     * The default implementation invokes {@link #exists(int)} and {@link #get(int)}.
+     * The default implementation delegates to {@link #isValidIndex(int)} and {@link #get(int)}.
      * Write operations are not supported.
      *
      * @param  index  index of first element to be returned from the list.
@@ -142,7 +163,7 @@ public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
 
     /**
      * The iterator returned by {@link #listIterator()}.  Provided as a named class instead
-     * than anonymous class for more readable stack traces. This is especially useful since
+     * of an anonymous class for more readable stack traces. This is especially useful since
      * elements may be loaded or computed when first needed, and those operations may fail.
      */
     private final class Iterator implements ListIterator<E> {
@@ -161,8 +182,7 @@ public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
 
         /** Whether {@link #next()} can succeed. */
         @Override public boolean hasNext() {
-            final int size = sizeIfKnown();
-            return (size >= 0) ? cursor < size : exists(cursor);
+            return isValidIndex(cursor);
         }
 
         /** Move forward by one element. */
@@ -171,6 +191,7 @@ public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
             try {
                 element = get(cursor);
             } catch (IndexOutOfBoundsException e) {
+                // TODO: simplify when we are allowed to compile for JDK15.
                 throw (NoSuchElementException) new NoSuchElementException().initCause(e);
             }
             cursor++;           // Set only on success.
@@ -199,37 +220,71 @@ public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
     }
 
     /**
-     * Creates a {@code Spliterator} without knowledge of collection size.
+     * Returns characteristics of this collection as a combination of {@code Spliterator} bits.
+     * The default implementation returns {@link Spliterator#ORDERED}. Subclasses should add the
+     * {@link Spliterator#NONNULL} bit if they guarantee that this list does not contain any {@code null} element.
+     *
+     * @return the characteristics of this collection.
+     *
+     * @see Spliterator#ORDERED
+     * @see Spliterator#NONNULL
+     * @see Spliterator#IMMUTABLE
+     * @see Spliterator#characteristics()
+     */
+    protected int characteristics() {
+        return Spliterator.ORDERED;
+    }
+
+    /**
+     * Creates a {@code Spliterator} which may be of unknown size.
      *
      * @return a {@code Spliterator} over the elements in this collection.
      */
     @Override
     public Spliterator<E> spliterator() {
-        return sizeIfKnown() >= 0 ? super.spliterator() : Spliterators.spliteratorUnknownSize(iterator(), Spliterator.ORDERED);
+        final int characteristics = characteristics();
+        final OptionalInt size = sizeIfKnown();
+        return size.isPresent()
+                ? Spliterators.spliterator(iterator(), size.getAsInt(), characteristics)
+                : Spliterators.spliteratorUnknownSize(iterator(), characteristics);
     }
 
     /**
-     * Returns the elements in an array.
+     * Returns all elements in an array.
+     * The implementation of this method avoids to invoke {@link #size()}.
      *
      * @return an array containing all list elements.
      */
     @Override
     public Object[] toArray() {
-        return sizeIfKnown() >= 0 ? super.toArray() : SetOfUnknownSize.toArray(iterator(), new Object[32], true);
+        return SetOfUnknownSize.toArray(iterator(), new Object[sizeIfKnown().orElse(DEFAULT_INITIAL_SIZE)], true);
     }
 
     /**
-     * Returns the elements in the given array, or in a new array of the same type
-     * if it was necessary to allocate more space.
+     * Returns the elements in the given array, or in a new array if it was necessary to allocate more space.
+     * If the given array is larger than necessary, the remaining array elements are set to {@code null}.
+     * The implementation of this method avoids to invoke {@link #size()}.
      *
      * @param  <T>    the type array elements.
      * @param  array  where to store the elements.
      * @return an array containing all list elements.
      */
     @Override
-    @SuppressWarnings("SuspiciousToArrayCall")
     public <T> T[] toArray(final T[] array) {
-        return sizeIfKnown() >= 0 ? super.toArray(array) : SetOfUnknownSize.toArray(iterator(), array, false);
+        return SetOfUnknownSize.toArray(iterator(), array, false);
+    }
+
+    /**
+     * Returns the elements in an array generated by the given function.
+     * The implementation of this method avoids to invoke {@link #size()}.
+     *
+     * @param  <T>        the type array elements.
+     * @param  generator  the function for allocating a new array.
+     * @return an array containing all list elements.
+     */
+    @Override
+    public <T> T[] toArray(final IntFunction<T[]> generator) {
+        return SetOfUnknownSize.toArray(iterator(), generator.apply(sizeIfKnown().orElse(DEFAULT_INITIAL_SIZE)), true);
     }
 
     /**
@@ -238,6 +293,7 @@ public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
      *
      * @param  object  the object to compare with this list.
      * @return {@code true} if the two list have the same content.
+     * @hidden because nothing new to said compared to general contract.
      */
     @Override
     public boolean equals(final Object object) {

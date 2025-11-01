@@ -31,6 +31,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.OptionalInt;
+import java.util.Spliterator;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -55,7 +57,7 @@ import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.AbstractIterator;
 import org.apache.sis.util.internal.shared.DefinitionURI;
 import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.SetOfUnknownSize;
+import org.apache.sis.util.collection.SetOfUnknownSize;
 import org.apache.sis.metadata.internal.shared.NameMeaning;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -407,6 +409,11 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 return codes;
             }
 
+            /** Declares that this set excludes null. */
+            @Override protected int characteristics() {
+                return Spliterator.DISTINCT | Spliterator.NONNULL;
+            }
+
             /**
              * The collection size, or a negative value if we have not yet computed the size.
              * A negative value different than -1 means that we have not counted all elements,
@@ -415,11 +422,11 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             private int size = -1;
 
             /**
-             * Returns {@code true} if the {@link #size()} method is cheap.
+             * Returns the {@link #size()} value if cheap.
              */
             @Override
-            protected boolean isSizeKnown() {
-                return size >= 0;
+            protected OptionalInt sizeIfKnown() {
+                return size >= 0 ? OptionalInt.of(size) : OptionalInt.empty();
             }
 
             /**
@@ -493,7 +500,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 return false;
             }
 
-            /** Declared soon as unsupported operation for preventing a call to {@link #size()}. */
+            /** Declared as unsupported operation for preventing a call to {@link #size()}. */
             @Override public boolean removeAll(Collection<?> c) {throw new UnsupportedOperationException();}
             @Override public boolean retainAll(Collection<?> c) {throw new UnsupportedOperationException();}
             @Override public boolean remove   (Object o)        {throw new UnsupportedOperationException();}

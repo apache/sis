@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.internal.shared;
+package org.apache.sis.util.collection;
 
 import java.util.ListIterator;
 
@@ -29,6 +29,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ListOfUnknownSizeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -44,7 +45,7 @@ public final class ListOfUnknownSizeTest extends TestCase {
         final Integer[] data = new Integer[] {4, 7, 1, 3, 0, -4, -3};
         final ListIterator<Integer> it = new ListOfUnknownSize<Integer>() {
             @Override
-            protected boolean exists(int index) {
+            protected boolean isValidIndex(int index) {
                 return index >= 0 && index < data.length;
             }
 

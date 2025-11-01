@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.AbstractMap;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Spliterator;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -33,7 +34,7 @@ import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.SetOfUnknownSize;
+import org.apache.sis.util.collection.SetOfUnknownSize;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.pending.jdk.JDK19;
 
@@ -393,6 +394,11 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
             /** Delegates to the enclosing class. */
             @Override public int size() {
                 return IdentifierMapAdapter.this.size();
+            }
+
+            /** Declares that this set excludes null. */
+            @Override protected int characteristics() {
+                return Spliterator.DISTINCT | Spliterator.NONNULL;
             }
 
             /** Returns an iterator over the (<var>citation</var>, <var>code</var>) entries. */

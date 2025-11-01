@@ -176,7 +176,7 @@ class WritableStore extends WorldFileStore {
             final Components components = components(true, numImages);
             if (components.isEmpty()) {
                 numImages = 0;
-            } else if (components.exists(1)) {
+            } else if (components.isValidIndex(1)) {
                 return 2;
             } else {
                 numImages = 1;
