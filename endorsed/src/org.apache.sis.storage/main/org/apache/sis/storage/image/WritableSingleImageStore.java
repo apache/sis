@@ -168,7 +168,7 @@ final class WritableSingleImageStore extends WritableStore implements WritableGr
     public void write(final GridCoverage coverage, final Option... options) throws DataStoreException {
         try {
             if (isMultiImages() == 0) {
-                add(new MemoryGridCoverageResource(this, coverage, null));
+                add(new MemoryGridCoverageResource(this, null, coverage, null));
             } else {
                 delegate().write(coverage, options);
             }

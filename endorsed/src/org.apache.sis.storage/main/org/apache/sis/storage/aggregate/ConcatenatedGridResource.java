@@ -481,7 +481,7 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
                 if (coverage != null) {
                     GridGeometry geometry = coverage.getGridGeometry();
                     GridExtent inGroup = domain.extentOf(geometry, GridSlice.CELL_ANCHOR, GridRoundingMode.NEAREST);
-                    var resource = new MemoryGridCoverageResource(this, coverage, processor);
+                    var resource = new MemoryGridCoverageResource(this, null, coverage, processor);
                     selected[i] = selected[i].resolve(resource, geometry.getExtent(), inGroup);
                 }
             }

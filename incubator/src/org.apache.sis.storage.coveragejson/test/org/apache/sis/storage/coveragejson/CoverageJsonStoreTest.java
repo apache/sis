@@ -132,7 +132,7 @@ public class CoverageJsonStoreTest {
             gcb.setValues(image);
             final GridCoverage coverage = gcb.build();
 
-            final GridCoverageResource gcr = new MemoryGridCoverageResource(null, coverage, null);
+            final GridCoverageResource gcr = new MemoryGridCoverageResource(null, null, coverage, null);
 
             aggregate.add(gcr);
 

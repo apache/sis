@@ -68,7 +68,7 @@ public final class MemoryGridCoverageResourceTest extends TestCase {
         gridToCRS = new AffineTransform2D(2, 0, 0, 3, 0, 0);
         final var grid = new GridGeometry(new GridExtent(WIDTH, HEIGHT), PixelInCell.CELL_CENTER, gridToCRS, crs);
         final var image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_BINARY);
-        resource = new MemoryGridCoverageResource(null, new GridCoverage2D(grid, null, image), null);
+        resource = new MemoryGridCoverageResource(null, null, new GridCoverage2D(grid, null, image), null);
     }
 
     /**

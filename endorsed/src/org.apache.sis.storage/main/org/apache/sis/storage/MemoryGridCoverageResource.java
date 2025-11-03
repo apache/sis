@@ -19,7 +19,9 @@ package org.apache.sis.storage;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.awt.image.RenderedImage;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
@@ -52,6 +54,11 @@ public class MemoryGridCoverageResource extends AbstractGridCoverageResource {
     private static final int BIDIMENSIONAL = 2;
 
     /**
+     * The resource identifier, or {@code null} if none.
+     */
+    private final GenericName identifer;
+
+    /**
      * The grid coverage specified at construction time.
      *
      * @see #getGridCoverage()
@@ -74,14 +81,26 @@ public class MemoryGridCoverageResource extends AbstractGridCoverageResource {
     /**
      * Creates a new coverage stored in memory.
      *
-     * @param parent     the parent resource, or {@code null} if none.
-     * @param coverage   stored coverage retained as-is (not copied). Cannot be null.
-     * @param processor  the grid coverage processor for selecting bands, or {@code null} for default.
+     * @param parent      the parent resource, or {@code null} if none.
+     * @param identifier  resource identifier, or {@code null} if none.
+     * @param coverage    stored coverage retained as-is (not copied). Cannot be null.
+     * @param processor   the grid coverage processor for selecting bands, or {@code null} for default.
      */
-    public MemoryGridCoverageResource(final Resource parent, final GridCoverage coverage, final GridCoverageProcessor processor) {
+    public MemoryGridCoverageResource(final Resource parent, final GenericName identifier,
+                                      final GridCoverage coverage, final GridCoverageProcessor processor)
+    {
         super(parent);
+        this.identifer = identifier;
         this.coverage  = Objects.requireNonNull(coverage);
         this.processor = (processor != null) ? processor : new GridCoverageProcessor();
+    }
+
+    /**
+     * Returns the resource identifier specified at construction time, if any.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() {
+        return Optional.ofNullable(identifer);
     }
 
     /**
