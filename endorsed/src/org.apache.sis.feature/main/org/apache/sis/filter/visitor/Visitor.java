@@ -55,20 +55,20 @@ import org.opengis.filter.ComparisonOperatorName;
  */
 public abstract class Visitor<R,A> {
     /**
-     * All filters known to this visitor.
-     * May contain an entry associated to the {@code null} key.
+     * All filters known to this visitor. May contain an entry associated to the {@code null} key,
+     * which specifies the action to execute when a {@link Filter} instance is null or has a null type.
      *
      * @see #setFilterHandler(CodeList, BiConsumer)
      */
-    private final Map<CodeList<?>, BiConsumer<Filter<R>,A>> filters;
+    protected final Map<CodeList<?>, BiConsumer<Filter<R>, A>> filters;
 
     /**
-     * All expressions known to this visitor.
-     * May contain an entry associated to the {@code null} key.
+     * All expressions known to this visitor. May contain an entry associated to the {@code null} key,
+     * which specifies the action to execute when an {@link Expression} instance is null.
      *
      * @see #setExpressionHandler(String, BiConsumer)
      */
-    private final Map<String, BiConsumer<Expression<R,?>,A>> expressions;
+    protected final Map<String, BiConsumer<Expression<R,?>, A>> expressions;
 
     /**
      * Creates a new visitor.
@@ -100,6 +100,7 @@ public abstract class Visitor<R,A> {
      * @param  copyExpressions  whether to copy the map of expression handlers.
      *
      * @see #removeFilterHandlers(Collection)
+     * @see #removeFunctionHandlers(Collection)
      */
     protected Visitor(final Visitor<R,A> source, final boolean copyFilters, final boolean copyExpressions) {
         filters     = copyFilters     ? new HashMap<>(source.filters)     : source.filters;
@@ -114,7 +115,7 @@ public abstract class Visitor<R,A> {
      * @param  type  identification of the filter type (can be {@code null}).
      * @return the action to execute when the identified filter is found, or {@code null} if none.
      */
-    protected final BiConsumer<Filter<R>,A> getFilterHandler(final CodeList<?> type) {
+    protected final BiConsumer<Filter<R>, A> getFilterHandler(final CodeList<?> type) {
         return filters.get(type);
     }
 
@@ -126,7 +127,7 @@ public abstract class Visitor<R,A> {
      * @param  type  identification of the expression type (can be {@code null}).
      * @return the action to execute when the identified expression is found, or {@code null} if none.
      */
-    protected final BiConsumer<Expression<R,?>,A> getExpressionHandler(final String type) {
+    protected final BiConsumer<Expression<R,?>, A> getExpressionHandler(final String type) {
         return expressions.get(type);
     }
 
@@ -138,7 +139,7 @@ public abstract class Visitor<R,A> {
      * @param  type    identification of the filter type (can be {@code null}).
      * @param  action  the action to execute when the identified filter is found.
      */
-    protected final void setFilterHandler(final CodeList<?> type, final BiConsumer<Filter<R>,A> action) {
+    protected final void setFilterHandler(final CodeList<?> type, final BiConsumer<Filter<R>, A> action) {
         filters.put(type, action);
     }
 
@@ -149,7 +150,7 @@ public abstract class Visitor<R,A> {
      * @param  lastType  identification of the last filter type (inclusive).
      * @param  action    the action to execute when an identified filter is found.
      */
-    private void setFamilyHandlers(final CodeList<?> lastType, final BiConsumer<Filter<R>,A> action) {
+    private void setFamilyHandlers(final CodeList<?> lastType, final BiConsumer<Filter<R>, A> action) {
         for (final CodeList<?> type : lastType.family()) {
             filters.put(type, action);
             if (type == lastType) break;
@@ -164,7 +165,7 @@ public abstract class Visitor<R,A> {
      * @param  type    identification of the expression type (can be {@code null}).
      * @param  action  the action to execute when the identified expression is found.
      */
-    protected final void setExpressionHandler(final String type, final BiConsumer<Expression<R,?>,A> action) {
+    protected final void setExpressionHandler(final String type, final BiConsumer<Expression<R,?>, A> action) {
         expressions.put(type, action);
     }
 
@@ -174,7 +175,7 @@ public abstract class Visitor<R,A> {
      * @param  types   identification of the expression types.
      * @param  action  the action to execute when the identified expression is found.
      */
-    private void setExpressionHandlers(final BiConsumer<Expression<R,?>,A> action, final String... types) {
+    private void setExpressionHandlers(final BiConsumer<Expression<R,?>, A> action, final String... types) {
         for (final String type : types) {
             expressions.put(type, action);
         }
@@ -185,7 +186,7 @@ public abstract class Visitor<R,A> {
      *
      * @param  action  the action to execute when one of the enumerated filters is found.
      */
-    protected final void setLogicalHandlers(final BiConsumer<Filter<R>,A> action) {
+    protected final void setLogicalHandlers(final BiConsumer<Filter<R>, A> action) {
         setFamilyHandlers(LogicalOperatorName.NOT, action);
     }
 
@@ -194,7 +195,7 @@ public abstract class Visitor<R,A> {
      *
      * @param  action  the action to execute when one of the enumerated filters is found.
      */
-    protected final void setNullAndNilHandlers(final BiConsumer<Filter<R>,A> action) {
+    protected final void setNullAndNilHandlers(final BiConsumer<Filter<R>, A> action) {
         setFilterHandler(ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_NULL), action);
         setFilterHandler(ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_NIL),  action);
     }
@@ -204,7 +205,7 @@ public abstract class Visitor<R,A> {
      *
      * @param  action  the action to execute when one of the enumerated filters is found.
      */
-    protected final void setBinaryComparisonHandlers(final BiConsumer<Filter<R>,A> action) {
+    protected final void setBinaryComparisonHandlers(final BiConsumer<Filter<R>, A> action) {
         setFamilyHandlers(ComparisonOperatorName.PROPERTY_IS_GREATER_THAN_OR_EQUAL_TO, action);
     }
 
@@ -216,7 +217,7 @@ public abstract class Visitor<R,A> {
      *
      * @param  action  the action to execute when one of the enumerated filters is found.
      */
-    protected final void setBinaryTemporalHandlers(final BiConsumer<Filter<R>,A> action) {
+    protected final void setBinaryTemporalHandlers(final BiConsumer<Filter<R>, A> action) {
         setFamilyHandlers(TemporalOperatorName.ANY_INTERACTS, action);
     }
 
@@ -228,7 +229,7 @@ public abstract class Visitor<R,A> {
      *
      * @param  action  the action to execute when one of the enumerated filters is found.
      */
-    protected final void setSpatialHandlers(final BiConsumer<Filter<R>,A> action) {
+    protected final void setSpatialHandlers(final BiConsumer<Filter<R>, A> action) {
         setFamilyHandlers(SpatialOperatorName.OVERLAPS, action);
         setFamilyHandlers(DistanceOperatorName.WITHIN,  action);
     }
@@ -238,17 +239,28 @@ public abstract class Visitor<R,A> {
      *
      * @param  action  the action to execute when one of the enumerated expressions is found.
      */
-    protected final void setMathHandlers(final BiConsumer<Expression<R,?>,A> action) {
+    protected final void setMathHandlers(final BiConsumer<Expression<R,?>, A> action) {
         setExpressionHandlers(action, FunctionNames.Add, FunctionNames.Subtract, FunctionNames.Multiply, FunctionNames.Divide);
     }
 
     /**
-     * Removes all filters of the given types. Types that have no registered handlers are ignored.
+     * Removes all filter handlers of the given types. Types that have no registered handlers are ignored.
+     * This is equivalent to {@code filters.keySet().removeAll(types)} but more type safe.
      *
-     * @param  types  types of filters to remove.
+     * @param  types  types of filter handlers to remove.
      */
     protected final void removeFilterHandlers(final Collection<? extends CodeList<?>> types) {
         filters.keySet().removeAll(types);
+    }
+
+    /**
+     * Removes all function handlers of the given names. Names that have no registered handlers are ignored.
+     * This is equivalent to {@code expressions.keySet().removeAll(names)} but more type safe.
+     *
+     * @param  names  names of expression handlers to remove.
+     */
+    protected final void removeFunctionHandlers(final Collection<String> names) {
+        expressions.keySet().removeAll(names);
     }
 
     /**

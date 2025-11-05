@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.sql.internal.shared;
 
 import java.util.Date;
-import java.sql.Types;
 import java.sql.JDBCType;
 
 
@@ -52,7 +51,7 @@ final class TypeMapper {
     private final Class<?> classe;
 
     /**
-     * A constant from the SQL {@link Types} enumeration.
+     * The data type.
      */
     private final JDBCType type;
 

@@ -70,6 +70,13 @@ public final class Reflection {
     public static final String COLUMN_NAME = "COLUMN_NAME";
 
     /**
+     * The {@value} key for getting a column type. Possible values are {@code functionColumnUnknown},
+     * {@code functionColumnIn}, {@code functionColumnInOut}, {@code functionColumnOut}, {@code functionReturn}
+     * or {@code functionColumnResult}.
+     */
+    public static final String COLUMN_TYPE = "COLUMN_TYPE";
+
+    /**
      * The {@value} key for getting the data type as one of {@link java.sql.Types} constants.
      *
      * <p>Values in this column are integers ({@code int}) rather than {@code String}.</p>
@@ -80,6 +87,21 @@ public final class Reflection {
      * Data source dependent type name. For a UDT the type name is fully qualified.
      */
     public static final String TYPE_NAME = "TYPE_NAME";
+
+    /**
+     * The {@value} key for getting a function name.
+     */
+    public static final String FUNCTION_NAME = "FUNCTION_NAME";
+
+    /**
+     * The {@value} key for getting a unique function name, including among overload variants.
+     */
+    public static final String SPECIFIC_NAME = "SPECIFIC_NAME";
+
+    /**
+     * The {@value} key for getting the ordinal position of a function parameter.
+     */
+    public static final String ORDINAL_POSITION = "ORDINAL_POSITION";
 
     /**
      * The {@value} key for the size for of a column. For numeric data, this is the maximum precision.

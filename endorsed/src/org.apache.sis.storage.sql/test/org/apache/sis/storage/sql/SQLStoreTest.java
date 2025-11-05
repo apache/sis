@@ -190,6 +190,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
              */
             verifySimpleQuerySorting(store);
             verifySimpleQueryWithLimit(store);
+            verifySimpleQueryWithMath(store);
             verifyWhereResourceId(store);
             verifySimpleWhere(store);
             verifyWhereOnLink(store);
@@ -388,6 +389,34 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     }
 
     /**
+     * Requests features with a mathematical operation.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifySimpleQueryWithMath(final SimpleFeatureStore dataset) throws DataStoreException {
+        final FeatureSet  cities = dataset.findResource("Cities");
+        final FeatureQuery query = new FeatureQuery();
+        query.setProjection(new FeatureQuery.NamedExpression(FF.property("english_name")),
+                            new FeatureQuery.NamedExpression(FF.function("SQRT", FF.property("population")), "value"));
+        final FeatureSet subset = cities.subset(query);
+        final var values = new HashMap<Object, Object>();
+        subset.features(false).forEach(
+                (feature) -> assertNull(values.put(feature.getPropertyValue("english_name"),
+                                                   feature.getPropertyValue("value"))));
+        final String[] expected = {"Montreal", "Quebec", "Paris", "Tōkyō"};
+        final int[]  population = {  1704694,   531902, 2206488, 13622267};
+        for (int i=0; i<expected.length; i++) {
+            final String city  = expected[i];
+            final double value = assertInstanceOf(Double.class, values.remove(city), city);
+            assertEquals(population[i], value * value, 0.1, city);
+        }
+        // Try again with a function returning a boolean value.
+        query.setProjection(new FeatureQuery.NamedExpression(FF.function("IS_NAN", FF.property("population")), "flag"));
+        cities.subset(query).features(false).forEach((feature) -> assertEquals(Boolean.FALSE, feature.getPropertyValue("flag")));
+    }
+
+    /**
      * Requests a new set of features filtered by an identifier.
      *
      * @param  dataset  the store on which to query the features.
@@ -482,8 +511,8 @@ public final class SQLStoreTest extends TestOnAllDatabases {
 
     /**
      * Checks that operations stacked on feature stream are well executed.
-     * This test focuses on mapping and peeking actions overloaded by SQL streams.
-     * Operations used here are meaningless; we just want to ensure that the pipeline does not skip any operation.
+     * This test focuses on mapping and peeking actions overloaded by <abbr>SQL</abbr> streams.
+     * Operations used here are meaningless, we just want to ensure that the pipeline does not skip any operation.
      *
      * @param  cities  a feature set containing all cities defined for the test class.
      */

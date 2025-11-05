@@ -18,14 +18,18 @@ package org.apache.sis.filter.math;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoublePredicate;
+import java.sql.Types;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
+import org.apache.sis.filter.visitor.FunctionIdentifier;
 import org.apache.sis.filter.base.Node;
 import org.apache.sis.util.iso.Names;
 
@@ -42,7 +46,7 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-enum Function implements AvailableFunction {
+public enum Function implements FunctionIdentifier, AvailableFunction {
     /*
      * MIN and MAX are omitted because it needs more generic code working with Comparable.
      * We may need specializations here for the handling of NaN, but this is deferred to a
@@ -93,7 +97,7 @@ enum Function implements AvailableFunction {
     /**
      * The value of <var>x</var> raised to the power of <var>y</var>.
      */
-    POWER(Math::pow),
+    POWER(null, null, Math::pow),
 
     /**
      * The square-root value of <var>x</var>.
@@ -108,7 +112,7 @@ enum Function implements AvailableFunction {
     /**
      * Hypotenuse of <var>x</var> and <var>y</var>.
      */
-    HYPOT(Math::hypot),
+    HYPOT(null, null, Math::hypot),
 
     /**
      * The arc sine of <var>x</var>.
@@ -129,7 +133,7 @@ enum Function implements AvailableFunction {
      * The arc tangent of <var>y</var>/<var>x</var>.
      * Note that <var>y</var> is the first argument and <var>x</var> is the second argument.
      */
-    ATAN2(Math::atan2),
+    ATAN2(null, null, Math::atan2),
 
     /**
      * The hyperbolic sine of <var>x</var>.
@@ -144,18 +148,38 @@ enum Function implements AvailableFunction {
     /**
      * The hyperbolic tangent of <var>x</var>.
      */
-    TANH(Math::tanh);
+    TANH(Math::tanh),
+
+    /**
+     * Returns whether the specified number is neither infinite of NaN.
+     */
+    IS_FINITE(Double::isFinite, null, null),
+
+    /**
+     * Returns whether the specified number is positive or negative infinity.
+     */
+    IS_INFINITE(Double::isInfinite, null, null),
+
+    /**
+     * Returns whether the specified number is a Not-a-Number (NaN) value.
+     */
+    IS_NAN(Double::isNaN, null, null);
+
+    /**
+     * The mathematical function to invoke if this operation is a predicate, or {@code null}.
+     */
+    final DoublePredicate filter;
 
     /**
      * The mathematical function to invoke if this operation is unary, or {@code null}.
      */
-    @SuppressWarnings("serial")
     final DoubleUnaryOperator unary;
 
     /**
      * The mathematical function to invoke if this operation is binary, or {@code null}.
+     * Usually, only one of the {@link #unary} and {@code binary} fields is non-null.
+     * But we may allow both of them to be non-null if the function if overloaded.
      */
-    @SuppressWarnings("serial")
     final DoubleBinaryOperator binary;
 
     /**
@@ -170,29 +194,31 @@ enum Function implements AvailableFunction {
      *
      * @see #getResultType()
      */
-    private AttributeType<Double> resultType;
+    private AttributeType<?> resultType;
 
     /**
      * Creates a new function description for a unary operation.
      */
     private Function(final DoubleUnaryOperator math) {
+        filter = null;
         unary  = math;
         binary = null;
     }
 
     /**
-     * Creates a new function description for a binary operation.
+     * Creates a new function description.
      */
-    private Function(final DoubleBinaryOperator math) {
-        unary  = null;
-        binary = math;
+    private Function(final DoublePredicate filter, final DoubleUnaryOperator unary, final DoubleBinaryOperator binary) {
+        this.filter = filter;
+        this.unary  = unary;
+        this.binary = binary;
     }
 
     /**
      * Returns the minimum number of parameters expected by this function.
      */
     final int getMinParameterCount() {
-        if (unary  != null) return 1;
+        if (unary  != null || filter != null) return 1;
         if (binary != null) return 2;
         return 0;
     }
@@ -202,7 +228,7 @@ enum Function implements AvailableFunction {
      */
     final int getMaxParameterCount() {
         if (binary != null) return 2;
-        if (unary  != null) return 1;
+        if (unary  != null || filter != null) return 1;
         return 0;
     }
 
@@ -229,9 +255,13 @@ enum Function implements AvailableFunction {
     /**
      * Returns the attribute type to declare in feature types that store result of this function.
      */
-    final synchronized AttributeType<Double> getResultType() {
+    final synchronized AttributeType<?> getResultType() {
         if (resultType == null) {
-            resultType = Node.createType(Double.class, name());
+            if (filter == null) {
+                resultType = Node.createType(Double.class, name());
+            } else {
+                resultType = Node.createType(Boolean.class, name());
+            }
         }
         return resultType;
     }
@@ -275,5 +305,24 @@ enum Function implements AvailableFunction {
         return new DefaultParameterDescriptor<>(
                 Map.of(DefaultParameterDescriptor.NAME_KEY, name),
                 1, 1, Number.class, null, null, null);
+    }
+
+    /**
+     * Returns the types of arguments and the type of the return value of this function.
+     * The {@code dataTypes[0]} array element is the data type of the function's return value.
+     * All other array elements are the data types of the function's parameters, in order.
+     * The values of all array elements are constants of the {@link Types} class.
+     *
+     * @param  dataTypes  data type of the return value followed by parameters, as {@link java.sql.Types} constants.
+     * @return whether the specified return type and argument data types are valid for this function.
+     */
+    @Override
+    public int[] getSignature() {
+        final int[] dataTypes = new int[getMaxParameterCount() + 1];
+        Arrays.fill(dataTypes, Types.DOUBLE);
+        if (filter != null) {
+            dataTypes[0] = Types.BOOLEAN;
+        }
+        return dataTypes;
     }
 }

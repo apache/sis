@@ -87,14 +87,15 @@ public final class Registry implements FunctionRegister {
                                           function.getMinParameterCount(),
                                           function.getMaxParameterCount(),
                                           parameters.length);
-        switch (parameters.length) {
-            case 1: return new UnaryOperator<>(function,
-                    parameters[0].toValueType(Number.class));
 
-            case 2: return new BinaryOperator<>(function,
-                    parameters[0].toValueType(Number.class),
-                    parameters[1].toValueType(Number.class));
+        final Expression<R, Number> p0 = parameters[0].toValueType(Number.class);
+        if (parameters.length == 1) {
+            if (function.filter != null) {
+                return new Predicate<>(function, p0);
+            } else {
+                return new UnaryOperator<>(function, p0);
+            }
         }
-        throw new IllegalArgumentException();   // Should never happen.
+        return new BinaryOperator<>(function, p0, parameters[1].toValueType(Number.class));
     }
 }

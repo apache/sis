@@ -17,7 +17,7 @@
 package org.apache.sis.filter.math;
 
 import java.util.Objects;
-import java.util.function.DoubleUnaryOperator;
+import java.util.function.DoublePredicate;
 import java.io.ObjectStreamException;
 import org.opengis.util.ScopedName;
 import org.apache.sis.filter.Optimization;
@@ -30,19 +30,19 @@ import org.opengis.filter.Expression;
 
 
 /**
- * An operation on a single operand.
+ * An operation on a single operand and returning a Boolean value.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  */
-final class UnaryOperator<R> extends UnaryFunction<R, Number>
-        implements FeatureExpression<R, Double>, Optimization.OnExpression<R, Double>
+final class Predicate<R> extends UnaryFunction<R, Number>
+        implements FeatureExpression<R, Boolean>, Optimization.OnExpression<R, Boolean>
 {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6215509464490587978L;
+    private static final long serialVersionUID = -5550022435116093162L;
 
     /**
      * The function to apply.
@@ -50,24 +50,24 @@ final class UnaryOperator<R> extends UnaryFunction<R, Number>
     private final Function function;
 
     /**
-     * The {@link Function#unary} value, guaranteed non-null.
+     * The {@link Function#filter} value, guaranteed non-null.
      */
-    private final transient DoubleUnaryOperator math;
+    private final transient DoublePredicate math;
 
     /**
-     * Creates a new function.
+     * Creates a new filter.
      */
-    UnaryOperator(final Function function, final Expression<R, ? extends Number> expression) {
+    Predicate(final Function function, final Expression<R, ? extends Number> expression) {
         super(expression);
         this.function = function;
-        math = Objects.requireNonNull(function.unary);
+        math = Objects.requireNonNull(function.filter);
     }
 
     /**
      * Invoked at deserialization time for setting the {@link #math} field.
      */
     private Object readResolve() throws ObjectStreamException {
-        return new UnaryOperator<>(function, expression);
+        return new Predicate<>(function, expression);
     }
 
     /**
@@ -82,8 +82,8 @@ final class UnaryOperator<R> extends UnaryFunction<R, Number>
      * Returns the type of values computed by this expression.
      */
     @Override
-    public final Class<Double> getResultClass() {
-        return Double.class;
+    public final Class<Boolean> getResultClass() {
+        return Boolean.class;
     }
 
     /**
@@ -99,10 +99,10 @@ final class UnaryOperator<R> extends UnaryFunction<R, Number>
      * Evaluates the expression.
      */
     @Override
-    public final Double apply(final R feature) {
+    public final Boolean apply(final R feature) {
         final Number value = expression.apply(feature);
         if (value != null) {
-            return math.applyAsDouble(value.doubleValue());
+            return math.test(value.doubleValue());
         }
         return null;
     }

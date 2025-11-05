@@ -49,7 +49,7 @@ import org.opengis.filter.capability.TemporalCapabilities;
 
 /**
  * Metadata about the specific elements that Apache <abbr>SIS</abbr> implementation supports.
- * This is also an unmodifiable map of all functions supported by this factory,
+ * This is also an unmodifiable map of functions supported by this factory,
  * together with their providers. This class is thread-safe.
  *
  * @todo Missing {@link SpatialCapabilities} and {@link TemporalCapabilities}.
@@ -62,7 +62,8 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
         implements FilterCapabilities, Conformance, IdCapabilities, ScalarCapabilities
 {
     /**
-     * The providers of functions. Each {@code FunctionRegister} instance typically provides many functions.
+     * The providers of functions.
+     * Each {@code FunctionRegister} instance typically provides many functions.
      * There is one provider for SQL/MM, one provider for mathematical functions, <i>etc</i>.
      */
     private final LazySet<FunctionRegister> providers;
@@ -168,7 +169,7 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
     }
 
     /**
-     * Indicates that SIS supports <i>And</i>, <i>Or</i> and <i>Not</i> operators.
+     * Advertises that Apache <abbr>SIS</abbr> supports <i>And</i>, <i>Or</i> and <i>Not</i> operators.
      */
     @Override
     public boolean hasLogicalOperators() {
@@ -184,7 +185,7 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
     }
 
     /**
-     * Advertises that SIS supports all comparison operators.
+     * Advertises that <abbr>SIS</abbr> supports all comparison operators.
      */
     @Override
     public Set<ComparisonOperatorName> getComparisonOperators() {
@@ -192,7 +193,7 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
     }
 
     /**
-     * Indicates that Apache SIS supports the <i>Spatial Filter</i> conformance level.
+     * Advertises that Apache <abbr>SIS</abbr> supports the <i>Spatial Filter</i> conformance level.
      *
      * @todo Need to implement {@linkplain FilterCapabilities#getSpatialCapabilities() temporal capabilities}.
      */
@@ -202,7 +203,7 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
     }
 
     /**
-     * Indicates that Apache SIS supports the <i>Temporal Filter</i> conformance level.
+     * Advertises that Apache <abbr>SIS</abbr> supports the <i>Temporal Filter</i> conformance level.
      *
      * @todo Need to implement {@linkplain FilterCapabilities#getTemporalCapabilities() temporal capabilities}.
      */
@@ -212,7 +213,7 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
     }
 
     /**
-     * Indicates that Apache SIS supports the <i>Sorting</i> conformance level.
+     * Advertises that Apache <abbr>SIS</abbr> supports the <i>Sorting</i> conformance level.
      */
     @Override
     public boolean implementsSorting() {
@@ -222,7 +223,7 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
     /**
      * Enumerates the functions that may be used in filter expressions.
      *
-     * @return the function that may be used in filter expressions.
+     * @return the functions that may be used in filter expressions.
      */
     @Override
     public Map<String, AvailableFunction> getFunctions() {
@@ -271,8 +272,8 @@ final class Capabilities extends AbstractMap<String, AvailableFunction>
     /**
      * Returns the index of the provider for the function of the given name.
      * This method shall be invoked in a block synchronized on {@code this}.
-     * If many providers define a function of the given name, then there is
-     * no guaranteed about which provider is returned.
+     * If many providers define a function of the given name,
+     * then there is no guaranteed about which provider is returned.
      *
      * @param  name  case-insensitive name of the function to get.
      * @return index of the provider for the given name, or -1 if not found.

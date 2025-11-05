@@ -27,7 +27,6 @@ import org.apache.sis.util.internal.shared.CollectionsExt;
 
 /**
  * Names of some filters and expressions used in Apache <abbr>SIS</abbr>.
- * This class defines only the names that need to be referenced from at least two different classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -49,6 +48,9 @@ public final class FunctionNames {
 
     /** Value of {@link org.opengis.filter.ValueReference#getFunctionName()}. */
     public static final String ValueReference = "ValueReference";
+
+    /** Synonymous of {@link #ValueReference} used in Filter Encoding XML. */
+    public static final String PropertyName = "PropertyName";
 
     /** The "Add" (+) arithmetic expression. */
     public static final String Add = "Add";

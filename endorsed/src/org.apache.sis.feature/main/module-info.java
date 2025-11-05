@@ -56,6 +56,9 @@ module org.apache.sis.feature {
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
             org.apache.sis.cql;                     // In the "incubator" sub-project.
 
+    exports org.apache.sis.filter.math to
+            org.apache.sis.storage.sql;
+
     exports org.apache.sis.filter.sqlmm to
             org.apache.sis.geometry;                // In the "incubator" sub-project.
 

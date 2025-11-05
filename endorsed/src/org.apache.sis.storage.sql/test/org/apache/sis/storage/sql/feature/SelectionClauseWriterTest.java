@@ -74,7 +74,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
     public void testOnDerby() throws Exception {
         try (TestDatabase db = TestDatabase.create("SelectionClause")) {
             db.executeSQL(List.of("CREATE TABLE TEST (ALPHA INTEGER, BETA INTEGER, GAMMA INTEGER, PI FLOAT);"));
-            final StorageConnector connector = new StorageConnector(db.source);
+            final var connector = new StorageConnector(db.source);
             connector.setOption(SchemaModifier.OPTION_KEY, this);
             try (DataStore store = new SQLStoreProvider().open(connector)) {
                 table = (Table) store.findResource("TEST");
@@ -126,11 +126,11 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
      * Verifies that a spatial operator transforms literal value before-hand if possible.
      */
     private void testGeometricFilterWithTransform() {
-        final GeneralEnvelope bbox = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        final var bbox = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         bbox.setEnvelope(-10, 20, -5, 25);
 
         Filter<Feature> filter = FF.intersects(FF.property("BETA"), FF.literal(bbox));
-        final Optimization optimization = new Optimization();
+        final var optimization = new Optimization();
         optimization.setFeatureType(table.featureType);
         verifySQL(optimization.apply(filter), "ST_Intersects(\"BETA\", " +
                 "ST_GeomFromText('POLYGON ((20 -10, 25 -10, 25 -5, 20 -5, 20 -10))'))");
@@ -141,7 +141,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
      * and verifies that the result is equal to the expected string.
      */
     private void verifySQL(final Filter<Feature> filter, final String expected) {
-        final SelectionClause sql = new SelectionClause(table);
+        final var sql = new SelectionClause(table);
         assertTrue(sql.tryAppend(SelectionClauseWriter.DEFAULT, filter));
         assertEquals(expected, sql.toString());
     }
