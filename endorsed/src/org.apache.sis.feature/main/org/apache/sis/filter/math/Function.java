@@ -19,6 +19,7 @@ package org.apache.sis.filter.math;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoublePredicate;
@@ -31,6 +32,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.filter.visitor.FunctionIdentifier;
 import org.apache.sis.filter.base.Node;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -86,6 +88,7 @@ public enum Function implements FunctionIdentifier, AvailableFunction {
 
     /**
      * The logarithm in base {@linkplain Math#E e} of <var>x</var>.
+     * This is named {@code LN} in some databases.
      */
     LOG(Math::log),
 
@@ -164,6 +167,16 @@ public enum Function implements FunctionIdentifier, AvailableFunction {
      * Returns whether the specified number is a Not-a-Number (NaN) value.
      */
     IS_NAN(Double::isNaN, null, null);
+
+    /**
+     * Synonymous of some function.
+     */
+    private static final Map<String, Function> ALIASES = Map.of(
+            "CEILING",    CEIL,
+            "LN",         LOG,
+            "isFinite",   IS_FINITE,
+            "isInfinite", IS_INFINITE,
+            "isNaN",      IS_NAN);
 
     /**
      * The mathematical function to invoke if this operation is a predicate, or {@code null}.
@@ -324,5 +337,28 @@ public enum Function implements FunctionIdentifier, AvailableFunction {
             dataTypes[0] = Types.BOOLEAN;
         }
         return dataTypes;
+    }
+
+    /**
+     * Returns the names and aliases of all functions.
+     */
+    static List<String> namesAndAliases() {
+        final var names = new ArrayList<String>(Containers.namesOf(Function.class));
+        names.addAll(ALIASES.keySet());
+        return names;
+    }
+
+    /**
+     * Returns the enumeration value for the given name.
+     * This method accepts synonymous.
+     *
+     * @param  name  the name or alias of the function.
+     * @return function for the given name or alias.
+     * @throws IllegalArgumentException if the given name or alias is unknown.
+     */
+    public static Function of(final String name) {
+        Function f = ALIASES.get(name);
+        if (f == null) f = valueOf(name);
+        return f;
     }
 }

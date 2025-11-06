@@ -389,7 +389,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     }
 
     /**
-     * Requests features with a mathematical operation.
+     * Requests features with some mathematical operations.
      *
      * @param  dataset  the store on which to query the features.
      * @throws DataStoreException if an error occurred during query execution.
@@ -401,9 +401,9 @@ public final class SQLStoreTest extends TestOnAllDatabases {
                             new FeatureQuery.NamedExpression(FF.function("SQRT", FF.property("population")), "value"));
         final FeatureSet subset = cities.subset(query);
         final var values = new HashMap<Object, Object>();
-        subset.features(false).forEach(
-                (feature) -> assertNull(values.put(feature.getPropertyValue("english_name"),
-                                                   feature.getPropertyValue("value"))));
+        subset.features(false).forEach((feature) ->
+                assertNull(values.put(feature.getPropertyValue("english_name"),
+                                      feature.getPropertyValue("value"))));
         final String[] expected = {"Montreal", "Quebec", "Paris", "Tōkyō"};
         final int[]  population = {  1704694,   531902, 2206488, 13622267};
         for (int i=0; i<expected.length; i++) {
@@ -411,8 +411,8 @@ public final class SQLStoreTest extends TestOnAllDatabases {
             final double value = assertInstanceOf(Double.class, values.remove(city), city);
             assertEquals(population[i], value * value, 0.1, city);
         }
-        // Try again with a function returning a boolean value.
-        query.setProjection(new FeatureQuery.NamedExpression(FF.function("IS_NAN", FF.property("population")), "flag"));
+        // Try again with a function returning a boolean value and with a function name which is an alias.
+        query.setProjection(new FeatureQuery.NamedExpression(FF.function("isNaN", FF.property("population")), "flag"));
         cities.subset(query).features(false).forEach((feature) -> assertEquals(Boolean.FALSE, feature.getPropertyValue("flag")));
     }
 

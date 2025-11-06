@@ -17,9 +17,9 @@
 package org.apache.sis.filter.sqlmm;
 
 import java.util.Set;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.filter.FunctionRegister;
-import org.apache.sis.filter.visitor.FunctionNames;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -61,7 +61,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public Set<String> getNames() {
-        return FunctionNames.of(SQLMM.class);
+        return Containers.namesOf(SQLMM.class);
     }
 
     /**

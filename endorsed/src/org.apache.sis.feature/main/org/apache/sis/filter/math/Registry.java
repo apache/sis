@@ -18,8 +18,8 @@ package org.apache.sis.filter.math;
 
 import java.util.Set;
 import org.apache.sis.filter.FunctionRegister;
-import org.apache.sis.filter.visitor.FunctionNames;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Constants;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -56,7 +56,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public Set<String> getNames() {
-        return FunctionNames.of(Function.class);
+        return CollectionsExt.viewAsSet(Function.namesAndAliases());
     }
 
     /**
@@ -68,7 +68,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public AvailableFunction describe(String name) {
-        return Function.valueOf(name);
+        return Function.of(name);
     }
 
     /**
@@ -82,7 +82,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public <R> Expression<R,?> create(final String name, final Expression<R,?>[] parameters) {
-        final Function function = Function.valueOf(name);
+        final Function function = Function.of(name);
         ArgumentChecks.ensureCountBetween("parameters", false,
                                           function.getMinParameterCount(),
                                           function.getMaxParameterCount(),

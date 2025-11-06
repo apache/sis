@@ -394,7 +394,7 @@ public final class CollectionsExt {
             }
             default: {
                 @SuppressWarnings("varargs")
-                final Set<E> set = new LinkedHashSet<>(Arrays.asList(array));
+                final var set = new LinkedHashSet<E>(Arrays.asList(array));
                 if (excludeNull) {
                     set.remove(null);
                 }
