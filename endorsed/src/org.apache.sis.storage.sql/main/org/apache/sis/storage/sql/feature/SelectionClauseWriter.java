@@ -24,6 +24,7 @@ import java.util.function.BiConsumer;
 import java.sql.Types;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.sis.filter.base.XPathSource;
@@ -90,20 +91,23 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
             /* Nothing to append */  if (write(sql, filter.getExpression()))    return;
             sql.append(" BETWEEN "); if (write(sql, filter.getLowerBoundary())) return;
             sql.append(" AND ");         write(sql, filter.getUpperBoundary());
+            sql.declareFunction(JDBCType.BOOLEAN);
         });
         setFilterHandler(FunctionNames.resourceId(), (f,sql) -> {
             if (f instanceof XPathSource && sql.appendColumnName(((XPathSource) f).getXPath())) {
                 final var filter = (ResourceId<?>) f;
                 sql.append(" = ").appendValue(filter.getIdentifier());
+                sql.declareFunction(JDBCType.BOOLEAN);
             } else {
                 sql.invalidate();
             }
         });
         setNullAndNilHandlers((filter, sql) -> {
-            final List<Expression<Feature, ?>> expressions = filter.getExpressions();
-            if (expressions.size() == 1) {
-                write(sql, expressions.get(0));
+            final List<Expression<Feature, ?>> parameters = filter.getExpressions();
+            if (parameters.size() == 1) {
+                write(sql, parameters.get(0));
                 sql.append(" IS NULL");
+                sql.declareFunction(JDBCType.BOOLEAN);
             } else {
                 sql.invalidate();
             }
@@ -136,10 +140,10 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     }
 
     /**
-     * Adds all values defined in the given enumeration as functions.
+     * Adds as functions all values defined by the specified enumeration.
      */
-    private void addAllOf(final Class<? extends Enum<?>> functions) {
-        for (Enum<?> id : functions.getEnumConstants()) {
+    private <E extends Enum<E> & FunctionIdentifier> void addAllOf(final Class<E> functions) {
+        for (E id : functions.getEnumConstants()) {
             final String name = id.name();
             setExpressionHandler(name, new Function(id));
         }
@@ -225,47 +229,45 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
             for (final var entry : expressions.entrySet()) {
                 final BiConsumer<Expression<Feature,?>, SelectionClause> handler = entry.getValue();
                 if (handler instanceof Function) {
-                    final Enum<?> id = ((Function) handler).function;
-                    if (id instanceof FunctionIdentifier) {
-                        final int[] signature = ((FunctionIdentifier) id).getSignature();   // May be null.
-                        boolean isSupported = false;
-                        String specificName = "";
-                        String name = id.name();
-                        if (lowerCase) name = name.toLowerCase(Locale.US);
-                        if (upperCase) name = name.toUpperCase(Locale.US);
-                        try (ResultSet r = metadata.getFunctionColumns(null, null, name, "%")) {
-                            while (r.next()) {
-                                if (!specificName.equals(specificName = r.getString(Reflection.SPECIFIC_NAME))) {
-                                    if (isSupported) break;     // Found a supported variant of the function.
-                                    isSupported = true;
-                                } else if (!isSupported) {
-                                    continue;   // Continue the search for the next overload variant.
-                                }
-                                switch (r.getShort(Reflection.COLUMN_TYPE)) {
-                                    case DatabaseMetaData.functionColumnIn:
-                                    case DatabaseMetaData.functionReturn: {
-                                        if (signature == null) continue;
-                                        final int n = r.getInt(Reflection.ORDINAL_POSITION);
-                                        if (n >= 0 && n < signature.length) {
-                                            int type = r.getInt(Reflection.DATA_TYPE);
-                                            switch (type) {
-                                                case Types.SMALLINT:  // Derby does not support `TINYINT`.
-                                                case Types.TINYINT:
-                                                case Types.BIT:   type = Types.BOOLEAN; break;
-                                                case Types.REAL:
-                                                case Types.FLOAT: type = Types.DOUBLE; break;
-                                            }
-                                            if (signature[n] == type) continue;
+                    final FunctionIdentifier id = ((Function) handler).function;
+                    final int[] signature = id.getSignature();   // May be null.
+                    boolean isSupported = false;
+                    String specificName = "";
+                    String name = id.name();
+                    if (lowerCase) name = name.toLowerCase(Locale.US);
+                    if (upperCase) name = name.toUpperCase(Locale.US);
+                    try (ResultSet r = metadata.getFunctionColumns(null, null, name, "%")) {
+                        while (r.next()) {
+                            if (!specificName.equals(specificName = r.getString(Reflection.SPECIFIC_NAME))) {
+                                if (isSupported) break;     // Found a supported variant of the function.
+                                isSupported = true;
+                            } else if (!isSupported) {
+                                continue;   // Continue the search for the next overload variant.
+                            }
+                            switch (r.getShort(Reflection.COLUMN_TYPE)) {
+                                case DatabaseMetaData.functionColumnIn:
+                                case DatabaseMetaData.functionReturn: {
+                                    if (signature == null) continue;
+                                    final int n = r.getInt(Reflection.ORDINAL_POSITION);
+                                    if (n >= 0 && n < signature.length) {
+                                        int type = r.getInt(Reflection.DATA_TYPE);
+                                        switch (type) {
+                                            case Types.SMALLINT:  // Derby does not support `TINYINT`.
+                                            case Types.TINYINT:
+                                            case Types.BIT:   type = Types.BOOLEAN; break;
+                                            case Types.REAL:
+                                            case Types.FLOAT: type = Types.DOUBLE; break;
                                         }
+                                        if (signature[n] == type) continue;
                                     }
                                 }
-                                isSupported = false;
-                                // Continue because the `ResultSet` may return many overload variants.
                             }
+                            isSupported = false;
+                            // Continue because the `ResultSet` may return many overload variants.
                         }
-                        if (!isSupported) {
-                            unsupportedExpressions.add(entry.getKey());
-                        }
+                    }
+                    if (!isSupported) {
+                        unsupportedExpressions.add(entry.getKey());
                     }
                 }
             }
@@ -341,6 +343,23 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     }
 
     /**
+     * Executes the registered action for the given expression.
+     *
+     * <h4>Note on type safety</h4>
+     * This method applies a theoretically unsafe cast, which is okay in the context of this class.
+     * See <cite>Note on parameterized type</cite> section in {@link Visitor#visit(Filter, Object)}.
+     *
+     * @param  sql         where to write the result of all actions.
+     * @param  expression  the expression for which to execute an action based on its type.
+     * @return value of {@link SelectionClause#functionReturnType()}.
+     */
+    @SuppressWarnings("unchecked")
+    final JDBCType writeFunction(final SelectionClause sql, final Expression<? super Feature, ?> expression) {
+        visit((Expression<Feature, ?>) expression, sql);
+        return sql.functionReturnType();
+    }
+
+    /**
      * Writes the expressions of a filter as a binary operator.
      * The filter must have exactly two expressions, otherwise the SQL will be declared invalid.
      *
@@ -355,15 +374,15 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     /**
      * Writes the parameters of a function or a binary operator.
      *
-     * @param sql          where to append the SQL clause.
-     * @param expressions  the expressions to write.
-     * @param separator    the separator to insert between expression.
-     * @param binary       whether the list of expressions shall contain exactly 2 elements.
+     * @param sql         where to append the SQL clause.
+     * @param parameters  the expressions to write as parameters.
+     * @param separator   the separator to insert between expression.
+     * @param binary      whether the list of expressions shall contain exactly 2 elements.
      */
-    private void writeParameters(final SelectionClause sql, final List<Expression<Feature,?>> expressions,
+    private void writeParameters(final SelectionClause sql, final List<Expression<Feature,?>> parameters,
                                  final String separator, final boolean binary)
     {
-        final int n = expressions.size();
+        final int n = parameters.size();
         if (binary && n != 2) {
             sql.invalidate();
             return;
@@ -372,7 +391,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         sql.append('(');
         for (int i=0; i<n; i++) {
             if (i != 0) sql.append(separator);
-            if (write(sql, expressions.get(i))) return;
+            if (write(sql, parameters.get(i))) return;
         }
         sql.append(')');
     }
@@ -422,6 +441,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
                 }
                 sql.append(')');
             }
+            sql.declareFunction(JDBCType.BOOLEAN);
         }
     }
 
@@ -447,6 +467,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
             final var filter = (BinaryComparisonOperator<Feature>) f;
             if (filter.isMatchingCase()) {
                 writeBinaryOperator(sql, filter, operator);
+                sql.declareFunction(JDBCType.BOOLEAN);
             } else {
                 sql.invalidate();
             }
@@ -472,6 +493,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         /** Invoked when an arithmetic expression needs to be converted to SQL clause. */
         @Override public void accept(final Expression<Feature,?> expression, final SelectionClause sql) {
             writeParameters(sql, expression.getParameters(), operator, true);
+            sql.declareFunction(JDBCType.DOUBLE);
         }
     }
 
@@ -486,17 +508,22 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
      */
     private final class Function implements BiConsumer<Expression<Feature,?>, SelectionClause> {
         /** Identification of the function. */
-        final Enum<?> function;
+        final FunctionIdentifier function;
+
+        /** The type of values returned by the function. */
+        private final JDBCType returnType;
 
         /** Creates a function. */
-        Function(final Enum<?> function) {
+        Function(final FunctionIdentifier function) {
             this.function = function;
+            returnType = JDBCType.valueOf(function.getSignature()[0]);
         }
 
         /** Invoked when an expression should be converted to a <abbr>SQL</abbr> clause. */
         @Override public void accept(final Expression<Feature,?> expression, final SelectionClause sql) {
-            sql.appendSpatialFunction(function.name());
+            sql.append(function.name());
             writeParameters(sql, expression.getParameters(), ", ", false);
+            sql.declareFunction(returnType);
         }
     }
 
@@ -527,9 +554,9 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
          */
         @Override public void accept(final Filter<Feature> filter, final SelectionClause sql) {
             sql.appendSpatialFunction(name);
-            final List<Expression<Feature, ?>> expressions = filter.getExpressions();
+            final List<Expression<Feature, ?>> parameters = filter.getExpressions();
             if (SelectionClause.REPLACE_UNSPECIFIED_CRS) {
-                for (Expression<Feature,?> exp : expressions) {
+                for (Expression<Feature,?> exp : parameters) {
                     if (exp instanceof ValueReference<?,?>) {
                         if (sql.acceptColumnCRS((ValueReference<Feature,?>) exp)) {
                             break;
@@ -537,7 +564,8 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
                     }
                 }
             }
-            writeParameters(sql, expressions, ", ", false);
+            writeParameters(sql, parameters, ", ", false);
+            sql.declareFunction(JDBCType.BOOLEAN);
             sql.clearColumnCRS();
         }
     }

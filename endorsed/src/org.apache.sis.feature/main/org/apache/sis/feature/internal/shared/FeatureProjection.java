@@ -16,11 +16,14 @@
  */
 package org.apache.sis.feature.internal.shared;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
@@ -33,6 +36,7 @@ import org.apache.sis.io.TableAppender;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Expression;
+import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
 
 
@@ -119,7 +123,7 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
      * Creates a new projection with a subset of the properties of another projection.
      * This constructor is invoked when the caller handles itself some of the properties.
      *
-     * <h4>behavioral change</h4>
+     * <h4>Behavioral change</h4>
      * Projections created by this constructor assumes that the feature instances given to the
      * {@link #apply(Feature)} method are already instances of {@link #typeWithDependencies}
      * and can be modified (if needed) in place. This constructor is designed for cases where
@@ -146,7 +150,7 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
 
     /**
      * Returns a variant of this projection where the caller has created the target feature instance itself.
-     * The callers is may have set some property values itself, and the {@code remaining} argument gives the
+     * The callers may have set some property values itself, and the {@code remaining} argument gives the
      * indexes of the properties that still need to be copied after caller's processing.
      *
      * @param  remaining  index of the properties that still need to be copied after the caller did its processing.
@@ -161,6 +165,42 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
     }
 
     /**
+     * Creates a new projection with the same properties as the source projection, but modified expressions.
+     *
+     * @param source  the projection to copy.
+     * @param mapper  a function receiving in arguments the property name and the expression fetching the property value,
+     *                and returning the expression to use in replacement of the function given in argument.
+     */
+    public FeatureProjection(final FeatureProjection source,
+            final BiFunction<String, Expression<? super Feature, ?>, Expression<? super Feature, ?>> mapper)
+    {
+        typeRequested    = source.typeRequested;
+        createInstance   = source.createInstance;
+        propertiesToCopy = source.propertiesToCopy;
+        expressions      = source.expressions.clone();
+        for (int i = 0; i < expressions.length; i++) {
+            expressions[i] = mapper.apply(propertiesToCopy[i], expressions[i]);
+        }
+        // TODO: check if we can remove some dependencies.
+        typeWithDependencies = source.typeWithDependencies;
+    }
+
+    /**
+     * Returns {@code true} if this projection contains at least one expression
+     * which is not a value reference or a literal.
+     *
+     * @return whether this projection is presumed to perform some operations.
+     */
+    public final boolean hasOperations() {
+        for (final var expression : expressions) {
+            if (!(expression instanceof ValueReference<?,?> || expression instanceof Literal<?,?>)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the names of all stored properties. This list may be shorter than the list of properties of the
      * {@linkplain #typeRequested requested feature type} if some feature properties are computed on-the-fly,
      * or if the target feature contains some new properties that are not in the source.
@@ -169,6 +209,16 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
      */
     public final List<String> propertiesToCopy() {
         return UnmodifiableArrayList.wrap(propertiesToCopy);
+    }
+
+    /**
+     * Returns the expression which is executed for fetching the property value at the given index.
+     *
+     * @param  index  index of the stored property for which to get the expression for fething the value.
+     * @return the expression which is executed for fetching the property value at the given index.
+     */
+    public final Expression<? super Feature, ?> expression(final int index) {
+        return expressions[index];
     }
 
     /**
@@ -337,5 +387,33 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
          * Type: stored, operation or dependency.
          */
         private String type;
+    }
+
+    /**
+     * Computes a hash code value for the projection.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(typeRequested, typeWithDependencies, createInstance)
+                + 97 * (Arrays.hashCode(propertiesToCopy) + 97 * Arrays.hashCode(expressions));
+    }
+
+    /**
+     * Compares this projection with the given object for equality.
+     *
+     * @param  obj  the object to compare with this projection.
+     * @return whether the two objects are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof FeatureProjection) {
+            final var other = (FeatureProjection) obj;
+            return (createInstance == other.createInstance)
+                    && typeRequested.equals(other.typeRequested)
+                    && typeWithDependencies.equals(other.typeWithDependencies)
+                    && Arrays.equals(propertiesToCopy, other.propertiesToCopy)
+                    && Arrays.equals(expressions, other.expressions);
+        }
+        return false;
     }
 }

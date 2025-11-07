@@ -141,7 +141,7 @@ final class Relation extends TableReference implements Cloneable {
      * The columns of the other table that constitute a primary or foreigner key. Keys are the columns
      * of the other table and values are columns of the table containing this {@code Relation}.
      */
-    private final Map<String,String> columns;
+    private final Map<String, String> columns;
 
     /**
      * The other table identified by {@link #catalog}, {@link #schema} and {@link #table} names.

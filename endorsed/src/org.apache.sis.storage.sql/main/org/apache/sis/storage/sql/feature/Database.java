@@ -31,6 +31,7 @@ import java.util.logging.LogRecord;
 import java.util.function.Consumer;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.Array;
+import java.sql.JDBCType;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -725,8 +726,8 @@ public class Database<G> extends Syntax {
                 }
             }
             case Types.ARRAY: {
-                final int componentType = getArrayComponentType(columnDefinition);
-                final ValueGetter<?> component = getMapping(new Column(componentType, columnDefinition.typeName));
+                final int componentType = getArrayComponentType(columnDefinition).getVendorTypeNumber();
+                final ValueGetter<?> component = getMapping(new Column(componentType, columnDefinition.typeName, columnDefinition.name));
                 if (component == ValueGetter.AsObject.INSTANCE) {
                     return ValueGetter.AsArray.INSTANCE;
                 }
@@ -749,9 +750,9 @@ public class Database<G> extends Syntax {
     }
 
     /**
-     * Returns the type of components in SQL arrays stored in a column.
+     * Returns the type of components in <abbr>SQL</abbr> arrays stored in a column.
      * This method is invoked when {@link Column#type} = {@link Types#ARRAY}.
-     * The default implementation returns {@link Types#OTHER} because JDBC
+     * The default implementation returns {@link JDBCType#OTHER} because <abbr>JDBC</abbr>
      * column metadata does not provide information about component types.
      * Database-specific subclasses should override this method if they can
      * provide that information from the {@link Column#typeName} value.
@@ -761,8 +762,8 @@ public class Database<G> extends Syntax {
      *
      * @see Array#getBaseType()
      */
-    protected int getArrayComponentType(final Column columnDefinition) {
-        return Types.OTHER;
+    protected JDBCType getArrayComponentType(final Column columnDefinition) {
+        return JDBCType.OTHER;
     }
 
     /**

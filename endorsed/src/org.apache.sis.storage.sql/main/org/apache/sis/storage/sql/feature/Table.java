@@ -56,6 +56,7 @@ import org.opengis.filter.InvalidFilterValueException;
 
 /**
  * Description of a table in the database, including columns, primary keys and foreigner keys.
+ * Despite the class name, {@code Table} instances can also be <abbr>SQL</abbr> projections or queries.
  * This class contains a {@link FeatureType} inferred from the table structure.
  * The {@link FeatureType} contains an {@link AttributeType} for each table column,
  * except foreigner keys which are represented by {@link FeatureAssociationRole}s.
@@ -180,6 +181,8 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * Creates a description of the table analyzed by the given object.
+     * This constructor is invoked for both real tables and queries,
+     * depending on the subclass of the {@code analyzer} argument.
      *
      * @param  database  information about the database (syntax for building SQL statements, …).
      * @param  analyzer  helper functions, e.g. for converting SQL types to Java types.
@@ -246,7 +249,13 @@ final class Table extends AbstractFeatureSet {
                 unhandled.set(i);
                 continue;
             }
-            final Column column = source.getColumn(xpath);
+            final Column column;
+            final var expression = projection.expression(i);
+            if (expression instanceof ComputedColumn) {
+                column = (ComputedColumn) expression;
+            } else {
+                column = source.getColumn(xpath);
+            }
             if (column != null) {
                 hasGeometry |= column.getGeometryType().isPresent();
                 final String name = storedProperties.get(i);

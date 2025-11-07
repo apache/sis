@@ -21,6 +21,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.sql.JDBCType;
 import java.sql.Connection;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -83,7 +84,7 @@ public final class SelectionClause extends SQLBuilder {
      *
      * Elements must be sorted in increasing order of keys.
      *
-     * @see #query(InfoStatements)
+     * @see #query(Connection, InfoStatements)
      */
     private final List<Map.Entry<Integer, CoordinateReferenceSystem>> parameters;
 
@@ -97,6 +98,17 @@ public final class SelectionClause extends SQLBuilder {
      * @see #REPLACE_UNSPECIFIED_CRS
      */
     private Optional<CoordinateReferenceSystem> columnCRS;
+
+    /**
+     * If the <abbr>SQL</abbr> fragment invokes a function, the return type of the topmost function.
+     * The topmost function is the one which contains all other functions as argument.
+     * This is the function producing the values that users will see.
+     * If this field is {@code null}, then the <abbr>SQL</abbr> fragment (if valid) is just a column identifier.
+     *
+     * @see #functionReturnType()
+     * @see #declareFunction(JDBCType)
+     */
+    private JDBCType functionReturnType;
 
     /**
      * Flag sets to {@code true} if a filter or expression cannot be converted to SQL.
@@ -272,6 +284,25 @@ public final class SelectionClause extends SQLBuilder {
     }
 
     /**
+     * If an expression has been converted to a <abbr>SQL</abbr> function, returns the function return type.
+     * If {@code null}, the <abbr>SQL</abbr> fragment (if valid) is just a column identifier.
+     */
+    final JDBCType functionReturnType() {
+        return isInvalid ? null : functionReturnType;
+    }
+
+    /**
+     * Declares that the <abbr>SQL</abbr> fragment contains at least one function.
+     * Java methods that format a <abbr>SQL</abbr> fragment should invoke this method
+     * last for ensuring that the topmost function has precedence.
+     *
+     * @param returnType the return type of the function.
+     */
+    public final void declareFunction(final JDBCType returnType) {
+        functionReturnType = returnType;
+    }
+
+    /**
      * Appends the name of a spatial function. The catalog and schema names are
      * included for making sure that it works even if the search path is not set.
      * The function name is written without quotes, because the functions kept by
@@ -286,7 +317,7 @@ public final class SelectionClause extends SQLBuilder {
     }
 
     /**
-     * Tries to append a SQL statement for the given filter.
+     * Tries to append a <abbr>SQL</abbr> fragment for the given filter.
      * This method returns {@code true} on success, or {@code false} if the statement can no be written.
      * In the latter case, the content of this {@code SelectionClause} is unchanged.
      *
@@ -328,6 +359,7 @@ public final class SelectionClause extends SQLBuilder {
      * Returns the <abbr>SQL</abbr> fragment built by this {@code SelectionClause}.
      * This method completes the information that we deferred until a connection is established.
      *
+     * @param  connection          connection to use for creating a default {@code spatialInformation}.
      * @param  spatialInformation  a cache of statements for fetching spatial information, or {@code null}.
      * @return the <abbr>SQL</abbr> fragment, or {@code null} if there is no {@code WHERE} clause to add.
      * @throws Exception if an SQL error, parsing error or other error occurred.
@@ -337,7 +369,7 @@ public final class SelectionClause extends SQLBuilder {
             return null;
         }
         boolean close = false;
-        for (int i = parameters.size(); --i >= 0;) {
+        for (int i = parameters.size(); --i >= 0;) {    // Reverse order is important.
             if (spatialInformation == null) {
                 spatialInformation = table.database.createInfoStatements(connection);
                 close = true;
@@ -355,5 +387,19 @@ public final class SelectionClause extends SQLBuilder {
             spatialInformation.close();
         }
         return buffer.toString();
+    }
+
+    /**
+     * Clears this builder and makes it ready for creating a new <abbr>SQL</abbr> statement.
+     *
+     * @return this builder, for method call chaining.
+     */
+    @Override
+    public final SQLBuilder clear() {
+        isInvalid = false;
+        functionReturnType = null;
+        clearColumnCRS();
+        parameters.clear();
+        return super.clear();
     }
 }

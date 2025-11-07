@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.sql.postgis;
 
+import java.sql.JDBCType;
 import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -46,6 +47,7 @@ final class ExtendedClauseWriter extends SelectionClauseWriter {
         super(DEFAULT, true, false);
         setFilterHandler(SpatialOperatorName.BBOX, (f,sql) -> {
             writeBinaryOperator(sql, f, " && ");
+            sql.declareFunction(JDBCType.BOOLEAN);
         });
     }
 
