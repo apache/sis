@@ -18,33 +18,19 @@ package org.apache.sis.geometries.math;
 
 
 /**
- * A cursor allows to iterate over a tuple array without copying datas.
- * Any change made to the cursor samples are made in the tuple array.
  *
- * API copied from Unlicense.science
+ * @author Johann Sorel (Geomatys)
  */
-public interface TupleArrayCursor {
+public class ArrayNdTest extends AbstractArrayTest {
 
-    Tuple samples();
+    @Override
+    protected int[] getSupportedDimensions() {
+        return new int[]{1,2,3,4};
+    }
 
-    /**
-     * Get the current tuple coordinate.
-     * @return Tuple, returns always the same container
-     */
-    int coordinate();
-
-    /**
-     * Move cursor to given coordinate.
-     *
-     * @param coordinate
-     */
-    void moveTo(int coordinate);
-
-    /**
-     * Move to next tuple.
-     *
-     * @return false if no more tuple
-     */
-    boolean next();
+    @Override
+    protected Array create(int dim, int length) {
+        return new ArrayMemory.Double(SampleSystem.ofSize(dim), new double[length*dim]);
+    }
 
 }

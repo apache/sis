@@ -26,14 +26,14 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -44,15 +44,15 @@ public final class To3D {
 
     private To3D(){}
 
-    private static void zedit(TupleArray array, Consumer<Tuple> Zeditor) {
-        final TupleArrayCursor cursor = array.cursor();
+    private static void zedit(Array array, Consumer<Tuple> Zeditor) {
+        final Cursor cursor = array.cursor();
         while (cursor.next()) {
             Zeditor.accept(cursor.samples());
         }
     }
 
     private static ArraySequence copy(PointSequence ps) {
-        final Map<String,TupleArray> attributes = new HashMap<>();
+        final Map<String,Array> attributes = new HashMap<>();
         for (String name : ps.getAttributesType().getAttributeNames()) {
             attributes.put(name, ps.getAttributeArray(name).copy());
         }
@@ -67,13 +67,13 @@ public final class To3D {
             Zeditor = (Tuple t) -> t.set(2, 0.0);
         }
 
-        TupleArray positions = ps.getAttributeArray(AttributesType.ATT_POSITION);
+        Array positions = ps.getAttributeArray(AttributesType.ATT_POSITION);
         positions = to3d(positions, crs3d, Zeditor);
         ps.setAttribute(AttributesType.ATT_POSITION, positions);
         return ps;
     }
 
-    private static TupleArray to3d(TupleArray positions, CoordinateReferenceSystem crs3d, Consumer<Tuple> Zeditor) {
+    private static Array to3d(Array positions, CoordinateReferenceSystem crs3d, Consumer<Tuple> Zeditor) {
 
         if (Zeditor == null) {
             Zeditor = (Tuple t) -> t.set(2, 0.0);
@@ -99,9 +99,9 @@ public final class To3D {
                 }
             }
             //create a new one
-            final TupleArray array = TupleArrays.of(SampleSystem.of(crs3d), positions.getDataType(), positions.getLength());
-            final TupleArrayCursor target = array.cursor();
-            final TupleArrayCursor source = positions.cursor();
+            final Array array = NDArrays.of(SampleSystem.of(crs3d), positions.getDataType(), positions.getLength());
+            final Cursor target = array.cursor();
+            final Cursor source = positions.cursor();
             while (source.next() && target.next()) {
                 Tuple t = target.samples();
                 Tuple s = source.samples();
@@ -182,7 +182,7 @@ public final class To3D {
             final org.apache.sis.geometries.mesh.MeshPrimitive copy3d = base.deepCopy();
             operation.result = copy3d;
 
-            TupleArray positions = copy3d.getPositions();
+            Array positions = copy3d.getPositions();
             positions = to3d(positions, operation.crs3d, operation.Zeditor);
             copy3d.setPositions(positions);
         }

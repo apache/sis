@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector1D;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -54,7 +54,7 @@ public final class MeshPrimitiveIndexes {
      * @param type index type, only triangle type index supported
      * @return reverse winding triangle index, returned type is the same as input
      */
-    public static TupleArray reverseTriangles(TupleArray index, MeshPrimitive.Type type) {
+    public static Array reverseTriangles(Array index, MeshPrimitive.Type type) {
         switch (type) {
             case TRIANGLE_FAN :
                 throw new UnsupportedOperationException("Triangle fan type not supported yet");
@@ -76,7 +76,7 @@ public final class MeshPrimitiveIndexes {
             array[i+1] = array[i+2];
             array[i+2] = t;
         }
-        return TupleArrays.packIntegerDataType(TupleArrays.of(index.getSampleSystem(), array));
+        return NDArrays.packIntegerDataType(NDArrays.of(index.getSampleSystem(), array));
     }
 
     /**
@@ -87,7 +87,7 @@ public final class MeshPrimitiveIndexes {
      * @param type index type, only triangle type index supported
      * @return triangles index, can be the original index if it is already triangle.
      */
-    public static TupleArray toTriangles(TupleArray index, MeshPrimitive.Type type) {
+    public static Array toTriangles(Array index, MeshPrimitive.Type type) {
         switch (type) {
             case TRIANGLE_FAN :
                 throw new UnsupportedOperationException("Triangle fan type not supported yet");
@@ -100,8 +100,8 @@ public final class MeshPrimitiveIndexes {
             default :
                 throw new IllegalArgumentException("Only triangle index type supported, but was " + type.name());
         }
-        final TupleArray tidx = toTrianglesNoPack(index);
-        return TupleArrays.packIntegerDataType(tidx);
+        final Array tidx = toTrianglesNoPack(index);
+        return NDArrays.packIntegerDataType(tidx);
     }
 
     /**
@@ -112,11 +112,12 @@ public final class MeshPrimitiveIndexes {
      * @param triangleStripIndex triangle strip index.
      * @return triangles index.
      */
-    private static TupleArray toTrianglesNoPack(TupleArray triangleStripIndex) {
+    private static Array toTrianglesNoPack(Array triangleStripIndex) {
 
-        final TupleArrayCursor cursor = triangleStripIndex.cursor();
+        final Cursor cursor = triangleStripIndex.cursor();
 
-        int[] triangles = new int[(triangleStripIndex.getLength()-2)*3];
+        final int length = Math.toIntExact(triangleStripIndex.getLength());
+        int[] triangles = new int[(length-2)*3];
         cursor.moveTo(0);
         int idx0 = (int) cursor.samples().get(0);
         cursor.moveTo(1);
@@ -124,7 +125,7 @@ public final class MeshPrimitiveIndexes {
 
         int realsize = 0;
         int maxIdx = Math.max(idx0, idx1);
-        for (int i = 2, n = triangleStripIndex.getLength(), k = 0; i < n; i++) {
+        for (int i = 2, n = length, k = 0; i < n; i++) {
             cursor.moveTo(i);
             int idx2 = (int) cursor.samples().get(0);
             maxIdx = Math.max(maxIdx, idx2);
@@ -157,7 +158,7 @@ public final class MeshPrimitiveIndexes {
             triangles = Arrays.copyOf(triangles, realsize);
         }
 
-        return TupleArrays.of(1, triangles);
+        return NDArrays.of(1, triangles);
     }
 
     /**
@@ -168,7 +169,7 @@ public final class MeshPrimitiveIndexes {
      * @param type index type, only triangle type index supported
      * @return triangle strip index, can be the original index if it is already a strip
      */
-    public static TupleArray toTriangleStrip(TupleArray index, MeshPrimitive.Type type) {
+    public static Array toTriangleStrip(Array index, MeshPrimitive.Type type) {
 
         switch (type) {
             case TRIANGLE_FAN :
@@ -187,7 +188,7 @@ public final class MeshPrimitiveIndexes {
         final Set<Edge> edges = new HashSet<>();
 
         //build edges map
-        final TupleArrayCursor cursor = index.cursor();
+        final Cursor cursor = index.cursor();
         while (cursor.next()) {
             final int i0 = (int) cursor.samples().get(0);
             cursor.next();
@@ -228,8 +229,8 @@ public final class MeshPrimitiveIndexes {
         //connect each strip with a degenerated triangle
         final List<Vector1D.Int> stripIndex = connect(strips);
 
-        TupleArray idx = TupleArrays.of(stripIndex, 1, DataType.UINT);
-        return TupleArrays.packIntegerDataType(idx);
+        Array idx = NDArrays.of(stripIndex, 1, DataType.UINT);
+        return NDArrays.packIntegerDataType(idx);
     }
 
     /**

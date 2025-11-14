@@ -19,14 +19,14 @@ package org.apache.sis.geometries.processor.spatialanalysis2d;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -54,17 +54,17 @@ public class IntersectionTest {
     public void testPrimitiveTrianglesPrimitivePoints() {
 
         final MeshPrimitive geom1 = new MeshPrimitive.Triangles();
-        geom1.setPositions(TupleArrays.of(CRS2D,
+        geom1.setPositions(NDArrays.of(CRS2D,
                 0.0, 0.0,  1.0, 0.0,  0.0, 1.0,
                 1.0, 0.0,  1.0, 1.0,  0.0, 1.0
                 ));
-        geom1.setAttribute("test", TupleArrays.of(1,
+        geom1.setAttribute("test", NDArrays.of(1,
                 0.0, 1.0, 2.0,
                 1.0, 8.0, 2.0
                 ));
 
         final MeshPrimitive geom2 = new MeshPrimitive.Points();
-        geom2.setPositions(TupleArrays.of(CRS2D,
+        geom2.setPositions(NDArrays.of(CRS2D,
                 0.2, 0.2,
                 0.5, 0.5,
                 1.0, 1.0,
@@ -74,8 +74,8 @@ public class IntersectionTest {
         final Geometry intersection = GeometryOperations.SpatialAnalysis2D.intersection(geom1, geom2);
         assertTrue(intersection instanceof MeshPrimitive.Points);
         final MeshPrimitive result = (MeshPrimitive) intersection;
-        final TupleArray positions = result.getPositions();
-        final TupleArray test = result.getAttribute("test");
+        final Array positions = result.getPositions();
+        final Array test = result.getAttribute("test");
 
         assertArrayEquals(new double[]{
                 0.2, 0.2,
@@ -106,17 +106,17 @@ public class IntersectionTest {
     public void testPrimitiveTrianglesPrimitiveLines() {
 
         final MeshPrimitive geom1 = new MeshPrimitive.Triangles();
-        geom1.setPositions(TupleArrays.of(CRS2D,
+        geom1.setPositions(NDArrays.of(CRS2D,
                 0.0, 0.0,  1.0, 0.0,  0.0, 1.0,
                 1.0, 0.0,  1.0, 1.0,  0.0, 1.0
                 ));
-        geom1.setAttribute("test", TupleArrays.of(1,
+        geom1.setAttribute("test", NDArrays.of(1,
                 0.0, 1.0, 2.0,
                 1.0, 8.0, 2.0
                 ));
 
         final MeshPrimitive geom2 = new MeshPrimitive.Lines();
-        geom2.setPositions(TupleArrays.of(CRS2D,
+        geom2.setPositions(NDArrays.of(CRS2D,
                 0.1, 0.5,  0.9, 0.5, //crossing 2 triangles
                 0.8, 0.9,  1.2, 0.9, //crossout 1 triangle
                 3.0, 0.2,  4.0, 0.2  //outside
@@ -125,8 +125,8 @@ public class IntersectionTest {
         final Geometry intersection = GeometryOperations.SpatialAnalysis2D.intersection(geom1, geom2);
         assertTrue(intersection instanceof MeshPrimitive.Lines);
         final MeshPrimitive.Lines result = (MeshPrimitive.Lines) intersection;
-        final TupleArray positions = result.getPositions();
-        final TupleArray test = result.getAttribute("test");
+        final Array positions = result.getPositions();
+        final Array test = result.getAttribute("test");
 
         assertArrayEquals(new double[]{
                 //first line, cut in two

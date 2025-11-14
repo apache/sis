@@ -41,9 +41,9 @@ import org.apache.sis.geometries.operation.SutherlandHodgman;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.geometries.processor.ProcessorUtils;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -72,7 +72,7 @@ public final class Intersection {
     private static void copyAttributes(PreparedTIN tin, MeshPrimitive primitive) {
 
         final AttributesType attributesType = tin.getAttributesType();
-        final int nbVertex = primitive.getPositions().getLength();
+        final long nbVertex = primitive.getPositions().getLength();
 
         final List<String> attributeNames = new ArrayList<>(attributesType.getAttributeNames());
         if (attributeNames.size() == 1) {
@@ -81,10 +81,10 @@ public final class Intersection {
         }
         attributeNames.remove(AttributesType.ATT_POSITION);
         final String[] templateNames = new String[attributeNames.size()];
-        final TupleArray[] attributes = new TupleArray[attributeNames.size()];
+        final Array[] attributes = new Array[attributeNames.size()];
         for (int i = 0; i < templateNames.length; i++) {
             templateNames[i] = attributeNames.get(i);
-            final TupleArray ta = TupleArrays.of(
+            final Array ta = NDArrays.of(
                     attributesType.getAttributeSystem(templateNames[i]),
                     attributesType.getAttributeType(templateNames[i]),
                     nbVertex);
@@ -101,7 +101,7 @@ public final class Intersection {
                 final Optional<Point> opt = evaluator.evaluate(vertex.getPosition());
                 if (opt.isEmpty()) return;
                 final Point point = opt.get();
-                final int index = vertex.getIndex();
+                final long index = vertex.getIndex();
                 for (int i = 0; i < templateNames.length; i++) {
                     attributes[i].set(index, point.getAttribute(templateNames[i]));
                 }
@@ -137,7 +137,7 @@ public final class Intersection {
 
             final PreparedTIN pt = PreparedTIN.create(p1);
 
-            final TupleArray positions = p2.getPositions().copy();
+            final Array positions = p2.getPositions().copy();
 
             final MeshPrimitive.Points intersection = new MeshPrimitive.Points();
             operation.result = intersection;
@@ -147,16 +147,16 @@ public final class Intersection {
 
             //create an index only for points which intersect
             final PreparedTIN.Evaluator evaluator = pt.evaluator();
-            final TupleArrayCursor cursor = positions.cursor();
+            final Cursor cursor = positions.cursor();
             final List<Integer> values = new ArrayList<>();
             while (cursor.next()) {
                 Tuple position = cursor.samples();
                 if (evaluator.evaluate(position).isPresent()) {
-                    values.add(cursor.coordinate());
+                    values.add(Math.toIntExact(cursor.coordinate()));
                 }
             }
             if (!values.isEmpty()) {
-                final TupleArray index = TupleArrays.ofUnsigned(1, values);
+                final Array index = NDArrays.ofUnsigned(1, values);
                 intersection.setIndex(index);
             }
 
@@ -199,7 +199,7 @@ public final class Intersection {
             final List<LineString> segments = new ArrayList<>();
             for (int i = 0, n = lines.getNumGeometries(); i < n; i++) {
                 final LineString line = lines.getGeometryN(i);
-                final TupleArray segment = line.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                final Array segment = line.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
                 final Tuple s1 = segment.get(0);
                 final Tuple s2 = segment.get(1);
 
@@ -208,7 +208,7 @@ public final class Intersection {
 
                     while (iterator.hasNext()) {
                         final Triangle triangle = iterator.next();
-                        final TupleArray corners = triangle.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                        final Array corners = triangle.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
                         final Tuple c0 = corners.get(0);
                         final Tuple c1 = corners.get(1);
                         final Tuple c2 = corners.get(2);

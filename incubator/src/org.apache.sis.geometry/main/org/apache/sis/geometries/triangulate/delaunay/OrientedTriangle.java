@@ -307,10 +307,10 @@ final class OrientedTriangle extends AbstractGeometry implements Triangle, Point
 
     @Override
     public int hashCode() {
-        int result = 31 + a.getIndex();
+        long result = 31 + a.getIndex();
         result = 31 * result + b.getIndex();
         result = 31 * result + c.getIndex();
-        return result;
+        return (int) result;
     }
 
 }

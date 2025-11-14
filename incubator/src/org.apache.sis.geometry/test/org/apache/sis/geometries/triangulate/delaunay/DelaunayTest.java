@@ -19,12 +19,12 @@ package org.apache.sis.geometries.triangulate.delaunay;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveComparator;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -47,7 +47,7 @@ public class DelaunayTest {
     @Test
     public void testTriangle() {
 
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 0,0,
                 1,0,
                 0,1);
@@ -57,7 +57,7 @@ public class DelaunayTest {
 
         final Delaunay delaunay = new Delaunay();
         delaunay.build(points);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{0,1,2}, triangles);
     }
@@ -74,7 +74,7 @@ public class DelaunayTest {
     @Test
     public void testQuad() {
 
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 0,0,
                 1,0,
                 0,1,
@@ -85,7 +85,7 @@ public class DelaunayTest {
 
         final Delaunay delaunay = new Delaunay();
         delaunay.build(points);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{0,1,2, 1,3,2}, triangles);
     }
@@ -102,7 +102,7 @@ public class DelaunayTest {
     @Test
     public void testEdgeSplit() {
 
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 0,0,
                 2,0,
                 1,1,
@@ -113,7 +113,7 @@ public class DelaunayTest {
 
         final Delaunay delaunay = new Delaunay();
         delaunay.build(points);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{2,0,3, 1,2,3}, triangles);
     }
@@ -133,7 +133,7 @@ public class DelaunayTest {
     @Test
     public void testTwoEdgeSplit() {
 
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 0,0,
                 2,0,
                 1,2,
@@ -146,7 +146,7 @@ public class DelaunayTest {
 
         final Delaunay delaunay = new Delaunay();
         delaunay.build(points);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{0,4,2, 4,1,2, 0,3,4, 4,3,1}, triangles);
     }
@@ -156,13 +156,13 @@ public class DelaunayTest {
      */
     @Test
     public void testFlipScanA() {
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 69,-157, //start
                 38,-192,
                 96,-199,
                 70,-237 //end
                 );
-        final TupleArray constraints = TupleArrays.ofUnsigned(1,
+        final Array constraints = NDArrays.ofUnsigned(1,
                 new int[]{0,3});
 
         final MeshPrimitive.Points points = new MeshPrimitive.Points();
@@ -171,7 +171,7 @@ public class DelaunayTest {
         final Delaunay delaunay = new Delaunay();
         delaunay.build(points);
         delaunay.pushConstraint(constraints, true);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{
             0,1,3,
@@ -184,7 +184,7 @@ public class DelaunayTest {
      */
     @Test
     public void testFlipScanB() {
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 73,-252, //start
                 40,-286,
                 39,-313,
@@ -192,7 +192,7 @@ public class DelaunayTest {
                 99,-322,
                 99,-294
                 );
-        final TupleArray constraints = TupleArrays.ofUnsigned(1,
+        final Array constraints = NDArrays.ofUnsigned(1,
                 new int[]{0,3});
 
         final MeshPrimitive.Points points = new MeshPrimitive.Points();
@@ -201,7 +201,7 @@ public class DelaunayTest {
         final Delaunay delaunay = new Delaunay();
         delaunay.build(points);
         delaunay.pushConstraint(constraints, true);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{
             0,1,2,
@@ -218,7 +218,7 @@ public class DelaunayTest {
      */
     @Test
     public void testFlipScanC() {
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 84,-368, //start
                 53,-402,
                 20,-413,
@@ -227,7 +227,7 @@ public class DelaunayTest {
                 112,-439,
                 111,-411
                 );
-        final TupleArray constraints = TupleArrays.ofUnsigned(1,
+        final Array constraints = NDArrays.ofUnsigned(1,
                 new int[]{0,4});
 
         final MeshPrimitive.Points points = new MeshPrimitive.Points();
@@ -238,7 +238,7 @@ public class DelaunayTest {
         //add a soft constraint to match the example
         delaunay.pushConstraint(2,5, false);
         delaunay.pushConstraint(constraints, true);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{
             0,1,3,
@@ -258,7 +258,7 @@ public class DelaunayTest {
      */
     @Test
     public void testFlipScanD() {
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 91,-524, //start
                 82,-559,
                 37,-578,
@@ -267,7 +267,7 @@ public class DelaunayTest {
                 128,-611,
                 104,-571
                 );
-        final TupleArray constraints = TupleArrays.ofUnsigned(1,
+        final Array constraints = NDArrays.ofUnsigned(1,
                 new int[]{0,4});
 
         final MeshPrimitive.Points points = new MeshPrimitive.Points();
@@ -279,7 +279,7 @@ public class DelaunayTest {
         delaunay.pushConstraint(1,5, false);
         delaunay.pushConstraint(2,5, false);
         delaunay.pushConstraint(constraints, true);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{
             0,1,4,
@@ -299,7 +299,7 @@ public class DelaunayTest {
      */
     @Test
     public void testFlipScanE() {
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 84,-674, //start
                 80,-715,
                 55,-731,
@@ -309,7 +309,7 @@ public class DelaunayTest {
                 124,-749,
                 97,-724
                 );
-        final TupleArray constraints = TupleArrays.ofUnsigned(1,
+        final Array constraints = NDArrays.ofUnsigned(1,
                 new int[]{0,4});
 
         final MeshPrimitive.Points points = new MeshPrimitive.Points();
@@ -318,7 +318,7 @@ public class DelaunayTest {
         final Delaunay delaunay = new Delaunay();
         delaunay.build(points);
         delaunay.pushConstraint(constraints, true);
-        final TupleArray triangles = delaunay.getTrianglesIndex();
+        final Array triangles = delaunay.getTrianglesIndex();
 
         compare(positions, new int[]{
             0,1,4,
@@ -336,10 +336,10 @@ public class DelaunayTest {
     /**
      * Compare created index, ignoring order of elements.
      */
-    private static void compare(TupleArray positions, int[] expected, TupleArray actual) {
+    private static void compare(Array positions, int[] expected, Array actual) {
         final MeshPrimitive.Triangles exp = new MeshPrimitive.Triangles();
         exp.setPositions(positions);
-        exp.setIndex(TupleArrays.ofUnsigned(1, expected));
+        exp.setIndex(NDArrays.ofUnsigned(1, expected));
         final MeshPrimitive.Triangles act = new MeshPrimitive.Triangles();
         act.setPositions(positions);
         act.setIndex(actual);

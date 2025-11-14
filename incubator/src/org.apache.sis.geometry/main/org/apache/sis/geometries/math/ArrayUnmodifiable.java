@@ -28,11 +28,11 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class TupleArrayUnmodifiable extends AbstractTupleArray {
+final class ArrayUnmodifiable extends AbstractArray {
 
-    private final TupleArray parent;
+    private final Array parent;
 
-    public TupleArrayUnmodifiable(TupleArray parent) {
+    public ArrayUnmodifiable(Array parent) {
         ArgumentChecks.ensureNonNull("parent", parent);
         this.parent = parent;
     }
@@ -53,7 +53,7 @@ final class TupleArrayUnmodifiable extends AbstractTupleArray {
     }
 
     @Override
-    public int getLength() {
+    public long getLength() {
         return parent.getLength();
     }
 
@@ -78,22 +78,22 @@ final class TupleArrayUnmodifiable extends AbstractTupleArray {
     }
 
     @Override
-    public Tuple get(int index) {
+    public Tuple get(long index) {
         return parent.get(index);
     }
 
     @Override
-    public void get(int index, Tuple buffer) {
+    public void get(long index, Tuple buffer) {
         parent.get(index, buffer);
     }
 
     @Override
-    public void set(int index, Tuple buffer) {
+    public void set(long index, Tuple buffer) {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
-    public void set(int index, TupleArray array, int offset, int nb) {
+    public void set(long index, Array array, long offset, long nb) {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
@@ -123,27 +123,27 @@ final class TupleArrayUnmodifiable extends AbstractTupleArray {
     }
 
     @Override
-    public byte[] toArrayByte(int offset, int nbTuple) {
+    public byte[] toArrayByte(long offset, int nbTuple) {
         return parent.toArrayByte(offset, nbTuple);
     }
 
     @Override
-    public short[] toArrayShort(int offset, int nbTuple) {
+    public short[] toArrayShort(long offset, int nbTuple) {
         return parent.toArrayShort(offset, nbTuple);
     }
 
     @Override
-    public int[] toArrayInt(int offset, int nbTuple) {
+    public int[] toArrayInt(long offset, int nbTuple) {
         return parent.toArrayInt(offset, nbTuple);
     }
 
     @Override
-    public float[] toArrayFloat(int offset, int nbTuple) {
+    public float[] toArrayFloat(long offset, int nbTuple) {
         return parent.toArrayFloat(offset, nbTuple);
     }
 
     @Override
-    public double[] toArrayDouble(int offset, int nbTuple) {
+    public double[] toArrayDouble(long offset, int nbTuple) {
         return parent.toArrayDouble(offset, nbTuple);
     }
 
@@ -158,18 +158,18 @@ final class TupleArrayUnmodifiable extends AbstractTupleArray {
     }
 
     @Override
-    public TupleArray resize(int newSize) {
+    public Array resize(long newSize) {
         return parent.resize(newSize);
     }
 
     @Override
-    public TupleArray copy() {
+    public Array copy() {
         return parent.copy();
     }
 
     @Override
-    public TupleArrayCursor cursor() {
-        return new TupleArrayCursorUnmodifiable(parent.cursor());
+    public Cursor cursor() {
+        return new CursorUnmodifiable(parent.cursor());
     }
 
 

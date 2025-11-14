@@ -26,9 +26,9 @@ import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.geometries.processor.ProcessorUtils;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -48,8 +48,8 @@ public final class Contains {
      * @param ring not null
      * @param point not null
      */
-    private static boolean contains(TupleArray ring, Tuple point) {
-        final TupleArrayCursor cursor = ring.cursor();
+    private static boolean contains(Array ring, Tuple point) {
+        final Cursor cursor = ring.cursor();
 
         int windingNumber = 0;
         Tuple current;
@@ -58,7 +58,7 @@ public final class Contains {
         current = cursor.samples();
         previous = Vectors.create(current.getSampleSystem(), current.getDataType());
         final double pointY = point.get(1);
-        for (int i = 1, n = ring.getLength(); i < n; i++){
+        for (long i = 1, n = ring.getLength(); i < n; i++){
             previous.set(current);
             cursor.moveTo(i);
             current = cursor.samples();
@@ -110,7 +110,7 @@ public final class Contains {
 
 
             { //check exterior
-                final TupleArray coords = polygon.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                final Array coords = polygon.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
                 if (!contains(coords, candidate.getPosition())) {
                     //point is outside the exterior ring
                     operation.result = false;
@@ -121,7 +121,7 @@ public final class Contains {
             { //check holes
                 for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
                     final LineString hole = polygon.getInteriorRingN(i);
-                    final TupleArray coords = hole.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                    final Array coords = hole.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
                     if (contains(coords, candidate.getPosition())) {
                         //point is within a hole
                         operation.result = false;

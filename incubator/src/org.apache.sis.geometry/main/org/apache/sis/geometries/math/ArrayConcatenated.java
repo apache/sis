@@ -28,15 +28,15 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class TupleArrayConcatenated extends AbstractTupleArray {
+final class ArrayConcatenated extends AbstractArray {
 
-    private final TupleArray[] arrays;
-    private final int[] offsets;
-    private final int length;
+    private final Array[] arrays;
+    private final long[] offsets;
+    private final long length;
 
-    public TupleArrayConcatenated(TupleArray[] arrays) {
+    public ArrayConcatenated(Array[] arrays) {
         this.arrays = arrays;
-        this.offsets = new int[arrays.length];
+        this.offsets = new long[arrays.length];
         final DataType dataType = arrays[0].getDataType();
         final SampleSystem type = arrays[0].getSampleSystem();
         for (int i = 1; i < arrays.length; i++) {
@@ -59,7 +59,7 @@ public final class TupleArrayConcatenated extends AbstractTupleArray {
 
     @Override
     public void setSampleSystem(SampleSystem type) {
-        for (TupleArray ta : arrays) {
+        for (Array ta : arrays) {
             ta.setSampleSystem(type);
         }
     }
@@ -70,7 +70,7 @@ public final class TupleArrayConcatenated extends AbstractTupleArray {
     }
 
     @Override
-    public int getLength() {
+    public long getLength() {
         return length;
     }
 
@@ -95,48 +95,48 @@ public final class TupleArrayConcatenated extends AbstractTupleArray {
     }
 
     @Override
-    public Tuple get(int index) {
+    public Tuple get(long index) {
         final int taidx = arrayIndex(index);
         return arrays[taidx].get(index - offsets[taidx]);
     }
 
     @Override
-    public void get(int index, Tuple buffer) {
+    public void get(long index, Tuple buffer) {
         final int taidx = arrayIndex(index);
         arrays[taidx].get(index - offsets[taidx], buffer);
     }
 
     @Override
-    public void set(int index, Tuple buffer) {
+    public void set(long index, Tuple buffer) {
         final int taidx = arrayIndex(index);
         arrays[taidx].set(index - offsets[taidx], buffer);
     }
 
     @Override
     public void transform(MathTransform trs) throws TransformException {
-        for (TupleArray ta : arrays) {
+        for (Array ta : arrays) {
             ta.transform(trs);
         }
     }
 
     @Override
     public void transform(CoordinateReferenceSystem crs) throws FactoryException, TransformException {
-        for (TupleArray ta : arrays) {
+        for (Array ta : arrays) {
             ta.transform(crs);
         }
     }
 
     @Override
-    public TupleArray copy() {
+    public Array copy() {
         return resize(length);
     }
 
     @Override
-    public TupleArrayCursor cursor() {
-        return new Cursor();
+    public Cursor cursor() {
+        return new CCursor();
     }
 
-    private int arrayIndex(int tupleIndex) {
+    private int arrayIndex(long tupleIndex) {
         ArgumentChecks.ensureBetween("Tuple index", 0, length - 1, tupleIndex);
         int p = Arrays.binarySearch(offsets, tupleIndex);
         if (p >= 0) {
@@ -146,10 +146,10 @@ public final class TupleArrayConcatenated extends AbstractTupleArray {
         }
     }
 
-    private class Cursor implements TupleArrayCursor {
+    private class CCursor implements Cursor {
 
-        private int coordinate = -1;
-        private final TupleArrayCursor[] cursors = new TupleArrayCursor[arrays.length];
+        private long coordinate = -1;
+        private final Cursor[] cursors = new Cursor[arrays.length];
 
         @Override
         public Tuple samples() {
@@ -162,12 +162,12 @@ public final class TupleArrayConcatenated extends AbstractTupleArray {
         }
 
         @Override
-        public int coordinate() {
+        public long coordinate() {
             return coordinate;
         }
 
         @Override
-        public void moveTo(int coordinate) {
+        public void moveTo(long coordinate) {
             if (coordinate<0 || coordinate >= length) {
                 throw new ArrayIndexOutOfBoundsException("Invalid coordinate " + coordinate + ", outside of data range [0," + length + "]. ");
             }

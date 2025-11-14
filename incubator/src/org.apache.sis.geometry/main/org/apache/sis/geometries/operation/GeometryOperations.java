@@ -42,8 +42,7 @@ import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.operation.spatialanalysis2d.Buffer;
@@ -69,6 +68,7 @@ import org.apache.sis.geometries.operation.spatialrelations2d.Relate;
 import org.apache.sis.geometries.operation.spatialrelations2d.Touches;
 import org.apache.sis.geometries.operation.spatialrelations2d.Within;
 import org.apache.sis.geometries.processor.Processor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -531,7 +531,7 @@ public final class GeometryOperations {
             final MeshPrimitive sep = MeshPrimitive.create(type);
             for (Entry<String,List<Tuple>> entry : atts.entrySet()) {
                 final String name = entry.getKey();
-                final TupleArray array = TupleArrays.of(entry.getValue(), attributesType.getAttributeSystem(name), attributesType.getAttributeType(name));
+                final Array array = NDArrays.of(entry.getValue(), attributesType.getAttributeSystem(name), attributesType.getAttributeType(name));
                 sep.setAttribute(name, array);
             }
             return sep;

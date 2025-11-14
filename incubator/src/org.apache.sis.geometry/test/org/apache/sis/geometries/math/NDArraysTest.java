@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TupleArraysTest {
+public class NDArraysTest {
 
     /**
      * Test integer type packing.
@@ -40,40 +40,40 @@ public class TupleArraysTest {
     public void testPackIntegerDataType() {
 
         final int[] datas = new int[]{0,1,2,3};
-        TupleArray array = TupleArrays.of(2, datas);
+        Array array = NDArrays.of(2, datas);
 
         //test ubyte packing
-        TupleArray packed = TupleArrays.packIntegerDataType(array);
+        Array packed = NDArrays.packIntegerDataType(array);
         assertEquals(DataType.UBYTE, packed.getDataType());
         assertArrayEquals(datas, packed.toArrayInt());
 
         //test byte packing
         datas[1] = -2;
-        packed = TupleArrays.packIntegerDataType(array);
+        packed = NDArrays.packIntegerDataType(array);
         assertEquals(DataType.BYTE, packed.getDataType());
         assertArrayEquals(datas, packed.toArrayInt());
 
         //test short packing
         datas[1] = -1000;
-        packed = TupleArrays.packIntegerDataType(array);
+        packed = NDArrays.packIntegerDataType(array);
         assertEquals(DataType.SHORT, packed.getDataType());
         assertArrayEquals(datas, packed.toArrayInt());
 
         //test ushort packing
         datas[1] = 10000;
-        packed = TupleArrays.packIntegerDataType(array);
+        packed = NDArrays.packIntegerDataType(array);
         assertEquals(DataType.USHORT, packed.getDataType());
         assertArrayEquals(datas, packed.toArrayInt());
 
         //test uint packaging
         datas[1] = 65535 + 20;
-        packed = TupleArrays.packIntegerDataType(array);
+        packed = NDArrays.packIntegerDataType(array);
         assertEquals(DataType.UINT, packed.getDataType());
         assertArrayEquals(datas, packed.toArrayInt());
 
         //test no change
         datas[1] = - (65535 + 20);
-        packed = TupleArrays.packIntegerDataType(array);
+        packed = NDArrays.packIntegerDataType(array);
         assertEquals(DataType.INT, packed.getDataType());
         assertArrayEquals(datas, packed.toArrayInt());
     }
@@ -84,11 +84,11 @@ public class TupleArraysTest {
     @Test
     public void testGroup() throws FactoryException {
 
-        final TupleArray array1 = TupleArrays.of(1, new double[]{ 0, 1, 2, 3});
-        final TupleArray array2 = TupleArrays.of(2, new double[]{10,11,12,13,14,15,16,17});
-        final TupleArray array3 = TupleArrays.of(1, new double[]{20,21,22,23});
+        final Array array1 = NDArrays.of(1, new double[]{ 0, 1, 2, 3});
+        final Array array2 = NDArrays.of(2, new double[]{10,11,12,13,14,15,16,17});
+        final Array array3 = NDArrays.of(1, new double[]{20,21,22,23});
 
-        final TupleArray group = TupleArrays.group(array1, array2, array3);
+        final Array group = NDArrays.group(array1, array2, array3);
         assertEquals(null, group.getCoordinateReferenceSystem());
         assertEquals(4, group.getSampleSystem().getSize());
         assertEquals(4, group.getLength());
@@ -107,11 +107,11 @@ public class TupleArraysTest {
      */
     @Test
     public void testGroupWrongSize() throws FactoryException {
-        final TupleArray array1 = TupleArrays.of(1, new double[]{ 0, 1, 2, 3});
-        final TupleArray array2 = TupleArrays.of(2, new double[]{10,11,12,13,14,15});
+        final Array array1 = NDArrays.of(1, new double[]{ 0, 1, 2, 3});
+        final Array array2 = NDArrays.of(2, new double[]{10,11,12,13,14,15});
 
         assertThrows(IllegalArgumentException.class, ()->{
-            final TupleArray group = TupleArrays.group(array1, array2);
+            final Array group = NDArrays.group(array1, array2);
         });
     }
 
@@ -125,7 +125,7 @@ public class TupleArraysTest {
         for(int i=0;i<100;i++) {
             arr[i] = i;
         }
-        final TupleArray array = TupleArrays.of(SampleSystem.ofSize(1), arr);
+        final Array array = NDArrays.of(SampleSystem.ofSize(1), arr);
 
         final Set<Tuple> distinct = Collections.synchronizedSet(new HashSet<>());
         Stream<Tuple> stream = array.stream(true);

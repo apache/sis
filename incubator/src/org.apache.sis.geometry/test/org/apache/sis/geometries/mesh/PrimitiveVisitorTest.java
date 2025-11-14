@@ -28,7 +28,7 @@ import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector3D;
 
 // Test dependencies
@@ -54,7 +54,7 @@ public class PrimitiveVisitorTest {
     public void testPoints() {
 
         final MeshPrimitive.Points geometry = new MeshPrimitive.Points();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5));
 
@@ -80,10 +80,10 @@ public class PrimitiveVisitorTest {
     public void testIndexedPoints() {
 
         final MeshPrimitive.Points geometry = new MeshPrimitive.Points();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5));
-        geometry.setIndex(TupleArrays.ofUnsigned(1, 0, 1, 0));
+        geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 0));
 
         final List<String> expected = Arrays.asList(
                 "V:0 POSITION[0.0, 1.0, 2.0]",
@@ -110,7 +110,7 @@ public class PrimitiveVisitorTest {
     public void testLines() {
 
         final MeshPrimitive.Lines geometry = new MeshPrimitive.Lines();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5,
                 6,7,8,
@@ -140,12 +140,12 @@ public class PrimitiveVisitorTest {
     public void testIndexedLines() {
 
         final MeshPrimitive.Lines geometry = new MeshPrimitive.Lines();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5,
                 6,7,8,
                 9,10,11));
-        geometry.setIndex(TupleArrays.ofUnsigned(1, 0, 1, 2, 3, 1, 3));
+        geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 3, 1, 3));
 
         final List<String> expected = Arrays.asList(
                 "LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0)",
@@ -175,7 +175,7 @@ public class PrimitiveVisitorTest {
     public void testLineStrip() {
 
         final MeshPrimitive.LineStrip geometry = new MeshPrimitive.LineStrip();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5,
                 6,7,8,
@@ -206,12 +206,12 @@ public class PrimitiveVisitorTest {
     public void testIndexedLineStrip() {
 
         final MeshPrimitive.LineStrip geometry = new MeshPrimitive.LineStrip();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5,
                 6,7,8,
                 9,10,11));
-        geometry.setIndex(TupleArrays.ofUnsigned(1, 0, 1, 2, 3, 0, 2));
+        geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 3, 0, 2));
 
         final List<String> expected = Arrays.asList(
                 "LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0)",
@@ -244,7 +244,7 @@ public class PrimitiveVisitorTest {
     public void testTriangles() {
 
         final MeshPrimitive.Triangles geometry = new MeshPrimitive.Triangles();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5,
                 6,7,8,
@@ -279,12 +279,12 @@ public class PrimitiveVisitorTest {
     public void testIndexedTriangles() {
 
         final MeshPrimitive.Triangles geometry = new MeshPrimitive.Triangles();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5,
                 6,7,8,
                 9,10,11));
-        geometry.setIndex(TupleArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
+        geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
 
         final List<String> expected = Arrays.asList(
                 "TRIANGLE ((0.0 1.0 2.0,3.0 4.0 5.0,6.0 7.0 8.0))",
@@ -324,7 +324,7 @@ public class PrimitiveVisitorTest {
     public void testTriangleFan() {
 
         final MeshPrimitive.TriangleFan geometry = new MeshPrimitive.TriangleFan();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0, 0,0,
                 0, 1,0,
                 1, 1,0,
@@ -380,14 +380,14 @@ public class PrimitiveVisitorTest {
     public void testIndexedTriangleFan() {
 
         final MeshPrimitive.TriangleFan geometry = new MeshPrimitive.TriangleFan();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0, 0,0,
                 0, 1,0,
                 1, 1,0,
                 1, 0,0,
                 1,-1,0,
                 0,-1,0));
-        geometry.setIndex(TupleArrays.ofUnsigned(1,
+        geometry.setIndex(NDArrays.ofUnsigned(1,
                 0, 1, 2, 3, 4, 5, 2));
 
         final List<String> expected = Arrays.asList(
@@ -440,7 +440,7 @@ public class PrimitiveVisitorTest {
     public void testTriangleStrip() {
 
         final MeshPrimitive.TriangleStrip geometry = new MeshPrimitive.TriangleStrip();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,0,0,
                 0,1,0,
                 1,0,0,
@@ -505,7 +505,7 @@ public class PrimitiveVisitorTest {
     public void testIndexedTriangleStrip() {
 
         final MeshPrimitive.TriangleStrip geometry = new MeshPrimitive.TriangleStrip();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,0,0,
                 0,1,0,
                 1,0,0,
@@ -514,7 +514,7 @@ public class PrimitiveVisitorTest {
                 2,1,0,
                 3,0,0,
                 3,1,0));
-        geometry.setIndex(TupleArrays.ofUnsigned(1,
+        geometry.setIndex(NDArrays.ofUnsigned(1,
                 0, 1, 2, 3, 4, 5, 6, 3));
 
         final List<String> expected = Arrays.asList(

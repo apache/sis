@@ -27,65 +27,37 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * A tuple array is fixed size array of tuples.
- *
- * @todo add an implementation based on MemorySegment
- * @todo add support for very large arrays, replace int indexing by long values, splitting in multiple tables
- * @todo add multi dimension support
- * @todo This class will be expected to provide efficient support for parallal processing used in API when they will available :
- * - Vector API (https://openjdk.org/jeps/426)
- * - GPGPU / Babylon (https://www.youtube.com/watch?v=qkr3E27XYbY)
+ * A array is fixed size array of tuples.
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface TupleArray {
+public interface Array extends NDArray {
 
     /**
      * @return if length is zero.
      */
+    @Override
     default boolean isEmpty() {
         return getLength() == 0;
+    }
+
+    @Override
+    public default long[] getShape() {
+        return new long[]{getLength()};
     }
 
     /**
      * @return number of tuples in the array.
      */
-    int getLength();
-
-    /**
-     * @return sample system, never null.
-     */
-    SampleSystem getSampleSystem();
-
-    /**
-     * Set sample system.
-     * @param type
-     * @throws IllegalArgumentException if new system dimension are different.
-     */
-    void setSampleSystem(SampleSystem type);
-
-    /**
-     * @return tuple coordinate reference system.
-     */
-    CoordinateReferenceSystem getCoordinateReferenceSystem();
-
-    /**
-     * @return dimension of each tuple.
-     */
-    int getDimension();
+    long getLength();
 
     /**
      * @return number of samples in the array, which is dimension mupliply by length.
      */
+    @Override
     default long getSampleCount() {
         return ((long) getLength()) * getDimension();
     }
-
-    /**
-     *
-     * @return data type of primitives in this array
-     */
-    DataType getDataType();
 
     /**
      * Get tuple.
@@ -94,7 +66,7 @@ public interface TupleArray {
      * @param index tuple index.
      * @return tuple values, tuple is a copy.
      */
-    default Tuple get(int index) {
+    default Tuple get(long index) {
         Tuple tuple = Vectors.create(getSampleSystem(), getDataType());
         get(index, tuple);
         return tuple;
@@ -106,7 +78,7 @@ public interface TupleArray {
      * @param index tuple index.
      * @param buffer tuple to write into.
      */
-    void get(int index, Tuple buffer);
+    void get(long index, Tuple buffer);
 
     /**
      * Set tuple.
@@ -114,7 +86,31 @@ public interface TupleArray {
      * @param index tuple index
      * @param buffer new tuple values.
      */
-    void set(int index, Tuple buffer);
+    void set(long index, Tuple buffer);
+
+    /**
+     * Get tuple.
+     *
+     * @param index tuple index.
+     * @param buffer tuple to write into.
+     */
+    @Override
+    default void get(long[] index, Tuple buffer) {
+        if (index.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
+        get(index[0], buffer);
+    }
+
+    /**
+     * Set tuple.
+     *
+     * @param index tuple index
+     * @param buffer new tuple values.
+     */
+    @Override
+    default void set(long[] index, Tuple buffer) {
+        if (index.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
+        set(index[0], buffer);
+    }
 
     /**
      * Set a range on tuple from given array.
@@ -123,9 +119,9 @@ public interface TupleArray {
      * @param offset starting offset in given array
      * @param nb number of tuples to copy
      */
-    default void set(int index, TupleArray array, int offset, int nb) {
+    default void set(long index, Array array, long offset, long nb) {
         final Vector v = Vectors.create(array.getDimension(), array.getDataType());
-        for (int i = 0; i < nb; i++) {
+        for (long i = 0; i < nb; i++) {
             array.get(offset + i, v);
             set(index + i, v);
         }
@@ -136,7 +132,7 @@ public interface TupleArray {
      * @param i
      * @param j
      */
-    default void swap(int i, int j) {
+    default void swap(long i, long j) {
         final Tuple ti = get(i);
         final Tuple tj = get(j);
         set(i, tj);
@@ -148,7 +144,7 @@ public interface TupleArray {
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default byte[] toArrayByte() {
-        return toArrayByte(0, getLength());
+        return toArrayByte(0, Math.toIntExact(getLength()));
     }
 
     /**
@@ -156,7 +152,7 @@ public interface TupleArray {
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default short[] toArrayShort() {
-        return toArrayShort(0, getLength());
+        return toArrayShort(0, Math.toIntExact(getLength()));
     }
 
     /**
@@ -164,7 +160,7 @@ public interface TupleArray {
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default int[] toArrayInt() {
-        return toArrayInt(0, getLength());
+        return toArrayInt(0, Math.toIntExact(getLength()));
     }
 
     /**
@@ -172,7 +168,7 @@ public interface TupleArray {
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default float[] toArrayFloat() {
-        return toArrayFloat(0, getLength());
+        return toArrayFloat(0, Math.toIntExact(getLength()));
     }
 
     /**
@@ -180,7 +176,7 @@ public interface TupleArray {
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
     default double[] toArrayDouble() {
-        return toArrayDouble(0, getLength());
+        return toArrayDouble(0, Math.toIntExact(getLength()));
     }
 
     /**
@@ -189,11 +185,12 @@ public interface TupleArray {
      * @return this array tuples as an interleaved array cast to bytes.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
-    default byte[] toArrayByte(int offset, int nbTuple) {
+    default byte[] toArrayByte(long offset, int nbTuple) {
         final int dimension = getDimension();
         final byte[] array = new byte[nbTuple*dimension];
         final Tuple v = Vectors.createByte(dimension);
-        for (int i = 0, k = offset; i < nbTuple; i++, k++) {
+        long k = offset;
+        for (int i = 0; i < nbTuple; i++, k++) {
             get(k, v);
             v.toArrayByte(array, i*dimension);
         }
@@ -206,11 +203,12 @@ public interface TupleArray {
      * @return this array tuples as an interleaved array cast to shorts.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
-    default short[] toArrayShort(int offset, int nbTuple) {
+    default short[] toArrayShort(long offset, int nbTuple) {
         final int dimension = getDimension();
         final short[] array = new short[nbTuple*dimension];
         final Tuple v = Vectors.createShort(dimension);
-        for (int i = 0, k = offset; i < nbTuple; i++, k++) {
+        long k = offset;
+        for (int i = 0; i < nbTuple; i++, k++) {
             get(k, v);
             v.toArrayShort(array, i*dimension);
         }
@@ -223,11 +221,12 @@ public interface TupleArray {
      * @return this array tuples as an interleaved array cast to integers.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
-    default int[] toArrayInt(int offset, int nbTuple) {
+    default int[] toArrayInt(long offset, int nbTuple) {
         final int dimension = getDimension();
         final int[] array = new int[nbTuple*dimension];
         final Tuple v = Vectors.createInt(dimension);
-        for (int i = 0, k = offset; i < nbTuple; i++, k++) {
+        long k = offset;
+        for (int i = 0; i < nbTuple; i++, k++) {
             get(k, v);
             v.toArrayInt(array, i*dimension);
         }
@@ -240,11 +239,12 @@ public interface TupleArray {
      * @return this array tuples as an interleaved array cast to floats.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
-    default float[] toArrayFloat(int offset, int nbTuple) {
+    default float[] toArrayFloat(long offset, int nbTuple) {
         final int dimension = getDimension();
         final float[] array = new float[nbTuple*dimension];
         final Vector v = Vectors.createFloat(dimension);
-        for (int i = 0, k = offset; i < nbTuple; i++, k++) {
+        long k = offset;
+        for (int i = 0; i < nbTuple; i++, k++) {
             get(k, v);
             v.toArrayFloat(array, i*dimension);
         }
@@ -257,11 +257,12 @@ public interface TupleArray {
      * @return this array tuples as an interleaved array cast to doubles.
      *         Example : [x1,x2,x3, y1,y2,y3, ... z1, z2,z3]
      */
-    default double[] toArrayDouble(int offset, int nbTuple) {
+    default double[] toArrayDouble(long offset, int nbTuple) {
         final int dimension = getDimension();
         final double[] array = new double[nbTuple*dimension];
-        final TupleArrayCursor cursor = cursor();
-        for (int i = 0, k = offset; i < nbTuple; i++, k++) {
+        final Cursor cursor = cursor();
+        long k = offset;
+        for (int i = 0; i < nbTuple; i++, k++) {
             cursor.moveTo(k);
             cursor.samples().toArrayDouble(array, i*dimension);
         }
@@ -273,9 +274,10 @@ public interface TupleArray {
      *
      * @param trs not null
      */
+    @Override
     default void transform(MathTransform trs) throws TransformException {
         final Vector v = Vectors.createDouble(getDimension());
-        for (int i=0,n=getLength();i<n;i++) {
+        for (long i=0,n=getLength();i<n;i++) {
             get(i, v);
             v.transform(trs);
             set(i,v);
@@ -288,6 +290,7 @@ public interface TupleArray {
      * @param crs target CRS
      * @throws FactoryException
      */
+    @Override
     default void transform(CoordinateReferenceSystem crs) throws FactoryException, TransformException {
         ArgumentChecks.ensureNonNull("crs", crs);
         final CoordinateReferenceSystem baseCrs = getCoordinateReferenceSystem();
@@ -304,11 +307,19 @@ public interface TupleArray {
      * @param type new data type, not null
      * @return retyped array, if the type is the same a copy is returned
      */
-    default TupleArray retype(DataType type) {
-        TupleArray formated = TupleArrays.of(getSampleSystem(), type, getLength());
+    @Override
+    default Array retype(DataType type) {
+        Array formated = NDArrays.of(getSampleSystem(), type, getLength());
         formated.set(0, this, 0, formated.getLength());
         return formated;
     }
+
+    @Override
+    default NDArray reshape(long[] newShape) {
+        if (newShape.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
+        return resize(newShape[0]);
+    }
+
     /**
      * Create a new array with given size.
      * Values are copied from this array, zero values are used to fill the new tuples.
@@ -316,23 +327,25 @@ public interface TupleArray {
      * @param newSize new array size
      * @return resized array
      */
-    TupleArray resize(int newSize);
+    Array resize(long newSize);
 
     /**
      * @return copy of this array
      */
-    TupleArray copy();
+    @Override
+    Array copy();
 
     /**
      * @return tuple cursor over this array.
      */
-    TupleArrayCursor cursor();
+    Cursor cursor();
 
     /**
      * @return tuple stream over this array.
      */
+    @Override
     default Stream<Tuple> stream(boolean parallel) {
-        return StreamSupport.stream(new TupleArraySpliterator(this), parallel);
+        return StreamSupport.stream(new ArraySpliterator(this), parallel);
     }
 
     /**
@@ -348,7 +361,7 @@ public interface TupleArray {
      * @param tolerance tolerance value for compare operation
      * @return true if tuples are value equal
      */
-    default boolean equals(TupleArray other, double tolerance) {
+    default boolean equals(Array other, double tolerance) {
         if (this == other) {
             return true;
         }
@@ -360,14 +373,14 @@ public interface TupleArray {
         if (dim != other.getDimension()) {
             return false;
         }
-        final int length = getLength();
+        final long length = getLength();
         if (length != other.getLength()) {
             return false;
         }
         if (!getSampleSystem().equals(other.getSampleSystem())) {
             return false;
         }
-        for (int i = 0; i < length; i++) {
+        for (long i = 0; i < length; i++) {
             Tuple v1 = get(i);
             Tuple v2 = other.get(i);
             if (!v1.equals(v2, tolerance)) {

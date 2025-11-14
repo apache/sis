@@ -14,23 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.math;
-
+package org.apache.sis.geometries.csg;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
+ * @see https://en.wikipedia.org/wiki/Constructive_solid_geometry
  */
-public class TupleArrayNlTest extends AbstractTupleArrayTest {
-
-    @Override
-    protected int[] getSupportedDimensions() {
-        return new int[]{1,2,3,4};
-    }
-
-    @Override
-    protected TupleArray create(int dim, int length) {
-        return new TupleArrayND.Long(SampleSystem.ofSize(dim), new long[length*dim]);
-    }
+public class ConstructiveSolidGeometry {
 
 }

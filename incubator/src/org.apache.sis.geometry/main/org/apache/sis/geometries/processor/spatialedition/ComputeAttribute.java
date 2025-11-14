@@ -23,8 +23,8 @@ import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -58,9 +58,9 @@ public final class ComputeAttribute {
             final org.apache.sis.geometries.mesh.MeshPrimitive copy3d = base.deepCopy();
             operation.result = copy3d;
 
-            TupleArray ta = copy3d.getAttribute(operation.attributeName);
+            Array ta = copy3d.getAttribute(operation.attributeName);
             if (ta == null) {
-                ta = TupleArrays.of(operation.attributeSystem, operation.attributeType, copy3d.getPositions().getLength());
+                ta = NDArrays.of(operation.attributeSystem, operation.attributeType, copy3d.getPositions().getLength());
                 copy3d.setAttribute(operation.attributeName, ta);
             }
 

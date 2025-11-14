@@ -26,9 +26,9 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class TupleArrayND extends AbstractTupleArray {
+public abstract class ArrayMemory extends AbstractArray {
 
-    static final class Byte extends TupleArrayND {
+    static final class Byte extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -57,7 +57,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -78,25 +78,25 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
-            final int offset = index * dimension;
+        public void get(long index, Tuple buffer) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i]);
             }
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
-            final int offset = index * dimension;
+        public void set(long index, Tuple tuple) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (byte) tuple.get(i);
             }
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             byte temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -115,60 +115,64 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
-            return Arrays.copyOfRange(array, offset * dimension, (offset+nbTuple) * dimension);
+        public byte[] toArrayByte(long offset, int nbTuple) {
+            return Arrays.copyOfRange(array,
+                    Math.toIntExact(offset * dimension),
+                    Math.toIntExact((offset+nbTuple) * dimension));
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
+        public short[] toArrayShort(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final short[] result = new short[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
+        public int[] toArrayInt(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final int[] result = new int[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
+        public float[] toArrayFloat(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final float[] result = new float[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
+        public double[] toArrayDouble(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final double[] result = new double[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public void set(int index, TupleArray array, int offset, int nb) {
+        public void set(long index, Array array, long offset, long nb) {
             ArgumentChecks.ensureCountBetween("dimension", true, dimension, dimension, array.getDimension());
-            final byte[] arr = array.toArrayByte(offset, nb);
-            System.arraycopy(arr, 0, this.array, index*dimension, nb*dimension);
+            final byte[] arr = array.toArrayByte(offset, Math.toIntExact(nb));
+            System.arraycopy(arr, 0, this.array,
+                    Math.toIntExact(index*dimension),
+                    Math.toIntExact(nb*dimension));
         }
 
         @Override
-        public Byte resize(int newSize) {
-            return new Byte(type, Arrays.copyOf(array, newSize*dimension));
+        public Byte resize(long newSize) {
+            return new Byte(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -177,16 +181,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return array[tupleIndex*dimension + sampleIndex];
+                public double get(long tupleIndex, int sampleIndex) {
+                    return array[Math.toIntExact(tupleIndex*dimension + sampleIndex)];
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = (byte) value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = (byte) value;
                 }
             };
         }
@@ -198,7 +202,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
 
     }
 
-    static final class UByte extends TupleArrayND {
+    static final class UByte extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -219,7 +223,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -247,25 +251,25 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
-            final int offset = index * dimension;
+        public void get(long index, Tuple buffer) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i] & 0xFF);
             }
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
-            final int offset = index * dimension;
+        public void set(long index, Tuple tuple) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (byte) tuple.get(i);
             }
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             byte temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -285,60 +289,64 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
-            return Arrays.copyOfRange(array, offset*dimension, (offset+nbTuple)*dimension);
+        public byte[] toArrayByte(long offset, int nbTuple) {
+            return Arrays.copyOfRange(array,
+                    Math.toIntExact(offset*dimension),
+                    Math.toIntExact((offset+nbTuple)*dimension));
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
+        public short[] toArrayShort(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final short[] result = new short[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (short) (array[k] & 0xFF);
             }
             return result;
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
+        public int[] toArrayInt(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final int[] result = new int[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k] & 0xFF;
             }
             return result;
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
+        public float[] toArrayFloat(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final float[] result = new float[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k] & 0xFF;
             }
             return result;
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
+        public double[] toArrayDouble(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final double[] result = new double[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k] & 0xFF;
             }
             return result;
         }
 
         @Override
-        public void set(int index, TupleArray array, int offset, int nb) {
+        public void set(long index, Array array, long offset, long nb) {
             ArgumentChecks.ensureCountBetween("dimension", true, dimension, dimension, array.getDimension());
-            final byte[] arr = array.toArrayByte(offset, nb);
-            System.arraycopy(arr, 0, this.array, index*dimension, nb*dimension);
+            final byte[] arr = array.toArrayByte(offset, Math.toIntExact(nb));
+            System.arraycopy(arr, 0, this.array,
+                    Math.toIntExact(index*dimension),
+                    Math.toIntExact(nb*dimension));
         }
 
         @Override
-        public UByte resize(int newSize) {
-            return new UByte(type, Arrays.copyOf(array, newSize*dimension));
+        public UByte resize(long newSize) {
+            return new UByte(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -347,16 +355,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return array[tupleIndex*dimension + sampleIndex] & 0xFF;
+                public double get(long tupleIndex, int sampleIndex) {
+                    return array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] & 0xFF;
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = (byte) value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = (byte) value;
                 }
             };
         }
@@ -368,7 +376,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
 
     }
 
-    static final class Short extends TupleArrayND {
+    static final class Short extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -389,7 +397,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -417,25 +425,25 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
-            final int offset = index * dimension;
+        public void get(long index, Tuple buffer) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i]);
             }
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
-            final int offset = index * dimension;
+        public void set(long index, Tuple tuple) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (short) tuple.get(i);
             }
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             short temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -464,60 +472,64 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
+        public byte[] toArrayByte(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final byte[] result = new byte[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (byte) array[k];
             }
             return result;
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
-            return Arrays.copyOfRange(array, offset*dimension, (offset+nbTuple)*dimension);
+        public short[] toArrayShort(long offset, int nbTuple) {
+            return Arrays.copyOfRange(array,
+                    Math.toIntExact(offset*dimension),
+                    Math.toIntExact((offset+nbTuple)*dimension));
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
+        public int[] toArrayInt(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final int[] result = new int[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
+        public float[] toArrayFloat(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final float[] result = new float[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
+        public double[] toArrayDouble(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final double[] result = new double[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public void set(int index, TupleArray array, int offset, int nb) {
+        public void set(long index, Array array, long offset, long nb) {
             ArgumentChecks.ensureCountBetween("dimension", true, dimension, dimension, array.getDimension());
-            final short[] arr = array.toArrayShort(offset, nb);
-            System.arraycopy(arr, 0, this.array, index*dimension, nb*dimension);
+            final short[] arr = array.toArrayShort(offset, Math.toIntExact(nb));
+            System.arraycopy(arr, 0, this.array,
+                    Math.toIntExact(index*dimension),
+                    Math.toIntExact(nb*dimension));
         }
 
         @Override
-        public Short resize(int newSize) {
-            return new Short(type, Arrays.copyOf(array, newSize*dimension));
+        public Short resize(long newSize) {
+            return new Short(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -526,16 +538,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return array[tupleIndex*dimension + sampleIndex];
+                public double get(long tupleIndex, int sampleIndex) {
+                    return array[Math.toIntExact(tupleIndex*dimension + sampleIndex)];
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = (short) value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = (short) value;
                 }
             };
         }
@@ -547,7 +559,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
 
     }
 
-    static final class UShort extends TupleArrayND {
+    static final class UShort extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -568,7 +580,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -596,25 +608,25 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
-            final int offset = index * dimension;
+        public void get(long index, Tuple buffer) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, java.lang.Short.toUnsignedInt(array[offset+i]));
             }
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
-            final int offset = index * dimension;
+        public void set(long index, Tuple tuple) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (short) tuple.get(i);
             }
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             short temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -634,45 +646,47 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
+        public byte[] toArrayByte(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final byte[] result = new byte[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (byte) array[k];
             }
             return result;
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
-            return Arrays.copyOfRange(array, offset*dimension, (offset+nbTuple)*dimension);
+        public short[] toArrayShort(long offset, int nbTuple) {
+            return Arrays.copyOfRange(array,
+                    Math.toIntExact(offset*dimension),
+                    Math.toIntExact((offset+nbTuple)*dimension));
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
+        public int[] toArrayInt(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final int[] result = new int[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k] & 0xFFFF;
             }
             return result;
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
+        public float[] toArrayFloat(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final float[] result = new float[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k] & 0xFFFF;
             }
             return result;
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
+        public double[] toArrayDouble(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final double[] result = new double[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k] & 0xFFFF;
             }
             return result;
@@ -680,15 +694,17 @@ public abstract class TupleArrayND extends AbstractTupleArray {
 
 
         @Override
-        public void set(int index, TupleArray array, int offset, int nb) {
+        public void set(long index, Array array, long offset, long nb) {
             ArgumentChecks.ensureCountBetween("dimension", true, dimension, dimension, array.getDimension());
-            final short[] arr = array.toArrayShort(offset, nb);
-            System.arraycopy(arr, 0, this.array, index*dimension, nb*dimension);
+            final short[] arr = array.toArrayShort(offset, Math.toIntExact(nb));
+            System.arraycopy(arr, 0, this.array,
+                    Math.toIntExact(index*dimension),
+                    Math.toIntExact(nb*dimension));
         }
 
         @Override
-        public UShort resize(int newSize) {
-            return new UShort(type, Arrays.copyOf(array, newSize*dimension));
+        public UShort resize(long newSize) {
+            return new UShort(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -697,16 +713,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return java.lang.Short.toUnsignedInt(array[tupleIndex*dimension + sampleIndex]);
+                public double get(long tupleIndex, int sampleIndex) {
+                    return java.lang.Short.toUnsignedInt(array[Math.toIntExact(tupleIndex*dimension + sampleIndex)]);
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = (short) value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = (short) value;
                 }
             };
         }
@@ -718,7 +734,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
 
     }
 
-    static final class Int extends TupleArrayND {
+    static final class Int extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -739,7 +755,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -767,16 +783,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
-            final int offset = index * dimension;
+        public void get(long index, Tuple buffer) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i]);
             }
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
-            final int offset = index * dimension;
+        public void set(long index, Tuple tuple) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
             }
@@ -788,54 +804,56 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
+        public byte[] toArrayByte(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final byte[] result = new byte[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (byte) array[k];
             }
             return result;
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
+        public short[] toArrayShort(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final short[] result = new short[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (short) array[k];
             }
             return result;
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
-            return Arrays.copyOfRange(array, offset*dimension, (offset+nbTuple)*dimension);
+        public int[] toArrayInt(long offset, int nbTuple) {
+            return Arrays.copyOfRange(array,
+                    Math.toIntExact(offset*dimension),
+                    Math.toIntExact((offset+nbTuple)*dimension));
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
+        public float[] toArrayFloat(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final float[] result = new float[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
+        public double[] toArrayDouble(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final double[] result = new double[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             int temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -850,15 +868,17 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public void set(int index, TupleArray array, int offset, int nb) {
+        public void set(long index, Array array, long offset, long nb) {
             ArgumentChecks.ensureCountBetween("dimension", true, dimension, dimension, array.getDimension());
-            final int[] arr = array.toArrayInt(offset, nb);
-            System.arraycopy(arr, 0, this.array, index*dimension, nb*dimension);
+            final int[] arr = array.toArrayInt(offset, Math.toIntExact(nb));
+            System.arraycopy(arr, 0, this.array,
+                    Math.toIntExact(index*dimension),
+                    Math.toIntExact(nb*dimension));
         }
 
         @Override
-        public Int resize(int newSize) {
-            return new Int(type, Arrays.copyOf(array, newSize*dimension));
+        public Int resize(long newSize) {
+            return new Int(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -867,16 +887,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return array[tupleIndex*dimension + sampleIndex];
+                public double get(long tupleIndex, int sampleIndex) {
+                    return array[Math.toIntExact(tupleIndex*dimension + sampleIndex)];
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = (int) value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = (int) value;
                 }
             };
         }
@@ -887,7 +907,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
     }
 
-    static final class UInt extends TupleArrayND {
+    static final class UInt extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -917,7 +937,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -945,25 +965,25 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
-            final int offset = index * dimension;
+        public void get(long index, Tuple buffer) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, Integer.toUnsignedLong(array[offset+i]));
             }
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
-            final int offset = index * dimension;
+        public void set(long index, Tuple tuple) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
             }
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             int temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -983,45 +1003,47 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
+        public byte[] toArrayByte(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final byte[] result = new byte[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (byte) (array[k] & 0xFFFFFFFFl);
             }
             return result;
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
+        public short[] toArrayShort(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final short[] result = new short[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (short) (array[k] & 0xFFFFFFFFl);
             }
             return result;
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
-            return Arrays.copyOfRange(array, offset*dimension, (offset+nbTuple)*dimension);
+        public int[] toArrayInt(long offset, int nbTuple) {
+            return Arrays.copyOfRange(array,
+                    Math.toIntExact(offset*dimension),
+                    Math.toIntExact((offset+nbTuple)*dimension));
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
+        public float[] toArrayFloat(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final float[] result = new float[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k] & 0xFFFFFFFFl;
             }
             return result;
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
+        public double[] toArrayDouble(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final double[] result = new double[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k] & 0xFFFFFFFFl;
             }
             return result;
@@ -1029,15 +1051,17 @@ public abstract class TupleArrayND extends AbstractTupleArray {
 
 
         @Override
-        public void set(int index, TupleArray array, int offset, int nb) {
+        public void set(long index, Array array, long offset, long nb) {
             ArgumentChecks.ensureCountBetween("dimension", true, dimension, dimension, array.getDimension());
-            final int[] arr = array.toArrayInt(offset, nb);
-            System.arraycopy(arr, 0, this.array, index*dimension, nb*dimension);
+            final int[] arr = array.toArrayInt(offset, Math.toIntExact(nb));
+            System.arraycopy(arr, 0, this.array,
+                    Math.toIntExact(index*dimension),
+                    Math.toIntExact(nb*dimension));
         }
 
         @Override
-        public UInt resize(int newSize) {
-            return new UInt(type, Arrays.copyOf(array, newSize*dimension));
+        public UInt resize(long newSize) {
+            return new UInt(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -1046,16 +1070,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return Integer.toUnsignedLong(array[tupleIndex*dimension + sampleIndex]);
+                public double get(long tupleIndex, int sampleIndex) {
+                    return Integer.toUnsignedLong(array[Math.toIntExact(tupleIndex*dimension + sampleIndex)]);
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = (int) value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = (int) value;
                 }
             };
         }
@@ -1066,7 +1090,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
     }
 
-    static final class Long extends TupleArrayND {
+    static final class Long extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -1087,7 +1111,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -1115,25 +1139,25 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
-            final int offset = index * dimension;
+        public void get(long index, Tuple buffer) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i]);
             }
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
-            final int offset = index * dimension;
+        public void set(long index, Tuple tuple) {
+            final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
             }
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             long temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -1148,58 +1172,58 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
+        public byte[] toArrayByte(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final byte[] result = new byte[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (byte) array[k];
             }
             return result;
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
+        public short[] toArrayShort(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final short[] result = new short[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (short) array[k];
             }
             return result;
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
+        public int[] toArrayInt(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final int[] result = new int[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (int) array[k];
             }
             return result;
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
+        public float[] toArrayFloat(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final float[] result = new float[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
+        public double[] toArrayDouble(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final double[] result = new double[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public Long resize(int newSize) {
-            return new Long(type, Arrays.copyOf(array, newSize*dimension));
+        public Long resize(long newSize) {
+            return new Long(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -1208,16 +1232,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return array[tupleIndex*dimension + sampleIndex];
+                public double get(long tupleIndex, int sampleIndex) {
+                    return array[Math.toIntExact(tupleIndex*dimension + sampleIndex)];
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = (int) value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = (int) value;
                 }
             };
         }
@@ -1228,7 +1252,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
     }
 
-    static final class Float extends TupleArrayND {
+    static final class Float extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -1249,7 +1273,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -1277,31 +1301,31 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public Tuple get(int index) {
+        public Tuple get(long index) {
             final Vector buffer = Vectors.create(type, DataType.FLOAT);
-            return buffer.set(array, index * dimension);
+            return buffer.set(array, Math.toIntExact(index * dimension));
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
+        public void get(long index, Tuple buffer) {
             if (dimension != buffer.getDimension()) {
                 throw new IllegalArgumentException("TupleArray and Tuple must have the same number of dimensions");
             }
-            buffer.set(array, index * dimension);
+            buffer.set(array, Math.toIntExact(index * dimension));
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
+        public void set(long index, Tuple tuple) {
             if (dimension != tuple.getDimension()) {
                 throw new IllegalArgumentException("TupleArray and Tuple must have the same number of dimensions");
             }
-            tuple.toArrayFloat(array, index * dimension);
+            tuple.toArrayFloat(array, Math.toIntExact(index * dimension));
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             float temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -1321,60 +1345,64 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
+        public byte[] toArrayByte(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final byte[] result = new byte[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (byte) array[k];
             }
             return result;
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
+        public short[] toArrayShort(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final short[] result = new short[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (short) array[k];
             }
             return result;
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
+        public int[] toArrayInt(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final int[] result = new int[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (int) array[k];
             }
             return result;
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
-            return Arrays.copyOfRange(array, offset*dimension, (offset+nbTuple)*dimension);
+        public float[] toArrayFloat(long offset, int nbTuple) {
+            return Arrays.copyOfRange(array,
+                    Math.toIntExact(offset*dimension),
+                    Math.toIntExact((offset+nbTuple)*dimension));
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
+        public double[] toArrayDouble(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final double[] result = new double[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = array[k];
             }
             return result;
         }
 
         @Override
-        public void set(int index, TupleArray array, int offset, int nb) {
+        public void set(long index, Array array, long offset, long nb) {
             ArgumentChecks.ensureCountBetween("dimension", true, dimension, dimension, array.getDimension());
-            final float[] arr = array.toArrayFloat(offset, nb);
-            System.arraycopy(arr, 0, this.array, index*dimension, nb*dimension);
+            final float[] arr = array.toArrayFloat(offset, Math.toIntExact(nb));
+            System.arraycopy(arr, 0, this.array,
+                    Math.toIntExact(index*dimension),
+                    Math.toIntExact(nb*dimension));
         }
 
         @Override
-        public Float resize(int newSize) {
-            return new Float(type, Arrays.copyOf(array, newSize*dimension));
+        public Float resize(long newSize) {
+            return new Float(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -1383,16 +1411,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return array[tupleIndex*dimension + sampleIndex];
+                public double get(long tupleIndex, int sampleIndex) {
+                    return array[Math.toIntExact(tupleIndex*dimension + sampleIndex)];
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = (float) value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = (float) value;
                 }
             };
         }
@@ -1403,7 +1431,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
     }
 
-    static final class Double extends TupleArrayND {
+    static final class Double extends ArrayMemory {
 
         private SampleSystem type;
         private final int dimension;
@@ -1424,7 +1452,7 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return array.length / dimension;
         }
 
@@ -1452,31 +1480,31 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public Tuple get(int index) {
+        public Tuple get(long index) {
             final Vector buffer = Vectors.create(type, DataType.DOUBLE);
-            return buffer.set(array, index * dimension);
+            return buffer.set(array, Math.toIntExact(index * dimension));
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
+        public void get(long index, Tuple buffer) {
             if (dimension != buffer.getDimension()) {
                 throw new IllegalArgumentException("TupleArray and Tuple must have the same number of dimensions");
             }
-            buffer.set(array, index * dimension);
+            buffer.set(array, Math.toIntExact(index * dimension));
         }
 
         @Override
-        public void set(int index, Tuple tuple) {
+        public void set(long index, Tuple tuple) {
             if (dimension != tuple.getDimension()) {
                 throw new IllegalArgumentException("TupleArray and Tuple must have the same number of dimensions");
             }
-            tuple.toArrayDouble(array, index * dimension);
+            tuple.toArrayDouble(array, Math.toIntExact(index * dimension));
         }
 
         @Override
-        public void swap(int i, int j) {
-            int oi = i*dimension + dimension;
-            int oj = j*dimension + dimension;
+        public void swap(long i, long j) {
+            int oi = Math.toIntExact(i*dimension + dimension);
+            int oj = Math.toIntExact(j*dimension + dimension);
             double temp;
             switch(dimension) {
                 default: for (int k=dimension; k > 5; k--) {
@@ -1496,60 +1524,64 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public byte[] toArrayByte(int offset, int nbTuple) {
+        public byte[] toArrayByte(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final byte[] result = new byte[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (byte) array[k];
             }
             return result;
         }
 
         @Override
-        public short[] toArrayShort(int offset, int nbTuple) {
+        public short[] toArrayShort(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final short[] result = new short[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (short) array[k];
             }
             return result;
         }
 
         @Override
-        public int[] toArrayInt(int offset, int nbTuple) {
+        public int[] toArrayInt(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final int[] result = new int[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (int) array[k];
             }
             return result;
         }
 
         @Override
-        public float[] toArrayFloat(int offset, int nbTuple) {
+        public float[] toArrayFloat(long offset, int nbTuple) {
             final int length = nbTuple * dimension;
             final float[] result = new float[length];
-            for (int i = 0, k = offset * dimension; i < length; i++, k++) {
+            for (int i = 0, k = Math.toIntExact(offset * dimension); i < length; i++, k++) {
                 result[i] = (float) array[k];
             }
             return result;
         }
 
         @Override
-        public double[] toArrayDouble(int offset, int nbTuple) {
-            return Arrays.copyOfRange(array, offset*dimension, (offset+nbTuple)*dimension);
+        public double[] toArrayDouble(long offset, int nbTuple) {
+            final int ioffset = Math.toIntExact(offset);
+            return Arrays.copyOfRange(array,
+                    ioffset*dimension,
+                    (ioffset+nbTuple)*dimension);
         }
 
         @Override
-        public void set(int index, TupleArray array, int offset, int nb) {
+        public void set(long index, Array array, long offset, long nb) {
             ArgumentChecks.ensureCountBetween("dimension", true, dimension, dimension, array.getDimension());
-            final double[] arr = array.toArrayDouble(offset, nb);
-            System.arraycopy(arr, 0, this.array, index*dimension, nb*dimension);
+            final int inb = Math.toIntExact(nb);
+            final double[] arr = array.toArrayDouble(offset, inb);
+            System.arraycopy(arr, 0, this.array, Math.toIntExact(index*dimension), inb*dimension);
         }
 
         @Override
-        public Double resize(int newSize) {
-            return new Double(type, Arrays.copyOf(array, newSize*dimension));
+        public Double resize(long newSize) {
+            return new Double(type, Arrays.copyOf(array, Math.toIntExact(newSize*dimension)));
         }
 
         @Override
@@ -1558,16 +1590,16 @@ public abstract class TupleArrayND extends AbstractTupleArray {
         }
 
         @Override
-        public TupleArrayCursor cursor() {
+        public Cursor cursor() {
             return new AbstractCursor(this) {
                 @Override
-                public double get(int tupleIndex, int sampleIndex) {
-                    return array[tupleIndex*dimension + sampleIndex];
+                public double get(long tupleIndex, int sampleIndex) {
+                    return array[Math.toIntExact(tupleIndex*dimension + sampleIndex)];
                 }
 
                 @Override
-                public void set(int tupleIndex, int sampleIndex, double value) {
-                    array[tupleIndex*dimension + sampleIndex] = value;
+                public void set(long tupleIndex, int sampleIndex, double value) {
+                    array[Math.toIntExact(tupleIndex*dimension + sampleIndex)] = value;
                 }
             };
         }

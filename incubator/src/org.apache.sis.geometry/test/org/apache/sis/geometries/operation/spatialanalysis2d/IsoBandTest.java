@@ -27,7 +27,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToCoord2D;
 import org.apache.sis.measure.NumberRange;
 
@@ -455,8 +455,8 @@ public class IsoBandTest {
         final SampleSystem ss = SampleSystem.of(Geometries.PSEUDOGEO_3D);
 
         final MeshPrimitive.Triangles triangles = new MeshPrimitive.Triangles();
-        triangles.setPositions(TupleArrays.of(ss, positions));
-        triangles.setIndex(TupleArrays.ofUnsigned(1, index));
+        triangles.setPositions(NDArrays.of(ss, positions));
+        triangles.setIndex(NDArrays.ofUnsigned(1, index));
 
         //Check BOTH
         final double[] steps = new double[]{0., 1., 2.};
@@ -566,8 +566,8 @@ public class IsoBandTest {
         final SampleSystem ss = SampleSystem.of(Geometries.PSEUDOGEO_3D);
 
         final MeshPrimitive.Triangles triangles = new MeshPrimitive.Triangles();
-        triangles.setPositions(TupleArrays.of(ss, positions));
-        triangles.setIndex(TupleArrays.ofUnsigned(1, index));
+        triangles.setPositions(NDArrays.of(ss, positions));
+        triangles.setIndex(NDArrays.ofUnsigned(1, index));
 
         final double[] steps = new double[]{0., 1., 2.};
 

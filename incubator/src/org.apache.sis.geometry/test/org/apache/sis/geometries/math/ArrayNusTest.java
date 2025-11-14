@@ -21,7 +21,7 @@ package org.apache.sis.geometries.math;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TupleArrayNusTest extends AbstractTupleArrayTest {
+public class ArrayNusTest extends AbstractArrayTest {
 
     @Override
     protected int[] getSupportedDimensions() {
@@ -29,8 +29,8 @@ public class TupleArrayNusTest extends AbstractTupleArrayTest {
     }
 
     @Override
-    protected TupleArray create(int dim, int length) {
-        return new TupleArrayND.UShort(SampleSystem.ofSize(dim), new short[length*dim]);
+    protected Array create(int dim, int length) {
+        return new ArrayMemory.UShort(SampleSystem.ofSize(dim), new short[length*dim]);
     }
 
 }

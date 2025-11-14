@@ -22,13 +22,13 @@ import java.util.Map;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.geometries.triangulate.EarClipping;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -40,7 +40,7 @@ public final class ToPrimitive {
     private ToPrimitive(){}
 
     private static ArraySequence toArraySequence(PointSequence points) {
-        final Map<String,TupleArray> attributes = new HashMap<>();
+        final Map<String,Array> attributes = new HashMap<>();
         for (String name : points.getAttributesType().getAttributeNames()) {
             attributes.put(name, points.getAttributeArray(name));
         }
@@ -67,7 +67,7 @@ public final class ToPrimitive {
             final org.apache.sis.geometries.mesh.MeshPrimitive primitive = new org.apache.sis.geometries.mesh.MeshPrimitive.Points();
             final AttributesType attributesType = operation.geometry.getAttributesType();
             for (String name : attributesType.getAttributeNames()) {
-                final TupleArray array = TupleArrays.of(attributesType.getAttributeSystem(name), attributesType.getAttributeType(name), 1);
+                final Array array = NDArrays.of(attributesType.getAttributeSystem(name), attributesType.getAttributeType(name), 1);
                 array.set(0, ((org.apache.sis.geometries.Point) operation.geometry).getAttribute(name));
                 primitive.setAttribute(name, array);
             }
@@ -179,14 +179,14 @@ public final class ToPrimitive {
                 final org.apache.sis.geometries.mesh.MeshPrimitive.Lines primitive = new org.apache.sis.geometries.mesh.MeshPrimitive.Lines();
                 final AttributesType attributesType = cdt.getAttributesType();
                 for (String name : attributesType.getAttributeNames()) {
-                    primitive.setAttribute(name, TupleArrays.of(attributesType.getAttributeSystem(name), attributesType.getAttributeType(name), numGeometries*2));
+                    primitive.setAttribute(name, NDArrays.of(attributesType.getAttributeSystem(name), attributesType.getAttributeType(name), numGeometries*2));
                 }
 
                 for (int i = 0, k = 0; i < numGeometries; i++, k += 2) {
                     final org.apache.sis.geometries.LineString line = cdt.getGeometryN(i);
                     final PointSequence points = line.getPoints();
                     for (String name : attributesType.getAttributeNames()) {
-                        TupleArray att = primitive.getAttribute(name);
+                        Array att = primitive.getAttribute(name);
                         att.set(k, points.getAttribute(0, name));
                         att.set(k+1, points.getAttribute(1, name));
                     }

@@ -19,7 +19,7 @@ package org.apache.sis.geometries.mesh;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,19 +40,19 @@ public class PrimitiveTest {
     public void testRemoveDuplicatesByPosition() {
 
         final MeshPrimitive primitive = new MeshPrimitive.TriangleStrip();
-        primitive.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3),
+        primitive.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3),
                 0,0,0, // <- duplicate
                 0,1,0,
                 1,0,0,
                 0,0,0, // <- duplicate
                 2,0,0));
-        primitive.setNormals(TupleArrays.of(3,
+        primitive.setNormals(NDArrays.of(3,
                 1,0,0, // <- duplicate
                 2,0,0,
                 3,0,0,
                 4,1,1, // <- duplicate, will not be preserved
                 5,0,0));
-        primitive.setIndex(TupleArrays.ofUnsigned(1,
+        primitive.setIndex(NDArrays.ofUnsigned(1,
                 0, 1, 2, 3,4));
 
         primitive.removeDuplicatesByPosition();
@@ -74,8 +74,8 @@ public class PrimitiveTest {
     public void testConcatenateTriangles() {
 
         final MeshPrimitive ts0 = new MeshPrimitive.Triangles();
-        ts0.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,2}));
-        ts0.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts0.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,2}));
+        ts0.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0,
             4,5,0,
@@ -84,8 +84,8 @@ public class PrimitiveTest {
         }));
 
         final MeshPrimitive ts1 = new MeshPrimitive.Triangles();
-        ts1.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,2}));
-        ts1.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts1.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,2}));
+        ts1.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0,
             4,5,0,
@@ -93,8 +93,8 @@ public class PrimitiveTest {
         }));
 
         final MeshPrimitive ts2 = new MeshPrimitive.Triangles();
-        ts2.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,2}));
-        ts2.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts2.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,2}));
+        ts2.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0,
             4,5,0,
@@ -120,8 +120,8 @@ public class PrimitiveTest {
     public void testConcatenateTriangleStrip() {
 
         final MeshPrimitive ts0 = new MeshPrimitive.TriangleStrip();
-        ts0.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,2,3}));
-        ts0.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts0.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,2,3}));
+        ts0.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0,
             4,5,0,
@@ -129,8 +129,8 @@ public class PrimitiveTest {
         }));
 
         final MeshPrimitive ts1 = new MeshPrimitive.TriangleStrip();
-        ts1.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,2,3}));
-        ts1.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts1.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,2,3}));
+        ts1.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0,
             4,5,0,
@@ -138,8 +138,8 @@ public class PrimitiveTest {
         }));
 
         final MeshPrimitive ts2 = new MeshPrimitive.TriangleStrip();
-        ts2.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,2,3}));
-        ts2.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts2.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,2,3}));
+        ts2.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0,
             4,5,0,
@@ -168,23 +168,23 @@ public class PrimitiveTest {
     public void testConcatenateTriangleStrip2() {
 
         final MeshPrimitive ts0 = new MeshPrimitive.TriangleStrip();
-        ts0.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,2,1}));
-        ts0.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts0.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,2,1}));
+        ts0.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0,
             4,5,0
         }));
 
         final MeshPrimitive ts1 = new MeshPrimitive.TriangleStrip();
-        ts1.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,0,0}));
-        ts1.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts1.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,0,0}));
+        ts1.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0
         }));
 
         final MeshPrimitive ts2 = new MeshPrimitive.TriangleStrip();
-        ts2.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,1,1,2}));
-        ts2.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts2.setIndex(NDArrays.ofUnsigned(1, new int[]{0,1,1,2}));
+        ts2.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             2,3,0,
             4,5,0
@@ -210,8 +210,8 @@ public class PrimitiveTest {
     public void testSplitTriangles() {
 
         final MeshPrimitive ts0 = new MeshPrimitive.Triangles();
-        ts0.setIndex(TupleArrays.ofUnsigned(1, new int[]{0,2,3, 3,0,2}));
-        ts0.setPositions(TupleArrays.of(Geometries.getUndefinedCRS(3), new float[]{
+        ts0.setIndex(NDArrays.ofUnsigned(1, new int[]{0,2,3, 3,0,2}));
+        ts0.setPositions(NDArrays.of(Geometries.getUndefinedCRS(3), new float[]{
             0,1,0,
             -1,-1,-1, //an unused position, must be added anyway, not the algo problem at this point
             2,3,0,

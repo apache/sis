@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TupleArrayConcatenatedTest extends AbstractTupleArrayTest {
+public class ArrayConcatenatedTest extends AbstractArrayTest {
 
     @Override
     protected int[] getSupportedDimensions() {
@@ -33,20 +33,20 @@ public class TupleArrayConcatenatedTest extends AbstractTupleArrayTest {
     }
 
     @Override
-    protected TupleArray create(int dim, int length) {
-        final TupleArray[] arrays = new TupleArray[length];
+    protected Array create(int dim, int length) {
+        final Array[] arrays = new Array[length];
         for (int i = 0; i < length; i++) {
-            arrays[i] = TupleArrays.of(dim, new double[dim]);
+            arrays[i] = NDArrays.of(dim, new double[dim]);
         }
-        return TupleArrays.concatenate(arrays);
+        return NDArrays.concatenate(arrays);
     }
 
     @Test
     public void testGetSet() {
-        final TupleArray array1 = TupleArrays.of(2, new double[]{0,1,2,3});
-        final TupleArray array2 = TupleArrays.of(2, new double[]{4,5,6,7});
-        final TupleArray array3 = TupleArrays.of(2, new double[]{8,9,10,11});
-        final TupleArray cnt = TupleArrays.concatenate(array1, array2, array3);
+        final Array array1 = NDArrays.of(2, new double[]{0,1,2,3});
+        final Array array2 = NDArrays.of(2, new double[]{4,5,6,7});
+        final Array array3 = NDArrays.of(2, new double[]{8,9,10,11});
+        final Array cnt = NDArrays.concatenate(array1, array2, array3);
 
         assertEquals(new Vector2D.Double(0,1), cnt.get(0));
         assertEquals(new Vector2D.Double(2,3), cnt.get(1));
@@ -79,12 +79,12 @@ public class TupleArrayConcatenatedTest extends AbstractTupleArrayTest {
     @Test
     public void testCursor() {
 
-        final TupleArray array1 = TupleArrays.of(2, new double[]{0,1,2,3});
-        final TupleArray array2 = TupleArrays.of(2, new double[]{4,5,6,7});
-        final TupleArray array3 = TupleArrays.of(2, new double[]{8,9,10,11});
-        final TupleArray cnt = TupleArrays.concatenate(array1, array2, array3);
+        final Array array1 = NDArrays.of(2, new double[]{0,1,2,3});
+        final Array array2 = NDArrays.of(2, new double[]{4,5,6,7});
+        final Array array3 = NDArrays.of(2, new double[]{8,9,10,11});
+        final Array cnt = NDArrays.concatenate(array1, array2, array3);
 
-        final TupleArrayCursor cursor = cnt.cursor();
+        final Cursor cursor = cnt.cursor();
         assertTrue(cursor.next());
         assertEquals(0, cursor.coordinate());
         assertEquals(new Vector2D.Double(0,1), cursor.samples());

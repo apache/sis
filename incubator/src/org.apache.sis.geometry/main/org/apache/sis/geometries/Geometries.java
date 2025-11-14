@@ -46,9 +46,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
@@ -68,6 +66,8 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -281,8 +281,8 @@ public final class Geometries {
                 maxx,maxy
             };
 
-            final TupleArray positions = TupleArrays.of(SampleSystem.of(lower.getCoordinateReferenceSystem()), values);
-            final TupleArray index = TupleArrays.ofUnsigned(1, new int[]{0,1,2,3});
+            final Array positions = NDArrays.of(SampleSystem.of(lower.getCoordinateReferenceSystem()), values);
+            final Array index = NDArrays.ofUnsigned(1, new int[]{0,1,2,3});
 
             final MeshPrimitive primitive = new MeshPrimitive.TriangleStrip();
             primitive.setPositions(positions);
@@ -306,7 +306,7 @@ public final class Geometries {
             final Vector3D.Double uuu = new Vector3D.Double(maxx, maxy, maxz);
             final Vector3D.Double luu = new Vector3D.Double(minx, maxy, maxz);
 
-            final TupleArray positions = TupleArrays.of(SampleSystem.of(lower.getCoordinateReferenceSystem()), new double[24*3]);
+            final Array positions = NDArrays.of(SampleSystem.of(lower.getCoordinateReferenceSystem()), new double[24*3]);
             //back
             positions.set(0, lll);
             positions.set(1, ull);
@@ -362,7 +362,7 @@ public final class Geometries {
                 22, 21, 20,
                 23, 22, 20 };
 
-            final TupleArray index = TupleArrays.ofUnsigned(1, indices);
+            final Array index = NDArrays.ofUnsigned(1, indices);
 
             final MeshPrimitive primitive = new MeshPrimitive.Triangles();
             primitive.setPositions(positions);
@@ -410,28 +410,28 @@ public final class Geometries {
 
         int maxIndexSize = 0;
         int attSize = 0;
-        final Map<String,TupleArray> resultAttributes = new HashMap<>();
+        final Map<String,Array> resultAttributes = new HashMap<>();
         for (MeshPrimitive p : primitives) {
-            TupleArray index = p.getIndex();
+            Array index = p.getIndex();
             maxIndexSize += index.getLength() + 3; //+1 for winding reset, +2 for degenerated triangle
             attSize += p.getPositions().getLength();
         }
         for (String name : primitive.getAttributesType().getAttributeNames()) {
-            final TupleArray model = primitive.getAttribute(name);
-            resultAttributes.put(name, TupleArrays.of(model.getSampleSystem(), model.getDataType(), attSize));
+            final Array model = primitive.getAttribute(name);
+            resultAttributes.put(name, NDArrays.of(model.getSampleSystem(), model.getDataType(), attSize));
         }
         int[] resultIndex = new int[maxIndexSize -3]; //no degenerate triangles for the first strip
 
         //add the first primitive
         int[] primIndex = primitive.getIndex().toArrayInt();
         System.arraycopy(primIndex, 0, resultIndex, 0, primIndex.length);
-        for (Entry<String,TupleArray> entry : resultAttributes.entrySet()) {
-            final TupleArray resultArray = entry.getValue();
-            final TupleArray primAtt = primitive.getAttribute(entry.getKey());
+        for (Entry<String,Array> entry : resultAttributes.entrySet()) {
+            final Array resultArray = entry.getValue();
+            final Array primAtt = primitive.getAttribute(entry.getKey());
             resultArray.set(0, primAtt, 0, primAtt.getLength());
         }
 
-        int attOffset = primitive.getPositions().getLength();
+        int attOffset = Math.toIntExact(primitive.getPositions().getLength());
         int idOffset = primIndex.length;
 
 
@@ -475,9 +475,9 @@ public final class Geometries {
                     resultIndex[idOffset+1] = resultIndex[idOffset+2];
                     idOffset +=  primIndex.length + 2;
 
-                    for (Entry<String,TupleArray> entry : resultAttributes.entrySet()) {
-                        final TupleArray resultArray = entry.getValue();
-                        final TupleArray primAtt = primitive.getAttribute(entry.getKey());
+                    for (Entry<String,Array> entry : resultAttributes.entrySet()) {
+                        final Array resultArray = entry.getValue();
+                        final Array primAtt = primitive.getAttribute(entry.getKey());
                         resultArray.set(attOffset, primAtt, 0, primAtt.getLength());
                     }
                     attOffset += primitive.getPositions().getLength();
@@ -490,9 +490,9 @@ public final class Geometries {
                         resultIndex[i] += attOffset;
                     }
                     idOffset += primIndex.length;
-                    for (Entry<String,TupleArray> entry : resultAttributes.entrySet()) {
-                        final TupleArray resultArray = entry.getValue();
-                        final TupleArray primAtt = primitive.getAttribute(entry.getKey());
+                    for (Entry<String,Array> entry : resultAttributes.entrySet()) {
+                        final Array resultArray = entry.getValue();
+                        final Array primAtt = primitive.getAttribute(entry.getKey());
                         resultArray.set(attOffset, primAtt, 0, primAtt.getLength());
                     }
                     attOffset += primitive.getPositions().getLength();
@@ -504,9 +504,9 @@ public final class Geometries {
         //build result primitive
         final MeshPrimitive result = MeshPrimitive.create(type);
         if (idOffset != resultIndex.length) resultIndex = Arrays.copyOf(resultIndex, idOffset);
-        final TupleArray allIndex = TupleArrays.ofUnsigned(1, resultIndex);
+        final Array allIndex = NDArrays.ofUnsigned(1, resultIndex);
         result.setIndex(allIndex);
-        for (Entry<String,TupleArray> entry : resultAttributes.entrySet()) {
+        for (Entry<String,Array> entry : resultAttributes.entrySet()) {
             result.setAttribute(entry.getKey(), entry.getValue());
         }
         return result;
@@ -574,7 +574,7 @@ public final class Geometries {
         }
 
         final MeshPrimitive.Type type = primitive.getType();
-        final TupleArray index = primitive.getIndex();
+        final Array index = primitive.getIndex();
 
         final List<MeshPrimitive> primitives = new ArrayList<>(2);
         switch (type) {
@@ -587,7 +587,7 @@ public final class Geometries {
                     if (end > array.length) end = array.length;
                     final int[] subRange = Arrays.copyOfRange(array, i, end);
                     final MeshPrimitive copy = primitive.deepCopy();
-                    copy.setIndex(TupleArrays.ofUnsigned(1, subRange));
+                    copy.setIndex(NDArrays.ofUnsigned(1, subRange));
                     if (copy.getIndex().getLength() > maxSize) {
                         throw new UnsupportedOperationException("ARG 1");
                     }
@@ -608,7 +608,7 @@ public final class Geometries {
      */
     public static void compact(MeshPrimitive primitive) {
 
-        final TupleArray indexArray = primitive.getIndex();
+        final Array indexArray = primitive.getIndex();
         if (indexArray == null) {
             //all attributes are used
             return;
@@ -631,7 +631,7 @@ public final class Geometries {
                 mapping.put(oldIndex, newIndex);
 
                 for (String name : rebuild.keySet()) {
-                    final TupleArray oldTa = primitive.getAttribute(name);
+                    final Array oldTa = primitive.getAttribute(name);
                     final List<Tuple> newTa = rebuild.get(name);
                     newTa.add(newIndex, oldTa.get(oldIndex));
                 }
@@ -641,13 +641,13 @@ public final class Geometries {
 
         //rebuild attributes arrays
         for (String name : rebuild.keySet()) {
-            final TupleArray oldTa = primitive.getAttribute(name);
+            final Array oldTa = primitive.getAttribute(name);
             final List<Tuple> newTa = rebuild.get(name);
-            final TupleArray ta = TupleArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType());
+            final Array ta = NDArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType());
             primitive.setAttribute(name, ta);
         }
         //new index
-        primitive.setIndex(TupleArrays.ofUnsigned(primitive.getIndex().getSampleSystem(), index));
+        primitive.setIndex(NDArrays.ofUnsigned(primitive.getIndex().getSampleSystem(), index));
     }
 
     public static MeshPrimitive.Triangles toPrimitive(List<org.locationtech.jts.geom.Polygon> triangles, CoordinateReferenceSystem crs) {
@@ -693,9 +693,9 @@ public final class Geometries {
             index[i*3+2] = ++k;
         }
 
-        final TupleArray positions = TupleArrays.of(SampleSystem.of(crs), values);
-        TupleArray idx = TupleArrays.of(1, index);
-        idx = TupleArrays.packIntegerDataType(idx);
+        final Array positions = NDArrays.of(SampleSystem.of(crs), values);
+        Array idx = NDArrays.of(1, index);
+        idx = NDArrays.packIntegerDataType(idx);
 
         final MeshPrimitive.Triangles primitive = new MeshPrimitive.Triangles();
         primitive.setPositions(positions);
@@ -791,8 +791,8 @@ public final class Geometries {
     private static PointSequence toPointSequence(CoordinateSequence cs, CoordinateReferenceSystem crs) {
         final int size = cs.size();
         final int dimension = crs.getCoordinateSystem().getDimension();
-        final TupleArray positions = TupleArrays.of(SampleSystem.of(crs), DataType.DOUBLE, size);
-        final TupleArrayCursor cursor = positions.cursor();
+        final Array positions = NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, size);
+        final Cursor cursor = positions.cursor();
         int i = 0;
         while (cursor.next()) {
             final Tuple samples = cursor.samples();

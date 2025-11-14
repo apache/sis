@@ -23,10 +23,10 @@ import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -81,25 +81,25 @@ public abstract class MeshPrimitiveVisitor {
         visited.clear();
         this.primitive = primitive;
 
-        TupleArray index = primitive.getIndex();
+        Array index = primitive.getIndex();
         if (index == null) {
             //create a virtual index with all points
-            int[] indices = new int[primitive.getPositions().getLength()];
+            int[] indices = new int[Math.toIntExact(primitive.getPositions().getLength())];
             for (int i = 0; i < indices.length; i++) indices[i] = i;
-            index = TupleArrays.ofUnsigned(1, indices);
+            index = NDArrays.ofUnsigned(1, indices);
         }
         if (index.isEmpty()) return;
 
-        final TupleArrayCursor cursor = index.cursor();
+        final Cursor cursor = index.cursor();
 
         int idx0;
         int idx1;
         int idx2;
-        int cnt = index.getLength();
+        long cnt = index.getLength();
         MeshPrimitive.Type mode = primitive.getType();
-        int offset = 0;
-        int i;
-        int n;
+        long offset = 0;
+        long i;
+        long n;
 
         switch (mode) {
             case POINTS:

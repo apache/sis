@@ -18,7 +18,6 @@ package org.apache.sis.geometries.math;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
@@ -31,31 +30,32 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class TupleArrays {
+public final class NDArrays {
 
-    public static TupleArray of(List<? extends Tuple> vectors, int dimension, DataType dataType) {
+    public static Array of(List<? extends Tuple> vectors, int dimension, DataType dataType) {
         return of(vectors, SampleSystem.ofSize(dimension), dataType);
     }
 
-    public static TupleArray of(List<? extends Tuple> vectors, SampleSystem type, DataType dataType) {
+    public static Array of(List<? extends Tuple> vectors, SampleSystem type, DataType dataType) {
         final int dimension = type.getSize();
-        final TupleArray array;
+        final Array array;
         switch (dataType) {
-            case BYTE : array = new TupleArrayND.Byte(type, new byte[vectors.size() * dimension]); break;
-            case UBYTE : array = new TupleArrayND.UByte(type, new byte[vectors.size() * dimension]); break;
-            case SHORT : array = new TupleArrayND.Short(type, new short[vectors.size() * dimension]); break;
-            case USHORT : array = new TupleArrayND.UShort(type, new short[vectors.size() * dimension]); break;
-            case INT : array = new TupleArrayND.Int(type, new int[vectors.size() * dimension]); break;
-            case UINT : array = new TupleArrayND.UInt(type, new int[vectors.size() * dimension]); break;
-            case LONG : array = new TupleArrayND.Long(type, new long[vectors.size() * dimension]); break;
-            case FLOAT : array = new TupleArrayND.Float(type, new float[vectors.size() * dimension]); break;
-            case DOUBLE : array = new TupleArrayND.Double(type, new double[vectors.size() * dimension]); break;
+            case BYTE : array = new ArrayMemory.Byte(type, new byte[vectors.size() * dimension]); break;
+            case UBYTE : array = new ArrayMemory.UByte(type, new byte[vectors.size() * dimension]); break;
+            case SHORT : array = new ArrayMemory.Short(type, new short[vectors.size() * dimension]); break;
+            case USHORT : array = new ArrayMemory.UShort(type, new short[vectors.size() * dimension]); break;
+            case INT : array = new ArrayMemory.Int(type, new int[vectors.size() * dimension]); break;
+            case UINT : array = new ArrayMemory.UInt(type, new int[vectors.size() * dimension]); break;
+            case LONG : array = new ArrayMemory.Long(type, new long[vectors.size() * dimension]); break;
+            case FLOAT : array = new ArrayMemory.Float(type, new float[vectors.size() * dimension]); break;
+            case DOUBLE : array = new ArrayMemory.Double(type, new double[vectors.size() * dimension]); break;
             default : throw new IllegalArgumentException("Unexpected data type " + dataType);
         }
 
@@ -66,127 +66,128 @@ public final class TupleArrays {
         return array;
     }
 
-    public static TupleArray of(SampleSystem type, DataType dataType, int nbTuple) {
+    public static Array of(SampleSystem type, DataType dataType, long nbTuple) {
         final int dimension = type.getSize();
-        final int size = nbTuple * dimension;
-        final TupleArray array;
+        final long size = nbTuple * dimension;
+        final int isize = Math.toIntExact(size);
+        final Array array;
         switch (dataType) {
-            case BYTE : array = new TupleArrayND.Byte(type, new byte[size]); break;
-            case UBYTE : array = new TupleArrayND.UByte(type, new byte[size]); break;
-            case SHORT : array = new TupleArrayND.Short(type, new short[size]); break;
-            case USHORT : array = new TupleArrayND.UShort(type, new short[size]); break;
-            case INT : array = new TupleArrayND.Int(type, new int[size]); break;
-            case UINT : array = new TupleArrayND.UInt(type, new int[size]); break;
-            case LONG : array = new TupleArrayND.Long(type, new long[size]); break;
-            case FLOAT : array = new TupleArrayND.Float(type, new float[size]); break;
-            case DOUBLE : array = new TupleArrayND.Double(type, new double[size]); break;
+            case BYTE : array = new ArrayMemory.Byte(type, new byte[isize]); break;
+            case UBYTE : array = new ArrayMemory.UByte(type, new byte[isize]); break;
+            case SHORT : array = new ArrayMemory.Short(type, new short[isize]); break;
+            case USHORT : array = new ArrayMemory.UShort(type, new short[isize]); break;
+            case INT : array = new ArrayMemory.Int(type, new int[isize]); break;
+            case UINT : array = new ArrayMemory.UInt(type, new int[isize]); break;
+            case LONG : array = new ArrayMemory.Long(type, new long[isize]); break;
+            case FLOAT : array = new ArrayMemory.Float(type, new float[isize]); break;
+            case DOUBLE : array = new ArrayMemory.Double(type, new double[isize]); break;
             default : throw new IllegalArgumentException("Unexpected data type " + dataType);
         }
         return array;
     }
 
-    public static TupleArray of(int dimension, byte ... values) {
+    public static Array of(int dimension, byte ... values) {
         return of(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray of(int dimension, short ... values) {
+    public static Array of(int dimension, short ... values) {
         return of(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray of(int dimension, int ... values) {
+    public static Array of(int dimension, int ... values) {
         return of(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray of(int dimension, long ... values) {
+    public static Array of(int dimension, long ... values) {
         return of(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray of(int dimension, float ... values) {
+    public static Array of(int dimension, float ... values) {
         return of(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray of(int dimension, double ... values) {
+    public static Array of(int dimension, double ... values) {
         return of(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray ofUnsigned(int dimension, byte ... values) {
+    public static Array ofUnsigned(int dimension, byte ... values) {
         return ofUnsigned(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray ofUnsigned(int dimension, short ... values) {
+    public static Array ofUnsigned(int dimension, short ... values) {
         return ofUnsigned(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray ofUnsigned(int dimension, int ... values) {
+    public static Array ofUnsigned(int dimension, int ... values) {
         return ofUnsigned(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray ofUnsigned(int dimension, List<Integer> values) {
+    public static Array ofUnsigned(int dimension, List<Integer> values) {
         return ofUnsigned(SampleSystem.ofSize(dimension), values);
     }
 
-    public static TupleArray of(CoordinateReferenceSystem crs, byte ... values) {
+    public static Array of(CoordinateReferenceSystem crs, byte ... values) {
         return of(SampleSystem.of(crs), values);
     }
 
-    public static TupleArray of(SampleSystem type, byte ... values) {
-        return new TupleArrayND.Byte(type, values);
+    public static Array of(SampleSystem type, byte ... values) {
+        return new ArrayMemory.Byte(type, values);
     }
 
-    public static TupleArray of(CoordinateReferenceSystem crs, int ... values) {
+    public static Array of(CoordinateReferenceSystem crs, int ... values) {
         return of(SampleSystem.of(crs), values);
     }
 
-    public static TupleArray of(SampleSystem type, int ... values) {
-        return new TupleArrayND.Int(type, values);
+    public static Array of(SampleSystem type, int ... values) {
+        return new ArrayMemory.Int(type, values);
     }
 
-    public static TupleArray of(CoordinateReferenceSystem crs, short ... values) {
+    public static Array of(CoordinateReferenceSystem crs, short ... values) {
         return of(SampleSystem.of(crs), values);
     }
 
-    public static TupleArray of(SampleSystem type, short ... values) {
-        return new TupleArrayND.Short(type, values);
+    public static Array of(SampleSystem type, short ... values) {
+        return new ArrayMemory.Short(type, values);
     }
 
-    public static TupleArray of(CoordinateReferenceSystem crs, long ... values) {
+    public static Array of(CoordinateReferenceSystem crs, long ... values) {
         return of(SampleSystem.of(crs), values);
     }
 
-    public static TupleArray of(SampleSystem type, long ... values) {
-        return new TupleArrayND.Long(type, values);
+    public static Array of(SampleSystem type, long ... values) {
+        return new ArrayMemory.Long(type, values);
     }
 
-    public static TupleArray of(CoordinateReferenceSystem crs, float ... values) {
+    public static Array of(CoordinateReferenceSystem crs, float ... values) {
         return of(SampleSystem.of(crs), values);
     }
 
-    public static TupleArray of(SampleSystem type, float ... values) {
-        return new TupleArrayND.Float(type, values);
+    public static Array of(SampleSystem type, float ... values) {
+        return new ArrayMemory.Float(type, values);
     }
 
-    public static TupleArray of(CoordinateReferenceSystem crs, double ... values) {
+    public static Array of(CoordinateReferenceSystem crs, double ... values) {
         return of(SampleSystem.of(crs), values);
     }
 
-    public static TupleArray of(SampleSystem type, double ... values) {
-        return new TupleArrayND.Double(type, values);
+    public static Array of(SampleSystem type, double ... values) {
+        return new ArrayMemory.Double(type, values);
     }
 
-    public static TupleArray ofUnsigned(SampleSystem type, byte ... values) {
-        return new TupleArrayND.UByte(type, values);
+    public static Array ofUnsigned(SampleSystem type, byte ... values) {
+        return new ArrayMemory.UByte(type, values);
     }
 
-    public static TupleArray ofUnsigned(SampleSystem type, short ... values) {
-        return new TupleArrayND.UShort(type, values);
+    public static Array ofUnsigned(SampleSystem type, short ... values) {
+        return new ArrayMemory.UShort(type, values);
     }
 
-    public static TupleArray ofUnsigned(SampleSystem type, int ... values) {
-        return new TupleArrayND.UInt(type, values);
+    public static Array ofUnsigned(SampleSystem type, int ... values) {
+        return new ArrayMemory.UInt(type, values);
     }
 
-    public static TupleArray ofUnsigned(SampleSystem type, List<Integer> values) {
-        return new TupleArrayND.UInt(type, values);
+    public static Array ofUnsigned(SampleSystem type, List<Integer> values) {
+        return new ArrayMemory.UInt(type, values);
     }
 
     /**
@@ -195,16 +196,16 @@ public final class TupleArrays {
      * @param array to compute bbox from
      * @return vectors with the same crs as the array, lower and upper bounds.
      */
-    public static BBox computeRange(TupleArray array) {
+    public static BBox computeRange(Array array) {
 
         final int dim = array.getDimension();
         final double[] min = new double[dim];
         final double[] max = new double[dim];
         final double[] buffer = new double[dim];
-        Arrays.fill(min, Double.NaN);
-        Arrays.fill(max, Double.NaN);
+        java.util.Arrays.fill(min, Double.NaN);
+        java.util.Arrays.fill(max, Double.NaN);
 
-        final TupleArrayCursor cursor = array.cursor();
+        final Cursor cursor = array.cursor();
         if (cursor.next()) {
             cursor.samples().toArrayDouble(buffer, 0);
             System.arraycopy(buffer, 0, min, 0, dim);
@@ -238,7 +239,7 @@ public final class TupleArrays {
      * @param array, not null
      * @return same or repacked array
      */
-    public static TupleArray packIntegerDataType(TupleArray array) {
+    public static Array packIntegerDataType(Array array) {
         final DataType dataType = array.getDataType();
 
         if (  DataType.LONG.equals(dataType)
@@ -255,7 +256,7 @@ public final class TupleArrays {
             }
             if (dataType != dt) {
                 //copy to a more efficiant data type
-                TupleArray cp = TupleArrays.of(array.getSampleSystem(), dt, array.getLength());
+                Array cp = of(array.getSampleSystem(), dt, array.getLength());
                 cp.set(0, array, 0, array.getLength());
                 array = cp;
             }
@@ -269,8 +270,8 @@ public final class TupleArrays {
      * @param array not null
      * @return unmodifiable view of the array.
      */
-    public static TupleArray unmodifiable(TupleArray array) {
-        return new TupleArrayUnmodifiable(array);
+    public static Array unmodifiable(Array array) {
+        return new ArrayUnmodifiable(array);
     }
 
     /**
@@ -279,8 +280,8 @@ public final class TupleArrays {
      * @param cursor not null
      * @return unmodifiable view of the array cursor.
      */
-    public static TupleArrayCursor unmodifiable(TupleArrayCursor cursor) {
-        return new TupleArrayCursorUnmodifiable(cursor);
+    public static Cursor unmodifiable(Cursor cursor) {
+        return new CursorUnmodifiable(cursor);
     }
 
     /**
@@ -289,8 +290,8 @@ public final class TupleArrays {
      * @param arrays not null
      * @return unmodifiable view of the array cursor.
      */
-    public static TupleArray concatenate(TupleArray ... arrays) {
-        return new TupleArrayConcatenated(arrays);
+    public static Array concatenate(Array ... arrays) {
+        return new ArrayConcatenated(arrays);
     }
 
     /**
@@ -300,9 +301,9 @@ public final class TupleArrays {
      * @param arrays not null or empty
      * @return never null, if arrays size is one, then a copy is returned
      */
-    public static TupleArray group(TupleArray ... arrays) throws FactoryException {
+    public static Array group(Array ... arrays) throws FactoryException {
         ArgumentChecks.ensureNonEmpty("arrays", arrays);
-        final int length = arrays[0].getLength();
+        final long length = arrays[0].getLength();
         if (length == 1) return arrays[0].copy();
         final DataType dataType = arrays[0].getDataType();
         final CoordinateReferenceSystem[] crs = new CoordinateReferenceSystem[arrays.length];
@@ -322,21 +323,21 @@ public final class TupleArrays {
             allDims.addAll(arrays[i].getSampleSystem().getSampleDimensions());
         }
 
-        final TupleArray result;
+        final Array result;
         if (undefined) {
             SampleSystem sampleSystem = new SampleSystem(dataType, allDims.toArray(new SampleDimension[0]));
-            result = TupleArrays.of(sampleSystem, dataType, length);
+            result = of(sampleSystem, dataType, length);
         } else {
-            result = TupleArrays.of(SampleSystem.of(CRS.compound(crs)), dataType, length);
+            result = of(SampleSystem.of(CRS.compound(crs)), dataType, length);
         }
 
         if (length == 0) return result;
 
-        final TupleArrayCursor resultCursor = result.cursor();
+        final Cursor resultCursor = result.cursor();
         int offset = 0;
         for (int a = 0; a < arrays.length; a++) {
             final int dim = arrays[a].getDimension();
-            TupleArrayCursor cursor = arrays[a].cursor();
+            Cursor cursor = arrays[a].cursor();
             cursor.moveTo(0);
             resultCursor.moveTo(0);
             for (int i = 0; i < length; i++, cursor.next(), resultCursor.next()) {
@@ -354,14 +355,22 @@ public final class TupleArrays {
     /**
      * Create a view of only the given selected index tuples in the array.
      */
-    public static TupleArray subset(TupleArray array, int ... selection) {
+    public static Array subset(Array array, int ... selection) {
+        return subset(array, ArraysExt.copyAsLongs(selection));
+    }
+
+    /**
+     * Create a view of only the given selected index tuples in the array.
+     */
+    public static Array subset(Array array, long ... selection) {
         return new Subset(array, selection);
     }
 
     /**
      * View TupleArray as a list.
      */
-    public static List<Tuple> asList(TupleArray array) {
+    public static List<Tuple> asList(Array array) {
+        final int size = Math.toIntExact(array.getLength());
         return new AbstractList<Tuple>() {
             @Override
             public Tuple get(int index) {
@@ -370,7 +379,7 @@ public final class TupleArrays {
 
             @Override
             public int size() {
-                return array.getLength();
+                return size;
             }
         };
     }
@@ -382,10 +391,10 @@ public final class TupleArrays {
      *
      * @param array to shuffle
      */
-    public static void shuffle(TupleArray array) {
+    public static void shuffle(Array array) {
         final Random random = new Random();
-        for (int i = array.getLength() - 1; i >= 1; i--) {
-            array.swap(i, random.nextInt(i));
+        for (long i = array.getLength() - 1; i >= 1; i--) {
+            array.swap(i, random.nextLong(i));
         }
     }
 
@@ -393,7 +402,7 @@ public final class TupleArrays {
      * Sort tuple array, in place, using quick sort algorithm.
      * Inspired by : https://www.geeksforgeeks.org/quick-sort-algorithm/
      */
-    public static void quickSort(TupleArray array, Comparator<Tuple> comparator) {
+    public static void quickSort(Array array, Comparator<Tuple> comparator) {
         quickSort(array, array.cursor(), array.cursor(), comparator, 0, array.getLength() - 1);
     }
 
@@ -406,18 +415,18 @@ public final class TupleArrays {
      * @param low inclusive
      * @param high inclusive
      */
-    public static void quickSort(TupleArray array, Comparator<Tuple> comparator, int low, int high) {
+    public static void quickSort(Array array, Comparator<Tuple> comparator, long low, long high) {
         quickSort(array, array.cursor(), array.cursor(), comparator, low, high);
     }
 
-    private static int partition(TupleArray array, TupleArrayCursor cursor1, TupleArrayCursor cursor2, Comparator<Tuple> comparator, int low, int high) {
+    private static long partition(Array array, Cursor cursor1, Cursor cursor2, Comparator<Tuple> comparator, long low, long high) {
         //pick the middle point as pivot, in case of already sorted arrays
         //it speeds up the operation and prevents the quicksort to make a java.lang.StackOverflowError
         array.swap((low+high)/2, high);
         cursor1.moveTo(high);
         final Tuple pivot = cursor1.samples();
-        int i = low - 1;
-        for (int j = low; j <= high - 1; j++) {
+        long i = low - 1;
+        for (long j = low; j <= high - 1; j++) {
             cursor2.moveTo(j);
             if (comparator.compare(cursor2.samples(),pivot) < 0) {
                 i++;
@@ -428,10 +437,10 @@ public final class TupleArrays {
         return i + 1;
     }
 
-    private static void quickSort(TupleArray array, TupleArrayCursor cursor1, TupleArrayCursor cursor2, Comparator<Tuple> comparator, int low, int high) {
+    private static void quickSort(Array array, Cursor cursor1, Cursor cursor2, Comparator<Tuple> comparator, long low, long high) {
 
         if (low < high) {
-            final int pi = partition(array, cursor1, cursor2, comparator, low, high);
+            final long pi = partition(array, cursor1, cursor2, comparator, low, high);
             quickSort(array, cursor1, cursor2, comparator, low, pi - 1);
             quickSort(array, cursor1, cursor2, comparator, pi + 1, high);
         }
@@ -449,20 +458,20 @@ public final class TupleArrays {
      *          This action returns quickly, but forked tasks continue to be submitted to the pool
      *        Therefor awaiting pool completion is necessary to ensure the operation is finished.
      */
-    public static RecursiveAction quickSortAction(TupleArray array, Comparator<Tuple> comparator, int low, int high) {
+    public static RecursiveAction quickSortAction(Array array, Comparator<Tuple> comparator, long low, long high) {
         return new QuickSortAction(array, array.cursor(), array.cursor(), comparator, low, high);
     }
 
     private static final class QuickSortAction extends RecursiveAction {
 
-        private final TupleArray array;
-        private final TupleArrayCursor cursor1;
-        private final TupleArrayCursor cursor2;
+        private final Array array;
+        private final Cursor cursor1;
+        private final Cursor cursor2;
         private final Comparator<Tuple> comparator;
-        private final int low;
-        private final int high;
+        private final long low;
+        private final long high;
 
-        public QuickSortAction(TupleArray array, TupleArrayCursor cursor1, TupleArrayCursor cursor2, Comparator<Tuple> comparator, int low, int high) {
+        public QuickSortAction(Array array, Cursor cursor1, Cursor cursor2, Comparator<Tuple> comparator, long low, long high) {
             this.array = array;
             this.cursor1 = cursor1;
             this.cursor2 = cursor2;
@@ -474,7 +483,7 @@ public final class TupleArrays {
         @Override
         protected void compute() {
             if (low < high) {
-                final int pi = partition(array, cursor1, cursor2, comparator, low, high);
+                final long pi = partition(array, cursor1, cursor2, comparator, low, high);
                 QuickSortAction qsa1 = new QuickSortAction(array, cursor1, cursor2, comparator, low, pi - 1);
                 qsa1.fork();
                 QuickSortAction qsa2 = new QuickSortAction(array, array.cursor(), array.cursor(), comparator, pi + 1, high);
@@ -498,20 +507,20 @@ public final class TupleArrays {
         return DataType.forRange(range, true);
     }
 
-    private TupleArrays(){}
+    private NDArrays(){}
 
-    private static class Subset extends AbstractTupleArray {
+    private static class Subset extends AbstractArray {
 
-        private final TupleArray base;
-        private final int[] index;
+        private final Array base;
+        private final long[] index;
 
-        public Subset(TupleArray base, int[] index) {
+        public Subset(Array base, long[] index) {
             this.base = base;
             this.index = index;
         }
 
         @Override
-        public int getLength() {
+        public long getLength() {
             return index.length;
         }
 
@@ -541,33 +550,33 @@ public final class TupleArrays {
         }
 
         @Override
-        public void get(int index, Tuple buffer) {
-            base.get(this.index[index], buffer);
+        public void get(long index, Tuple buffer) {
+            base.get(this.index[Math.toIntExact(index)], buffer);
         }
 
         @Override
-        public void set(int index, Tuple buffer) {
-            base.set(this.index[index], buffer);
+        public void set(long index, Tuple buffer) {
+            base.set(this.index[Math.toIntExact(index)], buffer);
         }
 
         @Override
-        public TupleArrayCursor cursor() {
-            final TupleArrayCursor bc = base.cursor();
-            return new TupleArrayCursor() {
-                private int coordinate = -1;
+        public Cursor cursor() {
+            final Cursor bc = base.cursor();
+            return new Cursor() {
+                private long coordinate = -1;
                 @Override
                 public Tuple<?> samples() {
-                    bc.moveTo(index[coordinate]);
+                    bc.moveTo(index[Math.toIntExact(coordinate)]);
                     return bc.samples();
                 }
 
                 @Override
-                public int coordinate() {
+                public long coordinate() {
                     return coordinate;
                 }
 
                 @Override
-                public void moveTo(int coordinate) {
+                public void moveTo(long coordinate) {
                     this.coordinate = coordinate;
                 }
 

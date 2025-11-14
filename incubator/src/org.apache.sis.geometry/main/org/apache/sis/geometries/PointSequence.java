@@ -21,9 +21,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -120,12 +120,12 @@ public interface PointSequence {
      * @param name attribute name
      * @return copy of all attribute values
      */
-    default TupleArray getAttributeArray(String name) {
+    default Array getAttributeArray(String name) {
         final AttributesType at = getAttributesType();
         final SampleSystem ss = at.getAttributeSystem(name);
         final DataType type = at.getAttributeType(name);
         final int size = size();
-        final TupleArray ta = TupleArrays.of(ss, type, size);
+        final Array ta = NDArrays.of(ss, type, size);
         for (int i = 0; i < size; i++) {
             ta.set(i, getAttribute(i, name));
         }

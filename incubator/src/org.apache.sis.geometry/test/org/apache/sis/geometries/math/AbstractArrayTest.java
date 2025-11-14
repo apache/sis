@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractTupleArrayTest {
+public abstract class AbstractArrayTest {
 
     protected static final double TOLERANCE = 0.0000001;
     protected static final String UNVALID_INDEX_EXPECTED = "Accessing value our of tuple size must cause an IndexOutOfBoundsException";
@@ -40,7 +40,7 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Created tuple array must have all values at zero.
      */
-    protected abstract TupleArray create(int dim, int length);
+    protected abstract Array create(int dim, int length);
 
 
     /**
@@ -53,7 +53,7 @@ public abstract class AbstractTupleArrayTest {
 
         for (int i = 0; i < supportedDimensions.length; i++) {
             final int dim = supportedDimensions[i];
-            final TupleArray array = create(dim, 5);
+            final Array array = create(dim, 5);
             assertEquals(dim, array.getDimension());
             assertEquals(5, array.getLength());
             testTupleArray(array);
@@ -64,7 +64,7 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Test a single tuple array.
      */
-    private void testTupleArray(TupleArray array) throws TransformException {
+    private void testTupleArray(Array array) throws TransformException {
         testGetSet(array);
         testToArray(array);
         testToArrayWithRange(array);
@@ -77,11 +77,11 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Test array resizing.
      */
-    private void testResize(TupleArray array) {
-        final int length = array.getLength();
+    private void testResize(Array array) {
+        final long length = array.getLength();
         final int dimension = array.getDimension();
         int inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.createDouble(dimension);
             for (int d = 0, dn = array.getDimension(); d < dn; d++) {
                 tuple.set(d, inc++);
@@ -89,12 +89,12 @@ public abstract class AbstractTupleArrayTest {
             array.set(i, tuple);
         }
 
-        final TupleArray resized = array.resize(array.getLength() + 10);
+        final Array resized = array.resize(array.getLength() + 10);
         assertEquals(length + 10, resized.getLength());
 
         //test values are still here
         inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.createDouble(dimension);
             resized.get(i, tuple);
             for (int d = 0, dn = array.getDimension(); d < dn; d++) {
@@ -106,11 +106,11 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Test array copy.
      */
-    private void testCopy(TupleArray array) {
-        final int length = array.getLength();
+    private void testCopy(Array array) {
+        final long length = array.getLength();
         final int dimension = array.getDimension();
         int inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.createDouble(dimension);
             for (int d = 0, dn = array.getDimension(); d < dn; d++) {
                 tuple.set(d, inc++);
@@ -118,11 +118,11 @@ public abstract class AbstractTupleArrayTest {
             array.set(i, tuple);
         }
 
-        final TupleArray copy = array.copy();
+        final Array copy = array.copy();
 
         //test values are still here
         inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.createDouble(dimension);
             copy.get(i, tuple);
             for (int d = 0, dn = array.getDimension(); d < dn; d++) {
@@ -137,11 +137,11 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Test tuple array to arrays.
      */
-    private void testToArray(TupleArray array) {
-        final int length = array.getLength();
+    private void testToArray(Array array) {
+        final long length = array.getLength();
         final int dimension = array.getDimension();
         int inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.createDouble(dimension);
             for (int d = 0; d < dimension; d++) {
                 tuple.set(d, inc++);
@@ -152,9 +152,9 @@ public abstract class AbstractTupleArrayTest {
         {//to short array
             final short[] table = array.toArrayShort();
             inc = 0;
-            for (int i = 0, n = length; i < n; i++) {
+            for (long i = 0, n = length; i < n; i++) {
                 for (int d = 0; d < dimension; d++) {
-                    assertEquals(inc++, table[i * dimension + d], TOLERANCE);
+                    assertEquals(inc++, table[(int)(i * dimension + d)], TOLERANCE);
                 }
             }
         }
@@ -162,9 +162,9 @@ public abstract class AbstractTupleArrayTest {
         {//to int array
             final int[] table = array.toArrayInt();
             inc = 0;
-            for (int i = 0, n = length; i < n; i++) {
+            for (long i = 0, n = length; i < n; i++) {
                 for (int d = 0; d < dimension; d++) {
-                    assertEquals(inc++, table[i * dimension + d], TOLERANCE);
+                    assertEquals(inc++, table[(int)(i * dimension + d)], TOLERANCE);
                 }
             }
         }
@@ -172,9 +172,9 @@ public abstract class AbstractTupleArrayTest {
         {//to float array
             final float[] table = array.toArrayFloat();
             inc = 0;
-            for (int i = 0, n = length; i < n; i++) {
+            for (long i = 0, n = length; i < n; i++) {
                 for (int d = 0; d < dimension; d++) {
-                    assertEquals(inc++, table[i * dimension + d], TOLERANCE);
+                    assertEquals(inc++, table[(int)(i * dimension + d)], TOLERANCE);
                 }
             }
         }
@@ -182,9 +182,9 @@ public abstract class AbstractTupleArrayTest {
         {//to double array
             final double[] table = array.toArrayDouble();
             inc = 0;
-            for (int i = 0, n = length; i < n; i++) {
+            for (long i = 0, n = length; i < n; i++) {
                 for (int d = 0; d < dimension; d++) {
-                    assertEquals(inc++, table[i * dimension + d], TOLERANCE);
+                    assertEquals(inc++, table[(int)(i * dimension + d)], TOLERANCE);
                 }
             }
         }
@@ -193,13 +193,13 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Test tuple array range to arrays.
      */
-    private void testToArrayWithRange(TupleArray array) {
-        final int length = array.getLength();
+    private void testToArrayWithRange(Array array) {
+        final long length = array.getLength();
         if (length < 3) return;
 
         final int dimension = array.getDimension();
         int inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.createDouble(dimension);
             for (int d = 0; d < dimension; d++) {
                 tuple.set(d, inc++);
@@ -209,7 +209,7 @@ public abstract class AbstractTupleArrayTest {
 
         int clip = 1;
         int rangeStart = clip;
-        int rangeEnd = length - 2 * clip;
+        int rangeEnd = (int)(length - 2 * clip);
         int rangeLength = rangeEnd - rangeStart;
         {//to short array
             final short[] table = array.toArrayShort(rangeStart, rangeLength);
@@ -255,11 +255,11 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Test array getter and setter methods.
      */
-    private void testGetSet(TupleArray array) {
-        final int length = array.getLength();
+    private void testGetSet(Array array) {
+        final long length = array.getLength();
         final int dimension = array.getDimension();
         int inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             final Vector tuple = Vectors.createDouble(dimension);
             for (int d = 0; d < dimension; d++) {
                 tuple.set(d, inc++);
@@ -276,11 +276,11 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Test array cursor.
      */
-    private void testCursor(TupleArray array) {
-        final int length = array.getLength();
+    private void testCursor(Array array) {
+        final long length = array.getLength();
         final int dimension = array.getDimension();
         int inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.createDouble(dimension);
             for (int d = 0; d < dimension; d++) {
                 tuple.set(d, inc++);
@@ -288,9 +288,9 @@ public abstract class AbstractTupleArrayTest {
             array.set(i, tuple);
         }
 
-        final TupleArrayCursor cursor = array.cursor();
+        final Cursor cursor = array.cursor();
         inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             assertTrue(cursor.next());
 
             final Vector tuple = Vectors.createDouble(dimension);
@@ -320,11 +320,11 @@ public abstract class AbstractTupleArrayTest {
     /**
      * Test array transform.
      */
-    private void testTransform(TupleArray array) throws TransformException {
-        final int length = array.getLength();
+    private void testTransform(Array array) throws TransformException {
+        final long length = array.getLength();
         final int dimension = array.getDimension();
         int inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.createDouble(dimension);
             for (int d = 0; d < dimension; d++) {
                 tuple.set(d, inc++);
@@ -340,7 +340,7 @@ public abstract class AbstractTupleArrayTest {
         array.transform(MathTransforms.linear(matrix));
 
         inc = 0;
-        for (int i = 0, n = length; i < n; i++) {
+        for (long i = 0, n = length; i < n; i++) {
             Vector tuple = Vectors.create(dimension, array.getDataType());
             for (int d = 0; d < dimension; d++) {
                 tuple.set(d, inc++ + 2);

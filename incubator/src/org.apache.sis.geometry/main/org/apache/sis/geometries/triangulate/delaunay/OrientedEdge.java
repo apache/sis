@@ -277,9 +277,9 @@ final class OrientedEdge extends AbstractGeometry implements LineString, PointSe
 
     @Override
     public int hashCode() {
-        int result = 31 + structure.start.getIndex();
+        long result = 31 + structure.start.getIndex();
         result = 31 * result + structure.end.getIndex();
-        return result;
+        return (int) result;
     }
 
     private static class Structure {

@@ -20,13 +20,13 @@ import java.util.Iterator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -50,7 +50,7 @@ public class OrientedEdgeTest {
               +
               E
         */
-        final TupleArray positions = TupleArrays.of(CRS,
+        final Array positions = NDArrays.of(CRS,
                 0,0,
                 2,0,
                 1,2,

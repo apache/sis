@@ -24,25 +24,25 @@ import java.util.function.Consumer;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class TupleArraySpliterator implements Spliterator<Tuple>{
+final class ArraySpliterator implements Spliterator<Tuple>{
 
-    private final TupleArray array;
+    private final Array array;
     /**
      * Inclusive
      */
-    private int rangeStart;
+    private long rangeStart;
     /**
      * Exclusive
      */
-    private int rangeEnd;
+    private long rangeEnd;
 
-    private TupleArrayCursor cursor;
+    private Cursor cursor;
 
-    public TupleArraySpliterator(TupleArray array) {
+    public ArraySpliterator(Array array) {
         this(array,0, array.getLength());
     }
 
-    public TupleArraySpliterator(TupleArray array, int rangeStart, int rangeEnd) {
+    public ArraySpliterator(Array array, long rangeStart, long rangeEnd) {
         if (rangeEnd <= rangeStart) {
             throw new IllegalArgumentException("Range end must be superior to range start");
         }
@@ -63,14 +63,14 @@ final class TupleArraySpliterator implements Spliterator<Tuple>{
 
     @Override
     public Spliterator<Tuple> trySplit() {
-        int remaining = rangeEnd - rangeStart;
+        long remaining = rangeEnd - rangeStart;
         if (remaining < 5) {
             //too few elements to split it
             return null;
         }
 
-        final int half = rangeStart + remaining / 2;
-        final TupleArraySpliterator split = new TupleArraySpliterator(array, half, rangeEnd);
+        final long half = rangeStart + remaining / 2;
+        final ArraySpliterator split = new ArraySpliterator(array, half, rangeEnd);
         rangeEnd = half;
         return split;
     }

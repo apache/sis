@@ -16,21 +16,48 @@
  */
 package org.apache.sis.geometries.math;
 
+import org.apache.sis.util.ArgumentChecks;
+
 
 /**
+ * Unmodifiable tuple array cursor.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TupleArrayNdTest extends AbstractTupleArrayTest {
+final class CursorUnmodifiable implements Cursor {
 
-    @Override
-    protected int[] getSupportedDimensions() {
-        return new int[]{1,2,3,4};
+    private final Cursor parent;
+    private Tuple previous;
+    private Tuple t;
+
+    public CursorUnmodifiable(Cursor parent) {
+        ArgumentChecks.ensureNonNull("parent", parent);
+        this.parent = parent;
     }
 
     @Override
-    protected TupleArray create(int dim, int length) {
-        return new TupleArrayND.Double(SampleSystem.ofSize(dim), new double[length*dim]);
+    public Tuple samples() {
+        Tuple cdt = parent.samples();
+        if (t == null || previous != cdt) {
+            t = new TupleUnmodifiable(cdt);
+            previous = cdt;
+        }
+        return t;
+    }
+
+    @Override
+    public long coordinate() {
+        return parent.coordinate();
+    }
+
+    @Override
+    public void moveTo(long coordinate) {
+        parent.moveTo(coordinate);
+    }
+
+    @Override
+    public boolean next() {
+        return parent.next();
     }
 
 }

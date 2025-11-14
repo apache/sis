@@ -21,14 +21,14 @@ package org.apache.sis.geometries.math;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractTupleArray implements TupleArray {
+public abstract class AbstractArray implements Array {
 
     @Override
-    public TupleArray resize(int newSize) {
-        final TupleArray copy = TupleArrays.of(getSampleSystem(), getDataType(), newSize);
-        final TupleArrayCursor cursor = cursor();
+    public Array resize(long newSize) {
+        final Array copy = NDArrays.of(getSampleSystem(), getDataType(), newSize);
+        final Cursor cursor = cursor();
         while (cursor.next()) {
-            final int idx = cursor.coordinate();
+            final long idx = cursor.coordinate();
             if (idx >= newSize) break;
             copy.set(idx, cursor.samples());
         }
@@ -36,7 +36,7 @@ public abstract class AbstractTupleArray implements TupleArray {
     }
 
     @Override
-    public TupleArray copy() {
+    public Array copy() {
         return resize(getLength());
     }
 
@@ -48,16 +48,16 @@ public abstract class AbstractTupleArray implements TupleArray {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof TupleArray)) {
+        if (!(obj instanceof Array)) {
             return false;
         }
-        final TupleArray other = (TupleArray) obj;
+        final Array other = (Array) obj;
 
         final int dim = getDimension();
         if (dim != other.getDimension()) {
             return false;
         }
-        final int length = getLength();
+        final long length = getLength();
         if (length != other.getLength()) {
             return false;
         }
@@ -74,6 +74,6 @@ public abstract class AbstractTupleArray implements TupleArray {
 
     @Override
     public int hashCode() {
-        return getDataType().hashCode() | (getDimension() * 21) | (getLength() * 7);
+        return getDataType().hashCode() | (getDimension() * 21) | ((int)getLength() * 7);
     }
 }
