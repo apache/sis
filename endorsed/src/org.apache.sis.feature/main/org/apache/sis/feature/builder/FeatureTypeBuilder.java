@@ -39,6 +39,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 
@@ -653,6 +654,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @see #addProperty(PropertyType)
      */
+    @OptionalCandidate
     public PropertyTypeBuilder getProperty(final String name) {
         return forName(properties, name, true);
     }

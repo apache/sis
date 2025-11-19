@@ -465,8 +465,8 @@ final class FeatureStream extends DeferredStream<Feature> {
                     final JDBCType type = filterToSQL.writeFunction(columnSQL, expression);
                     if (type != null) try {
                         columnSQL.append(" AS ").appendIdentifier(name);
-                        expression = new ComputedColumn(database, type, name,
-                                            columnSQL.query(connection, spatialInformation));
+                        String sql = columnSQL.query(connection, spatialInformation);
+                        expression = new ComputedColumn(database, type, name, sql);
                     } catch (Exception e) {
                         throw cannotExecute(e);
                     }
@@ -483,7 +483,7 @@ final class FeatureStream extends DeferredStream<Feature> {
             final var unhandled   = new BitSet();
             final var reusedNames = new HashSet<String>();
             projected = new Table(projected, queriedProjection, reusedNames, unhandled);
-            completion = queriedProjection.afterPreprocessing(unhandled.stream().toArray());
+            completion = queriedProjection.forPreexistingFeatureInstances(unhandled.stream().toArray());
             if (completion != null && !reusedNames.containsAll(completion.dependencies())) {
                 /*
                  * Cannot use `projected` because some expressions need properties available only

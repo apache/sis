@@ -934,7 +934,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             return true;
         }
         if (super.equals(obj)) {
-            final DefaultFeatureType that = (DefaultFeatureType) obj;
+            final var that = (DefaultFeatureType) obj;
             return isAbstract == that.isAbstract &&
                    superTypes.equals(that.superTypes) &&
                    properties.equals(that.properties);

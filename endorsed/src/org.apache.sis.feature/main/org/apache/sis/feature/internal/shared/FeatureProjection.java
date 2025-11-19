@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
+import org.opengis.util.GenericName;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
@@ -35,6 +36,7 @@ import org.apache.sis.io.TableAppender;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.Operation;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
@@ -52,7 +54,15 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
     /**
      * The type of features with the properties explicitly requested by the user.
      * The property names may differ from the properties of the {@link FeatureProjectionBuilder#source() source}
-     * features if aliases were specified by calls to {@link FeatureProjectionBuilder.Item#setName(GenericName)}.
+     * features if aliases were specified by {@link FeatureProjectionBuilder.Item#setPreferredName(GenericName)}.
+     *
+     * <h4>Relationship with {@code typeWithDependencies}</h4>
+     * The property <em>names</em> of {@code typeRequested} shall be a subset of the property names of
+     * {@link #typeWithDependencies}. However, a property of the same name may be an {@link Operation}
+     * in {@code typeWithDependencies} and replaced by {@link OperationView} in {@code typeRequested}.
+     * This replacement is done by {@link FeatureProjectionBuilder.Item#replaceIfMissingDependency()}.
+     * It is necessary because the {@link org.apache.sis.feature.DefaultFeatureType} constructor
+     * verifies that all dependencies of all operations exist.
      */
     public final FeatureType typeRequested;
 
@@ -60,6 +70,9 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
      * The requested type augmented with dependencies required for the execution of operations such as links.
      * If there is no need for additional properties, then this value is the same as {@link #typeRequested}.
      * The property names are the same as {@link #typeRequested} (i.e., may be aliases).
+     * However, some operations may be wrapped in {@link OperationView}.
+     *
+     * @see #dependencies()
      */
     public final FeatureType typeWithDependencies;
 
@@ -98,21 +111,21 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
         this.createInstance       = true;
         this.typeRequested        = typeRequested;
         this.typeWithDependencies = typeWithDependencies;
-        int storedCount = 0;
 
         // Expressions to apply on the source feature for fetching the property values of the projected feature.
         @SuppressWarnings({"LocalVariableHidesMemberVariable", "unchecked", "rawtypes"})
-        final Expression<? super Feature,?>[] expressions = new Expression[projection.size()];
+        final Expression<? super Feature, ?>[] expressions = new Expression[projection.size()];
 
         // Names of the properties to be stored in the attributes of the target features.
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String[] propertiesToCopy = new String[expressions.length];
 
+        int storedCount = 0;
         for (final FeatureProjectionBuilder.Item item : projection) {
             final var expression = item.attributeValueGetter();
             if (expression != null) {
                 expressions[storedCount] = expression;
-                propertiesToCopy[storedCount++] = item.getName();
+                propertiesToCopy[storedCount++] = item.getPreferredName();
             }
         }
         this.propertiesToCopy = ArraysExt.resize(propertiesToCopy, storedCount);
@@ -132,7 +145,7 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
      * @param  parent     the projection from which to inherit the types and expressions.
      * @param  remaining  index of the properties that still need to be copied after the caller did its processing.
      *
-     * @see #afterPreprocessing(int[])
+     * @see #forPreexistingFeatureInstances(int[])
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     private FeatureProjection(final FeatureProjection parent, final int[] remaining) {
@@ -157,7 +170,7 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
      * @return a variant of this projection which only completes the projection done by the caller,
      *         or {@code null} if there is nothing left to complete.
      */
-    public FeatureProjection afterPreprocessing(final int[] remaining) {
+    public FeatureProjection forPreexistingFeatureInstances(final int[] remaining) {
         if (remaining.length == 0 && typeRequested == typeWithDependencies) {
             return null;
         }
@@ -166,6 +179,12 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
 
     /**
      * Creates a new projection with the same properties as the source projection, but modified expressions.
+     * The modifications are specified by the given {@code mapper}. No expression can be added or removed.
+     * New expressions should return values of the same type as the previous expressions.
+     * The new expressions shall not introduce new dependencies.
+     *
+     * <h4>Purpose</h4>
+     * This constructor is used when the caller can replace some expressions by <abbr>SQL</abbr> statements.
      *
      * @param source  the projection to copy.
      * @param mapper  a function receiving in arguments the property name and the expression fetching the property value,
@@ -241,7 +260,11 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
     /**
      * Returns all dependencies used, directly or indirectly, by all expressions used in this projection.
      * The set includes transitive dependencies (expressions with operands that are other expressions).
-     * The elements are XPaths.
+     * The elements are XPaths to properties in the <em>source</em> features.
+     *
+     * <p>This method does not search for operations in {@link #typeWithDependencies} because the operation
+     * dependencies are references to {@link #typeWithDependencies} properties instead of properties of the
+     * source features. The property names may differ.</p>
      *
      * @return all dependencies (including transitive dependencies) as XPaths.
      */
@@ -255,13 +278,14 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
 
     /**
      * Derives a new projected feature instance from the given source.
-     * The feature type of the returned feature instance will be be {@link #typeRequested}.
+     * The given source feature should be of type {@link #typeWithDependencies}.
+     * The type of the returned feature instance will be {@link #typeRequested}.
      * This method performs the following steps:
      *
      * <ol class="verbose">
-     *   <li>If this projection was created by {@link #afterPreprocessing(int[])}, then the given feature
-     *     shall be an instances of {@link #typeWithDependencies} and may be modified in-place. Otherwise,
-     *     this method creates a new instance of {@link #typeWithDependencies}.</li>
+     *   <li>If this projection was created by {@link #forPreexistingFeatureInstances(int[])},
+     *     then the given feature shall be an instance of {@link #typeWithDependencies} and may be modified.
+     *     Otherwise, this method creates a new instance of {@link #typeWithDependencies}.</li>
      *   <li>This method executes all expressions for fetching values from {@code source}
      *     and stores the results in the feature instance of above step.</li>
      *   <li>If {@link #typeWithDependencies} is different than {@link #typeRequested}, then the feature

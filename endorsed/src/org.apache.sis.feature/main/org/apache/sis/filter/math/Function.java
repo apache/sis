@@ -267,6 +267,8 @@ public enum Function implements FunctionIdentifier, AvailableFunction {
 
     /**
      * Returns the attribute type to declare in feature types that store result of this function.
+     *
+     * @return the attribute type (never {@code null}).
      */
     final synchronized AttributeType<?> getResultType() {
         if (resultType == null) {

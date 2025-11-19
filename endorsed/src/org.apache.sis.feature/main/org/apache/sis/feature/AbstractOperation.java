@@ -155,7 +155,8 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
     public abstract ParameterDescriptorGroup getParameters();
 
     /**
-     * Returns the expected result type, or {@code null} if none.
+     * Returns the expected result type.
+     * This type is normally not allowed to be null, but it may happen on occasion.
      *
      * @return the type of the result, or {@code null} if none.
      */
@@ -183,7 +184,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * in the Java language, and may be {@code null} if the operation does not need a feature instance
      * (like static methods in the Java language).</div>
      *
-     * @param  feature     the feature on which to execute the operation.
+     * @param  instance    the feature instance on which to execute the operation.
      *                     Can be {@code null} if the operation does not need feature instance.
      * @param  parameters  the parameters to use for executing the operation.
      *                     Can be {@code null} if the operation does not take any parameters.
@@ -191,7 +192,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * @throws FeatureOperationException if the operation execution cannot complete.
      */
     @Override
-    public abstract Property apply(Feature feature, ParameterValueGroup parameters) throws FeatureOperationException;
+    public abstract Property apply(Feature instance, ParameterValueGroup parameters) throws FeatureOperationException;
 
     /**
      * Returns the names of feature properties that this operation needs for performing its task.

@@ -190,7 +190,7 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
     final void ensureValid(final FeatureType base, final FeatureType type) {
         if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
             throw new InvalidPropertyValueException(
-                    Resources.format(Resources.Keys.IllegalFeatureType_3, getName(), base.getName(), type.getName()));
+                    Resources.format(Resources.Keys.IllegalFeatureType_4, 0, getName(), base.getName(), type.getName()));
         }
     }
 

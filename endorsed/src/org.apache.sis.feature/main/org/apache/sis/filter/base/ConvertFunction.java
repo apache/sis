@@ -170,6 +170,8 @@ public final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      * Provides the type of values produced by this expression.
      * May return {@code null} if the type cannot be determined.
      *
+     * @param  addTo  where to add the type of the property evaluated by this expression.
+     * @return handler of the added property, or {@code null} if the property cannot be added.
      * @throws UnconvertibleObjectException if the property default value cannot be converted to the expected type.
      */
     @Override
@@ -179,7 +181,7 @@ public final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
             return null;
         }
         final FeatureProjectionBuilder.Item item = addTo.addTemplateProperty(fex);
-        item.replaceValueClass((c) -> getResultClass());
+        if (item != null) item.replaceValueClass((c) -> getResultClass());
         return item;
     }
 

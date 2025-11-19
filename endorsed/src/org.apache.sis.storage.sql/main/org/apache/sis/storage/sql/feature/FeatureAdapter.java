@@ -343,7 +343,7 @@ final class FeatureAdapter {
      */
     final Feature createFeature(final InfoStatements stmts, final ResultSet result) throws Exception {
         final Feature feature = featureType.newInstance();
-        for (int i=0; i<attributes.length; i++) {
+        for (int i=0; i < attributes.length; i++) {
             final Column column = attributes[i];
             final Object value = column.valueGetter.getValue(stmts, result, i+1);
             if (value != null) {

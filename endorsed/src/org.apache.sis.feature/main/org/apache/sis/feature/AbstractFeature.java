@@ -780,7 +780,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     private static String illegalFeatureType(
             final FeatureAssociationRole association, final FeatureType expected, final FeatureType actual)
     {
-        return Resources.format(Resources.Keys.IllegalFeatureType_3,
+        return Resources.format(Resources.Keys.IllegalFeatureType_4, 0,
                                 association.getName(), expected.getName(), actual.getName());
     }
 

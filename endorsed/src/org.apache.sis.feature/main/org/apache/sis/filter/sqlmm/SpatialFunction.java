@@ -180,8 +180,8 @@ abstract class SpatialFunction<R> extends Node
      *   <li>Otherwise, an attribute is created with the return value specified by the operation.</li>
      * </ul>
      *
-     * @param  addTo  where to add the type of properties evaluated by this expression.
-     * @return builder of type resulting from expression evaluation (never null).
+     * @param  addTo  where to add the type of the property evaluated by this expression.
+     * @return handler of the added property, or {@code null} if the property cannot be added.
      * @throws InvalidFilterValueException if the source feature type does not contain the expected properties,
      *         or if this method cannot determine the result type of the expression.
      *         It may be because that expression is backed by an unsupported implementation.
@@ -192,11 +192,11 @@ abstract class SpatialFunction<R> extends Node
             final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(getParameters().get(0));
             if (fex != null) {
                 final FeatureProjectionBuilder.Item item = addTo.addTemplateProperty(fex);
-                final boolean success = item.replaceValueClass((c) -> {
+                final boolean accept = (item == null) || item.replaceValueClass((c) -> {
                     final Geometries<?> library = Geometries.factory(c);
                     return (library == null) ? null : operation.getReturnType(library);
                 });
-                if (success) {
+                if (accept) {
                     return item;
                 }
             }
