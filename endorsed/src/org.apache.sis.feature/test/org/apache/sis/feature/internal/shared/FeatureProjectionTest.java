@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature.internal.shared;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 import org.apache.sis.util.iso.Names;
@@ -128,7 +129,7 @@ public final class FeatureProjectionTest extends TestCase {
         final FeatureProjection projection = builder.project().orElseThrow();
         assertSame(projection.typeRequested, projection.typeWithDependencies);
         assertPropertyNamesEqual(projection.typeRequested, "country", "population");
-        assertSetEquals(Set.of("name", "population"), projection.dependencies());
+        assertSetEquals(Arrays.asList("name", "population"), projection.requiredSourceProperties());
         assertValueClassEquals(String.class, projection, "country");
         return projection;
     }
@@ -205,6 +206,9 @@ public final class FeatureProjectionTest extends TestCase {
     /**
      * Tests the creation of a feature with an additional property computed early.
      * The operation is computed immediately from the source feature type.
+     *
+     * Note that since the results are stored (i.e. the "density" operation become an attribute in the
+     * final feature instance), there is no need for intermediate feature type with extra dependencies.
      */
     @Test
     public void testSubsetWithStoredOperation() {
@@ -214,12 +218,14 @@ public final class FeatureProjectionTest extends TestCase {
         addPopulationDensity(builder, true);
         builder.setName("Population density");
         final FeatureProjection projection = builder.project().orElseThrow();
-        assertSame(projection.typeRequested, projection.typeWithDependencies);
-        assertSetEquals(Set.of("name", "population", "area"), projection.dependencies());
         assertPropertyNamesEqual(projection.typeRequested, "country", "population", "density");
+        assertSetEquals(Arrays.asList("name", "population", "area"), projection.requiredSourceProperties());
+
+        // `typeWithDependencies` does not have the "area" extra dependency because values are stored.
+        assertSame(projection.typeRequested, projection.typeWithDependencies);
 
         // Property is an attribute because we requested the "stored" mode.
-        assertInstanceOf(AttributeType.class, projection.typeWithDependencies.getProperty("density"));
+        assertInstanceOf(AttributeType.class, projection.typeRequested.getProperty("density"));
         assertValueClassEquals(Number.class,  projection, "density");
         verifyDensityOnFeatureInstance(projection);
     }
@@ -236,10 +242,10 @@ public final class FeatureProjectionTest extends TestCase {
         addPopulationDensity(builder, false);
         builder.setName("Population density");
         final FeatureProjection projection = builder.project().orElseThrow();
-        assertNotEquals(projection.typeRequested, projection.typeWithDependencies);
-        assertSetEquals(Set.of("name", "population", "area"), projection.dependencies());
+        assertSetEquals(Arrays.asList("name", "population", "area"), projection.requiredSourceProperties());
         assertPropertyNamesEqual(projection.typeRequested, "country", "population", "density");
         assertPropertyNamesEqual(projection.typeWithDependencies, "country", "population", "density", "area");
+        // `typeWithDependencies` needs the extra "area" dependency because values are computed.
 
         // Property is an operation because we requested the "deferred" mode.
         assertInstanceOf(Operation.class, projection.typeWithDependencies.getProperty("density"));
@@ -251,31 +257,74 @@ public final class FeatureProjectionTest extends TestCase {
 
     /**
      * Tests the creation of a feature where an operation has been replaced by a simpler one.
-     * This case happen when a pure-Java operation has been replaced by a <abbr>SQL</abbr> expression,
+     * This case happens when a pure-Java operation has been replaced by a <abbr>SQL</abbr> expression.
+     * The <abbr>SQL</abbr> expression is simulated by a literal, which removes the dependency to the
+     * "area" property when an instance of {@link FeatureProjection#typeRequested} is created from a
+     * source feature instance.
+     */
+    @Test
+    public void testSubsetWithReplacedOperation() {
+        final FeatureProjection projection = testSubsetWithReplacedOperation(true,
+                new HashSet<>(Arrays.asList("country", "population", "density")));
+
+        // Property is an operation because we requested the "stored" mode.
+        assertInstanceOf(AttributeType.class, projection.typeWithDependencies.getProperty("density"));
+
+        // Compared to `testSubsetWithStoredOperation`, the "area" property disaspear.
+        assertSetEquals(Arrays.asList("name", "population"), projection.requiredSourceProperties());
+
+        // No extra dependency.
+        assertSame(projection.typeRequested, projection.typeWithDependencies);
+    }
+
+
+    /**
+     * Tests the creation of a feature where an operation has been replaced by a simpler one.
+     * This case happens when a pure-Java operation has been replaced by a <abbr>SQL</abbr> expression,
      * in which case the expression is simpler from <abbr>SIS</abbr> perspective. A consequence of this
      * simplification is that it may remove the need for some dependencies.
      */
     @Test
-    public void testSubsetWithReplacedOperation() {
+    public void testSubsetWithReplacedOperationAndLessDependencies() {
+        final FeatureProjection projection = testSubsetWithReplacedOperation(false,
+                new HashSet<>(Arrays.asList("country", "population", "density", "area")));
+
+        // Property is an operation because we requested the "deferred" mode.
+        assertInstanceOf(Operation.class, projection.typeWithDependencies.getProperty("density"));
+
+        // Compared to `testSubsetWithDeferredOperation`, the "area" property disaspear.
+        assertSetEquals(Arrays.asList("name", "population"), projection.requiredSourceProperties());
+
+        // The extra "area" dependency should have been removed, resulting in the same type.
+        assertSame(projection.typeRequested, projection.typeWithDependencies);
+    }
+
+    /**
+     * Implementation of the {@code testSubsetWithReplacedOperation()} test cases.
+     * The "density" operation will be resolved as an attribute if {@code stored} is {@code true}.
+     *
+     * @param  stored      whether the "density" operation should be converted to an attribute.
+     * @param  attributes  names of the attributes that are expected to found in the feature.
+     * @return the projection with modified expressions.
+     */
+    private FeatureProjection testSubsetWithReplacedOperation(final boolean stored, final Set<String> attributes) {
         final var builder = new FeatureProjectionBuilder(source, null);
         addCountry(builder);
         addPopulation(builder, false);
-        addPopulationDensity(builder, true);
+        addPopulationDensity(builder, stored);
         builder.setName("Population density");
         FeatureProjection projection = builder.project().orElseThrow();
-        final Set<String> expected = new HashSet<>(Set.of("country", "population", "density"));
-        projection = new FeatureProjection(projection, (name, expression) -> {
-            assertTrue(expected.remove(name), name);
+        projection = projection.replaceExpressions((name, expression) -> {
+            assertTrue(attributes.remove(name), name);
             if (name.equals("density")) {
                 return ff.literal(4.08);
             }
             return expression;
         });
-        assertTrue(expected.isEmpty(), expected.toString());
-        assertSame(projection.typeRequested, projection.typeWithDependencies);  // Because no more extra dependency.
-        assertSetEquals(Set.of("name", "population"), projection.dependencies());
         assertPropertyNamesEqual(projection.typeRequested, "country", "population", "density");
+        assertTrue(attributes.isEmpty(), attributes.toString());
         verifyDensityOnFeatureInstance(projection);
+        return projection;
     }
 
     /**

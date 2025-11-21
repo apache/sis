@@ -29,6 +29,7 @@ import org.opengis.metadata.quality.Result;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.pending.jdk.JDK16;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -49,7 +50,7 @@ import org.opengis.feature.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.5
  */
 public final class Features {
@@ -210,6 +211,18 @@ public final class Features {
      */
     public static FeatureType findCommonParent(final Iterable<? extends FeatureType> types) {
         return (types != null) ? CommonParentFinder.select(types) : null;
+    }
+
+    /**
+     * Returns the name of all properties (including inherited properties) of the given feature type.
+     *
+     * @param  feature  the feature type from which to get the name of all properties.
+     * @return name of all properties of the specified feature type.
+     *
+     * @since 1.6
+     */
+    public static List<String> getPropertyNames(final FeatureType feature) {
+        return JDK16.toList(feature.getProperties(true).stream().map((p) -> p.getName().toString()));
     }
 
     /**

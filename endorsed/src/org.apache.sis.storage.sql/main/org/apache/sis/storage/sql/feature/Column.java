@@ -61,7 +61,7 @@ public class Column implements Cloneable {
     public final String name;
 
     /**
-     * Name of the column as declared in with a {@code AS} clause in the <abbr>SQL</abbr> statement.
+     * Name of the column as declared with a {@code AS} clause in the <abbr>SQL</abbr> statement.
      * This is never null but may be identical to {@link #name} if no {@code AS} clause was specified.
      *
      * @see ResultSetMetaData#getColumnLabel(int)

@@ -19,6 +19,7 @@ package org.apache.sis.feature.internal.shared;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -28,14 +29,24 @@ import java.util.function.UnaryOperator;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.pending.jdk.Record;
+import org.apache.sis.pending.jdk.JDK19;
+import org.apache.sis.feature.Features;
+import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.feature.AbstractOperation;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.filter.visitor.ListingPropertyVisitor;
 import org.apache.sis.io.TableAppender;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
 import org.opengis.feature.Operation;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
@@ -50,7 +61,7 @@ import org.opengis.filter.ValueReference;
  * @author Guilhem Legal (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-public final class FeatureProjection implements UnaryOperator<Feature> {
+public final class FeatureProjection extends Record implements UnaryOperator<Feature> {
     /**
      * The type of features with the properties explicitly requested by the user.
      * The property names may differ from the properties of the {@link FeatureProjectionBuilder#source() source}
@@ -72,7 +83,12 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
      * The property names are the same as {@link #typeRequested} (i.e., may be aliases).
      * However, some operations may be wrapped in {@link OperationView}.
      *
-     * @see #dependencies()
+     * <p>This is <em>not</em> a container listing the properties of the source feature that are required.
+     * This type still assume that the {@link #apply(Feature)} method will receive complete source features.
+     * This type may differ from {@link #typeRequested} only when the latter contains operation that have not
+     * been converted to stored attributes.</p>
+     *
+     * @see #requiredSourceProperties()
      */
     public final FeatureType typeWithDependencies;
 
@@ -96,6 +112,28 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
      * to be already instances of {@link #typeWithDependencies} and will be modified in-place.
      */
     private final boolean createInstance;
+
+    /**
+     * Creates a new projection with the given properties.
+     *
+     * @param typeRequested         type of features with the properties explicitly requested by the user.
+     * @param typeWithDependencies  requested type augmented with dependencies required for the execution of operations.
+     * @param propertiesToCopy      names of the properties to be stored in the feature instances created by this object.
+     * @param expressions           expressions to apply on the source feature for fetching the property values.
+     * @param createInstance        whether the {@link #apply(Feature)} method shall create the feature instances.
+     */
+    private FeatureProjection(final FeatureType typeRequested,
+                              final FeatureType typeWithDependencies,
+                              final String[]    propertiesToCopy,
+                              final Expression<? super Feature, ?>[] expressions,
+                              final boolean createInstance)
+    {
+        this.typeRequested        = typeRequested;
+        this.typeWithDependencies = typeWithDependencies;
+        this.propertiesToCopy     = propertiesToCopy;
+        this.expressions          = expressions;
+        this.createInstance       = createInstance;
+    }
 
     /**
      * Creates a new projection with the given properties specified by a builder.
@@ -133,38 +171,15 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
     }
 
     /**
-     * Creates a new projection with a subset of the properties of another projection.
-     * This constructor is invoked when the caller handles itself some of the properties.
-     *
-     * <h4>Behavioral change</h4>
-     * Projections created by this constructor assumes that the feature instances given to the
-     * {@link #apply(Feature)} method are already instances of {@link #typeWithDependencies}
-     * and can be modified (if needed) in place. This constructor is designed for cases where
-     * the caller does itself a part of the {@code FeatureProjection} work.
-     *
-     * @param  parent     the projection from which to inherit the types and expressions.
-     * @param  remaining  index of the properties that still need to be copied after the caller did its processing.
-     *
-     * @see #forPreexistingFeatureInstances(int[])
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private FeatureProjection(final FeatureProjection parent, final int[] remaining) {
-        createInstance       = false;
-        typeRequested        = parent.typeRequested;
-        typeWithDependencies = parent.typeWithDependencies;
-        expressions          = new Expression[remaining.length];
-        propertiesToCopy     = new String[remaining.length];
-        for (int i=0; i<remaining.length; i++) {
-            final int index = remaining[i];
-            propertiesToCopy[i] = parent.propertiesToCopy[index];
-            expressions[i] = parent.expressions[index];
-        }
-    }
-
-    /**
      * Returns a variant of this projection where the caller has created the target feature instance itself.
      * The callers may have set some property values itself, and the {@code remaining} argument gives the
      * indexes of the properties that still need to be copied after caller's processing.
+     *
+     * <h4>Recommendation</h4>
+     * Caller should ensure that the {@code remaining} array does not contain indexes <var>i</var>
+     * where {@code expressions[i]} is equivalent to {@code FilterFactory.property(propertiesToCopy[i])}
+     * because it would be a useless operation. This method does not perform that verification by itself
+     * on the assumption that it would duplicate work already done by the caller.
      *
      * @param  remaining  index of the properties that still need to be copied after the caller did its processing.
      * @return a variant of this projection which only completes the projection done by the caller,
@@ -174,34 +189,133 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
         if (remaining.length == 0 && typeRequested == typeWithDependencies) {
             return null;
         }
-        return new FeatureProjection(this, remaining);
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        final Expression<? super Feature, ?>[] filteredExpressions = new Expression[remaining.length];
+        final String[] filteredProperties = new String[remaining.length];
+        for (int i=0; i<remaining.length; i++) {
+            final int index = remaining[i];
+            filteredProperties [i] = propertiesToCopy[index];
+            filteredExpressions[i] = expressions[index];
+        }
+        return new FeatureProjection(typeRequested, typeWithDependencies, filteredProperties, filteredExpressions, false);
     }
 
     /**
      * Creates a new projection with the same properties as the source projection, but modified expressions.
-     * The modifications are specified by the given {@code mapper}. No expression can be added or removed.
-     * New expressions should return values of the same type as the previous expressions.
-     * The new expressions shall not introduce new dependencies.
+     * The modifications are specified by the given {@code mapper}, which should return values of the same
+     * type as the previous expressions. The new expressions shall not introduce new dependencies.
      *
      * <h4>Purpose</h4>
-     * This constructor is used when the caller can replace some expressions by <abbr>SQL</abbr> statements.
+     * This method is used when the caller can replace some expressions by <abbr>SQL</abbr> statements.
      *
-     * @param source  the projection to copy.
      * @param mapper  a function receiving in arguments the property name and the expression fetching the property value,
      *                and returning the expression to use in replacement of the function given in argument.
+     * @return the feature projection with modified expressions. May be {@code this} if there is no change.
      */
-    public FeatureProjection(final FeatureProjection source,
+    public FeatureProjection replaceExpressions(
             final BiFunction<String, Expression<? super Feature, ?>, Expression<? super Feature, ?>> mapper)
     {
-        typeRequested    = source.typeRequested;
-        createInstance   = source.createInstance;
-        propertiesToCopy = source.propertiesToCopy;
-        expressions      = source.expressions.clone();
+        final Map<String, Expression<? super Feature, ?>> filtered = JDK19.newLinkedHashMap(expressions.length);
         for (int i = 0; i < expressions.length; i++) {
-            expressions[i] = mapper.apply(propertiesToCopy[i], expressions[i]);
+            final String property = propertiesToCopy[i];
+            if (filtered.put(property, mapper.apply(property, expressions[i])) != null) {
+                throw new CorruptedObjectException(Errors.format(Errors.Keys.DuplicatedElement_1, property));
+            }
         }
-        // TODO: check if we can remove some dependencies.
-        typeWithDependencies = source.typeWithDependencies;
+        /*
+         * The above loop replaced the expressions used for fetching values from the source feature instances
+         * and storing them as attributes. But expressions may also be used in an indirect way, as operations.
+         * Note that operations have no corresponding entries in the `propertiesToCopy` array.
+         */
+        final var builder = new FeatureTypeBuilder(typeWithDependencies);
+        for (final PropertyTypeBuilder property : builder.properties().toArray(PropertyTypeBuilder[]::new)) {
+            filtered.computeIfAbsent(property.getName().toString(), (name) -> {
+                final PropertyType type = property.build();
+                Expression<? super Feature, ?> expression = FeatureOperations.expressionOf(type);
+                if (!expression.equals(expression = mapper.apply(name, expression))) {
+                    property.replaceBy(builder.addProperty(FeatureOperations.replace(type, expression)));
+                    return expression;
+                }
+                return null;    // No change, keep the current operation.
+            });
+        }
+        /*
+         * Some expressions may become unnecessary if the new expression only fetches a property value, then stores
+         * that value unchanged in the same feature instance. Note that we will need to remove only the expression,
+         * not the property in the `FeatureType`.
+         */
+        if (!createInstance) {
+            for (final var it = filtered.entrySet().iterator(); it.hasNext();) {
+                final var entry = it.next();
+                final var expression = entry.getValue();
+                if (expression instanceof ValueReference<?,?>) {
+                    final String name = ((ValueReference<?,?>) expression).getXPath();
+                    if (name.equals(entry.getKey())) {
+                        // The expression reads and stores a property of the same name in the same feature instance.
+                        final PropertyTypeBuilder property = builder.getProperty(name);
+                        if (property != null) {     // A null value would probably be a bug, but check anyway.
+                            property.remove();
+                            it.remove();
+                        }
+                    }
+                }
+            }
+        }
+        /*
+         * Maybe the new expressions have less dependencies than the old expressions. It happens if `mapper` replaced
+         * a pure Java filter by a SQL expression such as `SQRT(x*x + y*y)`, in which case the `x` and `y` properties
+         * are used by the database and do not need anymore to be forwarded to the Java code.
+         */
+        if (typeWithDependencies != typeRequested) {
+            final var unnecessary = new HashSet<>(Features.getPropertyNames(typeWithDependencies));
+            unnecessary.removeAll(Features.getPropertyNames(typeRequested));
+            for (var property : builder.properties()) {
+                final PropertyType type = property.build();
+                if (type instanceof AbstractOperation) {
+                    unnecessary.removeAll(((AbstractOperation) type).getDependencies());
+                }
+            }
+            for (final String name : unnecessary) {
+                final PropertyTypeBuilder property = builder.getProperty(name);
+                // A `false` value below would be a bug, but check anyway.
+                if (property != null && filtered.remove(name) != null) {
+                    property.remove();
+                }
+            }
+        }
+        /*
+         * Remove any remaining operations. The remaining entries shall be only expressions
+         * for fetching the values to store in attributes, not values computed on-the-fly.
+         */
+        filtered.keySet().removeIf((name) -> {
+            final PropertyTypeBuilder property = builder.getProperty(name);
+            return (property != null) && (property.build() instanceof Operation);
+        });
+        /*
+         * Create the new feature types with the modified expressions.
+         * Check if we can reuse the existing feature types.
+         */
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        final Expression<? super Feature, ?>[] filteredExpressions = filtered.values().toArray(Expression[]::new);
+        String[] filteredProperties = filtered.keySet().toArray(String[]::new);
+        if (Arrays.equals(filteredProperties, propertiesToCopy)) {
+            filteredProperties = propertiesToCopy;  // Share existing instances (common case).
+        }
+        FeatureType withDeps = builder.build();
+        boolean modified = builder.setName(typeRequested.getName()).properties().removeIf(
+                (property) -> !typeRequested.hasProperty(property.getName().toString()));
+        FeatureType filteredType = builder.build();
+        if (filteredType.equals(typeRequested)) {
+            filteredType = typeRequested;
+        }
+        if (!modified) {
+            withDeps = filteredType;
+        } else if (withDeps.equals(typeWithDependencies)) {
+            withDeps = typeWithDependencies;
+        }
+        var p = new FeatureProjection(filteredType, withDeps, filteredProperties, filteredExpressions, createInstance);
+        if (equals(p)) p = this;
+        return p;
     }
 
     /**
@@ -266,9 +380,9 @@ public final class FeatureProjection implements UnaryOperator<Feature> {
      * dependencies are references to {@link #typeWithDependencies} properties instead of properties of the
      * source features. The property names may differ.</p>
      *
-     * @return all dependencies (including transitive dependencies) as XPaths.
+     * @return all dependencies (including transitive dependencies) from source features, as XPaths.
      */
-    public Set<String> dependencies() {
+    public Set<String> requiredSourceProperties() {
         Set<String> references = null;
         for (var expression : expressions) {
             references = ListingPropertyVisitor.xpaths(expression, references);

@@ -68,7 +68,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
      * The type of result of evaluating the expression.
      */
     @SuppressWarnings("serial")                         // Apache SIS implementations are serializable.
-    private final AttributeType<V> resultType;
+    final AttributeType<V> resultType;
 
     /**
      * The name of all feature properties that are known to be read by the expression.

@@ -461,7 +461,7 @@ final class FeatureStream extends DeferredStream<Feature> {
                 final var columnSQL = new SelectionClause(projected);
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final SelectionClauseWriter filterToSQL = getFilterToSQL();
-                queriedProjection = new FeatureProjection(queriedProjection, (name, expression) -> {
+                queriedProjection = queriedProjection.replaceExpressions((name, expression) -> {
                     final JDBCType type = filterToSQL.writeFunction(columnSQL, expression);
                     if (type != null) try {
                         columnSQL.append(" AS ").appendIdentifier(name);
@@ -473,9 +473,6 @@ final class FeatureStream extends DeferredStream<Feature> {
                     columnSQL.clear();
                     return expression;
                 });
-                if (queriedProjection.equals(projection)) {
-                    queriedProjection = projection;     // No change, keep the original one.
-                }
             }
             /*
              * Build a pseudo-table (a view) with the subset of columns specified by the projection.
@@ -484,7 +481,7 @@ final class FeatureStream extends DeferredStream<Feature> {
             final var reusedNames = new HashSet<String>();
             projected = new Table(projected, queriedProjection, reusedNames, unhandled);
             completion = queriedProjection.forPreexistingFeatureInstances(unhandled.stream().toArray());
-            if (completion != null && !reusedNames.containsAll(completion.dependencies())) {
+            if (completion != null && !reusedNames.containsAll(completion.requiredSourceProperties())) {
                 /*
                  * Cannot use `projected` because some expressions need properties available only
                  * in the source features. Request full feature instances from the original table.
