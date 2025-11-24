@@ -42,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  * and (<var>λ</var>,<var>φ</var>,<var>h</var>) outputs, then the following code:
  *
  * {@snippet lang="java" :
- *     TransformSeparator s = new TransformSeparator(theTransform);
+ *     var s = new TransformSeparator(theTransform);
  *     s.addSourceDimensionRange(0, 2);
  *     MathTransform mt = s.separate();
  *     }
@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Errors;
  * The output dimensions can be verified with a call to {@link #getTargetDimensions()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.6
  * @since   0.7
  */
 public class TransformSeparator {
@@ -494,6 +494,45 @@ public class TransformSeparator {
             }
         }
         throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateTransform_3, side, expected, actual));
+    }
+
+    /**
+     * Replaces the transform in the given range of coordinate indexes.
+     * The coordinates at indexes in the range from {@code lower} inclusive to {@code upper} exclusive
+     * will be computed by the given {@code replacement}. Coordinates at other indexes are computed by
+     * the transform given at construction time.
+     *
+     * @param  lower        index of the first coordinate to compute with the given replacement.
+     * @param  upper        index after the last coordinate to compute with the given replacement.
+     * @param  replacement  the transform to use for the given range of coordinate indexes.
+     * @return a transform with the replacement, or the transform specified at construction time if no change.
+     * @throws FactoryException if the transform cannot be separated.
+     *
+     * @since 1.6
+     */
+    public MathTransform replace(final int lower, final int upper, final MathTransform replacement) throws FactoryException {
+        final int limit = transform.getTargetDimensions();
+        ArgumentChecks.ensureBetween("lower",     0, limit, lower);
+        ArgumentChecks.ensureBetween("upper", lower, limit, upper);
+        ArgumentChecks.ensureNonNull("replacement", replacement);
+        clear();
+        int count = 0;
+        var components = new MathTransform[3];
+        if (lower != 0) {
+            addTargetDimensionRange(0, lower);
+            components[count++] = separate();
+            clear();
+        }
+        components[count++] = replacement;
+        if (upper != limit) {
+            addTargetDimensionRange(upper, limit);
+            components[count++] = separate();
+            clear();
+        }
+        components = ArraysExt.resize(components, count);
+        // Note: we should use `factory` below, but it may not be worth to duplicate the `compound` code for now.
+        final MathTransform result = MathTransforms.compound(components);
+        return transform.equals(result) ? transform : result;
     }
 
     /**

@@ -46,6 +46,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -148,7 +149,7 @@ import org.opengis.coordinate.CoordinateMetadata;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 public final class CRS {
@@ -1014,6 +1015,35 @@ public final class CRS {
             }
         }
         return Optional.ofNullable(epoch);
+    }
+
+    /**
+     * Returns the geodetic reference frame used by the given coordinate reference system.
+     * If the given <abbr>CRS</abbr> is an instance of {@link GeodeticCRS}, then this method returns the
+     * <abbr>CRS</abbr>'s datum. Otherwise, if the given <abbr>CRS</abbr> is an instance of {@link CompoundCRS},
+     * then this method searches for the first geodetic component. Otherwise, this method returns an empty value.
+     *
+     * @param  crs  the coordinate reference system for which to get the geodetic reference frame, or {@code null}.
+     * @return the geodetic reference frame, or an empty value if none.
+     *
+     * @see DatumOrEnsemble#getEllipsoid(CoordinateReferenceSystem)
+     * @see DatumOrEnsemble#getPrimeMeridian(CoordinateReferenceSystem)
+     * @see #getGreenwichLongitude(GeodeticCRS)
+     *
+     * @since 1.6
+     */
+    public static Optional<GeodeticDatum> getGeodeticReferenceFrame(final CoordinateReferenceSystem crs) {
+        if (crs instanceof GeodeticCRS) {
+            return Optional.ofNullable(DatumOrEnsemble.asDatum((GeodeticCRS) crs));
+        } else if (crs instanceof CompoundCRS) {
+            for (CoordinateReferenceSystem component : ((CompoundCRS) crs).getComponents()) {
+                final Optional<GeodeticDatum> datum = getGeodeticReferenceFrame(component);
+                if (datum.isPresent()) {
+                    return datum;
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**

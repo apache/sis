@@ -74,7 +74,7 @@ public abstract class Grid extends NamedElement {
      * The coordinate reference system, created when first needed.
      * May be {@code null} even after we attempted to create it.
      *
-     * @see #getCoordinateReferenceSystem(Decoder, List, List, Matrix)
+     * @see #getCRSFromAxes(Decoder, List, List, Matrix)
      */
     private CoordinateReferenceSystem crs;
 
@@ -290,7 +290,7 @@ public abstract class Grid extends NamedElement {
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if the CRS cannot be constructed.
      */
-    final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder, final List<Exception> warnings,
+    final CoordinateReferenceSystem getCRSFromAxes(final Decoder decoder, final List<Exception> warnings,
             final List<GridCacheValue> linearizations, final Matrix reorderGridToCRS)
             throws IOException, DataStoreException
     {
@@ -299,12 +299,12 @@ public abstract class Grid extends NamedElement {
             return crs;
         } else try {
             if (useCache) isCRSDetermined = true;               // Set now for avoiding new attempts if creation fail.
-            final CoordinateReferenceSystem result = CRSBuilder.assemble(decoder, this, linearizations, reorderGridToCRS);
+            CoordinateReferenceSystem result = CRSBuilder.assemble(decoder, this, linearizations, reorderGridToCRS);
             if (useCache) crs = result;
             return result;
         } catch (FactoryException | NullPointerException ex) {
             if (isNewWarning(ex, warnings)) {
-                canNotCreate(decoder, "getCoordinateReferenceSystem", Resources.Keys.CanNotCreateCRS_3, ex);
+                canNotCreate(decoder, "getCRSFromAxes", Resources.Keys.CanNotCreateCRS_3, ex);
             }
             return null;
         }
@@ -343,7 +343,7 @@ public abstract class Grid extends NamedElement {
             if (length <= 0) return null;
             high[(n-1) - i] = length;
         }
-        final DimensionNameType[] names = new DimensionNameType[n];
+        final var names = new DimensionNameType[n];
         switch (n) {
             default: names[1] = DimensionNameType.ROW;      // Fall through
             case 1:  names[0] = DimensionNameType.COLUMN;   // Fall through
@@ -381,18 +381,18 @@ public abstract class Grid extends NamedElement {
     final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
         if (!isGeometryDetermined) try {
             isGeometryDetermined = true;                    // Set now for avoiding new attempts if creation fail.
-            final Axis[] axes = getAxes(decoder);           // In CRS order (reverse of netCDF order).
             /*
              * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
              * The order of dimensions in the transform is the reverse of the netCDF dimension order.
              */
-            int lastSrcDim = getSourceDimensions();         // Will be decremented later, then kept final.
-            int lastTgtDim = axes.length;                   // Should be `getTargetDimensions()` but some axes may have been excluded.
-            final int[] deferred = new int[axes.length];    // Indices of axes that have been deferred.
-            final List<MathTransform> nonLinears = new ArrayList<>(axes.length);
-            final Matrix affine = Matrices.createZero(lastTgtDim + 1, lastSrcDim + 1);
-            affine.setElement(lastTgtDim--, lastSrcDim--, 1);
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final Axis[] axes       = getAxes(decoder);           // In CRS order (reverse of netCDF order).
+            final int[]  deferred   = new int[axes.length];       // Indices of axes that have been deferred.
+            final var    nonLinears = new ArrayList<MathTransform>(axes.length);
+            final int    lastSrcDim = getSourceDimensions() - 1;
+            final Matrix affine     = Matrices.createZero(axes.length + 1, lastSrcDim + 2);
+            affine.setElement(axes.length, lastSrcDim + 1, 1);
             for (int tgtDim=0; tgtDim < axes.length; tgtDim++) {
                 if (!axes[tgtDim].trySetTransform(affine, lastSrcDim, tgtDim, nonLinears)) {
                     deferred[nonLinears.size() - 1] = tgtDim;
@@ -439,8 +439,8 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
              * two-dimensional localization grid. Those transforms require two variables, i.e. "two-dimensional"
              * axes come in pairs.
              */
-            final List<GridCacheValue> linearizations = new ArrayList<>();
-            for (int i=0; i<nonLinears.size(); i++) {         // Length of `nonLinears` may change in this loop.
+            final var linearizations = new ArrayList<GridCacheValue>();
+            for (int i=0; i < nonLinears.size(); i++) {       // Length of `nonLinears` may change in this loop.
                 if (nonLinears.get(i) == null) {
                     for (int j=i; ++j < nonLinears.size();) {
                         if (nonLinears.get(j) == null) {
@@ -499,25 +499,21 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
              * This modification happens only if `Convention.linearizers()` specified transforms to apply on the
              * localization grid for making it more linear. This is a profile-dependent feature.
              */
-            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder, null, linearizations, affine);
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final CoordinateReferenceSystem crs = getCRSFromAxes(decoder, null, linearizations, affine);
             /*
              * Final transform, as the concatenation of the non-linear transforms followed by the affine transform.
              * We concatenate the affine transform last because it may change axis order.
              */
-            MathTransform gridToCRS = null;
-            final int nonLinearCount = nonLinears.size();
             final MathTransformFactory factory = decoder.getMathTransformFactory();
-            // Not a non-linear transform, but we abuse this list for convenience.
-            nonLinears.add(factory.createAffineTransform(affine));
-            for (int i=0; i <= nonLinearCount; i++) {
+            MathTransform gridToCRS = factory.createAffineTransform(affine);
+            for (int i = nonLinears.size(); --i >= 0;) {
                 MathTransform tr = nonLinears.get(i);
                 if (tr != null) {
-                    if (i < nonLinearCount) {
-                        final int srcDim = gridDimensionIndices[i];
-                        tr = factory.createPassThroughTransform(srcDim, tr,
-                                        (lastSrcDim + 1) - (srcDim + tr.getSourceDimensions()));
-                    }
-                    gridToCRS = (gridToCRS == null) ? tr : factory.createConcatenatedTransform(gridToCRS, tr);
+                    int firstAffectedCoordinate = gridDimensionIndices[i];
+                    int numTrailingCoordinates  = (lastSrcDim + 1) - (firstAffectedCoordinate + tr.getSourceDimensions());
+                    tr = factory.createPassThroughTransform(firstAffectedCoordinate, tr, numTrailingCoordinates);
+                    gridToCRS = factory.createConcatenatedTransform(tr, gridToCRS);
                 }
             }
             /*
@@ -550,7 +546,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
     /**
      * Logs a warning about a CRS or grid geometry that cannot be created.
      *
-     * @param  caller  one of {@code "getCoordinateReferenceSystem"} or {@code "getGridGeometry"}.
+     * @param  caller  one of {@code "getCRSFromAxes"} or {@code "getGridGeometry"}.
      * @param  key     one of {@link Resources.Keys#CanNotCreateCRS_3} or {@link Resources.Keys#CanNotCreateGridGeometry_3}.
      */
     private void canNotCreate(final Decoder decoder, final String caller, final short key, final Exception ex) {

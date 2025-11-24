@@ -18,6 +18,7 @@ package org.apache.sis.referencing.internal.shared;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.OptionalInt;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
@@ -143,13 +144,23 @@ public final class ReferencingUtilities {
      * @return the number of dimensions, or 0 if the given CRS or its coordinate system is null.
      */
     public static int getDimension(final CoordinateReferenceSystem crs) {
+        return getOptionalDimension(crs).orElse(0);
+    }
+
+    /**
+     * Returns the number of dimensions of the given <abbr>CRS</abbr>.
+     *
+     * @param  crs  the <abbr>CRS</abbr> from which to get the number of dimensions, or {@code null}.
+     * @return the number of dimensions, or empty if the given CRS or its coordinate system is null.
+     */
+    public static OptionalInt getOptionalDimension(final CoordinateReferenceSystem crs) {
         if (crs != null) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs != null) {                                               // Paranoiac check.
-                return cs.getDimension();
+            if (cs != null) {   // Should never be null, but let be safe.
+                return OptionalInt.of(cs.getDimension());
             }
         }
-        return 0;
+        return OptionalInt.empty();
     }
 
     /**

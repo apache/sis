@@ -535,7 +535,7 @@ public class Convention {
     }
 
     /**
-     * Returns the <i>grid to CRS</i> transform for the given node. This method is invoked after call
+     * Returns the <i>grid corner to CRS</i> transform for the given node. This method is invoked after call
      * to {@link #projection(Node)} method resulted in creation of a projected coordinate reference system.
      * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} is fixed to (latitude, longitude) axes in degrees,
      * but the projected CRS axes may have any order and units. In the particular case of "latitude_longitude"

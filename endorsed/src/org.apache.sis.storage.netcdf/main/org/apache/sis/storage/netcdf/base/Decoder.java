@@ -462,7 +462,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
         if (list.isEmpty()) {
             final var warnings = new ArrayList<Exception>();    // For internal usage by Grid.
             for (final Grid grid : getGridCandidates()) {
-                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings, null, null));
+                addIfNotPresent(list, grid.getCRSFromAxes(this, warnings, null, null));
             }
         }
         return list;

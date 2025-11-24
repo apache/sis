@@ -149,6 +149,12 @@ public class Resources extends IndexedResourceBundle {
         public static final short InconsistentCRS_2 = 29;
 
         /**
+         * The “{2}” attribute does not match the transform inferred from the axes of “{1}” in the
+         * “{0}” netCDF file.
+         */
+        public static final short InconsistentTransform_3 = 30;
+
+        /**
          * Attributes “{1}” and “{2}” on variable “{0}” have different lengths: {3} and {4}
          * respectively.
          */
