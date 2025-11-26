@@ -25,8 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.conics.Circle;
 import org.apache.sis.geometries.conics.CircularString;
 import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
@@ -44,6 +43,7 @@ import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -110,11 +110,11 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
         return new DefaultGeometryCollection<>(geometries);
     }
 
-    public static PointSequence createSequence(TupleArray positions) {
+    public static PointSequence createSequence(Array positions) {
         return createSequence(Collections.singletonMap(AttributesType.ATT_POSITION, positions));
     }
 
-    public static PointSequence createSequence(Map<String, TupleArray> attributes) {
+    public static PointSequence createSequence(Map<String, Array> attributes) {
         return new ArraySequence(attributes);
     }
 
@@ -205,25 +205,25 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
         if (!dimensions.hasZ) {
             final SampleSystem ss = SampleSystem.ofSize(2);
             if (isFloat) {
-                points = new ArraySequence(TupleArrays.of(ss, (float) coordinates.get(0), (float) coordinates.get(1)));
+                points = new ArraySequence(NDArrays.of(ss, (float) coordinates.get(0), (float) coordinates.get(1)));
             } else {
-                points = new ArraySequence(TupleArrays.of(ss, coordinates.get(0), coordinates.get(1)));
+                points = new ArraySequence(NDArrays.of(ss, coordinates.get(0), coordinates.get(1)));
             }
         } else {
             final SampleSystem ss = SampleSystem.ofSize(3);
             if (isFloat) {
-                points = new ArraySequence(TupleArrays.of(ss, (float) coordinates.get(0), (float) coordinates.get(1), (float) coordinates.get(2)));
+                points = new ArraySequence(NDArrays.of(ss, (float) coordinates.get(0), (float) coordinates.get(1), (float) coordinates.get(2)));
             } else {
-                points = new ArraySequence(TupleArrays.of(ss, coordinates.get(0), coordinates.get(1), coordinates.get(2)));
+                points = new ArraySequence(NDArrays.of(ss, coordinates.get(0), coordinates.get(1), coordinates.get(2)));
             }
         }
 
         if (dimensions.hasM) {
-            final TupleArray marray;
+            final Array marray;
             if (isFloat) {
-                marray = TupleArrays.of(SampleSystem.ofSize(1), (float) coordinates.get(dimensions.hasZ ? 3 : 2));
+                marray = NDArrays.of(SampleSystem.ofSize(1), (float) coordinates.get(dimensions.hasZ ? 3 : 2));
             } else {
-                marray = TupleArrays.of(SampleSystem.ofSize(1), coordinates.get(dimensions.hasZ ? 3 : 2));
+                marray = NDArrays.of(SampleSystem.ofSize(1), coordinates.get(dimensions.hasZ ? 3 : 2));
             }
             points.setAttribute("m", marray);
         }

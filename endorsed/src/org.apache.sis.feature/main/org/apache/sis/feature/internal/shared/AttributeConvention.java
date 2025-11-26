@@ -250,21 +250,6 @@ public final class AttributeConvention {
     }
 
     /**
-     * Returns {@code true} if the given feature type is non-null and has a {@value #IDENTIFIER} property.
-     *
-     * @param  feature  the feature type to test, or {@code null}.
-     * @return whether the given feature type is non-null and has a {@value #IDENTIFIER} property.
-     */
-    public static boolean hasIdentifier(final FeatureType feature) {
-        if (feature != null) try {
-            return feature.getProperty(IDENTIFIER) != null;
-        } catch (PropertyNotFoundException e) {
-            // Ignore
-        }
-        return false;
-    }
-
-    /**
      * Returns {@code true} if the given type is an {@link AttributeType} or an {@link Operation} computing
      * an attribute, and the attribute value is one of the geometry types recognized by SIS.
      * The types currently recognized by SIS are:

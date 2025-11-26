@@ -97,7 +97,7 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.6
  *
  * @see DefaultAttributeType
  * @see DefaultAssociationRole
@@ -851,7 +851,24 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     }
 
     /**
+     * Returns {@code true} if and only if an attribute, operation or association role of the given name exists
+     * in this feature type or in one of its super-types. If this method returns {@code true}, then calls to
+     * <code>{@linkplain #getProperty(String) getProperty}(name)</code> will not throw
+     * {@link PropertyNotFoundException}.
+     *
+     * @param  name  the name of the property to search.
+     * @return whether an attribute, operation or association role exists for the given name.
+     *
+     * @since 1.6
+     */
+    @Override
+    public boolean hasProperty(final String name) {
+        return byName.get(name) != null;
+    }
+
+    /**
      * Returns the attribute, operation or association role for the given name.
+     * The method searches in this feature type and in all super-types.
      *
      * @param  name  the name of the property to search.
      * @return the property for the given name, or {@code null} if none.
@@ -917,7 +934,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             return true;
         }
         if (super.equals(obj)) {
-            final DefaultFeatureType that = (DefaultFeatureType) obj;
+            final var that = (DefaultFeatureType) obj;
             return isAbstract == that.isAbstract &&
                    superTypes.equals(that.superTypes) &&
                    properties.equals(that.properties);

@@ -34,11 +34,12 @@ import org.opengis.filter.FilterFactory;
  *
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LeafExpressionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory<Feature,Object,?> factory;
+    private final FilterFactory<Feature, ?, ?> factory;
 
     /**
      * Creates a new test case.

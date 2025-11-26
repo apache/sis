@@ -56,7 +56,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.0
  */
 package org.apache.sis.storage.sql;

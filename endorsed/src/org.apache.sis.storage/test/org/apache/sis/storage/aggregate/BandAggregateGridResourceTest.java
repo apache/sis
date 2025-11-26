@@ -33,7 +33,7 @@ import org.apache.sis.coverage.grid.BufferedGridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.storage.base.MemoryGridResource;
+import org.apache.sis.storage.MemoryGridCoverageResource;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -48,6 +48,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BandAggregateGridResourceTest extends TestCase {
     /**
      * Width and height of images created for tests.
@@ -65,7 +66,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
     private final GridCoverageProcessor processor;
 
     /**
-     * Whether to hide {@link MemoryGridResource} in order to disable optimizations.
+     * Whether to hide {@link MemoryGridCoverageResource} in order to disable optimizations.
      */
     private boolean opaque;
 
@@ -153,7 +154,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
         final var aggregator = new CoverageAggregator(null, processor);
         aggregator.addRangeAggregate(first, second);
         /*
-         * If the result is not an instance of `MemoryGridResource`,
+         * If the result is not an instance of `MemoryGridCoverageResource`,
          * this is a bug in `BandAggregateGridResource.create(…)`.
          */
         final LocalName testName = Names.createLocalName(null, null, "test-name");
@@ -167,7 +168,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
     }
 
     /**
-     * Tests the shortcut for {@link MemoryGridResource} instances.
+     * Tests the shortcut for {@link MemoryGridCoverageResource} instances.
      * {@link BandAggregateGridResource} should apply aggregations directly on the underlying grid coverages.
      *
      * @throws DataStoreException if an error occurred while reading a resource.
@@ -200,7 +201,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
             System.arraycopy(bandValues, 0, data, i, numBands);
         }
         final var values = new DataBufferInt(data, data.length);
-        final var r = new MemoryGridResource(null, null, new BufferedGridCoverage(domain, samples, values), null);
+        final var r = new MemoryGridCoverageResource(null, null, new BufferedGridCoverage(domain, samples, values), null);
         return opaque ? new OpaqueGridResource(r) : r;
     }
 

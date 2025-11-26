@@ -113,7 +113,7 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
     }
 
     /**
-     * {@return the columns included in this tree table}.
+     * Returns the columns included in this tree table.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the returned collection is unmodifiable.

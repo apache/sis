@@ -18,12 +18,12 @@ package org.apache.sis.util.collection;
 
 import java.util.Set;
 import java.util.Iterator;
+import java.util.Spliterator;
 import java.io.Serializable;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.shared.SetOfUnknownSize;
 
 
 /**
@@ -110,6 +110,14 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
     @Override
     public final Class<E> getElementType() {
         return converter.getTargetClass();
+    }
+
+    /**
+     * Declares that this set excludes the null element.
+     */
+    @Override
+    protected int characteristics() {
+        return Spliterator.DISTINCT | Spliterator.NONNULL;
     }
 
     /**

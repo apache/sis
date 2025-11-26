@@ -30,10 +30,10 @@ import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -42,20 +42,20 @@ import org.apache.sis.util.ArgumentChecks;
  */
 public final class ArraySequence implements PointSequence, AttributesType {
 
-    private TupleArray positions;
-    private final Map<String,TupleArray> attributes = new HashMap<>(1);
+    private Array positions;
+    private final Map<String,Array> attributes = new HashMap<>(1);
 
-    public ArraySequence(TupleArray positions) {
+    public ArraySequence(Array positions) {
         this(Collections.singletonMap(AttributesType.ATT_POSITION, positions));
     }
 
-    public ArraySequence(Map<String, TupleArray> attributes) {
+    public ArraySequence(Map<String, Array> attributes) {
         this.attributes.putAll(attributes);
         this.positions = attributes.get(AttributesType.ATT_POSITION);
         ArgumentChecks.ensureNonNull("positions", this.positions);
         ArgumentChecks.ensureNonNull("positions crs", this.positions.getCoordinateReferenceSystem());
-        final int size = this.positions.getLength();
-        for (TupleArray ta : this.attributes.values()) {
+        final long size = this.positions.getLength();
+        for (Array ta : this.attributes.values()) {
             if (ta.getLength() != size) {
                 throw new IllegalArgumentException("All arrays must have the same length");
             }
@@ -84,7 +84,7 @@ public final class ArraySequence implements PointSequence, AttributesType {
 
     @Override
     public int size() {
-        return positions.getLength();
+        return Math.toIntExact(positions.getLength());
     }
 
     @Override
@@ -102,11 +102,11 @@ public final class ArraySequence implements PointSequence, AttributesType {
         positions.set(index, value);
     }
 
-    public TupleArray getAttribute(String name) {
+    public Array getAttribute(String name) {
         return attributes.get(name);
     }
 
-    public void setAttribute(String name, TupleArray array) {
+    public void setAttribute(String name, Array array) {
         if (array == null) {
             if (AttributesType.ATT_POSITION.equals(name)) {
                 throw new IllegalArgumentException("Positions attribute can not be removed");
@@ -153,13 +153,13 @@ public final class ArraySequence implements PointSequence, AttributesType {
     }
 
     @Override
-    public TupleArray getAttributeArray(String name) {
+    public Array getAttributeArray(String name) {
         return attributes.get(name).copy();
     }
 
     @Override
     public BBox getAttributeRange(String name) {
-        return TupleArrays.computeRange(attributes.get(name));
+        return NDArrays.computeRange(attributes.get(name));
     }
 
     /**
@@ -182,7 +182,7 @@ public final class ArraySequence implements PointSequence, AttributesType {
 
         @Override
         public Tuple getPosition() {
-            final TupleArrayCursor cursor = parent.positions.cursor();
+            final Cursor cursor = parent.positions.cursor();
             cursor.moveTo(index);
             return cursor.samples();
         }
@@ -196,18 +196,18 @@ public final class ArraySequence implements PointSequence, AttributesType {
 
         @Override
         public Tuple getAttribute(String key) {
-            final TupleArray tupleGrid = parent.attributes.get(key);
+            final Array tupleGrid = parent.attributes.get(key);
             if (tupleGrid == null) return null;
-            final TupleArrayCursor cursor = tupleGrid.cursor();
+            final Cursor cursor = tupleGrid.cursor();
             cursor.moveTo(index);
             return cursor.samples();
         }
 
         @Override
         public void setAttribute(String name, Tuple tuple) {
-            final TupleArray tupleGrid = parent.attributes.get(name);
+            final Array tupleGrid = parent.attributes.get(name);
             if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
-            final TupleArrayCursor cursor = tupleGrid.cursor();
+            final Cursor cursor = tupleGrid.cursor();
             cursor.moveTo(index);
             cursor.samples().set(tuple);
         }

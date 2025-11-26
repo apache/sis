@@ -124,7 +124,7 @@ public final class LenientDateFormat extends DateFormat {
     }
 
     /**
-     * Parses the given date as an instant, assuming UTC timezone if unspecified.
+     * Parses the given date as an instant, assuming <abbr>UTC</abbr> timezone if unspecified.
      *
      * @param  text   the text to parse as an instant in UTC timezone by default, or {@code null}.
      * @return the instant for the given text, or {@code null} if the given text was null.
@@ -135,7 +135,8 @@ public final class LenientDateFormat extends DateFormat {
     }
 
     /**
-     * Parses the given date as an instant, assuming UTC timezone if unspecified.
+     * Parses the given date as an instant, assuming <abbr>UTC</abbr> timezone if unspecified.
+     * This method is tolerant to date and time separated by a space instead of the {@code 'T'} character.
      *
      * @param  text   the text to parse as an instant in UTC timezone by default.
      * @param  lower  index of the first character to parse.

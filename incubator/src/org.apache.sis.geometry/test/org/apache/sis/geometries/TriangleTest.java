@@ -16,13 +16,13 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -37,7 +37,7 @@ public class TriangleTest {
     @Test
     public void constructorTest() {
 
-        final TupleArray positions = TupleArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
+        final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
         final PointSequence points = GeometryFactory.createSequence(positions);
         final LinearRing exterior = GeometryFactory.createLinearRing(points);
         final Triangle triangle = GeometryFactory.createTriangle(exterior);

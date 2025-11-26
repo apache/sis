@@ -90,8 +90,10 @@ final class GroupAggregate extends AggregatedResource implements Aggregate {
      * @param components        the resources to uses as components of this aggregate.
      * @param sampleDimensions  sample dimensions common to all grid coverage resources.
      */
-    GroupAggregate(final String name, final StoreListeners listeners, final GridCoverageResource[] components,
-                   final List<SampleDimension> sampleDimensions)
+    GroupAggregate(final String name,
+                   final StoreListeners         listeners,
+                   final GridCoverageResource[] components,
+                   final List<SampleDimension>  sampleDimensions)
     {
         super(name, listeners, true);
         this.components = components;

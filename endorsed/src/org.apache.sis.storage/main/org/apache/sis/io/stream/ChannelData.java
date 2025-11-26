@@ -173,8 +173,10 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * {@return the wrapped channel where data are read or written}.
+     * Returns the wrapped channel from which data are read or where data are written.
      * This is the {@code channel} field of the {@code ChannelData} subclass.
+     *
+     * @return the channel for actual read or write operations.
      *
      * @see ChannelDataInput#channel
      * @see ChannelDataOutput#channel

@@ -102,10 +102,18 @@ final class NamedFeatureType implements FeatureType, Serializable {
     }
 
     /**
+     * Always returns {@code false} since this feature type has no declared property yet.
+     */
+    @Override
+    public boolean hasProperty(String name) {
+        return false;
+    }
+
+    /**
      * Always throws {@link PropertyNotFoundException} since this feature type has no declared property yet.
      */
     @Override
-    public PropertyType getProperty(final String name) throws PropertyNotFoundException {
+    public PropertyType getProperty(String name) throws PropertyNotFoundException {
         throw new PropertyNotFoundException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
     }
 
@@ -113,7 +121,7 @@ final class NamedFeatureType implements FeatureType, Serializable {
      * Returns an empty set since this feature has no declared property yet.
      */
     @Override
-    public Collection<? extends PropertyType> getProperties(final boolean includeSuperTypes) {
+    public Collection<? extends PropertyType> getProperties(boolean includeSuperTypes) {
         return Collections.emptySet();
     }
 
@@ -139,6 +147,7 @@ final class NamedFeatureType implements FeatureType, Serializable {
         if (type == null) {
             return false;
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final FeatureType resolved = this.resolved;
         return (resolved != null) && resolved.isAssignableFrom(type);
     }

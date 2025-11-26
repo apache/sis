@@ -152,7 +152,7 @@ public final class TileMatrix {
     }
 
     /**
-     * {@return whether to use strips instead of tiles}.
+     * Returns whether to use strips instead of tiles.
      * This is {@code true} if image rows are not separated in tiles.
      * The purpose of using strips is to avoid the restriction that tile size must be multiple of 16 bytes.
      */

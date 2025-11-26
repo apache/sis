@@ -26,8 +26,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometries.operation.GeometryOperations;
@@ -35,6 +34,7 @@ import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -45,7 +45,7 @@ public final class Transform {
 
     private Transform(){}
 
-    private static TupleArray transform(TupleArray reference, org.apache.sis.geometries.operation.spatialedition.Transform operation) {
+    private static Array transform(Array reference, org.apache.sis.geometries.operation.spatialedition.Transform operation) {
 
         final int sourceDimension = reference.getDimension();
         final int targetDimension = operation.crs.getCoordinateSystem().getDimension();
@@ -53,7 +53,7 @@ public final class Transform {
 
         if (sourceDimension == targetDimension) {
             //use in place transform
-            final TupleArray positions = reference.copy();
+            final Array positions = reference.copy();
             try {
                 positions.transform(operation.transform);
             } catch (TransformException ex) {
@@ -62,7 +62,7 @@ public final class Transform {
             positions.setSampleSystem(ss);
             return positions;
         } else {
-            final int nb = reference.getLength();
+            final int nb = Math.toIntExact(reference.getLength());
             final double[] values = reference.toArrayDouble();
             final double[] result = new double[targetDimension * nb];
             try {
@@ -70,7 +70,7 @@ public final class Transform {
             } catch (TransformException ex) {
                 throw new OperationException(ex.getMessage(), ex);
             }
-            return TupleArrays.of(ss, result);
+            return NDArrays.of(ss, result);
         }
     }
 
@@ -91,8 +91,8 @@ public final class Transform {
             final org.apache.sis.geometries.LinearRing r = (org.apache.sis.geometries.LinearRing) operation.geometry;
 
             PointSequence ps = r.getPoints();
-            final TupleArray reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
-            final TupleArray positions = transform(reference, operation);
+            final Array reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
+            final Array positions = transform(reference, operation);
             final ArraySequence cp = new ArraySequence(positions);
             for (String name : ps.getAttributesType().getAttributeNames()) {
                 if (!AttributesType.ATT_POSITION.equals(name)) {
@@ -177,9 +177,9 @@ public final class Transform {
             final org.apache.sis.geometries.mesh.MeshPrimitive copy = org.apache.sis.geometries.mesh.MeshPrimitive.create(p.getType());
 
             final Set<String> toSkip = new HashSet<>();
-            final TupleArray positions = p.getAttribute(AttributesType.ATT_POSITION);
-            final TupleArray normals = p.getAttribute(AttributesType.ATT_NORMAL);
-            final TupleArray tangents = p.getAttribute(AttributesType.ATT_TANGENT);
+            final Array positions = p.getAttribute(AttributesType.ATT_POSITION);
+            final Array normals = p.getAttribute(AttributesType.ATT_NORMAL);
+            final Array tangents = p.getAttribute(AttributesType.ATT_TANGENT);
             if (positions != null) {
                 toSkip.add(AttributesType.ATT_POSITION);
                 toSkip.add(AttributesType.ATT_NORMAL);
@@ -187,13 +187,13 @@ public final class Transform {
 
                 try {
                     //transform positions
-                    final TupleArray cpp = positions.copy();
+                    final Array cpp = positions.copy();
                     cpp.setSampleSystem(SampleSystem.of(operation.crs));
                     cpp.transform(operation.transform);
                     copy.setAttribute(AttributesType.ATT_POSITION, cpp);
 
-                    final TupleArray cpn = (normals == null) ? null : normals.copy();
-                    final TupleArray cpt = (tangents == null) ? null : tangents.copy();
+                    final Array cpn = (normals == null) ? null : normals.copy();
+                    final Array cpt = (tangents == null) ? null : tangents.copy();
 
                     //transform normal and tangent with local matrix at each point
                     if (normals != null || tangents != null) {
@@ -201,7 +201,7 @@ public final class Transform {
 
                         final Vector nor = (normals == null) ? null : Vectors.create(normals.getSampleSystem(), normals.getDataType());
                         final Vector tag = (tangents == null) ? null : Vectors.create(tangents.getSampleSystem(), tangents.getDataType());
-                        for (int i = 0, n = positions.getLength(); i < n; i++) {
+                        for (long i = 0, n = positions.getLength(); i < n; i++) {
                             positions.get(i, pos);
                             final MatrixSIS matrix = MatrixSIS.castOrCopy(operation.transform.derivative(Vectors.asDirectPostion(pos)));
                             if (nor != null) {
@@ -233,7 +233,7 @@ public final class Transform {
             }
 
             //copy index and ranges
-            final TupleArray index = p.getIndex();
+            final Array index = p.getIndex();
             if (index != null) {
                 copy.setIndex(index.copy());
             }
@@ -259,8 +259,8 @@ public final class Transform {
             final org.apache.sis.geometries.Triangle p = (org.apache.sis.geometries.Triangle) operation.geometry;
             final PointSequence ps = p.getExteriorRing().getPoints();
 
-            final TupleArray reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
-            final TupleArray positions = transform(reference, operation);
+            final Array reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
+            final Array positions = transform(reference, operation);
             final ArraySequence cp = new ArraySequence(positions);
             for (String name : ps.getAttributesType().getAttributeNames()) {
                 if (!AttributesType.ATT_POSITION.equals(name)) {

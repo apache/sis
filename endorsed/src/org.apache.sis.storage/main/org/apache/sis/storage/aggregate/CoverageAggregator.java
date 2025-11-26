@@ -44,7 +44,8 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.storage.base.MemoryGridResource;
+import org.apache.sis.storage.MemoryGridCoverageResource;
+import org.apache.sis.storage.base.PseudoResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
@@ -189,6 +190,13 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
+     * Returns this aggregator as a pseudo-resource, used only for passing the listeners.
+     */
+    private PseudoResource asPseudoResource() {
+        return new PseudoResource(listeners);
+    }
+
+    /**
      * Adds the given coverage. This method can be invoked from any thread.
      *
      * @param  coverage  coverage to add.
@@ -197,10 +205,10 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      */
     public void add(final GridCoverage coverage) {
         try {
-            add(new MemoryGridResource(listeners, null, coverage, processor));
+            add(new MemoryGridCoverageResource(asPseudoResource(), null, coverage, processor));
         } catch (DataStoreException e) {
             /*
-             * `DataStoreException` are never thrown by `MemoryGridResource`.
+             * `DataStoreException` are never thrown by `MemoryGridCoverageResource`.
              * The only case where we could get that exception with default
              * `add(GridCoverageResource)` is with non-invertible transform.
              */
@@ -370,7 +378,7 @@ search: synchronized (members) {
          * but a future version may use the state of this `CoverageAggregator`, for example making a better
          * effort to align the resources on the same "gridToCRS" transform.
          */
-        final var crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
+        final var crs = DefaultTemporalCRS.castOrCopy(CommonCRS.defaultTemporal());
         double scale  = crs.toValue(span);
         double offset = crs.toValue(lower);
         long   index  = Numerics.roundAndClamp(offset / scale);             // See comment in above method.
@@ -520,7 +528,7 @@ search: synchronized (members) {
      */
     public void addRangeAggregate(final GridCoverageResource[] sources, final int[][] bandsPerSource) throws DataStoreException {
         if (sources.length != 0) {
-            add(BandAggregateGridResource.create(listeners, sources, bandsPerSource, processor));
+            add(BandAggregateGridResource.create(asPseudoResource(), sources, bandsPerSource, processor));
         }
     }
 

@@ -47,7 +47,7 @@ final class SimpleAggregate extends AbstractResource implements Aggregate {
     }
 
     /**
-     * {@return the components of this aggregate}.
+     * Returns the components of this aggregate.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")

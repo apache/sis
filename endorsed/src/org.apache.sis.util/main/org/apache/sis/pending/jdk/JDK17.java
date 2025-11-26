@@ -33,7 +33,7 @@ public final class JDK17 {
     }
 
     /**
-     * {@return a placeholder for the character set of the console}.
+     * Returns a placeholder for the character set of the console.
      *
      * @param  console  the console for which to get the character set.
      */

@@ -24,7 +24,7 @@ import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 
 
 /**
@@ -40,20 +40,20 @@ public class DefaultPoint extends AbstractGeometry implements Point {
      * @param crs geometry coordinate system, not null.
      */
     public DefaultPoint(CoordinateReferenceSystem crs) {
-        points = new ArraySequence(TupleArrays.of(SampleSystem.of(crs), DataType.DOUBLE, 1));
+        points = new ArraySequence(NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, 1));
     }
 
     public DefaultPoint(Tuple position) {
-        points = new ArraySequence(TupleArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+        points = new ArraySequence(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
         points.setPosition(0, position);
     }
 
     public DefaultPoint(CoordinateReferenceSystem crs, double... position) {
-        points = new ArraySequence(TupleArrays.of(crs, position));
+        points = new ArraySequence(NDArrays.of(crs, position));
     }
 
     public DefaultPoint(SampleSystem ss, double... position) {
-        points = new ArraySequence(TupleArrays.of(ss, position));
+        points = new ArraySequence(NDArrays.of(ss, position));
     }
 
     public DefaultPoint(PointSequence ps) {

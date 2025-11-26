@@ -33,6 +33,9 @@ module org.apache.sis.feature {
 
     uses org.apache.sis.filter.FunctionRegister;
 
+    provides org.apache.sis.filter.FunctionRegister
+        with org.apache.sis.filter.math.Registry;
+
     exports org.apache.sis.image;
     exports org.apache.sis.coverage;
     exports org.apache.sis.coverage.grid;
@@ -41,12 +44,20 @@ module org.apache.sis.feature {
     exports org.apache.sis.filter;
     exports org.apache.sis.index.tree;
 
-    exports org.apache.sis.filter.internal.shared to
+    exports org.apache.sis.filter.base to
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
-            org.apache.sis.cql,                     // In the "incubator" sub-project.
             org.apache.sis.portrayal.map;           // In the "incubator" sub-project.
+
+    exports org.apache.sis.filter.visitor to
+            org.apache.sis.storage,
+            org.apache.sis.storage.sql,
+            org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
+            org.apache.sis.cql;                     // In the "incubator" sub-project.
+
+    exports org.apache.sis.filter.math to
+            org.apache.sis.storage.sql;
 
     exports org.apache.sis.filter.sqlmm to
             org.apache.sis.geometry;                // In the "incubator" sub-project.

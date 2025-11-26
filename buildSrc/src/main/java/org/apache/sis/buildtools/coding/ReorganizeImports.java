@@ -150,6 +150,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         "org.junit",
         "org.opentest4j",
         "org.opengis.test",
+        "org.apache.sis.metadata.TreeTableViewTest",
         "org.apache.sis.referencing.cs.HardCodedAxes",
         "org.apache.sis.referencing.cs.HardCodedCS",
         "org.apache.sis.referencing.crs.HardCodedCRS",

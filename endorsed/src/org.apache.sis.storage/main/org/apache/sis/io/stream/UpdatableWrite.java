@@ -237,13 +237,13 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     }
 
     /**
-     * {@return the value size in number of bytes}.
+     * Returns the value size in number of bytes.
      * This is used for checking if there is enough room in a buffer.
      */
     abstract int sizeInBytes();
 
     /**
-     * {@return whether the value changed since it has been written}.
+     * Returns whether the value changed since it has been written.
      * This is used for avoiding unnecessary write operations in the output.
      */
     abstract boolean changed();
@@ -268,7 +268,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     public abstract void set(V value);
 
     /**
-     * {@return the same value as {@code get()}, but as a 64-bits integer}.
+     * Returns the same value as {@code get()}, but as a 64-bits integer.
      * This method is useful when the parameterized type is {@code <?>}.
      */
     public abstract OptionalLong getAsLong();

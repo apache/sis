@@ -34,9 +34,9 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
@@ -72,7 +72,7 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
      * <p>Whether a bit is set or not depends on three factors:</p>
      * <ul>
      *   <li>Whether deferred loading has been requested by a call to {@link #setLoadingStrategy(RasterLoadingStrategy)}.</li>
-     *   <li>Whether the resource is a {@link MemoryGridResource} instance, in which case it is not useful to delay.</li>
+     *   <li>Whether the resource is a {@link MemoryGridCoverageResource} instance, in which case it is not useful to delay.</li>
      *   <li>Whether the slice at the corresponding index can handle deferred loading itself.
      *       In such case, we let the resource manages its own lazy loading.</li>
      * </ul>
@@ -335,12 +335,12 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
 
     /**
      * Returns whether the given slice should be ignored in the determination of a loading strategy.
-     * {@link MemoryGridResource} instances are ignored because they usually behave like "at get tile time",
+     * {@link MemoryGridCoverageResource} instances are ignored because they usually behave like "at get tile time",
      * even if their {@code setLoadingStrategy(…)} method rejects the value (because it cannot be guaranteed).
      * We also don't flag those instances as deferred for the same reason.
      */
     private static boolean ignore(final GridCoverageResource slice) {
-        return slice instanceof MemoryGridResource;
+        return slice instanceof MemoryGridCoverageResource;
     }
 
     /**
@@ -473,7 +473,7 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
          * For all coverages that have been read immediately, wrap them in a memory resource.
          * This look cannot be inlined inside above loop because we need to know the adjusted domain.
          * This loop has some tolerance regarding coverages with a resolution different than expected.
-         * This is okay if `MemoryGridResource` applies the missing subsampling in its `read(…)` method.
+         * This is okay if `MemoryGridCoverageResource` applies the missing subsampling in its `read(…)` method.
          */
         if (coverages != null) try {
             for (int i=0; i < selected.length; i++) {
@@ -481,7 +481,7 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
                 if (coverage != null) {
                     GridGeometry geometry = coverage.getGridGeometry();
                     GridExtent inGroup = domain.extentOf(geometry, GridSlice.CELL_ANCHOR, GridRoundingMode.NEAREST);
-                    var resource = new MemoryGridResource(listeners, null, coverage, processor);
+                    var resource = new MemoryGridCoverageResource(this, null, coverage, processor);
                     selected[i] = selected[i].resolve(resource, geometry.getExtent(), inGroup);
                 }
             }

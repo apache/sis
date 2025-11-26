@@ -17,15 +17,21 @@
 package org.apache.sis.storage.sql.feature;
 
 import java.util.List;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.BiConsumer;
+import java.sql.Types;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.apache.sis.filter.internal.shared.FunctionNames;
-import org.apache.sis.filter.internal.shared.Visitor;
+import org.apache.sis.filter.base.XPathSource;
+import org.apache.sis.filter.visitor.FunctionIdentifier;
+import org.apache.sis.filter.visitor.FunctionNames;
+import org.apache.sis.filter.visitor.Visitor;
+import org.apache.sis.metadata.sql.internal.shared.Reflection;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.CodeList;
@@ -40,6 +46,7 @@ import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.BetweenComparisonOperator;
+import org.opengis.filter.ResourceId;
 
 
 /**
@@ -80,16 +87,27 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         setFilterHandler(ComparisonOperatorName.PROPERTY_IS_LESS_THAN,                new Comparison(" < "));
         setFilterHandler(ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO,    new Comparison(" <= "));
         setFilterHandler(ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_BETWEEN), (f,sql) -> {
-            final BetweenComparisonOperator<Feature>  filter = (BetweenComparisonOperator<Feature>) f;
+            final var filter = (BetweenComparisonOperator<Feature>) f;
             /* Nothing to append */  if (write(sql, filter.getExpression()))    return;
             sql.append(" BETWEEN "); if (write(sql, filter.getLowerBoundary())) return;
             sql.append(" AND ");         write(sql, filter.getUpperBoundary());
+            sql.declareFunction(JDBCType.BOOLEAN);
+        });
+        setFilterHandler(FunctionNames.resourceId(), (f,sql) -> {
+            if (f instanceof XPathSource && sql.appendColumnName(((XPathSource) f).getXPath())) {
+                final var filter = (ResourceId<?>) f;
+                sql.append(" = ").appendValue(filter.getIdentifier());
+                sql.declareFunction(JDBCType.BOOLEAN);
+            } else {
+                sql.invalidate();
+            }
         });
         setNullAndNilHandlers((filter, sql) -> {
-            final List<Expression<Feature, ?>> expressions = filter.getExpressions();
-            if (expressions.size() == 1) {
-                write(sql, expressions.get(0));
+            final List<Expression<Feature, ?>> parameters = filter.getExpressions();
+            if (parameters.size() == 1) {
+                write(sql, parameters.get(0));
                 sql.append(" IS NULL");
+                sql.declareFunction(JDBCType.BOOLEAN);
             } else {
                 sql.invalidate();
             }
@@ -97,14 +115,18 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         /*
          * Spatial filters.
          */
-        setFilterHandler(SpatialOperatorName.CONTAINS,   new Function(FunctionNames.ST_Contains));
-        setFilterHandler(SpatialOperatorName.CROSSES,    new Function(FunctionNames.ST_Crosses));
-        setFilterHandler(SpatialOperatorName.DISJOINT,   new Function(FunctionNames.ST_Disjoint));
-        setFilterHandler(SpatialOperatorName.EQUALS,     new Function(FunctionNames.ST_Equals));
-        setFilterHandler(SpatialOperatorName.INTERSECTS, new Function(FunctionNames.ST_Intersects));
-        setFilterHandler(SpatialOperatorName.OVERLAPS,   new Function(FunctionNames.ST_Overlaps));
-        setFilterHandler(SpatialOperatorName.TOUCHES,    new Function(FunctionNames.ST_Touches));
-        setFilterHandler(SpatialOperatorName.WITHIN,     new Function(FunctionNames.ST_Within));
+        setFilterHandler(SpatialOperatorName.CONTAINS,   new SpatialFilter(FunctionNames.ST_Contains));
+        setFilterHandler(SpatialOperatorName.CROSSES,    new SpatialFilter(FunctionNames.ST_Crosses));
+        setFilterHandler(SpatialOperatorName.DISJOINT,   new SpatialFilter(FunctionNames.ST_Disjoint));
+        setFilterHandler(SpatialOperatorName.EQUALS,     new SpatialFilter(FunctionNames.ST_Equals));
+        setFilterHandler(SpatialOperatorName.INTERSECTS, new SpatialFilter(FunctionNames.ST_Intersects));
+        setFilterHandler(SpatialOperatorName.OVERLAPS,   new SpatialFilter(FunctionNames.ST_Overlaps));
+        setFilterHandler(SpatialOperatorName.TOUCHES,    new SpatialFilter(FunctionNames.ST_Touches));
+        setFilterHandler(SpatialOperatorName.WITHIN,     new SpatialFilter(FunctionNames.ST_Within));
+        /*
+         * Mathematical functions.
+         */
+        addAllOf(org.apache.sis.filter.math.Function.class);
         /*
          * Expression visitor.
          */
@@ -113,19 +135,31 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         setExpressionHandler(FunctionNames.Divide,   new Arithmetic(" / "));
         setExpressionHandler(FunctionNames.Multiply, new Arithmetic(" * "));
         setExpressionHandler(FunctionNames.Literal, (e,sql) -> sql.appendLiteral(((Literal<Feature,?>) e).getValue()));
-        setExpressionHandler(FunctionNames.ValueReference, (e,sql) -> sql.appendColumnName((ValueReference<Feature,?>) e));
-        // Filters created from Filter Encoding XML can specify "PropertyName" instead of "Value reference".
-        setExpressionHandler("PropertyName", getExpressionHandler(FunctionNames.ValueReference));
+        setExpressionHandler(FunctionNames.ValueReference, (e,sql) -> sql.appendColumnName(((ValueReference<Feature,?>) e).getXPath()));
+        setExpressionHandler(FunctionNames.PropertyName, getExpressionHandler(FunctionNames.ValueReference));
+    }
+
+    /**
+     * Adds as functions all values defined by the specified enumeration.
+     */
+    private <E extends Enum<E> & FunctionIdentifier> void addAllOf(final Class<E> functions) {
+        for (E id : functions.getEnumConstants()) {
+            final String name = id.name();
+            setExpressionHandler(name, new Function(id));
+        }
     }
 
     /**
      * Creates a new converter initialized to the same handlers as the specified converter.
+     * This constructor is for implementations of {@link #duplicate(boolean, boolean)}.
      * The given source is usually {@link #DEFAULT}.
      *
-     * @param  source  the converter from which to copy the handlers.
+     * @param  source           the converter from which to copy the handlers.
+     * @param  copyFilters      whether to copy the map of filter handlers.
+     * @param  copyExpressions  whether to copy the map of expression handlers.
      */
-    protected SelectionClauseWriter(final SelectionClauseWriter source) {
-        super(source, true, false);
+    protected SelectionClauseWriter(SelectionClauseWriter source, boolean copyFilters, boolean copyExpressions) {
+        super(source, copyFilters, copyExpressions);
     }
 
     /**
@@ -133,10 +167,12 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
      * This method is invoked before to remove handlers for functions that are unsupported on the target
      * database software.
      *
+     * @param  copyFilters      whether to copy the map of filter handlers.
+     * @param  copyExpressions  whether to copy the map of expression handlers.
      * @return a converter initialized to a copy of {@code this}.
      */
-    protected SelectionClauseWriter duplicate() {
-        return new SelectionClauseWriter(this);
+    protected SelectionClauseWriter duplicate(boolean copyFilters, boolean copyExpressions) {
+        return new SelectionClauseWriter(this, copyFilters, copyExpressions);
     }
 
     /**
@@ -149,63 +185,119 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
      * @return a writer with unsupported functions removed.
      */
     final SelectionClauseWriter removeUnsupportedFunctions(final Database<?> database) {
-        final var unsupported = new HashMap<String, SpatialOperatorName>();
+        boolean failure = false;
+        final var unsupportedFilters = new HashMap<String, CodeList<?>>(16);
+        final var unsupportedExpressions = new HashSet<String>();
         final var accessors = GeometryEncoding.initial();
         try (Connection c = database.source.getConnection()) {
             final DatabaseMetaData metadata = c.getMetaData();
-            /*
-             * Get the names of all spatial functions for which a handler is registered.
-             * All those handlers should be instances of `Function`, otherwise we do not
-             * know how to determine whether the function is supported or not.
-             */
             final boolean lowerCase = metadata.storesLowerCaseIdentifiers();
             final boolean upperCase = metadata.storesUpperCaseIdentifiers();
-            for (final SpatialOperatorName type : SpatialOperatorName.values()) {
-                final BiConsumer<Filter<Feature>, SelectionClause> function = getFilterHandler(type);
-                if (function instanceof Function) {
-                    String name = ((Function) function).name;
+            /*
+             * Get the names of all spatial filters for which a handler is registered.
+             * These filters are initially assumed unsupported by the target database.
+             * We then iterate over the (potentially large) list of supported filters
+             * for removing from the map all the filters that we found supported.
+             * After that loop, only truly unsupported items should be remaining.
+             */
+            for (final SpatialOperatorName id : SpatialOperatorName.values()) {
+                final BiConsumer<Filter<Feature>, SelectionClause> handler = getFilterHandler(id);
+                if (handler instanceof SpatialFilter) {
+                    String name = ((SpatialFilter) handler).name;
                     if (lowerCase) name = name.toLowerCase(Locale.US);
                     if (upperCase) name = name.toUpperCase(Locale.US);
-                    unsupported.put(name, type);
+                    unsupportedFilters.put(name, id);
                 }
             }
-            /*
-             * Remove from above map all functions that are supported by the database.
-             * This list is potentially large so we do not put those items in a map.
-             */
             final String prefix = database.escapeWildcards(lowerCase ? "st_" : "ST_");
             try (ResultSet r = metadata.getFunctions(database.catalogOfSpatialTables,
                                                      database.schemaOfSpatialTables,
                                                      prefix + '%'))
             {
                 while (r.next()) {
-                    final String function = r.getString("FUNCTION_NAME");
+                    String function = r.getString(Reflection.FUNCTION_NAME);
                     GeometryEncoding.checkSupport(accessors, function);
-                    unsupported.remove(function);
+                    unsupportedFilters.remove(function);
+                }
+            }
+            /*
+             * Iterate over all functions (math, etc.) for which a handler is registered.
+             * For each of these function, get the parameter types and return value type.
+             * We check if a function is supported not only by searching for its name,
+             * but also by checking the arguments.
+             */
+            for (final var entry : expressions.entrySet()) {
+                final BiConsumer<Expression<Feature,?>, SelectionClause> handler = entry.getValue();
+                if (handler instanceof Function) {
+                    final FunctionIdentifier id = ((Function) handler).function;
+                    final int[] signature = id.getSignature();   // May be null.
+                    boolean isSupported = false;
+                    String specificName = "";
+                    String name = id.name();
+                    if (lowerCase) name = name.toLowerCase(Locale.US);
+                    if (upperCase) name = name.toUpperCase(Locale.US);
+                    try (ResultSet r = metadata.getFunctionColumns(null, null, name, "%")) {
+                        while (r.next()) {
+                            if (!specificName.equals(specificName = r.getString(Reflection.SPECIFIC_NAME))) {
+                                if (isSupported) break;     // Found a supported variant of the function.
+                                isSupported = true;
+                            } else if (!isSupported) {
+                                continue;   // Continue the search for the next overload variant.
+                            }
+                            switch (r.getShort(Reflection.COLUMN_TYPE)) {
+                                case DatabaseMetaData.functionColumnIn:
+                                case DatabaseMetaData.functionReturn: {
+                                    if (signature == null) continue;
+                                    final int n = r.getInt(Reflection.ORDINAL_POSITION);
+                                    if (n >= 0 && n < signature.length) {
+                                        int type = r.getInt(Reflection.DATA_TYPE);
+                                        switch (type) {
+                                            case Types.SMALLINT:  // Derby does not support `TINYINT`.
+                                            case Types.TINYINT:
+                                            case Types.BIT:   type = Types.BOOLEAN; break;
+                                            case Types.REAL:
+                                            case Types.FLOAT: type = Types.DOUBLE; break;
+                                        }
+                                        if (signature[n] == type) continue;
+                                    }
+                                }
+                            }
+                            isSupported = false;
+                            // Continue because the `ResultSet` may return many overload variants.
+                        }
+                    }
+                    if (!isSupported) {
+                        unsupportedExpressions.add(entry.getKey());
+                    }
                 }
             }
         } catch (SQLException e) {
-            /*
-             * If this exception happens before `unsupported` entries were removed,
-             * this is equivalent to assuming that all functions are unsupported.
-             */
             database.listeners.warning(e);
+            failure = true;
         }
-        database.setGeometryEncodingFunctions(accessors);
         /*
-         * Remaining functions are unsupported functions.
+         * The remaining items in the `unsupported` collection are functions that are unsupported by the database.
+         * If this collection is empty, then all functions are supported and we can use `this` with no change.
          */
-        if (unsupported.isEmpty()) {
-            return this;
+        database.setGeometryEncodingFunctions(accessors);
+        final boolean copyFilters     = failure || !unsupportedFilters.isEmpty();
+        final boolean copyExpressions = failure || !unsupportedExpressions.isEmpty();
+        if (copyFilters | copyExpressions) {
+            final SelectionClauseWriter copy = duplicate(copyFilters, copyExpressions);
+            copy.removeFilterHandlers(unsupportedFilters.values());
+            copy.removeFunctionHandlers(unsupportedExpressions);
+            if (failure) {
+                copy.filters.values().removeIf((handler) -> handler instanceof SpatialFilter);
+                copy.expressions.values().removeIf((handler) -> handler instanceof Function);
+            }
+            return copy;
         }
-        final SelectionClauseWriter copy = duplicate();
-        copy.removeFilterHandlers(unsupported.values());
-        return copy;
+        return this;
     }
 
     /**
      * Invoked when an unsupported filter is found. The SQL string is marked as invalid and
-     * may be truncated (later) to the length that it has the last time that it was valid.
+     * may be truncated (later) to the length that it had the last time that it was valid.
      */
     @Override
     protected final void typeNotFound(CodeList<?> type, Filter<Feature> filter, SelectionClause sql) {
@@ -214,7 +306,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
     /**
      * Invoked when an unsupported expression is found. The SQL string is marked as invalid
-     * and may be truncated (later) to the length that it has the last time that it was valid.
+     * and may be truncated (later) to the length that it had the last time that it was valid.
      */
     @Override
     protected final void typeNotFound(String type, Expression<Feature,?> expression, SelectionClause sql) {
@@ -251,6 +343,23 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     }
 
     /**
+     * Executes the registered action for the given expression.
+     *
+     * <h4>Note on type safety</h4>
+     * This method applies a theoretically unsafe cast, which is okay in the context of this class.
+     * See <cite>Note on parameterized type</cite> section in {@link Visitor#visit(Filter, Object)}.
+     *
+     * @param  sql         where to write the result of all actions.
+     * @param  expression  the expression for which to execute an action based on its type.
+     * @return value of {@link SelectionClause#functionReturnType()}.
+     */
+    @SuppressWarnings("unchecked")
+    final JDBCType writeFunction(final SelectionClause sql, final Expression<? super Feature, ?> expression) {
+        visit((Expression<Feature, ?>) expression, sql);
+        return sql.functionReturnType();
+    }
+
+    /**
      * Writes the expressions of a filter as a binary operator.
      * The filter must have exactly two expressions, otherwise the SQL will be declared invalid.
      *
@@ -265,15 +374,15 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     /**
      * Writes the parameters of a function or a binary operator.
      *
-     * @param sql          where to append the SQL clause.
-     * @param expressions  the expressions to write.
-     * @param separator    the separator to insert between expression.
-     * @param binary       whether the list of expressions shall contain exactly 2 elements.
+     * @param sql         where to append the SQL clause.
+     * @param parameters  the expressions to write as parameters.
+     * @param separator   the separator to insert between expression.
+     * @param binary      whether the list of expressions shall contain exactly 2 elements.
      */
-    private void writeParameters(final SelectionClause sql, final List<Expression<Feature,?>> expressions,
+    private void writeParameters(final SelectionClause sql, final List<Expression<Feature,?>> parameters,
                                  final String separator, final boolean binary)
     {
-        final int n = expressions.size();
+        final int n = parameters.size();
         if (binary && n != 2) {
             sql.invalidate();
             return;
@@ -282,7 +391,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         sql.append('(');
         for (int i=0; i<n; i++) {
             if (i != 0) sql.append(separator);
-            if (write(sql, expressions.get(i))) return;
+            if (write(sql, parameters.get(i))) return;
         }
         sql.append(')');
     }
@@ -316,7 +425,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
         /** Invoked when a logical filter needs to be converted to SQL clause. */
         @Override public void accept(final Filter<Feature> f, final SelectionClause sql) {
-            final LogicalOperator<Feature> filter = (LogicalOperator<Feature>) f;
+            final var filter = (LogicalOperator<Feature>) f;
             final List<Filter<Feature>> operands = filter.getOperands();
             final int n = operands.size();
             if (unary ? (n != 1) : (n == 0)) {
@@ -332,6 +441,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
                 }
                 sql.append(')');
             }
+            sql.declareFunction(JDBCType.BOOLEAN);
         }
     }
 
@@ -354,9 +464,10 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
         /** Invoked when a comparison needs to be converted to SQL clause. */
         @Override public void accept(final Filter<Feature> f, final SelectionClause sql) {
-            final BinaryComparisonOperator<Feature> filter = (BinaryComparisonOperator<Feature>) f;
+            final var filter = (BinaryComparisonOperator<Feature>) f;
             if (filter.isMatchingCase()) {
                 writeBinaryOperator(sql, filter, operator);
+                sql.declareFunction(JDBCType.BOOLEAN);
             } else {
                 sql.invalidate();
             }
@@ -382,6 +493,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         /** Invoked when an arithmetic expression needs to be converted to SQL clause. */
         @Override public void accept(final Expression<Feature,?> expression, final SelectionClause sql) {
             writeParameters(sql, expression.getParameters(), operator, true);
+            sql.declareFunction(JDBCType.DOUBLE);
         }
     }
 
@@ -389,17 +501,47 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
 
     /**
-     * Appends a function name with an arbitrary number of parameters (potentially zero).
-     * This method stops immediately if a parameter cannot be expressed in SQL, leaving
-     * the trailing part of the SQL in an invalid state. Callers should check if this is
-     * the case by invoking {@link SelectionClause#isInvalid()} after this method call.
+     * Handler for a function with an arbitrary number of parameters (potentially zero).
+     * This handler stops immediately if a parameter cannot be expressed in <abbr>SQL</abbr>,
+     * leaving the trailing part of the <abbr>SQL</abbr> in an invalid state. Callers should check
+     * if this is the case by invoking {@link SelectionClause#isInvalid()} after this method call.
      */
-    private final class Function implements BiConsumer<Filter<Feature>, SelectionClause> {
-        /** Name the function. */
+    private final class Function implements BiConsumer<Expression<Feature,?>, SelectionClause> {
+        /** Identification of the function. */
+        final FunctionIdentifier function;
+
+        /** The type of values returned by the function. */
+        private final JDBCType returnType;
+
+        /** Creates a function. */
+        Function(final FunctionIdentifier function) {
+            this.function = function;
+            returnType = JDBCType.valueOf(function.getSignature()[0]);
+        }
+
+        /** Invoked when an expression should be converted to a <abbr>SQL</abbr> clause. */
+        @Override public void accept(final Expression<Feature,?> expression, final SelectionClause sql) {
+            sql.append(function.name());
+            writeParameters(sql, expression.getParameters(), ", ", false);
+            sql.declareFunction(returnType);
+        }
+    }
+
+
+
+
+    /**
+     * Appends a spatial function name followed by an arbitrary number of parameters (potentially zero).
+     * This method stops immediately if a parameter cannot be expressed in <abbr>SQL</abbr>, leaving the
+     * trailing part of the <abbr>SQL</abbr> in an invalid state. Callers should check if this is the
+     * case by invoking {@link SelectionClause#isInvalid()} after this method call.
+     */
+    private final class SpatialFilter implements BiConsumer<Filter<Feature>, SelectionClause> {
+        /** Name of the function. */
         final String name;
 
         /** Creates a function of the given name. */
-        Function(final String name) {
+        SpatialFilter(final String name) {
             this.name = name;
         }
 
@@ -412,9 +554,9 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
          */
         @Override public void accept(final Filter<Feature> filter, final SelectionClause sql) {
             sql.appendSpatialFunction(name);
-            final List<Expression<Feature, ?>> expressions = filter.getExpressions();
+            final List<Expression<Feature, ?>> parameters = filter.getExpressions();
             if (SelectionClause.REPLACE_UNSPECIFIED_CRS) {
-                for (Expression<Feature,?> exp : expressions) {
+                for (Expression<Feature,?> exp : parameters) {
                     if (exp instanceof ValueReference<?,?>) {
                         if (sql.acceptColumnCRS((ValueReference<Feature,?>) exp)) {
                             break;
@@ -422,7 +564,8 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
                     }
                 }
             }
-            writeParameters(sql, expressions, ", ", false);
+            writeParameters(sql, parameters, ", ", false);
+            sql.declareFunction(JDBCType.BOOLEAN);
             sql.clearColumnCRS();
         }
     }

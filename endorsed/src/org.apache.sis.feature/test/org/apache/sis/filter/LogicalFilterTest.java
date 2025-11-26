@@ -43,11 +43,12 @@ import org.opengis.filter.LogicalOperator;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LogicalFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory<Feature,Object,?> factory;
+    private final FilterFactory<Feature, ?, ?> factory;
 
     /**
      * Creates a new test case.
@@ -259,7 +260,7 @@ public final class LogicalFilterTest extends TestCase {
 
         final var property = assertInstanceOf(PropertyValue.class, optimized.getParameters().get(0));
         assertEquals(String.class, property.getSourceClass());
-        assertEquals(Number.class, property.getValueClass());
+        assertEquals(Number.class, property.getResultClass());
     }
 
     /**

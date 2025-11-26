@@ -111,9 +111,11 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
     private final FeatureProjection projection;
 
     /**
-     * Creates a new iterator over features.
+     * Creates a new iterator over features represented by the give table.
+     * Note that despite its name, the {@code table} argument may be a subset of a table
+     * (a "projection" in <abbr>SQL</abbr> sense) or a query (a kind of virtual table).
      *
-     * @param table       the source table.
+     * @param table       the source table, <abbr>SQL</abbr> projection or query.
      * @param connection  connection to the database, used for creating the statement.
      * @param distinct    whether the set should contain distinct feature instances.
      * @param selection   condition to append, not including the {@code WHERE} keyword.
@@ -122,24 +124,20 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
      * @param count       maximum number of rows to return, or 0 (not -1) for no limit.
      * @param projection  additional properties to compute, or {@code null} if none.
      */
-    FeatureIterator(final Table           table,
-                    final Connection      connection,
-                    final boolean         distinct,
-                    final SelectionClause selection,
+    FeatureIterator(final Table             table,
+                    final Connection        connection,
+                    final InfoStatements    spatialInformation,
+                    final boolean           distinct,
+                    final SelectionClause   selection,
                     final SortBy<? super Feature> sort,
-                    final long offset,
-                    final long count,
+                    final long              offset,
+                    final long              count,
                     final FeatureProjection projection)
             throws Exception
     {
         adapter = table.adapter(connection);
         String sql = adapter.sql;   // Will be completed below with `WHERE` clause if needed.
-
-        if (table.database.getSpatialSchema().isPresent()) {
-            spatialInformation = table.database.createInfoStatements(connection);
-        } else {
-            spatialInformation = null;
-        }
+        this.spatialInformation = spatialInformation;
         final String filter = (selection != null) ? selection.query(connection, spatialInformation) : null;
         if (distinct || filter != null || sort != null || (offset | count) != 0) {
             final var builder = new SQLBuilder(table.database);
@@ -184,13 +182,8 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
     /**
      * Creates a new iterator over the dependencies of a feature.
      *
-     * @param table       the source table, or {@code null} if we are creating an iterator for a dependency.
      * @param adapter     converter from a {@link ResultSet} row to a {@link Feature} instance.
      * @param connection  connection to the database, used for creating statement.
-     * @param filter      condition to append, not including the {@code WHERE} keyword.
-     * @param distinct    whether the set should contain distinct feature instances.
-     * @param offset      number of rows to skip in underlying SQL query, or ≤ 0 for none.
-     * @param count       maximum number of rows to return, or ≤ 0 for no limit.
      */
     private FeatureIterator(final FeatureAdapter adapter, final Connection connection,
                             final InfoStatements spatialInformation) throws SQLException

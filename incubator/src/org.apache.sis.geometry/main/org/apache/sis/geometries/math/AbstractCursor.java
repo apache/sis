@@ -21,12 +21,12 @@ package org.apache.sis.geometries.math;
  *
  * @author Johann Sorel (Geomatys)
  */
-abstract class AbstractCursor extends AbstractTuple implements TupleArrayCursor {
+abstract class AbstractCursor extends AbstractTuple implements Cursor {
 
-    private final TupleArray array;
-    protected int offset = -1;
+    private final Array array;
+    protected long offset = -1;
 
-    AbstractCursor(TupleArray array) {
+    AbstractCursor(Array array) {
         super(array.getSampleSystem());
         this.array = array;
     }
@@ -37,12 +37,12 @@ abstract class AbstractCursor extends AbstractTuple implements TupleArrayCursor 
     }
 
     @Override
-    public int coordinate() {
+    public long coordinate() {
         return offset;
     }
 
     @Override
-    public void moveTo(int coordinate) {
+    public void moveTo(long coordinate) {
         if (coordinate<0 || coordinate >= array.getLength()) {
             throw new ArrayIndexOutOfBoundsException("Invalid coordinate " + coordinate + ", outside of data range [0," + array.getLength() + "]. ");
         }
@@ -75,8 +75,8 @@ abstract class AbstractCursor extends AbstractTuple implements TupleArrayCursor 
         set(offset, indice, value);
     }
 
-    public abstract double get(int tupleIndex, int sampleIndex);
+    public abstract double get(long tupleIndex, int sampleIndex);
 
-    public abstract void set(int tupleIndex, int sampleIndex, double value);
+    public abstract void set(long tupleIndex, int sampleIndex, double value);
 
 }

@@ -101,14 +101,6 @@ public final class AbstractFeatureTest extends FeatureTestCase {
         }
 
         /**
-         * Synonymous of {@link #getPropertyValue(String)} for this test.
-         */
-        @Override
-        public Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
-            return getPropertyValue(name);
-        }
-
-        /**
          * Sets the value for the property of the given name. In order to allow the tests to pass,
          * we need to reproduce in this method some of the verifications performed by the
          * {@link SingletonAttribute} and {@link MultiValuedAttribute} implementations.

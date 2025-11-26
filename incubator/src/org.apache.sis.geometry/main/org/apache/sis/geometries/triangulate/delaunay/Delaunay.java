@@ -29,13 +29,13 @@ import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.index.KdTree;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -78,8 +78,8 @@ public final class Delaunay {
         @Override
         public void addFirst(OrientedEdge e) {
             //create a key not affected by edge orientation
-            int idx0 = e.getStart().getIndex();
-            int idx1 = e.getEnd().getIndex();
+            int idx0 = (int)e.getStart().getIndex();
+            int idx1 = (int)e.getEnd().getIndex();
             if (idx0 > idx1) {
                 int i = idx0;
                 idx0 = idx1;
@@ -103,7 +103,7 @@ public final class Delaunay {
     /*
     Index the vertex to find closest point faster.
     */
-    private final KdTree<Integer> tree = new KdTree();
+    private final KdTree<Long> tree = new KdTree();
     private OrientedEdge[] indexToEdge;
 
     private final Set<OrientedTriangle> triangles = new HashSet<>() {
@@ -115,9 +115,9 @@ public final class Delaunay {
             }
             final boolean v = super.add(triangle);
             if (v) {
-                indexToEdge[triangle.a.getIndex()] = triangle.ab;
-                indexToEdge[triangle.b.getIndex()] = triangle.bc;
-                indexToEdge[triangle.c.getIndex()] = triangle.ca;
+                indexToEdge[(int)triangle.a.getIndex()] = triangle.ab;
+                indexToEdge[(int)triangle.b.getIndex()] = triangle.bc;
+                indexToEdge[(int)triangle.c.getIndex()] = triangle.ca;
             }
             return v;
         }
@@ -165,7 +165,7 @@ public final class Delaunay {
      * @throws IllegalArgumentException if an index is incorrect
      * @throws OperationException if an algorithm exception occurs
      */
-    public void pushConstraint(TupleArray constraints, boolean hard) throws IllegalArgumentException, OperationException {
+    public void pushConstraint(Array constraints, boolean hard) throws IllegalArgumentException, OperationException {
         ArgumentChecks.ensureNonNull("constraints", constraints);
 
         final int[] index = constraints.toArrayInt();
@@ -191,24 +191,24 @@ public final class Delaunay {
      * @return index of the triangles.
      * @throws IllegalStateException if used before build method is called
      */
-    public TupleArray getTrianglesIndex() throws IllegalStateException {
+    public Array getTrianglesIndex() throws IllegalStateException {
         if (triangles.isEmpty()) throw new IllegalStateException("Triangles list is empty, build method must be called first");
 
         int[] index = new int[(triangles.size()-3) * 3];
         int i = 0;
         for (OrientedTriangle t : triangles) {
-            final int i0 = t.a.getIndex();
-            final int i1 = t.b.getIndex();
-            final int i2 = t.c.getIndex();
+            final long i0 = t.a.getIndex();
+            final long i1 = t.b.getIndex();
+            final long i2 = t.c.getIndex();
             if (!(isRootVertex(i0) || isRootVertex(i1) || isRootVertex(i2))) {
-                index[i++] = i0;
-                index[i++] = i1;
-                index[i++] = i2;
+                index[i++] = (int)i0;
+                index[i++] = (int)i1;
+                index[i++] = (int)i2;
             }
         }
 
         index = Arrays.copyOf(index, i);
-        return TupleArrays.ofUnsigned(1, index);
+        return NDArrays.ofUnsigned(1, index);
     }
 
     /**
@@ -247,7 +247,7 @@ public final class Delaunay {
 
         Add an extra margin to the bounding box to reduce mathematical errors.
         */
-        final TupleArray positions = this.points.getPositions();
+        final Array positions = this.points.getPositions();
         final Envelope envelope = buffer(points.getEnvelope(), 10.0);
         final double envelopeMinX = envelope.getMinimum(0);
         final double envelopeMinY = envelope.getMinimum(1);
@@ -260,18 +260,18 @@ public final class Delaunay {
         final Vector<?> C = A.copy();
         C.set(0, envelopeMinX);
         C.set(1, envelopeMinY + envelope.getSpan(1) * 2);
-        rootOffset = positions.getLength();
-        final TupleArray extraPositions = positions.resize(3);
+        rootOffset = Math.toIntExact(positions.getLength());
+        final Array extraPositions = positions.resize(3);
         extraPositions.set(0, A);
         extraPositions.set(1, B);
         extraPositions.set(2, C);
-        final TupleArray positionsPlusRoot = TupleArrays.concatenate(positions, extraPositions);
+        final Array positionsPlusRoot = NDArrays.concatenate(positions, extraPositions);
 
         pointsPlusRoot = new MeshPrimitive.Points();
         pointsPlusRoot.setPositions(positionsPlusRoot);
 
         //prepare index
-        indexToEdge = new OrientedEdge[positionsPlusRoot.getLength()];
+        indexToEdge = new OrientedEdge[Math.toIntExact(positionsPlusRoot.getLength())];
 
         //base triangle
         final Vertex v0 = new Vertex(pointsPlusRoot, rootOffset);
@@ -286,10 +286,10 @@ public final class Delaunay {
 
 
         // TRIANGULATE /////////////////////////////////////////////////////////
-        final TupleArray index = points.getIndex();
+        final Array index = points.getIndex();
         if (index == null) {
             //use all points
-            for (int idx = 0, n = positions.getLength(); idx < n; idx++) {
+            for (long idx = 0, n = positions.getLength(); idx < n; idx++) {
                 insertPoint(idx);
             }
         } else {
@@ -306,13 +306,13 @@ public final class Delaunay {
      * @throws IllegalArgumentException if index is incorrect
      * @throws OperationException if an algorithm exception occurs
      */
-    private void insertPoint(int index) throws OperationException, IllegalArgumentException {
+    private void insertPoint(long index) throws OperationException, IllegalArgumentException {
         if (index < 0 || index >= rootOffset) throw new IllegalArgumentException("Index do not exist : " + index);
         final Vertex vertex = new Vertex(pointsPlusRoot, index);
         final Tuple position = vertex.getPosition();
 
         //find nearest vertex and tst all triangles using this vertex
-        final int nearestVertex = tree.nearest(position).getValue();
+        final long nearestVertex = tree.nearest(position).getValue();
         solve(nearestVertex, vertex);
 
         tree.insertNoCopy(vertex.getPosition(),vertex.getIndex());
@@ -325,8 +325,8 @@ public final class Delaunay {
         }
     }
 
-    private void solve(int nearestVertex, Vertex vertex) {
-        OrientedEdge edge = indexToEdge[nearestVertex];
+    private void solve(long nearestVertex, Vertex vertex) {
+        OrientedEdge edge = indexToEdge[Math.toIntExact(nearestVertex)];
 
         for (;;) {
             OrientedTriangle triangle = edge.getTriangle();
@@ -388,7 +388,7 @@ public final class Delaunay {
      * @throws OperationException if an algorithm exception occurs
      * @throws IllegalArgumentException if edge indexes are incorrect
      */
-    private OrientedEdge insertEdge(int startIndex, int endIndex, boolean isContraint) throws OperationException, IllegalArgumentException {
+    private OrientedEdge insertEdge(long startIndex, long endIndex, boolean isContraint) throws OperationException, IllegalArgumentException {
         if (startIndex < 0 || startIndex >= rootOffset) throw new IllegalArgumentException("Constraint segment index do not exist : " + startIndex);
         if (endIndex < 0 || endIndex >= rootOffset) throw new IllegalArgumentException("Constraint segment index do not exist : " + endIndex);
 //        System.out.println("e " + startIndex +" " + endIndex);
@@ -624,7 +624,7 @@ public final class Delaunay {
      * @param index vertex index
      * @return true if vertex index is a root vertex
      */
-    private boolean isRootVertex(int index) {
+    private boolean isRootVertex(long index) {
         return index >= rootOffset;
     }
 
@@ -956,11 +956,11 @@ public final class Delaunay {
      * but the adjacent edge will not be colinear to the segment.
      * @throws OperationException if an algorithm exception occurs
      */
-    private OrientedEdge searchTriangle(int startIndex, int endIndex) throws OperationException {
+    private OrientedEdge searchTriangle(long startIndex, long endIndex) throws OperationException {
         final Vertex end = new Vertex(pointsPlusRoot, endIndex);
         final Tuple endPosition = end.getPosition();
 
-        OrientedEdge edge = indexToEdge[startIndex];
+        OrientedEdge edge = indexToEdge[Math.toIntExact(startIndex)];
 
         for (;;) {
             if (edge.getEnd().getIndex() == endIndex) {

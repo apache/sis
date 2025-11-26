@@ -254,7 +254,7 @@ public class Content extends ResourceDefinition {
             final String escape = stmt.getConnection().getMetaData().getSearchStringEscape();
             while (rs.next()) {
                 String tableName = getString(rs, 1);
-                GenericName name = factory.createLocalName(namespace, SQLUtilities.escape(tableName, escape));
+                GenericName name = factory.createLocalName(namespace, SQLUtilities.escapeWildcards(tableName, escape));
                 contents.add(new Content(dao, name, tableName, rs, listeners));
             }
         } catch (SQLException e) {

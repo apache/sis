@@ -26,12 +26,12 @@ import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector2D;
 import static org.apache.sis.geometries.math.Vectors.*;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -130,7 +130,7 @@ public class EarClipping {
     public MeshPrimitive.Triangles toMesh(Polygon polygon) {
         final List<Tuple[]> list = triangulate(polygon);
 
-        final TupleArray positions = TupleArrays.of(polygon.getCoordinateReferenceSystem(), new double[list.size()*3*2]);
+        final Array positions = NDArrays.of(polygon.getCoordinateReferenceSystem(), new double[list.size()*3*2]);
         for (int i = 0, k = 0, n = list.size(); i < n; i++, k+=3) {
             final Tuple[] t = list.get(i);
             positions.set(k+0, t[0]);

@@ -491,7 +491,7 @@ public class ValueGetter<T> {
              * Get a function for getting values of components in the array.
              * If no match is found, then `cmget` stay null.
              */
-            cmget = stmts.database.getMapping(new Column(array.getBaseType(), array.getBaseTypeName()));
+            cmget = stmts.database.getMapping(new Column(array.getBaseType(), array.getBaseTypeName(), "element"));
         }
         Class<?> componentType = Numbers.primitiveToWrapper(result.getClass().getComponentType());
         if (cmget != null && !cmget.valueType.isAssignableFrom(componentType)) {

@@ -305,13 +305,13 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         assertSame(crs, factory.createProjectedCRS("27571"));
         /*
-         * Gets the CRS using 'createObject'. It will require more SQL
+         * Gets the CRS using `createObject`. It will require more SQL
          * statement internally in order to determines the object type.
          */
         assertSame(crs, factory.createObject("27571"));
         assertSame(crs, factory.createObject("NTF (Paris) / Lambert zone I"));
-        assertSame(crs, factory.createProjectedCRS("NTF Paris Lambert zone I"));
-        assertSame(crs, factory.createObject("NTF Paris Lambert zone I"));
+        assertSame(crs, factory.createProjectedCRS("ntf (paris) / lambert zone I"));
+        assertSame(crs, factory.createObject("ntf (paris) / lambert zone I"));
         loggings.assertNoUnexpectedLog();
     }
 
@@ -558,7 +558,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         final EPSGFactory factory = dataEPSG.factory();
         /*
          * Most basic objects.
-         * Note: the numbers in 'size() >= x' checks were determined from the content of EPSG dataset version 7.9.
+         * Note: the numbers in `size() >= x` checks were determined from the content of EPSG dataset version 7.9.
          */
         try {
             final Set<String> axes = factory.getAuthorityCodes(CoordinateSystemAxis.class);

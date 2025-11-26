@@ -96,7 +96,7 @@ public class CoverageJsonStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@return the logger used by CoverageJSON stores}.
+     * Returns the logger used by CoverageJSON stores.
      */
     @Override
     public Logger getLogger() {

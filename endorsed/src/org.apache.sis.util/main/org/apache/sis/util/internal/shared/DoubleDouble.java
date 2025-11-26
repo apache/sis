@@ -437,14 +437,18 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
     }
 
     /**
-     * {@return {@code 1/this}}.
+     * Returns {@code 1/this}.
+     *
+     * @return a new number which is the inverse of this number.
      */
     public DoubleDouble inverse() {
         return ONE.divide(this);
     }
 
     /**
-     * {@return {@code -this}}.
+     * Returns {@code -this}.
+     *
+     * @return a new number which is the negative of this number.
      */
     public DoubleDouble negate() {
         return new DoubleDouble(-value, -error);

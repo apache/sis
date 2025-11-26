@@ -117,7 +117,7 @@ public final class BuildHelper implements Plugin<Project> {
     }
 
     /**
-     * {@return the main modules to patch with test classes}.
+     * Returns the main modules to patch with test classes.
      */
     final Stream<Map.Entry<String,File>> getPatchedDirectories() {
         return testDirs.entrySet().stream().filter((e) -> mainDirs.containsKey(e.getKey()));

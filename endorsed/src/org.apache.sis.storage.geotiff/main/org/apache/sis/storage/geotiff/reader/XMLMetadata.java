@@ -76,7 +76,7 @@ public final class XMLMetadata implements Filter {
 
     /**
      * The bytes to decode as an XML document.
-     * DGIWG specification mandates UTF-8 encoding.
+     * <abbr>DGIWG</abbr> specification mandates UTF-8 encoding.
      */
     private byte[] bytes;
 

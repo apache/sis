@@ -720,7 +720,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.5
      */
     public GridCoverage appendDimension(final GridCoverage source, final Instant lower, final Duration span) {
-        final DefaultTemporalCRS crs = DefaultTemporalCRS.castOrCopy(CommonCRS.Temporal.TRUNCATED_JULIAN.crs());
+        final DefaultTemporalCRS crs = DefaultTemporalCRS.castOrCopy(CommonCRS.defaultTemporal());
         double scale  = crs.toValue(span);
         double offset = crs.toValue(lower);
         long   index  = Numerics.roundAndClamp(offset / scale);             // See comment in above method.

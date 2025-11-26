@@ -29,14 +29,14 @@ import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -58,7 +58,7 @@ public class ToPrimitiveTest {
 
     @Test
     public void testLineString() {
-        final TupleArray positions = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+        final Array positions = NDArrays.of(CRS2D, new double[]{0,1,2,3});
         final PointSequence points = GeometryFactory.createSequence(positions);
         final LineString line = GeometryFactory.createLineString(points);
         final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(line);
@@ -69,7 +69,7 @@ public class ToPrimitiveTest {
 
     @Test
     public void testPolygon() {
-        final TupleArray positions = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+        final Array positions = NDArrays.of(CRS2D, new double[]{0,1,2,3});
         final PointSequence points = GeometryFactory.createSequence(positions);
         final LinearRing exterior = GeometryFactory.createLinearRing(points);
         final Polygon point = GeometryFactory.createPolygon(exterior, null);
@@ -82,11 +82,11 @@ public class ToPrimitiveTest {
     @Test
     public void testMultiLineString() {
         { //one line has 3 points, so we must obtain a MultiPrimitive
-            final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+            final Array positions1 = NDArrays.of(CRS2D, new double[]{0,1,2,3});
             final PointSequence points1 = GeometryFactory.createSequence(positions1);
             final LineString line1 = GeometryFactory.createLineString(points1);
 
-            final TupleArray positions2 = TupleArrays.of(CRS2D, new double[]{3,4,5,6,7,8});
+            final Array positions2 = NDArrays.of(CRS2D, new double[]{3,4,5,6,7,8});
             final PointSequence points2 = GeometryFactory.createSequence(positions2);
             final LineString line2 = GeometryFactory.createLineString(points2);
 
@@ -106,11 +106,11 @@ public class ToPrimitiveTest {
             assertEquals(MeshPrimitive.Type.LINE_STRIP, primitive2.getType());
         }
         { //all linestrings are lines, we must obtain a Primitive.Lines
-            final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+            final Array positions1 = NDArrays.of(CRS2D, new double[]{0,1,2,3});
             final PointSequence points1 = GeometryFactory.createSequence(positions1);
             final LineString line1 = GeometryFactory.createLineString(points1);
 
-            final TupleArray positions2 = TupleArrays.of(CRS2D, new double[]{3,4,5,6});
+            final Array positions2 = NDArrays.of(CRS2D, new double[]{3,4,5,6});
             final PointSequence points2 = GeometryFactory.createSequence(positions2);
             final LineString line2 = GeometryFactory.createLineString(points2);
 
@@ -129,7 +129,7 @@ public class ToPrimitiveTest {
 
     @Test
     public void testMultiPoint() {
-        final TupleArray positions1 = TupleArrays.of(CRS2D, new double[]{0,1,2,3});
+        final Array positions1 = NDArrays.of(CRS2D, new double[]{0,1,2,3});
         final PointSequence points = GeometryFactory.createSequence(positions1);
         final MultiPoint mpoints = GeometryFactory.createMultiPoint(points);
 

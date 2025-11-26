@@ -28,8 +28,8 @@ import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -97,8 +97,8 @@ public final class MeshPrimitiveComparator {
 
             final List<String> expectedAtts = expected.getAttributesType().getAttributeNames();
             final List<String> candidateAtts = candidate.getAttributesType().getAttributeNames();
-            final TupleArray expectedIdx = expected.getIndex();
-            final TupleArray candidateIdx = candidate.getIndex();
+            final Array expectedIdx = expected.getIndex();
+            final Array candidateIdx = candidate.getIndex();
 
             if (!Objects.equals(expectedAtts, candidateAtts)) {
                 throw new IllegalArgumentException("Primitive attributes differ");

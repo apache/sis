@@ -25,11 +25,11 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.WritableGridCoverageResource;
 import org.apache.sis.storage.Query;
-import org.apache.sis.storage.base.MemoryGridResource;
 
 
 /**
@@ -168,7 +168,7 @@ final class WritableSingleImageStore extends WritableStore implements WritableGr
     public void write(final GridCoverage coverage, final Option... options) throws DataStoreException {
         try {
             if (isMultiImages() == 0) {
-                add(new MemoryGridResource(listeners, null, coverage, null));
+                add(new MemoryGridCoverageResource(this, null, coverage, null));
             } else {
                 delegate().write(coverage, options);
             }

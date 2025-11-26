@@ -705,7 +705,7 @@ final class TransformCommand extends FormattedOutputCommand {
     }
 
     /**
-     * {@return the math transform of the operation, inverted if requested by user}.
+     * Returns the math transform of the operation, inverted if requested by user.
      */
     private MathTransform getMathTransform() throws NoninvertibleTransformException {
         MathTransform mt = operation.getMathTransform();

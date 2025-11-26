@@ -55,7 +55,9 @@ public final class WritableAggregateSupport implements Localized {
     }
 
     /**
-     * {@return the locale used by the targetresource for error messages, or {@code null} if unknown}.
+     * Returns the locale used by the target resource for error messages, or {@code null} if unknown.
+     *
+     * @return locale for error messages, or {@code null} if unknown.
      */
     @Override
     public final Locale getLocale() {

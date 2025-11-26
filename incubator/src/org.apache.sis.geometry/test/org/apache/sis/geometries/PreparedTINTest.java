@@ -20,7 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -52,12 +52,12 @@ public class PreparedTINTest {
     public void testSingle() throws TransformException {
 
         final MeshPrimitive.Triangles geometry = new MeshPrimitive.Triangles();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5,
                 6,7,8,
                 9,10,11));
-        geometry.setIndex(TupleArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
+        geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
 
         final PreparedTIN tin = PreparedTIN.create(geometry);
         assertEquals(2, tin.getPatches(null).count());
@@ -76,12 +76,12 @@ public class PreparedTINTest {
     public void testMulti() throws TransformException {
 
         final MeshPrimitive.Triangles geometry = new MeshPrimitive.Triangles();
-        geometry.setPositions(TupleArrays.of(CRS3D,
+        geometry.setPositions(NDArrays.of(CRS3D,
                 0,1,2,
                 3,4,5,
                 6,7,8,
                 9,10,11));
-        geometry.setIndex(TupleArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
+        geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
 
         final PreparedTIN tin = PreparedTIN.create(geometry, geometry);
         assertEquals(4, tin.getPatches(null).count());

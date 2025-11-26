@@ -17,6 +17,7 @@
 package org.apache.sis.util.internal.shared;
 
 import java.util.*;
+import java.util.function.IntFunction;
 import java.lang.reflect.Array;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.InvalidParameterCardinalityException;
@@ -338,6 +339,27 @@ public final class CollectionsExt {
     }
 
     /**
+     * Returns the given collection viewed as an unmodifiable set.
+     * It is caller's responsibility to ensure that the collection contains no duplicated values.
+     *
+     * @param  <E>       type of elements in the set.
+     * @param  elements  the elements to view as a set.
+     * @return the given collection viewed as a set.
+     */
+    public static <E> Set<E> viewAsSet(final Collection<E> elements) {
+        return new AbstractSet<E>() {
+            @Override public int         size()                       {return elements.size();}
+            @Override public boolean     isEmpty()                    {return elements.isEmpty();}
+            @Override public boolean     contains(Object o)           {return elements.contains(o);}
+            @Override public boolean     containsAll(Collection<?> c) {return elements.containsAll(c);}
+            @Override public Iterator<E> iterator()                   {return elements.iterator();}
+            @Override public Object[]    toArray()                    {return elements.toArray();}
+            @Override public <T> T[]     toArray(T[] a)               {return elements.toArray(a);}
+            @Override public <T> T[]     toArray(IntFunction<T[]> g)  {return elements.toArray(g);}
+        };
+    }
+
+    /**
      * Returns the specified array as an immutable set, or {@code null} if the array is null.
      * If the given array contains duplicated elements, i.e. elements that are equal in the
      * sense of {@link Object#equals(Object)}, then only the last instance of the duplicated
@@ -372,7 +394,7 @@ public final class CollectionsExt {
             }
             default: {
                 @SuppressWarnings("varargs")
-                final Set<E> set = new LinkedHashSet<>(Arrays.asList(array));
+                final var set = new LinkedHashSet<E>(Arrays.asList(array));
                 if (excludeNull) {
                     set.remove(null);
                 }

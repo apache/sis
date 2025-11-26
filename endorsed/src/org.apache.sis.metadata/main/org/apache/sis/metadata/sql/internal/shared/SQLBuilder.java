@@ -91,11 +91,11 @@ public class SQLBuilder extends Syntax {
     }
 
     /**
-     * Clears this builder and make it ready for creating a new SQL statement.
+     * Clears this builder and makes it ready for creating a new <abbr>SQL</abbr> statement.
      *
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder clear() {
+    public SQLBuilder clear() {
         buffer.setLength(0);
         return this;
     }

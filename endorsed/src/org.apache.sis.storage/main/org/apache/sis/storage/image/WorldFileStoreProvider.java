@@ -175,7 +175,7 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
     }
 
     /**
-     * {@return the logger used by image stores}.
+     * Returns the logger used by image stores.
      */
     @Override
     public Logger getLogger() {

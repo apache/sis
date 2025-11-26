@@ -207,10 +207,10 @@ public class Resources extends IndexedResourceBundle {
         public static final short IllegalCharacteristicsType_3 = 25;
 
         /**
-         * Association “{0}” does not accept features of type ‘{2}’. Expected an instance of ‘{1}’ or
-         * derived type.
+         * The “{1}” {0,choice,0#association|1#operation} expects features of type ‘{2}’, but an
+         * instance of ‘{3}’ has been given.
          */
-        public static final short IllegalFeatureType_3 = 26;
+        public static final short IllegalFeatureType_4 = 26;
 
         /**
          * Illegal grid envelope [{1,number} … {2,number}] for dimension {0}.

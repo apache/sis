@@ -76,7 +76,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * but different sources. This is used for creating {@linkplain #subset(Query) subsets}.
      */
     private ConcatenatedFeatureSet(final FeatureSet[] sources, final ConcatenatedFeatureSet original) {
-        super(original.listeners);
+        super(original);
         this.sources = UnmodifiableArrayList.wrap(sources);
         commonType = original.commonType;
     }
@@ -233,7 +233,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      */
     @Override
     public FeatureSet subset(final Query query) throws DataStoreException {
-        final FeatureSet[] subsets = new FeatureSet[sources.size()];
+        final var subsets = new FeatureSet[sources.size()];
         boolean modified = false;
         for (int i=0; i<subsets.length; i++) {
             FeatureSet source = sources.get(i);

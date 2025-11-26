@@ -35,11 +35,11 @@ import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -123,7 +123,7 @@ public final class TINBuilder {
         final List<Triangle> triangles = new ArrayList<>(finished.size());
         for (int i = 0, n = finished.size(); i < n; i++) {
             final WTriangle t = finished.get(i);
-            final TupleArray positions = TupleArrays.of(Arrays.asList(t.p0, t.p1, t.p2, t.p0), t.p0.getSampleSystem(), t.p0.getDataType());
+            final Array positions = NDArrays.of(Arrays.asList(t.p0, t.p1, t.p2, t.p0), t.p0.getSampleSystem(), t.p0.getDataType());
             final PointSequence points = GeometryFactory.createSequence(positions);
             final LinearRing exterior = GeometryFactory.createLinearRing(points);
             triangles.add(GeometryFactory.createTriangle(exterior));

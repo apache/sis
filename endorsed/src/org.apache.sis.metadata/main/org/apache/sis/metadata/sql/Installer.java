@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.apache.sis.metadata.sql.internal.shared.ScriptRunner;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
 
 
@@ -81,16 +80,16 @@ final class Installer extends ScriptRunner {
     }
 
     /**
-     * Invoked for each line of the SQL installation script to execute.
+     * Invoked for each statement of the <abbr>SQL</abbr> installation script which creates a table.
      * If the database does not support enumerations, replaces enumeration columns by {@code VARCHAR}.
      */
     @Override
-    protected int execute(final StringBuilder sql) throws SQLException, IOException {
-        if (!isEnumTypeSupported && CharSequences.startsWith(sql, "CREATE TABLE", true)) {
+    protected void editTableCreation(final StringBuilder sql) {
+        super.editTableCreation(sql);
+        if (!isEnumTypeSupported) {
             for (final String type : enumTypes) {
                 StringBuilders.replace(sql, type, "VARCHAR(25)");
             }
         }
-        return super.execute(sql);
     }
 }

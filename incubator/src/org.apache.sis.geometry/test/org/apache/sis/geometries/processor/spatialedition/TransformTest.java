@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -53,25 +53,25 @@ public class TransformTest {
     private static MeshPrimitive createPrimitive() throws FactoryException {
 
         final MeshPrimitive primitive = new MeshPrimitive.Points();
-        primitive.setPositions(TupleArrays.of(CRS_SOURCE,
+        primitive.setPositions(NDArrays.of(CRS_SOURCE,
                 0.0, 0.0, 0.0, //point on earth equator, lon 0
                 90.0, 0.0, 0.0, //point on earth equator, lon 90
                 180.0, 0.0, 0.0, //point on earth equator, lon 180
                 45.0, 45.0, 0.0 //point in east-europe
         ));
-        primitive.setNormals(TupleArrays.of(3,
+        primitive.setNormals(NDArrays.of(3,
                 0.0, 0.0, 1.0,
                 0.0, 0.0, 1.0,
                 0.0, 0.0, 1.0,
                 0.0, 0.0, 1.0
         ));
-        primitive.setTangents(TupleArrays.of(3,
+        primitive.setTangents(NDArrays.of(3,
                 1.0, 0.0, 0.0,
                 1.0, 0.0, 0.0,
                 1.0, 0.0, 0.0,
                 1.0, 0.0, 0.0
         ));
-        primitive.setTexCoords(0,TupleArrays.of(2,
+        primitive.setTexCoords(0,NDArrays.of(2,
                 1.0, 2.0,
                 3.0, 4.0,
                 5.0, 6.0,
@@ -83,25 +83,25 @@ public class TransformTest {
 
     private static void testPrimitive(MeshPrimitive result) {
         assertEquals(CRS_TARGET, result.getCoordinateReferenceSystem());
-        assertTrue(TupleArrays.of(CRS_TARGET,
+        assertTrue(NDArrays.of(CRS_TARGET,
                 6378137.0, 0.0, 0.0,
                 0.0, 6378137.0, 0.0,
                -6378137.0, 0.0, 0.0,
                3194419.145, 3194419.145, 4487348.408
         ).equals(result.getPositions(), 1e-3));
-        assertTrue(TupleArrays.of(3,
+        assertTrue(NDArrays.of(3,
                 1.0, 0.0, 0.0,
                 0.0, 1.0, 0.0,
                -1.0, 0.0, 0.0,
                 0.5, 0.5, 0.707
         ).equals(result.getNormals(), 1e-3));
-        assertTrue(TupleArrays.of(3,
+        assertTrue(NDArrays.of(3,
                 0.0, 1.0, 0.0,
                -1.0, 0.0, 0.0,
                 0.0,-1.0, 0.0,
                -0.707,0.707, 0.0
         ).equals(result.getTangents(), 1e-3));
-        assertTrue(TupleArrays.of(2,
+        assertTrue(NDArrays.of(2,
                 1.0, 2.0,
                 3.0, 4.0,
                 5.0, 6.0,

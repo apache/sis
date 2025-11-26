@@ -37,8 +37,10 @@ Execute the scripts in the `public` schema of a PostgreSQL database on the local
 This page assumes that the database name is "Referencing", but any other name can be used
 if the argument given to `TableScriptUpdater` (later in this page) is adjusted accordingly.
 
-If a copy of the original SQL scripts (as downloaded from EPSG) for the previous version is still available,
-and if the following commands report no difference, then jump to "Automatic updates after the manual checks" step.
+
+### Updates the Data Definition scripts
+
+Verify that the new SQL scripts downloaded from EPSG defines the same tables as the previous version:
 
 ```bash
 cd _<directory containing EPSG scripts of previous version>_
@@ -46,70 +48,16 @@ diff PostgreSQL_Table_Script.sql $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql
 diff PostgreSQL_FKey_Script.sql  $EPSG_SCRIPTS/PostgreSQL_FKey_Script.sql
 ```
 
-Otherwise, move to the directory which contains the Apache SIS scripts:
-
-```bash
-cd <path to a local copy of http://svn.apache.org/repos/asf/sis/data/non-free/EPSG/>
-export NON_FREE_DIR=$PWD
-```
-
-Overwrite `Tables.sql` and `FKeys.sql` with the new SQL scripts.
-Do not overwrite `Data.sql` yet:
-
-```bash
-cp $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql Tables.sql
-cp $EPSG_SCRIPTS/PostgreSQL_FKey_Script.sql  FKeys.sql
-```
-
-
-### Manual checks and editions
-
-Open the `Tables.sql` file for edition:
-
-* Keep the header comments that existed in the overwritten file.
-* Remove the `"Change"` table and the `change_id` column in all tables. They are EPSG metadata unused by Apache SIS.
-* Remove the `information_source`, `data_source` and `revision_date` columns in all tables. They are EPSG metadata unused by Apache SIS.
-* Remove the `crs_scope`, `coord_op_scope`, `datum_scope` and `area_of_use_code` columns, which are deprecated.
-* Keep the same column order than in the previous `Tables.sql`.
-* Rename `epsg_` table names to the camel case convention used by Apache SIS.
-* Suppress trailing `NULL` (not to be confused with `NOT NULL`) as they are implicit.
-* In the statement creating the `coordinateaxis` table,
-  add the `NOT NULL` constraint to the `coord_axis_code` column.
-* In the statement creating the `epsg_datum` table,
-  change the type of the `realization_epoch` and `publication_date` columns to `DATE`.
-* Change the type of `ellipsoid_shape`, `reverse_op`, `param_sign_reversal`
-  `show_crs`, `show_operation` and all `deprecated` fields from `SMALLINT`
-  (or sometimes `VARCHAR(3)`) to `BOOLEAN`.
-* Change all `FLOAT` types to `DOUBLE PRECISION` because Apache SIS reads all numbers as `double` type.
-  This change avoids spurious digits in the conversions from `float` to `double`.
-* Change the type of `epsg_usage` column from `SERIAL` to `INTEGER NOT NULL`.
-* Change the type of every `table_name` columns from `VARCHAR(80)` to `"Table Name"`.
-* Change the type of `coord_ref_sys_kind` column from `VARCHAR(24)` to `"CRS Kind"`.
-* Change the type of `coord_sys_type` column from `VARCHAR(24)` to `"CS Kind"`.
-* Change the type of `datum_type` column from `VARCHAR(24)` to `"Datum Kind"`.
-* Change the type of `supersession_type` column from `VARCHAR(50)` to `"Supersession Type"`.
-* If new enumeration values are added, check the maximal lengths of `VARCHAR` replacements in `EPSGInstaller`.
-* Suppress trailing spaces and save.
-
-Then open the `FKeys.sql` file for edition:
-
-* Remove the `fk_change_id` foreigner key.
-* At the end of all `ALTER TABLE` statement, append `ON UPDATE RESTRICT ON DELETE RESTRICT`.
-* Suppress trailing spaces and save.
-
-Usually, the above editions result in no change compared to the previous scripts (ignoring white spaces),
-in which case the maintainer can just revert the changes in order to preserve the formatting.
-However, if some changes are found in the schema, then hard-coded values in the `DataScriptFormatter` class
-may need to be modified, in particular the `booleanColumns` and `doubleColumns` collections.
-
-
-### Automatic updates after the manual checks
-
-Execute the `main` method of the `org.apache.sis.referencing.factory.sql.epsg.*Updater` classes
+If there are some changes, port them manually to the {@code Tables.sql} and {@code FKeys.sql} scripts.
+The [page listing the changes](./Changes.html) gives information about the changes to expert or to reproduce.
+Then, execute the `main` method of the `org.apache.sis.referencing.factory.sql.epsg.*Updater` classes
 located in the test directory of the `org.apache.sis.non-free:sis-epsg` Maven sub-project.
 Adjust version numbers as needed in the following commands:
 
 ```bash
+cd <path to a local copy of http://svn.apache.org/repos/asf/sis/data/non-free/EPSG/>
+export NON_FREE_DIR=$PWD
+
 cd _<path to SIS project directory>_
 gradle clean test jar
 export CLASSPATH=~/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar

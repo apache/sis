@@ -501,34 +501,42 @@ public class HyperRectangleWriter {
         }
 
         /**
-         * {@return the number of banks to write}.
+         * Returns the number of banks to write.
          * This is not necessarily the number of bands, because the writer may be able
          * to write all bands contiguously in a single call to a {@code write(…)} method.
+         *
+         * @return the number of banks (not bands) to write.
          */
         public int numBanks() {
             return bankIndices.length;
         }
 
         /**
-         * {@return the total number of elements contained in the hyper-rectangle}.
+         * Returns the total number of elements contained in the hyper-rectangle.
          * The number of bytes to write will be this length multiplied by element size.
          * This information is valid only after a {@code create(…)} method has been invoked.
+         *
+         * @return the total number of elements contained in the hyper-rectangle.
          */
         public long length() {
             return length;
         }
 
         /**
-         * {@return the number of elements (not necessarily bytes) between a pixel and the next pixel}.
+         * Returns the number of elements (not necessarily bytes) between a pixel and the next pixel.
          * This information is valid only after a {@code create(…)} method has been invoked.
+         *
+         * @return number of elements between a pixel and the next pixel.
          */
         public int pixelStride() {
             return pixelStride;
         }
 
         /**
-         * {@return the number of elements (not necessarily bytes) between a row and the next row}.
+         * Returns the number of elements (not necessarily bytes) between a row and the next row.
          * This information is valid only after a {@code create(…)} method has been invoked.
+         *
+         * @return number of elements between a row and the next row.
          */
         public int scanlineStride() {
             return scanlineStride;

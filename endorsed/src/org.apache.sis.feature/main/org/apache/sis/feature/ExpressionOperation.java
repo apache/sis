@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.function.Function;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.filter.internal.shared.FunctionNames;
-import org.apache.sis.filter.internal.shared.Visitor;
+import org.apache.sis.filter.visitor.FunctionNames;
+import org.apache.sis.filter.visitor.Visitor;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.CodeList;
@@ -68,7 +68,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
      * The type of result of evaluating the expression.
      */
     @SuppressWarnings("serial")                         // Apache SIS implementations are serializable.
-    private final AttributeType<V> resultType;
+    final AttributeType<V> resultType;
 
     /**
      * The name of all feature properties that are known to be read by the expression.

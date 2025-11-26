@@ -24,6 +24,7 @@ import org.opengis.util.LocalName;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.filter.capability.AvailableFunction;
+import org.apache.sis.pending.jdk.Record;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Names;
@@ -35,7 +36,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 
 
 /**
- * Description of a SQLMM function with its parameters.
+ * Description of a <abbr>SQLMM</abbr> function with its parameters.
  *
  * @todo Argument descriptions are incomplete. They have no good names,
  *       and the types are missing (they are {@code null}) except for geometry types.
@@ -44,7 +45,7 @@ import org.apache.sis.referencing.NamedIdentifier;
  *
  * @see SQLMM#description(Geometries)
  */
-final class FunctionDescription implements AvailableFunction, Serializable {
+final class FunctionDescription extends Record implements AvailableFunction, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -127,7 +128,7 @@ final class FunctionDescription implements AvailableFunction, Serializable {
     }
 
     /**
-     * {@return the type of return value}.
+     * Returns the type of return value.
      */
     @Override
     public TypeName getReturnType() {
@@ -142,6 +143,7 @@ final class FunctionDescription implements AvailableFunction, Serializable {
      *
      * @param  <T>  the type of the argument value.
      */
+    @SuppressWarnings("EqualsAndHashcode")
     private static final class Argument<T> extends SimpleIdentifiedObject implements ParameterDescriptor<T> {
         /**
          * For cross-version compatibility.
@@ -180,7 +182,7 @@ final class FunctionDescription implements AvailableFunction, Serializable {
         }
 
         /**
-         * {@return the name of the type of the argument}.
+         * Returns the name of the type of the argument.
          */
         @Override
         public TypeName getValueType() {
@@ -268,7 +270,7 @@ final class FunctionDescription implements AvailableFunction, Serializable {
         }
 
         /**
-         * {@return a hash-code value for this argument description}.
+         * Returns a hash-code value for this argument description.
          */
         @Override
         public int hashCode() {
@@ -276,9 +278,11 @@ final class FunctionDescription implements AvailableFunction, Serializable {
         }
 
         /**
-         * {@return a string representation of this argument}.
+         * Returns a string representation of this argument.
          * Current version includes the name and the type.
          * Should be used only for debugging purposes.
+         *
+         * @return a string representation for debugging purposes.
          */
         @Override
         public String toString() {
@@ -318,7 +322,7 @@ final class FunctionDescription implements AvailableFunction, Serializable {
     }
 
     /**
-     * {@return a hash-code value for this function description}.
+     * Returns a hash-code value for this function description.
      */
     @Override
     public int hashCode() {
@@ -326,8 +330,10 @@ final class FunctionDescription implements AvailableFunction, Serializable {
     }
 
     /**
-     * {@return a string representation of this function with its argument}.
+     * Returns a string representation of this function with its argument.
      * Should be used only for debugging purposes.
+     *
+     * @return a string representation for debugging purposes.
      */
     @Override
     public String toString() {

@@ -615,6 +615,8 @@ public enum Type {
 
     /**
      * Reads the value as strings. There is usually exactly one string, but an arbitrary amount is allowed.
+     * The default implementation assumes that the vector contains numerical data, which is the case of all
+     * types except {@link #ASCII}. This method is overridden for handling any text in the {@code ASCII} case.
      *
      * @param  input    the input from where to read the value.
      * @param  length   the string length, including the final NUL byte.

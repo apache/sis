@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Errors;
  * @see ResultSet#getMetaData()
  * @see DatabaseMetaData#getColumns(String, String, String, String)
  */
-public final class Column implements Cloneable {
+public class Column implements Cloneable {
     /**
      * Name of the column as declared in the table.
      *
@@ -61,7 +61,7 @@ public final class Column implements Cloneable {
     public final String name;
 
     /**
-     * Name of the column as declared in with a {@code AS} clause in the <abbr>SQL</abbr> statement.
+     * Name of the column as declared with a {@code AS} clause in the <abbr>SQL</abbr> statement.
      * This is never null but may be identical to {@link #name} if no {@code AS} clause was specified.
      *
      * @see ResultSetMetaData#getColumnLabel(int)
@@ -139,14 +139,15 @@ public final class Column implements Cloneable {
     ValueGetter<?> valueGetter;
 
     /**
-     * Creates a synthetic column (a column not inferred from database analysis)
-     * for describing the type of elements in an array.
+     * Creates a column of the given name and type.
+     * This constructor is used for columns that are not inferred from database analysis.
      *
-     * @param  type      SQL type of the column.
+     * @param  type      SQL type of the column as one of the constants enumerated in {@link Types} class.
      * @param  typeName  SQL name of the type.
+     * @param  name      the column name, also used as the property name.
      */
-    Column(final int type, final String typeName) {
-        this.name = label = propertyName = "element";
+    Column(final int type, final String typeName, final String name) {
+        this.name = label = propertyName = name;
         this.type       = type;
         this.typeName   = typeName;
         this.precision  = 0;

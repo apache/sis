@@ -900,7 +900,7 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * {@return a string representation of this context for debugging purposes}.
+     * Returns a string representation of this context for debugging purposes.
      */
     @Override
     public String toString() {

@@ -21,7 +21,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -53,7 +53,7 @@ public class To3DTest {
     public void testPrimitive() {
 
         final MeshPrimitive primitive = new MeshPrimitive.Points();
-        primitive.setPositions(TupleArrays.of(CRS2D,
+        primitive.setPositions(NDArrays.of(CRS2D,
                 0.0, 1.0,
                 2.0, 3.0,
                 4.0, 5.0,

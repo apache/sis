@@ -246,7 +246,7 @@ public final class MetadataReaderTest extends TestCase {
         final class DummyResource extends AbstractResource {
             /** Creates a dummy resource without parent. */
             DummyResource() {
-                super(null, false);
+                super(null);
             }
 
             /** Makes listeners accessible to this package. */

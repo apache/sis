@@ -64,6 +64,7 @@ final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> implements Bi
     BinarySpatialFilter(final Geometries<?> library, final Expression<R,?> geometry,
                         final Envelope bounds, final WraparoundMethod wraparound)
     {
+        // Checks for null value are done indirectly in the methods invoked below.
         super(library, geometry, new LeafExpression.Transformed<>(library.toGeometry2D(bounds, wraparound),
                                  new LeafExpression.Literal<>(bounds)), null);
         operatorType = SpatialOperatorName.BBOX;
@@ -138,6 +139,7 @@ final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> implements Bi
      * @return {@code true} if the test(s) are passed for the provided object.
      */
     @Override
+    @SuppressWarnings("UseSpecificCatch")
     public boolean test(final R object) {
         final GeometryWrapper left = expression1.apply(object);
         if (left != null) {

@@ -21,8 +21,8 @@ import java.util.Map;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrayCursor;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -55,8 +55,8 @@ public abstract class AbstractGeometry implements Geometry {
         }
     }
 
-    public static void toText(StringBuilder sb, TupleArray array) {
-        final TupleArrayCursor cursor = array.cursor();
+    public static void toText(StringBuilder sb, Array array) {
+        final Cursor cursor = array.cursor();
         boolean first = true;
         while (cursor.next()) {
             if (!first) {

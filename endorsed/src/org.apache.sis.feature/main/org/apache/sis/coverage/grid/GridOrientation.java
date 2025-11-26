@@ -30,10 +30,15 @@ import org.apache.sis.util.resources.Errors;
  * For example, the conversion from grid coordinates to CRS coordinates may flip the <var>y</var> axis
  * (grid coordinates increasing toward down on screen), or may swap <var>x</var> and <var>y</var> axes, <i>etc.</i>
  * The constants enumerated in this class cover only a few common cases where the grid is
- * <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">axis-aligned</a> with the CRS.
+ * <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">axis-aligned</a> with the <abbr>CRS</abbr>.
+ *
+ * <h4>Custom orientations</h4>
+ * For creating a custom orientations, one of the constants defined in this class can be used as a starting point.
+ * Then, the {@link #flipGridAxis(int)}, {@link #useVariantOfCRS(AxesConvention)} or {@link #canReorderGridAxis(boolean)}
+ * methods can be invoked.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.6
  *
  * @see GridGeometry#GridGeometry(GridExtent, Envelope, GridOrientation)
  *
@@ -144,6 +149,15 @@ public final class GridOrientation implements Serializable {
     public static final GridOrientation DISPLAY = new GridOrientation(2, AxesConvention.DISPLAY_ORIENTED, false);
 
     /**
+     * Unknown image orientation. The {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS}
+     * transforms inferred from this orientation will be null.
+     * All methods in this class invoked on the {@code UNKNOWN} instance will return {@code UNKNOWN}.
+     *
+     * @since 1.6
+     */
+    public static final GridOrientation UNKNOWN = new GridOrientation(0, null, true);
+
+    /**
      * Set of grid axes to reverse, as a bit mask. For any dimension <var>i</var>, the bit
      * at {@code 1L << i} is set to 1 if the grid axis at that dimension should be flipped.
      * This is the argument to give in calls to {@link GridExtent#cornerToCRS(Envelope, long, int[])}.
@@ -163,7 +177,7 @@ public final class GridOrientation implements Serializable {
 
     /**
      * Whether {@link GridExtent} can be rewritten with a different axis order
-     * for matching the CRS axis order specified by {@link #crsVariant}.
+     * for matching the <abbr>CRS</abbr> axis order specified by {@link #crsVariant}.
      * If {@code false}, then axis order changes will be handled in the {@code gridToCRS} transform instead.
      *
      * @see #canReorderGridAxis(boolean)
@@ -196,6 +210,9 @@ public final class GridOrientation implements Serializable {
         if (dimension >= Long.SIZE) {
             throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
         }
+        if (this == UNKNOWN) {
+            return this;
+        }
         return new GridOrientation(flippedAxes ^ (1L << dimension), crsVariant, canReorderGridAxis);
     }
 
@@ -227,7 +244,7 @@ public final class GridOrientation implements Serializable {
      * @see #DISPLAY
      */
     public GridOrientation useVariantOfCRS(final AxesConvention variant) {
-        if (variant == crsVariant) {
+        if (variant == crsVariant || this == UNKNOWN) {
             return this;
         }
         if (variant == AxesConvention.NORMALIZED || variant == AxesConvention.ORIGINAL) {
@@ -246,7 +263,7 @@ public final class GridOrientation implements Serializable {
      * @return a grid orientation equals to this one except that it has the specified flag.
      */
     public GridOrientation canReorderGridAxis(final boolean enabled) {
-        if (enabled == canReorderGridAxis) {
+        if (enabled == canReorderGridAxis || this == UNKNOWN) {
             return this;
         }
         return new GridOrientation(flippedAxes, crsVariant, enabled);
@@ -261,7 +278,7 @@ public final class GridOrientation implements Serializable {
     @Override
     public boolean equals(final Object other) {
         if (other instanceof GridOrientation) {
-            final GridOrientation that = (GridOrientation) other;
+            final var that = (GridOrientation) other;
             return flippedAxes == that.flippedAxes &&
                    crsVariant  == that.crsVariant  &&
                    canReorderGridAxis == that.canReorderGridAxis;
@@ -283,7 +300,10 @@ public final class GridOrientation implements Serializable {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(getClass().getSimpleName()).append('[');
+        if (this == UNKNOWN) {
+            return "UNKNOWN";
+        }
+        final var buffer = new StringBuilder(getClass().getSimpleName()).append('[');
         String separator = "";
         if (flippedAxes != 0) {
             buffer.append("flip={");

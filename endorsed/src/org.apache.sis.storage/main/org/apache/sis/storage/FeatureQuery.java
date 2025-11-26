@@ -36,8 +36,8 @@ import org.apache.sis.feature.internal.shared.FeatureProjection;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.filter.internal.shared.ListingPropertyVisitor;
-import org.apache.sis.filter.internal.shared.SortByComparator;
+import org.apache.sis.filter.visitor.ListingPropertyVisitor;
+import org.apache.sis.storage.base.SortByComparator;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.ArgumentChecks;
@@ -629,7 +629,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
             if (fex != null) {
                 final FeatureProjectionBuilder.Item item = fex.expectedType(builder);
                 if (item != null) {
-                    item.setName(alias);    // Need to be invoked aven if the alias is null.
+                    item.setPreferredName(alias);   // Need to be invoked even if the alias is null.
                     item.setValueGetter(expression, type == ProjectionType.STORED);
                     return true;
                 }

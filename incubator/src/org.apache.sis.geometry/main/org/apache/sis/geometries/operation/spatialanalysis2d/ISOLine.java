@@ -28,12 +28,12 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -105,7 +105,7 @@ public final class ISOLine {
         final CoordinateReferenceSystem crs = CRS.compound(CommonCRS.WGS84.normalizedGeographic(), CommonCRS.Vertical.ELLIPSOIDAL.crs());
 
         final MeshPrimitive.Lines lines = new MeshPrimitive.Lines();
-        TupleArray position = TupleArrays.of(SampleSystem.of(crs), DataType.DOUBLE, segments.size());
+        Array position = NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, segments.size());
         Iterator<Vector3D.Double> iterator = segments.iterator();
         int i = 0;
         while (iterator.hasNext()) {

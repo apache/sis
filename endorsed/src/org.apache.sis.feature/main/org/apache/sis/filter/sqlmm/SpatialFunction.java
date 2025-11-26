@@ -21,7 +21,7 @@ import java.util.Collection;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
@@ -43,7 +43,9 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  */
-abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Object>, Optimization.OnExpression<R,Object> {
+abstract class SpatialFunction<R> extends Node
+        implements FeatureExpression<R, Object>, Optimization.OnExpression<R, Object>
+{
     /**
      * For cross-version compatibility.
      */
@@ -78,7 +80,7 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      */
     SpatialFunction(final SQLMM operation, final Expression<R,?>[] parameters) {
         this.operation = operation;
-        ArgumentChecks.ensureCountBetween("parameters", true,
+        ArgumentChecks.ensureCountBetween("parameters", false,
                 operation.minParamCount, operation.maxParamCount, parameters.length);
     }
 
@@ -149,7 +151,7 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      * Returns the kind of objects evaluated by this expression.
      */
     @Override
-    public final Class<?> getValueClass() {
+    public final Class<?> getResultClass() {
         return operation.getReturnType(getGeometryLibrary());
     }
 
@@ -160,7 +162,7 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
     @Override
     @SuppressWarnings("unchecked")
     public final <N> Expression<R,N> toValueType(final Class<N> target) {
-        if (target.isAssignableFrom(getValueClass())) {
+        if (target.isAssignableFrom(getResultClass())) {
             return (Expression<R,N>) this;
         } else {
             throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertValue_2, getFunctionName(), target));
@@ -178,8 +180,8 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      *   <li>Otherwise, an attribute is created with the return value specified by the operation.</li>
      * </ul>
      *
-     * @param  addTo  where to add the type of properties evaluated by this expression.
-     * @return builder of type resulting from expression evaluation (never null).
+     * @param  addTo  where to add the type of the property evaluated by this expression.
+     * @return handler of the added property, or {@code null} if the property cannot be added.
      * @throws InvalidFilterValueException if the source feature type does not contain the expected properties,
      *         or if this method cannot determine the result type of the expression.
      *         It may be because that expression is backed by an unsupported implementation.
@@ -190,16 +192,16 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
             final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(getParameters().get(0));
             if (fex != null) {
                 final FeatureProjectionBuilder.Item item = addTo.addTemplateProperty(fex);
-                final boolean success = item.replaceValueClass((c) -> {
+                final boolean accept = (item == null) || item.replaceValueClass((c) -> {
                     final Geometries<?> library = Geometries.factory(c);
                     return (library == null) ? null : operation.getReturnType(library);
                 });
-                if (success) {
+                if (accept) {
                     return item;
                 }
             }
             throw new InvalidFilterValueException(Resources.format(Resources.Keys.NotAGeometryAtFirstExpression));
         }
-        return addTo.addComputedProperty(addTo.addAttribute(getValueClass()).setName(getFunctionName()), false);
+        return addTo.addComputedProperty(addTo.addAttribute(getResultClass()).setName(getFunctionName()), false);
     }
 }

@@ -21,12 +21,12 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveIndexes;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -82,7 +82,7 @@ public class PrimitiveIndexesTest {
     @Test
     public void testToStripSingleTriangle() {
 
-        final TupleArray index = TupleArrays.of(1, 0, 1, 2);
+        final Array index = NDArrays.of(1, 0, 1, 2);
 
         final int[] ts = MeshPrimitiveIndexes.toTriangleStrip(index, MeshPrimitive.Type.TRIANGLES).toArrayInt();
 
@@ -109,7 +109,7 @@ public class PrimitiveIndexesTest {
     @Test
     public void testToStripTwoNeighorTriangles() {
 
-        final TupleArray index = TupleArrays.of(1,
+        final Array index = NDArrays.of(1,
                 0, 1, 2,
                 2, 1, 3);
 
@@ -140,7 +140,7 @@ public class PrimitiveIndexesTest {
     @Test
     public void testToStripTwoSeparateTriangles() {
 
-        final TupleArray index = TupleArrays.of(1,
+        final Array index = NDArrays.of(1,
                 0, 1, 2,
                 3, 4, 5);
 
@@ -185,7 +185,7 @@ public class PrimitiveIndexesTest {
     @Test
     public void testToStripTwoIncompatibleTriangles() {
 
-        final TupleArray index = TupleArrays.of(1,
+        final Array index = NDArrays.of(1,
                 0, 1, 2,
                 1, 2, 3);
 
@@ -228,7 +228,7 @@ public class PrimitiveIndexesTest {
      */
     @Test
     public void testToStripNeighborTriangles() {
-        final TupleArray index = TupleArrays.of(1,
+        final Array index = NDArrays.of(1,
                 7, 0, 2,
                 5, 0, 7,
                 5, 3, 0,
@@ -264,7 +264,7 @@ public class PrimitiveIndexesTest {
      */
     @Test
     public void testToStripNeighborTrianglesDegenerate() {
-        final TupleArray index = TupleArrays.of(1,
+        final Array index = NDArrays.of(1,
                 7, 2, 0,
                 5, 7, 0,
                 5, 0, 3,
@@ -309,7 +309,7 @@ public class PrimitiveIndexesTest {
     @Test
     public void testToTriangles() {
 
-        final TupleArray index = TupleArrays.of(1,
+        final Array index = NDArrays.of(1,
                 0, 1, 2, 3);
 
         final int[] ts = MeshPrimitiveIndexes.toTriangles(index, MeshPrimitive.Type.TRIANGLE_STRIP).toArrayInt();
@@ -332,7 +332,7 @@ public class PrimitiveIndexesTest {
     @Test
     public void testReverseTriangles() {
 
-        final TupleArray index = TupleArrays.of(1,
+        final Array index = NDArrays.of(1,
                 0, 1, 2,
                 2, 1, 3);
 
@@ -356,7 +356,7 @@ public class PrimitiveIndexesTest {
     @Test
     public void testReverseTriangleStrip() {
 
-        final TupleArray index = TupleArrays.of(1,
+        final Array index = NDArrays.of(1,
                 0, 1, 2, 3);
 
         final int[] ts = MeshPrimitiveIndexes.reverseTriangles(index, MeshPrimitive.Type.TRIANGLE_STRIP).toArrayInt();

@@ -21,9 +21,8 @@ import java.math.BigInteger;
 import org.opengis.util.ScopedName;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
-import org.apache.sis.filter.internal.shared.FunctionNames;
-import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.filter.base.BinaryFunction;
+import org.apache.sis.filter.visitor.FunctionNames;
 import org.apache.sis.math.Fraction;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -40,8 +39,8 @@ import org.opengis.filter.Expression;
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  */
-abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
-        implements FeatureExpression<R,Number>, Optimization.OnExpression<R,Number>
+abstract class ArithmeticFunction<R> extends BinaryFunction<R, Number, Number>
+        implements FeatureExpression<R, Number>, Optimization.OnExpression<R, Number>
 {
     /**
      * For cross-version compatibility.
@@ -58,13 +57,21 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
     }
 
     /**
+     * Returns the type of values computed by this expression.
+     */
+    @Override
+    public final Class<Number> getResultClass() {
+        return Number.class;
+    }
+
+    /**
      * Creates an attribute type for numeric values of the given name.
      * The attribute is mandatory, unbounded and has no default value.
      *
      * @param  name  name of the attribute to create.
      * @return an attribute of the given name for numbers.
      */
-    static AttributeType<Number> createNumericType(final String name) {
+    private static AttributeType<Number> createNumericType(final String name) {
         return createType(Number.class, name);
     }
 
@@ -72,14 +79,6 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
      * Returns the type of results computed by this arithmetic function.
      */
     protected abstract AttributeType<Number> expectedType();
-
-    /**
-     * Returns the type of values computed by this expression.
-     */
-    @Override
-    public final Class<?> getValueClass() {
-        return Number.class;
-    }
 
     /**
      * Provides the type of results computed by this expression. That type depends only
@@ -106,25 +105,6 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
             }
         }
         return null;
-    }
-
-    /**
-     * Returns {@code this} if this expression provides values of the specified type,
-     * or otherwise returns an expression doing conversions on-the-fly.
-     *
-     * @throws ClassCastException if the specified type is not a supported target type.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public <N> Expression<R,N> toValueType(final Class<N> target) {
-        if (target.isAssignableFrom(Number.class)) {
-            return (Expression<R,N>) this;
-        } else try {
-            return new ConvertFunction<>(this, Number.class, target);
-        } catch (UnconvertibleObjectException e) {
-            throw (ClassCastException) new ClassCastException(Errors.format(
-                    Errors.Keys.CanNotConvertValue_2, getFunctionName(), target)).initCause(e);
-        }
     }
 
     /**

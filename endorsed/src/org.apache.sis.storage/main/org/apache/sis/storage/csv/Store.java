@@ -441,7 +441,7 @@ final class Store extends URIDataStore implements FeatureSet {
             if (startTime != null) {
                 final TemporalCRS temporal;
                 if (isTimeAbsolute) {
-                    temporal = TimeEncoding.DEFAULT.crs();
+                    temporal = CommonCRS.defaultTemporal();
                     timeEncoding = TimeEncoding.ABSOLUTE;
                 } else {
                     temporal = builder.createTemporalCRS(startTime, timeUnit);

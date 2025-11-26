@@ -98,11 +98,13 @@ public abstract class PRJDataStore extends URIDataStore {
     }
 
     /**
-     * {@return the convention to use for parsing the PRJ file if Well-Known Text 1 is used}.
+     * Returns the convention to use for parsing the <abbr>PRJ</abbr> file if Well-Known Text 1 is used.
      * Unfortunately, many formats use the ambiguous conventions from the very first specification,
      * and ignore the clarifications done by OGC 01-009. In such case, we have to tell the WKT parser
      * that the ambiguous conventions are used. This method can be overridden if the subclass has a way
      * to know which WKT 1 conventions are used.
+     *
+     * @return convention to use for parsing the <abbr>PRJ</abbr> file.
      */
     protected Convention getConvention() {
         return Convention.WKT1_COMMON_UNITS;

@@ -172,7 +172,7 @@ public enum Compression {
     }
 
     /**
-     * {@return whether the compression can be configured with different levels}.
+     * Returns whether the compression can be configured with different levels.
      */
     public final boolean supportLevels() {
         return this == DEFLATE;

@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Spliterator;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.EOFException;
@@ -56,7 +58,7 @@ import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.ListOfUnknownSize;
+import org.apache.sis.util.collection.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.setup.OptionKey;
@@ -624,14 +626,19 @@ loop:   for (int convention=0;; convention++) {
         }
 
         /**
-         * Returns the number of images if this information is known, or any negative value otherwise.
+         * Returns the number of images if this information is known, or empty otherwise.
          * This is used by {@link ListOfUnknownSize} for optimizing some operations.
          */
         @Override
-        protected int sizeIfKnown() {
+        protected OptionalInt sizeIfKnown() {
             synchronized (WorldFileStore.this) {
-                return size;
+                return (size >= 0) ? OptionalInt.of(size) : OptionalInt.empty();
             }
+        }
+
+        /** Declares that this list has no duplicated elements and excludes null. */
+        @Override protected int characteristics() {
+            return Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.DISTINCT;
         }
 
         /**
@@ -639,7 +646,7 @@ loop:   for (int convention=0;; convention++) {
          * Current implementations is not more efficient than {@link #get(int)}.
          */
         @Override
-        protected boolean exists(final int index) {
+        protected boolean isValidIndex(final int index) {
             synchronized (WorldFileStore.this) {
                 if (size >= 0) {
                     return index >= 0 && index < size;

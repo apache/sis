@@ -155,6 +155,7 @@ final class DistanceFilter<R> extends BinaryGeometryFilter<R> implements Distanc
      * @return {@code true} if the test(s) are passed for the provided object.
      */
     @Override
+    @SuppressWarnings("UseSpecificCatch")
     public boolean test(final R object) {
         final GeometryWrapper left = expression1.apply(object);
         if (left != null) {

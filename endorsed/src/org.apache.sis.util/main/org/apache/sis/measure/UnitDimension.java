@@ -405,7 +405,7 @@ final class UnitDimension implements Dimension, Serializable {
     }
 
     /**
-     * {@return returns a hash code value which takes element order in account}.
+     * Returns returns a hash code value which takes element order in account.
      * If the map is empty or contains only one element, then the returned value
      * is the same as {@link #hashCode()}.
      */
@@ -416,9 +416,10 @@ final class UnitDimension implements Dimension, Serializable {
     }
 
     /**
-     * {@return an hash code value of the given map computed in an order-sensitive was}.
+     * Returns an hash code value of the given map computed in an order-sensitive was.
      *
      * @param  components  the map for which to compute hash code.
+     * @return order-sensitive hash code value for the given components.
      */
     static int hashCodeOrdered(final Map<?,?> components) {
         int code = 0;

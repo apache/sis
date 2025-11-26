@@ -18,13 +18,13 @@ package org.apache.sis.geometries.operation;
 
 import java.util.List;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector2D;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -36,14 +36,14 @@ public final class SutherlandHogmanTest {
     @Test
     public void testRectangleClip(){
 
-        final TupleArray subject = TupleArrays.of(2,
+        final Array subject = NDArrays.of(2,
                 0.0, 0.0,
                 10.0, 0.0,
                 10.0, 20.0,
                 0.0, 20.0,
                 0.0, 0.0);
 
-        final TupleArray clip = TupleArrays.of(2,
+        final Array clip = NDArrays.of(2,
                 5.0, 8.0,
                 15.0, 8.0,
                 15.0, 24.0,
@@ -51,7 +51,7 @@ public final class SutherlandHogmanTest {
                 5.0, 8.0
             );
 
-        final List<Tuple> result = SutherlandHodgman.clip(TupleArrays.asList(subject), TupleArrays.asList(clip));
+        final List<Tuple> result = SutherlandHodgman.clip(NDArrays.asList(subject), NDArrays.asList(clip));
         assertEquals(4,result.size());
         assertEquals(new Vector2D.Double( 5,  8),result.get(0));
         assertEquals(new Vector2D.Double(10,  8),result.get(1));

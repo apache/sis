@@ -28,8 +28,10 @@ import java.util.Optional;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.function.Consumer;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.Array;
+import java.sql.JDBCType;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -50,13 +52,14 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
+import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.filter.base.WarningEvent;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.Modules;
-import org.apache.sis.storage.sql.SQLStore;
-import org.apache.sis.storage.sql.ResourceDefinition;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.TreeTable;
@@ -64,6 +67,8 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
+import org.opengis.filter.ValueReference;
+import org.opengis.util.CodeList;
 
 
 /**
@@ -102,7 +107,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-public class Database<G> extends Syntax  {
+public class Database<G> extends Syntax {
     /**
      * The SQL wildcard for any characters. A string containing only this wildcard
      * means "any value" and can sometimes be replaced by {@code null}.
@@ -721,8 +726,8 @@ public class Database<G> extends Syntax  {
                 }
             }
             case Types.ARRAY: {
-                final int componentType = getArrayComponentType(columnDefinition);
-                final ValueGetter<?> component = getMapping(new Column(componentType, columnDefinition.typeName));
+                final int componentType = getArrayComponentType(columnDefinition).getVendorTypeNumber();
+                final ValueGetter<?> component = getMapping(new Column(componentType, columnDefinition.typeName, columnDefinition.name));
                 if (component == ValueGetter.AsObject.INSTANCE) {
                     return ValueGetter.AsArray.INSTANCE;
                 }
@@ -745,9 +750,9 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns the type of components in SQL arrays stored in a column.
+     * Returns the type of components in <abbr>SQL</abbr> arrays stored in a column.
      * This method is invoked when {@link Column#type} = {@link Types#ARRAY}.
-     * The default implementation returns {@link Types#OTHER} because JDBC
+     * The default implementation returns {@link JDBCType#OTHER} because <abbr>JDBC</abbr>
      * column metadata does not provide information about component types.
      * Database-specific subclasses should override this method if they can
      * provide that information from the {@link Column#typeName} value.
@@ -757,8 +762,8 @@ public class Database<G> extends Syntax  {
      *
      * @see Array#getBaseType()
      */
-    protected int getArrayComponentType(final Column columnDefinition) {
-        return Types.OTHER;
+    protected JDBCType getArrayComponentType(final Column columnDefinition) {
+        return JDBCType.OTHER;
     }
 
     /**
@@ -884,13 +889,20 @@ public class Database<G> extends Syntax  {
     }
 
     /**
+     * Returns the localized resources for warnings and error messages.
+     */
+    private Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
+    }
+
+    /**
      * Logs a warning with a localized message and an optional cause.
      *
      * @param resourceKey  one of {@code Resources.Keys} constants.
      * @param cause        the cause, or {@code null} if none.
      */
     final void warning(final short resourceKey, final Exception cause) {
-        LogRecord record = Resources.forLocale(listeners.getLocale()).createLogRecord(Level.WARNING, resourceKey);
+        LogRecord record = resources().createLogRecord(Level.WARNING, resourceKey);
         record.setThrown(cause);
         log(record);
     }
@@ -906,6 +918,27 @@ public class Database<G> extends Syntax  {
         record.setSourceMethodName("components");                // Main public API triggering the database analysis.
         record.setLoggerName(Modules.SQL);
         listeners.warning(record);
+    }
+
+    /**
+     * Creates a listener for warnings that occur during the execution of filters or expressions.
+     * This method declares {@link FeatureSet#features(boolean)} as the public source of the log.
+     *
+     * @return the warning listener.
+     */
+    final Consumer<WarningEvent> createFilterListener() {
+        return (event) -> {
+            final LogRecord record = resources().createLogRecord(
+                    event.recoverable ? Level.FINE : Level.WARNING,
+                    Resources.Keys.IncompatibleFunction_2,
+                    event.getOperatorType().map(CodeList::identifier).orElse("?"),
+                    event.getParameter(ValueReference.class).map(ValueReference<?,?>::getXPath).orElse("?"));
+            record.setThrown(event.exception);
+            record.setSourceClassName(FeatureSet.class.getName());
+            record.setSourceMethodName("features");
+            record.setLoggerName(Modules.SQL);
+            listeners.warning(record);
+        };
     }
 
     /**

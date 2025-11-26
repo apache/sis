@@ -149,49 +149,49 @@ abstract class ChannelDataTestCase extends TestCase {
         return array;
     }
 
-    /** {@return a new array of bytes or random length}. */
+    /** Returns a new array of bytes or random length. */
     final byte[] randomBytes() {
         final byte[] array = new byte[random.nextInt(ARRAY_MAX_LENGTH / Byte.BYTES)];
         random.nextBytes(array);
         return array;
     }
 
-    /** {@return a new array of characters or random length}. */
+    /** Returns a new array of characters or random length. */
     final char[] randomChars() {
         final char[] array = new char[random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES)];
         for (int i=0; i<array.length; i++) array[i] = (char) random.nextInt(1 << Character.SIZE);
         return array;
     }
 
-    /** {@return a new array of short integers or random length}. */
+    /** Returns a new array of short integers or random length. */
     final short[] randomShorts() {
         final short[] array = new short[random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES)];
         for (int i=0; i<array.length; i++) array[i] = (short) random.nextInt(1 << Short.SIZE);
         return array;
     }
 
-    /** {@return a new array of integers or random length}. */
+    /** Returns a new array of integers or random length. */
     final int[] randomInts() {
         final int[] array = new int[random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES)];
         for (int i=0; i<array.length; i++) array[i] = random.nextInt();
         return array;
     }
 
-    /** {@return a new array of long integers or random length}. */
+    /** Returns a new array of long integers or random length. */
     final long[] randomLongs() {
         final long[] array = new long[random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES)];
         for (int i=0; i<array.length; i++) array[i] = random.nextLong();
         return array;
     }
 
-    /** {@return a new array of single-precision floating point values or random length}. */
+    /** Returns a new array of single-precision floating point values or random length. */
     final float[] randomFloats() {
         final float[] array = new float[random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES)];
         for (int i=0; i<array.length; i++) array[i] = random.nextFloat();
         return array;
     }
 
-    /** {@return a new array of double-precision floating point values or random length}. */
+    /** Returns a new array of double-precision floating point values or random length. */
     final double[] randomDoubles() {
         final double[] array = new double[random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES)];
         for (int i=0; i<array.length; i++) array[i] = random.nextDouble();

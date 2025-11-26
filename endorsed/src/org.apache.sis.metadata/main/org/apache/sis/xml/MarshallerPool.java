@@ -454,10 +454,11 @@ public class MarshallerPool {
     }
 
     /**
-     * {@return a string representation of this pool for debugging purposes}.
+     * Returns a string representation of this pool for debugging purposes.
      * The string representation is unspecified and may change in any future
      * Apache SIS version.
      *
+     * @return a string representation for debugging purposes.
      * @since 1.5
      */
     @Override

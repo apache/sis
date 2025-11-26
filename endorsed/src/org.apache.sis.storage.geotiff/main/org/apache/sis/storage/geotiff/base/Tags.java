@@ -52,7 +52,7 @@ public final class Tags {
 
     /**
      * Embedded XML-encoded instance documents prepared using 19139-based schema.
-     * This is an OGC DGIWG extension tag.
+     * This is an <abbr>OGC</abbr> <abbr>DGIWG</abbr> extension tag.
      */
     public static final short GEO_METADATA = (short) 0xC6DD;
 
@@ -92,7 +92,7 @@ public final class Tags {
     }
 
     /**
-     * {@return the name of the given tag}.
+     * Returns the name of the given tag.
      * This method should be rarely invoked (mostly for formatting error messages).
      */
     public static String name(final short tag) {

@@ -78,15 +78,8 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
 
     /**
      * Creates a new resource which can send notifications to the given set of listeners.
-     * If {@code hidden} is {@code false} (the recommended value), then this resource will have its own set of
-     * listeners with this resource declared as the {@linkplain StoreListeners#getSource() source of events}.
-     * It will be possible to add and remove listeners independently from the set of parent listeners.
-     * Conversely if {@code hidden} is {@code true}, then the given listeners will be used directly
-     * and this resource will not appear as the source of any event.
-     *
-     * <p>In any cases, the listeners of all parents (ultimately the data store that created this resource)
-     * will always be notified, either directly if {@code hidden} is {@code true}
-     * or indirectly if {@code hidden} is {@code false}.</p>
+     * The {@code hidden} argument specifies whether the new resource should be invisible in the tree of resources.
+     * See the {@linkplain AbstractResource#AbstractResource(StoreListeners, boolean) parent constructor} for more information.
      *
      * @param  parentListeners  listeners of the parent resource, or {@code null} if none.
      *         This is usually the listeners of the {@link DataStore} that created this resource.

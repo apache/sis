@@ -27,12 +27,12 @@ import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.filter.internal.shared.SortByComparator;
-import org.apache.sis.filter.internal.shared.WarningEvent;
+import org.apache.sis.storage.base.SortByComparator;
 import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Strings;
@@ -79,6 +79,8 @@ final class FeatureStream extends DeferredStream<Feature> {
      * This is used for writing the content of the {@link SelectionClause}.
      * It is usually a singleton instance shared by all databases.
      * It is fetched when first needed.
+     *
+     * @see #getFilterToSQL()
      */
     private SelectionClauseWriter filterToSQL;
 
@@ -136,6 +138,7 @@ final class FeatureStream extends DeferredStream<Feature> {
      */
     FeatureStream(final Table table, final boolean parallel) {
         super(FeatureIterator.CHARACTERISTICS, parallel);
+        listener = table.database.createFilterListener();
         this.table = table;
     }
 
@@ -183,7 +186,6 @@ final class FeatureStream extends DeferredStream<Feature> {
         }
         if (selection == null) {
             selection = new SelectionClause(table);
-            filterToSQL = table.database.getFilterToSupportedSQL();
         }
         /*
          * Simplify/optimize the filter (it may cause `include` or `exclude` filters to emerge) and try
@@ -191,24 +193,25 @@ final class FeatureStream extends DeferredStream<Feature> {
          * if we have a "F₀ AND F₁ AND F₂" chain, it is possible to have some Fₙ as SQL statements and
          * other Fₙ executed in Java code.
          */
-        Stream<Feature> stream = this;
-        try {
-            WarningEvent.LISTENER.set(selection);
+        return execute(() -> {
+            Stream<Feature> stream = this;
             final var optimization = new Optimization();
             optimization.setFeatureType(table.featureType);
             for (final var filter : optimization.applyAndDecompose((Filter<? super Feature>) predicate)) {
                 if (filter == Filter.include()) continue;
                 if (filter == Filter.exclude()) return empty();
-                if (!selection.tryAppend(filterToSQL, filter)) {
+                if (!selection.tryAppend(getFilterToSQL(), filter)) {
                     // Delegate to Java code all filters that we cannot translate to SQL statement.
-                    stream = super.filter(filter);
+                    if (stream == this) {
+                        stream = super.filter(filter);
+                    } else {
+                        stream = stream.filter(filter);
+                    }
                     hasPredicates = true;
                 }
             }
-        } finally {
-            WarningEvent.LISTENER.remove();
-        }
-        return stream;
+            return stream;
+        });
     }
 
     /**
@@ -314,7 +317,9 @@ final class FeatureStream extends DeferredStream<Feature> {
             projection = (FeatureProjection) mapper;
             return (Stream) this;
         }
-        return new PaginedStream<>(super.map(mapper), this);
+        final var stream = new PaginedStream<R>(super.map(mapper), this);
+        stream.listener = listener;
+        return stream;
     }
 
     /**
@@ -424,29 +429,83 @@ final class FeatureStream extends DeferredStream<Feature> {
     @Override
     protected Spliterator<Feature> createSourceIterator() throws Exception {
         Table projected = table;
+        final Database<?> database = projected.database;
+        lock(database.transactionLocks);
+        final Connection connection = getConnection();
+        setCloseHandler(connection);  // Executed only if an exception occurs in the middle of this method.
+        makeReadOnly(connection);
+        /*
+         * Helper methods for spatial functions which expect or return geometry objects:
+         * find SRID codes of CRSs and conversely by searching in "spatial_ref_sys" table.
+         */
+        final InfoStatements spatialInformation;
+        if (database.getSpatialSchema().isPresent()) {
+            spatialInformation = database.createInfoStatements(connection);
+        } else {
+            spatialInformation = null;
+        }
+        /*
+         * The `projection` is what the user requested by a call to `Stream.map(Function)`.
+         * The `queriedProjection` is what we will use for building a SQL query, possibly
+         * with some expressions replaced by SQL fragments. Then, `completion` is what we
+         * could not do in SQL and will need to finish in Java.
+         */
         FeatureProjection completion = null;
-        if (projection != null) {
+        FeatureProjection queriedProjection = projection;
+        if (queriedProjection != null) {
+            /*
+             * First, if the projection contains expressions other than value references,
+             * try to replace them by SQL functions written in the "SELECT" statement.
+             */
+            if (queriedProjection.hasOperations()) {
+                final var columnSQL = new SelectionClause(projected);
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                final SelectionClauseWriter filterToSQL = getFilterToSQL();
+                queriedProjection = queriedProjection.replaceExpressions((name, expression) -> {
+                    final JDBCType type = filterToSQL.writeFunction(columnSQL, expression);
+                    if (type != null) try {
+                        columnSQL.append(" AS ").appendIdentifier(name);
+                        String sql = columnSQL.query(connection, spatialInformation);
+                        expression = new ComputedColumn(database, type, name, sql);
+                    } catch (Exception e) {
+                        throw cannotExecute(e);
+                    }
+                    columnSQL.clear();
+                    return expression;
+                });
+            }
+            /*
+             * Build a pseudo-table (a view) with the subset of columns specified by the projection.
+             */
             final var unhandled   = new BitSet();
             final var reusedNames = new HashSet<String>();
-            projected = new Table(projected, projection, reusedNames, unhandled);
-            completion = projection.afterPreprocessing(unhandled.stream().toArray());
-            if (completion != null && !reusedNames.containsAll(completion.dependencies())) {
+            projected = new Table(projected, queriedProjection, reusedNames, unhandled);
+            completion = queriedProjection.forPreexistingFeatureInstances(unhandled.stream().toArray());
+            if (completion != null && !reusedNames.containsAll(completion.requiredSourceProperties())) {
                 /*
                  * Cannot use `projected` because some expressions need properties available only
                  * in the source features. Request full feature instances from the original table.
                  */
                 projected  = table;
-                completion = projection;
+                completion = queriedProjection;
             }
         }
-        lock(projected.database.transactionLocks);
-        final Connection connection = getConnection();
-        setCloseHandler(connection);  // Executed only if `FeatureIterator` creation fails, discarded later otherwise.
-        makeReadOnly(connection);
-        final var features = new FeatureIterator(projected, connection, distinct, selection, sort, offset, count, completion);
+        final var features = new FeatureIterator(projected, connection, spatialInformation,
+                                    distinct, selection, sort, offset, count, completion);
         setCloseHandler(features);
         selection = null;             // Let the garbage collector do its work.
         return features;
+    }
+
+    /**
+     * Returns the converter from filters/expressions to the {@code WHERE} part of <abbr>SQL</abbr> statements.
+     * The value is cached for avoiding synchronization.
+     */
+    private SelectionClauseWriter getFilterToSQL() {
+        if (filterToSQL == null) {
+            filterToSQL = table.database.getFilterToSupportedSQL();
+        }
+        return filterToSQL;
     }
 
     /**
@@ -457,7 +516,7 @@ final class FeatureStream extends DeferredStream<Feature> {
     @Override
     public String toString() {
         return Strings.toString(getClass(), "table", table.name.table,
-                "predicates", hasPredicates ? (filterToSQL != null ? "mixed" : "Java") : (filterToSQL != null ? "SQL" : null),
+                "predicates", hasPredicates ? (filterToSQL != null ? "mixed" : "Java") : (selection != null ? "SQL" : null),
                 "comparator", hasComparator ? (sort != null ? "mixed" : "Java") : (sort != null ? "SQL" : null),
                 "distinct",   distinct ? Boolean.TRUE : null,
                 "offset",     offset != 0 ? offset : null,

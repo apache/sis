@@ -39,7 +39,7 @@ import org.apache.sis.map.SEPresentation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.base.MemoryFeatureSet;
+import org.apache.sis.storage.MemoryFeatureSet;
 import org.apache.sis.style.se1.FeatureTypeStyle;
 import org.apache.sis.style.se1.LineSymbolizer;
 import org.apache.sis.style.se1.Rule;

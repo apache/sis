@@ -196,7 +196,7 @@ public final class Compression implements Serializable {
     }
 
     /**
-     * {@return whether the compression method may use predictor}.
+     * Returns whether the compression method may use predictor.
      */
     final boolean usePredictor() {
         return level != 0;

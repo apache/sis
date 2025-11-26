@@ -22,12 +22,13 @@ import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.filter.internal.shared.XPath;
+import org.apache.sis.filter.base.XPath;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -35,6 +36,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.filter.Expression;
 
@@ -104,7 +106,7 @@ import org.opengis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.7
  */
 public final class FeatureOperations {
@@ -312,7 +314,7 @@ public final class FeatureOperations {
      *
      * @since 1.4
      */
-    public static <V> Operation function(final Map<String,?> identification,
+    public static <V> Operation function(final Map<String, ?> identification,
                                          final Function<? super Feature, ? extends V> expression,
                                          final AttributeType<? super V> resultType)
     {
@@ -341,11 +343,58 @@ public final class FeatureOperations {
      *
      * @since 1.4
      */
-    public static <V> Operation expression(final Map<String,?> identification,
+    public static <V> Operation expression(final Map<String, ?> identification,
                                            final Expression<? super Feature, ?> expression,
                                            final AttributeType<V> resultType)
     {
         return function(identification, expression.toValueType(resultType.getValueClass()), resultType);
+    }
+
+    /**
+     * Creates an operation with the same identification and result type than the given operation,
+     * but evaluated using the given expression. For example, if the given operation is the result
+     * of a previous call to {@link #expression expression(…)}, then invoking this method is equivalent
+     * to invoking {@code expression(…)} again with the same arguments except for {@code expression}.
+     *
+     * @param  operation   the operation to evaluate in a different way.
+     * @param  expression  the new expression to use for evaluating the operation.
+     * @return the new operation. May be the given operation if the expression is the same.
+     * @throws IllegalArgumentException if the {@linkplain Operation#getResult() result type}
+     *         of the given operation is not an {@link AttributeType}.
+     *
+     * @since 1.6
+     */
+    public static Operation replace(final PropertyType property, final Expression<? super Feature, ?> expression) {
+        final AttributeType<?> resultType;
+        if (property instanceof ExpressionOperation<?>) {
+            var operation = (ExpressionOperation) property;
+            if (operation.expression.equals(expression)) {
+                return operation;
+            }
+            resultType = operation.resultType;
+        } else if (property instanceof AttributeType<?>) {
+            resultType = (AttributeType<?>) property;
+        } else if (property instanceof Operation) {
+            final IdentifiedType type = ((Operation) property).getResult();
+            if (type instanceof AttributeType<?>) {
+                resultType = (AttributeType<?>) type;
+            } else {
+                throw illegalResultType(Errors.Keys.IllegalPropertyValueClass_3, property.getName(), AttributeType.class, type);
+            }
+        } else {
+            throw illegalResultType(Errors.Keys.IllegalArgumentClass_2, "property", property);
+        }
+        return expression(Map.of(AbstractIdentifiedType.INHERIT_FROM_KEY, property), expression, resultType);
+    }
+
+    /**
+     * Returns the exception to throw for an illegal result type.
+     * The last argument will be replaced by the class or interface of that argument.
+     */
+    private static IllegalArgumentException illegalResultType(final short key, final Object... arguments) {
+        final int last = arguments.length - 1;
+        arguments[last] = Classes.getStandardType(Classes.getClass(arguments[last]));
+        return new IllegalArgumentException(Errors.format(key, arguments));
     }
 
     /**

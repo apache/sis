@@ -113,7 +113,7 @@ public final class ScopedIdentifier<T> {
     }
 
     /**
-     * {@return an hash code value for this key}.
+     * Returns an hash code value for this key.
      */
     @Override
     public int hashCode() {
@@ -136,7 +136,7 @@ public final class ScopedIdentifier<T> {
     }
 
     /**
-     * {@return a string representation for debugging purposes}.
+     * Returns a string representation for debugging purposes.
      */
     @Override
     public String toString() {

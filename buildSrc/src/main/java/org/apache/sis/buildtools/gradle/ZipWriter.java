@@ -65,7 +65,7 @@ abstract class ZipWriter extends Conventions {
     }
 
     /**
-     * {@return the ZIP output stream}. This is either the JDK {@link ZipArchiveEntry}
+     * Returns the ZIP output stream. This is either the JDK {@link ZipArchiveEntry}
      * or the Apache Common Compress {@link ZipArchiveOutputStream} implementation.
      */
     abstract OutputStream out();
@@ -107,7 +107,7 @@ abstract class ZipWriter extends Conventions {
             out.setLevel(Deflater.BEST_COMPRESSION);
         }
 
-        /** {@return the ZIP output stream}. */
+        /** Returns the ZIP output stream. */
         @Override final OutputStream out() {
             return out;
         }
@@ -147,7 +147,7 @@ abstract class ZipWriter extends Conventions {
             out.setLevel(Deflater.BEST_COMPRESSION);
         }
 
-        /** {@return the ZIP output stream}. */
+        /** Returns the ZIP output stream. */
         @Override final OutputStream out() {
             return out;
         }

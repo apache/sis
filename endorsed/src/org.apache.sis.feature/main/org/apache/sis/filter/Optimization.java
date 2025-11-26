@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.util.internal.shared.CollectionsExt;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -45,6 +45,7 @@ import org.opengis.feature.FeatureType;
  * <ul>
  *   <li>Application of some logical identities such as {@code NOT(NOT(A)) == A}.</li>
  *   <li>Application of logical short circuits such as {@code A & FALSE == FALSE}.</li>
+ *   <li>Replacement of value references to non-existent properties by null literals.</li>
  *   <li>Immediate evaluation of expressions where all parameters are literal values.</li>
  * </ul>
  *
@@ -72,13 +73,13 @@ import org.opengis.feature.FeatureType;
  * <h2>Behavioral changes</h2>
  * Optimized filters shall produce the same results as non-optimized filters.
  * However side-effects may differ, in particular regarding exceptions that may be thrown.
- * For example if a filter tests {@code A & B} and if {@code Optimization} determines that the {@code B}
+ * For example, if a filter tests {@code A & B} and if {@code Optimization} determines that the {@code B}
  * condition will always evaluate to {@code false}, then the {@code A} condition will never be tested.
  * If that condition had side-effects or threw an exception,
  * those effects will disappear in the optimized filter.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.1
  */
 public class Optimization {
@@ -539,6 +540,9 @@ public class Optimization {
      * @see DefaultFilterFactory#literal(Object)
      */
     public static <R,V> Literal<R,V> literal(final V value) {
+        if (value == null) {
+            return LeafExpression.NULL();
+        }
         return new LeafExpression.Literal<>(value);
     }
 }

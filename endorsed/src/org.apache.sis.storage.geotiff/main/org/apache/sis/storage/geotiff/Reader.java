@@ -189,7 +189,7 @@ final class Reader extends IOBase {
     }
 
     /**
-     * {@return the modifiers (BigTIFF, COG…) used by this reader}.
+     * Returns the modifiers (BigTIFF, <abbr>COG</abbr>…) used by this reader.
      */
     @Override
     public final Set<FormatModifier> getModifiers() {

@@ -22,8 +22,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.TupleArray;
-import org.apache.sis.geometries.math.TupleArrays;
+import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector2D;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.referencing.CommonCRS;
@@ -31,6 +30,7 @@ import org.apache.sis.referencing.CommonCRS;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -44,7 +44,7 @@ public class ArraySequenceTest {
      */
     @Test
     public void constructorNoCrsTest() {
-        final TupleArray positions = TupleArrays.of(2, new double[]{0,0, 1,0, 0,1, 0,0});
+        final Array positions = NDArrays.of(2, new double[]{0,0, 1,0, 0,1, 0,0});
         assertThrows(NullPointerException.class, ()->{
             ArraySequence array = new ArraySequence(positions);
         });
@@ -55,7 +55,7 @@ public class ArraySequenceTest {
      */
     @Test
     public void constructorCrsTest() {
-        final TupleArray positions = TupleArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
+        final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
         ArraySequence array = new ArraySequence(positions);
     }
 
@@ -64,8 +64,8 @@ public class ArraySequenceTest {
      */
     @Test
     public void constructorAttributesNoPositionTest() {
-        final TupleArray normals = TupleArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
-        final Map<String,TupleArray> attributes = new HashMap<>();
+        final Array normals = NDArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
+        final Map<String,Array> attributes = new HashMap<>();
         attributes.put(AttributesType.ATT_NORMAL, normals);
         assertThrows(NullPointerException.class, ()->{
             ArraySequence array = new ArraySequence(attributes);
@@ -77,9 +77,9 @@ public class ArraySequenceTest {
      */
     @Test
     public void constructorAttributesTest() {
-        final TupleArray positions = TupleArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
-        final TupleArray normals = TupleArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
-        final Map<String,TupleArray> attributes = new HashMap<>();
+        final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
+        final Array normals = NDArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
+        final Map<String,Array> attributes = new HashMap<>();
         attributes.put(AttributesType.ATT_POSITION, positions);
         attributes.put(AttributesType.ATT_NORMAL, normals);
         ArraySequence array = new ArraySequence(attributes);
@@ -92,9 +92,9 @@ public class ArraySequenceTest {
     public void pointsTest() {
 
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
-        final TupleArray positions = TupleArrays.of(crs, new double[]{0,0, 1,0, 0,1, 0,0});
-        final TupleArray normals = TupleArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
-        final Map<String,TupleArray> attributes = new HashMap<>();
+        final Array positions = NDArrays.of(crs, new double[]{0,0, 1,0, 0,1, 0,0});
+        final Array normals = NDArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
+        final Map<String,Array> attributes = new HashMap<>();
         attributes.put(AttributesType.ATT_POSITION, positions);
         attributes.put(AttributesType.ATT_NORMAL, normals);
         final ArraySequence array = new ArraySequence(attributes);

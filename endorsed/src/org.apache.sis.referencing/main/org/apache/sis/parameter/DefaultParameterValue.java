@@ -238,7 +238,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     }
 
     /**
-     * {@return the definition of this parameter}.
+     * Returns the definition of this parameter.
+     *
+     * @return description of this parameter.
      */
     @Override
     @XmlElement(name = "operationParameter", required = true)
@@ -247,7 +249,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     }
 
     /**
-     * {@return the URI of the GML document or WKT file from which this parameter value has been read}.
+     * Returns the <abbr>URI</abbr> of the <abbr>GML</abbr> document
+     * or <abbr>WKT</abbr> file from which the parameter values are read.
      * This information allows to interpret {@link #valueFile()} as a path relative to the file that defined
      * this parameter value. For example, the following snippet gets the file, then tries to make it absolute:
      *
@@ -256,6 +259,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *     URI file = pv.valueFile();
      *     file = pv.getSourceFile().map((base) -> base.resolve(file)).orElse(file);
      *     }
+     *
+     * @return the <abbr>URI</abbr> of the document from which the parameter values are read.
      *
      * @see #setSourceFile(URI)
      * @see Parameters#getSourceFile(ParameterDescriptor)

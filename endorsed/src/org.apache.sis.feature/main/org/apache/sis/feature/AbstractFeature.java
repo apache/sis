@@ -87,7 +87,7 @@ import org.opengis.feature.Operation;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see DefaultFeatureType#newInstance()
  *
@@ -378,14 +378,10 @@ public abstract class AbstractFeature implements Feature, Serializable {
 
     /**
      * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
-     * This method is equivalent to the following code, but potentially more efficient when the property does not exist:
+     * This method is equivalent to the following code, but potentially more efficient:
      *
      * {@snippet lang="java" :
-     *     try {
-     *         return getPropertyValue(name);
-     *     } catch (PropertyNotFoundException ignore) {
-     *         return missingPropertyFallback
-     *     }
+     *     return type.hasProperty(name) ? getPropertyValue(name) : missingPropertyFallback;
      *     }
      *
      * Note that if a property of the given name exists but has no value, then this method returns the
@@ -399,9 +395,13 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *         if no attribute or association of that name exists. This value may be {@code null}.
      *
      * @since 1.1
+     *
+     * @deprecated Experience suggests that this method encourage bugs in user's code that stay unnoticed.
      */
-    @Override
-    public abstract Object getValueOrFallback(final String name, Object missingPropertyFallback);
+    @Deprecated(since = "1.5", forRemoval = true)
+    public Object getValueOrFallback(final String name, Object missingPropertyFallback) {
+        return type.hasProperty(name) ? getPropertyValue(name) : missingPropertyFallback;
+    }
 
     /**
      * Executes the parameterless operation of the given name and returns the value of its result.
@@ -473,50 +473,6 @@ public abstract class AbstractFeature implements Feature, Serializable {
                 throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetPropertyValue_1, name));
             }
         }
-    }
-
-    /**
-     * Returns the explicit or default value of a characteristic of a property.
-     * This is a shortcut for the following chain of method invocations
-     * (cast and null checks omitted for brevity),
-     * except that the actual implementation is potentially more efficient:
-     *
-     * {@snippet lang="java" :
-     * return Optional.ofNullable(
-     *         ((Attribute<?>) getProperty(property))
-     *         .characteristics()
-     *         .get(characteristic)
-     *         .getValue());
-     * }
-     *
-     * If the attribute has no {@linkplain AbstractAttribute#characteristics() characteristic} of the given name,
-     * then this method fallbacks on the default value of the {@linkplain DefaultAttributeType#characteristics()
-     * characteristics of the attribute type}.
-     *
-     * @param  property        name of the property for which to get a characteristic.
-     * @param  characteristic  name of the characteristic of the property of the given name.
-     * @return value of the specified characteristic on the specified property, or an empty value
-     *         if the property is not an attribute or the attribute has no such characteristic.
-     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property of this feature.
-     *
-     * @since 1.5
-     */
-    public Optional<?> getCharacteristicValue(final String property, final String characteristic)
-            throws PropertyNotFoundException
-    {
-        Property p = getProperty(property);
-        if (p instanceof Attribute<?>) {
-            var attribute = (Attribute<?>) p;
-            Attribute<?> ca = attribute.characteristics().get(characteristic);
-            if (ca != null) {
-                // If the characteristic is present, assume that an explicitly null value is intentional.
-                return Optional.ofNullable(ca.getValue());
-            } else {
-                return Optional.ofNullable(attribute.getType().characteristics().get(characteristic))
-                        .map(AttributeType::getDefaultValue);
-            }
-        }
-        return Optional.empty();
     }
 
     /**
@@ -601,6 +557,27 @@ public abstract class AbstractFeature implements Feature, Serializable {
             }
         }
         association.setValue((Feature) value);
+    }
+
+    /**
+     * Returns the default characteristic values as specified in the feature type.
+     * This method is invoked when an individual property cannot have characteristic.
+     * It happens with {@link DenseFeature} and {@link SparseFeature} subclasses,
+     * which have optimization for the case where a feature contains only values
+     * without the other information related to properties (such as characteristics).
+     *
+     * @param  property        name of the property for which to get a characteristic.
+     * @param  characteristic  name of the characteristic of the property of the given name.
+     * @return default value of the specified characteristic on the specified property.
+     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property.
+     */
+    final Optional<?> getDefaultCharacteristicValue(final String property, final String characteristic) {
+        final PropertyType p = type.getProperty(property);
+        if (p instanceof AttributeType<?>) {
+            return Optional.ofNullable(((AttributeType<?>) p).characteristics().get(characteristic))
+                    .map(AttributeType::getDefaultValue);
+        }
+        return Optional.empty();
     }
 
     /**
@@ -803,7 +780,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     private static String illegalFeatureType(
             final FeatureAssociationRole association, final FeatureType expected, final FeatureType actual)
     {
-        return Resources.format(Resources.Keys.IllegalFeatureType_3,
+        return Resources.format(Resources.Keys.IllegalFeatureType_4, 0,
                                 association.getName(), expected.getName(), actual.getName());
     }
 

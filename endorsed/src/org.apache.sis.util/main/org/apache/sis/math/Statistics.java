@@ -391,7 +391,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     }
 
     /**
-     * Multiplies the statistics by the given factor. The given scale factory is also applied
+     * Multiplies the statistics by the given factor. The given scale factor is also applied
      * recursively on the {@linkplain #differences() differences} statistics, if any.
      * Invoking this method transforms the statistics as if every values given to the
      * {@code accept(…)} had been first multiplied by the given factor.

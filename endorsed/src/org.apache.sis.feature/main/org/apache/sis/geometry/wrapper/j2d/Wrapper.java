@@ -198,7 +198,7 @@ add:    for (;;) {
     }
 
     /**
-     * {@return directly the underlying Java2D geometry}. This method does not copy the shape.
+     * Returns directly the underlying Java2D geometry. This method does not copy the shape.
      * Caller should not modify the returned shape (by casting to an implementation class).
      */
     @Override

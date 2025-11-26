@@ -42,7 +42,7 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.0
  */
 module org.apache.sis.storage.sql {

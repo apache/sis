@@ -160,7 +160,7 @@ import org.opengis.referencing.ObjectDomain;
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
@@ -829,11 +829,10 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
                  * then we will search in the aliases table as a fallback.
                  */
                 final var result = new ArrayList<Integer>();
-                final String pattern = toLikePattern(code);
-                findCodesFromName(source, source.type, pattern, code, result);
+                findCodesFromName(source, source.type, code, result);
                 if (result.isEmpty()) {
                     // Search in aliases only if no match was found in primary names.
-                    findCodesFromAlias(source, pattern, code, result);
+                    findCodesFromAlias(source, code, result);
                 }
                 Integer resolved = null;
                 for (Integer value : result) {
@@ -872,57 +871,46 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     }
 
     /**
-     * Returns the given object name as a pattern which can be used in a {@code LIKE} clause.
-     * This method does not change the character case for avoiding the need to use {@code LOWER}
-     * in the <abbr>SQL</abbr> statement (because it may prevent the use of the database index).
-     */
-    final String toLikePattern(final String name) {
-        return SQLUtilities.toLikePattern(name, false, translator.wildcardEscape);
-    }
-
-    /**
      * Finds the authority codes for the given name.
+     * The search is case-insensitive and accent-insensitive if the database uses a lenient collation.
      *
      * @param  source    information about the table where the code should appear.
      * @param  cacheKey  object class or {@link TableInfo#toCacheKey(IdentifiedObject)} value.
-     * @param  pattern   the name to search as a pattern that can be used with {@code LIKE}.
-     * @param  name      the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
+     * @param  name      name of the object to search. Case and accents will be ignored if possible.
      * @param  addTo     the collection where to add the codes that have been found.
      * @throws SQLException if an error occurred while querying the database.
      */
-    final void findCodesFromName(final TableInfo source, final Object cacheKey, final String pattern, final String name,
+    final void findCodesFromName(final TableInfo source, final Object cacheKey, final String name,
                                  final Collection<Integer> addTo) throws SQLException
     {
         AuthorityCodes codes = getCodeMap(cacheKey, source, false);
         if (codes != null) {
-            codes.findCodesFromName(pattern, name, addTo);
+            codes.findCodesFromName(name, addTo);
         }
     }
 
     /**
      * Finds the authority codes for the given alias.
+     * The search is case-insensitive and accent-insensitive if the database uses a lenient collation.
      *
-     * @param  source   information about the table where the code should appear.
-     * @param  pattern  the name to search as a pattern that can be used with {@code LIKE}.
-     * @param  name     the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
-     * @param  addTo    the collection where to add the codes that have been found.
+     * @param  source  information about the table where the code should appear.
+     * @param  name    name of the object to search. Case and accents will be ignored if possible.
+     * @param  addTo   the collection where to add the codes that have been found.
      * @throws SQLException if an error occurred while querying the database.
      */
-    final void findCodesFromAlias(final TableInfo source, final String pattern, final String name, final Collection<Integer> addTo)
+    final void findCodesFromAlias(final TableInfo source, final String name, final Collection<Integer> addTo)
             throws SQLException
     {
         final PreparedStatement stmt = prepareStatement(
                 "AliasKey",
                 "SELECT OBJECT_CODE, ALIAS"
                         + " FROM \"Alias\""
-                        + " WHERE OBJECT_TABLE_NAME=? AND ALIAS LIKE ?");
+                        + " WHERE OBJECT_TABLE_NAME=? AND ALIAS=?");
         stmt.setString(1, translator.toActualTableName(source.table));
-        stmt.setString(2, pattern);
+        stmt.setString(2, name);
         try (ResultSet result = stmt.executeQuery()) {
             while (result.next()) {
-                if (SQLUtilities.filterFalsePositive(name, result.getString(2))) {
-                    addTo.add(getOptionalInteger(result, 1));
-                }
+                addTo.add(getOptionalInteger(result, 1));
             }
         }
     }
@@ -1115,11 +1103,39 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @param  result       the result set to fetch value from.
      * @param  columnIndex  the column index (1-based).
+     * @return the Boolean at the specified column, or {@code false}.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private boolean getBoolean(final ResultSet result, final int columnIndex) throws SQLException {
+        return translator.useBoolean() ? result.getBoolean(columnIndex) : (result.getInt(columnIndex) != 0);
+    }
+
+    /**
+     * Gets the value from the specified {@link ResultSet}, or {@code null} if none.
+     * This method is invoked for columns where the <abbr>EPSG</abbr> database uses "Yes", "No" or empty values.
+     * The Apache <abbr>SIS</abbr> scripts rather uses the {@code BOOLEAN} type, but allowing null values for the
+     * cases where the flag is allowed to be absent (empty).
+     *
+     * <h4>Exceptions</h4>
+     * If a string is not recognized as a Boolean value, this method throws a {@link SQLException} because a wrong
+     * {@code PARAM_SIGN_REVERSAL} value would let {@code EPSGDataAccess} finishes its work without apparent problem
+     * but would cause failures later when Apache <abbr>SIS</abbr> tries to infer an inverse operation. An exception
+     * thrown at a later time is more difficult to relate to the root cause than if we throw the exception here.
+     *
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
      * @return the Boolean at the specified column, or {@code null}.
      * @throws SQLException if an error occurred while querying the database.
      */
-    private boolean getOptionalBoolean(final ResultSet result, final int columnIndex) throws SQLException {
-        return translator.useBoolean() ? result.getBoolean(columnIndex) : (result.getInt(columnIndex) != 0);
+    private Boolean getOptionalBoolean(final ResultSet result, final int columnIndex) throws SQLException {
+        Boolean value;
+        if (translator.useBoolean()) {
+            value = result.getBoolean(columnIndex);
+        } else {
+            // May throw SQLException - see above comment.
+            value = SQLUtilities.parseBoolean(result.getString(columnIndex));
+        }
+        return result.wasNull() ? null : value;
     }
 
     /**
@@ -1558,11 +1574,8 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final String column = isPrimaryKey ? source.codeColumn : source.nameColumn;
                 query.setLength(queryStart);
                 query.append(source.codeColumn);
-                if (!isPrimaryKey) {
-                    query.append(", ").append(column);      // Only for filterFalsePositive(…).
-                }
                 query.append(" FROM ").append(source.fromClause)
-                     .append(" WHERE ").append(column).append(isPrimaryKey ? " = ?" : " LIKE ?");
+                     .append(" WHERE ").append(column).append("=?");
                 try (PreparedStatement stmt = connection.prepareStatement(translator.apply(query.toString()))) {
                     /*
                      * Check if at least one record is found for the code or the name.
@@ -1571,14 +1584,12 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     if (isPrimaryKey) {
                         stmt.setInt(1, key);
                     } else {
-                        stmt.setString(1, toLikePattern(code));
+                        stmt.setString(1, code);
                     }
                     Integer present = null;
                     try (ResultSet result = stmt.executeQuery()) {
                         while (result.next()) {
-                            if (isPrimaryKey || SQLUtilities.filterFalsePositive(code, result.getString(2))) {
-                                present = ensureSingleton(getOptionalInteger(result, 1), present, code);
-                            }
+                            present = ensureSingleton(getOptionalInteger(result, 1), present, code);
                         }
                     }
                     if (present != null) {
@@ -1713,7 +1724,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final String  area       = getOptionalString (result, 3);
                 final String  scope      = getOptionalString (result, 4);
                 final String  remarks    = getOptionalString (result, 5);
-                final boolean deprecated = getOptionalBoolean(result, 6);
+                final boolean deprecated = getBoolean        (result, 6);
                 final String  type       = getString   (code, result, 7);
                 /*
                  * Do not invoke `createProperties` now, even if we have all required information,
@@ -2004,7 +2015,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final String   area       = getOptionalString  (result,  8);
                 final String   scope      = getOptionalString  (result,  9);
                 final String   remarks    = getOptionalString  (result, 10);
-                final boolean  deprecated = getOptionalBoolean (result, 11);
+                final boolean  deprecated = getBoolean         (result, 11);
                 final Integer  convRSCode = getOptionalInteger (result, 15);
                 /*
                  * Do not invoke `createProperties` now, even if we have all required information,
@@ -2210,10 +2221,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                             + " WHERE CONVENTIONAL_RS_CODE = ?", code))
             {
                 while (result.next()) {
-                    final Integer epsg       = getInteger   (code, result, 1);
-                    final String  name       = getString    (code, result, 2);
-                    final String  remarks    = getOptionalString  (result, 3);
-                    final boolean deprecated = getOptionalBoolean (result, 4);
+                    final Integer epsg       = getInteger (code, result, 1);
+                    final String  name       = getString  (code, result, 2);
+                    final String  remarks    = getOptionalString(result, 3);
+                    final boolean deprecated = getBoolean       (result, 4);
                     /*
                      * Map of properties should be populated only after we extracted all
                      * information needed from the `ResultSet`, because it may be closed.
@@ -2287,7 +2298,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final double  semiMinorAxis     = getOptionalDouble (result, 5);
                 final String  uom_code          = getString   (code, result, 6);
                 final String  remarks           = getOptionalString (result, 7);
-                final boolean deprecated        = getOptionalBoolean(result, 8);
+                final boolean deprecated        = getBoolean        (result, 8);
                 final Unit<Length> unit         = owner.createUnit(uom_code).asType(Length.class);
                 final boolean useSemiMinor      = Double.isNaN(inverseFlattening);
                 if (useSemiMinor && Double.isNaN(semiMinorAxis)) {
@@ -2380,7 +2391,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 final double  longitude  = getDouble   (code, result, 3);
                 final String  uom_code   = getString   (code, result, 4);
                 final String  remarks    = getOptionalString (result, 5);
-                final boolean deprecated = getOptionalBoolean(result, 6);
+                final boolean deprecated = getBoolean        (result, 6);
                 final Unit<Angle> unit = owner.createUnit(uom_code).asType(Angle.class);
                 /*
                  * Map of properties should be populated only after we extracted all
@@ -2472,7 +2483,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 double   zmax        = getOptionalDouble  (result,  9);
                 Temporal tmin        = getOptionalTemporal(result, 11, "createExtent");
                 Temporal tmax        = getOptionalTemporal(result, 12, "createExtent");
-                boolean  deprecated  = getOptionalBoolean (result, 13);
+                boolean  deprecated  = getBoolean         (result, 13);
                 DefaultGeographicBoundingBox bbox = null;
                 if (!(Double.isNaN(ymin) && Double.isNaN(ymax) && Double.isNaN(xmin) && Double.isNaN(xmax))) {
                     /*
@@ -2581,12 +2592,12 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         + " WHERE COORD_SYS_CODE = ?", code))
         {
             while (result.next()) {
-                final Integer epsg       = getInteger  (code, result, 1);
-                final String  name       = getString   (code, result, 2);
-                final String  type       = getString   (code, result, 3);
-                final int     dimension  = getInteger  (code, result, 4);
-                final String  remarks    = getOptionalString (result, 5);
-                final boolean deprecated = getOptionalBoolean(result, 6);
+                final Integer epsg       = getInteger (code, result, 1);
+                final String  name       = getString  (code, result, 2);
+                final String  type       = getString  (code, result, 3);
+                final int     dimension  = getInteger (code, result, 4);
+                final String  remarks    = getOptionalString(result, 5);
+                final boolean deprecated = getBoolean       (result, 6);
                 final CoordinateSystemAxis[] axes = createComponents(
                         GeodeticAuthorityFactory::createCoordinateSystemAxis,
                         "AxisOrder",
@@ -3000,6 +3011,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
      *
      * @param  parameter  the <abbr>EPSG</abbr> code of the parameter descriptor.
      * @param  options    the options where to store the {@value #SIGN_REVERSAL_OPTION} value.
+     * @throws SQLException if the flag uses an unrecognized string value.
      */
     private void getSignReversal(final int parameter, final Map<String, String> options) throws SQLException {
         try (ResultSet result = executeQueryForCodes(
@@ -3010,15 +3022,8 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         {
             Boolean reversibility = null;
             while (result.next()) {
-                Boolean value;
-                if (translator.useBoolean()) {
-                    value = result.getBoolean(1);
-                    if (result.wasNull()) return;
-                } else {
-                    // May throw SQLException - see above comment.
-                    value = SQLUtilities.parseBoolean(result.getString(1));
-                    if (value == null) return;
-                }
+                Boolean value = getOptionalBoolean(result, 1);
+                if (value == null) return;
                 if (reversibility == null) reversibility = value;
                 else if (!reversibility.equals(value)) return;
             }
@@ -3087,10 +3092,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         + " WHERE PARAMETER_CODE = ?", code))
         {
             while (result.next()) {
-                final Integer epsg        = getInteger  (code, result, 1);
-                final String  name        = getString   (code, result, 2);
-                final String  description = getOptionalString (result, 3);
-                final boolean deprecated  = getOptionalBoolean(result, 4);
+                final Integer epsg        = getInteger (code, result, 1);
+                final String  name        = getString  (code, result, 2);
+                final String  description = getOptionalString(result, 3);
+                final boolean deprecated  = getBoolean       (result, 4);
                 getParameterUnit(epsg, options, null);
                 getParameterType(epsg, options);
                 getSignReversal (epsg, options);
@@ -3369,10 +3374,10 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         + " WHERE COORD_OP_METHOD_CODE = ?", code))
         {
             while (result.next()) {
-                final Integer epsg       = getInteger  (code, result, 1);
-                final String  name       = getString   (code, result, 2);
-                final String  remarks    = getOptionalString (result, 3);
-                final boolean deprecated = getOptionalBoolean(result, 4);
+                final Integer epsg       = getInteger (code, result, 1);
+                final String  name       = getString  (code, result, 2);
+                final String  remarks    = getOptionalString(result, 3);
+                final boolean deprecated = getBoolean       (result, 4);
                 final ParameterDescriptor<?>[] descriptors = createComponents(
                                 GeodeticAuthorityFactory::createParameterDescriptor,
                                 "Coordinate_Operation Parameter Usage",
@@ -3476,12 +3481,12 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                 } else {
                     methodCode = getInteger(code, result, 6);
                 }
-                final String  version    = getOptionalString (result,  7);
-                final double  accuracy   = getOptionalDouble (result,  8);
-                final String  area       = getOptionalString (result,  9);
-                final String  scope      = getOptionalString (result, 10);
-                final String  remarks    = getOptionalString (result, 11);
-                final boolean deprecated = getOptionalBoolean(result, 12);
+                final String  version    = getOptionalString(result,  7);
+                final double  accuracy   = getOptionalDouble(result,  8);
+                final String  area       = getOptionalString(result,  9);
+                final String  scope      = getOptionalString(result, 10);
+                final String  remarks    = getOptionalString(result, 11);
+                final boolean deprecated = getBoolean       (result, 12);
                 /*
                  * Create the source and target CRS for the codes fetched above.  Those CRS are optional only for
                  * conversions (the above calls to getString(code, result, …) verified that those CRS are defined

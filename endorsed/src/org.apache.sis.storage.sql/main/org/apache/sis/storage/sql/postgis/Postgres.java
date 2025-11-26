@@ -136,13 +136,13 @@ public final class Postgres<G> extends Database<G> {
      * This method is invoked when {@link Column#type} = {@link Types#ARRAY}.
      */
     @Override
-    protected int getArrayComponentType(final Column columnDefinition) {
+    protected JDBCType getArrayComponentType(final Column columnDefinition) {
         String typeName = columnDefinition.typeName;
         if (typeName.equalsIgnoreCase("_text")) {       // Common case.
-            return Types.VARCHAR;
+            return JDBCType.VARCHAR;
         }
         if (typeName.length() >= 2 && typeName.charAt(0) == '_') try {
-            return JDBCType.valueOf(typeName.substring(1).toUpperCase(Locale.US)).getVendorTypeNumber();
+            return JDBCType.valueOf(typeName.substring(1).toUpperCase(Locale.US));
         } catch (IllegalArgumentException e) {
             // Unknown type. Ignore and fallback on `Types.OTHER`.
         }

@@ -24,7 +24,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.util.Exceptions;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -85,6 +85,7 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
      * @param  geometry2   the second of the two expressions to be used by this function.
      * @param  systemUnit  if the CRS needs to be in some units of measurement, the {@link Unit#getSystemUnit()} value.
      */
+    @SuppressWarnings("UseSpecificCatch")
     protected BinaryGeometryFilter(final Geometries<?> library,
                                    final Expression<R,?> geometry1,
                                    final Expression<R,?> geometry2,
@@ -237,7 +238,7 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
              * If one of the "effective" parameter has been modified, recreate a new filter.
              * If all operands are literal, we can evaluate that filter immediately.
              */
-            Filter<R> filter = this;
+            BinaryGeometryFilter<R> filter = this;
             if ((effective1 != geometry1) || (effective2 != geometry2)) {
                 filter = recreate(effective1, effective2);
             }

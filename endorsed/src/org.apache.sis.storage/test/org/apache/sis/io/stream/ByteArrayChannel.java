@@ -123,7 +123,7 @@ public final class ByteArrayChannel implements SeekableByteChannel {
     }
 
     /**
-     * {@return this channel position}.
+     * Returns this channel position.
      *
      * @throws IOException if the channel is closed.
      */
@@ -148,7 +148,7 @@ public final class ByteArrayChannel implements SeekableByteChannel {
     }
 
     /**
-     * {@return the current size}.
+     * Returns the current size.
      *
      * @throws IOException if the channel is closed.
      */
@@ -182,7 +182,7 @@ public final class ByteArrayChannel implements SeekableByteChannel {
     }
 
     /**
-     * {@return whether or not this channel is open}.
+     * Returns whether or not this channel is open.
      */
     @Override
     public boolean isOpen() {

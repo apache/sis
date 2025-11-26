@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff.reader;
 
+import java.time.Instant;
 import java.util.NoSuchElementException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
@@ -25,12 +26,17 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
@@ -78,13 +84,9 @@ import org.apache.sis.math.Vector;
  */
 public final class GridGeometryBuilder extends GeoKeysLoader {
     /**
-     * Default scale factory to apply if a row in the model transformation contains only zero values.
-     * The matrix in a GeoTIFF file is always of size 4×4 even if the <abbr>CRS</abbr> is two-dimensional.
-     * In the latter case, the matrix row for the third dimension has only zero values. That row should be
-     * discarded when building the final {@link GridGeometry}, but there is sometime inconsistency between
-     * the number of <abbr>CRS</abbr> dimensions and which matrix rows have been assigned non-zero values.
+     * Number of dimensions of the horizontal part.
      */
-    private static final double DEFAULT_SCALE_FACTOR = 1;
+    public static final int BIDIMENSIONAL = 2;
 
     //  ╔════════════════════════════════════════════════════════════════════════════════╗
     //  ║                                                                                ║
@@ -108,7 +110,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
     public Vector modelTiePoints;
 
     /**
-     * The conversion from grid coordinates to CRS coordinates as an affine transform.
+     * The conversion from grid coordinates to <abbr>CRS</abbr> coordinates as an affine transform.
      * The "grid to CRS" transform can be determined in different ways, from simpler to more complex:
      *
      * <ul>
@@ -174,14 +176,18 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
 
     /**
      * Suggested value for a general description of the transformation form grid coordinates to "real world" coordinates.
-     * This information is obtained as a side-effect of {@link #build(StoreListeners, long, long)} call.
+     * This information is obtained as a side-effect of {@link #build(StoreListeners, long, long, Instant)} call.
+     *
+     * @see #completeMetadata(GridGeometry, MetadataBuilder)
      */
     private String description;
 
     /**
      * {@code POINT} if {@link GeoKeys#RasterType} is {@link GeoCodes#RasterPixelIsPoint},
      * {@code AREA} if it is {@link GeoCodes#RasterPixelIsArea}, or null if unspecified.
-     * This information is obtained as a side-effect of {@link #build(StoreListeners, long, long)} call.
+     * This information is obtained as a side-effect of {@link #build(StoreListeners, long, long, Instant)} call.
+     *
+     * @see #completeMetadata(GridGeometry, MetadataBuilder)
      */
     private CellGeometry cellGeometry;
 
@@ -236,7 +242,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
              * Grid to CRS conversion:  crs = grid × scale + translation
              * We rearrange as:         translation = crs - grid × scale
              * where:                   grid   =  modelTiePoints[i]
-             *                          crs    =  modelTiePoints[i + RECORD_LENGTH/2]
+             *                          crs    =  modelTiePoints[i + RECORD_LENGTH / BIDIMENSIONAL]
              *                          scale  =  affine(i,i)  —  on the diagonal
              */
             if (distance != Double.POSITIVE_INFINITY) {
@@ -245,7 +251,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
                 final int trCol  = affine.getNumCol() - 1;
                 for (int j=0; j<numDim; j++) {
                     final double src = -modelTiePoints.doubleValue(nearest + j);
-                    final double tgt =  modelTiePoints.doubleValue(nearest + j + Localization.RECORD_LENGTH / 2);
+                    final double tgt =  modelTiePoints.doubleValue(nearest + j + Localization.RECORD_LENGTH / BIDIMENSIONAL);
                     var t = DoubleDouble.of(src, decimal).multiply(affine.getNumber(j,j), decimal).add(tgt, decimal);
                     affine.setNumber(j, trCol, t);
                 }
@@ -264,14 +270,17 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
      * @param  listeners  the listeners where to report warnings.
      * @param  width      the image width in pixels.
      * @param  height     the image height in pixels.
+     * @param  imageDate  the date/time found in the {@code DATE_TIME} tag, or {@code null} if none.
      * @return the grid geometry, guaranteed non-null.
      * @throws FactoryException if an error occurred while creating a CRS or a transform.
      */
     @SuppressWarnings("fallthrough")
-    public GridGeometry build(final StoreListeners listeners, final long width, final long height) throws FactoryException {
+    public GridGeometry build(final StoreListeners listeners, final long width, final long height, final Instant imageDate)
+            throws FactoryException
+    {
         CoordinateReferenceSystem crs = null;
         if (keyDirectory != null) {
-            final CRSBuilder helper = new CRSBuilder(listeners);
+            final var helper = new CRSBuilder(listeners);
             try {
                 crs = helper.build(this);
                 description  = helper.description;
@@ -289,47 +298,90 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
             }
         }
         /*
-         * If the CRS is non-null, then it is either two- or three-dimensional.
-         * The `affine` matrix may be for a greater number of dimensions, so it
-         * may need to be reduced.
+         * If the CRS is non-null, then the spatial part is either two- or three-dimensional.
+         * A temporal axis may be added to the non-null CRS.
          */
-        int n = (crs != null) ? crs.getCoordinateSystem().getDimension() : 2;
-        final var axisTypes = new DimensionNameType[n];
-        final var high = new long[n];
-        switch (n) {
+        final double timeCoordinate;
+        final TemporalCRS temporalCRS;
+        final int spatialDimension = (crs != null) ? crs.getCoordinateSystem().getDimension() : BIDIMENSIONAL;
+        final int dimension;
+        if (imageDate != null) {
+            dimension = spatialDimension + 1;
+            temporalCRS = CommonCRS.defaultTemporal();
+            timeCoordinate = DefaultTemporalCRS.castOrCopy(temporalCRS).toValue(imageDate);
+            if (crs != null) {
+                crs = CRS.compound(crs, temporalCRS);
+            }
+        } else {
+            dimension = spatialDimension;
+            timeCoordinate = Double.NaN;
+            temporalCRS = null;
+        }
+        final var axisTypes = new DimensionNameType[dimension];
+        final var high = new long[dimension];
+        if (temporalCRS != null) {
+            axisTypes[spatialDimension] = DimensionNameType.TIME;
+        }
+        switch (spatialDimension) {
             default: axisTypes[2] = DimensionNameType.VERTICAL; // Fallthrough everywhere.
             case 2:  axisTypes[1] = DimensionNameType.ROW;      high[1] = height - 1;
             case 1:  axisTypes[0] = DimensionNameType.COLUMN;   high[0] = width  - 1;
             case 0:  break;
         }
         final var extent = new GridExtent(axisTypes, null, high, true);
-        boolean pixelIsPoint = (cellGeometry == CellGeometry.POINT);
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
+        PixelInCell anchor = (cellGeometry == CellGeometry.POINT) ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER;
         GridGeometry gridGeometry;
         try {
             MathTransform gridToCRS = null;
             if (affine != null) {
-                final Matrix m = Matrices.resizeAffine(affine, ++n, n);
-                Matrices.forceNonZeroScales(m, DEFAULT_SCALE_FACTOR);
+                /*
+                 * The `affine` matrix is always 4×4 in a GeoTIFF file, which may be larger than requested.
+                 * Resize the matrix to the size that we need. Maybe the last dimension, initially ignored,
+                 * become used by the temporal dimension, so we need to clear that dimension for safety.
+                 */
+                final Matrix m = Matrices.resizeAffine(affine, dimension + 1, dimension + 1);
+                if (temporalCRS != null) {
+                    for (int i=0; i <= dimension; i++) {
+                        m.setElement(spatialDimension, i, 0);
+                        m.setElement(i, spatialDimension, 0);
+                    }
+                    m.setElement(spatialDimension, dimension, timeCoordinate);
+                    m.setElement(spatialDimension, spatialDimension, Double.NaN);   // Unknown duration.
+                }
+                /*
+                 * If the CRS has no vertical component, then the matrix row and column for the vertical coordinates
+                 * should be ignored. However, we observed inconsistency in some GeoTIFF files between the number of
+                 * CRS dimensions and the matrix rows which have been assigned non-zero values. Because rows of only
+                 * zero values cause problems, we assign a NaN value in one of their columns.
+                 */
+                Matrices.forceNonZeroScales(m, Double.NaN);
                 gridToCRS = factory.createAffineTransform(m);
             } else if (modelTiePoints != null) {
-                pixelIsPoint = true;
+                anchor    = PixelInCell.CELL_CENTER;
                 gridToCRS = Localization.nonLinear(modelTiePoints);
-                gridToCRS = factory.createPassThroughTransform(0, gridToCRS, n - 2);
+                gridToCRS = factory.createPassThroughTransform(0, gridToCRS, spatialDimension - BIDIMENSIONAL);
+                if (temporalCRS != null) {
+                    gridToCRS = MathTransforms.compound(gridToCRS, MathTransforms.linear(Double.NaN, timeCoordinate));
+                }
             }
-            gridGeometry = new GridGeometry(extent, pixelIsPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER, gridToCRS, crs);
+            gridGeometry = new GridGeometry(extent, anchor, gridToCRS, crs);
         } catch (TransformException e) {
-            GeneralEnvelope envelope = null;
-            if (crs != null) {
-                envelope = new GeneralEnvelope(crs);
-                envelope.setToNaN();
-            }
-            gridGeometry = new GridGeometry(extent, envelope, GridOrientation.HOMOTHETY);
-            canNotCreate(listeners, e);
             /*
              * Note: we catch TransformExceptions because they may be caused by erroneous data in the GeoTIFF file,
              * but let FactoryExceptions propagate because they are more likely to be a SIS configuration problem.
              */
+            GeneralEnvelope envelope = null;
+            if (crs != null) {
+                envelope = new GeneralEnvelope(crs);
+                envelope.setToNaN();
+                if (temporalCRS != null && anchor == PixelInCell.CELL_CENTER) {
+                    // The coordinate is the lower value (start) of the time range.
+                    envelope.setRange(spatialDimension, timeCoordinate, Double.NaN);
+                }
+            }
+            gridGeometry = new GridGeometry(extent, envelope, GridOrientation.UNKNOWN);
+            canNotCreate(listeners, e);
         }
         keyDirectory      = null;            // Not needed anymore, so let GC do its work.
         numericParameters = null;
@@ -344,7 +396,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
      *
      * <h4>Prerequisite</h4>
      * <ul>
-     *   <li>{@link #build(StoreListeners, long, long)} must have been invoked successfully before this method.</li>
+     *   <li>{@link #build(StoreListeners, long, long, Instant)} must have been invoked successfully before this method.</li>
      *   <li>{@link ImageFileDirectory} must have filled its part of metadata before to invoke this method.</li>
      * </ul>
      *
@@ -358,7 +410,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
      *   <li>{@code metadata/referenceSystemInfo}</li>
      * </ul>
      *
-     * @param  gridGeometry  the grid geometry computed by {@link #build(StoreListeners, long, long)}.
+     * @param  gridGeometry  the grid geometry computed by {@link #build(StoreListeners, long, long, Instant)}.
      * @param  metadata      the helper class where to write metadata values.
      * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
      */

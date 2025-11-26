@@ -101,7 +101,7 @@ public final class MultiResolutionCoverageLoaderTest extends TestCase {
     private static final class DummyResource extends AbstractGridCoverageResource {
         /** Creates a dummy resource. */
         DummyResource() {
-            super(null, false);
+            super(null);
         }
 
         /** Returns the preferred resolutions in units of CRS axes. */

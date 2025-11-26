@@ -112,7 +112,9 @@ public abstract class Initializer {
     }
 
     /**
-     * {@return initializers found on the module path}.
+     * Returns initializers found on the module path.
+     *
+     * @return all registered initializers.
      */
     public static ServiceLoader<Initializer> load() {
         try {
